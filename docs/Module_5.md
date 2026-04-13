@@ -5431,3 +5431,359 @@ function syncMissingConfigs() {
   );
 }
 
+// ============================================================================
+// PHASE 3 PATCH 5 + 5B: CONFIG HARDENING + TOLERANT MATCHING FALLBACK
+// ============================================================================
+
+/**
+ * TOLERANT_MODE - Helper for tolerant matching of old Bet_Slips rows
+ * Fixes "not all bets are being assessed" by providing fallback matching logic
+ */
+var TOLERANT_MODE = {
+  enabled: true,
+  fuzzyMatchThreshold: 0.8,
+  dateToleranceDays: 1,
+  teamNameTolerance: 0.9,
+  legacyColumnMappings: {
+    // Old column names -> new canonical names
+    'bet_id': ['bet_id', 'id', 'betid', 'pick_id'],
+    'league': ['league', 'lg', 'sport', 'league_name'],
+    'event_date': ['date', 'game_date', 'event_date', 'match_date'],
+    'team': ['team', 'selection', 'pick', 'team_name'],
+    'opponent': ['opponent', 'opp', 'vs', 'opponent_name'],
+    'side_total': ['type', 'bet_type', 'side_total', 'market'],
+    'line': ['line', 'odds', 'price', 'line_value'],
+    'confidence': ['confidence', 'conf', 'confidence_pct', 'conf_pct'],
+    'result': ['result', 'outcome', 'status', 'bet_result']
+  }
+};
+
+/**
+ * tolerantHeaderMatch_ - Tolerant header matching for legacy Bet_Slips
+ * @param {Array} actualHeaders - Actual headers from sheet
+ * @param {Array} targetHeaders - Target canonical headers
+ * @returns {Object} Header map with tolerant matching
+ */
+function tolerantHeaderMatch_(actualHeaders, targetHeaders) {
+  var map = {};
+  var usedActual = [];
+  
+  // First pass: exact matches using ContractEnforcer
+  if (typeof createCanonicalHeaderMap_ !== 'undefined') {
+    map = createCanonicalHeaderMap_(targetHeaders, actualHeaders);
+    // Mark used actual headers
+    Object.values(map).forEach(idx => {
+      if (idx >= 0) usedActual.push(idx);
+    });
+  }
+  
+  // Second pass: tolerant matching for unmapped target columns
+  targetHeaders.forEach((target, targetIdx) => {
+    if (map[target] === undefined || map[target] < 0) {
+      var legacyMappings = TOLERANT_MODE.legacyColumnMappings[target] || [target];
+      
+      for (var i = 0; i < actualHeaders.length; i++) {
+        if (usedActual.includes(i)) continue; // Skip already used columns
+        
+        var actual = String(actualHeaders[i]).toLowerCase().replace(/[\s_]/g, "");
+        
+        for (var j = 0; j < legacyMappings.length; j++) {
+          var legacy = String(legacyMappings[j]).toLowerCase().replace(/[\s_]/g, "");
+          
+          // Exact match
+          if (actual === legacy) {
+            map[target] = i;
+            usedActual.push(i);
+            break;
+          }
+          
+          // Fuzzy match
+          if (TOLERANT_MODE.enabled) {
+            var similarity = stringSimilarity_(actual, legacy);
+            if (similarity >= TOLERANT_MODE.fuzzyMatchThreshold) {
+              map[target] = i;
+              usedActual.push(i);
+              Logger.log('[tolerantHeaderMatch_] Fuzzy matched: ' + actual + ' -> ' + legacy + ' (' + (similarity * 100).toFixed(1) + '%)');
+              break;
+            }
+          }
+        }
+        
+        if (map[target] !== undefined && map[target] >= 0) break;
+      }
+    }
+  });
+  
+  return map;
+}
+
+/**
+ * stringSimilarity_ - Calculate string similarity using Levenshtein distance
+ * @param {string} s1 - First string
+ * @param {string} s2 - Second string
+ * @returns {number} Similarity score (0-1)
+ */
+function stringSimilarity_(s1, s2) {
+  if (!s1 || !s2) return 0;
+  if (s1 === s2) return 1;
+  
+  var longer = s1.length > s2.length ? s1 : s2;
+  var shorter = s1.length > s2.length ? s2 : s1;
+  
+  if (longer.length === 0) return 1;
+  
+  var distance = levenshteinDistance_(longer, shorter);
+  return (longer.length - distance) / longer.length;
+}
+
+/**
+ * levenshteinDistance_ - Calculate Levenshtein distance between strings
+ * @param {string} s1 - First string
+ * @param {string} s2 - Second string
+ * @returns {number} Levenshtein distance
+ */
+function levenshteinDistance_(s1, s2) {
+  var costs = [];
+  for (var i = 0; i <= s1.length; i++) {
+    var lastValue = i;
+    for (var j = 0; j <= s2.length; j++) {
+      if (i === 0) {
+        costs[j] = j;
+      } else {
+        if (j > 0) {
+          var newValue = costs[j - 1];
+          if (s1.charAt(i - 1) !== s2.charAt(j - 1)) {
+            newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + 1;
+          }
+          costs[j - 1] = lastValue;
+          lastValue = newValue;
+        }
+      }
+    }
+    if (i > 0) costs[s2.length] = lastValue;
+  }
+  return costs[s2.length];
+}
+
+/**
+ * tolerantBetSlipsParser_ - Parse Bet_Slips with tolerant matching for legacy data
+ * @param {Sheet} sheet - Bet_Slips sheet
+ * @returns {Array} Array of parsed bet objects
+ */
+function tolerantBetSlipsParser_(sheet) {
+  if (!sheet) return [];
+  
+  var data = sheet.getDataRange().getValues();
+  if (data.length < 2) return [];
+  
+  var headers = data[0];
+  var bets = [];
+  
+  // Use tolerant header matching
+  var headerMap = tolerantHeaderMatch_(headers, BET_SLIPS_CONTRACT);
+  
+  Logger.log('[tolerantBetSlipsParser_] Header mapping: ' + JSON.stringify(headerMap));
+  
+  for (var i = 1; i < data.length; i++) {
+    var row = data[i];
+    if (!row || row.length === 0) continue;
+    
+    var bet = {};
+    
+    // Map columns using tolerant header map
+    Object.keys(headerMap).forEach(function(canonical) {
+      var colIdx = headerMap[canonical];
+      if (colIdx >= 0 && colIdx < row.length) {
+        bet[canonical] = row[colIdx];
+      }
+    });
+    
+    // Apply tolerant data cleaning
+    bet = tolerantDataCleaning_(bet);
+    
+    // Validate bet has minimum required fields
+    if (bet.bet_id && bet.league && bet.team) {
+      bets.push(bet);
+    } else {
+      Logger.log('[tolerantBetSlipsParser_] Skipping invalid bet: ' + JSON.stringify(bet));
+    }
+  }
+  
+  Logger.log('[tolerantBetSlipsParser_] Parsed ' + bets.length + ' bets from ' + (data.length - 1) + ' rows');
+  return bets;
+}
+
+/**
+ * tolerantDataCleaning_ - Clean and normalize bet data with tolerance
+ * @param {Object} bet - Bet object
+ * @returns {Object} Cleaned bet object
+ */
+function tolerantDataCleaning_(bet) {
+  // Clean and normalize team names
+  if (bet.team) {
+    bet.team = String(bet.team).trim();
+    // Remove common prefixes/suffixes
+    bet.team = bet.team.replace(/^(The |A )/i, '').replace(/\s+(The|A)$/i, '');
+  }
+  
+  if (bet.opponent) {
+    bet.opponent = String(bet.opponent).trim();
+    bet.opponent = bet.opponent.replace(/^(The |A )/i, '').replace(/\s+(The|A)$/i, '');
+  }
+  
+  // Normalize confidence
+  if (bet.confidence || bet.confidence_pct) {
+    var conf = bet.confidence || bet.confidence_pct;
+    if (typeof conf === 'string') {
+      conf = conf.replace('%', '').trim();
+      conf = parseFloat(conf);
+    }
+    if (!isNaN(conf)) {
+      // Convert to percentage if needed
+      if (conf <= 1) conf = conf * 100;
+      bet.confidence_pct = Math.max(0, Math.min(100, conf));
+      
+      // Apply confidence normalization
+      var normalized = normalizeConfidence_(bet.confidence_pct / 100);
+      if (normalized) {
+        bet.tier_code = normalized.tier_code;
+        bet.tier_display = normalized.tier_display;
+      }
+    }
+  }
+  
+  // Clean league names
+  if (bet.league) {
+    bet.league = String(bet.league).trim().toUpperCase();
+  }
+  
+  // Clean dates
+  if (bet.event_date) {
+    var dateObj = new Date(bet.event_date);
+    if (!isNaN(dateObj.getTime())) {
+      bet.event_date = dateObj.toISOString().split('T')[0]; // YYYY-MM-DD format
+    }
+  }
+  
+  // Generate missing bet_id if needed
+  if (!bet.bet_id && bet.team && bet.event_date) {
+    bet.bet_id = 'LEGACY_' + String(bet.team).replace(/\s+/g, '_') + '_' + bet.event_date.replace(/-/g, '');
+  }
+  
+  return bet;
+}
+
+/**
+ * validateConfigState_ - Enhanced config validation for Phase 3
+ * @param {Object} config - Configuration object
+ * @param {string} tier - Configuration tier ('tier1', 'tier2', 'accumulator')
+ * @returns {boolean} True if valid
+ */
+function validateConfigState_(config, tier) {
+  if (!config) {
+    Logger.log('[validateConfigState_] No configuration provided for tier: ' + tier);
+    return false;
+  }
+  
+  try {
+    // Basic validation for all tiers
+    var required = ['version', 'LAST_UPDATED'];
+    for (var i = 0; i < required.length; i++) {
+      if (!config[required[i]]) {
+        Logger.log('[validateConfigState_] Missing required config field: ' + required[i]);
+        return false;
+      }
+    }
+    
+    // Tier-specific validation
+    if (tier === 'tier1') {
+      return validateTier1Config_(config);
+    } else if (tier === 'tier2') {
+      return validateTier2Config_(config);
+    } else if (tier === 'accumulator') {
+      return validateAccumulatorConfig_(config);
+    }
+    
+    return true;
+  } catch (err) {
+    Logger.log('[validateConfigState_] Config validation failed for tier ' + tier + ': ' + err.message);
+    return false;
+  }
+}
+
+/**
+ * validateTier1Config_ - Validate Tier1 configuration
+ * @param {Object} config - Tier1 config object
+ * @returns {boolean} True if valid
+ */
+function validateTier1Config_(config) {
+  // Check probability values
+  if (config.BREAKEVEN_PROB && (config.BREAKEVEN_PROB <= 0 || config.BREAKEVEN_PROB >= 1)) {
+    Logger.log('[validateTier1Config_] BREAKEVEN_PROB must be between 0 and 1');
+    return false;
+  }
+  
+  if (config.JUICE && (config.JUICE <= 0 || config.JUICE >= 1)) {
+    Logger.log('[validateTier1Config_] JUICE must be between 0 and 1');
+    return false;
+  }
+  
+  // Validate tier thresholds
+  if (config.TIER_STRONG_MIN && config.TIER_MEDIUM_MIN && config.TIER_WEAK_MIN) {
+    if (config.TIER_STRONG_MIN <= config.TIER_MEDIUM_MIN ||
+        config.TIER_MEDIUM_MIN <= config.TIER_WEAK_MIN) {
+      Logger.log('[validateTier1Config_] Tier thresholds must be strictly decreasing');
+      return false;
+    }
+  }
+  
+  return true;
+}
+
+/**
+ * validateTier2Config_ - Validate Tier2 configuration
+ * @param {Object} config - Tier2 config object
+ * @returns {boolean} True if valid
+ */
+function validateTier2Config_(config) {
+  // Validate bucket arrays
+  if (config.SPREAD_BUCKETS && Array.isArray(config.SPREAD_BUCKETS)) {
+    if (config.SPREAD_BUCKETS.length < 2) {
+      Logger.log('[validateTier2Config_] SPREAD_BUCKETS must have at least 2 elements');
+      return false;
+    }
+    
+    // Check if sorted
+    for (var i = 1; i < config.SPREAD_BUCKETS.length; i++) {
+      if (config.SPREAD_BUCKETS[i] <= config.SPREAD_BUCKETS[i-1]) {
+        Logger.log('[validateTier2Config_] SPREAD_BUCKETS must be sorted in ascending order');
+        return false;
+      }
+    }
+  }
+  
+  return true;
+}
+
+/**
+ * validateAccumulatorConfig_ - Validate Accumulator configuration
+ * @param {Object} config - Accumulator config object
+ * @returns {boolean} True if valid
+ */
+function validateAccumulatorConfig_(config) {
+  // Validate leg counts
+  if (config.MIN_LEGS_PER_ACCA && config.MAX_LEGS_PER_ACCA) {
+    if (config.MIN_LEGS_PER_ACCA < 2 || config.MIN_LEGS_PER_ACCA > config.MAX_LEGS_PER_ACCA) {
+      Logger.log('[validateAccumulatorConfig_] MIN_LEGS_PER_ACCA must be >= 2 and <= MAX_LEGS_PER_ACCA');
+      return false;
+    }
+    
+    if (config.MAX_LEGS_PER_ACCA < 2 || config.MAX_LEGS_PER_ACCA > 20) {
+      Logger.log('[validateAccumulatorConfig_] MAX_LEGS_PER_ACCA must be between 2 and 20');
+      return false;
+    }
+  }
+  
+  return true;
+}
+
