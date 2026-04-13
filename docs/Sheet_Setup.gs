@@ -1629,105 +1629,69 @@ function createSheetIfMissing_(ss, sheetName) {
 
 
 /**
- * createConfigAccumulatorSheet - Create Config_Accumulator sheet with all configuration keys
+ * Creates Config_Accumulator sheet with EXACT structure from your live example
  */
 function createConfigAccumulatorSheet(ss) {
-  var sheet = ss.getSheetByName('Config_Accumulator');
+  let sheet = ss.getSheetByName('Config_Accumulator');
   if (!sheet) {
     sheet = ss.insertSheet('Config_Accumulator');
   }
   sheet.clear();
 
-  // Headers for Config_Accumulator
-  var headers = [
-    'config_version',
-    'rank_weight',
-    'form_weight',
-    'h2h_weight',
-    'forebet_weight',
-    'variance_weight',
-    'pctWeight',
-    'netRtgWeight',
-    'homeCourtWeight',
-    'momentumWeight',
-    'streakWeight',
-    'confidence_min',
-    'confidence_max',
-    'min_samples',
-    'confidence_scale',
-    'bayesian_blending',
-    'show_all_tiers',
-    'tier_strong_min_score',
-    'tier_medium_min_score',
-    'tier_weak_min_score',
-    'Weighted Score %',
-    'Accuracy %',
-    'Coverage %',
-    'Composite Score',
-    'Correct Predictions',
-    'Total Predictions',
-    'RISKY Count',
-    'Training Size',
-    'Data Confidence',
-    'last_updated',
-    'updated_by',
-    'home_court_weight',
-    'momentum_weight',
-    'net_rtg_weight',
-    'pct_weight',
-    'streak_weight'
+  const data = [
+    ['config_version', 'v_elite_20260315_1128', '', ''],
+    ['--- LEGACY WEIGHTS ---', '', '', ''],
+    ['rank_weight', '0', '', ''],
+    ['form_weight', '2.5', '', ''],
+    ['h2h_weight', '1.5', '', ''],
+    ['forebet_weight', '3', '', ''],
+    ['variance_weight', '1', '', ''],
+    ['--- NEW WEIGHTS ---', '', '', ''],
+    ['pctWeight', '2', '', ''],
+    ['netRtgWeight', '2', '', ''],
+    ['homeCourtWeight', '1', '', ''],
+    ['momentumWeight', '1', '', ''],
+    ['streakWeight', '1', '', ''],
+    ['--- COMMON PARAMS ---', '', '', ''],
+    ['home_advantage', '3', '', ''],
+    ['score_threshold', '35', '', ''],
+    ['confidence_min', '50', '', ''],
+    ['confidence_max', '95', '', ''],
+    ['--- ELITE PARAMS (NEW) ---', '', '', ''],
+    ['min_samples', '1', '', ''],
+    ['confidence_scale', '30', '', ''],
+    ['bayesian_blending', 'TRUE', '', ''],
+    ['show_all_tiers', 'TRUE', '', ''],
+    ['--- TIER THRESHOLDS ---', '', '', ''],
+    ['tier_strong_min_score', '75', '', ''],
+    ['tier_medium_min_score', '60', '', ''],
+    ['tier_weak_min_score', '50', '', ''],
+    ['--- METRICS ---', '', '', ''],
+    ['Weighted Score %', '92.0%', '', ''],
+    ['Accuracy %', '92.0%', '', ''],
+    ['Coverage %', '21.4%', '', ''],
+    ['Composite Score', '80.21', '', ''],
+    ['Correct Predictions', '23', '', ''],
+    ['Total Predictions', '25', '', ''],
+    ['RISKY Count', '92', '', ''],
+    ['Training Size', '117', '', ''],
+    ['Data Confidence', '87.3%', '', ''],
+    ['--- INFO ---', '', '', ''],
+    ['last_updated', '15/03/2026', '', ''],
+    ['updated_by', 'applyTier1ProposalToConfig (rank 1)', '', ''],
+    ['home_court_weight', '1', '', ''],
+    ['momentum_weight', '1', '', ''],
+    ['net_rtg_weight', '2', '', ''],
+    ['pct_weight', '3', '', ''],
+    ['streak_weight', '1', '', '']
   ];
 
-  // Set headers
-  sheet.getRange(1, 1, 1, headers.length).setValues([headers])
-    .setFontWeight('bold')
-    .setBackground('#4a86e8')
-    .setFontColor('#ffffff');
-
-  // Add default configuration row with all the keys from user's example
-  var defaultConfig = [
-    'v_elite_20260315_1128', // config_version
-    '0', // rank_weight
-    '2.5', // form_weight
-    '1.5', // h2h_weight
-    '3', // forebet_weight
-    '1', // variance_weight
-    '2', // pctWeight
-    '2', // netRtgWeight
-    '1', // homeCourtWeight
-    '1', // momentumWeight
-    '1', // streakWeight
-    '50', // confidence_min
-    '95', // confidence_max
-    '1', // min_samples
-    '30', // confidence_scale
-    'TRUE', // bayesian_blending
-    'TRUE', // show_all_tiers
-    '75', // tier_strong_min_score
-    '60', // tier_medium_min_score
-    '50', // tier_weak_min_score
-    '92.0%', // Weighted Score %
-    '92.0%', // Accuracy %
-    '21.4%', // Coverage %
-    '80.21', // Composite Score
-    '23', // Correct Predictions
-    '25', // Total Predictions
-    '92', // RISKY Count
-    '117', // Training Size
-    '87.3%', // Data Confidence
-    '15/03/2026', // last_updated
-    'applyTier1ProposalToConfig (rank 1)', // updated_by
-    '1', // home_court_weight (duplicate)
-    '1', // momentum_weight (duplicate)
-    '2', // net_rtg_weight (duplicate)
-    '3', // pct_weight (duplicate)
-    '1' // streak_weight (duplicate)
-  ];
-
-  sheet.getRange(2, 1, 1, defaultConfig.length).setValues([defaultConfig]);
-
-  sheet.autoResizeColumns(1, headers.length);
-  Logger.log('[Genesis] Config_Accumulator sheet created with all configuration keys');
+  sheet.getRange(1, 1, data.length, 4).setValues(data);
+  sheet.getRange('A:A').setFontWeight('bold');
+  sheet.autoResizeColumns(1, 4);
+  
+  Logger.log('Config_Accumulator created with all weights, thresholds & metrics');
+  return sheet;
 }
 
 function cleanUpcomingCleanDuplicateColumns() {
