@@ -1750,12 +1750,7 @@ function createConfigTier1Sheet(ss) {
     ['Data Confidence', '87.3%', 'Live data confidence'],
     ['--- INFO ---', '', ''],
     ['last_updated', '15/03/2026', 'Last update timestamp'],
-    ['updated_by', 'applyTier1ProposalToConfig (rank 1)', 'Last update source'],
-    ['home_court_weight', '1', 'Live home court weight'],
-    ['momentum_weight', '1', 'Live momentum weight'],
-    ['net_rtg_weight', '2', 'Live net rating weight'],
-    ['pct_weight', '3', 'Live PCT weight'],
-    ['streak_weight', '1', 'Live streak weight']
+    ['updated_by', 'applyTier1ProposalToConfig (rank 1)', 'Last update source']
   ];
 
   sheet.getRange(1, 1, data.length, 3).setValues(data);
