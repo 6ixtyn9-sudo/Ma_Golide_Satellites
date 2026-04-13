@@ -2570,6 +2570,7 @@ function generateAccuracyReport(ssArg) {
 
     // FT score column
     var ftIndex =
+      resH['FT Score'] !== undefined ? resH['FT Score'] :
       resH['ft score'] !== undefined ? resH['ft score'] :
       resH['ftscore'] !== undefined ? resH['ftscore'] :
       resH['final score'] !== undefined ? resH['final score'] :

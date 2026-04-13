@@ -4409,7 +4409,7 @@ function predictQuarters_Tier2_OU(ss, options) {
 
       // ═══ BAYESIAN CONFIDENCE ═══
       var sampleSize = model.samples || model.sampleSize || 0;
-      var sampleConf = _calcSampleConfidence(sampleSize, CONF_SCALE);
+      var sampleConf = _calcSampleConfidence(sampleSize, CONF_SCALE, OU_CFG);
       var isBayesian = sampleConf < 0.7;
 
       if (isBayesian) {
@@ -4781,12 +4781,12 @@ function _blendWithForebet(modelMu, forebetMu, weight) {
   return Math.max(5, Math.min(150, blended));
 }
 
-function _calcSampleConfidence(n, scale) {
-  if (n === 0) return OU_CFG.MIN_CONFIDENCE;
-  var conf = OU_CFG.MIN_CONFIDENCE +
-             (OU_CFG.MAX_CONFIDENCE - OU_CFG.MIN_CONFIDENCE) *
+function _calcSampleConfidence(n, scale, cfg) {
+  if (n === 0) return cfg.MIN_CONFIDENCE;
+  var conf = cfg.MIN_CONFIDENCE +
+             (cfg.MAX_CONFIDENCE - cfg.MIN_CONFIDENCE) *
              (1 - Math.exp(-n / scale));
-  return Math.min(OU_CFG.MAX_CONFIDENCE, conf);
+  return Math.min(cfg.MAX_CONFIDENCE, conf);
 }
 
 function _parseBookLine(row, h, qk) {

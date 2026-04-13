@@ -2075,16 +2075,16 @@ function calculateMaGolideScore(features, config) {
   var variancePenalty = safeNum_(features.variancePenalty, 0);
 
   // Get weights
-  var pctWeight = safeNum_(config.pctWeight, safeNum_(config.pct_weight, 0));
-  var netRtgWeight = safeNum_(config.netRtgWeight, safeNum_(config.net_rtg_weight, 0));
-  var homeCourtWeight = safeNum_(config.homeCourtWeight, safeNum_(config.home_court_weight, 0));
-  var momentumWeight = safeNum_(config.momentumWeight, safeNum_(config.momentum_weight, 0));
-  var streakWeight = safeNum_(config.streakWeight, safeNum_(config.streak_weight, 0));
-  var rankWeight = safeNum_(config.rank, safeNum_(config.rankWeight, 0));
-  var formWeight = safeNum_(config.form, safeNum_(config.formWeight, 0));
-  var h2hWeight = safeNum_(config.h2h, safeNum_(config.h2hWeight, 0));
-  var forebetWeight = safeNum_(config.forebet, safeNum_(config.forebetWeight, 0));
-  var varianceWeight = safeNum_(config.variance, safeNum_(config.varianceWeight, 0));
+  var pctWeight = (config.pctWeight !== undefined && config.pctWeight !== null) ? safeNum_(config.pctWeight, safeNum_(config.pct_weight, 0)) : 0;
+  var netRtgWeight = (config.netRtgWeight !== undefined && config.netRtgWeight !== null) ? safeNum_(config.netRtgWeight, safeNum_(config.net_rtg_weight, 0)) : 0;
+  var homeCourtWeight = (config.homeCourtWeight !== undefined && config.homeCourtWeight !== null) ? safeNum_(config.homeCourtWeight, safeNum_(config.home_court_weight, 0)) : 0;
+  var momentumWeight = (config.momentumWeight !== undefined && config.momentumWeight !== null) ? safeNum_(config.momentumWeight, safeNum_(config.momentum_weight, 0)) : 0;
+  var streakWeight = (config.streakWeight !== undefined && config.streakWeight !== null) ? safeNum_(config.streakWeight, safeNum_(config.streak_weight, 0)) : 0;
+  var rankWeight = (config.rank !== undefined && config.rank !== null) ? safeNum_(config.rank, safeNum_(config.rankWeight, 0)) : 0;
+  var formWeight = (config.form !== undefined && config.form !== null) ? safeNum_(config.form, safeNum_(config.formWeight, 0)) : 0;
+  var h2hWeight = (config.h2h !== undefined && config.h2h !== null) ? safeNum_(config.h2h, safeNum_(config.h2hWeight, 0)) : 0;
+  var forebetWeight = (config.forebet !== undefined && config.forebet !== null) ? safeNum_(config.forebet, safeNum_(config.forebetWeight, 0)) : 0;
+  var varianceWeight = (config.variance !== undefined && config.variance !== null) ? safeNum_(config.variance, safeNum_(config.varianceWeight, 0)) : 0;
 
   // Calculate weighted components
   var weightedRank = rankWeight * rankDiff;
@@ -2222,7 +2222,7 @@ function analyzeTier1(ss) {
     var config = loadTier1Config(ss);
     if (typeof validateConfigState_ === 'function') {
       try {
-        validateConfigState_(config, ['version', 'confMin', 'confMax']);
+        validateConfigState_(config, ['confMin', 'confMax']);
       } catch (eVal) {
         Logger.log('[analyzeTier1] validateConfigState_: ' + eVal);
       }

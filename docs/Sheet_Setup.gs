@@ -6096,10 +6096,6 @@ function calculateVariancePenalty_(homeTeam, awayTeam, varianceMap) {
  * 2) Then paste this one.
  */
 
-if (typeof _selectSnipers === 'function') {
-  Logger.log('[WARN] _selectSnipers duplicates');
-}
-
 function _selectSnipers(candidates, config, tierCuts) {
   var fn = '_selectSnipers';
   candidates = candidates || [];
