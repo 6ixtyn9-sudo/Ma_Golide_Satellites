@@ -1,0 +1,182 @@
+
+function generateCompleteAccuracyReport(ss) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  var ui = SpreadsheetApp.getUi();
+  
+  Logger.log('═══════════════════════════════════════════════════════════════');
+  Logger.log('    MA GOLIDE COMPLETE ACCURACY REPORT');
+  Logger.log('═══════════════════════════════════════════════════════════════');
+  
+  try {
+    ss.toast('Generating Complete Accuracy Report...', 'Ma Golide', 30);
+    
+    // Load all data
+    var games = loadHistoricalGamesEnhanced_(ss);
+    var betSlipsData = loadBetSlipsComplete_(ss);
+    
+    Logger.log('[Report] Games loaded: ' + games.length);
+    Logger.log('[Report] Bet_Slips rows: ' + betSlipsData.rows.length);
+    
+    // Grade each bet type
+    var reports = {};
+    
+    reports.SNIPER_MARGIN = gradeSniperMargin_(betSlipsData, games);
+    reports.SNIPER_OU = gradeSniperOU_(betSlipsData, games);
+    reports.BANKER = gradeBankers_(betSlipsData, games);
+    reports.ROBBER = gradeRobbers_(betSlipsData, games);
+    reports.FIRST_HALF = gradeFirstHalf_(betSlipsData, games);
+    reports.FT_OU = gradeFTOU_(betSlipsData, games);
+    reports.HIGH_QUARTER = gradeHighQuarter_(betSlipsData, games);
+    
+    // Write unified report
+    writeUnifiedAccuracyReport_(ss, reports);
+    
+    // Summary
+    var totalBets = 0, totalHits = 0;
+    Object.keys(reports).forEach(function(key) {
+      totalBets += reports[key].matched;
+      totalHits += reports[key].hits;
+    });
+    
+    var overallRate = totalBets > 0 ? (totalHits / totalBets * 100).toFixed(1) : '0.0';
+    
+    Logger.log('[Report] COMPLETE: ' + totalHits + '/' + totalBets + ' (' + overallRate + '%)');
+    ss.toast('Report complete: ' + totalHits + '/' + totalBets + ' (' + overallRate + '%)', 'Ma Golide', 5);
+    
+    return reports;
+    
+  } catch (e) {
+    Logger.log('[Report] ERROR: ' + e.message + '\n' + e.stack);
+    ss.toast('Accuracy Report Error: ' + e.message, 'Ma Golide', 10);
+    return null;
+  }
+}
+
+is not complete, not all bets are being resulted
+
+i only want one reulted page
+
+Accuracy_Report
+MA GOLIDE COMPLETE ACCURACY REPORT														
+Generated:	4/14/2026, 11:18:57 AM													
+														
+═══ OVERALL SUMMARY ═══														
+Total Bets Graded:	0													
+Total Hits:	0													
+Total Misses:	0													
+Overall Hit Rate:	0.00%													
+														
+═══ BY BET TYPE ═══														
+Bet Type	Found	Matched	Hits	Misses	Pushes/Ties	Hit Rate								
+														
+														
+═══ LEGACY SNIPER MARGIN CROSS-CHECK (date-keyed) ═══														
+Source sheet:	Bet_Slips													
+Total side bets found (SNIPER MARGIN):	0													
+Matched to ResultsClean:	0													
+Hits:	0													
+Misses:	0													
+Hit Rate (excl ties; ties count as MISS):	N/A													
+														
+--- LEGACY SIDE BET DETAILS (includes Bet_Slips columns) ---														
+League	Date	Time	Match	Pick	Type	Odds	Confidence	EV	Tier	Quarter	Actual Q Score	Actual Side	Outcome	
+														
+═══ Tier2_Accuracy (Log Summary) ═══														
+Source sheet:	Tier2_Accuracy													
+Metric	Value													
+Raw Log Rows	196													
+Unique Predictions (deduplicated)	28													
+														
+O/U ACCURACY REPORT														
+Generated: 4/14/2026, 11:19:05 AM														
+Source: OU_LOG														
+														
+═══ OVERALL O/U SUMMARY ═══														
+Total Predictions	20													
+Matched to Results	20													
+Pending (No Results)	0													
+Duplicates Skipped	0													
+														
+Wins	12													
+Losses	8													
+Pushes	0													
+Win Rate	60%													
+Breakeven Required	52.4%													
+Edge vs Breakeven	+7.6%													
+														
+═══ HIGHEST SCORING QUARTER ═══														
+No HIGH_QTR predictions found or matched														
+														
+═══ O/U STRATEGY COMPARISON ═══														
+Strategy	Bets	Wins	Losses	Pushes	Win Rate	Edge								
+All Quarters	20	12	8	0	60%	+7.6%								
+📊 Highest Confidence	5	4	1	0	80%	+27.6%								
+💰 Highest EV	5	4	1	0	80%	+27.6%								
+⚖️ Composite Score	5	4	1	0	80%	+27.6%								
+🎯 Directional	0	0	0	0	0%	-52.4%								
+														
+═══ O/U BY DIRECTION ═══														
+Direction	Bets	Wins	Win Rate											
+OVER	12	5	41.7%											
+UNDER	8	7	87.5%											
+														
+═══ O/U BY QUARTER ═══														
+Quarter	Bets	Wins	Win Rate											
+Q1	5	4	80%											
+Q2	5	2	40%											
+Q3	5	2	40%											
+Q4	5	4	80%											
+														
+═══ O/U BY LEAGUE (Top 10) ═══														
+League	Bets	Wins	Win Rate	W-L-P										
+NBA	20	12	60%	12-8-0										
+														
+═══ O/U DETAIL LOG ═══														
+Date	League	Home	Away	Qtr	Dir	Line	Actual	Result	Diff	Conf%	EV%	Tier	Type	
+2026-01-11	NBA	Memphis Grizzlies	Brooklyn Nets	Q1	OVER	58.745	57	LOSS	-1.7	56%			📊CONF 💰EV ⚖️COMP	
+2026-01-11	NBA	Memphis Grizzlies	Brooklyn Nets	Q2	OVER	57.61	54	LOSS	-3.6	56%				
+2026-01-11	NBA	Memphis Grizzlies	Brooklyn Nets	Q3	OVER	57.84	40	LOSS	-17.8	56%				
+2026-01-11	NBA	Memphis Grizzlies	Brooklyn Nets	Q4	OVER	55.665	50	LOSS	-5.7	55%				
+2026-01-11	NBA	Utah Jazz	Charlotte Hornets	Q1	OVER	58.745	59	WIN	0.3	55%			📊CONF 💰EV ⚖️COMP	
+2026-01-11	NBA	Utah Jazz	Charlotte Hornets	Q2	OVER	57.61	56	LOSS	-1.6	55%				
+2026-01-11	NBA	Utah Jazz	Charlotte Hornets	Q3	OVER	57.84	64	WIN	6.2	55%				
+2026-01-11	NBA	Utah Jazz	Charlotte Hornets	Q4	OVER	55.665	66	WIN	10.3	54%				
+2026-01-11	NBA	Chicago Bulls	Dallas Mavericks	Q1	OVER	58.745	64	WIN	5.3	57%			📊CONF 💰EV ⚖️COMP	
+2026-01-11	NBA	Chicago Bulls	Dallas Mavericks	Q2	OVER	57.61	57	LOSS	-0.6	57%				
+2026-01-11	NBA	Chicago Bulls	Dallas Mavericks	Q3	OVER	57.84	52	LOSS	-5.8	57%				
+2026-01-11	NBA	Chicago Bulls	Dallas Mavericks	Q4	OVER	55.665	59	WIN	3.3	56%				
+2026-01-11	NBA	Detroit Pistons	Los Angeles Clippers	Q1	UNDER	58.745	42	WIN	-16.7	62%			📊CONF 💰EV ⚖️COMP	
+2026-01-11	NBA	Detroit Pistons	Los Angeles Clippers	Q2	UNDER	57.61	54	WIN	-3.6	62%				
+2026-01-11	NBA	Detroit Pistons	Los Angeles Clippers	Q3	UNDER	57.84	48	WIN	-9.8	61%				
+2026-01-11	NBA	Detroit Pistons	Los Angeles Clippers	Q4	UNDER	55.665	46	WIN	-9.7	61%				
+2026-01-11	NBA	Indiana Pacers	Miami Heat	Q1	UNDER	58.745	54	WIN	-4.7	61%			📊CONF 💰EV	
+2026-01-11	NBA	Indiana Pacers	Miami Heat	Q2	UNDER	57.61	52	WIN	-5.6	61%			⚖️COMP	
+2026-01-11	NBA	Indiana Pacers	Miami Heat	Q3	UNDER	57.84	65	LOSS	7.2	60%				
+2026-01-11	NBA	Indiana Pacers	Miami Heat	Q4	UNDER	55.665	51	WIN	-4.7	60%				
+
+Tier2_Accuracy
+TIER 2 ACCURACY REPORT	Generated: 4/14/2026, 11:18:58 AM
+	
+Metric	Value
+Raw Log Rows	224
+Unique Predictions (deduplicated)	28
+	
+── PREDICTION SOURCES ──	
+  From Prediction_Text	28
+  From Tier Column	0
+  From Margin Derivation	0
+  Total Derived	0
+	
+── MATCH RESULTS ──	
+  With Result (matched)	28
+  Exact Date Match	28
+  Fuzzy Date Match (±1d)	0
+  No Result Found	0
+  No Quarter Data	0
+	
+── OVERALL ──	
+  Total Scored	28
+  Total Hits	7
+  Overall Hit %	25.00%
+
+why are quarter over and unders not showing on betslips

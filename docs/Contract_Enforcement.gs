@@ -542,6 +542,107 @@ function _loadTier2Signals(ss, config) {
     signals[key] = sig;
   }
 
+  // ─── OU_Log FALLBACK ─────────────────────────────────────────────────────────
+  // If UpcomingClean has no ou-q* columns, load O/U predictions from OU_Log.
+  // This bridges the standalone processEnhancements call to quarter O/U data.
+  if (config.includeOUSignals !== false) {
+    var hasAnyOU = Object.keys(signals).some(function(k) {
+      var s = signals[k].ou;
+      return s.Q1 !== null || s.Q2 !== null || s.Q3 !== null || s.Q4 !== null;
+    });
+
+    if (!hasAnyOU) {
+      var ouLogSheet = (typeof _getSheet === 'function') ? _getSheet(ss, 'OU_Log') : ss.getSheetByName('OU_Log');
+      if (!ouLogSheet) {
+        // Case-insensitive search for OU_Log
+        var allSheets = ss.getSheets();
+        for (var ssi = 0; ssi < allSheets.length; ssi++) {
+          if (allSheets[ssi].getName().toLowerCase() === 'ou_log') {
+            ouLogSheet = allSheets[ssi];
+            break;
+          }
+        }
+      }
+      if (ouLogSheet) {
+        var ouData = ouLogSheet.getDataRange().getValues();
+        if (ouData.length > 1) {
+          var ouHdr = _headerMapRobust(ouData[0]);
+          var ouHomeIdx  = _col(ouHdr, 'home');
+          var ouAwayIdx  = _col(ouHdr, 'away');
+          var ouPeriodIdx = _col(ouHdr, 'period');
+          if (ouPeriodIdx === undefined) ouPeriodIdx = _col(ouHdr, 'quarter');
+          var ouPickIdx  = _col(ouHdr, 'pick_text');
+          if (ouPickIdx === undefined) ouPickIdx = _col(ouHdr, 'picktext');
+          var ouPcIdx    = _col(ouHdr, 'pick_code');
+          if (ouPcIdx === undefined) ouPcIdx = _col(ouHdr, 'pickcode');
+          var ouThrIdx   = _col(ouHdr, 'threshold');
+          var ouConfIdx  = _col(ouHdr, 'confidence_pct');
+          if (ouConfIdx === undefined) ouConfIdx = _col(ouHdr, 'confidencepct');
+          var ouEvIdx    = _col(ouHdr, 'ev');
+          var ouEdgeIdx  = _col(ouHdr, 'edge_score');
+          if (ouEdgeIdx === undefined) ouEdgeIdx = _col(ouHdr, 'edgescore');
+
+          if (ouHomeIdx !== undefined && ouAwayIdx !== undefined) {
+            for (var ouli = 1; ouli < ouData.length; ouli++) {
+              var ouRow = ouData[ouli];
+              var ouHome = String(ouRow[ouHomeIdx] || '').trim();
+              var ouAway = String(ouRow[ouAwayIdx] || '').trim();
+              if (!ouHome || !ouAway) continue;
+
+              var ouKey = ouHome.toLowerCase() + ' vs ' + ouAway.toLowerCase();
+
+              var ouQ = ouPeriodIdx !== undefined ? String(ouRow[ouPeriodIdx] || '').trim().toUpperCase() : '';
+              if (!/^Q[1-4]$/.test(ouQ)) continue;
+
+              // Build pick text for parsing
+              var ouPickTxt = ouPickIdx !== undefined ? String(ouRow[ouPickIdx] || '').trim() : '';
+              if (!ouPickTxt && ouPcIdx !== undefined && ouThrIdx !== undefined) {
+                var pc = String(ouRow[ouPcIdx] || '').trim();
+                var thr = String(ouRow[ouThrIdx] || '').trim();
+                if (pc && thr) ouPickTxt = pc + ' ' + thr;
+              }
+              if (!ouPickTxt) continue;
+
+              var ouParsed = (typeof _parseOUSignal === 'function')
+                ? _parseOUSignal(ouPickTxt)
+                : _parseOUSignalRobust(ouPickTxt);
+              if (!ouParsed) continue;
+
+              if (ouConfIdx !== undefined) {
+                var ouC = _normalizeConf(ouRow[ouConfIdx], NaN);
+                if (isFinite(ouC)) ouParsed.conf = ouC;
+              }
+              if (ouEvIdx !== undefined) {
+                var ouEv = parseFloat(String(ouRow[ouEvIdx] || '').replace(/[%]/g, '').trim());
+                if (isFinite(ouEv)) ouParsed.ev = ouEv;
+              }
+              if (ouEdgeIdx !== undefined) {
+                var ouEd = parseFloat(String(ouRow[ouEdgeIdx] || '').replace(/[%]/g, '').trim());
+                if (isFinite(ouEd)) ouParsed.edge = ouEd;
+              }
+
+              if (!signals[ouKey]) {
+                signals[ouKey] = {
+                  margin: { Q1: null, Q2: null, Q3: null, Q4: null },
+                  marginConf: { Q1: NaN, Q2: NaN, Q3: NaN, Q4: NaN },
+                  marginEdge: NaN,
+                  ou: { Q1: null, Q2: null, Q3: null, Q4: null },
+                  ouBestDir: null,
+                  ouHighestEst: '',
+                  gameTier: ''
+                };
+              }
+              if (!signals[ouKey].ou[ouQ]) {
+                signals[ouKey].ou[ouQ] = ouParsed;
+              }
+            }
+            Logger.log('[_loadTier2Signals] Populated O/U from OU_Log (no ou-q* cols in UpcomingClean)');
+          }
+        }
+      }
+    }
+  }
+
   return signals;
 }
 

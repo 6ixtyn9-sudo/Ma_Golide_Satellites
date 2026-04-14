@@ -278,11 +278,12 @@ function loadBetSlipsComplete_(ss) {
       currentSection = rowText.substring(0, 50);
     }
     
-    // Detect column header rows
+    // Detect column header rows (supports both 10-col and 23-col Bet_Slips formats)
     var hasHeaderWords = row.some(function(c) {
       var s = String(c || '').toLowerCase();
-      return s === 'match' || s === 'fixture' || s === 'game' || 
-             s === 'league' || s === 'date' || s === 'pick';
+      return s === 'match' || s === 'fixture' || s === 'game' ||
+             s === 'league' || s === 'date' || s === 'pick' ||
+             s === 'bet_record_id' || s === 'market' || s === 'selection_text';
     });
     
     if (hasHeaderWords) {
@@ -298,21 +299,27 @@ function loadBetSlipsComplete_(ss) {
     
     if (!currentHMap) continue;
     
-    // Get match column
+    // Get match value: 10-col format has 'Match' column; 23-col uses 'Home' + 'Away'
+    var matchVal = '';
     var matchCol = currentHMap.match || currentHMap.fixture || currentHMap.game;
-    if (matchCol === undefined) continue;
-    
-    var matchVal = String(row[matchCol] || '').trim();
+    if (matchCol !== undefined) {
+      matchVal = String(row[matchCol] || '').trim();
+    } else if (currentHMap.home !== undefined && currentHMap.away !== undefined) {
+      var _hv = String(row[currentHMap.home] || '').trim();
+      var _av = String(row[currentHMap.away] || '').trim();
+      if (_hv && _av) matchVal = _hv + ' vs ' + _av;
+    }
     if (!matchVal) continue;
     
     // Skip if looks like a header or separator
-    if (matchVal.toLowerCase() === 'match' || matchVal.indexOf('────') !== -1) continue;
+    if (matchVal.toLowerCase() === 'match' || matchVal.indexOf('────') !== -1 ||
+        matchVal.toLowerCase() === 'home vs away') continue;
     
     // Parse teams
     var teams = parseMatchTeams_(matchVal);
     if (!teams) continue;
     
-    // Build row data
+    // Build row data (column lookups support both 10-col and 23-col formats)
     var rowData = {
       sourceRow: r + 1,
       section: currentSection,
@@ -327,16 +334,16 @@ function loadBetSlipsComplete_(ss) {
       homeNorm: normalizeTeam_(teams.home),
       awayNorm: normalizeTeam_(teams.away),
       
-      // Extract common columns
-      league: getColValue_(row, currentHMap, ['league', 'comp']),
-      date: getColValue_(row, currentHMap, ['date', 'gamedate']),
-      time: getColValue_(row, currentHMap, ['time']),
-      type: getColValue_(row, currentHMap, ['type', 'signal', 'signaltype']),
-      pick: getColValue_(row, currentHMap, ['pick', 'selection', 'bet']),
-      odds: getColValue_(row, currentHMap, ['odds', 'price']),
-      confidence: getColValue_(row, currentHMap, ['confidence', 'conf']),
-      ev: getColValue_(row, currentHMap, ['ev', 'expectedvalue']),
-      tier: getColValue_(row, currentHMap, ['tier'])
+      // Extract common columns — 'market' covers 23-col; 'type' covers 10-col
+      league:     getColValue_(row, currentHMap, ['league', 'comp']),
+      date:       getColValue_(row, currentHMap, ['date', 'gamedate']),
+      time:       getColValue_(row, currentHMap, ['time']),
+      type:       getColValue_(row, currentHMap, ['type', 'signal', 'signaltype', 'market']),
+      pick:       getColValue_(row, currentHMap, ['pick', 'selection', 'bet', 'selection_text', 'selectiontext']),
+      odds:       getColValue_(row, currentHMap, ['odds', 'price']),
+      confidence: getColValue_(row, currentHMap, ['confidence', 'conf', 'confidence_pct', 'confidencepct']),
+      ev:         getColValue_(row, currentHMap, ['ev', 'expectedvalue']),
+      tier:       getColValue_(row, currentHMap, ['tier', 'tier_code', 'tiercode'])
     };
     
     result.rows.push(rowData);
@@ -373,12 +380,16 @@ function gradeSniperMargin_(betSlipsData, games) {
     details: []
   };
   
-  // Filter for margin bets
+  // Filter for margin bets (supports 23-col Market = SNIPER_MARGIN and legacy Type)
   var marginBets = betSlipsData.rows.filter(function(row) {
-    var typeUpper = (row.type + ' ' + row.section).toUpperCase();
-    return typeUpper.indexOf('SNIPER') !== -1 && 
-           (typeUpper.indexOf('MARGIN') !== -1 || typeUpper.indexOf('SIDE') !== -1) &&
-           typeUpper.indexOf('O/U') === -1;
+    var typeU = String(row.type || '').toUpperCase();
+    if (typeU === 'SNIPER_MARGIN') return true;
+    if (typeU === 'SNIPER_OU' || typeU === 'FT_OU' || typeU === 'BANKER' ||
+        typeU === 'ROBBER' || typeU === 'FIRST_HALF_1X2') return false;
+    var combined = (typeU + ' ' + String(row.section || '').toUpperCase());
+    return combined.indexOf('SNIPER') !== -1 &&
+           (combined.indexOf('MARGIN') !== -1 || combined.indexOf('SIDE') !== -1) &&
+           combined.indexOf('O/U') === -1;
   });
   
   result.found = marginBets.length;
@@ -467,12 +478,16 @@ function gradeSniperOU_(betSlipsData, games) {
     details: []
   };
   
-  // Filter for O/U bets
+  // Filter for quarter O/U bets (supports 23-col Market = SNIPER_OU and legacy Type)
   var ouBets = betSlipsData.rows.filter(function(row) {
-    var typeUpper = (row.type + ' ' + row.section + ' ' + row.pick).toUpperCase();
-    return (typeUpper.indexOf('O/U') !== -1 || typeUpper.indexOf('OU') !== -1 ||
-            typeUpper.indexOf('OVER') !== -1 || typeUpper.indexOf('UNDER') !== -1) &&
-           /Q[1-4]/i.test(typeUpper + ' ' + row.pick);
+    var typeU = String(row.type || '').toUpperCase();
+    if (typeU === 'SNIPER_OU') return /Q[1-4]/i.test(row.pick || '');
+    if (typeU === 'SNIPER_MARGIN' || typeU === 'FT_OU' || typeU === 'BANKER' ||
+        typeU === 'ROBBER' || typeU === 'FIRST_HALF_1X2') return false;
+    var combined = (typeU + ' ' + String(row.section || '').toUpperCase() + ' ' + String(row.pick || '').toUpperCase());
+    return (combined.indexOf('O/U') !== -1 || combined.indexOf('OU') !== -1 ||
+            combined.indexOf('OVER') !== -1 || combined.indexOf('UNDER') !== -1) &&
+           /Q[1-4]/i.test(combined);
   });
   
   result.found = ouBets.length;
@@ -553,9 +568,13 @@ function gradeBankers_(betSlipsData, games) {
   };
   
   var bankerBets = betSlipsData.rows.filter(function(row) {
-    var typeUpper = (row.type + ' ' + row.section).toUpperCase();
-    return typeUpper.indexOf('BANKER') !== -1 || 
-           (typeUpper.indexOf('ML') !== -1 && typeUpper.indexOf('ROBBER') === -1);
+    var typeU = String(row.type || '').toUpperCase();
+    if (typeU === 'BANKER') return true;
+    if (typeU === 'ROBBER' || typeU === 'SNIPER_MARGIN' || typeU === 'SNIPER_OU' ||
+        typeU === 'FT_OU' || typeU === 'FIRST_HALF_1X2' || typeU === 'SNIPER') return false;
+    var combined = (typeU + ' ' + String(row.section || '').toUpperCase());
+    return combined.indexOf('BANKER') !== -1 ||
+           (combined.indexOf('ML') !== -1 && combined.indexOf('ROBBER') === -1);
   });
   
   result.found = bankerBets.length;
@@ -619,8 +638,12 @@ function gradeRobbers_(betSlipsData, games) {
   };
   
   var robberBets = betSlipsData.rows.filter(function(row) {
-    var typeUpper = (row.type + ' ' + row.section).toUpperCase();
-    return typeUpper.indexOf('ROBBER') !== -1 || typeUpper.indexOf('UNDERDOG') !== -1;
+    var typeU = String(row.type || '').toUpperCase();
+    if (typeU === 'ROBBER') return true;
+    if (typeU === 'BANKER' || typeU === 'SNIPER_MARGIN' || typeU === 'SNIPER_OU' ||
+        typeU === 'FT_OU' || typeU === 'FIRST_HALF_1X2' || typeU === 'SNIPER') return false;
+    var combined = (typeU + ' ' + String(row.section || '').toUpperCase());
+    return combined.indexOf('ROBBER') !== -1 || combined.indexOf('UNDERDOG') !== -1;
   });
   
   result.found = robberBets.length;
@@ -683,9 +706,13 @@ function gradeFirstHalf_(betSlipsData, games) {
   };
   
   var fhBets = betSlipsData.rows.filter(function(row) {
-    var typeUpper = (row.type + ' ' + row.section).toUpperCase();
-    return typeUpper.indexOf('1H') !== -1 || typeUpper.indexOf('FIRST HALF') !== -1 ||
-           typeUpper.indexOf('FH') !== -1 || typeUpper.indexOf('HALF TIME') !== -1;
+    var typeU = String(row.type || '').toUpperCase();
+    if (typeU === 'FIRST_HALF_1X2') return true;
+    if (typeU === 'BANKER' || typeU === 'ROBBER' || typeU === 'FT_OU' ||
+        typeU === 'SNIPER_MARGIN' || typeU === 'SNIPER_OU' || typeU === 'SNIPER') return false;
+    var combined = (typeU + ' ' + String(row.section || '').toUpperCase());
+    return combined.indexOf('1H') !== -1 || combined.indexOf('FIRST HALF') !== -1 ||
+           combined.indexOf('FH') !== -1 || combined.indexOf('HALF TIME') !== -1;
   });
   
   result.found = fhBets.length;
@@ -756,10 +783,14 @@ function gradeFTOU_(betSlipsData, games) {
   };
   
   var ftouBets = betSlipsData.rows.filter(function(row) {
-    var typeUpper = (row.type + ' ' + row.section + ' ' + row.pick).toUpperCase();
-    return (typeUpper.indexOf('FT O/U') !== -1 || typeUpper.indexOf('FT OU') !== -1 ||
-            typeUpper.indexOf('FULL TIME') !== -1 || typeUpper.indexOf('TOTAL') !== -1) &&
-           !/Q[1-4]/i.test(row.pick);
+    var typeU = String(row.type || '').toUpperCase();
+    if (typeU === 'FT_OU') return true;
+    if (typeU === 'SNIPER_MARGIN' || typeU === 'SNIPER_OU' || typeU === 'BANKER' ||
+        typeU === 'ROBBER' || typeU === 'FIRST_HALF_1X2' || typeU === 'SNIPER') return false;
+    var combined = (typeU + ' ' + String(row.section || '').toUpperCase() + ' ' + String(row.pick || '').toUpperCase());
+    return (combined.indexOf('FT O/U') !== -1 || combined.indexOf('FT OU') !== -1 ||
+            combined.indexOf('FULL TIME') !== -1 || combined.indexOf('TOTAL') !== -1) &&
+           !/Q[1-4]/i.test(row.pick || '');
   });
   
   result.found = ftouBets.length;
@@ -832,9 +863,14 @@ function gradeHighQuarter_(betSlipsData, games) {
   };
   
   var hqBets = betSlipsData.rows.filter(function(row) {
-    var typeUpper = (row.type + ' ' + row.section).toUpperCase();
-    return typeUpper.indexOf('HIGH') !== -1 && 
-           (typeUpper.indexOf('QTR') !== -1 || typeUpper.indexOf('QUARTER') !== -1);
+    var typeU = String(row.type || '').toUpperCase();
+    // 23-col format: Market = 'SNIPER', pick starts with 'Highest Q'
+    if (typeU === 'SNIPER' && /highest\s*q/i.test(row.pick || '')) return true;
+    if (typeU === 'SNIPER_MARGIN' || typeU === 'SNIPER_OU' || typeU === 'FT_OU' ||
+        typeU === 'BANKER' || typeU === 'ROBBER' || typeU === 'FIRST_HALF_1X2') return false;
+    var combined = (typeU + ' ' + String(row.section || '').toUpperCase());
+    return combined.indexOf('HIGH') !== -1 &&
+           (combined.indexOf('QTR') !== -1 || combined.indexOf('QUARTER') !== -1);
   });
   
   result.found = hqBets.length;
@@ -887,7 +923,7 @@ function gradeHighQuarter_(betSlipsData, games) {
 // ═══════════════════════════════════════════════════════════════════════════════
 
 function writeUnifiedAccuracyReport_(ss, reports) {
-  var sheetName = 'Ma_Golide_Report';
+  var sheetName = 'Accuracy_Report';
   var sh = findSheet_(ss, sheetName);
   if (!sh) {
     sh = ss.insertSheet(sheetName);
