@@ -352,6 +352,31 @@ function _loadTier2Signals(ss, config) {
 
   var hdr = _headerMapRobust(data[0]);
 
+  // Build a map of Q1-Q4 book lines from UpcomingClean for the OU_Log fallback
+  var ucQLines = {};
+  var ucQ1Idx = _col(hdr, 'q1');
+  var ucQ2Idx = _col(hdr, 'q2');
+  var ucQ3Idx = _col(hdr, 'q3');
+  var ucQ4Idx = _col(hdr, 'q4');
+  var ucHomeIdxQ = _col(hdr, 'home');
+  var ucAwayIdxQ = _col(hdr, 'away');
+  if ((ucQ1Idx !== undefined || ucQ2Idx !== undefined) &&
+      ucHomeIdxQ !== undefined && ucAwayIdxQ !== undefined) {
+    for (var qbi = 1; qbi < data.length; qbi++) {
+      var qbRow = data[qbi];
+      var qbHome = String(qbRow[ucHomeIdxQ] || '').trim().toLowerCase();
+      var qbAway = String(qbRow[ucAwayIdxQ] || '').trim().toLowerCase();
+      if (!qbHome || !qbAway) continue;
+      var qbKey = qbHome + ' vs ' + qbAway;
+      ucQLines[qbKey] = {
+        Q1: ucQ1Idx !== undefined ? parseFloat(qbRow[ucQ1Idx]) : NaN,
+        Q2: ucQ2Idx !== undefined ? parseFloat(qbRow[ucQ2Idx]) : NaN,
+        Q3: ucQ3Idx !== undefined ? parseFloat(qbRow[ucQ3Idx]) : NaN,
+        Q4: ucQ4Idx !== undefined ? parseFloat(qbRow[ucQ4Idx]) : NaN
+      };
+    }
+  }
+
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
 
@@ -645,8 +670,15 @@ function _loadTier2Signals(ss, config) {
               if (!signals[ouKey].ou[ouQ]) {
                 signals[ouKey].ou[ouQ] = ouParsed;
               }
+
+              // Attach the actual book line for this quarter from UpcomingClean Q1-Q4 columns
+              var ucQEntry = ucQLines[ouKey];
+              if (ucQEntry && isFinite(ucQEntry[ouQ]) && ucQEntry[ouQ] > 0) {
+                signals[ouKey].ou[ouQ].bookLine = ucQEntry[ouQ];
+              }
             }
-            Logger.log('[_loadTier2Signals] Populated O/U from OU_Log (no ou-q* cols in UpcomingClean)');
+            var ucQLineCount = Object.keys(ucQLines).length;
+            Logger.log('[_loadTier2Signals] Populated O/U from OU_Log + UpcomingClean quarters (' + ucQLineCount + ' games with Q1-Q4 book lines)');
           }
         }
       }
@@ -2631,7 +2663,10 @@ function _getEnhHighQ(ss, homeTeam, awayTeam) {
 
       enableFTOU:            toBool(getFirst(cfg, ['enableFTOU', 'enable_ft_ou'], true), true),
       ftOuMinConf:           toNum(getFirst(cfg, ['ftOuMinConf', 'ft_ou_min_conf'], 55), 55),
-      ftOuMinEv:             toNum(getFirst(cfg, ['ftOuMinEv', 'ft_ou_min_ev'], 0.005), 0.005)
+      ftOuMinEv:             toNum(getFirst(cfg, ['ftOuMinEv', 'ft_ou_min_ev'], 0.005), 0.005),
+
+      ouMinEdge:             toNum(getFirst(cfg, ['ouMinEdge', 'ou_min_edge'], 2.0), 2.0),
+      includeHQSignals:      toBool(getFirst(cfg, ['includeHQSignals', 'include_hq_signals', 'hq_enabled', 'hqEnabled', 'includeHighestQuarter'], true), true)
     };
   }
 
