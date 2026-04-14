@@ -603,9 +603,19 @@ function _loadTier2Signals(ss, config) {
               }
               if (!ouPickTxt) continue;
 
-              var ouParsed = (typeof _parseOUSignal === 'function')
-                ? _parseOUSignal(ouPickTxt)
-                : _parseOUSignalRobust(ouPickTxt);
+              var ouParsed = null;
+              if (typeof _parseOUSignal === 'function') ouParsed = _parseOUSignal(ouPickTxt);
+              // FIX: _parseOUSignal uses ^-anchored patterns that fail on "Q1: Over 52.5" format
+              // from OU_Log. Fall back to robust parser which has no ^ anchor.
+              if (!ouParsed && typeof _parseOUSignalRobust === 'function') ouParsed = _parseOUSignalRobust(ouPickTxt);
+              // Last resort: reconstruct from Pick_Code + first number in text
+              if (!ouParsed) {
+                var _pcDir = ouPcIdx !== undefined ? String(ouRow[ouPcIdx] || '').trim().toUpperCase() : '';
+                if (_pcDir === 'OVER' || _pcDir === 'UNDER') {
+                  var _lineMatch = ouPickTxt.match(/\b(\d+\.?\d*)\b/);
+                  if (_lineMatch) ouParsed = { direction: _pcDir, line: parseFloat(_lineMatch[1]), conf: NaN, ev: NaN, edge: NaN, star: false };
+                }
+              }
               if (!ouParsed) continue;
 
               if (ouConfIdx !== undefined) {
@@ -2912,8 +2922,10 @@ function _getEnhHighQ(ss, homeTeam, awayTeam) {
               hqRes.enhPWin       = enhData.pWin;
               hqRes.enhIsTie      = enhData.isTie;
             }
-            // If hqRes lacks confidence but enh has it, use enh confidence
-            if ((!hqRes.confidence || hqRes.confidence <= 0) && enhData.confidence > 0) {
+            // FIX: Use enh confidence whenever it is higher than hqRes confidence.
+            // Previously only overrode when hqRes.confidence <= 0, but hqRes often
+            // returns ~42% from _deriveHighestQuarter_ while enh has 57-77%.
+            if (enhData.confidence > 0 && (!hqRes.confidence || !isFinite(hqRes.confidence) || hqRes.confidence < enhData.confidence)) {
               hqRes.confidence = enhData.confidence;
             }
             // If hqRes has no ev but enh has it, use enh EV
