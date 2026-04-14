@@ -288,100 +288,145 @@ function _parseBestDir(raw) {
 }
 
 function _loadTier2Signals(ss, config) {
-  var sheet = _getSheet(ss, 'UpcomingClean');
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  config = config || {};
+
+  var sheet = (typeof _getSheet === 'function') ? _getSheet(ss, 'UpcomingClean') : ss.getSheetByName('UpcomingClean');
   if (!sheet) return {};
 
   var data = sheet.getDataRange().getValues();
-  if (data.length < 2) return {};
+  if (!data || data.length < 2) return {};
 
-  config = config || {};
   var signals = {};
-  var QUARTERS = ['q1', 'q2', 'q3', 'q4'];
+  var QUARTERS_L = ['q1', 'q2', 'q3', 'q4'];
 
-  // Build robust header map that tolerates "-", "_", spaces, casing
-  function _headerMapRobust(row0) {
+  // ─────────────────────────────────────────────────────────────
+  // Robust header map + column resolver
+  // ─────────────────────────────────────────────────────────────
+  function _headerMapRobust_(row0) {
     var m = {};
     for (var i = 0; i < row0.length; i++) {
       var raw = row0[i];
       if (raw === null || raw === undefined || raw === '') continue;
 
       var s = String(raw).trim();
-      var canon = s.toLowerCase().replace(/[\s]+/g, '_');
-      var keyLoose = s.toLowerCase().replace(/[\s_\-]+/g, '');
+      var lower = s.toLowerCase();
+      var norm1 = lower.replace(/[\s]+/g, '_');       // spaces -> _
+      var norm2 = lower.replace(/[\s_\-]+/g, '');     // strip separators
+      var norm3 = lower.replace(/-/g, '_');           // - -> _
 
-      m[canon] = i;
-      m[s.toLowerCase()] = i;
-      m[keyLoose] = i;
-      m[canon.replace(/-/g, '_')] = i;
-      m[canon.replace(/_/g, '-')] = i;
+      m[lower] = i;
+      m[norm1] = i;
+      m[norm2] = i;
+      m[norm3] = i;
     }
     return m;
   }
 
-  // Find column index by trying several key variants
-  function _col(hdr, name) {
+  function _col_(hdr, name) {
     if (!hdr) return undefined;
     if (hdr[name] !== undefined) return hdr[name];
 
-    var s = String(name).toLowerCase().trim();
-    var v1 = s.replace(/[\s]+/g, '_');
-    var v2 = v1.replace(/_/g, '-');
-    var v3 = s.replace(/[\s_\-]+/g, '');
-    var v4 = s.replace(/-/g, '_');
-    var v5 = s.replace(/_/g, '-');
-
+    var s = String(name || '').toLowerCase().trim();
+    var v1 = s;
+    var v2 = s.replace(/[\s]+/g, '_');
+    var v3 = s.replace(/-/g, '_');
+    var v4 = s.replace(/[\s_\-]+/g, '');
     if (hdr[v1] !== undefined) return hdr[v1];
     if (hdr[v2] !== undefined) return hdr[v2];
     if (hdr[v3] !== undefined) return hdr[v3];
     if (hdr[v4] !== undefined) return hdr[v4];
-    if (hdr[v5] !== undefined) return hdr[v5];
-
     return undefined;
   }
 
-  // FIXED: Normalizes 0.54 to 54, handles 74 as 74 (never rounds to 1%)
-  function _normalizeConf(v, def) {
+  function _toNum_(v, def) {
     if (v === null || v === undefined || v === '') return def;
-    var n = parseFloat(String(v).replace(/[%★●○⭐\(\)]/g, '').trim());
+    var n = parseFloat(String(v).replace(/,/g, '').replace(/[^\d.-]/g, '').trim());
+    return isFinite(n) ? n : def;
+  }
+
+  // Normalizes 0.54 -> 54, keeps 56 -> 56
+  function _normalizeConf_(v, def) {
+    var n = _toNum_(v, def);
     if (!isFinite(n)) return def;
-    // If 0 < n <= 1, it's a decimal (0.54 -> 54%)
     if (n > 0 && n <= 1.0) return n * 100;
-    // Otherwise, treat as whole number (74 -> 74%)
     return n;
   }
 
-  var hdr = _headerMapRobust(data[0]);
+  // Direction normalizer (ONE canonical name used everywhere)
+  function _normOuDir_(d) {
+    d = String(d || '').trim().toUpperCase();
+    if (d === 'O') return 'OVER';
+    if (d === 'U') return 'UNDER';
+    if (d === 'OVER' || d === 'UNDER') return d;
+    return '';
+  }
 
-  // Build a map of Q1-Q4 book lines from UpcomingClean for the OU_Log fallback
+  // Safe O/U signal parser (for UpcomingClean ou-q* cells if they exist)
+  function _parseOUSignalRobust_(txt) {
+    if (!txt || txt === 'N/A') return null;
+    var s = String(txt).toUpperCase();
+
+    // strip symbols + bracketed conf
+    s = s.replace(/[★●○⭐]/g, ' ');
+    s = s.replace(/\([^)]*\)/g, ' ');
+    s = s.replace(/\s+/g, ' ').trim();
+
+    // match OVER 58.8 / UNDER 59
+    var m = s.match(/\b(OVER|UNDER|O|U)\b\s*([0-9]+(?:\.[0-9]+)?)/i);
+    if (!m) return null;
+
+    var dir = _normOuDir_(m[1]);
+    if (!dir) return null;
+
+    return {
+      direction: dir,
+      line: parseFloat(m[2]),
+      conf: NaN,
+      ev: NaN,
+      edge: NaN,
+      star: false
+    };
+  }
+
+  var hdr = _headerMapRobust_(data[0]);
+
+  // ─────────────────────────────────────────────────────────────
+  // Build Q1–Q4 book-line cache from UpcomingClean (for OU_Log override)
+  // ─────────────────────────────────────────────────────────────
   var ucQLines = {};
-  var ucQ1Idx = _col(hdr, 'q1');
-  var ucQ2Idx = _col(hdr, 'q2');
-  var ucQ3Idx = _col(hdr, 'q3');
-  var ucQ4Idx = _col(hdr, 'q4');
-  var ucHomeIdxQ = _col(hdr, 'home');
-  var ucAwayIdxQ = _col(hdr, 'away');
-  if ((ucQ1Idx !== undefined || ucQ2Idx !== undefined) &&
-      ucHomeIdxQ !== undefined && ucAwayIdxQ !== undefined) {
-    for (var qbi = 1; qbi < data.length; qbi++) {
-      var qbRow = data[qbi];
-      var qbHome = String(qbRow[ucHomeIdxQ] || '').trim().toLowerCase();
-      var qbAway = String(qbRow[ucAwayIdxQ] || '').trim().toLowerCase();
-      if (!qbHome || !qbAway) continue;
-      var qbKey = qbHome + ' vs ' + qbAway;
-      ucQLines[qbKey] = {
-        Q1: ucQ1Idx !== undefined ? parseFloat(qbRow[ucQ1Idx]) : NaN,
-        Q2: ucQ2Idx !== undefined ? parseFloat(qbRow[ucQ2Idx]) : NaN,
-        Q3: ucQ3Idx !== undefined ? parseFloat(qbRow[ucQ3Idx]) : NaN,
-        Q4: ucQ4Idx !== undefined ? parseFloat(qbRow[ucQ4Idx]) : NaN
+  var ucHomeIdx = _col_(hdr, 'home');
+  var ucAwayIdx = _col_(hdr, 'away');
+  var ucQ1Idx = _col_(hdr, 'q1');
+  var ucQ2Idx = _col_(hdr, 'q2');
+  var ucQ3Idx = _col_(hdr, 'q3');
+  var ucQ4Idx = _col_(hdr, 'q4');
+
+  if (ucHomeIdx !== undefined && ucAwayIdx !== undefined) {
+    for (var r0 = 1; r0 < data.length; r0++) {
+      var row0 = data[r0];
+      var h0 = String(row0[ucHomeIdx] || '').trim().toLowerCase();
+      var a0 = String(row0[ucAwayIdx] || '').trim().toLowerCase();
+      if (!h0 || !a0) continue;
+
+      var k0 = h0 + ' vs ' + a0;
+      ucQLines[k0] = {
+        Q1: (ucQ1Idx !== undefined) ? _toNum_(row0[ucQ1Idx], NaN) : NaN,
+        Q2: (ucQ2Idx !== undefined) ? _toNum_(row0[ucQ2Idx], NaN) : NaN,
+        Q3: (ucQ3Idx !== undefined) ? _toNum_(row0[ucQ3Idx], NaN) : NaN,
+        Q4: (ucQ4Idx !== undefined) ? _toNum_(row0[ucQ4Idx], NaN) : NaN
       };
     }
   }
 
+  // ─────────────────────────────────────────────────────────────
+  // 1) Load per-game Tier2 fields directly from UpcomingClean (if present)
+  // ─────────────────────────────────────────────────────────────
   for (var i = 1; i < data.length; i++) {
     var row = data[i];
 
-    var homeIdx = _col(hdr, 'home');
-    var awayIdx = _col(hdr, 'away');
+    var homeIdx = _col_(hdr, 'home');
+    var awayIdx = _col_(hdr, 'away');
     if (homeIdx === undefined || awayIdx === undefined) continue;
 
     var home = String(row[homeIdx] || '').trim();
@@ -394,294 +439,206 @@ function _loadTier2Signals(ss, config) {
       margin: { Q1: null, Q2: null, Q3: null, Q4: null },
       marginConf: { Q1: NaN, Q2: NaN, Q3: NaN, Q4: NaN },
       marginEdge: NaN,
+
       ou: { Q1: null, Q2: null, Q3: null, Q4: null },
       ouBestDir: null,
       ouHighestEst: '',
       gameTier: ''
     };
 
-    // Game tier
-    var gtIdx = _col(hdr, 'ou-game-tier');
+    // gameTier (if you store it)
+    var gtIdx = _col_(hdr, 'ou-game-tier');
     if (gtIdx !== undefined) sig.gameTier = String(row[gtIdx] || '').trim();
 
-    // Margin edge score
-    var meIdx = _col(hdr, 't2-edge-score');
-    if (meIdx !== undefined) sig.marginEdge = _normalizeConf(row[meIdx], NaN);
+    // margin edge score
+    var meIdx = _col_(hdr, 't2-edge-score');
+    if (meIdx !== undefined) sig.marginEdge = _normalizeConf_(row[meIdx], NaN);
 
-    // Margin signals per quarter
-    for (var qi = 0; qi < QUARTERS.length; qi++) {
-      var qL = QUARTERS[qi];
+    // margin per quarter
+    for (var qi = 0; qi < QUARTERS_L.length; qi++) {
+      var qL = QUARTERS_L[qi];
       var qU = qL.toUpperCase();
 
-      var sigIdx = _col(hdr, 't2-' + qL);
-      var confIdx = _col(hdr, 't2-' + qL + '-conf');
+      var sigIdx = _col_(hdr, 't2-' + qL);
+      var confIdx = _col_(hdr, 't2-' + qL + '-conf');
 
       if (sigIdx !== undefined) {
         var rawSig = String(row[sigIdx] || '').trim();
         if (rawSig && rawSig !== 'N/A' && rawSig !== 'EVEN') {
           sig.margin[qU] = rawSig;
-          if (confIdx !== undefined) sig.marginConf[qU] = _normalizeConf(row[confIdx], NaN);
+          if (confIdx !== undefined) sig.marginConf[qU] = _normalizeConf_(row[confIdx], NaN);
         }
       }
     }
 
-    // O/U signals per quarter
+    // ou per quarter from UpcomingClean columns if they exist (ou-q1 / ou_q1)
     if (config.includeOUSignals !== false) {
-      for (var oqi = 0; oqi < QUARTERS.length; oqi++) {
-        var oqL = QUARTERS[oqi];
+      for (var oqi = 0; oqi < QUARTERS_L.length; oqi++) {
+        var oqL = QUARTERS_L[oqi];
         var oqU = oqL.toUpperCase();
 
-        var ouIdx = _col(hdr, 'ou-' + oqL);
-        if (ouIdx === undefined) ouIdx = _col(hdr, 'ou_' + oqL);
+        var ouIdx = _col_(hdr, 'ou-' + oqL);
+        if (ouIdx === undefined) ouIdx = _col_(hdr, 'ou_' + oqL);
         if (ouIdx === undefined) continue;
 
         var ouRaw = String(row[ouIdx] || '').trim();
         if (!ouRaw) continue;
 
-        var parsed = (typeof _parseOUSignal === 'function')
-          ? _parseOUSignal(ouRaw)
-          : _parseOUSignalRobust(ouRaw);
-
+        var parsed = (typeof _parseOUSignal === 'function') ? _parseOUSignal(ouRaw) : null;
+        if (!parsed) parsed = _parseOUSignalRobust_(ouRaw);
         if (!parsed) continue;
 
-        // Confidence - FIXED with normalizeConf
-        var confIdx2 = _col(hdr, 'ou-' + oqL + '-conf');
-        if (confIdx2 === undefined) confIdx2 = _col(hdr, 'ou_' + oqL + '_conf');
+        if (parsed.dir && !parsed.direction) parsed.direction = parsed.dir;
+        parsed.direction = _normOuDir_(parsed.direction);
+        if (!parsed.direction) continue;
+
+        // optional conf/ev/edge columns
+        var confIdx2 = _col_(hdr, 'ou-' + oqL + '-conf');
+        if (confIdx2 === undefined) confIdx2 = _col_(hdr, 'ou_' + oqL + '_conf');
         if (confIdx2 !== undefined) {
-          var c = _normalizeConf(row[confIdx2], NaN);
-          if (isFinite(c)) parsed.conf = isFinite(parsed.conf) ? Math.max(parsed.conf, c) : c;
+          var c2 = _normalizeConf_(row[confIdx2], NaN);
+          if (isFinite(c2)) parsed.conf = isFinite(parsed.conf) ? Math.max(parsed.conf, c2) : c2;
         }
 
-        // EV
-        var evIdx = _col(hdr, 'ou-' + oqL + '-ev');
-        if (evIdx === undefined) evIdx = _col(hdr, 'ou_' + oqL + '_ev');
+        var evIdx = _col_(hdr, 'ou-' + oqL + '-ev');
+        if (evIdx === undefined) evIdx = _col_(hdr, 'ou_' + oqL + '_ev');
         if (evIdx !== undefined) {
-          var evRaw = parseFloat(String(row[evIdx] || '').replace(/[%★●○⭐\(\)]/g, '').trim());
-          if (isFinite(evRaw)) parsed.ev = evRaw;
+          var ev2 = _toNum_(row[evIdx], NaN);
+          if (isFinite(ev2)) parsed.ev = ev2;
         }
 
-        // Edge
-        var edgeIdx = _col(hdr, 'ou-' + oqL + '-edge');
-        if (edgeIdx === undefined) edgeIdx = _col(hdr, 'ou_' + oqL + '_edge');
+        var edgeIdx = _col_(hdr, 'ou-' + oqL + '-edge');
+        if (edgeIdx === undefined) edgeIdx = _col_(hdr, 'ou_' + oqL + '_edge');
         if (edgeIdx !== undefined) {
-          var eRaw = parseFloat(String(row[edgeIdx] || '').replace(/[%★●○⭐\(\)]/g, '').trim());
-          if (isFinite(eRaw)) parsed.edge = eRaw;
-        }
-
-        // Star from tier
-        var tierIdx = _col(hdr, 'ou-' + oqL + '-tier');
-        if (tierIdx === undefined) tierIdx = _col(hdr, 'ou_' + oqL + '_tier');
-        if (tierIdx !== undefined) {
-          var tierTxt = String(row[tierIdx] || '').toUpperCase();
-          if (tierTxt.indexOf('ELITE') !== -1) parsed.star = true;
+          var e2 = _toNum_(row[edgeIdx], NaN);
+          if (isFinite(e2)) parsed.edge = e2;
         }
 
         sig.ou[oqU] = parsed;
       }
     }
 
-    // Best directional O/U
-    if (config.preferDirectional !== false) {
-      var bestDirIdx = _col(hdr, 'ou-best-dir');
-      var bestIdx = _col(hdr, 'ou-best');
-
-      var bestDirRaw = bestDirIdx !== undefined ? String(row[bestDirIdx] || '').trim() : '';
-      if ((!bestDirRaw || bestDirRaw === 'N/A') && bestIdx !== undefined) {
-        bestDirRaw = String(row[bestIdx] || '').trim();
-      }
-
-      if (bestDirRaw && bestDirRaw !== 'N/A') {
-        var bd = (typeof _parseBestDir === 'function') ? _parseBestDir(bestDirRaw) : null;
-
-        if (!bd) {
-          var bdStr = bestDirRaw.toUpperCase();
-          // Strip symbols before matching
-          bdStr = bdStr.replace(/[★●○⭐]/g, '').replace(/\([^)]*\)/g, '').replace(/\s+/g, ' ').trim();
-          var bdMatch = bdStr.match(/(Q[1-4]).*?\b(OVER|UNDER)\b.*?([\d.]+)/);
-          if (bdMatch) {
-            bd = {
-              quarter: bdMatch[1],
-              direction: bdMatch[2],
-              line: parseFloat(bdMatch[3]),
-              conf: NaN,
-              ev: NaN,
-              edge: NaN,
-              star: false
-            };
-          }
-        }
-
-        if (bd) {
-          var bevIdx = _col(hdr, 'ou-best-ev');
-          if (bevIdx !== undefined) {
-            var bevVal = parseFloat(String(row[bevIdx] || '').replace(/[%★●○⭐\(\)]/g, '').trim());
-            bd.ev = isFinite(bevVal) ? bevVal : bd.ev;
-          }
-
-          var bedIdx = _col(hdr, 'ou-best-edge');
-          if (bedIdx !== undefined) {
-            var bedVal = parseFloat(String(row[bedIdx] || '').replace(/[%★●○⭐\(\)]/g, '').trim());
-            bd.edge = isFinite(bedVal) ? bedVal : bd.edge;
-          }
-
-          var bconfIdx = _col(hdr, 'ou-best-conf');
-          if (bconfIdx !== undefined) bd.conf = _normalizeConf(row[bconfIdx], bd.conf);
-
-          if (sig.gameTier && /ELITE/i.test(sig.gameTier)) bd.star = true;
-
-          sig.ouBestDir = bd;
-        }
-      }
-    }
-
-    // Highest scoring quarter estimate
-    if (config.includeHighestQuarter) {
-      var heIdx = _col(hdr, 'ou-highest-est');
-      if (heIdx !== undefined) sig.ouHighestEst = String(row[heIdx] || '').trim();
-
-      if (!sig.ouHighestEst) {
-        var bestQ = '', bestMu = -Infinity;
-        for (var hqi = 0; hqi < QUARTERS.length; hqi++) {
-          var hqL = QUARTERS[hqi], hqU = hqL.toUpperCase();
-          var hCol = _col(hdr, 'ou-' + hqL);
-          if (hCol === undefined) continue;
-          var mu = (typeof _parseESTValue === 'function') ? _parseESTValue(row[hCol]) : NaN;
-          if (isFinite(mu) && mu > bestMu) {
-            bestMu = mu;
-            bestQ = hqU;
-          }
-        }
-        if (bestQ) sig.ouHighestEst = bestQ + ' ' + bestMu.toFixed(1);
-      }
-
-      if (!sig.ouHighestEst) {
-        var legIdx = _col(hdr, 'ou-highest');
-        if (legIdx !== undefined) {
-          var legacy = String(row[legIdx] || '').trim();
-          var lm = legacy.match(/(Q[1-4])\s*\(([\d.]+)/i);
-          if (lm) sig.ouHighestEst = lm[1].toUpperCase() + ' ' + lm[2];
-        }
-      }
-    }
-
     signals[key] = sig;
   }
 
-  // ─── OU_Log FALLBACK ─────────────────────────────────────────────────────────
-  // If UpcomingClean has no ou-q* columns, load O/U predictions from OU_Log.
-  // This bridges the standalone processEnhancements call to quarter O/U data.
+  // ─────────────────────────────────────────────────────────────
+  // 2) OU_Log FALLBACK (critical fix: reads Prediction/Confidence/EV_Percent/Threshold columns)
+  // ─────────────────────────────────────────────────────────────
   if (config.includeOUSignals !== false) {
     var hasAnyOU = Object.keys(signals).some(function(k) {
-      var s = signals[k].ou;
-      return s.Q1 !== null || s.Q2 !== null || s.Q3 !== null || s.Q4 !== null;
+      var s = signals[k] && signals[k].ou;
+      return s && (s.Q1 || s.Q2 || s.Q3 || s.Q4);
     });
 
     if (!hasAnyOU) {
       var ouLogSheet = (typeof _getSheet === 'function') ? _getSheet(ss, 'OU_Log') : ss.getSheetByName('OU_Log');
-      if (!ouLogSheet) {
-        // Case-insensitive search for OU_Log
-        var allSheets = ss.getSheets();
-        for (var ssi = 0; ssi < allSheets.length; ssi++) {
-          if (allSheets[ssi].getName().toLowerCase() === 'ou_log') {
-            ouLogSheet = allSheets[ssi];
-            break;
+      if (!ouLogSheet) return signals;
+
+      var ouData = ouLogSheet.getDataRange().getValues();
+      if (!ouData || ouData.length < 2) return signals;
+
+      var ouHdr = _headerMapRobust_(ouData[0]);
+
+      // OU_Log columns: Home, Away, Quarter, Threshold, Prediction, Confidence, EV_Percent, Edge_Score, Expected_Q
+      var ouHomeIdx  = _col_(ouHdr, 'home');
+      var ouAwayIdx  = _col_(ouHdr, 'away');
+      var ouQIdx     = _col_(ouHdr, 'quarter');
+      if (ouQIdx === undefined) ouQIdx = _col_(ouHdr, 'period');
+
+      var ouDirIdx   = _col_(ouHdr, 'prediction');
+      if (ouDirIdx === undefined) ouDirIdx = _col_(ouHdr, 'pick_code');
+      if (ouDirIdx === undefined) ouDirIdx = _col_(ouHdr, 'direction');
+
+      var ouLineIdx  = _col_(ouHdr, 'threshold');
+      if (ouLineIdx === undefined) ouLineIdx = _col_(ouHdr, 'line');
+
+      var ouConfIdx  = _col_(ouHdr, 'confidence');
+      if (ouConfIdx === undefined) ouConfIdx = _col_(ouHdr, 'confidence_pct');
+
+      var ouEvIdx    = _col_(ouHdr, 'ev_percent');
+      if (ouEvIdx === undefined) ouEvIdx = _col_(ouHdr, 'ev');
+
+      var ouEdgeIdx  = _col_(ouHdr, 'edge_score');
+      if (ouEdgeIdx === undefined) ouEdgeIdx = _col_(ouHdr, 'edge');
+
+      var ouExpIdx   = _col_(ouHdr, 'expected_q');
+      if (ouExpIdx === undefined) ouExpIdx = _col_(ouHdr, 'expected');
+
+      if (ouHomeIdx === undefined || ouAwayIdx === undefined || ouQIdx === undefined) return signals;
+
+      for (var r1 = 1; r1 < ouData.length; r1++) {
+        var ouRow = ouData[r1];
+        var ouHome = String(ouRow[ouHomeIdx] || '').trim();
+        var ouAway = String(ouRow[ouAwayIdx] || '').trim();
+        if (!ouHome || !ouAway) continue;
+
+        var ouKey = ouHome.toLowerCase() + ' vs ' + ouAway.toLowerCase();
+
+        var qRaw = String(ouRow[ouQIdx] || '').trim().toUpperCase();
+        if (!/^Q[1-4]$/.test(qRaw)) continue;
+
+        var dirRaw = (ouDirIdx !== undefined) ? String(ouRow[ouDirIdx] || '').trim() : '';
+        var dir = _normOuDir_(dirRaw);
+        if (!dir) continue;
+
+        var line0 = (ouLineIdx !== undefined) ? _toNum_(ouRow[ouLineIdx], NaN) : NaN;
+        if (!isFinite(line0) || line0 <= 0) continue;
+
+        var conf0 = (ouConfIdx !== undefined) ? _normalizeConf_(ouRow[ouConfIdx], NaN) : NaN;
+        var ev0   = (ouEvIdx !== undefined) ? _toNum_(ouRow[ouEvIdx], NaN) : NaN;
+        var edge0 = (ouEdgeIdx !== undefined) ? _toNum_(ouRow[ouEdgeIdx], NaN) : NaN;
+        var exp0  = (ouExpIdx !== undefined) ? _toNum_(ouRow[ouExpIdx], NaN) : NaN;
+
+        var ouParsed = {
+          direction: dir,
+          line: line0,
+          bookLine: null,
+          conf: conf0,
+          ev: ev0,
+          edge: edge0,
+          expected: exp0,
+          star: false
+        };
+
+        // If Edge_Score is missing, compute from expected-vs-line
+        if ((!isFinite(ouParsed.edge) || ouParsed.edge === 0) && isFinite(exp0)) {
+          ouParsed.edge = (dir === 'OVER') ? (exp0 - line0) : (line0 - exp0);
+        }
+
+        // Ensure base node exists
+        if (!signals[ouKey]) {
+          signals[ouKey] = {
+            margin: { Q1: null, Q2: null, Q3: null, Q4: null },
+            marginConf: { Q1: NaN, Q2: NaN, Q3: NaN, Q4: NaN },
+            marginEdge: NaN,
+            ou: { Q1: null, Q2: null, Q3: null, Q4: null },
+            ouBestDir: null,
+            ouHighestEst: '',
+            gameTier: ''
+          };
+        }
+
+        // Only set if missing (don't overwrite UpcomingClean data)
+        if (!signals[ouKey].ou[qRaw]) {
+          signals[ouKey].ou[qRaw] = ouParsed;
+        }
+
+        // Override with UpcomingClean book line for this quarter
+        var ucQEntry = ucQLines[ouKey];
+        if (ucQEntry && isFinite(ucQEntry[qRaw]) && ucQEntry[qRaw] > 0) {
+          signals[ouKey].ou[qRaw].line = ucQEntry[qRaw];
+          signals[ouKey].ou[qRaw].bookLine = ucQEntry[qRaw];
+
+          // Recompute edge vs book line if expected exists
+          var expX = signals[ouKey].ou[qRaw].expected;
+          if (isFinite(expX)) {
+            var bl = ucQEntry[qRaw];
+            signals[ouKey].ou[qRaw].edge = (dir === 'OVER') ? (expX - bl) : (bl - expX);
           }
         }
       }
-      if (ouLogSheet) {
-        var ouData = ouLogSheet.getDataRange().getValues();
-        if (ouData.length > 1) {
-          var ouHdr = _headerMapRobust(ouData[0]);
-          var ouHomeIdx  = _col(ouHdr, 'home');
-          var ouAwayIdx  = _col(ouHdr, 'away');
-          var ouPeriodIdx = _col(ouHdr, 'period');
-          if (ouPeriodIdx === undefined) ouPeriodIdx = _col(ouHdr, 'quarter');
-          var ouPickIdx  = _col(ouHdr, 'pick_text');
-          if (ouPickIdx === undefined) ouPickIdx = _col(ouHdr, 'picktext');
-          var ouPcIdx    = _col(ouHdr, 'pick_code');
-          if (ouPcIdx === undefined) ouPcIdx = _col(ouHdr, 'pickcode');
-          var ouThrIdx   = _col(ouHdr, 'threshold');
-          var ouConfIdx  = _col(ouHdr, 'confidence_pct');
-          if (ouConfIdx === undefined) ouConfIdx = _col(ouHdr, 'confidencepct');
-          var ouEvIdx    = _col(ouHdr, 'ev');
-          var ouEdgeIdx  = _col(ouHdr, 'edge_score');
-          if (ouEdgeIdx === undefined) ouEdgeIdx = _col(ouHdr, 'edgescore');
 
-          if (ouHomeIdx !== undefined && ouAwayIdx !== undefined) {
-            for (var ouli = 1; ouli < ouData.length; ouli++) {
-              var ouRow = ouData[ouli];
-              var ouHome = String(ouRow[ouHomeIdx] || '').trim();
-              var ouAway = String(ouRow[ouAwayIdx] || '').trim();
-              if (!ouHome || !ouAway) continue;
-
-              var ouKey = ouHome.toLowerCase() + ' vs ' + ouAway.toLowerCase();
-
-              var ouQ = ouPeriodIdx !== undefined ? String(ouRow[ouPeriodIdx] || '').trim().toUpperCase() : '';
-              if (!/^Q[1-4]$/.test(ouQ)) continue;
-
-              // Build pick text for parsing
-              var ouPickTxt = ouPickIdx !== undefined ? String(ouRow[ouPickIdx] || '').trim() : '';
-              if (!ouPickTxt && ouPcIdx !== undefined && ouThrIdx !== undefined) {
-                var pc = String(ouRow[ouPcIdx] || '').trim();
-                var thr = String(ouRow[ouThrIdx] || '').trim();
-                if (pc && thr) ouPickTxt = pc + ' ' + thr;
-              }
-              if (!ouPickTxt) continue;
-
-              var ouParsed = null;
-              if (typeof _parseOUSignal === 'function') ouParsed = _parseOUSignal(ouPickTxt);
-              // FIX: _parseOUSignal uses ^-anchored patterns that fail on "Q1: Over 52.5" format
-              // from OU_Log. Fall back to robust parser which has no ^ anchor.
-              if (!ouParsed && typeof _parseOUSignalRobust === 'function') ouParsed = _parseOUSignalRobust(ouPickTxt);
-              // Last resort: reconstruct from Pick_Code + first number in text
-              if (!ouParsed) {
-                var _pcDir = ouPcIdx !== undefined ? String(ouRow[ouPcIdx] || '').trim().toUpperCase() : '';
-                if (_pcDir === 'OVER' || _pcDir === 'UNDER') {
-                  var _lineMatch = ouPickTxt.match(/\b(\d+\.?\d*)\b/);
-                  if (_lineMatch) ouParsed = { direction: _pcDir, line: parseFloat(_lineMatch[1]), conf: NaN, ev: NaN, edge: NaN, star: false };
-                }
-              }
-              if (!ouParsed) continue;
-
-              if (ouConfIdx !== undefined) {
-                var ouC = _normalizeConf(ouRow[ouConfIdx], NaN);
-                if (isFinite(ouC)) ouParsed.conf = ouC;
-              }
-              if (ouEvIdx !== undefined) {
-                var ouEv = parseFloat(String(ouRow[ouEvIdx] || '').replace(/[%]/g, '').trim());
-                if (isFinite(ouEv)) ouParsed.ev = ouEv;
-              }
-              if (ouEdgeIdx !== undefined) {
-                var ouEd = parseFloat(String(ouRow[ouEdgeIdx] || '').replace(/[%]/g, '').trim());
-                if (isFinite(ouEd)) ouParsed.edge = ouEd;
-              }
-
-              if (!signals[ouKey]) {
-                signals[ouKey] = {
-                  margin: { Q1: null, Q2: null, Q3: null, Q4: null },
-                  marginConf: { Q1: NaN, Q2: NaN, Q3: NaN, Q4: NaN },
-                  marginEdge: NaN,
-                  ou: { Q1: null, Q2: null, Q3: null, Q4: null },
-                  ouBestDir: null,
-                  ouHighestEst: '',
-                  gameTier: ''
-                };
-              }
-              if (!signals[ouKey].ou[ouQ]) {
-                signals[ouKey].ou[ouQ] = ouParsed;
-              }
-
-              // Attach the actual book line for this quarter from UpcomingClean Q1-Q4 columns
-              var ucQEntry = ucQLines[ouKey];
-              if (ucQEntry && isFinite(ucQEntry[ouQ]) && ucQEntry[ouQ] > 0) {
-                signals[ouKey].ou[ouQ].bookLine = ucQEntry[ouQ];
-              }
-            }
-            var ucQLineCount = Object.keys(ucQLines).length;
-            Logger.log('[_loadTier2Signals] Populated O/U from OU_Log + UpcomingClean quarters (' + ucQLineCount + ' games with Q1-Q4 book lines)');
-          }
-        }
-      }
+      Logger.log('[_loadTier2Signals] OU_Log fallback applied (format: Prediction/Confidence/EV_Percent/Threshold)');
     }
   }
 
@@ -2275,8 +2232,14 @@ function buildAccumulator(ss) {
 
   function _canonicalQOUPick_(quarter, direction, line) {
     var q = String(quarter || '').toUpperCase().trim();
-    var d = String(direction || '').toUpperCase().trim();
+
+    var d0 = String(direction || '').toUpperCase().trim();
+    var d  = (d0 === 'O') ? 'OVER'
+           : (d0 === 'U') ? 'UNDER'
+           : d0;
+
     var l = _fmtLine1dp_(line);
+
     if (!/^Q[1-4]$/.test(q)) return '';
     if (!(d === 'OVER' || d === 'UNDER')) return '';
     if (!l) return '';
