@@ -955,6 +955,16 @@ function loadTier2Config(ss, league, forceRefresh) {
     }
   }
   
+  // Ensure meta fields required by validateConfigState_ are always present
+  if (!config['version'] && !config['config_version']) {
+    config['version'] = 'v1.0.0';
+  } else if (!config['version'] && config['config_version']) {
+    config['version'] = config['config_version'];
+  }
+  if (!config['LAST_UPDATED'] && !config['last_updated']) {
+    config['LAST_UPDATED'] = new Date().toISOString();
+  }
+
   // Cache the config
   CONFIG_TIER2 = config;
   CONFIG_TIER2_META = {
@@ -4194,6 +4204,7 @@ function loadTier1Config(ss) {
   var DEFAULTS = {
     // Meta
     version: 'v1.0.0',
+    LAST_UPDATED: new Date().toISOString(),
 
     // Legacy weights
     rank: 0,
@@ -5078,6 +5089,16 @@ function loadTier2Config(ss, league, forceRefresh) {
     if (typeof t2_canonicalizeConfig_ === 'function') {
       config = t2_canonicalizeConfig_(config);
     }
+
+    // Ensure meta fields required by validateConfigState_ are always present
+    if (!config['version'] && !config['config_version']) {
+      config['version'] = 'v1.0.0';
+    } else if (!config['version'] && config['config_version']) {
+      config['version'] = config['config_version'];
+    }
+    if (!config['LAST_UPDATED'] && !config['last_updated']) {
+      config['LAST_UPDATED'] = new Date().toISOString();
+    }
     
     // Cache the config
     CONFIG_TIER2 = config;
@@ -5127,6 +5148,7 @@ function getEliteDefaults_() {
     // ═══════════════════════════════════════════════════════════════════
     version: 'elite_defaults_v6.1',
     config_version: 'elite_defaults_v6.1',
+    LAST_UPDATED: new Date().toISOString(),
     
     // ═══════════════════════════════════════════════════════════════════
     // TIER 2 MARGIN ENGINE (Core)
