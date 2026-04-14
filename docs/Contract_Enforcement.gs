@@ -3830,13 +3830,31 @@ function _formatBetSlipRow_(pick, market, period, cfgBundle, slipIndex,
     };
   var pickStr = String((pick && pick.pick) || '');
   var pU = pickStr.toUpperCase();
+  var mkt = typeLabel != null ? typeLabel : (pick.type || market || '');
   var side = '';
   var lineStr = '';
-  if (pU.indexOf('OVER') >= 0) side = 'OVER';
-  else if (pU.indexOf('UNDER') >= 0) side = 'UNDER';
-  var lm = pickStr.match(/([+-]?\d+\.?\d*)/);
-  if (lm) lineStr = lm[1];
-  var mkt = typeLabel != null ? typeLabel : (pick.type || market || '');
+  var selectionTeam = '';
+  if (pU.indexOf('OVER') >= 0) {
+    side = 'OVER';
+    var _ovM = pickStr.match(/OVER\s*([+-]?\d+\.?\d*)/i);
+    if (_ovM) lineStr = _ovM[1];
+  } else if (pU.indexOf('UNDER') >= 0) {
+    side = 'UNDER';
+    var _unM = pickStr.match(/UNDER\s*([+-]?\d+\.?\d*)/i);
+    if (_unM) lineStr = _unM[1];
+  } else {
+    var _homeU = (teams.home || '').toUpperCase();
+    var _awayU = (teams.away || '').toUpperCase();
+    if (_homeU && pU.indexOf(_homeU) >= 0) {
+      side = 'HOME';
+      selectionTeam = teams.home;
+    } else if (_awayU && pU.indexOf(_awayU) >= 0) {
+      side = 'AWAY';
+      selectionTeam = teams.away;
+    }
+    var _marginM = pickStr.match(/([+-]\d+\.?\d*)/);
+    if (_marginM) lineStr = _marginM[1];
+  }
   var evDisp = formatEV(pick.ev);
   var t1 = (cfgBundle && cfgBundle.t1) || '';
   var t2 = (cfgBundle && cfgBundle.t2) || '';
@@ -3853,7 +3871,7 @@ function _formatBetSlipRow_(pick, market, period, cfgBundle, slipIndex,
     period,
     side,
     lineStr,
-    '',
+    selectionTeam,
     pickStr,
     formatOdds(pick.odds),
     confB.confidencePct,

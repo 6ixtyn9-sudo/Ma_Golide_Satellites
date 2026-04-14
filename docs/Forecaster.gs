@@ -2641,14 +2641,7 @@ function analyzeTier1(ss) {
     Logger.log('═══════════════════════════════════════════════════════════════');
     Logger.log('[Summary] Processed: ' + gamesProcessed + ', Skipped: ' + gamesSkipped);
 
-    ui.alert(
-      'Tier 1 Forecast Complete!',
-      'Successfully analyzed ' + gamesProcessed + ' upcoming games.\n\n' +
-      'Predictions written to \'Analysis_Tier1\' sheet.\n' +
-      'Forensic log updated in \'Tier1_Predictions\' sheet.\n\n' +
-      '[v3.3] Complete patched version with all fixes.',
-      ui.ButtonSet.OK
-    );
+    Logger.log('[Tier1] Forecast complete: ' + gamesProcessed + ' games analyzed. Predictions written to Analysis_Tier1 + Tier1_Predictions.');
 
     Logger.log('[PHASE 2 COMPLETE] Tier1_Predictions: FORENSIC_CORE_17 + confidence bundle');
     Logger.log('[PHASE 3 COMPLETE] Tier1 validateConfigState_(version, confMin, confMax)');

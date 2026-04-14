@@ -2555,27 +2555,75 @@ function runTheWholeShebang_WithTuners() {
   return _runWholeShebang_({ includeTuners: true });
 }
 
+/**
+ * Auto-resume entry point — called by the time-based trigger created when
+ * the pipeline approaches the 6-minute limit. Clears the trigger, then
+ * picks up from the saved stage.
+ */
+function runTheWholeShebang_Resume() {
+  _shebang_clearResumeTrigger_();
+  _runWholeShebang_({ includeTuners: false, resume: true });
+}
+
+/** Remove any previously scheduled resume trigger. */
+function _shebang_clearResumeTrigger_() {
+  var props = PropertiesService.getScriptProperties();
+  var tid = props.getProperty('SHEBANG_TRIGGER_ID');
+  if (tid) {
+    ScriptApp.getProjectTriggers().forEach(function(t) {
+      if (String(t.getUniqueId()) === tid) ScriptApp.deleteTrigger(t);
+    });
+    props.deleteProperty('SHEBANG_TRIGGER_ID');
+  }
+}
+
+/**
+ * Save the next stage to resume from and schedule a 1-minute trigger
+ * that will call runTheWholeShebang_Resume.
+ */
+function _shebang_scheduleResume_(nextStage) {
+  _shebang_clearResumeTrigger_();
+  var trigger = ScriptApp.newTrigger('runTheWholeShebang_Resume')
+    .timeBased()
+    .after(60 * 1000)
+    .create();
+  var props = PropertiesService.getScriptProperties();
+  props.setProperty('SHEBANG_TRIGGER_ID', trigger.getUniqueId());
+  props.setProperty('SHEBANG_RESUME_STAGE', nextStage);
+}
+
 function _runWholeShebang_(opts) {
   opts = opts || {};
   const includeTuners = !!opts.includeTuners;
+  const isResume = !!opts.resume;
+
+  // ── Resume state ──────────────────────────────────────────────────────────
+  var _resumeTarget = isResume
+    ? (PropertiesService.getScriptProperties().getProperty('SHEBANG_RESUME_STAGE') || '')
+    : '';
+  if (_resumeTarget) PropertiesService.getScriptProperties().deleteProperty('SHEBANG_RESUME_STAGE');
 
   const ui = SpreadsheetApp.getUi();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const g  = (typeof globalThis !== 'undefined') ? globalThis : this;
 
-  const confirm = ui.alert(
-    includeTuners ? '🚀 RUN THE WHOLE SHEBANG (WITH TUNING)?' : '🚀 RUN THE WHOLE SHEBANG?',
-    'This will execute the Ma Golide pipeline.\n\n' +
-      (includeTuners
-        ? 'Includes Tuning (may hit the 6-minute limit).\n\n'
-        : 'Tuning is excluded to stay under the 6-minute limit.\n\n') +
-      'Continue?',
-    ui.ButtonSet.YES_NO
-  );
-
-  if (confirm !== ui.Button.YES) {
-    ss.toast('Pipeline cancelled.', 'Ma Golide', 3);
-    return;
+  if (isResume) {
+    ss.toast('▶ Resuming pipeline' + (_resumeTarget ? ' from: ' + _resumeTarget : '') + '...', 'Ma Golide', 8);
+    Logger.log('[Shebang] RESUMING from stage: ' + (_resumeTarget || 'beginning'));
+  } else {
+    const confirm = ui.alert(
+      includeTuners ? '🚀 RUN THE WHOLE SHEBANG (WITH TUNING)?' : '🚀 RUN THE WHOLE SHEBANG?',
+      'This will execute the Ma Golide pipeline.\n\n' +
+        (includeTuners
+          ? 'Includes Tuning (may hit the 6-minute limit).\n\n'
+          : 'Tuning is excluded to stay under the 6-minute limit.\n\n') +
+        'Continue?',
+      ui.ButtonSet.YES_NO
+    );
+    if (confirm !== ui.Button.YES) {
+      ss.toast('Pipeline cancelled.', 'Ma Golide', 3);
+      return;
+    }
   }
 
   Logger.log('===== INITIATING THE WHOLE SHEBANG =====');
@@ -2586,14 +2634,24 @@ function _runWholeShebang_(opts) {
   const skipped   = [];
   const zfLog     = [];
 
-  // If you want to fail gracefully before Apps Script kills the process.
-  // (Does NOT save you if a single stage itself runs too long.)
-  const MAX_SAFE_MS = 5.5 * 60 * 1000; // 5m30s safety margin
+  // Pause before Apps Script 6-minute wall; schedule a trigger to auto-resume.
+  const MAX_SAFE_MS = 4.5 * 60 * 1000; // 4m30s — leaves buffer for trigger scheduling
   function timeGuard(label) {
     if (Date.now() - startMs > MAX_SAFE_MS) {
-      throw new Error('Aborting before Apps Script 6-minute limit (at stage: ' + label + '). ' +
-                      'Run Tuners separately.');
+      _shebang_scheduleResume_(label);
+      ss.toast('⏸ Auto-paused before "' + label + '". Resuming in ~1 min...', 'Ma Golide', 15);
+      Logger.log('[Shebang] PAUSED before stage: ' + label + ' — resume trigger scheduled.');
+      return true;
     }
+    return false;
+  }
+
+  // Returns true (and clears the target) when we reach the resume stage;
+  // returns false and skips the stage while we're still catching up.
+  function _shouldSkipStage_(label) {
+    if (!_resumeTarget) return false;
+    if (_resumeTarget === label) { _resumeTarget = ''; return false; }
+    return true;
   }
 
   function pickFn(preferred, fallback) {
@@ -2651,12 +2709,17 @@ function _runWholeShebang_(opts) {
     if (zfGuardActive) zf.repair(ss, 'UpcomingClean', zfLog, { policy: 'freshest' });
   }
 
+  // Returns true if the pipeline was paused (caller should `return`).
   function runPlainStage(label, toastMsg, candidates) {
-    timeGuard(label);
+    if (_shouldSkipStage_(label)) {
+      Logger.log('[Shebang] RESUME_SKIP ' + label);
+      return false;
+    }
+    if (timeGuard(label)) return true;
     ss.toast(toastMsg, 'The Whole Shebang', 15);
 
     const res = resolveFn(candidates);
-    if (!res) { skipped.push(label + ' (not found)'); return; }
+    if (!res) { skipped.push(label + ' (not found)'); return false; }
 
     try {
       callResolved(res);
@@ -2666,14 +2729,20 @@ function _runWholeShebang_(opts) {
       skipped.push(label + ' (error)');
       Logger.log('[Shebang] FAIL ' + label + ' via ' + res.name + '(): ' + e.message);
     }
+    return false;
   }
 
+  // Returns true if the pipeline was paused (caller should `return`).
   function runGuardedStage(label, toastMsg, candidates) {
-    timeGuard(label);
+    if (_shouldSkipStage_(label)) {
+      Logger.log('[Shebang] RESUME_SKIP ' + label);
+      return false;
+    }
+    if (timeGuard(label)) return true;
     ss.toast(toastMsg, 'The Whole Shebang', 20);
 
     const res = resolveFn(candidates);
-    if (!res) { skipped.push(label + ' (not found)'); return; }
+    if (!res) { skipped.push(label + ' (not found)'); return false; }
 
     let preRan = false;
     try {
@@ -2690,20 +2759,21 @@ function _runWholeShebang_(opts) {
         catch (postErr) { Logger.log('[Shebang] Post-repair error after ' + label + ': ' + postErr.message); }
       }
     }
+    return false;
   }
 
   try {
     // Phase 1: Genesis
-    runPlainStage('Genesis', 'Phase 1/7: Running Genesis...', [
+    if (runPlainStage('Genesis', 'Phase 1/7: Running Genesis...', [
       { name: 'setupAllSheets', passSs: false }
-    ]);
+    ])) return;
 
     // Phase 2: Parsers
-    runPlainStage('Parsers', 'Phase 2/7: Parsing ALL Data...', [
+    if (runPlainStage('Parsers', 'Phase 2/7: Parsing ALL Data...', [
       { name: 'runAllParsers', passSs: false }
-    ]);
+    ])) return;
 
-    // ZF bootstrap AFTER setup+parse
+    // ZF bootstrap AFTER setup+parse (idempotent — always safe to run)
     try {
       zfBootstrap();
       Logger.log('[Shebang] ZERO_FALLBACK overlay: ' + (zfDetected ? 'detected' : 'not detected'));
@@ -2712,15 +2782,16 @@ function _runWholeShebang_(opts) {
     }
 
     // Phase 3: Historical (keep plain unless you KNOW it writes schema-sensitive columns)
-    runPlainStage('Historical Analysis', 'Phase 3/7: Historical Analysis...', [
+    if (runPlainStage('Historical Analysis', 'Phase 3/7: Historical Analysis...', [
       { name: 'runAllHistoricalAnalyzers', passSs: true }
-    ]);
+    ])) return;
 
     // Phase 4: Tier 1 (writer => guarded)
-    runGuardedStage('Tier 1 Forecast', 'Phase 4/7: Tier 1 Forecast...', [
+    if (runGuardedStage('Tier 1 Forecast', 'Phase 4/7: Tier 1 Forecast...', [
       { name: 'analyzeTier1', passSs: true }
-    ]);
+    ])) return;
 
+    // T2 context init — runs unconditionally (fast, idempotent; needed by both Tier 2 stages)
     try {
       if (typeof t2_resetSharedGameContext_ === 'function') {
         t2_resetSharedGameContext_(ss, { source: 'WholeShebang' });
@@ -2731,53 +2802,53 @@ function _runWholeShebang_(opts) {
     }
 
     // Phase 5: Tier 2 writers (ONE canonical pass each)
-    runGuardedStage('Tier 2 Margins', 'Phase 5/7: Tier 2 Margins...', [
+    if (runGuardedStage('Tier 2 Margins', 'Phase 5/7: Tier 2 Margins...', [
       { name: 'runTier2_DeepDive', passSs: false },
       { name: 'predictQuarters_Tier2', passSs: true }
-    ]);
+    ])) return;
 
-    runGuardedStage('Tier 2 O/U', 'Phase 5/7: Tier 2 O/U...', [
+    if (runGuardedStage('Tier 2 O/U', 'Phase 5/7: Tier 2 O/U...', [
       { name: 'runTier2OU', passSs: false },
       { name: 'predictQuartersOU_Tier2', passSs: true },
       { name: 'predictQuarters_Tier2_OU', passSs: true }
-    ]);
+    ])) return;
 
-    runGuardedStage('Enhancements', 'Phase 5/7: Enhancements...', [
+    if (runGuardedStage('Enhancements', 'Phase 5/7: Enhancements...', [
       { name: 'runAllEnhancements', passSs: false }
-    ]);
+    ])) return;
 
     // Phase 6: Accumulator (writer => guarded)
-    runGuardedStage('Accumulator', 'Phase 6/7: Building Accumulators...', [
+    if (runGuardedStage('Accumulator', 'Phase 6/7: Building Accumulators...', [
       { name: 'buildAccumulator', passSs: true },
       { name: 'buildModule8Accumulator', passSs: true },
       { name: 'runAccumulator', passSs: false }
-    ]);
+    ])) return;
 
-    // Optional verify
+    // Optional verify (non-critical, always safe to re-run)
     if (zf.verifyHeaders) {
       try { zf.verifyHeaders(ss, 'UpcomingClean', zfLog); }
       catch (e) { Logger.log('[Shebang] Header verify error (non-fatal): ' + e.message); }
     }
 
     // Phase 7: Reports (plain)
-    runPlainStage('Accuracy Report', 'Phase 7/7: Accuracy Report...', [
+    if (runPlainStage('Accuracy Report', 'Phase 7/7: Accuracy Report...', [
       { name: 'generateAccuracyReport', passSs: true }
-    ]);
-    runPlainStage('Tier 2 Accuracy Report', 'Phase 7/7: Tier 2 Accuracy...', [
+    ])) return;
+    if (runPlainStage('Tier 2 Accuracy Report', 'Phase 7/7: Tier 2 Accuracy...', [
       { name: 'buildTier2AccuracyReport', passSs: true }
-    ]);
-    runPlainStage('O/U Accuracy Report', 'Phase 7/7: O/U Accuracy...', [
+    ])) return;
+    if (runPlainStage('O/U Accuracy Report', 'Phase 7/7: O/U Accuracy...', [
       { name: 'buildOUAccuracyReport', passSs: true }
-    ]);
+    ])) return;
 
     // OPTIONAL (not recommended for menu/editor runs)
     if (includeTuners) {
-      runPlainStage('Tier 1 Tuning', 'Phase 7/7: Tier 1 Tuning (proposal)...', [
+      if (runPlainStage('Tier 1 Tuning', 'Phase 7/7: Tier 1 Tuning (proposal)...', [
         { name: 'tuneLeagueWeights', passSs: true }
-      ]);
-      runPlainStage('Tier 2 Tuning', 'Phase 7/7: Tier 2 Tuning (proposal)...', [
+      ])) return;
+      if (runPlainStage('Tier 2 Tuning', 'Phase 7/7: Tier 2 Tuning (proposal)...', [
         { name: 'tuneTier2Config', passSs: true }
-      ]);
+      ])) return;
     }
 
     const duration = Math.round((Date.now() - startMs) / 1000);
