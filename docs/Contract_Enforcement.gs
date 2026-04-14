@@ -5570,4 +5570,3 @@ function alignForensicLogsToContract_(ss) {
   
   return results;
 }
-
