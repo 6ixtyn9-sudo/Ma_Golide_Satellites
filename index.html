@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Ma Golide — Betting System</title>
+  <title>Ma Golide — Gold Universe</title>
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
     body {
@@ -19,103 +19,209 @@
       text-align: center;
     }
     header h1 {
-      font-size: 2.5rem;
-      color: #58a6ff;
+      font-size: 2.4rem;
+      color: #FFD700;
       letter-spacing: 2px;
       text-transform: uppercase;
     }
     header p {
       margin-top: 0.5rem;
       color: #8b949e;
-      font-size: 1.1rem;
-    }
-    .badge {
-      display: inline-block;
-      background: #238636;
-      color: #fff;
-      border-radius: 4px;
-      padding: 2px 10px;
-      font-size: 0.8rem;
-      margin-left: 0.5rem;
-      vertical-align: middle;
+      font-size: 1.05rem;
     }
     .container {
-      max-width: 1100px;
+      max-width: 1200px;
       margin: 0 auto;
       padding: 2rem;
     }
+
+    /* Architecture flow diagram */
+    .arch-flow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0;
+      margin: 2rem 0;
+      flex-wrap: wrap;
+    }
+    .arch-node {
+      background: #161b22;
+      border: 2px solid #30363d;
+      border-radius: 10px;
+      padding: 1rem 1.4rem;
+      text-align: center;
+      min-width: 160px;
+    }
+    .arch-node.satellites { border-color: #58a6ff; }
+    .arch-node.assayer    { border-color: #FFD700; }
+    .arch-node.mothership { border-color: #f0883e; }
+    .arch-node .node-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-bottom: 0.3rem;
+    }
+    .arch-node.satellites .node-label { color: #58a6ff; }
+    .arch-node.assayer    .node-label { color: #FFD700; }
+    .arch-node.mothership .node-label { color: #f0883e; }
+    .arch-node .node-name {
+      font-size: 0.95rem;
+      font-weight: bold;
+      color: #e6edf3;
+    }
+    .arch-node .node-desc {
+      font-size: 0.75rem;
+      color: #8b949e;
+      margin-top: 0.3rem;
+    }
+    .arch-arrow {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 0 0.5rem;
+      color: #8b949e;
+      font-size: 0.65rem;
+      text-align: center;
+      gap: 2px;
+    }
+    .arch-arrow .arrow-line {
+      width: 60px;
+      height: 2px;
+      background: #30363d;
+      position: relative;
+    }
+    .arch-arrow .arrow-line::after {
+      content: '▶';
+      position: absolute;
+      right: -8px;
+      top: -7px;
+      color: #30363d;
+      font-size: 0.7rem;
+    }
+
+    /* Section titles */
     .section-title {
-      font-size: 1.4rem;
-      color: #58a6ff;
+      font-size: 1.3rem;
       border-bottom: 1px solid #30363d;
       padding-bottom: 0.5rem;
-      margin: 2rem 0 1rem;
+      margin: 2.5rem 0 1.2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
     }
+    .section-title.blue  { color: #58a6ff; }
+    .section-title.gold  { color: #FFD700; }
+    .section-title.amber { color: #f0883e; }
+    .section-title .badge {
+      font-size: 0.65rem;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-weight: normal;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    .badge-blue  { background: #1f3a5f; color: #58a6ff; }
+    .badge-gold  { background: #2d2a00; color: #FFD700; }
+    .badge-amber { background: #2d1a00; color: #f0883e; }
+
+    /* Module grids */
     .grid {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-      gap: 1.2rem;
+      grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 1rem;
     }
     .card {
       background: #161b22;
       border: 1px solid #30363d;
       border-radius: 8px;
-      padding: 1.2rem;
+      padding: 1.1rem 1.2rem;
       transition: border-color 0.2s;
     }
-    .card:hover {
-      border-color: #58a6ff;
-    }
+    .card:hover { border-color: #58a6ff; }
+    .card.gold:hover { border-color: #FFD700; }
+    .card.amber:hover { border-color: #f0883e; }
     .card .module-tag {
-      font-size: 0.75rem;
-      color: #f0883e;
+      font-size: 0.7rem;
       font-weight: bold;
       text-transform: uppercase;
       letter-spacing: 1px;
+      margin-bottom: 0.35rem;
     }
+    .tag-blue  { color: #58a6ff; }
+    .tag-gold  { color: #FFD700; }
+    .tag-amber { color: #f0883e; }
+    .tag-green { color: #3fb950; }
+    .tag-purple{ color: #bc8cff; }
+    .tag-teal  { color: #39d353; }
     .card h3 {
       color: #e6edf3;
-      font-size: 1rem;
-      margin: 0.4rem 0 0.6rem;
+      font-size: 0.95rem;
+      margin-bottom: 0.4rem;
     }
     .card p {
       color: #8b949e;
-      font-size: 0.88rem;
+      font-size: 0.83rem;
       line-height: 1.5;
     }
+    .card .filename {
+      font-size: 0.72rem;
+      color: #484f58;
+      margin-top: 0.5rem;
+      font-family: monospace;
+    }
+
+    /* Info boxes */
     .info-box {
       background: #161b22;
       border: 1px solid #30363d;
-      border-left: 4px solid #58a6ff;
       border-radius: 8px;
       padding: 1.2rem 1.5rem;
-      margin-top: 1rem;
-      font-size: 0.93rem;
+      margin: 1rem 0;
+      font-size: 0.9rem;
       line-height: 1.7;
     }
-    .info-box h3 {
-      color: #58a6ff;
-      margin-bottom: 0.5rem;
-    }
-    .info-box ul {
-      margin-left: 1.2rem;
-    }
-    .info-box li {
-      color: #8b949e;
-      margin-bottom: 0.3rem;
-    }
+    .info-box.blue-left  { border-left: 4px solid #58a6ff; }
+    .info-box.gold-left  { border-left: 4px solid #FFD700; }
+    .info-box.amber-left { border-left: 4px solid #f0883e; }
+    .info-box h3 { margin-bottom: 0.5rem; font-size: 1rem; }
+    .info-box.blue-left  h3 { color: #58a6ff; }
+    .info-box.gold-left  h3 { color: #FFD700; }
+    .info-box.amber-left h3 { color: #f0883e; }
+    .info-box ul { margin-left: 1.2rem; }
+    .info-box li { color: #8b949e; margin-bottom: 0.25rem; }
     .info-box code {
       background: #0d1117;
       color: #f0883e;
       padding: 1px 6px;
       border-radius: 4px;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
     }
+
+    /* Grade pills */
+    .grades {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+      margin-top: 0.8rem;
+    }
+    .grade-pill {
+      padding: 3px 12px;
+      border-radius: 20px;
+      font-size: 0.78rem;
+      font-weight: bold;
+    }
+    .grade-pill.platinum { background: #1a1a2e; color: #E5E4E2; border: 1px solid #E5E4E2; }
+    .grade-pill.gold     { background: #2d2d0d; color: #FFD700; border: 1px solid #FFD700; }
+    .grade-pill.silver   { background: #2d2d2d; color: #C0C0C0; border: 1px solid #C0C0C0; }
+    .grade-pill.bronze   { background: #2d1f0d; color: #CD7F32; border: 1px solid #CD7F32; }
+    .grade-pill.rock     { background: #1a1a1a; color: #808080; border: 1px solid #808080; }
+    .grade-pill.charcoal { background: #0d0d0d; color: #555;    border: 1px solid #333; }
+
     footer {
       text-align: center;
       padding: 2rem;
       color: #30363d;
-      font-size: 0.85rem;
+      font-size: 0.82rem;
       border-top: 1px solid #21262d;
       margin-top: 3rem;
     }
@@ -124,136 +230,356 @@
 <body>
 
 <header>
-  <h1>Ma Golide <span class="badge">v1.1.0</span></h1>
-  <p>Advanced Sports Betting Prediction &amp; Analysis System — Google Apps Script</p>
+  <h1>Ma Golide — Gold Universe</h1>
+  <p>Three interconnected Google Apps Script systems for sports betting prediction, purity testing &amp; accumulator building</p>
 </header>
 
 <div class="container">
 
-  <div class="info-box">
-    <h3>How to Use This System</h3>
-    <p>This project runs entirely inside <strong>Google Sheets</strong> using Google Apps Script. To deploy it:</p>
-    <ul>
-      <li>Open your Google Sheet and navigate to <strong>Extensions → Apps Script</strong>.</li>
-      <li>Copy each <code>.gs</code> file from the <code>docs/</code> folder into the Apps Script editor.</li>
-      <li>Run <code>Sheet_Setup</code> first to initialize the spreadsheet structure.</li>
-      <li>Use the custom menus generated by each module to interact with the system.</li>
-    </ul>
-    <p style="margin-top:0.8rem;">Alternatively, use <strong>Clasp</strong> to push files directly: <code>clasp push</code></p>
+  <!-- Architecture flow -->
+  <div class="arch-flow">
+    <div class="arch-node satellites">
+      <div class="node-label">Repos 1–N</div>
+      <div class="node-name">Ma Golide Satellites</div>
+      <div class="node-desc">League spreadsheets<br>generate predictions</div>
+    </div>
+    <div class="arch-arrow">
+      <div class="arrow-line"></div>
+      <span>clean data</span>
+    </div>
+    <div class="arch-node assayer">
+      <div class="node-label">Repo 2</div>
+      <div class="node-name">Ma Assayer</div>
+      <div class="node-desc">Tests prediction purity<br>Gold vs Charcoal</div>
+    </div>
+    <div class="arch-arrow">
+      <div class="arrow-line"></div>
+      <span>purity contract</span>
+    </div>
+    <div class="arch-node mothership">
+      <div class="node-label">Repo 3</div>
+      <div class="node-name">Mothership</div>
+      <div class="node-desc">Reads all satellites<br>builds Accas &amp; Slips</div>
+    </div>
   </div>
 
-  <h2 class="section-title">System Modules</h2>
-  <div class="grid">
+  <div class="info-box blue-left">
+    <h3>How to Deploy These Scripts to Google Sheets</h3>
+    <ul>
+      <li>Open a Google Sheet and go to <strong>Extensions → Apps Script</strong>.</li>
+      <li>Copy each <code>.gs</code> file from the relevant <code>docs/</code> or <code>doc/</code> folder into the editor.</li>
+      <li>For each system, run the setup/genesis function first to initialize the sheet structure.</li>
+      <li>Or use <strong>Clasp</strong>: <code>clasp push</code> from the project directory.</li>
+    </ul>
+  </div>
 
+  <!-- ─── MA GOLIDE (SATELLITES) ─── -->
+  <h2 class="section-title blue">
+    Ma Golide — Satellites
+    <span class="badge badge-blue">v1.1.0 Diagnostic</span>
+    <span style="color:#484f58; font-size:0.8rem; font-weight:normal;">docs/</span>
+  </h2>
+
+  <div class="info-box blue-left">
+    <p>The league-level prediction machines. Each satellite spreadsheet runs these modules to process raw sports data, generate predictions, and feed clean results to the Assayer.</p>
+  </div>
+
+  <div class="grid">
     <div class="card">
-      <div class="module-tag">Module 1</div>
+      <div class="module-tag tag-blue">Module 1</div>
       <h3>Sheet Setup</h3>
-      <p>One-click creation of the full spreadsheet infrastructure. The "Single Source of Truth" for all sheet names and layout. Run this first.</p>
+      <p>One-click creation of the full spreadsheet infrastructure. Single source of truth for all sheet names. Run first.</p>
+      <div class="filename">Sheet_Setup.gs</div>
     </div>
-
     <div class="card">
-      <div class="module-tag">Module 2</div>
+      <div class="module-tag tag-blue">Module 2</div>
       <h3>Config &amp; Ledger Satellite</h3>
-      <p>Manages system configuration, sport-specific settings (NBA, NFL, Volleyball), and betting ledger management.</p>
+      <p>Sport-specific configuration (NBA, NFL, Volleyball) and betting ledger management.</p>
+      <div class="filename">Config_Ledger_Satellite.gs</div>
     </div>
-
     <div class="card">
-      <div class="module-tag">Module 3</div>
+      <div class="module-tag tag-blue">Module 3</div>
       <h3>Signal Processor</h3>
-      <p>The "Mouth" of the system. Cleans and standardizes messy raw sports data into a structured horizontal format ready for analysis.</p>
+      <p>The "Mouth" of the system. Cleans and standardises messy raw data into a structured horizontal format.</p>
+      <div class="filename">Signal_Processor.gs</div>
     </div>
-
     <div class="card">
-      <div class="module-tag">Module 4</div>
+      <div class="module-tag tag-blue">Module 4</div>
       <h3>Data Parser</h3>
-      <p>Specialized parsing engine using advanced regex and DFS-based splitters to decode concatenated team/date strings like <code>DallasCowboysPhiladelphiaEagles</code>.</p>
+      <p>Decodes concatenated team/date strings (e.g. <code>DallasCowboysPhiladelphiaEagles23/11/2025</code>) via advanced regex and DFS splitting.</p>
+      <div class="filename">Data_Parser.gs</div>
     </div>
-
     <div class="card">
-      <div class="module-tag">Module 5</div>
+      <div class="module-tag tag-blue">Module 5</div>
       <h3>Margin Analyzer</h3>
-      <p>Point spread and margin prediction engine. Analyzes historical margins to forecast home/away advantage and betting edges.</p>
+      <p>Point spread and margin prediction engine. Forecasts home/away advantage and betting edges.</p>
+      <div class="filename">Margin_Analyzer.gs</div>
     </div>
-
     <div class="card">
-      <div class="module-tag">Module 6</div>
+      <div class="module-tag tag-blue">Module 6</div>
       <h3>Forecaster</h3>
-      <p>Trend analysis and initial forecasting layer. Provides probability models feeding into over/under and quarter predictions.</p>
+      <p>Trend analysis and initial forecasting layer. Probability models feeding into Over/Under and quarter predictions.</p>
+      <div class="filename">Forecaster.gs</div>
     </div>
-
     <div class="card">
-      <div class="module-tag">Module 7</div>
+      <div class="module-tag tag-blue">Module 7</div>
       <h3>Game Processor</h3>
-      <p>Production-ready prediction logic for Over/Under and Quarter outcomes. Features the Tuner Brier accuracy calibration system.</p>
+      <p>Production-ready Over/Under and Quarter outcome predictions with the Tuner Brier accuracy calibration system.</p>
+      <div class="filename">Game_Processor.gs</div>
     </div>
-
     <div class="card">
-      <div class="module-tag">Module 8</div>
+      <div class="module-tag tag-blue">Module 8</div>
       <h3>Inventory Manager</h3>
-      <p>Tracks the full inventory of games and betting opportunities across sports. Manages game states from upcoming to settled.</p>
+      <p>Tracks the full inventory of games and betting opportunities across sports from upcoming to settled.</p>
+      <div class="filename">Inventory_Manager.gs</div>
     </div>
-
     <div class="card">
-      <div class="module-tag">Module 9</div>
+      <div class="module-tag tag-blue">Module 9</div>
       <h3>Accumulator Builder</h3>
-      <p>Assembles multiple picks into parlays/accumulators. Includes ROBBERS upset detection, confidence tier system (Elite/Strong/Medium/Weak), and first-half 1x2 predictions.</p>
+      <p>Builds parlays/accumulators. ROBBERS upset detection, confidence tiers (Elite/Strong/Medium/Weak), first-half 1x2 predictions.</p>
+      <div class="filename">Accumulator_Builder.gs</div>
     </div>
-
     <div class="card">
-      <div class="module-tag">Audit</div>
+      <div class="module-tag tag-blue">Audit</div>
       <h3>Contract Enforcer</h3>
-      <p>Data integrity enforcement engine. Ensures all modules follow system rules, validates outputs, and flags violations automatically.</p>
+      <p>Data integrity enforcement. Validates module outputs and flags rule violations automatically.</p>
+      <div class="filename">Contract_Enforcer.gs</div>
     </div>
-
     <div class="card">
-      <div class="module-tag">Audit</div>
+      <div class="module-tag tag-blue">Audit</div>
       <h3>Contract Enforcement</h3>
-      <p>Full audit trail from predictions → bet slips → results → accuracy reports. Calculates hit rates and tracks betting performance.</p>
+      <p>Full audit trail: Predictions → Bet Slips → Results → Accuracy Reports with hit rate tracking.</p>
+      <div class="filename">Contract_Enforcement.gs</div>
     </div>
-
   </div>
 
-  <h2 class="section-title">Key Features</h2>
+  <!-- ─── MA ASSAYER ─── -->
+  <h2 class="section-title gold">
+    Ma Assayer — Gold Universe Purity Engine
+    <span class="badge badge-gold">v4.3.0</span>
+    <span style="color:#484f58; font-size:0.8rem; font-weight:normal;">ma_assayer/docs/</span>
+  </h2>
+
+  <div class="info-box gold-left">
+    <p><em>"Testing the purity of predictions — separating Gold from Charcoal"</em></p>
+    <p style="margin-top:0.5rem;">Consumes raw satellite data, runs purity analysis, and produces two output sheets (<code>ASSAYER_EDGES</code> and <code>ASSAYER_LEAGUE_PURITY</code>) that become the official contract for the Mothership.</p>
+    <div class="grades">
+      <span class="grade-pill platinum">⬡ Platinum ≥85%</span>
+      <span class="grade-pill gold">Au Gold ≥72%</span>
+      <span class="grade-pill silver">Ag Silver ≥62%</span>
+      <span class="grade-pill bronze">Cu Bronze ≥55%</span>
+      <span class="grade-pill rock">ite Rock ≥50%</span>
+      <span class="grade-pill charcoal">🜃 Charcoal &lt;50%</span>
+    </div>
+  </div>
+
   <div class="grid">
-    <div class="card">
-      <h3>Resilient Parsing</h3>
-      <p>Handles "unkillable" data formats where teams and dates are concatenated without spaces or delimiters.</p>
+    <div class="card gold">
+      <div class="module-tag tag-gold">M1</div>
+      <h3>Output Writers</h3>
+      <p>Writes the official purity contract to <code>ASSAYER_EDGES</code> and <code>ASSAYER_LEAGUE_PURITY</code> sheets.</p>
+      <div class="filename">Output_Writers.gs</div>
     </div>
-    <div class="card">
-      <h3>Multi-Sport Support</h3>
-      <p>Supports NBA, NFL, and Volleyball with configurable scoring modes (points vs. sets).</p>
+    <div class="card gold">
+      <div class="module-tag tag-gold">M2</div>
+      <h3>Main Orchestrator</h3>
+      <p>Controller that coordinates the full assay pipeline end-to-end when "Run Full Assay" is triggered.</p>
+      <div class="filename">Main_Orchestrator.gs</div>
     </div>
-    <div class="card">
-      <h3>Advanced Analytics</h3>
-      <p>Implements shrinkage, continuity correction for integer lines, and conditional win rate calculations.</p>
+    <div class="card gold">
+      <div class="module-tag tag-gold">M3</div>
+      <h3>Flagger</h3>
+      <p>Applies purity flags back to source sheets, marking each record with its grade (Gold, Silver, Charcoal, etc.).</p>
+      <div class="filename">Flagger_FlagsSourceSheets.gs</div>
     </div>
-    <div class="card">
-      <h3>Automated Audit</h3>
-      <p>End-to-end tracking from predictions through to settled results with hit rate reporting.</p>
+    <div class="card gold">
+      <div class="module-tag tag-gold">M4</div>
+      <h3>Discovery Edge Engine</h3>
+      <p>Discovers and validates statistical edges across leagues, quarters, tiers, and confidence buckets. Handles type-segmented totals.</p>
+      <div class="filename">Discovery_Edge.gs</div>
+    </div>
+    <div class="card gold">
+      <div class="module-tag tag-gold">M5</div>
+      <h3>Config &amp; Constants</h3>
+      <p>Single source of truth for all sheet names, column schemas, spread/line/confidence buckets, grade thresholds, and statistical parameters.</p>
+      <div class="filename">Config_ConfigurationAndConstants.gs</div>
+    </div>
+    <div class="card gold">
+      <div class="module-tag tag-gold">M6</div>
+      <h3>ColResolver — Fuzzy Matching</h3>
+      <p>Case-insensitive fuzzy column matching using Levenshtein distance and word-level similarity. Maps any header variant to its canonical name.</p>
+      <div class="filename">ColResolver_ColumnMatching.gs</div>
+    </div>
+    <div class="card gold">
+      <div class="module-tag tag-gold">M7</div>
+      <h3>Parser</h3>
+      <p>Parses raw data rows from Side and Totals sheets. Extracts dates, leagues, picks, results, confidence, EV, and tier information.</p>
+      <div class="filename">Parser_DataParsing.gs</div>
+    </div>
+    <div class="card gold">
+      <div class="module-tag tag-gold">M8</div>
+      <h3>Stats Calculations</h3>
+      <p>Wilson confidence intervals, shrinkage estimators, Brier score calibration, lift scoring, and reliability gating.</p>
+      <div class="filename">Stats_StatsCalculations.gs</div>
+    </div>
+    <div class="card gold">
+      <div class="module-tag tag-gold">M9</div>
+      <h3>Utility Functions</h3>
+      <p>Shared helpers: date normalisation, safe number parsing, sheet existence checks, and data sanitisation utilities.</p>
+      <div class="filename">Utils_UtilityFunctions.gs</div>
+    </div>
+    <div class="card gold">
+      <div class="module-tag tag-gold">M10</div>
+      <h3>Logging System</h3>
+      <p>Structured, levelled logging (debug/info/warn/error/success) with module namespacing and optional sheet output.</p>
+      <div class="filename">Log_LoggingSystem.gs</div>
+    </div>
+    <div class="card gold">
+      <div class="module-tag tag-gold">Config</div>
+      <h3>Config Ledger Reader</h3>
+      <p>Reads the <code>Config_Ledger</code> sheet to track config stamp versions, detect drift between satellite configurations, and validate stamp purity.</p>
+      <div class="filename">ConfigLedger_Reader.gs</div>
     </div>
   </div>
 
-  <h2 class="section-title">Script Files</h2>
-  <div class="info-box">
-    <ul>
-      <li><code>docs/Sheet_Setup.gs</code> — Module 1: Infrastructure bootstrapper</li>
-      <li><code>docs/Config_Ledger_Satellite.gs</code> — Module 2: Configuration &amp; ledger</li>
-      <li><code>docs/Signal_Processor.gs</code> — Module 3: Raw data cleaning</li>
-      <li><code>docs/Data_Parser.gs</code> — Module 4: Advanced string parsing</li>
-      <li><code>docs/Margin_Analyzer.gs</code> — Module 5: Margin &amp; spread predictions</li>
-      <li><code>docs/Forecaster.gs</code> — Module 6: Trend forecasting</li>
-      <li><code>docs/Game_Processor.gs</code> — Module 7: Over/Under &amp; quarter predictions</li>
-      <li><code>docs/Inventory_Manager.gs</code> — Module 8: Game inventory tracking</li>
-      <li><code>docs/Accumulator_Builder.gs</code> — Module 9: Parlay/accumulator assembly</li>
-      <li><code>docs/Contract_Enforcer.gs</code> — Audit: Integrity enforcement</li>
-      <li><code>docs/Contract_Enforcement.gs</code> — Audit: Full audit trail</li>
-    </ul>
+  <!-- ─── MOTHERSHIP ─── -->
+  <h2 class="section-title amber">
+    Ma Golide Mothership — The Parent of the Gold Universe
+    <span class="badge badge-amber">Central Brain</span>
+    <span style="color:#484f58; font-size:0.8rem; font-weight:normal;">ma_golide_mothership/doc/</span>
+  </h2>
+
+  <div class="info-box amber-left">
+    <p><em>"The one who sees all satellites, consults the Assayer, and builds the Accas"</em></p>
+    <p style="margin-top:0.5rem;">Reads upcoming games from all satellite sheets, pulls the latest purity report from the Assayer, then produces Accas, Risky Accas, Portfolios, and Bet Slips.</p>
+  </div>
+
+  <div class="grid">
+    <div class="card amber">
+      <div class="module-tag tag-amber">Core</div>
+      <h3>Intelligence Core (MIC)</h3>
+      <p>The learning engine. Maintains historical archives, segment stats, Bayesian win-rate tracking, shadow backtest, and auto-tuner. Decides BET / CAUTION / BLOCK per segment.</p>
+      <div class="filename">Mothership_ Intelligence_Core.gs</div>
+    </div>
+    <div class="card amber">
+      <div class="module-tag tag-amber">Core</div>
+      <h3>Acca Engine</h3>
+      <p>Assembles standard accumulators from satellite data filtered through Assayer purity grades. Applies confidence tiers and EV thresholds.</p>
+      <div class="filename">Mothership_AccaEngine.gs</div>
+    </div>
+    <div class="card amber">
+      <div class="module-tag tag-amber">Bridge</div>
+      <h3>Assayer Bridge</h3>
+      <p>Multi-satellite bridge. Connects the Mothership to all registered satellite spreadsheets and pulls the Assayer's <code>ASSAYER_EDGES</code> purity contract.</p>
+      <div class="filename">Mothership_AssayerBridge.gs</div>
+    </div>
+    <div class="card amber">
+      <div class="module-tag tag-amber">Setup</div>
+      <h3>Genesis</h3>
+      <p>One-time bootstrapper that creates all Mothership sheet schemas (Archives, Performance Log, Segment Stats, Insights, Policy Overrides, etc.).</p>
+      <div class="filename">Mothership_Genesis.gs</div>
+    </div>
+    <div class="card amber">
+      <div class="module-tag tag-amber">AI</div>
+      <h3>Hive Mind</h3>
+      <p>Aggregate intelligence layer. Synthesises insights across all satellites, identifies system-wide patterns, and generates strategic recommendations.</p>
+      <div class="filename">Mothership_HiveMind.gs</div>
+    </div>
+    <div class="card amber">
+      <div class="module-tag tag-amber">UI</div>
+      <h3>Menu</h3>
+      <p>Google Sheets custom menu builder. Exposes all Mothership operations (sync, build accas, run MIC, tune, export) as one-click menu items.</p>
+      <div class="filename">Mothership_Menu.gs</div>
+    </div>
+    <div class="card amber">
+      <div class="module-tag tag-amber">Risk</div>
+      <h3>Risky Acca Builder</h3>
+      <p>Constructs higher-risk accumulator portfolios using expanded confidence ranges. Includes variance budgeting and kelly-fraction sizing.</p>
+      <div class="filename">Mothership_RiskyAccaBuilder.gs</div>
+    </div>
+    <div class="card amber">
+      <div class="module-tag tag-amber">Risk</div>
+      <h3>Risky Analyzer</h3>
+      <p>Post-hoc analysis of risky acca performance. Tracks hit rates, ROI contributions, and leg-level failure attribution.</p>
+      <div class="filename">Mothership_RiskyAnalyzer.gs</div>
+    </div>
+    <div class="card amber">
+      <div class="module-tag tag-amber">Analytics</div>
+      <h3>Performance Analyzer</h3>
+      <p>Full performance reporting pipeline. Computes win rates (lifetime, L30, L10), ROI, trend direction, and segment-level health scores.</p>
+      <div class="filename">Performance_Analyzer.gs</div>
+    </div>
+    <div class="card amber">
+      <div class="module-tag tag-amber">Audit</div>
+      <h3>Systems Audit</h3>
+      <p>End-to-end integrity check across all Mothership sheets. Validates schema compliance, detects orphaned records, and flags data drift.</p>
+      <div class="filename">Systems Audit.gs</div>
+    </div>
+    <div class="card amber">
+      <div class="module-tag tag-amber">Config</div>
+      <h3>Config Ledger Mothership</h3>
+      <p>Reads <code>Config_Ledger</code> from the Assayer sheet. Segments rows by config stamp, detects win-rate drift across versions, and gates accas via <code>isSafeToAcca()</code>.</p>
+      <div class="filename">ConfigLedger_Mothership.gs</div>
+    </div>
+  </div>
+
+  <!-- File listing -->
+  <h2 class="section-title blue" style="margin-top:3rem;">All Script Files</h2>
+  <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(360px, 1fr)); gap:1rem;">
+    <div class="info-box blue-left">
+      <h3>Ma Golide Satellites — <code>docs/</code></h3>
+      <ul>
+        <li><code>Sheet_Setup.gs</code></li>
+        <li><code>Config_Ledger_Satellite.gs</code></li>
+        <li><code>Signal_Processor.gs</code></li>
+        <li><code>Data_Parser.gs</code></li>
+        <li><code>Margin_Analyzer.gs</code></li>
+        <li><code>Forecaster.gs</code></li>
+        <li><code>Game_Processor.gs</code></li>
+        <li><code>Inventory_Manager.gs</code></li>
+        <li><code>Accumulator_Builder.gs</code></li>
+        <li><code>Contract_Enforcer.gs</code></li>
+        <li><code>Contract_Enforcement.gs</code></li>
+      </ul>
+    </div>
+    <div class="info-box gold-left">
+      <h3>Ma Assayer — <code>ma_assayer/docs/</code></h3>
+      <ul>
+        <li><code>Main_Orchestrator.gs</code></li>
+        <li><code>Config_ConfigurationAndConstants.gs</code></li>
+        <li><code>ConfigLedger_Reader.gs</code></li>
+        <li><code>ColResolver_ColumnMatching.gs</code></li>
+        <li><code>Discovery_Edge.gs</code></li>
+        <li><code>Flagger_FlagsSourceSheets.gs</code></li>
+        <li><code>Output_Writers.gs</code></li>
+        <li><code>Parser_DataParsing.gs</code></li>
+        <li><code>Stats_StatsCalculations.gs</code></li>
+        <li><code>Utils_UtilityFunctions.gs</code></li>
+        <li><code>Log_LoggingSystem.gs</code></li>
+      </ul>
+    </div>
+    <div class="info-box amber-left">
+      <h3>Mothership — <code>ma_golide_mothership/doc/</code></h3>
+      <ul>
+        <li><code>Mothership_Genesis.gs</code></li>
+        <li><code>Mothership_Menu.gs</code></li>
+        <li><code>Mothership_ Intelligence_Core.gs</code></li>
+        <li><code>Mothership_AccaEngine.gs</code></li>
+        <li><code>Mothership_AssayerBridge.gs</code></li>
+        <li><code>Mothership_HiveMind.gs</code></li>
+        <li><code>Mothership_RiskyAccaBuilder.gs</code></li>
+        <li><code>Mothership_RiskyAnalyzer.gs</code></li>
+        <li><code>Performance_Analyzer.gs</code></li>
+        <li><code>Systems Audit.gs</code></li>
+        <li><code>ConfigLedger_Mothership.gs</code></li>
+      </ul>
+    </div>
   </div>
 
 </div>
 
 <footer>
-  Ma Golide Betting System &mdash; Google Apps Script &mdash; All modules run inside Google Sheets
+  Ma Golide Gold Universe — Three interconnected Google Apps Script systems — All modules run inside Google Sheets
 </footer>
 
 </body>
