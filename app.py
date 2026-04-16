@@ -5,13 +5,19 @@ import logging
 from datetime import datetime
 from flask import Flask, render_template, request, jsonify, redirect, url_for
 
-from auth.google_auth import get_client, is_configured, reset_client
+from auth.google_auth import get_client, get_write_client, is_configured, reset_client
 from registry.satellite_registry import (
     list_satellites, get_satellite, add_satellite, update_satellite,
     remove_satellite, bulk_add, summary_stats,
 )
-from fetcher.sheet_fetcher import fetch_satellite, batch_fetch
+from fetcher.sheet_fetcher import (
+    fetch_satellite, batch_fetch,
+    read_bet_slips, read_results_clean, count_bet_slips_rows,
+)
 from assayer.assayer_engine import run_full_assay
+from assayer.accuracy_engine import run_accuracy_report
+from assayer.highest_quarter import run_hq_pipeline
+from assayer.pipeline_writer import write_bet_records, count_bet_slips
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
@@ -128,7 +134,6 @@ def api_fetch_one(sat_id):
                      last_fetched=payload["fetched_at"])
 
     payload_trimmed = {k: v for k, v in payload.items() if k != "data"}
-    payload_trimmed["row_counts"] = payload["row_counts"]
     return jsonify({"payload_meta": payload_trimmed, "status": "fetched"})
 
 
@@ -284,6 +289,123 @@ def api_job_status(job_id):
 def api_reset_auth():
     reset_client()
     return jsonify({"status": "Auth cache cleared"})
+
+
+@app.route("/api/accuracy-report/<sat_id>", methods=["POST"])
+def api_accuracy_report(sat_id):
+    """
+    MA GOLIDE COMPLETE ACCURACY REPORT.
+    Reads Bet_Slips + ResultsClean. Optionally filter by origin_config.
+    """
+    sat = get_satellite(sat_id)
+    if not sat:
+        return jsonify({"error": "Satellite not found"}), 404
+
+    origin_filter = request.args.get("origin_config") or (request.json or {}).get("origin_config")
+
+    client, err = get_client()
+    if err:
+        return jsonify({"error": err}), 503
+
+    sheet_id = sat.get("sheet_id", "")
+
+    bet_slip_rows, bs_err = read_bet_slips(client, sheet_id)
+    if bs_err:
+        return jsonify({"error": f"Could not read Bet_Slips: {bs_err}"}), 500
+
+    results_rows, rc_err = read_results_clean(client, sheet_id)
+    if rc_err:
+        logger.warning(f"ResultsClean read warning: {rc_err}")
+
+    report = run_accuracy_report(
+        bet_slip_rows=bet_slip_rows,
+        results_rows=results_rows,
+        origin_config_filter=origin_filter,
+    )
+
+    report["satellite_id"] = sat_id
+    report["sheet_name"] = sat.get("sheet_name", "")
+    report["bet_slips_count"] = len(bet_slip_rows)
+    report["results_count"] = len(results_rows)
+
+    return jsonify(report)
+
+
+@app.route("/api/run-hq/<sat_id>", methods=["POST"])
+def api_run_hq(sat_id):
+    """
+    Run the elite Highest Quarter pipeline and write accepted bets to Bet_Slips.
+    """
+    sat = get_satellite(sat_id)
+    if not sat:
+        return jsonify({"error": "Satellite not found"}), 404
+
+    body = request.json or {}
+    custom_config = body.get("config", {})
+
+    read_client, err = get_client()
+    if err:
+        return jsonify({"error": err}), 503
+
+    write_client, w_err = get_write_client()
+    if w_err:
+        logger.warning(f"Write client not available: {w_err}. HQ bets will not be saved.")
+
+    sheet_id = sat.get("sheet_id", "")
+    payload, fetch_err = fetch_satellite(read_client, sat)
+    if fetch_err:
+        return jsonify({"error": f"Could not fetch satellite: {fetch_err}"}), 500
+
+    upcoming_rows = payload.get("data", {}).get("upcoming", [])
+    if not upcoming_rows:
+        upcoming_rows = payload.get("data", {}).get("side", [])
+
+    accepted_records, total_generated = run_hq_pipeline(
+        game_rows=upcoming_rows,
+        config=custom_config,
+        origin_config="TIER2",
+        tier_level="TIER2",
+        source_module="HQ_Pipeline_v2",
+    )
+
+    coverage_summary = {
+        "predictions_generated": total_generated,
+        "predictions_written": 0,
+        "pipeline_coverage_pct": 0.0,
+        "write_error": None,
+    }
+
+    if accepted_records and write_client:
+        write_summary, write_err = write_bet_records(
+            write_client, sheet_id, accepted_records, total_generated
+        )
+        coverage_summary.update(write_summary)
+        if write_err:
+            coverage_summary["write_error"] = write_err
+    elif not write_client:
+        coverage_summary["write_error"] = "Write client unavailable — check service account permissions"
+
+    return jsonify({
+        "satellite_id": sat_id,
+        "sheet_name": sat.get("sheet_name", ""),
+        "hq_bets_accepted": len(accepted_records),
+        "predictions_generated": total_generated,
+        "pipeline_coverage_pct": coverage_summary.get("pipeline_coverage_pct", 0.0),
+        "write_summary": coverage_summary,
+        "bets": [r.to_dict() for r in accepted_records],
+    })
+
+
+@app.route("/api/bet-slips-count/<sat_id>")
+def api_bet_slips_count(sat_id):
+    sat = get_satellite(sat_id)
+    if not sat:
+        return jsonify({"error": "Not found"}), 404
+    client, err = get_client()
+    if err:
+        return jsonify({"error": err}), 503
+    count = count_bet_slips_rows(client, sat.get("sheet_id", ""))
+    return jsonify({"sat_id": sat_id, "bet_slips_count": count})
 
 
 if __name__ == "__main__":

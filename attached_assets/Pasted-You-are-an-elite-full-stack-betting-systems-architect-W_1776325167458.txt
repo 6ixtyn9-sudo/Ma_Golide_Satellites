@@ -1,0 +1,59 @@
+You are an elite full-stack betting systems architect. We are rebuilding MA GOLIDE from scratch in a clean new Replit environment. You have full GitHub access.
+
+### NON-NEGOTIABLE REQUIREMENTS:
+
+1. **Single Source of Truth**
+   - Only ONE accuracy report is allowed: "MA GOLIDE COMPLETE ACCURACY REPORT".
+   - It must read exclusively from the `Bet_Slips` sheet and `ResultsClean` sheet.
+   - All bet types must be included: BANKER, ROBBER, SNIPER_OU, SNIPER_MARGIN, FIRST_HALF_1X2, FT_OU, HIGHEST_QUARTER.
+   - Remove all legacy accuracy logic, old assayer.py logic, Tier2_Accuracy, O/U LOG, and fragmented reports.
+
+2. **Full Traceability of Config Usage**
+   - Every bet must clearly show which config created it.
+   - Replace old Config_Influence with these clean fields in BetRecord and Bet_Slips:
+     - origin_config → "TIER1", "TIER2", "BLENDED", or "LEGACY"
+     - config_version_used → exact version string (e.g. "v_elite_20260315_1128" or "t2_elite_20260114_0801")
+     - tier_level → "TIER1" or "TIER2"
+   - Config 1 is strictly for Tier 1 bets. Config 2 is strictly for Tier 2 bets.
+   - Drastically reduce fallback logic. Make config selection deterministic and consistent.
+
+3. **All Bets Must Land on Bet_Slips**
+   - No prediction leakage allowed. Every qualified prediction from any pipeline must be written to the Bet_Slips sheet.
+   - Add "Pipeline Coverage %" (predictions written vs generated) in the accuracy report.
+
+4. **Highest Quarter Must Be Superior**
+   - Build a true elite Highest Quarter pipeline that outperforms all other bet types.
+   - Use softmax, Bayesian shrinkage, Forebet blending, quarter-specific pace, coaching tendencies, rest advantage, and foul trouble.
+   - Enforce stricter thresholds: STRONG ≥ 58%, MEDIUM ≥ 54%. Auto-reject anything weaker.
+   - Fully integrate all HQ config parameters (hq_softmax_temperature, hq_shrink_k, hq_vol_weight, highQtrTieMargin, hq_skip_ties, etc.).
+   - Must write accepted bets to Bet_Slips with bet_type = "HIGHEST_QUARTER".
+
+5. **Elite Consolidated Architecture**
+   - Use a single unified BetRecord dataclass as the contract for ALL pipelines.
+   - Create these clean files (do not keep legacy structure):
+     - assayer/bet_record.py
+     - assayer/accuracy_engine.py (main unified report + all graders)
+     - assayer/highest_quarter.py (superior version)
+     - assayer/pipeline_writer.py (central writer to Bet_Slips to prevent leakage)
+     - app.py (clean routes + updated dashboard)
+     - fetcher/sheet_fetcher.py (must support Bet_Slips writing)
+   - Completely remove or isolate all legacy assayer code so it cannot interfere.
+
+6. **Dashboard & Final Polish**
+   - Update dashboard to show Bet Slips count, Pipeline Coverage %, and clear buttons for "Accuracy Report" and "Run HQ Pipeline".
+   - Make the accuracy report filterable by origin_config (TIER1 / TIER2).
+
+7. **GitHub Commit (MANDATORY FINAL STEP)**
+   - After all work is complete and tested, automatically:
+     - Commit with this exact message: "MA GOLIDE v2 - Elite Unified Architecture + Full Traceability + Superior HQ Pipeline - 2026-04-14"
+     - Push to the main branch.
+   - Return the commit hash in your final message.
+
+### Execution Rules:
+- First explore the current codebase thoroughly.
+- Show me a clean architecture plan before writing major code.
+- Prioritize cleanliness, consistency, and traceability.
+- Legacy code must not disturb the new system.
+- Make the final codebase elite and maintainable.
+
+Begin now.

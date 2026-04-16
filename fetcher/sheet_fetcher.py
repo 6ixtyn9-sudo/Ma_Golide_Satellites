@@ -7,10 +7,11 @@ logger = logging.getLogger(__name__)
 GOLD_UNIVERSE_SHEETS = {"Side", "Totals", "MA_Vault", "MA_Discovery",
                          "ASSAYER_EDGES", "ASSAYER_LEAGUE_PURITY", "MA_Config"}
 LEGACY_SHEETS = {"Predictions", "Results", "BetSlips", "Accuracy"}
-SIDE_NAMES = {"Side", "side"}
-TOTALS_NAMES = {"Totals", "totals"}
-RESULTS_NAMES = {"ResultsClean", "Results", "results"}
-UPCOMING_NAMES = {"UpcomingClean", "Upcoming", "upcoming"}
+SIDE_NAMES      = {"Side", "side"}
+TOTALS_NAMES    = {"Totals", "totals"}
+RESULTS_NAMES   = {"ResultsClean", "Results", "results"}
+UPCOMING_NAMES  = {"UpcomingClean", "Upcoming", "upcoming"}
+BET_SLIPS_NAMES = {"Bet_Slips", "BetSlips", "Bet Slips"}
 
 RATE_LIMIT_DELAY = 1.1
 
@@ -66,15 +67,17 @@ def fetch_satellite(client, sat):
 
     fmt = detect_format(all_names)
 
-    side_ws = _safe_get_sheet(ss, SIDE_NAMES)
-    totals_ws = _safe_get_sheet(ss, TOTALS_NAMES)
+    side_ws    = _safe_get_sheet(ss, SIDE_NAMES)
+    totals_ws  = _safe_get_sheet(ss, TOTALS_NAMES)
     results_ws = _safe_get_sheet(ss, RESULTS_NAMES)
     upcoming_ws = _safe_get_sheet(ss, UPCOMING_NAMES)
+    bet_slips_ws = _safe_get_sheet(ss, BET_SLIPS_NAMES)
 
-    side_data = _ws_to_records(side_ws)
-    totals_data = _ws_to_records(totals_ws)
-    results_data = _ws_to_records(results_ws)
+    side_data     = _ws_to_records(side_ws)
+    totals_data   = _ws_to_records(totals_ws)
+    results_data  = _ws_to_records(results_ws)
     upcoming_data = _ws_to_records(upcoming_ws)
+    bet_slips_data = _ws_to_records(bet_slips_ws)
 
     payload = {
         "satellite_id": sat.get("id"),
@@ -84,19 +87,60 @@ def fetch_satellite(client, sat):
         "sheet_names": sorted(all_names),
         "fetched_at": datetime.utcnow().isoformat(),
         "data": {
-            "side": side_data,
-            "totals": totals_data,
-            "results": results_data,
-            "upcoming": upcoming_data,
+            "side":       side_data,
+            "totals":     totals_data,
+            "results":    results_data,
+            "upcoming":   upcoming_data,
+            "bet_slips":  bet_slips_data,
         },
         "row_counts": {
-            "side": len(side_data),
-            "totals": len(totals_data),
-            "results": len(results_data),
-            "upcoming": len(upcoming_data),
+            "side":      len(side_data),
+            "totals":    len(totals_data),
+            "results":   len(results_data),
+            "upcoming":  len(upcoming_data),
+            "bet_slips": len(bet_slips_data),
         },
     }
     return payload, None
+
+
+def read_bet_slips(client, sheet_id: str):
+    """Read all rows from the Bet_Slips tab of a spreadsheet."""
+    try:
+        ss = client.open_by_key(sheet_id)
+        ws = _safe_get_sheet(ss, BET_SLIPS_NAMES)
+        if ws is None:
+            return [], "Bet_Slips tab not found"
+        rows = ws.get_all_records(default_blank="")
+        return rows, None
+    except Exception as e:
+        return [], str(e)
+
+
+def read_results_clean(client, sheet_id: str):
+    """Read all rows from the ResultsClean tab of a spreadsheet."""
+    try:
+        ss = client.open_by_key(sheet_id)
+        ws = _safe_get_sheet(ss, RESULTS_NAMES)
+        if ws is None:
+            return [], "ResultsClean tab not found"
+        rows = ws.get_all_records(default_blank="")
+        return rows, None
+    except Exception as e:
+        return [], str(e)
+
+
+def count_bet_slips_rows(client, sheet_id: str) -> int:
+    """Return number of data rows in Bet_Slips (excluding header)."""
+    try:
+        ss = client.open_by_key(sheet_id)
+        ws = _safe_get_sheet(ss, BET_SLIPS_NAMES)
+        if ws is None:
+            return 0
+        all_vals = ws.get_all_values()
+        return max(0, len(all_vals) - 1)
+    except Exception:
+        return 0
 
 
 def batch_fetch(client, satellites, on_progress=None, delay=RATE_LIMIT_DELAY):

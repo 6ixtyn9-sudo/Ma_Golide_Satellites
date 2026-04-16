@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Gold Universe Orchestrator</title>
+  <title>MA GOLIDE — Gold Universe Orchestrator</title>
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -13,12 +13,11 @@
       --txt: #c9d1d9; --txt2: #8b949e; --txt3: #484f58;
       --blue: #58a6ff; --gold: #FFD700; --amber: #f0883e;
       --green: #3fb950; --red: #f85149; --purple: #bc8cff;
-      --teal: #39d353;
+      --teal: #39d353; --cyan: #56d7f7;
     }
 
     body { font-family: 'Segoe UI', system-ui, sans-serif; background: var(--bg); color: var(--txt); min-height: 100vh; }
 
-    /* ── Header ── */
     header { background: linear-gradient(135deg,#1f2937,#111827); border-bottom: 1px solid var(--border); padding: 1.2rem 2rem; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.8rem; }
     header h1 { font-size: 1.5rem; color: var(--gold); letter-spacing: 1px; }
     header .sub { font-size: 0.82rem; color: var(--txt2); margin-top: 2px; }
@@ -26,24 +25,22 @@
     .auth-badge.ok { background: #1a3a1a; color: var(--green); border: 1px solid var(--green); }
     .auth-badge.warn { background: #3a1a1a; color: var(--red); border: 1px solid var(--red); }
 
-    /* ── Layout ── */
-    .layout { display: grid; grid-template-columns: 280px 1fr; gap: 0; min-height: calc(100vh - 60px); }
+    .layout { display: grid; grid-template-columns: 290px 1fr; gap: 0; min-height: calc(100vh - 60px); }
     aside { background: var(--bg2); border-right: 1px solid var(--border); padding: 1.2rem; display: flex; flex-direction: column; gap: 1.2rem; }
     main { padding: 1.5rem; display: flex; flex-direction: column; gap: 1.5rem; overflow-x: auto; }
 
-    /* ── Stats row ── */
-    .stats-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.8rem; }
+    .stats-row { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.8rem; }
     .stat-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 0.9rem 1rem; }
     .stat-card .val { font-size: 1.8rem; font-weight: bold; color: var(--blue); }
     .stat-card .val.gold { color: var(--gold); }
     .stat-card .val.green { color: var(--green); }
     .stat-card .val.amber { color: var(--amber); }
+    .stat-card .val.cyan { color: var(--cyan); }
+    .stat-card .val.purple { color: var(--purple); }
     .stat-card .lbl { font-size: 0.75rem; color: var(--txt2); margin-top: 2px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    /* ── Section ── */
     .section-title { font-size: 0.9rem; color: var(--txt2); text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid var(--border); padding-bottom: 0.4rem; margin-bottom: 0.8rem; }
 
-    /* ── Buttons ── */
     .btn { display: inline-flex; align-items: center; gap: 6px; padding: 6px 14px; border-radius: 6px; border: 1px solid; font-size: 0.83rem; cursor: pointer; font-weight: 500; transition: opacity 0.15s; }
     .btn:hover { opacity: 0.85; }
     .btn:disabled { opacity: 0.4; cursor: not-allowed; }
@@ -52,10 +49,11 @@
     .btn-amber { background: #2d1a00; color: var(--amber); border-color: var(--amber); }
     .btn-green { background: #1a3a1a; color: var(--green); border-color: var(--green); }
     .btn-red { background: #3a1a1a; color: var(--red); border-color: var(--red); }
+    .btn-cyan { background: #0d2a2f; color: var(--cyan); border-color: var(--cyan); }
+    .btn-purple { background: #1e1433; color: var(--purple); border-color: var(--purple); }
     .btn-sm { padding: 3px 9px; font-size: 0.75rem; }
     .btn-full { width: 100%; justify-content: center; }
 
-    /* ── Form ── */
     .form-group { margin-bottom: 0.7rem; }
     .form-group label { display: block; font-size: 0.75rem; color: var(--txt2); margin-bottom: 3px; }
     .form-group input, .form-group select, .form-group textarea {
@@ -65,7 +63,6 @@
     .form-group input:focus, .form-group select:focus { outline: none; border-color: var(--blue); }
     .form-group textarea { resize: vertical; min-height: 60px; font-family: monospace; }
 
-    /* ── Table ── */
     .table-wrap { overflow-x: auto; border: 1px solid var(--border); border-radius: 8px; }
     table { width: 100%; border-collapse: collapse; font-size: 0.82rem; }
     thead { background: var(--bg3); }
@@ -74,7 +71,6 @@
     tr:last-child td { border-bottom: none; }
     tr:hover td { background: rgba(255,255,255,0.02); }
 
-    /* ── Status pill ── */
     .pill { display: inline-block; padding: 2px 8px; border-radius: 12px; font-size: 0.72rem; font-weight: bold; }
     .pill-pending   { background: #21262d; color: var(--txt2); }
     .pill-fetched   { background: #1f3a5f; color: var(--blue); }
@@ -84,33 +80,54 @@
     .pill-gold_universe { background: #2d2a00; color: var(--gold); }
     .pill-legacy    { background: #1a1a2e; color: var(--purple); }
 
-    /* ── Grade pill ── */
+    .outcome-HIT  { color: var(--green); font-weight: bold; }
+    .outcome-MISS { color: var(--red); }
+    .outcome-PUSH { color: var(--amber); }
+    .outcome-NO_RESULT { color: var(--txt3); }
+    .outcome-NO_MATCH  { color: var(--txt3); font-style: italic; }
+
+    .tier-BANKER    { color: var(--green); font-weight: bold; }
+    .tier-ROBBER    { color: var(--red); font-weight: bold; }
+    .tier-NEUTRAL   { color: var(--txt2); }
     .grade-PLATINUM { color: #E5E4E2; }
     .grade-GOLD     { color: #FFD700; }
     .grade-SILVER   { color: #C0C0C0; }
     .grade-BRONZE   { color: #CD7F32; }
     .grade-ROCK     { color: #808080; }
     .grade-CHARCOAL { color: #555; }
-    .tier-BANKER    { color: var(--green); font-weight: bold; }
-    .tier-ROBBER    { color: var(--red); font-weight: bold; }
-    .tier-NEUTRAL   { color: var(--txt2); }
 
-    /* ── Job log ── */
     .job-log { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; padding: 0.8rem; font-family: monospace; font-size: 0.78rem; max-height: 120px; overflow-y: auto; color: var(--teal); min-height: 40px; }
 
-    /* ── Alert ── */
     .alert { padding: 0.8rem 1rem; border-radius: 6px; font-size: 0.83rem; }
     .alert-warn { background: #2d1a00; border: 1px solid var(--amber); color: var(--amber); }
     .alert-info { background: #1f3a5f; border: 1px solid var(--blue); color: var(--blue); }
 
-    /* ── Bulk textarea hint ── */
     .hint { font-size: 0.72rem; color: var(--txt3); margin-top: 3px; }
 
-    /* ── Assay detail panel ── */
     #assay-panel { display: none; }
     #assay-panel.visible { display: block; }
+    #accuracy-panel { display: none; }
+    #accuracy-panel.visible { display: block; }
+    #hq-panel { display: none; }
+    #hq-panel.visible { display: block; }
+
     .panel { background: var(--bg2); border: 1px solid var(--border); border-radius: 8px; padding: 1.2rem; }
     .panel h3 { font-size: 0.95rem; color: var(--gold); margin-bottom: 0.8rem; }
+
+    .accuracy-type-block { margin-bottom: 1.4rem; }
+    .accuracy-type-header { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0.8rem; background: var(--bg3); border-radius: 6px; margin-bottom: 0.5rem; cursor: pointer; border: 1px solid var(--border); }
+    .accuracy-type-header:hover { border-color: var(--border2); }
+    .accuracy-type-header .type-label { font-size: 0.85rem; font-weight: 600; color: var(--txt); }
+    .accuracy-type-header .type-stats { font-size: 0.8rem; color: var(--txt2); display: flex; gap: 1rem; }
+    .hit-rate-good { color: var(--green); font-weight: bold; }
+    .hit-rate-ok { color: var(--amber); font-weight: bold; }
+    .hit-rate-bad { color: var(--red); font-weight: bold; }
+    .type-details { display: none; }
+    .type-details.open { display: block; }
+
+    .config-filter { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; margin-bottom: 0.8rem; }
+    .config-filter label { font-size: 0.78rem; color: var(--txt2); }
+    .config-filter select { background: var(--bg3); border: 1px solid var(--border2); border-radius: 5px; color: var(--txt); padding: 4px 8px; font-size: 0.8rem; }
 
     @media (max-width: 800px) {
       .layout { grid-template-columns: 1fr; }
@@ -122,8 +139,8 @@
 
 <header>
   <div>
-    <h1>Gold Universe Orchestrator</h1>
-    <div class="sub">Manual control — {{ now }}</div>
+    <h1>MA GOLIDE — Gold Universe Orchestrator</h1>
+    <div class="sub">Elite Unified Architecture v2 — {{ now }}</div>
   </div>
   <div style="display:flex;gap:0.6rem;align-items:center;">
     {% if configured %}
@@ -137,17 +154,15 @@
 
 <div class="layout">
 
-  <!-- ── Sidebar ── -->
   <aside>
 
     {% if not configured %}
     <div class="alert alert-warn">
       <strong>Setup required</strong><br>
-      Add your Google Service Account JSON to Replit Secrets as <code>GOOGLE_SERVICE_ACCOUNT_JSON</code> to connect to satellites.
+      Add your Google Service Account JSON to Replit Secrets as <code>GOOGLE_SERVICE_ACCOUNT_JSON</code>.
     </div>
     {% endif %}
 
-    <!-- Bulk ops -->
     <div>
       <div class="section-title">Bulk Operations</div>
       <div style="display:flex;flex-direction:column;gap:0.5rem;">
@@ -161,7 +176,6 @@
       <div class="job-log" id="job-log" style="margin-top:0.6rem;">Idle — waiting for manual trigger.</div>
     </div>
 
-    <!-- Add single satellite -->
     <div>
       <div class="section-title">Add Satellite</div>
       <div class="form-group">
@@ -188,12 +202,11 @@
       <div id="add-msg" style="font-size:0.78rem;margin-top:0.4rem;color:var(--txt2);"></div>
     </div>
 
-    <!-- Bulk add -->
     <div>
       <div class="section-title">Bulk Add (JSON)</div>
       <div class="form-group">
-        <textarea id="bulk-json" placeholder='[{"sheet_id":"...","date":"2026-01-10","league":"NBA"},{"sheet_id":"...","date":"2026-01-11","league":"EuroLeague"}]'></textarea>
-        <div class="hint">Paste a JSON array of objects with sheet_id, date, league (and optional sheet_name, notes).</div>
+        <textarea id="bulk-json" placeholder='[{"sheet_id":"...","date":"2026-01-10","league":"NBA"}]'></textarea>
+        <div class="hint">Paste a JSON array with sheet_id, date, league (and optional sheet_name, notes).</div>
       </div>
       <button class="btn btn-amber btn-full" onclick="bulkAdd()">Bulk Add</button>
       <div id="bulk-msg" style="font-size:0.78rem;margin-top:0.4rem;color:var(--txt2);"></div>
@@ -201,10 +214,8 @@
 
   </aside>
 
-  <!-- ── Main content ── -->
   <main>
 
-    <!-- Stats -->
     <div class="stats-row">
       <div class="stat-card">
         <div class="val">{{ stats.total }}</div>
@@ -223,13 +234,20 @@
         <div class="lbl">Legacy</div>
       </div>
       <div class="stat-card">
-        <div class="val">{{ stats.by_status.get('error', 0) }}</div>
+        <div class="val cyan" id="stat-bet-slips">—</div>
+        <div class="lbl">Bet Slips</div>
+      </div>
+      <div class="stat-card">
+        <div class="val purple" id="stat-coverage">—</div>
+        <div class="lbl">Pipeline Coverage</div>
+      </div>
+      <div class="stat-card">
+        <div class="val" style="color:var(--red);">{{ stats.by_status.get('error', 0) }}</div>
         <div class="lbl">Errors</div>
       </div>
     </div>
 
     {% if stats.by_league %}
-    <!-- League breakdown -->
     <div class="panel">
       <div class="section-title">Satellites by League</div>
       <div style="display:flex;flex-wrap:wrap;gap:0.5rem;">
@@ -242,11 +260,10 @@
     </div>
     {% endif %}
 
-    <!-- Satellite registry table -->
     <div>
       <div class="section-title" style="display:flex;justify-content:space-between;align-items:center;">
         <span>Satellite Registry ({{ stats.total }})</span>
-        <input type="text" id="filter-input" placeholder="Filter by league or date..." 
+        <input type="text" id="filter-input" placeholder="Filter by league or date..."
                style="background:var(--bg3);border:1px solid var(--border2);border-radius:5px;color:var(--txt);padding:4px 8px;font-size:0.78rem;width:200px;"
                oninput="filterTable(this.value)">
       </div>
@@ -261,10 +278,10 @@
               <th>Sheet Name</th>
               <th>Format</th>
               <th>Status</th>
+              <th>Bet Slips</th>
               <th>Side</th>
               <th>Totals</th>
               <th>Last Fetched</th>
-              <th>Last Assayed</th>
               <th>Assay Summary</th>
               <th>Actions</th>
             </tr>
@@ -277,10 +294,10 @@
               <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;color:var(--txt2);" title="{{ sat.sheet_name }}">{{ sat.sheet_name or '—' }}</td>
               <td><span class="pill pill-{{ sat.format }}">{{ sat.format }}</span></td>
               <td><span class="pill pill-{{ sat.status }}">{{ sat.status }}</span></td>
+              <td style="color:var(--cyan);">{{ sat.row_counts.get('bet_slips', '—') if sat.row_counts else '—' }}</td>
               <td style="color:var(--txt2);">{{ sat.row_counts.get('side', '—') if sat.row_counts else '—' }}</td>
               <td style="color:var(--txt2);">{{ sat.row_counts.get('totals', '—') if sat.row_counts else '—' }}</td>
               <td style="color:var(--txt3);font-size:0.75rem;">{{ sat.last_fetched[:16].replace('T',' ') if sat.last_fetched else '—' }}</td>
-              <td style="color:var(--txt3);font-size:0.75rem;">{{ sat.last_assayed[:16].replace('T',' ') if sat.last_assayed else '—' }}</td>
               <td>
                 {% if sat.assay_summary %}
                 <span class="tier-BANKER">{{ sat.assay_summary.bankers_count }}B</span>
@@ -292,9 +309,11 @@
                 {% endif %}
               </td>
               <td>
-                <div style="display:flex;gap:4px;">
-                  <button class="btn btn-primary btn-sm" onclick="fetchOne('{{ sat.id }}')" title="Fetch data from this sheet" {% if not configured %}disabled{% endif %}>Fetch</button>
-                  <button class="btn btn-gold btn-sm" onclick="assayOne('{{ sat.id }}')" title="Run assay on this sheet" {% if not configured %}disabled{% endif %}>Assay</button>
+                <div style="display:flex;gap:4px;flex-wrap:wrap;">
+                  <button class="btn btn-primary btn-sm" onclick="fetchOne('{{ sat.id }}')" {% if not configured %}disabled{% endif %}>Fetch</button>
+                  <button class="btn btn-gold btn-sm" onclick="assayOne('{{ sat.id }}')" {% if not configured %}disabled{% endif %}>Assay</button>
+                  <button class="btn btn-cyan btn-sm" onclick="showAccuracyReport('{{ sat.id }}')" {% if not configured %}disabled{% endif %}>Report</button>
+                  <button class="btn btn-purple btn-sm" onclick="runHQ('{{ sat.id }}')" {% if not configured %}disabled{% endif %}>Run HQ</button>
                   <button class="btn btn-red btn-sm" onclick="removeSat('{{ sat.id }}')" title="Remove from registry">✕</button>
                 </div>
               </td>
@@ -310,11 +329,36 @@
       {% endif %}
     </div>
 
-    <!-- Assay detail panel -->
     <div id="assay-panel">
       <div class="panel">
         <h3 id="assay-panel-title">Assay Result</h3>
         <div id="assay-panel-content"></div>
+      </div>
+    </div>
+
+    <div id="accuracy-panel">
+      <div class="panel">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:0.8rem;flex-wrap:wrap;gap:0.6rem;">
+          <h3 id="accuracy-panel-title" style="margin-bottom:0;">MA GOLIDE COMPLETE ACCURACY REPORT</h3>
+          <div class="config-filter">
+            <label>Filter by Config:</label>
+            <select id="origin-config-filter" onchange="reloadAccuracyReport()">
+              <option value="">ALL</option>
+              <option value="TIER1">TIER1</option>
+              <option value="TIER2">TIER2</option>
+              <option value="BLENDED">BLENDED</option>
+              <option value="LEGACY">LEGACY</option>
+            </select>
+          </div>
+        </div>
+        <div id="accuracy-panel-content"><span style="color:var(--txt2)">Select a satellite and click Report to run.</span></div>
+      </div>
+    </div>
+
+    <div id="hq-panel">
+      <div class="panel">
+        <h3 id="hq-panel-title">Highest Quarter Pipeline Result</h3>
+        <div id="hq-panel-content"></div>
       </div>
     </div>
 
@@ -324,6 +368,7 @@
 <script>
   let currentJobId = null;
   let jobPollInterval = null;
+  let currentAccuracySatId = null;
 
   function refreshPage() { location.reload(); }
 
@@ -390,19 +435,16 @@
 
     const s = d.summary;
     log(`Assay done — ${s.bankers_count} bankers, ${s.robbers_count} robbers, ${s.total_edges} edges`);
-
     document.getElementById('assay-panel-title').textContent = `Assay: ${s.sheet_name || s.sheet_id}`;
 
-    let html = `
-      <div style="display:flex;flex-wrap:wrap;gap:0.8rem;margin-bottom:1rem;">
-        <div class="stat-card" style="min-width:100px;"><div class="val green">${s.bankers_count}</div><div class="lbl">Bankers</div></div>
-        <div class="stat-card" style="min-width:100px;"><div class="val" style="color:var(--red)">${s.robbers_count}</div><div class="lbl">Robbers</div></div>
-        <div class="stat-card" style="min-width:100px;"><div class="val amber">${s.neutrals_count}</div><div class="lbl">Neutral</div></div>
-        <div class="stat-card" style="min-width:100px;"><div class="val gold">${s.gold_count}</div><div class="lbl">Gold+</div></div>
-        <div class="stat-card" style="min-width:100px;"><div class="val">${(s.overall_win_rate*100).toFixed(1)}%</div><div class="lbl">Avg Win Rate</div></div>
-        <div class="stat-card" style="min-width:100px;"><div class="val">${s.total_edges}</div><div class="lbl">Edges</div></div>
-      </div>
-    `;
+    let html = `<div style="display:flex;flex-wrap:wrap;gap:0.8rem;margin-bottom:1rem;">
+      <div class="stat-card" style="min-width:100px;"><div class="val green">${s.bankers_count}</div><div class="lbl">Bankers</div></div>
+      <div class="stat-card" style="min-width:100px;"><div class="val" style="color:var(--red)">${s.robbers_count}</div><div class="lbl">Robbers</div></div>
+      <div class="stat-card" style="min-width:100px;"><div class="val amber">${s.neutrals_count}</div><div class="lbl">Neutral</div></div>
+      <div class="stat-card" style="min-width:100px;"><div class="val gold">${s.gold_count}</div><div class="lbl">Gold+</div></div>
+      <div class="stat-card" style="min-width:100px;"><div class="val">${(s.overall_win_rate*100).toFixed(1)}%</div><div class="lbl">Avg Win Rate</div></div>
+      <div class="stat-card" style="min-width:100px;"><div class="val">${s.total_edges}</div><div class="lbl">Edges</div></div>
+    </div>`;
 
     if (d.league_purity && d.league_purity.length > 0) {
       html += `<div style="margin-bottom:0.8rem;"><strong style="font-size:0.82rem;color:var(--txt2);text-transform:uppercase;letter-spacing:1px;">League Purity</strong>`;
@@ -433,26 +475,187 @@
       }
       html += `</tbody></table></div></div>`;
     }
+    content.innerHTML = html;
+  }
 
-    if (d.robbers && d.robbers.length > 0) {
-      html += `<div><strong style="font-size:0.82rem;color:var(--red);text-transform:uppercase;letter-spacing:1px;">Top Robbers (Avoid)</strong>`;
-      html += `<div class="table-wrap" style="margin-top:0.5rem;"><table><thead><tr>
-        <th>Segment</th><th>Grade</th><th>Win Rate</th><th>N</th><th>Lift</th>
-      </tr></thead><tbody>`;
-      for (const e of d.robbers.slice(0,10)) {
-        html += `<tr>
-          <td style="font-family:monospace;font-size:0.75rem;max-width:240px;overflow:hidden;text-overflow:ellipsis;" title="${e.key}">${e.key}</td>
-          <td><span class="grade-${e.grade}">${e.symbol} ${e.grade}</span></td>
-          <td style="color:var(--red);">${(e.win_rate*100).toFixed(1)}%</td>
-          <td>${e.n}</td>
-          <td style="color:var(--red);">${(e.lift*100).toFixed(1)}%</td>
-        </tr>`;
+  async function showAccuracyReport(satId) {
+    currentAccuracySatId = satId;
+    const panel = document.getElementById('accuracy-panel');
+    const content = document.getElementById('accuracy-panel-content');
+    const title = document.getElementById('accuracy-panel-title');
+    content.innerHTML = '<span style="color:var(--txt2)">Loading accuracy report...</span>';
+    panel.classList.add('visible');
+    panel.scrollIntoView({ behavior: 'smooth' });
+    await _loadAccuracyReport(satId);
+  }
+
+  function reloadAccuracyReport() {
+    if (currentAccuracySatId) showAccuracyReport(currentAccuracySatId);
+  }
+
+  async function _loadAccuracyReport(satId) {
+    const content = document.getElementById('accuracy-panel-content');
+    const title = document.getElementById('accuracy-panel-title');
+    const filter = document.getElementById('origin-config-filter').value;
+
+    let url = `/api/accuracy-report/${satId}`;
+    if (filter) url += `?origin_config=${filter}`;
+
+    const r = await fetch(url, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) });
+    const d = await r.json();
+    if (d.error) { content.innerHTML = `<span style="color:var(--red)">${d.error}</span>`; return; }
+
+    title.textContent = `MA GOLIDE COMPLETE ACCURACY REPORT — ${d.sheet_name || satId}`;
+
+    const hitRateCls = (pct) => pct >= 60 ? 'hit-rate-good' : pct >= 50 ? 'hit-rate-ok' : 'hit-rate-bad';
+
+    let html = `<div style="display:flex;flex-wrap:wrap;gap:0.8rem;margin-bottom:1.2rem;">
+      <div class="stat-card" style="min-width:100px;"><div class="val">${d.total_bets_found}</div><div class="lbl">Bets Found</div></div>
+      <div class="stat-card" style="min-width:100px;"><div class="val">${d.total_bets_graded}</div><div class="lbl">Graded</div></div>
+      <div class="stat-card" style="min-width:100px;"><div class="val green">${d.total_hits}</div><div class="lbl">Hits</div></div>
+      <div class="stat-card" style="min-width:100px;"><div class="val" style="color:var(--red)">${d.total_misses}</div><div class="lbl">Misses</div></div>
+      <div class="stat-card" style="min-width:120px;">
+        <div class="val ${hitRateCls(d.overall_hit_rate_pct)}">${d.overall_hit_rate_pct}%</div>
+        <div class="lbl">Overall Hit Rate</div>
+      </div>
+      <div class="stat-card" style="min-width:100px;"><div class="val cyan">${d.bet_slips_count}</div><div class="lbl">Bet Slips</div></div>
+      <div class="stat-card" style="min-width:110px;"><div class="val" style="color:var(--txt2);">${d.origin_config_filter}</div><div class="lbl">Config Filter</div></div>
+    </div>`;
+
+    const typeOrder = ['BANKER','ROBBER','SNIPER_OU','SNIPER_MARGIN','FIRST_HALF_1X2','FT_OU','HIGHEST_QUARTER'];
+    const typeLabels = {
+      'BANKER':'BANKER — Moneyline Winners',
+      'ROBBER':'ROBBER — Underdog ML Picks',
+      'SNIPER_OU':'SNIPER O/U — Quarter Over/Under Totals',
+      'SNIPER_MARGIN':'SNIPER MARGIN — Quarter Side Bets',
+      'FIRST_HALF_1X2':'FIRST HALF 1X2 — First Half Winner',
+      'FT_OU':'FT O/U — Full-Time Over/Under',
+      'HIGHEST_QUARTER':'HIGHEST QUARTER — Highest Scoring Quarter',
+    };
+
+    for (const bt of typeOrder) {
+      const data = d.by_bet_type[bt];
+      if (!data || data.found === 0) continue;
+
+      const scored = data.hits + data.misses;
+      const hrCls = hitRateCls(data.hit_rate_pct);
+      const blockId = `type-block-${bt}`;
+
+      html += `<div class="accuracy-type-block">
+        <div class="accuracy-type-header" onclick="toggleTypeBlock('${blockId}')">
+          <span class="type-label">${typeLabels[bt] || bt}</span>
+          <span class="type-stats">
+            <span>Found: <strong>${data.found}</strong></span>
+            <span>Matched: <strong>${data.matched}</strong></span>
+            <span class="${hrCls}">${data.hit_rate_pct}% (${data.hits}/${scored})</span>
+          </span>
+        </div>
+        <div class="type-details" id="${blockId}">`;
+
+      html += `<div style="display:flex;gap:0.8rem;flex-wrap:wrap;margin-bottom:0.6rem;">
+        <span style="font-size:0.78rem;color:var(--txt2);">Source: <strong>Bet_Slips</strong></span>
+        <span style="font-size:0.78rem;color:var(--txt2);">Found: <strong>${data.found}</strong></span>
+        <span style="font-size:0.78rem;color:var(--txt2);">Matched to ResultsClean: <strong>${data.matched}</strong></span>
+        <span style="font-size:0.78rem;color:var(--green);">Hits: <strong>${data.hits}</strong></span>
+        <span style="font-size:0.78rem;color:var(--red);">Misses: <strong>${data.misses}</strong></span>
+        <span style="font-size:0.78rem;color:var(--amber);">Pushes: <strong>${data.pushes}</strong></span>
+        <span style="font-size:0.78rem;" class="${hrCls}">Hit Rate: <strong>${data.hit_rate_pct}%</strong></span>
+      </div>`;
+
+      if (data.details && data.details.length > 0) {
+        html += `<div class="table-wrap"><table><thead><tr>
+          <th>League</th><th>Date</th><th>Match</th><th>Selection</th><th>Conf %</th>
+          <th>Tier</th><th>Origin</th><th>Quarter</th><th>Outcome</th><th>Detail</th>
+        </tr></thead><tbody>`;
+        for (const item of data.details) {
+          const rec = item.rec;
+          const det = item.detail;
+          const match = `${rec.home} vs ${rec.away}`;
+          const sel = rec.selection_text || rec.selection_team || rec.predicted || '—';
+          const outCls = `outcome-${item.outcome}`;
+          const outEmoji = item.outcome === 'HIT' ? '✅ HIT' : item.outcome === 'MISS' ? '❌ MISS' : item.outcome === 'PUSH' ? '🔄 PUSH' : item.outcome;
+          const detStr = det.actual_score || det.actual_winner || det.actual_1h_score ||
+                         (det.actual_total != null ? `Total: ${det.actual_total}` : '') ||
+                         det.actual_highest || '—';
+          const origin = rec.origin_config || '—';
+          html += `<tr>
+            <td>${rec.league || '—'}</td>
+            <td>${rec.date || '—'}</td>
+            <td style="max-width:160px;overflow:hidden;text-overflow:ellipsis;" title="${match}">${match}</td>
+            <td style="max-width:140px;overflow:hidden;text-overflow:ellipsis;" title="${sel}">${sel}</td>
+            <td>${rec.confidence_pct ? rec.confidence_pct.toFixed(1)+'%' : '—'}</td>
+            <td style="font-size:0.75rem;">${rec.tier_display || rec.tier_code || '—'}</td>
+            <td><span style="font-size:0.72rem;padding:2px 6px;border-radius:4px;background:var(--bg3);color:var(--purple);">${origin}</span></td>
+            <td>${rec.quarter || rec.period || '—'}</td>
+            <td class="${outCls}">${outEmoji}</td>
+            <td style="font-size:0.75rem;color:var(--txt2);">${detStr}</td>
+          </tr>`;
+        }
+        html += `</tbody></table></div>`;
       }
-      html += `</tbody></table></div></div>`;
+
+      html += `</div></div>`;
     }
 
     content.innerHTML = html;
-    setTimeout(() => location.reload(), 100);
+  }
+
+  function toggleTypeBlock(id) {
+    const el = document.getElementById(id);
+    if (el) el.classList.toggle('open');
+  }
+
+  async function runHQ(satId) {
+    const panel = document.getElementById('hq-panel');
+    const content = document.getElementById('hq-panel-content');
+    const title = document.getElementById('hq-panel-title');
+    content.innerHTML = '<span style="color:var(--txt2)">Running elite HQ pipeline...</span>';
+    panel.classList.add('visible');
+    panel.scrollIntoView({ behavior: 'smooth' });
+    log(`Running HQ pipeline on ${satId}...`, true);
+
+    const r = await fetch(`/api/run-hq/${satId}`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({}) });
+    const d = await r.json();
+    if (d.error) { log('ERROR: ' + d.error); content.innerHTML = `<span style="color:var(--red)">${d.error}</span>`; return; }
+
+    title.textContent = `Highest Quarter Pipeline — ${d.sheet_name || satId}`;
+    log(`HQ done — ${d.hq_bets_accepted} accepted, coverage ${d.pipeline_coverage_pct}%`);
+
+    document.getElementById('stat-coverage').textContent = d.pipeline_coverage_pct + '%';
+
+    let html = `<div style="display:flex;flex-wrap:wrap;gap:0.8rem;margin-bottom:1rem;">
+      <div class="stat-card" style="min-width:110px;"><div class="val purple">${d.hq_bets_accepted}</div><div class="lbl">HQ Accepted</div></div>
+      <div class="stat-card" style="min-width:110px;"><div class="val">${d.predictions_generated}</div><div class="lbl">Generated</div></div>
+      <div class="stat-card" style="min-width:120px;"><div class="val cyan">${d.pipeline_coverage_pct}%</div><div class="lbl">Pipeline Coverage</div></div>
+    </div>`;
+
+    if (d.write_summary && d.write_summary.write_error) {
+      html += `<div class="alert alert-warn" style="margin-bottom:0.8rem;"><strong>Write Notice:</strong> ${d.write_summary.write_error}</div>`;
+    } else if (d.hq_bets_accepted > 0 && (!d.write_summary || !d.write_summary.write_error)) {
+      const written = d.write_summary?.predictions_written || 0;
+      html += `<div class="alert alert-info" style="margin-bottom:0.8rem;">${written} HQ bet(s) written to Bet_Slips.</div>`;
+    }
+
+    if (d.bets && d.bets.length > 0) {
+      html += `<div class="table-wrap"><table><thead><tr>
+        <th>Match</th><th>Predicted Q</th><th>Confidence</th><th>Tier</th><th>Q Totals</th><th>Config</th>
+      </tr></thead><tbody>`;
+      for (const b of d.bets) {
+        html += `<tr>
+          <td>${b.home} vs ${b.away}</td>
+          <td style="color:var(--purple);font-weight:bold;">${b.predicted}</td>
+          <td style="color:var(--cyan);">${b.confidence_pct.toFixed(2)}%</td>
+          <td>${b.tier_display || b.tier_code}</td>
+          <td style="font-family:monospace;font-size:0.75rem;color:var(--txt2);">${b.hq_q_totals || '—'}</td>
+          <td style="font-size:0.75rem;color:var(--txt2);">${b.config_version_used || '—'}</td>
+        </tr>`;
+      }
+      html += `</tbody></table></div>`;
+    } else {
+      html += `<div style="color:var(--txt2);font-size:0.84rem;">No bets passed the confidence threshold (≥54%).</div>`;
+    }
+
+    content.innerHTML = html;
   }
 
   async function addSatellite() {

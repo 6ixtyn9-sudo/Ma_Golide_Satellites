@@ -1,0 +1,1745 @@
+"""
+Ma Assayer — Python port of the core purity engine.
+Separates Gold from Charcoal using Wilson confidence intervals,
+shrinkage estimators, and lift scoring.
+Tier system: Bankers (safe) / Robbers (risky — the opposite of bankers).
+"""
+
+import math
+import logging
+from collections import defaultdict
+
+logger = logging.getLogger(__name__)
+
+GRADES = [
+    ("PLATINUM", 0.85, "⬡"),
+    ("GOLD",     0.72, "Au"),
+    ("SILVER",   0.62, "Ag"),
+    ("BRONZE",   0.55, "Cu"),
+    ("ROCK",     0.50, "ite"),
+    ("CHARCOAL", 0.00, "🜃"),
+]
+
+WILSON_Z = 1.645
+MIN_N = 10
+MIN_N_RELIABLE = 30
+MIN_LIFT = 0.03
+
+
+def wilson_lower_bound(wins, n, z=WILSON_Z):
+    if n == 0:
+        return 0.0
+    p = wins / n
+    denom = 1 + (z * z / n)
+    center = p + (z * z) / (2 * n)
+    spread = z * math.sqrt((p * (1 - p) / n) + (z * z / (4 * n * n)))
+    return max(0.0, (center - spread) / denom)
+
+
+def shrink_rate(wins, n, prior_alpha=2, prior_beta=2):
+    return (wins + prior_alpha) / (n + prior_alpha + prior_beta)
+
+
+def assign_grade(win_rate):
+    for name, threshold, symbol in GRADES:
+        if win_rate >= threshold:
+            return name, symbol
+    return "CHARCOAL", "🜃"
+
+
+def classify_tier(win_rate, lower_bound, n):
+    if n < MIN_N:
+        return "ROBBER"
+    if lower_bound >= 0.60 and win_rate >= 0.72:
+        return "BANKER"
+    if lower_bound >= 0.55 and win_rate >= 0.62:
+        return "BANKER"
+    if win_rate < 0.50:
+        return "ROBBER"
+    return "NEUTRAL"
+
+
+def _normalise(val):
+    if val is None:
+        return ""
+    return str(val).strip().lower()
+
+
+def _parse_outcome(val):
+    v = _normalise(val)
+    if v in ("win", "w", "1", "hit", "yes", "correct", "✓", "won"):
+        return "win"
+    if v in ("loss", "l", "0", "miss", "no", "incorrect", "✗", "lost", "lose"):
+        return "loss"
+    return None
+
+
+def _parse_float(val):
+    try:
+        return float(str(val).replace("%", "").strip())
+    except Exception:
+        return None
+
+
+def assay_side_data(side_rows, source_label="Side"):
+    segments = defaultdict(lambda: {"wins": 0, "losses": 0})
+
+    for row in side_rows:
+        outcome = _parse_outcome(row.get("outcome") or row.get("result") or
+                                  row.get("Outcome") or row.get("Result") or "")
+        if outcome is None:
+            continue
+
+        league = _normalise(row.get("league") or row.get("League") or "unknown")
+        quarter = _normalise(row.get("quarter") or row.get("Quarter") or "all")
+        tier = _normalise(row.get("tier") or row.get("Tier") or "unknown")
+        side = _normalise(row.get("side") or row.get("Side") or "unknown")
+
+        conf_raw = _parse_float(row.get("confidence") or row.get("Confidence") or 0)
+        if conf_raw is not None and conf_raw > 1:
+            conf_raw /= 100
+        conf_bucket = _conf_bucket(conf_raw)
+
+        key = (league, quarter, tier, side, conf_bucket, source_label)
+        segments[key]["wins" if outcome == "win" else "losses"] += 1
+
+    return _build_edges(segments)
+
+
+def assay_totals_data(totals_rows, source_label="Totals"):
+    segments = defaultdict(lambda: {"wins": 0, "losses": 0})
+
+    for row in totals_rows:
+        outcome = _parse_outcome(row.get("result") or row.get("Result") or
+                                  row.get("outcome") or row.get("Outcome") or "")
+        if outcome is None:
+            continue
+
+        league = _normalise(row.get("league") or row.get("League") or "unknown")
+        quarter = _normalise(row.get("quarter") or row.get("Quarter") or "all")
+        direction = _normalise(row.get("direction") or row.get("Direction") or "unknown")
+        bet_type = _normalise(row.get("type") or row.get("Type") or "ou")
+
+        conf_raw = _parse_float(row.get("confidence") or row.get("Confidence") or 0)
+        if conf_raw is not None and conf_raw > 1:
+            conf_raw /= 100
+        conf_bucket = _conf_bucket(conf_raw)
+
+        key = (league, quarter, direction, bet_type, conf_bucket, source_label)
+        segments[key]["wins" if outcome == "win" else "losses"] += 1
+
+    return _build_edges(segments)
+
+
+def _conf_bucket(conf):
+    if conf is None:
+        return "unknown"
+    if conf >= 0.80:
+        return "80+"
+    if conf >= 0.70:
+        return "70-79"
+    if conf >= 0.60:
+        return "60-69"
+    if conf >= 0.50:
+        return "50-59"
+    return "<50"
+
+
+def _build_edges(segments):
+    edges = []
+    for key, counts in segments.items():
+        wins = counts["wins"]
+        losses = counts["losses"]
+        n = wins + losses
+        if n < MIN_N:
+            continue
+
+        win_rate = wins / n
+        shrunk = shrink_rate(wins, n)
+        lb = wilson_lower_bound(wins, n)
+        grade, symbol = assign_grade(win_rate)
+        tier = classify_tier(win_rate, lb, n)
+        reliable = n >= MIN_N_RELIABLE and lb > 0
+        lift = win_rate - 0.50
+
+        if abs(lift) < MIN_LIFT:
+            continue
+
+        edge = {
+            "key": "|".join(str(k) for k in key),
+            "segment": key,
+            "n": n,
+            "wins": wins,
+            "losses": losses,
+            "win_rate": round(win_rate, 4),
+            "shrunk_rate": round(shrunk, 4),
+            "lower_bound": round(lb, 4),
+            "lift": round(lift, 4),
+            "grade": grade,
+            "symbol": symbol,
+            "tier": tier,
+            "reliable": reliable,
+        }
+        edges.append(edge)
+
+    edges.sort(key=lambda e: (-e["win_rate"], -e["n"]))
+    return edges
+
+
+def compute_league_purity(edges):
+    by_league = defaultdict(lambda: {"wins": 0, "n": 0, "grades": defaultdict(int)})
+    for edge in edges:
+        seg = edge.get("segment", ())
+        league = seg[0] if seg else "unknown"
+        by_league[league]["wins"] += edge["wins"]
+        by_league[league]["n"] += edge["n"]
+        by_league[league]["grades"][edge["grade"]] += 1
+
+    purity = []
+    for league, stats in by_league.items():
+        n = stats["n"]
+        wins = stats["wins"]
+        if n == 0:
+            continue
+        wr = wins / n
+        lb = wilson_lower_bound(wins, n)
+        grade, symbol = assign_grade(wr)
+        purity.append({
+            "league": league,
+            "n": n,
+            "win_rate": round(wr, 4),
+            "lower_bound": round(lb, 4),
+            "grade": grade,
+            "symbol": symbol,
+            "grade_counts": dict(stats["grades"]),
+        })
+
+    purity.sort(key=lambda p: -p["win_rate"])
+    return purity
+
+
+def run_full_assay(satellite_payload):
+    data = satellite_payload.get("data", {})
+    side_rows = data.get("side", [])
+    totals_rows = data.get("totals", [])
+
+    side_edges = assay_side_data(side_rows, source_label="Side")
+    totals_edges = assay_totals_data(totals_rows, source_label="Totals")
+    all_edges = side_edges + totals_edges
+
+    league_purity = compute_league_purity(all_edges)
+
+    bankers = [e for e in all_edges if e["tier"] == "BANKER"]
+    robbers = [e for e in all_edges if e["tier"] == "ROBBER"]
+    neutrals = [e for e in all_edges if e["tier"] == "NEUTRAL"]
+
+    gold_count = sum(1 for e in all_edges if e["grade"] in ("GOLD", "PLATINUM"))
+    total_edges = len(all_edges)
+
+    grade_breakdown = defaultdict(int)
+    for e in all_edges:
+        grade_breakdown[e["grade"]] += 1
+
+    summary = {
+        "satellite_id": satellite_payload.get("satellite_id"),
+        "sheet_id": satellite_payload.get("sheet_id"),
+        "sheet_name": satellite_payload.get("sheet_name"),
+        "total_rows": len(side_rows) + len(totals_rows),
+        "total_edges": total_edges,
+        "bankers_count": len(bankers),
+        "robbers_count": len(robbers),
+        "neutrals_count": len(neutrals),
+        "gold_count": gold_count,
+        "grade_breakdown": dict(grade_breakdown),
+        "overall_win_rate": round(
+            sum(e["win_rate"] * e["n"] for e in all_edges) / max(1, sum(e["n"] for e in all_edges)), 4
+        ) if all_edges else 0,
+        "assayed_at": satellite_payload.get("fetched_at"),
+    }
+
+    return {
+        "summary": summary,
+        "edges": all_edges,
+        "bankers": bankers,
+        "robbers": robbers,
+        "league_purity": league_purity,
+    }
+
+
+"""
+Unified BetRecord structure — the single contract all pipelines feed into.
+Every bet type (BANKER, ROBBER, SNIPER_OU, SNIPER_MARGIN, FIRST_HALF_1X2,
+FT_OU, HIGHEST_QUARTER) must produce a BetRecord before being written to
+Bet_Slips or graded by the accuracy engine.
+"""
+
+from dataclasses import dataclass, field, asdict
+from typing import Optional
+import datetime
+
+
+BET_TYPES = {
+    "BANKER":           "Moneyline — high-confidence home/away winner",
+    "ROBBER":           "Moneyline — upset/underdog pick",
+    "SNIPER_OU":        "Quarter Over/Under totals",
+    "SNIPER_MARGIN":    "Quarter Spread / Side margin",
+    "FIRST_HALF_1X2":  "First Half winner (1=home, 2=away)",
+    "FT_OU":            "Full-Time Over/Under totals",
+    "HIGHEST_QUARTER":  "Highest-scoring quarter prediction",
+}
+
+CONFIG_INFLUENCE_LEVELS = ("CONFIG1_ONLY", "CONFIG2_ONLY", "BOTH", "NONE")
+
+TIER_CODES = {
+    "ELITE":   (80, 100),
+    "STRONG":  (65, 79),
+    "MEDIUM":  (54, 64),
+    "WEAK":    (50, 53),
+}
+
+
+def _tier_from_confidence(conf_pct: float, bet_type: str = "") -> tuple[str, str]:
+    """Return (tier_code, tier_display) from a confidence percentage (0-100)."""
+    if bet_type == "HIGHEST_QUARTER":
+        if conf_pct >= 58:
+            return "STRONG", "STRONG ★"
+        if conf_pct >= 54:
+            return "MEDIUM", "MEDIUM ●"
+        return "WEAK", "WEAK ○"
+    if conf_pct >= 80:
+        return "ELITE", "★ ({}%) ★".format(int(conf_pct))
+    if conf_pct >= 65:
+        return "STRONG", "STRONG ★"
+    if conf_pct >= 54:
+        return "MEDIUM", "MEDIUM ●"
+    return "WEAK", "WEAK ○"
+
+
+def _config_influence(t1_version: str, t2_version: str) -> str:
+    has_t1 = bool(t1_version and t1_version.strip())
+    has_t2 = bool(t2_version and t2_version.strip())
+    if has_t1 and has_t2:
+        return "BOTH"
+    if has_t1:
+        return "CONFIG1_STRONG"
+    if has_t2:
+        return "CONFIG2_MEDIUM"
+    return "NONE"
+
+
+@dataclass
+class BetRecord:
+    bet_record_id: str = ""
+    universal_game_id: str = ""
+    source_prediction_id: str = ""
+
+    league: str = ""
+    date: str = ""
+    time: str = ""
+    home: str = ""
+    away: str = ""
+
+    bet_type: str = ""
+    period: str = ""
+    quarter: str = ""
+
+    selection_side: str = ""
+    selection_line: Optional[float] = None
+    selection_team: str = ""
+    selection_text: str = ""
+
+    odds: Optional[float] = None
+    confidence_pct: float = 0.0
+    confidence_prob: Optional[float] = None
+    ev: Optional[float] = None
+
+    tier_code: str = ""
+    tier_display: str = ""
+    config_influence: str = "NONE"
+
+    config_version_t1: str = ""
+    config_version_t2: str = ""
+    config_version_acc: str = ""
+    source_module: str = ""
+
+    predicted: str = ""
+    actual_result: str = ""
+    actual_score: str = ""
+    actual_winner: str = ""
+    outcome: str = ""
+
+    reject_reason: str = ""
+
+    hq_q_totals: str = ""
+    hq_dominant_strength: Optional[float] = None
+
+    created_at: str = field(default_factory=lambda: datetime.datetime.utcnow().isoformat())
+
+    def derive_tier(self):
+        self.tier_code, self.tier_display = _tier_from_confidence(
+            self.confidence_pct, self.bet_type
+        )
+
+    def derive_config_influence(self):
+        self.config_influence = _config_influence(
+            self.config_version_t1, self.config_version_t2
+        )
+
+    def to_dict(self) -> dict:
+        return asdict(self)
+
+    @classmethod
+    def from_bet_slip_row(cls, row: dict) -> "BetRecord":
+        """Parse a row from the Bet_Slips Google Sheet into a BetRecord."""
+
+        def _s(key, *aliases):
+            for k in (key,) + aliases:
+                v = row.get(k, "")
+                if v != "":
+                    return str(v).strip()
+            return ""
+
+        def _f(key, *aliases):
+            for k in (key,) + aliases:
+                v = row.get(k, "")
+                if v != "":
+                    try:
+                        return float(str(v).replace("%", "").strip())
+                    except Exception:
+                        pass
+            return None
+
+        conf_raw = _f("Confidence_Pct", "Confidence", "confidence_pct")
+        if conf_raw is not None and conf_raw <= 1.0:
+            conf_raw *= 100
+
+        bet_type = _s("Market", "Type", "bet_type").upper()
+        t1 = _s("Config_Version_T1", "config_version_t1")
+        t2 = _s("Config_Version_T2", "config_version_t2")
+
+        tier_code, tier_display = _tier_from_confidence(conf_raw or 0, bet_type)
+        cfg_influence = _config_influence(t1, t2)
+
+        return cls(
+            bet_record_id=_s("Bet_Record_ID", "bet_record_id"),
+            universal_game_id=_s("Universal_Game_ID", "universal_game_id"),
+            source_prediction_id=_s("Source_Prediction_Record_ID", "source_prediction_id"),
+            league=_s("League", "league"),
+            date=_s("Date", "date"),
+            time=_s("Time", "time"),
+            home=_s("Home", "home"),
+            away=_s("Away", "away"),
+            bet_type=bet_type,
+            period=_s("Period", "period"),
+            quarter=_s("Quarter", "quarter", "Period"),
+            selection_side=_s("Selection_Side", "selection_side"),
+            selection_line=_f("Selection_Line", "selection_line", "Line"),
+            selection_team=_s("Selection_Team", "selection_team"),
+            selection_text=_s("Selection_Text", "selection_text", "Pick"),
+            odds=_f("Odds", "odds"),
+            confidence_pct=conf_raw or 0.0,
+            confidence_prob=_f("Confidence_Prob", "confidence_prob"),
+            ev=_f("EV", "ev"),
+            tier_code=_s("Tier_Code", "Tier", "tier_code") or tier_code,
+            tier_display=_s("Tier_Display", "tier_display") or tier_display,
+            config_influence=_s("Config_Influence", "config_influence") or cfg_influence,
+            config_version_t1=t1,
+            config_version_t2=t2,
+            config_version_acc=_s("Config_Version_Acc", "config_version_acc"),
+            source_module=_s("Source_Module", "source_module"),
+        )
+
+
+"""
+MA GOLIDE COMPLETE ACCURACY REPORT — single source of truth.
+
+Reads ONLY from:
+  • Bet_Slips   — the bets that were placed
+  • ResultsClean — actual match outcomes to grade against
+
+Produces one unified report covering ALL bet types:
+  BANKER | ROBBER | SNIPER_OU | SNIPER_MARGIN |
+  FIRST_HALF_1X2 | FT_OU | HIGHEST_QUARTER
+
+Config_Influence column shows whether a bet was driven by
+Config 1 (Tier 1), Config 2 (Tier 2), or both.
+"""
+
+import logging
+import re
+from collections import defaultdict
+from datetime import datetime
+
+from assayer.bet_record import BetRecord
+
+logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
+
+def _norm(v) -> str:
+    return str(v).strip().lower() if v is not None else ""
+
+
+def _game_key(league: str, date: str, home: str, away: str) -> str:
+    return "|".join([
+        _norm(league), _norm(date),
+        _norm(home).replace(" ", ""),
+        _norm(away).replace(" ", ""),
+    ])
+
+
+def _fuzzy_team_match(a: str, b: str) -> bool:
+    """True if team names share at least one significant word."""
+    stop = {"vs", "at", "the", "fc", "sc", "ac", "cf", "city", "united"}
+    words_a = {w for w in _norm(a).split() if w not in stop and len(w) > 2}
+    words_b = {w for w in _norm(b).split() if w not in stop and len(w) > 2}
+    return bool(words_a & words_b)
+
+
+def _parse_score(score_str: str):
+    """Parse 'Home - Away' or 'Home : Away' into (int, int) or None."""
+    if not score_str:
+        return None
+    m = re.search(r"(\d+)\s*[-:]\s*(\d+)", str(score_str))
+    if m:
+        return int(m.group(1)), int(m.group(2))
+    return None
+
+
+def _parse_quarter_score(result_row: dict, quarter: str):
+    """
+    Extract quarter score from a ResultsClean row.
+    Columns tried: Q1_H, Q1_A, Q1_Home, Q1_Away, Q1, etc.
+    Returns (home_q, away_q) or None.
+    """
+    q = _norm(quarter).upper().replace(" ", "")
+    if not q.startswith("Q"):
+        q = "Q" + q
+
+    candidates = [
+        (f"{q}_H", f"{q}_A"),
+        (f"{q}_Home", f"{q}_Away"),
+        (f"{q}Home", f"{q}Away"),
+        (f"{q}_home", f"{q}_away"),
+    ]
+    for h_key, a_key in candidates:
+        hv = result_row.get(h_key, "")
+        av = result_row.get(a_key, "")
+        if hv != "" and av != "":
+            try:
+                return int(float(str(hv))), int(float(str(av)))
+            except Exception:
+                pass
+
+    combined = result_row.get(q, result_row.get(q.lower(), ""))
+    if combined:
+        parsed = _parse_score(str(combined))
+        if parsed:
+            return parsed
+
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Result map builder
+# ---------------------------------------------------------------------------
+
+def _build_result_map(results_rows: list[dict]) -> dict:
+    """
+    Index ResultsClean rows by game key for fast lookup.
+    Also builds a quarter-level index.
+    """
+    result_map: dict[str, list[dict]] = defaultdict(list)
+    for row in results_rows:
+        league = row.get("League", row.get("league", ""))
+        date = row.get("Date", row.get("date", ""))
+        home = row.get("Home", row.get("home", row.get("HomeTeam", "")))
+        away = row.get("Away", row.get("away", row.get("AwayTeam", "")))
+        key = _game_key(league, date, home, away)
+        result_map[key].append(row)
+    return result_map
+
+
+def _find_result(result_map: dict, bet: BetRecord) -> dict | None:
+    key = _game_key(bet.league, bet.date, bet.home, bet.away)
+    rows = result_map.get(key)
+    if rows:
+        return rows[0]
+
+    for rkey, rows in result_map.items():
+        parts = rkey.split("|")
+        if len(parts) == 4:
+            _, _, rh, ra = parts
+            if _fuzzy_team_match(bet.home, rh) and _fuzzy_team_match(bet.away, ra):
+                return rows[0]
+    return None
+
+
+# ---------------------------------------------------------------------------
+# Graders — one per bet type
+# ---------------------------------------------------------------------------
+
+def _grade_banker(bet: BetRecord, result: dict) -> tuple[str, str]:
+    """BANKER: did the predicted team win full-time?"""
+    actual_winner = str(result.get("Winner", result.get("winner",
+                       result.get("ActualWinner", "")))).strip()
+    ft_home = result.get("FT_Home", result.get("FT_H", result.get("HomeScore", "")))
+    ft_away = result.get("FT_Away", result.get("FT_A", result.get("AwayScore", "")))
+
+    score_str = f"{ft_home} - {ft_away}"
+    scores = _parse_score(score_str)
+    if scores:
+        home_score, away_score = scores
+        predicted_side = bet.selection_side.upper()
+        if home_score > away_score:
+            actual = bet.home
+        elif away_score > home_score:
+            actual = bet.away
+        else:
+            return "PUSH", score_str
+        if (predicted_side == "HOME" and actual == bet.home) or \
+           (predicted_side == "AWAY" and actual == bet.away) or \
+           _fuzzy_team_match(bet.selection_team, actual):
+            return "HIT", score_str
+        return "MISS", score_str
+
+    if actual_winner:
+        if _fuzzy_team_match(bet.selection_team, actual_winner):
+            return "HIT", actual_winner
+        return "MISS", actual_winner
+
+    return "UNKNOWN", ""
+
+
+def _grade_robber(bet: BetRecord, result: dict) -> tuple[str, str]:
+    return _grade_banker(bet, result)
+
+
+def _grade_sniper_ou(bet: BetRecord, result: dict) -> tuple[str, str]:
+    """SNIPER_OU: quarter total vs line."""
+    q_scores = _parse_quarter_score(result, bet.quarter or bet.period)
+    if q_scores is None:
+        return "UNKNOWN", ""
+    total = sum(q_scores)
+    line = bet.selection_line
+    if line is None:
+        return "UNKNOWN", ""
+    direction = _norm(bet.selection_side) or _norm(bet.selection_text).split()[0]
+    if "over" in direction:
+        outcome = "HIT" if total > line else ("PUSH" if total == line else "MISS")
+    elif "under" in direction:
+        outcome = "HIT" if total < line else ("PUSH" if total == line else "MISS")
+    else:
+        return "UNKNOWN", str(total)
+    return outcome, str(total)
+
+
+def _grade_sniper_margin(bet: BetRecord, result: dict) -> tuple[str, str]:
+    """SNIPER_MARGIN: quarter spread."""
+    q_scores = _parse_quarter_score(result, bet.quarter or bet.period)
+    if q_scores is None:
+        return "UNKNOWN", ""
+    home_q, away_q = q_scores
+    line = bet.selection_line or 0
+    side = _norm(bet.selection_side)
+
+    if side == "home" or "h" == side:
+        covered = (home_q - away_q) > -line
+        actual_side = "H" if home_q > away_q else "A"
+        return ("HIT" if covered else "MISS"), f"{home_q} - {away_q}"
+    elif side == "away" or "a" == side:
+        covered = (away_q - home_q) > -line
+        actual_side = "A" if away_q > home_q else "H"
+        return ("HIT" if covered else "MISS"), f"{home_q} - {away_q}"
+    return "UNKNOWN", f"{home_q} - {away_q}"
+
+
+def _grade_first_half(bet: BetRecord, result: dict) -> tuple[str, str]:
+    """FIRST_HALF_1X2: first half winner."""
+    fh_home = result.get("1H_Home", result.get("1H_H", result.get("Q1H", result.get("Q2H", ""))))
+    fh_away = result.get("1H_Away", result.get("1H_A", result.get("Q1A", result.get("Q2A", ""))))
+
+    if not fh_home or not fh_away:
+        q1 = _parse_quarter_score(result, "Q1")
+        q2 = _parse_quarter_score(result, "Q2")
+        if q1 and q2:
+            fh_home = q1[0] + q2[0]
+            fh_away = q1[1] + q2[1]
+        else:
+            return "UNKNOWN", ""
+
+    try:
+        h = int(float(str(fh_home)))
+        a = int(float(str(fh_away)))
+    except Exception:
+        return "UNKNOWN", ""
+
+    if h > a:
+        actual = "1"
+    elif a > h:
+        actual = "2"
+    else:
+        actual = "X"
+
+    score_str = f"{h} - {a}"
+    predicted_side = _norm(bet.selection_side)
+    selection_text = _norm(bet.selection_text)
+
+    if "home" in predicted_side or "1" == predicted_side or "1h: home" in selection_text or \
+       _fuzzy_team_match(bet.home, bet.selection_team):
+        predicted = "1"
+    elif "away" in predicted_side or "2" == predicted_side or "1h: away" in selection_text or \
+         _fuzzy_team_match(bet.away, bet.selection_team):
+        predicted = "2"
+    else:
+        predicted = predicted_side
+
+    if actual == "X":
+        return "PUSH", score_str
+    return ("HIT" if predicted == actual else "MISS"), score_str
+
+
+def _grade_ft_ou(bet: BetRecord, result: dict) -> tuple[str, str]:
+    """FT_OU: full-time total."""
+    ft_home = result.get("FT_Home", result.get("FT_H", result.get("HomeScore", "")))
+    ft_away = result.get("FT_Away", result.get("FT_A", result.get("AwayScore", "")))
+    scores = _parse_score(f"{ft_home} - {ft_away}")
+    if not scores:
+        return "UNKNOWN", ""
+    total = sum(scores)
+    line = bet.selection_line
+    if line is None:
+        return "UNKNOWN", str(total)
+    direction = _norm(bet.selection_side) or _norm(bet.selection_text).split()[0]
+    if "over" in direction:
+        outcome = "HIT" if total > line else ("PUSH" if total == line else "MISS")
+    elif "under" in direction:
+        outcome = "HIT" if total < line else ("PUSH" if total == line else "MISS")
+    else:
+        return "UNKNOWN", str(total)
+    return outcome, str(total)
+
+
+def _grade_highest_quarter(bet: BetRecord, result: dict) -> tuple[str, str]:
+    """HIGHEST_QUARTER: did the predicted quarter have the highest total?"""
+    predicted_q = _norm(bet.quarter or bet.period or bet.selection_text)
+    if not predicted_q:
+        return "UNKNOWN", ""
+
+    q_map = {}
+    for qn in ("Q1", "Q2", "Q3", "Q4"):
+        scores = _parse_quarter_score(result, qn)
+        if scores:
+            q_map[qn.lower()] = sum(scores)
+
+    if not q_map:
+        return "UNKNOWN", ""
+
+    best_q = max(q_map, key=lambda k: q_map[k])
+    q_totals = " ".join(f"{k.upper()}:{v}" for k, v in sorted(q_map.items()))
+
+    if best_q in _norm(predicted_q):
+        return "HIT", q_totals
+    return "MISS", q_totals
+
+
+GRADERS = {
+    "BANKER":          _grade_banker,
+    "ROBBER":          _grade_robber,
+    "SNIPER_OU":       _grade_sniper_ou,
+    "SNIPER_MARGIN":   _grade_sniper_margin,
+    "FIRST_HALF_1X2":  _grade_first_half,
+    "1H 1X2":          _grade_first_half,
+    "FT_OU":           _grade_ft_ou,
+    "HIGHEST_QUARTER": _grade_highest_quarter,
+    "SNIPER_HIGH_QTR": _grade_highest_quarter,
+}
+
+
+def _grade(bet: BetRecord, result: dict | None) -> BetRecord:
+    if result is None:
+        bet.outcome = "UNMATCHED"
+        bet.actual_result = "No matching result found"
+        return bet
+
+    grader = GRADERS.get(bet.bet_type.upper())
+    if grader is None:
+        grader = GRADERS.get(bet.bet_type.upper().replace("_", " "), None)
+    if grader is None:
+        bet.outcome = "UNKNOWN_TYPE"
+        return bet
+
+    try:
+        outcome, actual = grader(bet, result)
+        bet.outcome = outcome
+        bet.actual_result = actual
+    except Exception as e:
+        logger.warning(f"Grading error for {bet.bet_record_id}: {e}")
+        bet.outcome = "ERROR"
+        bet.actual_result = str(e)
+    return bet
+
+
+# ---------------------------------------------------------------------------
+# Main report generator
+# ---------------------------------------------------------------------------
+
+def build_accuracy_report(bet_slip_rows: list[dict],
+                          results_rows: list[dict]) -> dict:
+    """
+    Build the MA GOLIDE COMPLETE ACCURACY REPORT.
+
+    Returns a dict with:
+      generated_at, overall_summary, by_bet_type, bet_details, config_summary
+    """
+    logger.info(f"Building accuracy report: {len(bet_slip_rows)} bet slips, "
+                f"{len(results_rows)} result rows")
+
+    result_map = _build_result_map(results_rows)
+
+    graded: list[BetRecord] = []
+    for row in bet_slip_rows:
+        try:
+            bet = BetRecord.from_bet_slip_row(row)
+        except Exception as e:
+            logger.warning(f"Could not parse bet slip row: {e} | row={row}")
+            continue
+
+        if not bet.bet_type:
+            logger.debug(f"Skipping row with no bet_type: {row}")
+            continue
+
+        result = _find_result(result_map, bet)
+        bet = _grade(bet, result)
+        graded.append(bet)
+
+    hits = sum(1 for b in graded if b.outcome == "HIT")
+    misses = sum(1 for b in graded if b.outcome == "MISS")
+    pushes = sum(1 for b in graded if b.outcome == "PUSH")
+    unmatched = sum(1 for b in graded if b.outcome in ("UNMATCHED", "UNKNOWN", "ERROR", "UNKNOWN_TYPE"))
+    scored = len(graded) - unmatched
+
+    overall_summary = {
+        "total_bets_graded": len(graded),
+        "total_scored": scored,
+        "total_hits": hits,
+        "total_misses": misses,
+        "total_pushes": pushes,
+        "total_unmatched": unmatched,
+        "overall_hit_rate": round(hits / max(1, scored) * 100, 2),
+    }
+
+    by_type: dict[str, dict] = defaultdict(lambda: {
+        "found": 0, "matched": 0, "hits": 0, "misses": 0, "pushes": 0
+    })
+    for b in graded:
+        bt = b.bet_type
+        by_type[bt]["found"] += 1
+        if b.outcome not in ("UNMATCHED",):
+            by_type[bt]["matched"] += 1
+        if b.outcome == "HIT":
+            by_type[bt]["hits"] += 1
+        elif b.outcome == "MISS":
+            by_type[bt]["misses"] += 1
+        elif b.outcome == "PUSH":
+            by_type[bt]["pushes"] += 1
+
+    by_bet_type = {}
+    for bt, counts in by_type.items():
+        scored_bt = counts["matched"] - counts["pushes"]
+        by_bet_type[bt] = {
+            **counts,
+            "hit_rate": round(counts["hits"] / max(1, scored_bt) * 100, 2),
+            "description": BET_TYPES.get(bt.upper(), bt),
+        }
+
+    config_summary = {
+        "CONFIG1_ONLY":   sum(1 for b in graded if b.config_influence == "CONFIG1_STRONG"),
+        "CONFIG2_ONLY":   sum(1 for b in graded if b.config_influence == "CONFIG2_MEDIUM"),
+        "BOTH":           sum(1 for b in graded if b.config_influence == "BOTH"),
+        "NONE":           sum(1 for b in graded if b.config_influence == "NONE"),
+        "config1_hits":   sum(1 for b in graded if "CONFIG1" in b.config_influence and b.outcome == "HIT"),
+        "config2_hits":   sum(1 for b in graded if "CONFIG2" in b.config_influence and b.outcome == "HIT"),
+    }
+
+    bet_details = [b.to_dict() for b in graded]
+
+    logger.info(f"Report built: {hits}/{scored} hits ({overall_summary['overall_hit_rate']}%)")
+
+    return {
+        "generated_at": datetime.utcnow().isoformat(),
+        "overall_summary": overall_summary,
+        "by_bet_type": by_bet_type,
+        "config_summary": config_summary,
+        "bet_details": bet_details,
+    }
+
+
+"""
+Highest Quarter Pipeline — MA GOLIDE Phase 2.
+
+Mirrors the "Sniper mindset" from the GAS Sheet_Setup.gs logic but in Python.
+Uses softmax probability distribution + Bayesian shrinkage to predict which
+quarter will have the highest combined score.
+
+Stricter accuracy requirements than other bet types:
+  • STRONG tier  ≥ 58% confidence
+  • MEDIUM tier  ≥ 54% confidence
+  • Bets below MEDIUM are rejected.
+
+All accepted bets are returned as BetRecord objects with:
+  bet_type = "HIGHEST_QUARTER"
+  Config_Influence derived from the Tier 2 config version.
+"""
+
+import math
+import logging
+from typing import Optional
+
+from assayer.bet_record import BetRecord, _tier_from_confidence
+
+logger = logging.getLogger(__name__)
+
+
+# ---------------------------------------------------------------------------
+# Config defaults (mirrors Tier 2 config from the PDFs)
+# ---------------------------------------------------------------------------
+
+DEFAULT_HQ_CONFIG = {
+    "hq_enabled": True,
+    "hq_softmax_temperature": 4.0,
+    "hq_shrink_k": 10,
+    "hq_min_confidence": 55.0,
+    "hq_min_pwin": 0.35,
+    "hq_vol_weight": 0.4,
+    "hq_fb_weight": 0.25,
+    "hq_skip_ties": True,
+    "highQtrTieMargin": 2.5,
+    "tieMargin": 1.5,
+    "hq_exempt_from_cap": False,
+    "hq_max_picks_per_slip": 2,
+    "highest_q_tie_policy": "SKIP",
+    "highest_q_tie_conf_penalty": 0.1,
+    "confidence_scale": 30.0,
+    "hq_min_confidence_strong": 58.0,
+    "hq_min_confidence_medium": 54.0,
+}
+
+QUARTERS = ["Q1", "Q2", "Q3", "Q4"]
+
+
+# ---------------------------------------------------------------------------
+# Math helpers
+# ---------------------------------------------------------------------------
+
+def _softmax(scores: list[float], temperature: float = 4.0) -> list[float]:
+    """Temperature-scaled softmax over raw scores."""
+    if not scores or temperature <= 0:
+        n = len(scores)
+        return [1.0 / n] * n
+    max_s = max(scores)
+    exps = [math.exp((s - max_s) / temperature) for s in scores]
+    total = sum(exps)
+    return [e / total for e in exps]
+
+
+def _bayesian_shrink(game_probs: list[float],
+                     league_priors: list[float],
+                     k: int = 10) -> list[float]:
+    """
+    Shrink game-specific probabilities toward league prior base rates.
+    p_shrunk = (k * prior + n * game_prob) / (k + n)
+    With n=1 game observation this simplifies to weighting.
+    """
+    n = 1
+    shrunk = [(k * lp + n * gp) / (k + n) for lp, gp in zip(league_priors, game_probs)]
+    total = sum(shrunk)
+    if total <= 0:
+        return [1.0 / len(shrunk)] * len(shrunk)
+    return [s / total for s in shrunk]
+
+
+def _uniform_prior(n: int = 4) -> list[float]:
+    return [1.0 / n] * n
+
+
+# ---------------------------------------------------------------------------
+# Core prediction
+# ---------------------------------------------------------------------------
+
+def predict_highest_quarter(game: dict, config: dict | None = None) -> dict | None:
+    """
+    Given a game dict with predicted quarter scores or pace signals,
+    return a prediction dict or None if rejected.
+
+    Expected keys in `game`:
+        q1_pred, q2_pred, q3_pred, q4_pred  — predicted quarter totals (float)
+        league                               — for logging
+        home, away                           — team names
+        date, time                           — scheduling
+        forebet_q1..q4                       — optional Forebet model scores
+        league_q_priors                      — optional [p_q1, p_q2, p_q3, p_q4] base rates
+    """
+    cfg = {**DEFAULT_HQ_CONFIG, **(config or {})}
+
+    if not cfg.get("hq_enabled", True):
+        return None
+
+    raw = []
+    for qn in QUARTERS:
+        v = game.get(f"{qn.lower()}_pred", game.get(qn.lower(), 0))
+        try:
+            raw.append(float(v))
+        except Exception:
+            raw.append(0.0)
+
+    if all(r == 0 for r in raw):
+        logger.debug(f"HQ: no quarter predictions for {game.get('home')} vs {game.get('away')}")
+        return None
+
+    temperature = float(cfg.get("hq_softmax_temperature", 4.0))
+    probs_game = _softmax(raw, temperature)
+
+    league_priors = game.get("league_q_priors", _uniform_prior(4))
+    if len(league_priors) != 4:
+        league_priors = _uniform_prior(4)
+
+    k = int(cfg.get("hq_shrink_k", 10))
+    probs_shrunk = _bayesian_shrink(probs_game, league_priors, k)
+
+    fb_weight = float(cfg.get("hq_fb_weight", 0.25))
+    fb_probs: list[float] | None = None
+    if all(game.get(f"forebet_{qn.lower()}", 0) for qn in QUARTERS):
+        fb_raw = [float(game.get(f"forebet_{qn.lower()}", 0)) for qn in QUARTERS]
+        fb_probs = _softmax(fb_raw, temperature)
+
+    if fb_probs:
+        probs_final = [
+            (1 - fb_weight) * sp + fb_weight * fp
+            for sp, fp in zip(probs_shrunk, fb_probs)
+        ]
+        total = sum(probs_final)
+        probs_final = [p / total for p in probs_final]
+    else:
+        probs_final = probs_shrunk
+
+    best_idx = probs_final.index(max(probs_final))
+    best_q = QUARTERS[best_idx]
+    p_win = probs_final[best_idx]
+
+    sorted_probs = sorted(probs_final, reverse=True)
+    dominant_strength = sorted_probs[0] - sorted_probs[1] if len(sorted_probs) > 1 else 0.0
+
+    tie_margin = float(cfg.get("highQtrTieMargin", 2.5))
+    if len(sorted_probs) > 1:
+        diff_pct = (sorted_probs[0] - sorted_probs[1]) * 100
+        if diff_pct < tie_margin:
+            if cfg.get("hq_skip_ties", True):
+                logger.debug(f"HQ rejected (tie margin {diff_pct:.1f}% < {tie_margin}%): "
+                             f"{game.get('home')} vs {game.get('away')}")
+                return None
+
+    min_pwin = float(cfg.get("hq_min_pwin", 0.35))
+    if p_win < min_pwin:
+        logger.debug(f"HQ rejected (p_win={p_win:.3f} < {min_pwin}): "
+                     f"{game.get('home')} vs {game.get('away')}")
+        return None
+
+    confidence_scale = float(cfg.get("confidence_scale", 30.0))
+    min_conf_cap = float(cfg.get("hq_min_confidence", 55.0))
+    raw_confidence_pct = (p_win - 0.25) / 0.75 * confidence_scale + min_conf_cap
+    confidence_pct = max(min_conf_cap, min(95.0, raw_confidence_pct))
+
+    if cfg.get("hq_skip_ties", True) and len(sorted_probs) > 1:
+        tie_penalty = float(cfg.get("highest_q_tie_conf_penalty", 0.1))
+        diff = sorted_probs[0] - sorted_probs[1]
+        if diff < 0.05:
+            confidence_pct -= tie_penalty * 100
+
+    min_strong = float(cfg.get("hq_min_confidence_strong", 58.0))
+    min_medium = float(cfg.get("hq_min_confidence_medium", 54.0))
+
+    if confidence_pct < min_medium:
+        logger.debug(f"HQ rejected (confidence={confidence_pct:.1f}% < {min_medium}%): "
+                     f"{game.get('home')} vs {game.get('away')}")
+        return None
+
+    tier_code, tier_display = _tier_from_confidence(confidence_pct, "HIGHEST_QUARTER")
+
+    q_totals = " ".join(f"{q}:{int(raw[i])}" for i, q in enumerate(QUARTERS))
+
+    predicted_total = raw[best_idx]
+
+    return {
+        "bet_type": "HIGHEST_QUARTER",
+        "quarter": best_q,
+        "p_win": round(p_win, 4),
+        "confidence_pct": round(confidence_pct, 2),
+        "tier_code": tier_code,
+        "tier_display": tier_display,
+        "dominant_strength": round(dominant_strength, 4),
+        "q_totals_predicted": q_totals,
+        "predicted_total": round(predicted_total, 1),
+        "selection_text": f"Highest Scoring Quarter: {best_q} {predicted_total:.1f}",
+        "probs": {q: round(p, 4) for q, p in zip(QUARTERS, probs_final)},
+        "reject_reason": "",
+    }
+
+
+# ---------------------------------------------------------------------------
+# Batch pipeline — converts upcoming game rows into BetRecords
+# ---------------------------------------------------------------------------
+
+def run_hq_pipeline(upcoming_rows: list[dict],
+                    config: dict | None = None,
+                    config_version_t2: str = "",
+                    max_picks: int | None = None) -> list[BetRecord]:
+    """
+    Process all upcoming games through the HQ pipeline.
+    Returns a list of BetRecord objects ready to be written to Bet_Slips.
+
+    `upcoming_rows` should come from the UpcomingClean sheet and must have
+    at minimum: home, away, date, league, and predicted quarter scores
+    (q1_pred, q2_pred, q3_pred, q4_pred).
+    """
+    cfg = {**DEFAULT_HQ_CONFIG, **(config or {})}
+    max_picks_cfg = max_picks or int(cfg.get("hq_max_picks_per_slip", 2))
+    records: list[BetRecord] = []
+
+    for row in upcoming_rows:
+        prediction = predict_highest_quarter(row, cfg)
+        if prediction is None:
+            continue
+
+        league = str(row.get("League", row.get("league", ""))).strip()
+        date = str(row.get("Date", row.get("date", ""))).strip()
+        time_ = str(row.get("Time", row.get("time", ""))).strip()
+        home = str(row.get("Home", row.get("home", ""))).strip()
+        away = str(row.get("Away", row.get("away", ""))).strip()
+
+        safe_home = home.replace(" ", "").upper()[:8]
+        safe_away = away.replace(" ", "").upper()[:8]
+        date_safe = date.replace("-", "").replace("/", "")
+        bet_id = f"{date_safe}_{safe_home}_{safe_away}__HQ__{prediction['quarter']}"
+
+        rec = BetRecord(
+            bet_record_id=bet_id,
+            universal_game_id=f"{date_safe}__{safe_home}__{safe_away}",
+            league=league,
+            date=date,
+            time=time_,
+            home=home,
+            away=away,
+            bet_type="HIGHEST_QUARTER",
+            period=prediction["quarter"],
+            quarter=prediction["quarter"],
+            selection_side="",
+            selection_line=prediction["predicted_total"],
+            selection_text=prediction["selection_text"],
+            confidence_pct=prediction["confidence_pct"],
+            confidence_prob=prediction["p_win"],
+            tier_code=prediction["tier_code"],
+            tier_display=prediction["tier_display"],
+            config_version_t2=config_version_t2,
+            config_influence="CONFIG2_MEDIUM" if config_version_t2 else "NONE",
+            source_module="HQ_Pipeline_v2",
+            hq_q_totals=prediction["q_totals_predicted"],
+            hq_dominant_strength=prediction["dominant_strength"],
+        )
+
+        logger.info(
+            f"HQ accepted: {home} vs {away} | {prediction['quarter']} | "
+            f"conf={prediction['confidence_pct']:.1f}% | tier={prediction['tier_code']} | "
+            f"dominant_strength={prediction['dominant_strength']:.3f}"
+        )
+        records.append(rec)
+
+        if len(records) >= max_picks_cfg:
+            logger.info(f"HQ: max picks per slip ({max_picks_cfg}) reached")
+            break
+
+    logger.info(f"HQ pipeline: {len(records)} picks from {len(upcoming_rows)} games")
+    return records
+
+
+import os
+import json
+import threading
+import logging
+from datetime import datetime
+from flask import Flask, render_template, request, jsonify, redirect, url_for
+
+from auth.google_auth import get_client, is_configured, reset_client
+from registry.satellite_registry import (
+    list_satellites, get_satellite, add_satellite, update_satellite,
+    remove_satellite, bulk_add, summary_stats,
+)
+from fetcher.sheet_fetcher import fetch_satellite, batch_fetch
+from assayer.assayer_engine import run_full_assay
+from assayer.accuracy_engine import build_accuracy_report
+from assayer.highest_quarter import run_hq_pipeline, DEFAULT_HQ_CONFIG
+
+logging.basicConfig(level=logging.INFO,
+                    format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
+logger = logging.getLogger(__name__)
+
+app = Flask(__name__)
+
+_job_status = {}
+_job_lock = threading.Lock()
+
+
+def _set_job(job_id, state, detail=""):
+    with _job_lock:
+        _job_status[job_id] = {"state": state, "detail": detail,
+                                "updated": datetime.utcnow().isoformat()}
+
+
+def _get_job(job_id):
+    with _job_lock:
+        return _job_status.get(job_id)
+
+
+@app.route("/")
+def dashboard():
+    stats = summary_stats()
+    sats = list_satellites()
+    configured = is_configured()
+    return render_template("dashboard.html",
+                           stats=stats,
+                           satellites=sats,
+                           configured=configured,
+                           now=datetime.utcnow().isoformat()[:16].replace("T", " ") + " UTC")
+
+
+@app.route("/api/status")
+def api_status():
+    return jsonify({
+        "google_configured": is_configured(),
+        "registry_count": len(list_satellites()),
+        "stats": summary_stats(),
+    })
+
+
+@app.route("/api/satellites", methods=["GET"])
+def api_satellites():
+    date = request.args.get("date")
+    league = request.args.get("league")
+    fmt = request.args.get("format")
+    return jsonify(list_satellites(date=date, league=league, fmt=fmt))
+
+
+@app.route("/api/satellites/add", methods=["POST"])
+def api_add_satellite():
+    body = request.json or {}
+    sheet_id = body.get("sheet_id", "").strip()
+    sheet_name = body.get("sheet_name", "").strip()
+    date = body.get("date", "").strip()
+    league = body.get("league", "").strip()
+    notes = body.get("notes", "").strip()
+
+    if not sheet_id:
+        return jsonify({"error": "sheet_id is required"}), 400
+    if not date or not league:
+        return jsonify({"error": "date and league are required"}), 400
+
+    sat, status = add_satellite(sheet_id, sheet_name, date, league, notes)
+    return jsonify({"satellite": sat, "status": status})
+
+
+@app.route("/api/satellites/bulk-add", methods=["POST"])
+def api_bulk_add():
+    body = request.json or {}
+    entries = body.get("entries", [])
+    if not isinstance(entries, list) or not entries:
+        return jsonify({"error": "entries must be a non-empty list"}), 400
+    results = bulk_add(entries)
+    return jsonify({"results": results})
+
+
+@app.route("/api/satellites/<sat_id>", methods=["DELETE"])
+def api_delete_satellite(sat_id):
+    removed = remove_satellite(sat_id)
+    return jsonify({"removed": removed})
+
+
+@app.route("/api/satellites/<sat_id>", methods=["GET"])
+def api_get_satellite(sat_id):
+    sat = get_satellite(sat_id)
+    if not sat:
+        return jsonify({"error": "Not found"}), 404
+    return jsonify(sat)
+
+
+@app.route("/api/fetch/<sat_id>", methods=["POST"])
+def api_fetch_one(sat_id):
+    sat = get_satellite(sat_id)
+    if not sat:
+        return jsonify({"error": "Satellite not found"}), 404
+
+    client, err = get_client()
+    if err:
+        return jsonify({"error": err}), 503
+
+    payload, fetch_err = fetch_satellite(client, sat)
+    if fetch_err:
+        update_satellite(sat_id, status="error", last_fetched=datetime.utcnow().isoformat())
+        return jsonify({"error": fetch_err}), 500
+
+    update_satellite(sat_id,
+                     status="fetched",
+                     format=payload["detected_format"],
+                     sheet_name=payload["sheet_name"],
+                     row_counts=payload["row_counts"],
+                     last_fetched=payload["fetched_at"])
+
+    payload_trimmed = {k: v for k, v in payload.items() if k != "data"}
+    payload_trimmed["row_counts"] = payload["row_counts"]
+    return jsonify({"payload_meta": payload_trimmed, "status": "fetched"})
+
+
+@app.route("/api/assay/<sat_id>", methods=["POST"])
+def api_assay_one(sat_id):
+    sat = get_satellite(sat_id)
+    if not sat:
+        return jsonify({"error": "Satellite not found"}), 404
+
+    client, err = get_client()
+    if err:
+        return jsonify({"error": err}), 503
+
+    payload, fetch_err = fetch_satellite(client, sat)
+    if fetch_err:
+        update_satellite(sat_id, status="error")
+        return jsonify({"error": fetch_err}), 500
+
+    update_satellite(sat_id,
+                     status="fetched",
+                     format=payload["detected_format"],
+                     sheet_name=payload["sheet_name"],
+                     row_counts=payload["row_counts"],
+                     last_fetched=payload["fetched_at"])
+
+    result = run_full_assay(payload)
+    summary = result["summary"]
+
+    update_satellite(sat_id,
+                     status="assayed",
+                     last_assayed=datetime.utcnow().isoformat(),
+                     assay_summary=summary)
+
+    return jsonify({
+        "summary": summary,
+        "bankers": result["bankers"][:20],
+        "robbers": result["robbers"][:20],
+        "league_purity": result["league_purity"],
+        "top_edges": result["edges"][:30],
+    })
+
+
+@app.route("/api/fetch-all", methods=["POST"])
+def api_fetch_all():
+    sats = list_satellites()
+    if not sats:
+        return jsonify({"error": "No satellites in registry"}), 400
+
+    client, err = get_client()
+    if err:
+        return jsonify({"error": err}), 503
+
+    job_id = f"fetch_all_{datetime.utcnow().strftime('%H%M%S')}"
+    _set_job(job_id, "running", f"Starting batch fetch for {len(sats)} satellites")
+
+    def _run():
+        def on_progress(done, total, sat, error):
+            msg = f"[{done}/{total}] {sat.get('league')} {sat.get('date')}"
+            if error:
+                msg += f" — ERROR: {error}"
+            _set_job(job_id, "running", msg)
+
+        results = batch_fetch(client, sats, on_progress=on_progress)
+        success = 0
+        for r in results:
+            sat = r["satellite"]
+            sat_id = sat["id"]
+            if r["error"]:
+                update_satellite(sat_id, status="error",
+                                 last_fetched=datetime.utcnow().isoformat())
+            else:
+                p = r["payload"]
+                update_satellite(sat_id,
+                                 status="fetched",
+                                 format=p["detected_format"],
+                                 sheet_name=p["sheet_name"],
+                                 row_counts=p["row_counts"],
+                                 last_fetched=p["fetched_at"])
+                success += 1
+
+        _set_job(job_id, "done",
+                 f"Complete: {success}/{len(sats)} fetched successfully")
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    return jsonify({"job_id": job_id, "satellites": len(sats)})
+
+
+@app.route("/api/assay-all", methods=["POST"])
+def api_assay_all():
+    sats = list_satellites()
+    if not sats:
+        return jsonify({"error": "No satellites in registry"}), 400
+
+    client, err = get_client()
+    if err:
+        return jsonify({"error": err}), 503
+
+    job_id = f"assay_all_{datetime.utcnow().strftime('%H%M%S')}"
+    _set_job(job_id, "running", f"Starting full assay for {len(sats)} satellites")
+
+    def _run():
+        results = batch_fetch(client, sats)
+        success = 0
+        for r in results:
+            sat = r["satellite"]
+            sat_id = sat["id"]
+            if r["error"]:
+                update_satellite(sat_id, status="error",
+                                 last_fetched=datetime.utcnow().isoformat())
+                _set_job(job_id, "running",
+                         f"ERROR {sat.get('league')}: {r['error']}")
+                continue
+            p = r["payload"]
+            update_satellite(sat_id,
+                             status="fetched",
+                             format=p["detected_format"],
+                             sheet_name=p["sheet_name"],
+                             row_counts=p["row_counts"],
+                             last_fetched=p["fetched_at"])
+            try:
+                result = run_full_assay(p)
+                update_satellite(sat_id,
+                                 status="assayed",
+                                 last_assayed=datetime.utcnow().isoformat(),
+                                 assay_summary=result["summary"])
+                success += 1
+                _set_job(job_id, "running",
+                         f"Assayed {sat.get('league')} {sat.get('date')} — "
+                         f"{result['summary']['bankers_count']} bankers, "
+                         f"{result['summary']['robbers_count']} robbers")
+            except Exception as e:
+                _set_job(job_id, "running",
+                         f"Assay ERROR {sat.get('league')}: {e}")
+
+        _set_job(job_id, "done",
+                 f"Complete: {success}/{len(sats)} assayed successfully")
+
+    t = threading.Thread(target=_run, daemon=True)
+    t.start()
+    return jsonify({"job_id": job_id, "satellites": len(sats)})
+
+
+@app.route("/api/job/<job_id>")
+def api_job_status(job_id):
+    status = _get_job(job_id)
+    if not status:
+        return jsonify({"error": "Unknown job"}), 404
+    return jsonify(status)
+
+
+@app.route("/api/reset-auth", methods=["POST"])
+def api_reset_auth():
+    reset_client()
+    return jsonify({"status": "Auth cache cleared"})
+
+
+@app.route("/api/accuracy/<sat_id>", methods=["POST"])
+def api_accuracy_report(sat_id):
+    """
+    Build the MA GOLIDE COMPLETE ACCURACY REPORT for a satellite.
+    Reads exclusively from Bet_Slips + ResultsClean.
+    Returns a single unified JSON report.
+    """
+    sat = get_satellite(sat_id)
+    if not sat:
+        return jsonify({"error": "Satellite not found"}), 404
+
+    client, err = get_client()
+    if err:
+        return jsonify({"error": err}), 503
+
+    payload, fetch_err = fetch_satellite(client, sat)
+    if fetch_err:
+        return jsonify({"error": fetch_err}), 500
+
+    data = payload.get("data", {})
+    bet_slips = data.get("bet_slips", [])
+    results = data.get("results", [])
+
+    if not bet_slips:
+        return jsonify({
+            "warning": "No Bet_Slips data found in this satellite sheet.",
+            "sheet_names": payload.get("sheet_names", []),
+            "row_counts": payload.get("row_counts", {}),
+        }), 200
+
+    report = build_accuracy_report(bet_slips, results)
+
+    update_satellite(sat_id,
+                     last_fetched=payload["fetched_at"],
+                     row_counts=payload["row_counts"])
+
+    return jsonify(report)
+
+
+@app.route("/api/hq-pipeline/<sat_id>", methods=["POST"])
+def api_hq_pipeline(sat_id):
+    """
+    Run the Highest Quarter pipeline for a satellite.
+    Reads UpcomingClean to generate HQ predictions.
+    Returns BetRecord objects (HIGHEST_QUARTER type).
+    """
+    sat = get_satellite(sat_id)
+    if not sat:
+        return jsonify({"error": "Satellite not found"}), 404
+
+    client, err = get_client()
+    if err:
+        return jsonify({"error": err}), 503
+
+    payload, fetch_err = fetch_satellite(client, sat)
+    if fetch_err:
+        return jsonify({"error": fetch_err}), 500
+
+    data = payload.get("data", {})
+    upcoming = data.get("upcoming", [])
+
+    body = request.json or {}
+    config = body.get("hq_config", {})
+    t2_version = body.get("config_version_t2", "")
+
+    records = run_hq_pipeline(upcoming, config=config, config_version_t2=t2_version)
+
+    return jsonify({
+        "satellite_id": sat_id,
+        "sheet_name": payload.get("sheet_name"),
+        "upcoming_count": len(upcoming),
+        "hq_picks": len(records),
+        "picks": [r.to_dict() for r in records],
+        "generated_at": datetime.utcnow().isoformat(),
+    })
+
+
+@app.route("/accuracy/<sat_id>")
+def accuracy_page(sat_id):
+    """Render the accuracy report page for a satellite."""
+    sat = get_satellite(sat_id)
+    if not sat:
+        return "Satellite not found", 404
+    return render_template("accuracy_report.html", satellite=sat)
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=False)
+
+
+import time
+import logging
+from datetime import datetime
+
+logger = logging.getLogger(__name__)
+
+GOLD_UNIVERSE_SHEETS = {"Side", "Totals", "MA_Vault", "MA_Discovery",
+                         "ASSAYER_EDGES", "ASSAYER_LEAGUE_PURITY", "MA_Config"}
+LEGACY_SHEETS = {"Predictions", "Results", "BetSlips", "Accuracy"}
+SIDE_NAMES = {"Side", "side"}
+TOTALS_NAMES = {"Totals", "totals"}
+RESULTS_NAMES = {"ResultsClean", "Results", "results"}
+UPCOMING_NAMES = {"UpcomingClean", "Upcoming", "upcoming"}
+BET_SLIPS_NAMES = {"Bet_Slips", "BetSlips", "bet_slips", "Bet Slips"}
+
+RATE_LIMIT_DELAY = 1.1
+
+
+def _sheet_names(spreadsheet):
+    return {ws.title for ws in spreadsheet.worksheets()}
+
+
+def detect_format(sheet_names_set):
+    gu_matches = sheet_names_set & GOLD_UNIVERSE_SHEETS
+    legacy_matches = sheet_names_set & LEGACY_SHEETS
+    if len(gu_matches) >= 2:
+        return "gold_universe"
+    if len(legacy_matches) >= 1:
+        return "legacy"
+    return "unknown"
+
+
+def _safe_get_sheet(spreadsheet, name_candidates):
+    for name in name_candidates:
+        try:
+            ws = spreadsheet.worksheet(name)
+            return ws
+        except Exception:
+            pass
+    return None
+
+
+def _ws_to_records(ws):
+    if ws is None:
+        return []
+    try:
+        return ws.get_all_records(default_blank="")
+    except Exception as e:
+        logger.warning(f"Failed to read worksheet: {e}")
+        return []
+
+
+def fetch_satellite(client, sat):
+    sheet_id = sat.get("sheet_id", "")
+    if not sheet_id:
+        return None, "No sheet_id"
+
+    try:
+        ss = client.open_by_key(sheet_id)
+    except Exception as e:
+        return None, f"Cannot open sheet: {e}"
+
+    try:
+        all_names = _sheet_names(ss)
+    except Exception as e:
+        return None, f"Cannot list worksheets: {e}"
+
+    fmt = detect_format(all_names)
+
+    side_ws = _safe_get_sheet(ss, SIDE_NAMES)
+    totals_ws = _safe_get_sheet(ss, TOTALS_NAMES)
+    results_ws = _safe_get_sheet(ss, RESULTS_NAMES)
+    upcoming_ws = _safe_get_sheet(ss, UPCOMING_NAMES)
+    bet_slips_ws = _safe_get_sheet(ss, BET_SLIPS_NAMES)
+
+    side_data = _ws_to_records(side_ws)
+    totals_data = _ws_to_records(totals_ws)
+    results_data = _ws_to_records(results_ws)
+    upcoming_data = _ws_to_records(upcoming_ws)
+    bet_slips_data = _ws_to_records(bet_slips_ws)
+
+    payload = {
+        "satellite_id": sat.get("id"),
+        "sheet_id": sheet_id,
+        "sheet_name": ss.title,
+        "detected_format": fmt,
+        "sheet_names": sorted(all_names),
+        "fetched_at": datetime.utcnow().isoformat(),
+        "data": {
+            "side": side_data,
+            "totals": totals_data,
+            "results": results_data,
+            "upcoming": upcoming_data,
+            "bet_slips": bet_slips_data,
+        },
+        "row_counts": {
+            "side": len(side_data),
+            "totals": len(totals_data),
+            "results": len(results_data),
+            "upcoming": len(upcoming_data),
+            "bet_slips": len(bet_slips_data),
+        },
+    }
+    return payload, None
+
+
+def batch_fetch(client, satellites, on_progress=None, delay=RATE_LIMIT_DELAY):
+    results = []
+    total = len(satellites)
+    for i, sat in enumerate(satellites):
+        sat_id = sat.get("id", "?")
+        league = sat.get("league", "?")
+        date = sat.get("date", "?")
+        logger.info(f"Fetching [{i+1}/{total}] {league} {date} ({sat_id})")
+
+        payload, err = fetch_satellite(client, sat)
+        results.append({
+            "satellite": sat,
+            "payload": payload,
+            "error": err,
+        })
+
+        if on_progress:
+            on_progress(i + 1, total, sat, err)
+
+        if i < total - 1:
+            time.sleep(delay)
+
+    return results
+
+
+Gold Universe Orchestrator
+Manual control — {{ now }}
+{% if configured %}
+Google Connected
+{% else %}
+Google Not Configured
+{% endif %}Refresh
+{% if not configured %}
+Setup required
+Add your Google Service Account JSON to Replit Secrets as GOOGLE_SERVICE_ACCOUNT_JSON to connect to satellites.
+{% endif %}
+Bulk Operations
+Fetch All Satellites
+Run Full Assay on All
+Idle — waiting for manual trigger.
+Add Satellite
+Sheet ID (from Google Sheets URL)
+1BxiMVs0XRA5nFMdKvBdBZjgmUUqptlbs74OgVE2upms
+Sheet Name (optional)
+United States (NBA) J10
+Date (e.g. 2026-01-10)
+2026-01-10
+League
+NBA
+Notes (optional)
+Add to Registry
+Bulk Add (JSON)
+[{"sheet_id":"...","date":"2026-01-10","league":"NBA"},{"sheet_id":"...","date":"2026-01-11","league":"EuroLeague"}]
+Paste a JSON array of objects with sheet_id, date, league (and optional sheet_name, notes).
+Bulk Add
+{{ stats.total }}
+Satellites
+{{ stats.assayed }}
+Assayed
+{{ stats.by_format.get('gold_universe', 0) }}
+Gold Universe
+{{ stats.by_format.get('legacy', 0) }}
+Legacy
+{{ stats.by_status.get('error', 0) }}
+Errors
+{% if stats.by_league %}
+Satellites by League
+{% for league, count in stats.by_league.items()|sort(attribute='1', reverse=True) %}
+{{ count }} {{ league }}
+{% endfor %}
+{% endif %}
+Satellite Registry ({{ stats.total }})
+Filter by league or date...
+{% if satellites %}
+{% for sat in satellites|sort(attribute='date', reverse=True) %} {% endfor %}
+League	Date	Sheet Name	Format	Status	Side	Totals	Bet Slips	Last Fetched	Last Assayed	Assay Summary	Actions
+{{ sat.league }}	{{ sat.date }}	{{ sat.sheet_name or '—' }}	{{ sat.format }}	{{ sat.status }}	{{ sat.row_counts.get('side', '—') if sat.row_counts else '—' }}	{{ sat.row_counts.get('totals', '—') if sat.row_counts else '—' }}	{{ sat.row_counts.get('bet_slips', '—') if sat.row_counts else '—' }}	{{ sat.last_fetched[:16].replace('T',' ') if sat.last_fetched else '—' }}	{{ sat.last_assayed[:16].replace('T',' ') if sat.last_assayed else '—' }}	{% if sat.assay_summary %} {{ sat.assay_summary.bankers_count }}B / {{ sat.assay_summary.robbers_count }}R ({{ (sat.assay_summary.overall_win_rate * 100)|round(1) }}%) {% else %} — {% endif %}	
+Fetch
+Assay
+Accuracy
+HQ
+✕
+{% else %}
+No satellites registered yet. Use the sidebar to add satellite spreadsheet IDs.
+{% endif %}
+
+
+MA GOLIDE — Complete Accuracy Report
+{{ satellite.league }} | {{ satellite.date }} | {{ satellite.sheet_name or satellite.sheet_id }}
+Reload Report
+← Back
+Failed to load report: Failed to fetch
