@@ -5045,99 +5045,96 @@ function runBuildLeagueQuarterStats() {
 
 
 /**
- * Loads league quarter profile from LeagueQuarterO_U_Stats sheet.
- * Returns the format predictHighestQuarterEnhanced expects.
- * If league not found: returns null (caller handles fallback/skip).
- */
+Loads league quarter profile from LeagueQuarterO_U_Stats sheet.
+Returns the format predictHighestQuarterEnhanced expects.
+If league not found: returns null (caller handles fallback/skip).
+*/
 function getLeagueProfile(ss, league) {
   // NEW: make it work when ss isn't passed (diagnostics/backtests/contract mode)
   if (!ss) {
     try { ss = SpreadsheetApp.getActiveSpreadsheet(); } catch (e) {}
   }
   if (!ss) return null;
-  
+
   var sheet = ss.getSheetByName('LeagueQuarterO_U_Stats');
   if (!sheet || sheet.getLastRow() < 2) return null;
-  
+
   var data = sheet.getDataRange().getValues();
   var headers = data[0];
   var hmap = {};
   for (var h = 0; h < headers.length; h++) {
     hmap[String(headers[h]).toLowerCase().trim().replace(/[\s_]+/g, '')] = h;
   }
-  
+
   // Find the league row
   var leagueNorm = String(league || '').toLowerCase().trim();
   var cLeague = hmap['league'];
   if (cLeague === undefined) return null;
-  
+
   var row = null;
   for (var r = 1; r < data.length; r++) {
     var rowLeague = String(data[r][cLeague] || '').toLowerCase().trim();
-    if (rowLeague === leagueNorm || 
-        (leagueNorm === '' && data.length === 2)) { // single league: use it
+    if (rowLeague === leagueNorm || (leagueNorm === '' && data.length === 2)) { // single league: use it
       row = data[r];
       break;
     }
   }
-  
+
   // If no exact match found and only one league exists, use it
-  if (!row && data.length === 2) {
-    row = data[1];
-  }
-  
+  if (!row && data.length === 2) row = data[1];
   if (!row) return null;
-  
+
   // Parse helper: strips '%' and returns number
   function parseVal(idx) {
     if (idx === undefined) return NaN;
     var v = String(row[idx] || '').replace('%', '').trim();
     return parseFloat(v);
   }
-  
+
   var cGames = hmap['games'];
   var cQ1Mean = hmap['q1mean'] !== undefined ? hmap['q1mean'] : hmap['q1_mean'];
-  var cQ1SD = hmap['q1sd'] !== undefined ? hmap['q1sd'] : hmap['q1_sd'];
+  var cQ1SD   = hmap['q1sd']   !== undefined ? hmap['q1sd']   : hmap['q1_sd'];
   var cQ2Mean = hmap['q2mean'] !== undefined ? hmap['q2mean'] : hmap['q2_mean'];
-  var cQ2SD = hmap['q2sd'] !== undefined ? hmap['q2sd'] : hmap['q2_sd'];
+  var cQ2SD   = hmap['q2sd']   !== undefined ? hmap['q2sd']   : hmap['q2_sd'];
   var cQ3Mean = hmap['q3mean'] !== undefined ? hmap['q3mean'] : hmap['q3_mean'];
-  var cQ3SD = hmap['q3sd'] !== undefined ? hmap['q3sd'] : hmap['q3_sd'];
+  var cQ3SD   = hmap['q3sd']   !== undefined ? hmap['q3sd']   : hmap['q3_sd'];
   var cQ4Mean = hmap['q4mean'] !== undefined ? hmap['q4mean'] : hmap['q4_mean'];
-  var cQ4SD = hmap['q4sd'] !== undefined ? hmap['q4sd'] : hmap['q4_sd'];
+  var cQ4SD   = hmap['q4sd']   !== undefined ? hmap['q4sd']   : hmap['q4_sd'];
+
   var cQ1Pct = hmap['q1highestpct'] !== undefined ? hmap['q1highestpct'] : hmap['q1_highestpct'];
   var cQ2Pct = hmap['q2highestpct'] !== undefined ? hmap['q2highestpct'] : hmap['q2_highestpct'];
   var cQ3Pct = hmap['q3highestpct'] !== undefined ? hmap['q3highestpct'] : hmap['q3_highestpct'];
   var cQ4Pct = hmap['q4highestpct'] !== undefined ? hmap['q4highestpct'] : hmap['q4_highestpct'];
-  
+
   var games = parseVal(cGames);
   if (!isFinite(games) || games < 5) return null;
-  
+
   var q1m = parseVal(cQ1Mean), q1s = parseVal(cQ1SD);
   var q2m = parseVal(cQ2Mean), q2s = parseVal(cQ2SD);
   var q3m = parseVal(cQ3Mean), q3s = parseVal(cQ3SD);
   var q4m = parseVal(cQ4Mean), q4s = parseVal(cQ4SD);
-  
+
   // Parse highest-quarter percentages (stored as "29.4%")
   var q1pct = parseVal(cQ1Pct) / 100;
   var q2pct = parseVal(cQ2Pct) / 100;
   var q3pct = parseVal(cQ3Pct) / 100;
   var q4pct = parseVal(cQ4Pct) / 100;
-  
+
   // Validate
   if (!isFinite(q1m) || !isFinite(q2m) || !isFinite(q3m) || !isFinite(q4m)) return null;
-  
+
   // Default SDs if missing
   if (!isFinite(q1s) || q1s <= 0) q1s = 8;
   if (!isFinite(q2s) || q2s <= 0) q2s = 8;
   if (!isFinite(q3s) || q3s <= 0) q3s = 8;
   if (!isFinite(q4s) || q4s <= 0) q4s = 8;
-  
+
   // Default percentages if missing
   if (!isFinite(q1pct)) q1pct = 0.25;
   if (!isFinite(q2pct)) q2pct = 0.25;
   if (!isFinite(q3pct)) q3pct = 0.25;
   if (!isFinite(q4pct)) q4pct = 0.25;
-  
+
   var prof = {
     Q1: { mean: q1m, sd: q1s, count: games, overPct: 50, underPct: 50 },
     Q2: { mean: q2m, sd: q2s, count: games, overPct: 50, underPct: 50 },
@@ -5146,13 +5143,20 @@ function getLeagueProfile(ss, league) {
     _source: 'LeagueQuarterO_U_Stats',
     quarterPcts: { Q1: q1pct, Q2: q2pct, Q3: q3pct, Q4: q4pct }
   };
-  
+
+  // FIX: q1pct100 etc were undefined in your PDF version
+  var q1pct100 = isFinite(q1pct) ? (q1pct * 100) : NaN;
+  var q2pct100 = isFinite(q2pct) ? (q2pct * 100) : NaN;
+  var q3pct100 = isFinite(q3pct) ? (q3pct * 100) : NaN;
+  var q4pct100 = isFinite(q4pct) ? (q4pct * 100) : NaN;
+
   Logger.log('[getLeagueProfile] Loaded profile for "' + league + '": ' +
-    'Q1=' + q1m + '±' + q1s + ' (' + (q1pct*100).toFixed(1) + '%), ' +
-    'Q2=' + q2m + '±' + q2s + ' (' + (q2pct*100).toFixed(1) + '%), ' +
-    'Q3=' + q3m + '±' + q3s + ' (' + (q3pct*100).toFixed(1) + '%), ' +
-    'Q4=' + q4m + '±' + q4s + ' (' + (q4pct*100).toFixed(1) + '%)');
-  
+    'Q1=' + q1m + '±' + q1s + (isFinite(q1pct100) ? (' (' + q1pct100.toFixed(1) + '%)') : '') + ', ' +
+    'Q2=' + q2m + '±' + q2s + (isFinite(q2pct100) ? (' (' + q2pct100.toFixed(1) + '%)') : '') + ', ' +
+    'Q3=' + q3m + '±' + q3s + (isFinite(q3pct100) ? (' (' + q3pct100.toFixed(1) + '%)') : '') + ', ' +
+    'Q4=' + q4m + '±' + q4s + (isFinite(q4pct100) ? (' (' + q4pct100.toFixed(1) + '%)') : '')
+  );
+
   return prof;
 }
 
