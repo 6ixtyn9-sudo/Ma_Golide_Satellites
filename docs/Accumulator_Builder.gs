@@ -4854,22 +4854,8 @@ function loadLeagueOU(ss) {
     return key ? (h2h.byMatchup[key] || null) : null;
   }
   
-  /**
- * ═══════════════════════════════════════════════════════════════════════════
- * loadRecent — PATCHED (Fix 2A + Fix 2C)
- * ═══════════════════════════════════════════════════════════════════════════
- * Fix 2A: Cache returns SAME object shape as first return ({ ok, byTeam }).
- *         No more { ok, home, away } wrapper on cache hit.
- * Fix 2C: Trend computation parameterized — stores t.trend[Q] (legacy 5/5),
- *         t.trend5[Q], t.trendByN[n][Q], t.trendN[Q] + t._trendN.
- *
- * Optional signature:
- *   loadRecent(ss)            — uses default lookback (5)
- *   loadRecent(ss, 10)        — lookback N = 10
- *   loadRecent(ss, configObj) — reads .recent_games_min / .recentGamesMin / .lookbackN
- *
- * Backward compatible: existing code reading t.trend[Q] still works unchanged.
- */
+
+  
  function loadRecent(ss, configOrN) {
    var fn = 'loadRecent';
    var cache = ensureCache(ss);
@@ -5366,38 +5352,6 @@ function _getTeamWinFactor(q, home, away, stats, ctx) {
 }
 
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * _getQuarterBaseScore — PATCHED (R3 + R4-PATCH5 / Fix 4A)
- * File: Module 9 (Enhancements / Elite module — inside IIFE)
- * ═══════════════════════════════════════════════════════════════════════════
- * Prior patches preserved:
- *   From P1/P2: getEliteDefaults_() fallback chain for shrinkage k
- *   From P3:    Clean Bayesian shrinkage, no dead stats._elite.* fallback
- *   All:        n/(n+k) pattern, separate kH2H = clamp(k, 6, 16) for H2H
- *
- * R4-PATCH5 addition (Fix 4A — O/U → HQ cross-leverage):
- *   If ctx.ouPredictions[Q] exists and has a valid mu (populated by O/U
- *   pipeline via Patches 2→4→6), use it as the base score instead of
- *   recomputing independently from recent stats + H2H + league profile.
- *
- *   Rationale: O/U's predictor (t2ou_predictQuarterTotal_) uses the same
- *   Bayesian shrinkage pattern but operates on venue-specific quarter totals
- *   with additional Forebet blending. Its output is a more informed estimate
- *   than what this function computes from avgScored per team.
- *
- *   Also stashes O/U's sigma into ctx._hq.baseSigmaByQ[Q] so downstream
- *   HQ confidence logic (Patch 6+) can optionally use variance information.
- *
- *   Short-circuits early — no spreadsheet access needed when O/U data exists.
- *   Falls through to full legacy computation if ouPredictions is absent or
- *   mu is invalid.
- *
- * Signature (backward compatible):
- *   _getQuarterBaseScore(q, home, away, stats, ctx)
- * Returns expected combined quarter total (Number).
- * ═══════════════════════════════════════════════════════════════════════════
- */
 function _getQuarterBaseScore(q, home, away, stats, ctx) {
   var fn = 'getQuarterBaseScore';
   var Q = quarterKey(q);
@@ -5575,18 +5529,6 @@ function _getQuarterBaseScore(q, home, away, stats, ctx) {
 
 
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * _getRecentQuarterTrend — PATCHED (Round 1 ctx + Round 2 trendByN unlock)
- * ═══════════════════════════════════════════════════════════════════════════
- * Round 1: ctx-aware (uses ctx.homeRecent/ctx.awayRecent/ctx.ss when provided).
- * Round 2: Uses trendByN[games] when loadRecent has stored parameterized trends,
- *          falls back gracefully through trendN → trend5 → trend (legacy).
- *
- * Signature (backward compatible):
- *   _getRecentQuarterTrend(q, home, away, stats, games, ctx)
- * Returns trend factor [-0.15, 0.15]
- */
  function _getRecentQuarterTrend(q, home, away, stats, games, ctx) {
    var fn = 'getRecentQuarterTrend';
    var Q = quarterKey(q);
@@ -5672,18 +5614,7 @@ function _getQuarterBaseScore(q, home, away, stats, ctx) {
    return result;
  }
   
-  /**
- * ═══════════════════════════════════════════════════════════════════════════
- * _getPaceFactor  
- * ═══════════════════════════════════════════════════════════════════════════
- * From P3: NO inline loadRecent fallback (orchestrator owns that workaround).
- * From P1/P2: Game-level cache ctx._hq.paceFactor (pace identical Q1–Q4).
- * From P2: Simple ctx fallback for recent stats.
- *
- * Signature (backward compatible):
- *   _getPaceFactor(q, home, away, stats, ctx)
- * Returns pace factor [-0.10, 0.10]
- */
+
  function _getPaceFactor(q, home, away, stats, ctx) {
    var fn = 'getPaceFactor';
    var Q = quarterKey(q);
@@ -5806,36 +5737,8 @@ function _getQuarterBaseScore(q, home, away, stats, ctx) {
    return result;
  }
   
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * [UPDATED 5C] _getH2HQuarterPattern
- * File: Module 9 (Enhancements / Elite module — inside IIFE)
- * ═══════════════════════════════════════════════════════════════════════════
- * Returns H2H pattern factor [-0.18, 0.18]
- *
- * Prior logic preserved:
- *   - Core deviation signal: (h2hAvg − leagueMean) / leagueMean
- *   - Reliability scaling:   clamp(h2hCount / 8, 0, 1)
- *   - Volatility/noise damping: CV-based with variance penalty scaling
- *   - Fallback damping via league SD ratio when avg missing but sd exists
- *   - ctx prefetch for ss, h2hStats, prof (no redundant sheet reads)
- *   - Per-quarter caching to ctx._hq.h2hFactor[Q]
- *
- * Round 5 addition (Signal 5C — h2h_boost):
- *   Reads ctx.h2hBoost (injected by orchestrator from config.h2h_boost).
- *   Multiplies the computed factor by h2hBoost BEFORE the final contract
- *   clamp, allowing H2H signal to reach the ±0.18 cap faster in leagues
- *   where H2H patterns are more predictive (boost > 1), or to be
- *   attenuated (boost < 1), without ever exceeding contract bounds.
- *
- *   Default h2hBoost = 1.0 (no change from prior behavior).
- *   Guard: boost must be finite and > 0; otherwise treated as 1.0.
- *
- * Signature (unchanged):
- *   _getH2HQuarterPattern(q, home, away, stats, ctx)
- * Returns factor in [-0.18, 0.18].
- * ═══════════════════════════════════════════════════════════════════════════
- */
+
+
 function _getH2HQuarterPattern(q, home, away, stats, ctx) {
   var fn = 'getH2HQuarterPattern';
   var Q = quarterKey(q);
