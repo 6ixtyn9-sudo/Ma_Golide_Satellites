@@ -824,704 +824,6 @@ function _m8_parseConf_(raw) {
 }
 
 
-/* ============================================================================
- * _deriveHighestQuarter_ v7.1 DIAGNOSTIC
- * ============================================================================
- * Heavily instrumented version for debugging team stats lookup failures.
- * 
- * DIAGNOSTIC FEATURES:
- * - Logs full structure of incoming marginStats
- * - Logs all team name normalization steps
- * - Attempts multiple lookup strategies with logging
- * - Provides detailed failure reasons
- * - Safe property access throughout
- * 
- * v7.1 PATCHES:
- * - Strategy B (T2 fallback) now parses points from BOTH formats:
- *     "Q1 55.2"           (bare number after quarter)
- *     "Q1 (55.2 pts)"     (parenthesized with pts suffix)
- *     "Highest Scoring Quarter: Q1 55.2"
- * - Uses isFinite() for safer number validation
- * - Preserves decimal precision in pts display (55.2 not 55)
- * 
- * Config keys:
- *   highQtrWinnerTakesAllMargin - force winner if margin > this (default: 1.5)
- *   highQtrFlatSdMin            - suppress if std dev < this (default: 0.8)
- *   showHighestQuarterPoints    - include pts in output (default: true)
- *   highQtrWeights              - weight config for enhanced predictor
- *   diagnosticMode              - extra verbose logging (default: true in this version)
- */
-function _deriveHighestQuarter_(game, marginStats, config, t2) {
-  var FN = '_deriveHighestQuarter_';
-  var DIAG_VERSION = '7.1-DIAGNOSTIC';
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // DIAGNOSTIC UTILITIES
-  // ─────────────────────────────────────────────────────────────────────────
-  
-  /**
-   * Safe logging that won't throw
-   */
-  function log_(level, msg, data) {
-    try {
-      var prefix = '[' + FN + '] [' + level + '] ';
-      var dataStr = '';
-      if (data !== undefined) {
-        try {
-          dataStr = ' | DATA: ' + JSON.stringify(data, null, 0);
-        } catch (e) {
-          dataStr = ' | DATA: [unstringifiable]';
-        }
-      }
-      Logger.log(prefix + msg + dataStr);
-    } catch (e) {
-      // Silent fail - logging should never break the function
-    }
-  }
-  
-  /**
-   * Deep inspect an object's structure (keys, types, sample values)
-   */
-  function inspectObject_(obj, label, maxDepth) {
-    maxDepth = maxDepth || 2;
-    label = label || 'object';
-    
-    if (obj === null) return { type: 'null', value: null };
-    if (obj === undefined) return { type: 'undefined', value: undefined };
-    
-    var t = typeof obj;
-    if (t !== 'object') return { type: t, value: String(obj).slice(0, 100) };
-    
-    if (Array.isArray(obj)) {
-      return {
-        type: 'array',
-        length: obj.length,
-        sample: obj.slice(0, 3).map(function(x) { 
-          return inspectObject_(x, '', maxDepth - 1); 
-        })
-      };
-    }
-    
-    var keys = [];
-    try { keys = Object.keys(obj); } catch (e) { keys = []; }
-    
-    var result = {
-      type: 'object',
-      keyCount: keys.length,
-      keys: keys.slice(0, 20),
-      keySample: {}
-    };
-    
-    if (maxDepth > 0) {
-      keys.slice(0, 5).forEach(function(k) {
-        try {
-          result.keySample[k] = inspectObject_(obj[k], k, maxDepth - 1);
-        } catch (e) {
-          result.keySample[k] = { error: e.message };
-        }
-      });
-    }
-    
-    return result;
-  }
-  
-  /**
-   * Safe number conversion with detailed logging
-   */
-  function safeNum_(val, fallback, context) {
-    if (val === null || val === undefined) {
-      log_('TRACE', 'safeNum_ NULL/UNDEF for ' + context + ', using fallback=' + fallback);
-      return fallback;
-    }
-    var n = parseFloat(val);
-    if (!isFinite(n)) {
-      log_('TRACE', 'safeNum_ NaN for ' + context + ' (raw=' + String(val).slice(0,50) + '), using fallback=' + fallback);
-      return fallback;
-    }
-    return n;
-  }
-  
-  /**
-   * Clamp with bounds check
-   */
-  function clamp_(v, lo, hi) {
-    v = safeNum_(v, (lo + hi) / 2, 'clamp');
-    return Math.max(lo, Math.min(hi, v));
-  }
-  
-  /**
-   * Calculate standard deviation of array
-   */
-  function stdDev_(arr) {
-    if (!Array.isArray(arr) || arr.length === 0) return 0;
-    var nums = arr.map(function(x) { return safeNum_(x, 0, 'stdDev'); });
-    var mean = nums.reduce(function(a, b) { return a + b; }, 0) / nums.length;
-    var sqDiffs = nums.map(function(x) { return Math.pow(x - mean, 2); });
-    var avgSqDiff = sqDiffs.reduce(function(a, b) { return a + b; }, 0) / nums.length;
-    return Math.sqrt(avgSqDiff);
-  }
-  
-  /**
-   * Normalize team name for consistent lookup
-   * Returns object with multiple variants for fallback attempts
-   */
-  function normalizeTeamName_(raw) {
-    if (!raw) return { original: '', lower: '', trimmed: '', canonical: '', variants: [] };
-    
-    var s = String(raw);
-    var trimmed = s.trim();
-    var lower = trimmed.toLowerCase();
-    
-    // Canonical: lowercase, collapse whitespace, remove punctuation
-    var canonical = lower
-      .replace(/[''`]/g, '')           // Remove apostrophes
-      .replace(/[.\-,]/g, ' ')         // Replace punctuation with space
-      .replace(/\s+/g, ' ')            // Collapse whitespace
-      .trim();
-    
-    // Generate variants for fuzzy matching
-    var variants = [
-      trimmed,                          // Original trimmed
-      lower,                            // Lowercase
-      canonical,                        // Canonical
-      canonical.replace(/\s/g, ''),     // No spaces
-      lower.replace(/^the\s+/i, ''),    // Remove leading "the"
-    ];
-    
-    // Add common abbreviation expansions
-    var abbrevMap = {
-      'okc': 'oklahoma city thunder',
-      'la lakers': 'los angeles lakers',
-      'la clippers': 'los angeles clippers',
-      'ny knicks': 'new york knicks',
-      'nyk': 'new york knicks',
-      'gs warriors': 'golden state warriors',
-      'gsw': 'golden state warriors',
-      'sa spurs': 'san antonio spurs',
-      'no pelicans': 'new orleans pelicans',
-      'nop': 'new orleans pelicans',
-      'phx': 'phoenix suns',
-      'phx suns': 'phoenix suns'
-    };
-    
-    if (abbrevMap[canonical]) {
-      variants.push(abbrevMap[canonical]);
-    }
-    
-    // Deduplicate
-    var seen = {};
-    variants = variants.filter(function(v) {
-      if (!v || seen[v]) return false;
-      seen[v] = true;
-      return true;
-    });
-    
-    return {
-      original: s,
-      trimmed: trimmed,
-      lower: lower,
-      canonical: canonical,
-      variants: variants
-    };
-  }
-  
-  /**
-   * Attempt to find team data in marginStats using multiple strategies
-   */
-  function findTeamInStats_(teamNorm, marginStats, context) {
-    var results = {
-      found: false,
-      key: null,
-      data: null,
-      strategy: null,
-      attempts: []
-    };
-    
-    if (!marginStats || typeof marginStats !== 'object') {
-      results.attempts.push({ strategy: 'CHECK_OBJECT', result: 'marginStats is not an object' });
-      return results;
-    }
-    
-    var statsKeys = [];
-    try { statsKeys = Object.keys(marginStats); } catch (e) {
-      results.attempts.push({ strategy: 'GET_KEYS', result: 'Failed: ' + e.message });
-      return results;
-    }
-    
-    if (statsKeys.length === 0) {
-      results.attempts.push({ strategy: 'KEY_COUNT', result: 'marginStats has 0 keys' });
-      return results;
-    }
-    
-    // Strategy 1: Exact match on each variant
-    for (var i = 0; i < teamNorm.variants.length; i++) {
-      var variant = teamNorm.variants[i];
-      if (marginStats.hasOwnProperty(variant) && marginStats[variant] !== undefined) {
-        results.found = true;
-        results.key = variant;
-        results.data = marginStats[variant];
-        results.strategy = 'EXACT_VARIANT_' + i;
-        results.attempts.push({ strategy: 'EXACT', variant: variant, result: 'FOUND' });
-        return results;
-      }
-      results.attempts.push({ strategy: 'EXACT', variant: variant, result: 'NOT_FOUND' });
-    }
-    
-    // Strategy 2: Case-insensitive scan of all keys
-    var lowerVariants = teamNorm.variants.map(function(v) { return v.toLowerCase(); });
-    
-    for (var j = 0; j < statsKeys.length; j++) {
-      var statsKey = statsKeys[j];
-      var statsKeyLower = String(statsKey).toLowerCase().trim();
-      
-      for (var k = 0; k < lowerVariants.length; k++) {
-        if (statsKeyLower === lowerVariants[k]) {
-          results.found = true;
-          results.key = statsKey;
-          results.data = marginStats[statsKey];
-          results.strategy = 'CASE_INSENSITIVE';
-          results.attempts.push({ 
-            strategy: 'CASE_INSENSITIVE', 
-            statsKey: statsKey, 
-            matchedVariant: teamNorm.variants[k],
-            result: 'FOUND' 
-          });
-          return results;
-        }
-      }
-    }
-    results.attempts.push({ strategy: 'CASE_INSENSITIVE_SCAN', result: 'NO_MATCH' });
-    
-    // Strategy 3: Substring/contains match
-    for (var m = 0; m < statsKeys.length; m++) {
-      var sk = String(statsKeys[m]).toLowerCase();
-      for (var n = 0; n < lowerVariants.length; n++) {
-        // Check if stats key contains variant or vice versa (min 5 chars to avoid false positives)
-        if (lowerVariants[n].length >= 5 && sk.indexOf(lowerVariants[n]) !== -1) {
-          results.found = true;
-          results.key = statsKeys[m];
-          results.data = marginStats[statsKeys[m]];
-          results.strategy = 'SUBSTRING_VARIANT_IN_KEY';
-          results.attempts.push({ 
-            strategy: 'SUBSTRING', 
-            statsKey: statsKeys[m], 
-            variant: lowerVariants[n],
-            result: 'FOUND' 
-          });
-          return results;
-        }
-        if (sk.length >= 5 && lowerVariants[n].indexOf(sk) !== -1) {
-          results.found = true;
-          results.key = statsKeys[m];
-          results.data = marginStats[statsKeys[m]];
-          results.strategy = 'SUBSTRING_KEY_IN_VARIANT';
-          results.attempts.push({ 
-            strategy: 'SUBSTRING', 
-            statsKey: statsKeys[m], 
-            variant: lowerVariants[n],
-            result: 'FOUND' 
-          });
-          return results;
-        }
-      }
-    }
-    results.attempts.push({ strategy: 'SUBSTRING_SCAN', result: 'NO_MATCH' });
-    
-    // Strategy 4: Log available keys for debugging
-    results.attempts.push({
-      strategy: 'AVAILABLE_KEYS',
-      sampleKeys: statsKeys.slice(0, 15),
-      totalKeys: statsKeys.length
-    });
-    
-    return results;
-  }
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // MAIN FUNCTION START
-  // ─────────────────────────────────────────────────────────────────────────
-  
-  log_('INFO', '═══════════════════════════════════════════════════════════════');
-  log_('INFO', 'ENTRY v' + DIAG_VERSION);
-  
-  // Defensive initialization
-  game = game || {};
-  config = config || {};
-  marginStats = marginStats || {};
-  t2 = t2 || {};
-  
-  // Log incoming parameter structure
-  log_('DEBUG', 'PARAM game:', inspectObject_(game, 'game', 2));
-  log_('DEBUG', 'PARAM marginStats:', inspectObject_(marginStats, 'marginStats', 2));
-  log_('DEBUG', 'PARAM config:', inspectObject_(config, 'config', 1));
-  log_('DEBUG', 'PARAM t2:', inspectObject_(t2, 't2', 1));
-  
-  // Extract and normalize team names
-  var homeRaw = game.home;
-  var awayRaw = game.away;
-  
-  log_('DEBUG', 'RAW TEAMS: home=' + JSON.stringify(homeRaw) + ' away=' + JSON.stringify(awayRaw));
-  
-  var homeNorm = normalizeTeamName_(homeRaw);
-  var awayNorm = normalizeTeamName_(awayRaw);
-  
-  log_('DEBUG', 'NORMALIZED home:', homeNorm);
-  log_('DEBUG', 'NORMALIZED away:', awayNorm);
-  
-  var home = homeNorm.trimmed;
-  var away = awayNorm.trimmed;
-  
-  // Exit early if missing teams
-  if (!home || !away) {
-    log_('WARN', 'EARLY EXIT: missing teams. home="' + home + '" away="' + away + '"');
-    return {
-      quarter: 'N/A',
-      pick: 'Highest Q: N/A',
-      confidence: 0,
-      expectedTotal: null,
-      isTie: false,
-      margin: null,
-      source: 'NONE',
-      details: { reason: 'missing_teams', homeRaw: homeRaw, awayRaw: awayRaw }
-    };
-  }
-  
-  // Configuration with sensible defaults
-  var WTA_MARGIN = clamp_(safeNum_(config.highQtrWinnerTakesAllMargin, 1.5, 'WTA_MARGIN'), 0.5, 5);
-  var FLAT_SD_MIN = clamp_(safeNum_(config.highQtrFlatSdMin, 0.8, 'FLAT_SD_MIN'), 0, 3);
-  var SHOW_POINTS = (config.showHighestQuarterPoints !== false);
-  var DIAGNOSTIC_MODE = (config.diagnosticMode !== false); // Default ON for this version
-  
-  log_('DEBUG', 'CONFIG: WTA_MARGIN=' + WTA_MARGIN + ' FLAT_SD_MIN=' + FLAT_SD_MIN + 
-       ' SHOW_POINTS=' + SHOW_POINTS + ' DIAGNOSTIC=' + DIAGNOSTIC_MODE);
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // MARGINSTAT STRUCTURE ANALYSIS
-  // ─────────────────────────────────────────────────────────────────────────
-  
-  log_('INFO', '--- MARGINSTATS ANALYSIS ---');
-  
-  var statsKeys = [];
-  try { 
-    statsKeys = Object.keys(marginStats); 
-  } catch (e) {
-    log_('ERROR', 'Cannot get marginStats keys: ' + e.message);
-  }
-  
-  log_('INFO', 'marginStats key count: ' + statsKeys.length);
-  
-  if (statsKeys.length === 0) {
-    log_('ERROR', 'marginStats is EMPTY - this is the root cause of fallback behavior');
-    log_('ERROR', 'marginStats type: ' + typeof marginStats);
-    log_('ERROR', 'marginStats constructor: ' + (marginStats && marginStats.constructor ? marginStats.constructor.name : 'unknown'));
-  } else {
-    log_('INFO', 'marginStats sample keys (first 10): ' + JSON.stringify(statsKeys.slice(0, 10)));
-    log_('INFO', 'marginStats sample keys (last 5): ' + JSON.stringify(statsKeys.slice(-5)));
-    
-    // Log structure of first entry
-    if (statsKeys[0]) {
-      log_('DEBUG', 'First entry structure [' + statsKeys[0] + ']:', 
-           inspectObject_(marginStats[statsKeys[0]], 'firstEntry', 3));
-    }
-  }
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // TEAM LOOKUP DIAGNOSTICS
-  // ─────────────────────────────────────────────────────────────────────────
-  
-  log_('INFO', '--- TEAM LOOKUP DIAGNOSTICS ---');
-  
-  var homeLookup = findTeamInStats_(homeNorm, marginStats, 'HOME');
-  var awayLookup = findTeamInStats_(awayNorm, marginStats, 'AWAY');
-  
-  log_('INFO', 'HOME LOOKUP [' + home + ']:', {
-    found: homeLookup.found,
-    key: homeLookup.key,
-    strategy: homeLookup.strategy,
-    dataType: homeLookup.data ? typeof homeLookup.data : 'N/A',
-    attempts: homeLookup.attempts
-  });
-  
-  log_('INFO', 'AWAY LOOKUP [' + away + ']:', {
-    found: awayLookup.found,
-    key: awayLookup.key,
-    strategy: awayLookup.strategy,
-    dataType: awayLookup.data ? typeof awayLookup.data : 'N/A',
-    attempts: awayLookup.attempts
-  });
-  
-  if (!homeLookup.found || !awayLookup.found) {
-    log_('ERROR', 'TEAM LOOKUP FAILED - This explains the "Cannot read properties of undefined" error');
-    log_('ERROR', 'homeLookup.found=' + homeLookup.found + ' awayLookup.found=' + awayLookup.found);
-    
-    // Attempt to diagnose key format mismatch
-    if (statsKeys.length > 0) {
-      log_('WARN', 'KEY FORMAT ANALYSIS:');
-      var sampleKey = statsKeys[0];
-      log_('WARN', '  Sample marginStats key: "' + sampleKey + '" (length=' + sampleKey.length + ')');
-      log_('WARN', '  Sample key charCodes: ' + sampleKey.split('').slice(0,20).map(function(c) { 
-        return c.charCodeAt(0); 
-      }).join(','));
-      log_('WARN', '  Home canonical: "' + homeNorm.canonical + '" (length=' + homeNorm.canonical.length + ')');
-      log_('WARN', '  Home charCodes: ' + homeNorm.canonical.split('').slice(0,20).map(function(c) { 
-        return c.charCodeAt(0); 
-      }).join(','));
-    }
-  }
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // Strategy A: Enhanced predictor (preferred)
-  // ─────────────────────────────────────────────────────────────────────────
-  
-  log_('INFO', '--- STRATEGY A: ENHANCED PREDICTOR ---');
-  
-  var enhancedAvailable = (typeof predictHighestQuarterEnhanced === 'function');
-  log_('DEBUG', 'predictHighestQuarterEnhanced available: ' + enhancedAvailable);
-  
-  if (enhancedAvailable) {
-    try {
-      var enhConfig = config.highQtrWeights || null;
-      log_('DEBUG', 'Calling predictHighestQuarterEnhanced with:', {
-        game: { home: home, away: away },
-        marginStatsKeyCount: statsKeys.length,
-        enhConfig: enhConfig
-      });
-      
-      var res = predictHighestQuarterEnhanced({ home: home, away: away }, marginStats, enhConfig);
-      
-      log_('DEBUG', 'predictHighestQuarterEnhanced returned:', inspectObject_(res, 'result', 3));
-      
-      if (res && res.allQuarters && res.allQuarters.length >= 2) {
-        // Sort by score descending
-        var sorted = res.allQuarters.slice().sort(function(a, b) {
-          return safeNum_(b.enhancedScore, 0, 'sort_b') - safeNum_(a.enhancedScore, 0, 'sort_a');
-        });
-        
-        log_('DEBUG', 'Sorted quarters:', sorted.map(function(q) {
-          return { quarter: q.quarter, score: q.enhancedScore };
-        }));
-        
-        var top = sorted[0];
-        var second = sorted[1];
-        var topScore = safeNum_(top.enhancedScore, 0, 'topScore');
-        var secondScore = safeNum_(second.enhancedScore, 0, 'secondScore');
-        var margin = topScore - secondScore;
-        
-        log_('DEBUG', 'Top quarter: ' + top.quarter + ' score=' + topScore);
-        log_('DEBUG', 'Second quarter: ' + second.quarter + ' score=' + secondScore);
-        log_('DEBUG', 'Margin: ' + margin);
-        
-        // Flatness check
-        var scores = sorted.map(function(q) { return safeNum_(q.enhancedScore, 0, 'flatness'); });
-        var sd = stdDev_(scores);
-        
-        log_('DEBUG', 'All scores: ' + JSON.stringify(scores) + ' SD=' + sd.toFixed(3));
-        
-        // Check for suspicious identical scores (fallback indicator)
-        var allIdentical = scores.every(function(s) { return s === scores[0]; });
-        if (allIdentical) {
-          log_('ERROR', 'ALL QUARTER SCORES IDENTICAL (' + scores[0] + ') - FALLBACK VALUES DETECTED');
-          log_('ERROR', 'This indicates team stats lookup failed upstream');
-        }
-        
-        if (sd < FLAT_SD_MIN) {
-          log_('WARN', 'Flat scores suppression triggered: SD=' + sd.toFixed(3) + ' < threshold=' + FLAT_SD_MIN);
-          return {
-            quarter: 'N/A',
-            pick: 'Highest Q: N/A',
-            confidence: Math.min(50, safeNum_(res.confidence, 0, 'conf')),
-            expectedTotal: null,
-            isTie: false,
-            margin: margin,
-            source: 'ENHANCED',
-            details: {
-              reason: 'flat_scores',
-              sd: sd,
-              scores: scores,
-              allIdentical: allIdentical,
-              homeLookup: homeLookup.found,
-              awayLookup: awayLookup.found
-            }
-          };
-        }
-        
-        // Winner-Takes-All logic
-        var isTie = !(margin > WTA_MARGIN);
-        var pickQuarter = isTie
-          ? (top.quarter + ' or ' + second.quarter)
-          : top.quarter;
-        
-        // Calculate confidence
-        var conf = clamp_(50 + (margin * 2), 50, 80);
-        if (isTie) conf = Math.min(conf, 55);
-        conf = Math.round(conf * 10) / 10;
-        
-        var expected = Math.round(topScore * 10) / 10;
-        var showPts = SHOW_POINTS && !isTie && expected >= 20 && expected <= 80;
-        var pickText = 'Highest Q: ' + pickQuarter + (showPts ? ' (' + expected + ' pts)' : '');
-        
-        log_('INFO', 'ENHANCED RESULT: ' + (isTie ? 'TIE' : 'WINNER') + ' ' + pickQuarter +
-             ' margin=' + margin.toFixed(1) + ' conf=' + conf);
-        
-        return {
-          quarter: isTie ? 'EST' : pickQuarter,
-          pick: pickText,
-          confidence: conf,
-          expectedTotal: isTie ? null : expected,
-          isTie: isTie,
-          margin: Math.round(margin * 10) / 10,
-          source: 'ENHANCED',
-          details: {
-            wtaMargin: WTA_MARGIN,
-            sd: sd,
-            topScore: topScore,
-            secondScore: secondScore,
-            homeLookup: homeLookup.found,
-            awayLookup: awayLookup.found
-          }
-        };
-        
-      } else {
-        log_('WARN', 'predictHighestQuarterEnhanced returned invalid/empty result');
-        log_('WARN', 'res=' + JSON.stringify(res));
-      }
-      
-    } catch (e) {
-      log_('ERROR', 'ENHANCED PREDICTOR EXCEPTION: ' + e.message);
-      log_('ERROR', 'Stack: ' + (e.stack || 'N/A'));
-      
-      // Detailed error analysis
-      if (e.message && e.message.indexOf('undefined') !== -1) {
-        log_('ERROR', 'UNDEFINED ACCESS ERROR - Likely cause: team name not found in marginStats');
-        log_('ERROR', 'Attempted home variants: ' + JSON.stringify(homeNorm.variants));
-        log_('ERROR', 'Attempted away variants: ' + JSON.stringify(awayNorm.variants));
-      }
-    }
-  }
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // Strategy B: T2 fallback (v7.1 PATCHED)
-  // ─────────────────────────────────────────────────────────────────────────
-  
-  log_('INFO', '--- STRATEGY B: T2 FALLBACK (v7.1 Enhanced Parsing) ---');
-  
-  var est = t2.ouHighestEst ? String(t2.ouHighestEst).trim() : '';
-  log_('DEBUG', 'T2 ouHighestEst raw: "' + est + '"');
-  
-  if (est) {
-    var cleaned = est.replace(/^Highest\s+(?:Scoring\s+)?Quarter:?\s*/i, '').trim();
-    log_('DEBUG', 'T2 cleaned: "' + cleaned + '"');
-    
-    // Tie pattern
-    var tieMatch = cleaned.match(/(?:EST\s*)?(Q[1-4])\s*=\s*(Q[1-4])/i);
-    if (tieMatch) {
-      var qA = tieMatch[1].toUpperCase();
-      var qB = tieMatch[2].toUpperCase();
-      log_('INFO', 'T2 TIE DETECTED: ' + qA + '=' + qB);
-      return {
-        quarter: 'EST',
-        pick: 'Highest Q: ' + qA + ' or ' + qB,
-        confidence: 52,
-        expectedTotal: null,
-        isTie: true,
-        margin: null,
-        source: 'T2_FALLBACK',
-        details: { raw: est, parsed: 'tie', qA: qA, qB: qB }
-      };
-    }
-    
-    // Single quarter pattern
-    var qMatch = cleaned.match(/\b(Q[1-4])\b/i);
-    if (qMatch) {
-      var q = qMatch[1].toUpperCase();
-      
-      // ═══════════════════════════════════════════════════════════════════
-      // v7.1 PATCH: Enhanced points parsing
-      // Captures points from BOTH formats:
-      //   "Q1 55.2"           → bare number after quarter
-      //   "Q1 (55.2 pts)"     → parenthesized with optional pts suffix
-      //   "Highest Scoring Quarter: Q1 55.2" → after prefix removal
-      // ═══════════════════════════════════════════════════════════════════
-      var pts = null;
-      
-      // Method 1: Bare number immediately after quarter (e.g., "Q1 55.2")
-      var ptsMatch1 = cleaned.match(/\bQ[1-4]\b[^0-9]*([0-9]+(?:\.[0-9]+)?)/i);
-      if (ptsMatch1) {
-        pts = parseFloat(ptsMatch1[1]);
-        log_('DEBUG', 'Points parsed via Method 1 (bare number): ' + pts);
-      }
-      
-      // Method 2: Parenthesized with pts suffix (e.g., "(55.2 pts)")
-      if (!isFinite(pts)) {
-        var ptsMatch2 = cleaned.match(/\(?\s*([0-9]+(?:\.[0-9]+)?)\s*pts?\s*\)?/i);
-        if (ptsMatch2) {
-          pts = parseFloat(ptsMatch2[1]);
-          log_('DEBUG', 'Points parsed via Method 2 (parenthesized): ' + pts);
-        }
-      }
-      
-      log_('INFO', 'T2 SINGLE QUARTER: ' + q + ' pts=' + pts + ' (isFinite=' + isFinite(pts) + ')');
-      
-      var pickText = 'Highest Q: ' + q;
-      // v7.1: Use isFinite() for safer check, preserve decimal precision
-      if (SHOW_POINTS && isFinite(pts) && pts >= 20 && pts <= 80) {
-        pickText += ' (' + (Math.round(pts * 10) / 10) + ' pts)';
-      }
-      
-      return {
-        quarter: q,
-        pick: pickText,
-        confidence: 55,
-        expectedTotal: isFinite(pts) ? pts : null, // v7.1: Safe null fallback
-        isTie: false,
-        margin: null,
-        source: 'T2_FALLBACK',
-        details: { raw: est, parsed: 'single', quarter: q, pts: pts }
-      };
-    }
-    
-    log_('WARN', 'T2 string present but no parseable quarter found');
-  } else {
-    log_('DEBUG', 'No T2 fallback data available');
-  }
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // FINAL FALLBACK - NO DATA
-  // ─────────────────────────────────────────────────────────────────────────
-  
-  log_('WARN', 'ALL STRATEGIES FAILED - Returning N/A');
-  log_('WARN', 'DIAGNOSTIC SUMMARY:', {
-    home: home,
-    away: away,
-    marginStatsKeyCount: statsKeys.length,
-    homeLookupSuccess: homeLookup.found,
-    awayLookupSuccess: awayLookup.found,
-    enhancedAvailable: enhancedAvailable,
-    t2Available: !!est
-  });
-  
-  return {
-    quarter: 'N/A',
-    pick: 'Highest Q: N/A',
-    confidence: 0,
-    expectedTotal: null,
-    isTie: false,
-    margin: null,
-    source: 'NONE',
-    details: {
-      reason: 'no_data',
-      diagnostics: {
-        marginStatsKeyCount: statsKeys.length,
-        marginStatsSampleKeys: statsKeys.slice(0, 5),
-        homeNormalized: homeNorm,
-        awayNormalized: awayNorm,
-        homeLookupAttempts: homeLookup.attempts,
-        awayLookupAttempts: awayLookup.attempts
-      }
-    }
-  };
-}
-
 
 /* ============================================================================
  * COMPANION DIAGNOSTIC FUNCTION
@@ -1857,78 +1159,158 @@ function _acc_sanitizePicksBundle(bundle) {
 // ╚═══════════════════════════════════════════════════════════════════════════════════════════════════╝
 
 /**
- * Derives highest quarter from available data sources.
- * ALWAYS returns single quarter via sanitization.
- * 
- * Priority:
- *   1. predictHighestQuarterEnhanced (if available)
- *   2. T2 signals (ou-highest-est field)
- *   3. marginStats derived calculation
- */
+Derives highest quarter from available data sources.
+ALWAYS returns a single quarter via sanitization.
+Priority:
+1) predictHighestQuarterEnhanced (if available)
+2) T2 signals (ou-highest-est field)
+3) marginStats derived calculation
+*/
 function _deriveHighestQuarter_(game, marginStats, config, t2) {
   var fn = '_deriveHighestQuarter_';
-  var skipResult = { quarter: 'N/A', pick: null, confidence: 0, source: 'skip' };
-  
+
+  function has_(obj, k) {
+    return !!obj && Object.prototype.hasOwnProperty.call(obj, k);
+  }
+
+  function pick_(obj, keys, fallback) {
+    for (var i = 0; i < keys.length; i++) {
+      var k = keys[i];
+      if (obj && obj[k] !== undefined && obj[k] !== null && obj[k] !== '') return obj[k];
+    }
+    return fallback;
+  }
+
+  var skipResult = {
+    quarter: 'N/A',
+    pick: null,
+    confidence: 0,
+    source: 'skip',
+    wasTie: false,
+    tiedWith: null,
+    // pass-through fields (so gatekeepers don’t see missing-as-zero)
+    pWin: null,
+    reliability: null,
+    pQ1: null, pQ2: null, pQ3: null, pQ4: null,
+    expectedTotal: null,
+    dominant: null,
+    dominantStrength: null,
+    tier: null,
+    tierDisplay: null,
+    sourceMeta: null,
+    modelObject: null
+  };
+
+  game = game || {};
+  config = config || {};
+  marginStats = marginStats || {};
+  t2 = t2 || null;
+
   if (!game || !game.home || !game.away) return skipResult;
-  
+
   var home = String(game.home).trim();
   var away = String(game.away).trim();
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // METHOD 1: Use predictHighestQuarterEnhanced if available
-  // ─────────────────────────────────────────────────────────────────────────
+  if (!home || !away) return skipResult;
+
+  // ───────────────────────────────────────────────
+  // METHOD 1: Enhanced predictor
+  // ───────────────────────────────────────────────
   if (typeof predictHighestQuarterEnhanced === 'function') {
     try {
       var hqPred = predictHighestQuarterEnhanced(game, marginStats, config);
-      
-      if (hqPred && !hqPred.skip && hqPred.quarter !== 'N/A') {
+      if (hqPred && !hqPred.skip && hqPred.quarter && hqPred.quarter !== 'N/A') {
         var s = _acc_sanitizeHighestQuarter(hqPred.quarter);
-        
-        if (s.valid) {
-          return {
+        if (s && s.valid) {
+          var out = {
             quarter: s.quarter,
             pick: 'Highest Q: ' + s.quarter,
-            confidence: hqPred.confidence || 55,
+            confidence: (hqPred.confidence != null ? hqPred.confidence : 55),
             source: 'Elite_HQ' + (s.wasSanitized ? '_SANITIZED' : ''),
-            wasTie: hqPred.wasTie || s.wasSanitized,
-            tiedWith: hqPred.tiedWith
+            wasTie: !!(hqPred.wasTie || s.wasSanitized),
+            tiedWith: hqPred.tiedWith || null,
+
+            // NEW: preserve model metrics for gating/sorting/debug
+            pWin: null,
+            reliability: null,
+            pQ1: null, pQ2: null, pQ3: null, pQ4: null,
+            expectedTotal: (hqPred.expectedTotal != null ? hqPred.expectedTotal : null),
+            dominant: (hqPred.dominant != null ? hqPred.dominant : null),
+            dominantStrength: (hqPred.dominantStrength != null ? hqPred.dominantStrength : null),
+            tier: (hqPred.tier != null ? hqPred.tier : null),
+            tierDisplay: (hqPred.tierDisplay != null ? hqPred.tierDisplay : null),
+            sourceMeta: (hqPred.sourceMeta != null ? hqPred.sourceMeta : null),
+            modelObject: (hqPred.modelObject != null ? hqPred.modelObject : null)
           };
+
+          // pWin aliases
+          if (has_(hqPred, 'pWin')) out.pWin = hqPred.pWin;
+          else if (has_(hqPred, 'pwin')) out.pWin = hqPred.pwin;
+
+          // reliability aliases
+          if (has_(hqPred, 'reliability')) out.reliability = hqPred.reliability;
+          else if (has_(hqPred, 'reliab')) out.reliability = hqPred.reliab;
+          else if (has_(hqPred, 'rel')) out.reliability = hqPred.rel;
+
+          // quarter prob aliases
+          if (has_(hqPred, 'pQ1')) out.pQ1 = hqPred.pQ1;
+          if (has_(hqPred, 'pQ2')) out.pQ2 = hqPred.pQ2;
+          if (has_(hqPred, 'pQ3')) out.pQ3 = hqPred.pQ3;
+          if (has_(hqPred, 'pQ4')) out.pQ4 = hqPred.pQ4;
+
+          // Optional raw payload for diagnostics (off by default)
+          if (config && (config.hqReturnRaw === true || config.hq_return_raw === true)) {
+            out._hqRaw = hqPred;
+          }
+
+          return out;
         }
       }
     } catch (e) {
-      Logger.log('[' + fn + '] Elite error: ' + e.message);
+      Logger.log('[' + fn + '] Elite error: ' + (e && e.message ? e.message : e));
     }
   }
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // METHOD 2: Use T2 signals
-  // ─────────────────────────────────────────────────────────────────────────
+
+  // ───────────────────────────────────────────────
+  // METHOD 2: Tier2 signals (ouHighestEst, etc.)
+  // ───────────────────────────────────────────────
   if (t2) {
-    // Check ou-highest-est or similar fields
     var candidates = [
       t2.ouHighestEst, t2['ou-highest-est'], t2.highestQuarter, t2.highestQ
     ];
-    
+
     for (var i = 0; i < candidates.length; i++) {
       if (!candidates[i]) continue;
-      
+
       var s2 = _acc_sanitizeHighestQuarter(String(candidates[i]));
-      if (s2.valid) {
+      if (s2 && s2.valid) {
         return {
           quarter: s2.quarter,
           pick: 'Highest Q: ' + s2.quarter,
-          confidence: t2.highestQConf || 55,
+          confidence: (t2.highestQConf != null ? t2.highestQConf : 55),
           source: 'T2_Signal' + (s2.wasSanitized ? '_SANITIZED' : ''),
-          wasTie: s2.wasSanitized
+          wasTie: !!s2.wasSanitized,
+          tiedWith: null,
+
+          // keep fields present but unknown here
+          pWin: null,
+          reliability: null,
+          pQ1: null, pQ2: null, pQ3: null, pQ4: null,
+          expectedTotal: null,
+          dominant: null,
+          dominantStrength: null,
+          tier: null,
+          tierDisplay: null,
+          sourceMeta: null,
+          modelObject: null
         };
       }
     }
-    
-    // Derive from margin confidence scores
+
+    // If you store per-quarter confidence and want a fallback:
     if (t2.marginConf && typeof t2.marginConf === 'object') {
       var quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
       var bestQ = null, bestConf = 0;
-      
+
       for (var qi = 0; qi < quarters.length; qi++) {
         var q = quarters[qi];
         var conf = t2.marginConf[q];
@@ -1937,65 +1319,99 @@ function _deriveHighestQuarter_(game, marginStats, config, t2) {
           bestQ = q;
         }
       }
-      
+
       if (bestQ && bestConf > 50) {
         return {
           quarter: bestQ,
           pick: 'Highest Q: ' + bestQ,
           confidence: bestConf,
-          source: 'T2_MarginConf'
+          source: 'T2_MarginConf',
+          wasTie: false,
+          tiedWith: null,
+
+          pWin: null,
+          reliability: null,
+          pQ1: null, pQ2: null, pQ3: null, pQ4: null,
+          expectedTotal: null,
+          dominant: null,
+          dominantStrength: null,
+          tier: null,
+          tierDisplay: null,
+          sourceMeta: null,
+          modelObject: null
         };
       }
     }
   }
-  
-  // ─────────────────────────────────────────────────────────────────────────
-  // METHOD 3: Derive from marginStats
-  // ─────────────────────────────────────────────────────────────────────────
-  if (marginStats && typeof marginStats === 'object') {
-    var homeKey = home, awayKey = away;
-    if (typeof _t2_teamKeyCanonical_ === 'function') {
-      homeKey = _t2_teamKeyCanonical_(home);
-      awayKey = _t2_teamKeyCanonical_(away);
-    }
-    var homeStats = marginStats[homeKey] || marginStats[home] || marginStats[home.toLowerCase()];
-    var awayStats = marginStats[awayKey] || marginStats[away] || marginStats[away.toLowerCase()];
-    
-    if (homeStats && awayStats) {
-      var quarters = ['Q1', 'Q2', 'Q3', 'Q4'];
-      var scores = [];
-      
-      for (var j = 0; j < quarters.length; j++) {
-        var q = quarters[j];
-        var homeAvg = 55, awayAvg = 55;
-        
-        if (homeStats.Home && homeStats.Home[q]) {
-          homeAvg = homeStats.Home[q].avgTotal || homeStats.Home[q].mean || 55;
-        }
-        if (awayStats.Away && awayStats.Away[q]) {
-          awayAvg = awayStats.Away[q].avgTotal || awayStats.Away[q].mean || 55;
-        }
-        
-        scores.push({ quarter: q, total: homeAvg + awayAvg });
+
+  // ───────────────────────────────────────────────
+  // METHOD 3: Derive from marginStats (as seen in your PDF snippet)
+  // ───────────────────────────────────────────────
+  try {
+    if (marginStats && typeof marginStats === 'object') {
+      var homeKey = home, awayKey = away;
+      if (typeof t2_teamKeyCanonical === 'function') {
+        homeKey = t2_teamKeyCanonical(home);
+        awayKey = t2_teamKeyCanonical(away);
       }
-      
-      scores.sort(function(a, b) { return b.total - a.total; });
-      
-      if (scores.length > 0) {
-        var wasTie = scores.length > 1 && Math.abs(scores[0].total - scores[1].total) < 1.5;
-        
-        return {
-          quarter: scores[0].quarter,
-          pick: 'Highest Q: ' + scores[0].quarter,
-          confidence: wasTie ? 52 : 58,
-          source: 'MarginStats_Derived',
-          wasTie: wasTie
-        };
+
+      var homeStats = marginStats[homeKey] || marginStats[home] || marginStats[String(home).toLowerCase()];
+      var awayStats = marginStats[awayKey] || marginStats[away] || marginStats[String(away).toLowerCase()];
+
+      if (homeStats && awayStats) {
+        var qs = ['Q1', 'Q2', 'Q3', 'Q4'];
+        var scores = [];
+
+        for (var j = 0; j < qs.length; j++) {
+          var Q = qs[j];
+          var homeAvg = 55, awayAvg = 55;
+
+          if (homeStats.Home && homeStats.Home[Q]) {
+            homeAvg = homeStats.Home[Q].avgTotal || homeStats.Home[Q].mean || 55;
+          }
+          if (awayStats.Away && awayStats.Away[Q]) {
+            awayAvg = awayStats.Away[Q].avgTotal || awayStats.Away[Q].mean || 55;
+          }
+
+          scores.push({ quarter: Q, total: homeAvg + awayAvg });
+        }
+
+        scores.sort(function(a, b) { return b.total - a.total; });
+
+        if (scores.length > 0) {
+          var wasTie = (scores.length > 1) && (Math.abs(scores[0].total - scores[1].total) < 1.5);
+          return {
+            quarter: scores[0].quarter,
+            pick: 'Highest Q: ' + scores[0].quarter,
+            confidence: wasTie ? 52 : 58,
+            source: 'MarginStats_Derived',
+            wasTie: wasTie,
+            tiedWith: wasTie ? [scores[0].quarter, scores[1].quarter] : null,
+
+            pWin: null,
+            reliability: null,
+            pQ1: null, pQ2: null, pQ3: null, pQ4: null,
+            expectedTotal: scores[0].total,
+            dominant: null,
+            dominantStrength: null,
+            tier: null,
+            tierDisplay: null,
+            sourceMeta: null,
+            modelObject: null
+          };
+        }
       }
     }
+  } catch (e3) {
+    Logger.log('[' + fn + '] marginStats derive error: ' + (e3 && e3.message ? e3.message : e3));
   }
-  
+
   return skipResult;
+}
+
+// Back-compat name used elsewhere in your codebase/PDFs:
+function deriveHighestQuarter(game, marginStats, config, t2) {
+  return _deriveHighestQuarter_(game, marginStats, config, t2);
 }
 
 
@@ -2130,6 +1546,131 @@ function _acc_scrubBetSlipsSheet_(ss) {
   
   return { ok: true, touched: touched, blanked: blanked };
 }
+
+// ─────────────────────────────────────────────────────────────
+// enh-high-q cache (UpcomingClean) — GLOBAL (paste once)
+// ─────────────────────────────────────────────────────────────
+var _ucEnhCache = null;
+
+function _loadUpcomingCleanEnhColumns(ss) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  if (_ucEnhCache !== null) return _ucEnhCache;
+
+  _ucEnhCache = {};
+
+  var ucSheet = ss.getSheetByName('UpcomingClean');
+  if (!ucSheet) {
+    Logger.log('[UpcomingClean] not found — cannot load enh-high-q columns');
+    return _ucEnhCache;
+  }
+
+  var ucData = ucSheet.getDataRange().getValues();
+  if (!ucData || ucData.length < 2) return _ucEnhCache;
+
+  function normKey_(s) {
+    return String(s || '').toLowerCase().trim().replace(/[^a-z0-9]/g, '');
+  }
+
+  function headerMap_(headers) {
+    var m = {};
+    for (var i = 0; i < headers.length; i++) {
+      var raw = String(headers[i] || '').toLowerCase().trim();
+      if (!raw) continue;
+
+      // Multiple normalized forms
+      var k1 = raw;
+      var k2 = raw.replace(/[\s_]+/g, '_');
+      var k3 = raw.replace(/-/g, '_');
+      var k4 = raw.replace(/[\s_-]+/g, '');
+      var k5 = normKey_(raw);
+
+      m[k1] = i;
+      m[k2] = i;
+      m[k3] = i;
+      m[k4] = i;
+      m[k5] = i;
+    }
+    return m;
+  }
+
+  function toNum_(v, d) {
+    if (v === null || v === undefined || v === '') return d;
+    var s = String(v).replace('%', '').trim().replace(/[^\d.-]/g, '');
+    var n = Number(s);
+    return isFinite(n) ? n : d;
+  }
+
+  function toBool_(v, d) {
+    if (v === true || v === false) return v;
+    var s = String(v || '').toLowerCase().trim();
+    if (s === 'true' || s === 'yes' || s === '1' || s === 'on') return true;
+    if (s === 'false' || s === 'no' || s === '0' || s === 'off') return false;
+    return d;
+  }
+
+  function normQuarter_(v) {
+    var s = String(v || '').toUpperCase().trim();
+    if (!s) return '';
+    if (/^Q[1-4]$/.test(s)) return s;
+    if (/^[1-4]$/.test(s)) return 'Q' + s;
+    var m = s.match(/Q\s*([1-4])/);
+    return m ? ('Q' + m[1]) : '';
+  }
+
+  var map = headerMap_(ucData[0]);
+
+  var homeIdx = map['home'];
+  var awayIdx = map['away'];
+
+  var enhQIdx    = map['enh_high_q'] || map['enh-high-q'] || map['enhhighq'];
+  var enhConfIdx = map['enh_high_q_conf'] || map['enh-high-q-conf'] || map['enhhighqconf'];
+  var enhEvIdx   = map['enh_high_q_ev'] || map['enh-high-q-ev'] || map['enhhighqev'];
+  var enhPwinIdx = map['enh_high_q_pwin'] || map['enh-high-q-pwin'] || map['enhhighqpwin'];
+  var enhRelIdx  = map['enh_high_q_reliability'] || map['enh-high-q-reliability'] || map['enhhighqreliability'];
+  var enhTieIdx  = map['enh_high_q_tie'] || map['enh-high-q-tie'] || map['enhhighqtie'];
+
+  if (homeIdx === undefined || awayIdx === undefined || enhQIdx === undefined) {
+    Logger.log('[UpcomingClean] Missing required columns for enh-high-q cache (need: home, away, enh-high-q)');
+    return _ucEnhCache;
+  }
+
+  var loaded = 0;
+
+  for (var r = 1; r < ucData.length; r++) {
+    var row = ucData[r];
+
+    var home = String(row[homeIdx] || '').trim().toLowerCase();
+    var away = String(row[awayIdx] || '').trim().toLowerCase();
+    if (!home || !away) continue;
+
+    var q = normQuarter_(row[enhQIdx]);
+    if (!q) continue;
+
+    var key = home + ' vs ' + away;
+
+    _ucEnhCache[key] = {
+      quarter: q,
+      confidence: (enhConfIdx !== undefined) ? toNum_(row[enhConfIdx], 0) : 0,
+      ev:         (enhEvIdx   !== undefined) ? toNum_(row[enhEvIdx], 0)   : 0,
+      pWin:       (enhPwinIdx !== undefined) ? toNum_(row[enhPwinIdx], 0) : 0,
+      reliability:(enhRelIdx  !== undefined) ? toNum_(row[enhRelIdx], 0)  : 0,
+      isTie:      (enhTieIdx  !== undefined) ? toBool_(row[enhTieIdx], false) : false
+    };
+
+    loaded++;
+  }
+
+  Logger.log('[UpcomingClean] Loaded ' + loaded + ' enh-high-q entries');
+  return _ucEnhCache;
+}
+
+function _getEnhHighQ(ss, homeTeam, awayTeam) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  var cache = _loadUpcomingCleanEnhColumns(ss);
+  var key = (String(homeTeam) + ' vs ' + String(awayTeam)).toLowerCase();
+  return cache[key] || null;
+}
+
 
 // ╔═══════════════════════════════════════════════════════════════════════════════════════════════════╗
 // ║  buildAccumulator v3.8.2 — CONSOLIDATED FINAL + HQ Gating + enh-high-q Reading                  ║
@@ -2528,121 +2069,6 @@ function buildAccumulator(ss) {
     var val = lines[quarter];
     return (isFinite(val) && val > 0) ? val : null;
   }
-
-  // ═══════════════════════════════════════════════════════════════════════════
-  // enh-high-q COLUMN READER FROM UPCOMINGCLEAN (Patch 4B support)
-  // Reads the enhancement columns so HQ gate has enriched data
-  // ═══════════════════════════════════════════════════════════════════════════
-  var _ucEnhCache = null;
-
-  var _ucEnhCache = null;
-
-function _loadUpcomingCleanEnhColumns(ss) {
-  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
-  if (_ucEnhCache !== null) return _ucEnhCache;
-
-  _ucEnhCache = {};
-  var ucSheet = ss.getSheetByName('UpcomingClean');
-  if (!ucSheet) {
-    Logger.log('[UpcomingClean] not found — cannot load enh-high-q columns');
-    return _ucEnhCache;
-  }
-
-  var ucData = ucSheet.getDataRange().getValues();
-  if (ucData.length < 2) return _ucEnhCache;
-
-  function headerMap_(headers) {
-    var m = {};
-    for (var i = 0; i < headers.length; i++) {
-      var raw = String(headers[i] || '').toLowerCase().trim();
-      var norm = raw.replace(/[\s_]+/g, '_');
-      var hyphToUnd = raw.replace(/-/g, '_');
-      var stripped = raw.replace(/[\s_-]+/g, ''); // enhhighqpwin style
-
-      m[raw] = i;
-      m[norm] = i;
-      m[hyphToUnd] = i;
-      m[stripped] = i;
-    }
-    return m;
-  }
-
-  function toNum_(v, d) {
-    if (v === null || v === undefined || v === '') return d;
-    var s = String(v).replace('%', '').trim().replace(/[^\d.-]/g, '');
-    var n = Number(s);
-    return isFinite(n) ? n : d;
-  }
-
-  function toBool_(v, d) {
-    if (v === true || v === false) return v;
-    var s = String(v || '').toLowerCase().trim();
-    if (s === 'true' || s === 'yes' || s === '1' || s === 'on') return true;
-    if (s === 'false' || s === 'no' || s === '0' || s === 'off') return false;
-    return d;
-  }
-
-  function normQuarter_(v) {
-    var s = String(v || '').toUpperCase().trim();
-    if (!s) return '';
-    if (/^Q[1-4]$/.test(s)) return s;
-    if (/^[1-4]$/.test(s)) return 'Q' + s;
-    var m = s.match(/Q\s*([1-4])/);
-    return m ? ('Q' + m[1]) : '';
-  }
-
-  var ucMap = headerMap_(ucData[0]);
-
-  var homeIdx = ucMap['home'];
-  var awayIdx = ucMap['away'];
-
-  // enh-high-q and friends
-  var enhQIdx    = ucMap['enh_high_q'];               // also catches enh-high-q, enhhighq, etc.
-  var enhConfIdx = ucMap['enh_high_q_conf'];
-  var enhEvIdx   = ucMap['enh_high_q_ev'];
-  var enhPwinIdx = ucMap['enh_high_q_pwin'];
-  var enhRelIdx  = ucMap['enh_high_q_reliability'];   // NEW
-  var enhTieIdx  = ucMap['enh_high_q_tie'];
-
-  if (homeIdx === undefined || awayIdx === undefined || enhQIdx === undefined) {
-    Logger.log('[UpcomingClean] Missing required columns for enh-high-q cache');
-    return _ucEnhCache;
-  }
-
-  var loaded = 0;
-  for (var r = 1; r < ucData.length; r++) {
-    var row = ucData[r];
-    var home = String(row[homeIdx] || '').trim().toLowerCase();
-    var away = String(row[awayIdx] || '').trim().toLowerCase();
-    if (!home || !away) continue;
-
-    var enhQ = String(row[enhQIdx] || '').trim();
-    if (!enhQ) continue;
-
-    var key = home + ' vs ' + away;
-
-    _ucEnhCache[key] = {
-      quarter:     normQuarter_(enhQ),
-      confidence:  enhConfIdx !== undefined ? toNum_(row[enhConfIdx], 0) : 0,
-      ev:          enhEvIdx   !== undefined ? toNum_(row[enhEvIdx], 0)   : 0,
-      pWin:        enhPwinIdx !== undefined ? toNum_(row[enhPwinIdx], 0) : 0,
-      reliability: enhRelIdx  !== undefined ? toNum_(row[enhRelIdx], 0)  : 0, // NEW
-      isTie:       enhTieIdx  !== undefined ? toBool_(row[enhTieIdx], false) : false
-    };
-    loaded++;
-  }
-
-  Logger.log('[UpcomingClean] Loaded ' + loaded + ' enh-high-q entries');
-  return _ucEnhCache;
-}
-
-function _getEnhHighQ(ss, homeTeam, awayTeam) {
-  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
-  var cache = _loadUpcomingCleanEnhColumns(ss);
-  var key = (String(homeTeam) + ' vs ' + String(awayTeam)).toLowerCase();
-  return cache[key] || null;
-}
-
   // ═══════════════════════════════════════════════════════════════════════════
   // CONFIG CANONICALIZATION
   // ═══════════════════════════════════════════════════════════════════════════
@@ -2801,7 +2227,7 @@ function _getEnhHighQ(ss, homeTeam, awayTeam) {
     }
 
     // ─── Pre-load enh-high-q columns from UpcomingClean (Patch 4B support) ───
-    _loadUpcomingCleanEnhColumns();
+    _loadUpcomingCleanEnhColumns(ss);
 
     // ─── Initialize Buckets ───
     var bankerCandidates    = [];
@@ -2930,8 +2356,8 @@ function _getEnhHighQ(ss, homeTeam, awayTeam) {
       // T2 SIGNALS
       // ═══════════════════════════════════════════════════════════════════════
       var matchKey = home.toLowerCase() + ' vs ' + away.toLowerCase();
-      var t2 = t2Signals[matchKey];
-      if (!t2) continue;
+      var t2 = t2Signals[matchKey] || {};
+      // NOTE: do NOT continue; HSQ can still be derived from marginStats / enhanced model
 
       // R4B: Pre-seed dominant quarter from existing game result payload (if present)
       var hqDominant = _extractDominantFromT2_(t2);
@@ -2961,131 +2387,119 @@ function _getEnhHighQ(ss, homeTeam, awayTeam) {
         });
       }
 
-      // ═══════════════════════════════════════════════════════════════════════
-      // HIGHEST QUARTER (with HQ Gating — Patch 4B)
-      // ═══════════════════════════════════════════════════════════════════════
-      if (config.includeHighestQuarter) {
-        diag.highestQ.attempted++;
-        try {
-          var hqRes = _deriveHighestQuarter_(
-            { home: home, away: away, league: league, date: dateVal },
-            marginStats, config, t2
-          );
 
-          // ── ENRICH hqRes with enh-high-q data from UpcomingClean (Patch 4B) ──
-          var enhData = _getEnhHighQ(home, away);
-          if (enhData && hqRes) {
-            // If enhancement column has data, overlay onto hqRes for richer gating
-            if (enhData.quarter && !hqRes.enhQuarter) {
-              hqRes.enhQuarter    = enhData.quarter;
-              hqRes.enhConfidence = enhData.confidence;
-              hqRes.enhEV         = enhData.ev;
-              hqRes.enhPWin       = enhData.pWin;
-              hqRes.enhIsTie      = enhData.isTie;
-            }
-            // FIX: Use enh confidence whenever it is higher than hqRes confidence.
-            // Previously only overrode when hqRes.confidence <= 0, but hqRes often
-            // returns ~42% from _deriveHighestQuarter_ while enh has 57-77%.
-            if (enhData.confidence > 0 && (!hqRes.confidence || !isFinite(hqRes.confidence) || hqRes.confidence < enhData.confidence)) {
-              hqRes.confidence = enhData.confidence;
-            }
-            // If hqRes has no ev but enh has it, use enh EV
-            if ((!hqRes.ev && hqRes.ev !== 0) && enhData.ev) {
-              hqRes.ev = enhData.ev;
-            }
-            // If enh says it's a tie, propagate
-            if (enhData.isTie) {
-              hqRes.wasTie = true;
-            }
-          } else if (enhData && !hqRes) {
-            // hqRes was null but we have enhancement data — build from enh
-            if (enhData.quarter) {
-              hqRes = {
-                quarter: enhData.quarter,
-                pick: 'Highest Q: ' + enhData.quarter,
-                confidence: enhData.confidence || 55,
-                ev: enhData.ev || 0,
-                pWin: enhData.pWin || 0,
-                wasTie: enhData.isTie || false,
-                source: 'enh-high-q'
-              };
-            }
-          }
-          // ── END enh-high-q enrichment ─────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════════════
+// HIGHEST QUARTER (PRIMARY = enh-high-q from UpcomingClean)
+// ═══════════════════════════════════════════════════════════════════════
+if (config.includeHighestQuarter) {
+  diag.highestQ.attempted++;
+  try {
+    var hqRes = null;
 
-          if (hqRes && hqRes.quarter !== 'N/A' && hqRes.pick) {
-            var finalQuarter = hqRes.quarter;
-            var finalPick    = hqRes.pick;
+    // PRIMARY: read enh-high-q output (already computed with correct OU→HQ bridge)
+    var enhData = _getEnhHighQ(ss, home, away);
 
-            var sHQ = _acc_sanitizeHighestQuarter(finalQuarter);
-            if (sHQ.wasSanitized) {
-              finalQuarter = sHQ.quarter;
-              finalPick    = 'Highest Q: ' + sHQ.quarter;
-              diag.highestQ.sanitized++;
-            }
+    if (enhData && enhData.quarter) {
+      hqRes = {
+        quarter: enhData.quarter,
+        pick: 'Highest Q: ' + enhData.quarter,
+        confidence: enhData.confidence || 0,
+        ev: enhData.ev || 0,
+        pWin: enhData.pWin || 0,
+        reliability: enhData.reliability || 0,
+        wasTie: !!enhData.isTie,
+        source: 'enh-high-q'
+      };
+    } else {
+      // FALLBACK: derive only if enh columns are missing
+      hqRes = _deriveHighestQuarter_(
+        { home: home, away: away, league: league, date: dateVal },
+        marginStats, config, t2
+      );
+    }
 
-            finalPick = _acc_sanitizePickText(finalPick);
+    if (hqRes && hqRes.quarter !== 'N/A' && hqRes.pick) {
+      var finalQuarter = hqRes.quarter;
+      var finalPick = hqRes.pick;
 
-            if (/^Q[1-4]$/.test(finalQuarter)) {
-
-              // ── HQ GATING (Patch 4B) ──────────────────────────────────
-              var hqGate = (typeof hq_gateCheck_ === 'function')
-                ? hq_gateCheck_(hqRes, config)
-                : { pass: true, reason: '' };  // safe fallback if gate fn missing
-
-              if (!hqGate.pass) {
-                if (!diag.highestQ) diag.highestQ = { attempted:0, skipped:0 };
-                diag.highestQ.gated = (diag.highestQ.gated || 0) + 1;
-                Logger.log('[HQ GATE] SKIP: ' + hqGate.reason);
-                // DO NOT push to sniperCandidates — skip this HQ pick
-              } else {
-              // ── END GATE CHECK ─────────────────────────────────────────
-
-                sniperCandidates.push({
-                  league: league, date: dateVal, time: time, match: matchStr,
-                  pick: finalPick,
-                  signalType: 'HIGH_QTR', type: 'SNIPER HIGH QTR',
-                  confidence: sHQ.wasSanitized
-                    ? Math.min(hqRes.confidence || 55, 55)
-                    : (hqRes.confidence || 55),
-                  hqSource: hqRes.source, gameTier: t2.gameTier,
-                  isHighQtr: true, wasTie: hqRes.wasTie || sHQ.wasSanitized,
-                  enhQuarter: hqRes.enhQuarter || null,
-                  enhConfidence: hqRes.enhConfidence || null,
-                  enhEV: hqRes.enhEV || null,
-                  enhPWin: hqRes.enhPWin || null
-                });
-                diag.highestQ.found++;
-
-                // R4B: Infer dominant quarter if not already provided
-                var hqQ = _normQuarter_(finalQuarter);
-                var hqC = toNum(hqRes.confidence, 0);
-                var hqM = toNum(hqRes.margin, 0);
-
-                if (!hqDominant &&
-                    hqQ &&
-                    hqC >= config.hqDominantMinConf &&
-                    !hqRes.wasTie &&
-                    hqM >= config.hqDominantMinMargin) {
-                  hqDominant = { quarter: hqQ, confidence: hqC, margin: hqM, source: 'hqRes' };
-                  diag.hqDominant.found++;
-                  diag.hqDominant.source[hqDominant.source] = (diag.hqDominant.source[hqDominant.source] || 0) + 1;
-                }
-
-              } // end of hqGate.pass === true block
-
-            } else {
-              diag.highestQ.skipped++;
-            }
-          } else {
-            diag.highestQ.skipped++;
-          }
-        } catch (e) { diag.highestQ.errors++; }
+      var sHQ = _acc_sanitizeHighestQuarter(finalQuarter);
+      if (sHQ.wasSanitized) {
+        finalQuarter = sHQ.quarter;
+        finalPick = 'Highest Q: ' + sHQ.quarter;
+        diag.highestQ.sanitized++;
       }
 
-      // ═══════════════════════════════════════════════════════════════════════
-      // O/U PER QUARTER (R4B: HQ dominant quarter can boost matching OU picks)
-      // ═══════════════════════════════════════════════════════════════════════
+      finalPick = _acc_sanitizePickText(finalPick);
+
+      if (/^Q[1-4]$/.test(finalQuarter)) {
+        var hqGate = (typeof hq_gateCheck_ === 'function')
+          ? hq_gateCheck_(hqRes, config)
+          : { pass: true, reason: '' };
+
+        if (!hqGate.pass) {
+          diag.highestQ.gated = (diag.highestQ.gated || 0) + 1;
+          Logger.log('[HQ GATE] SKIP: ' + hqGate.reason);
+        } else {
+          // Push as standard SNIPER row (helps _selectSnipers not drop it)
+          sniperCandidates.push({
+            league: league,
+            date: dateVal,
+            time: time,
+            match: matchStr,
+            pick: finalPick,
+
+            type: 'SNIPER',
+            signalType: 'HIGH_QTR',
+            market: 'HIGH_QTR',
+            period: finalQuarter,
+
+            confidence: (function () {
+              var c = Number(hqRes.confidence);
+              if (!isFinite(c) || c <= 0) c = 55;
+              if (sHQ.wasSanitized) c = Math.min(c, 55);
+              return c;
+            })(),
+
+            isHighQtr: true,
+            isHQ: true,
+            wasTie: !!hqRes.wasTie,
+            hqSource: hqRes.source || null,
+            gameTier: (t2 && t2.gameTier) ? t2.gameTier : '',
+
+            pWin: (hqRes.pWin != null ? hqRes.pWin : null),
+            reliability: (hqRes.reliability != null ? hqRes.reliability : null)
+          });
+
+          diag.highestQ.found++;
+
+          // OPTIONAL: keep your dominant-quarter inference (safe even if margin missing)
+          var hqQ = _normQuarter_(finalQuarter);
+          var hqC = toNum(hqRes.confidence, 0);
+          var hqM = toNum(hqRes.margin, 0);
+
+          if (!hqDominant &&
+              hqQ &&
+              hqC >= config.hqDominantMinConf &&
+              !hqRes.wasTie &&
+              hqM >= config.hqDominantMinMargin) {
+            hqDominant = { quarter: hqQ, confidence: hqC, margin: hqM, source: 'hqRes' };
+            diag.hqDominant.found++;
+            diag.hqDominant.source[hqDominant.source] =
+              (diag.hqDominant.source[hqDominant.source] || 0) + 1;
+          }
+        }
+      } else {
+        diag.highestQ.skipped++;
+      }
+    } else {
+      diag.highestQ.skipped++;
+    }
+  } catch (e) {
+    diag.highestQ.errors++;
+    Logger.log('[HSQ] ERROR: ' + (e && e.message ? e.message : e));
+  }
+}
+
       if (config.includeOUSignals && t2.ou) {
         var usedDominantThisGame = false;
 
@@ -3358,6 +2772,78 @@ function _getEnhHighQ(ss, homeTeam, awayTeam) {
     if (typeof _capSnipersPerGame === 'function') {
       snipers = _capSnipersPerGame(snipers, config.maxSnipersPerGame);
     }
+
+// ─────────────────────────────────────────────────────────────
+// FORCE INCLUDE HSQ if selection dropped them all
+// (Observed in your log: _selectSnipers ... (HQ: 0) while HSQ found>0)
+// ─────────────────────────────────────────────────────────────
+(function forceIncludeHQ_() {
+  function isHQPick_(p) {
+    if (!p) return false;
+    if (p.isHighQtr === true || p.isHQ === true) return true;
+    if (String(p.signalType || '').toUpperCase() === 'HIGH_QTR') return true;
+    var txt = String(p.pick || '');
+    return (/Highest\s*Q/i.test(txt) && /Q([1-4])/i.test(txt));
+  }
+
+  function num_(v, d) {
+    var n = Number(v);
+    return isFinite(n) ? n : d;
+  }
+
+  // Candidates that already passed your HQ gate are in sniperCandidates
+  var hqCand = (sniperCandidates || []).filter(isHQPick_);
+  var hqInSnipers = (snipers || []).filter(isHQPick_);
+
+  // Add a quick diagnostic so you can confirm counts in logs
+  log('HSQ PRE-FORCE: candidatesHQ=' + hqCand.length + ' selectedHQ=' + hqInSnipers.length);
+
+  if (!hqCand.length) return;          // nothing to add
+  if (hqInSnipers.length > 0) return;  // already present
+
+  // how many to inject
+  var maxHQ = num_(config && config.hqMaxPerSlip, 1);
+  if (!isFinite(maxHQ) || maxHQ <= 0) maxHQ = 1;
+  maxHQ = Math.max(1, Math.min(5, Math.round(maxHQ)));
+
+  // sort by confidence desc
+  hqCand.sort(function(a, b) {
+    return num_(b.confidence, 0) - num_(a.confidence, 0);
+  });
+
+  // avoid duplicates
+  var seen = {};
+  for (var i = 0; i < snipers.length; i++) {
+    var s = snipers[i];
+    var k0 = (s.match || '') + '|' + (s.pick || '') + '|' + (s.type || '');
+    seen[k0] = true;
+  }
+
+  var added = 0;
+  for (var j = 0; j < hqCand.length && added < maxHQ; j++) {
+    var p = hqCand[j];
+
+    // clone + normalize as standard SNIPER row (grader + compatibility)
+    var c = {};
+    for (var k in p) if (Object.prototype.hasOwnProperty.call(p, k)) c[k] = p[k];
+    c.type = 'SNIPER';        // critical
+    c.signalType = 'HIGH_QTR';
+    c.market = c.market || 'HIGH_QTR';
+
+    // ensure numeric confidence
+    c.confidence = num_(c.confidence, 55);
+
+    var key = (c.match || '') + '|' + (c.pick || '') + '|' + (c.type || '');
+    if (seen[key]) continue;
+
+    snipers.push(c);
+    seen[key] = true;
+    added++;
+  }
+
+  log('HSQ FORCE-INCLUDE: added=' + added + ' (maxHQ=' + maxHQ + ')');
+})();
+
 
     robberCandidates.sort(function(a, b) {
       return toNum(b.confidence, 0) - toNum(a.confidence, 0);
