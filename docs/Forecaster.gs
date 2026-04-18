@@ -5672,6 +5672,3 @@ function tolerantDataCleaning_(bet) {
   return bet;
 }
 
-// validateConfigState_ is defined in Contract_Enforcer.gs — do not redefine here.
-// Signature: validateConfigState_(configObj, requiredKeysArray)
-// All callers pass an array of required key names to check against the config object.
