@@ -2867,31 +2867,6 @@ function loadTeamNameMap(ss) {
 let TIER2_MARGIN_CACHE = null;
 
 
-
-/**
- * Load Tier 2 margin stats from clean sheets
- * 
- * STRUCTURE: marginStats[team][venue][quarter] = {
- *   avgMargin, avgTotal, samples, rawMargins, stdDev
- * }
- * 
- * ALWAYS initializes Q1-Q4 with 0 values if no data (fixes CONTRACTS FAIL)
- * 
- * @param {Spreadsheet|Sheet|null} ss - Spreadsheet context
- * @returns {Object} Margin stats object
- */
-/**
- * Load Tier 2 margin stats from clean sheets
- *
- * STRUCTURE:
- * marginStats[canonicalTeam][venue][quarter] = {
- *   avgMargin, avgTotal, samples, rawMargins, stdDev
- * }
- *
- * ✅ Canonical team keys (lowercase)
- * ✅ Numeric-safe (no NaN cascades)
- * ✅ Contract-safe (always initializes Q1–Q4)
- */
 function loadTier2MarginStats(ss) {
   ss = _ensureSpreadsheet_(ss);
 
