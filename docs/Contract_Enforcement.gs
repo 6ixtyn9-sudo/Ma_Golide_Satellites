@@ -3910,323 +3910,140 @@ function debugSniperSelection() {
 
 
 /**
- * =====================================================================
- * FUNCTION 1: loadBetSlipsSniperOUPicks_(ss) - FIXED v2.0
- * =====================================================================
- * Load ACTUAL Sniper O/U picks from Bet_Slips sheet.
- * 
- * FIXES:
- *   - Detects "SNIPER" in block title above header (not just type column)
- *   - Parses more pick formats (U59.5, UNDER59.5, Q1: UNDER 59, etc.)
- *   - Falls back to separate Quarter/Dir/Line columns if present
- *   - More lenient type filtering
+ * PATCH 2026-04-19 (v2)
+ * -----------------------------------------------------------------------------
+ * Load Sniper quarter O/U picks from Bet_Slips using the canonical parser.
+ *
+ * Enhanced with VIBRANT DIAGNOSTICS to solve the "Loaded: 0" mystery.
  */
 function loadBetSlipsSniperOUPicks_(ss) {
   ss = ss || SpreadsheetApp.getActiveSpreadsheet();
-  
-  var sh = getSheetInsensitive(ss, 'Bet_Slips') ||
-           getSheetInsensitive(ss, 'Bet Slips') ||
-           getSheetInsensitive(ss, 'BetSlips');
+  var FN = '[loadBetSlipsSniperOUPicks_]';
 
-  if (!sh || sh.getLastRow() < 2) {
-    Logger.log('[loadBetSlipsSniperOUPicks_] No Bet_Slips sheet or empty');
+  if (typeof loadBetSlipsComplete_ !== 'function') {
+    Logger.log(FN + ' ERROR: loadBetSlipsComplete_ not found.');
     return [];
   }
 
-  var data = sh.getDataRange().getValues();
-  Logger.log('[loadBetSlipsSniperOUPicks_] Raw rows: ' + data.length);
+  var betSlipsData = loadBetSlipsComplete_(ss);
+  var rows = (betSlipsData && betSlipsData.rows) ? betSlipsData.rows : [];
+  Logger.log(FN + ' Canonical rows parsed: ' + rows.length);
 
-  // ─── INTERNAL HELPERS ───────────────────────────────────────────
-  
-  function isEmptyRow_(row) {
-    if (!row || !row.length) return true;
-    for (var i = 0; i < row.length; i++) {
-      if (String(row[i] || '').trim() !== '') return false;
-    }
-    return true;
-  }
-
-  function isErrorCell_(v) {
-    var s = String(v || '').trim();
-    return /^#(ERROR|REF|N\/A|VALUE|DIV\/0|NAME)\b/i.test(s);
-  }
-
-  function parseSlipDate_(v) {
-    if (v instanceof Date && !isNaN(v.getTime())) return v;
-    
-    var s = String(v || '').trim();
-    if (!s) return null;
-
-    var iso = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})$/);
-    if (iso) return new Date(+iso[1], +iso[2] - 1, +iso[3]);
-
-    var dmy = s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})$/);
-    if (dmy) {
-      var d = parseInt(dmy[1], 10);
-      var m = parseInt(dmy[2], 10);
-      var y = parseInt(dmy[3], 10);
-      if (y < 100) y += 2000;
-      return new Date(y, m - 1, d);
-    }
-
-    var parsed = new Date(s);
-    return isNaN(parsed.getTime()) ? null : parsed;
-  }
-
-  function stripNoise_(s) {
-    s = String(s || '');
-    s = s.replace(/\([^)]*\)/g, ' ');  // Remove (NBA), (OT), etc.
-    s = s.replace(/\[[^\]]*\]/g, ' '); // Remove [brackets]
-    return s.replace(/\s+/g, ' ').trim();
-  }
-
-  function parseSlipMatch_(s) {
-    s = stripNoise_(s);
-    if (!s) return null;
-
-    // Support "Away @ Home" format
-    if (/\s+@\s+/.test(s)) {
-      var tmp = s.split(/\s+@\s+/);
-      if (tmp.length >= 2) {
-        return { home: String(tmp[1]).trim(), away: String(tmp[0]).trim() };
-      }
-    }
-
-    var parts = null;
-    if (/\s+vs\.?\s+/i.test(s)) {
-      parts = s.split(/\s+vs\.?\s+/i);
-    } else if (/\s+v\s+/i.test(s)) {
-      parts = s.split(/\s+v\s+/i);
-    } else if (/\s+-\s+/.test(s)) {
-      parts = s.split(/\s+-\s+/);
-    }
-
-    if (!parts || parts.length < 2) return null;
-
-    var home = String(parts[0] || '').trim();
-    var away = String(parts[1] || '').trim();
-    return (home && away) ? { home: home, away: away } : null;
-  }
-
-  function parseSlipOUPick_(s) {
-    s = String(s || '').toUpperCase();
-    // Strip decorations/icons/emojis
-    s = s.replace(/[●○★☆✓✗🏀⚽🔮⭐]/g, ' ').replace(/\s+/g, ' ').trim();
-    if (!s) return null;
-
-    // Quarter can be anywhere: Q1, 1Q, Q 1
-    var qm = s.match(/\bQ\s*([1-4])\b|\b([1-4])\s*Q\b/);
-    if (!qm) return null;
-    var qNum = qm[1] || qm[2];
-    var quarter = 'Q' + qNum;
-
-    // Direction + Line - supports many formats:
-    // "UNDER 59.0", "U 59", "U59", "UNDER59.5", "Q1: OVER 61", "O61.5"
-    var dm = s.match(/\b(OVER|UNDER)\b\s*([0-9]+(?:\.[0-9]+)?)\b/) ||
-             s.match(/\b(O|U)\b\s*([0-9]+(?:\.[0-9]+)?)\b/) ||
-             s.match(/\b(OVER|UNDER)([0-9]+(?:\.[0-9]+)?)\b/) ||
-             s.match(/\b(O|U)([0-9]+(?:\.[0-9]+)?)\b/);
-
-    if (!dm) return null;
-
-    var direction = String(dm[1]).toUpperCase();
-    if (direction === 'O') direction = 'OVER';
-    if (direction === 'U') direction = 'UNDER';
-
-    var line = parseFloat(dm[2]);
-    if (!isFinite(line)) return null;
-
-    return { quarter: quarter, direction: direction, line: line };
-  }
-
-  function coercePercent_(v) {
-    if (v === null || v === undefined || v === '') return 0;
-
-    if (typeof v === 'number') {
-      if (!isFinite(v)) return 0;
-      return (v > 0 && v <= 1) ? v * 100 : v;
-    }
-
-    var s = String(v).replace('%', '').trim();
-    var n = parseFloat(s);
-    if (!isFinite(n)) return 0;
-    return (n > 0 && n <= 1) ? n * 100 : n;
-  }
-
-  function normalizeTeamMaybe_(name) {
-    name = String(name || '').trim();
-    if (!name) return '';
-    try {
-      if (typeof t2ou_normalizeTeamName_ === 'function') {
-        return t2ou_normalizeTeamName_(name);
-      }
-    } catch (e) {}
-    return name.toLowerCase();
-  }
-
-  // NEW: Look for block title above header row
-  function getBlockTitleAboveHeader_(headerRowIdx0) {
-    for (var k = 1; k <= 3; k++) {
-      var rr = data[headerRowIdx0 - k];
-      if (!rr) continue;
-
-      var nonEmpty = [];
-      for (var c = 0; c < rr.length; c++) {
-        var t = String(rr[c] || '').trim();
-        if (t) nonEmpty.push(t);
-      }
-      if (nonEmpty.length === 0) continue;
-
-      // A block label row usually has 1-3 filled cells
-      var joined = nonEmpty.join(' ').trim();
-      if (joined.length > 0 && nonEmpty.length <= 3) return joined;
-    }
+  function normDir_(v) {
+    var s = String(v || '').trim().toUpperCase();
+    if (s === 'O' || s === 'OVER') return 'OVER';
+    if (s === 'U' || s === 'UNDER') return 'UNDER';
     return '';
   }
 
-  // ─── FIND HEADER BLOCKS ─────────────────────────────────────────
-  
-  var headerRows = findHeaderRows_(data, [
-    ['league', 'competition', 'comp'],
-    ['date', 'gamedate', 'game date'],
-    ['match', 'fixture', 'game', 'home'],
-    ['pick', 'selection', 'selection_text'],
-    ['type', 'signal', 'signal type', 'market']
-  ]);
-
-  if (!headerRows || headerRows.length === 0) {
-    Logger.log('[loadBetSlipsSniperOUPicks_] No valid header rows found');
-    return [];
+  function toNum_(v) {
+    if (v === '' || v == null) return NaN;
+    var n = parseFloat(String(v).replace(/[%,\s]/g, '').trim());
+    return isFinite(n) ? n : NaN;
   }
 
-  Logger.log('[loadBetSlipsSniperOUPicks_] Header blocks found: ' + headerRows.length);
+  function quarterFrom_(periodU, pickU) {
+    if (/^Q[1-4]$/.test(periodU)) return periodU;
+    var qm = pickU.match(/\bQ([1-4])\b/i) || pickU.match(/Q([1-4])/i);
+    return qm ? ('Q' + qm[1]) : '';
+  }
 
-  // ─── EXTRACT PICKS ──────────────────────────────────────────────
-  
+  function parsePickDirLine_(pickU) {
+    // Robust pattern: look for O/U/OVER/UNDER followed by a number
+    // Handle cases like "O 58.5", "OVER 58.5", "U58.5", "Q1: UNDER 59.0"
+    var dm = pickU.match(/\b(OVER|UNDER|O|U)\b\s*([0-9]+(?:\.[0-9]+)?)/i) || 
+             pickU.match(/(OVER|UNDER|O|U)\s*([0-9]+(?:\.[0-9]+)?)/i);
+             
+    if (!dm) return { dir: '', line: NaN };
+    var dirRaw = dm[1].toUpperCase();
+    var dir = (dirRaw === 'O' || dirRaw === 'OVER') ? 'OVER' : 'UNDER';
+    var line = parseFloat(dm[2]);
+    return { dir: dir, line: isFinite(line) ? line : NaN };
+  }
+
   var picks = [];
+  var skippedCounts = { context: 0, quarter: 0, ou: 0 };
 
-  for (var hi = 0; hi < headerRows.length; hi++) {
-    var hInfo = headerRows[hi];
-    var hMap = hInfo.headerMap;
+  rows.forEach(function(r, idx) {
+    if (!r) return;
 
-    var startRow = hInfo.rowIndex + 1;
-    var endRow = (hi + 1 < headerRows.length)
-      ? headerRows[hi + 1].rowIndex - 1
-      : data.length - 1;
+    var typeU = String(r.type || '').trim().toUpperCase();
+    var secU  = String(r.section || '').trim().toUpperCase();
+    var pickText = String(r.pick || '').trim();
+    var pickU = pickText.toUpperCase();
+    var periodU = String(r.period || '').trim().toUpperCase();
 
-    // NEW: Check block title for "SNIPER"
-    var blockTitle = getBlockTitleAboveHeader_(hInfo.rowIndex);
-    var blockUpper = String(blockTitle || '').toUpperCase();
-    var blockIsSniper = blockUpper.indexOf('SNIPER') !== -1;
+    // 1. Context Check
+    var inSniperContext = (typeU.indexOf('SNIPER') !== -1) || (secU.indexOf('SNIPER') !== -1);
+    
+    // 2. Quarter Check
+    var q = quarterFrom_(periodU, pickU);
+    var isQuarter = !!q;
 
-    var leagueCol = findColumn_(hMap, ['league', 'competition', 'comp']);
-    var dateCol   = findColumn_(hMap, ['date', 'gamedate', 'game date']);
-    var timeCol   = findColumn_(hMap, ['time']);
-    var matchCol  = findColumn_(hMap, ['match', 'fixture', 'game']);
-    var homeCol   = findColumn_(hMap, ['home', 'home team']);
-    var awayCol   = findColumn_(hMap, ['away', 'away team']);
-    var pickCol   = findColumn_(hMap, ['pick', 'selection', 'selection_text']);
-    var typeCol   = findColumn_(hMap, ['type', 'signal', 'signal type', 'market']);
-    var confCol   = findColumn_(hMap, ['confidence', 'confidence %', 'conf', 'confidence_pct']);
-    var evCol     = findColumn_(hMap, ['ev', 'ev%', 'expected value']);
-    var tierCol   = findColumn_(hMap, ['tier']);
-
-    // NEW: Optional separate columns for quarter O/U
-    var qtrCol    = findColumn_(hMap, ['quarter', 'qtr', 'period']);
-    var dirCol    = findColumn_(hMap, ['dir', 'direction', 'over/under', 'o/u', 'ou']);
-    var lineCol   = findColumn_(hMap, ['line', 'total', 'points', 'pts']);
-
-    for (var r = startRow; r <= endRow; r++) {
-      var row = data[r];
-      if (!row || isEmptyRow_(row)) continue;
-      if (isErrorCell_(row[0])) continue;
-
-      var typeStr = typeCol !== undefined ? String(row[typeCol] || '').trim() : '';
-      var typeUpper = typeStr.toUpperCase();
-
-      // ═══ FLEXIBLE SNIPER DETECTION ═══
-      // Accept if:
-      // 1. Type column contains "SNIPER"
-      // 2. OR Block title above header contains "SNIPER"
-      // 3. OR Type contains "T2" or "TIER2" or "TIER 2"
-      var isSniper = blockIsSniper ||
-                     typeUpper.indexOf('SNIPER') !== -1 ||
-                     /\bT2\b/i.test(typeUpper) ||
-                     /\bTIER\s*2\b/i.test(typeUpper);
-
-      // ═══ FLEXIBLE O/U DETECTION ═══
-      // Accept if type mentions O/U, or if we can parse an O/U pick from the Pick cell
-      var typeIsOU = /\b(O\/U|OU|OVER|UNDER)\b/i.test(typeUpper);
-      var hasQuarterInType = /\bQ[1-4]\b/i.test(typeUpper);
-
-      var matchStr = matchCol !== undefined ? String(row[matchCol] || '').trim() : '';
-      if (!matchStr && homeCol !== undefined && awayCol !== undefined) {
-        var hM = String(row[homeCol] || '').trim();
-        var aM = String(row[awayCol] || '').trim();
-        if (hM && aM) matchStr = hM + ' vs ' + aM;
-      }
-      var pickStr  = pickCol !== undefined ? String(row[pickCol] || '').trim() : '';
-      
-      if (!matchStr) continue;
-
-      var matchParsed = parseSlipMatch_(matchStr);
-      if (!matchParsed) continue;
-
-      // Try to parse O/U from pick cell
-      var ouParsed = parseSlipOUPick_(pickStr);
-
-      // Fallback: build from separate columns if present
-      if (!ouParsed && qtrCol !== undefined && dirCol !== undefined && lineCol !== undefined) {
-        var qRaw = String(row[qtrCol] || '').toUpperCase().trim();
-        var dRaw = String(row[dirCol] || '').toUpperCase().trim();
-        var lRaw = row[lineCol];
-
-        var qMatch = qRaw.match(/\bQ\s*([1-4])\b|\b([1-4])\s*Q\b/);
-        var qNum2 = qMatch ? (qMatch[1] || qMatch[2]) : null;
-
-        var dir2 = (dRaw === 'O') ? 'OVER' : (dRaw === 'U') ? 'UNDER' : dRaw;
-        var line2 = parseFloat(lRaw);
-
-        if (qNum2 && (dir2 === 'OVER' || dir2 === 'UNDER') && isFinite(line2)) {
-          ouParsed = { quarter: 'Q' + qNum2, direction: dir2, line: line2 };
-        }
-      }
-
-      // If we can't parse an O/U pick, skip
-      if (!ouParsed) continue;
-
-      // Exclusions: skip HIGH QTR picks, MARGIN picks
-      var isHighQtr = /\bHIGH(EST)?\s*(Q(TR|UARTER)?|SCORING)\b/i.test(typeUpper);
-      var isMargin = /\bMARGIN\b/i.test(typeUpper);
-      if (isHighQtr || isMargin) continue;
-
-      // Final filter: must be sniper OR (T2 O/U type)
-      if (!isSniper && !typeIsOU && !hasQuarterInType) continue;
-
-      var dateRaw = dateCol !== undefined ? row[dateCol] : '';
-      var dateVal = parseSlipDate_(dateRaw);
-
-      picks.push({
-        league: leagueCol !== undefined ? String(row[leagueCol] || '').trim() : 'Unknown',
-        dateRaw: dateRaw,
-        date: dateVal || dateRaw,
-        time: timeCol !== undefined ? String(row[timeCol] || '').trim() : '',
-        match: matchStr,
-        home: normalizeTeamMaybe_(matchParsed.home),
-        away: normalizeTeamMaybe_(matchParsed.away),
-        quarter: ouParsed.quarter,
-        direction: ouParsed.direction,
-        line: ouParsed.line,
-        type: typeStr || blockTitle || 'SNIPER O/U',
-        confidence: confCol !== undefined ? coercePercent_(row[confCol]) : 0,
-        ev: evCol !== undefined ? coercePercent_(row[evCol]) : 0,
-        tier: tierCol !== undefined ? String(row[tierCol] || '').trim() : '',
-        sourceRow: r + 1
-      });
+    // 3. O/U Check
+    var selSide = '';
+    var selLine = '';
+    if (r.rawRow && r.headerMap && typeof getColValue_ === 'function') {
+      selSide = getColValue_(r.rawRow, r.headerMap, ['selection_side', 'side', 'dir', 'direction']);
+      selLine = getColValue_(r.rawRow, r.headerMap, ['selection_line', 'line', 'total']);
     }
+
+    var dir = normDir_(selSide);
+    var line = toNum_(selLine);
+
+    // Fallback to parsing pick text if structured columns are empty
+    if (!dir || !isFinite(line)) {
+      var parsed = parsePickDirLine_(pickU);
+      if (!dir) dir = parsed.dir;
+      if (!isFinite(line)) line = parsed.line;
+    }
+
+    var isOU = !!dir && isFinite(line);
+
+    // Logging for troubleshooting
+    if (idx < 5 || (inSniperContext && idx < 20)) {
+      Logger.log(FN + ' Row ' + (idx + 1) + ' Debug: ' + 
+                 'Match=' + r.match + ' | ' +
+                 'Type=' + typeU + ' | ' +
+                 'Sec=' + secU + ' | ' +
+                 'Pick=' + pickU + ' | ' +
+                 'Period=' + periodU + ' | ' +
+                 'Parsed: q=' + q + ' dir=' + dir + ' line=' + line + ' | ' +
+                 'Flags: context=' + inSniperContext + ' qtr=' + isQuarter + ' ou=' + isOU);
+    }
+
+    if (!inSniperContext) { skippedCounts.context++; return; }
+    if (!isQuarter) { skippedCounts.quarter++; return; }
+    if (!isOU) { skippedCounts.ou++; return; }
+
+    picks.push({
+      source: 'Bet_Slips',
+      type: 'SNIPER_OU',
+      originalType: r.type || '',
+      section: r.section || '',
+      date: r.date || '',
+      league: r.league || '',
+      home: r.home || '',
+      away: r.away || '',
+      quarter: q,
+      direction: dir,
+      line: line,
+      confidence: r.confidence || '',
+      ev: r.ev || '',
+      tier: r.tier || '',
+      pick: pickText,
+      period: r.period || '',
+      sourceRow: r.sourceRow || ''
+    });
+  });
+
+  Logger.log(FN + ' FINAL: Loaded ' + picks.length + ' Sniper O/U picks');
+  if (picks.length === 0) {
+    Logger.log(FN + ' SKIP SUMMARY: context=' + skippedCounts.context + 
+               ', quarter=' + skippedCounts.quarter + 
+               ', ou=' + skippedCounts.ou);
   }
 
-  Logger.log('[loadBetSlipsSniperOUPicks_] Sniper O/U picks extracted: ' + picks.length);
   return picks;
 }
 
