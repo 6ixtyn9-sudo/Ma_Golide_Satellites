@@ -18,102 +18,6 @@ var CONTRACT_BUILD_DATE = "2026-04-12";
 /** IANA timezone used when turning Dates / serials into calendar dates */
 var SATELLITE_TIMEZONE = "Africa/Johannesburg";
 
-/**
- * Uppercase alias → canonical team token (no spaces; Assayer join-safe).
- * Expand per league. Unknown inputs cause enforceTeamNameResolution_ to throw.
- */
-var TEAM_DICTIONARY = {
-  "LA LAKERS": "LAKERS",
-  "LOS ANGELES LAKERS": "LAKERS",
-  "L.A. LAKERS": "LAKERS",
-  "LAKERS": "LAKERS",
-  "NY KNICKS": "KNICKS",
-  "NEW YORK KNICKS": "KNICKS",
-  "KNICKS": "KNICKS",
-  "BOSTON CELTICS": "CELTICS",
-  "CELTICS": "CELTICS",
-  // Missing teams from error logs + full NBA roster
-  "MEMPHIS GRIZZLIES": "GRIZZLIES",
-  "GRIZZLIES": "GRIZZLIES",
-  "ORLANDO MAGIC": "MAGIC",
-  "MAGIC": "MAGIC",
-  "UTAH JAZZ": "JAZZ",
-  "JAZZ": "JAZZ",
-  "SAN ANTONIO SPURS": "SPURS",
-  "SPURS": "SPURS",
-  "CHICAGO BULLS": "BULLS",
-  "BULLS": "BULLS",
-  "DETROIT PISTONS": "PISTONS",
-  "PISTONS": "PISTONS",
-  "INDIANA PACERS": "PACERS",
-  "PACERS": "PACERS",
-  "GOLDEN STATE WARRIORS": "WARRIORS",
-  "WARRIORS": "WARRIORS",
-  "BROOKLYN NETS": "NETS",
-  "NETS": "NETS",
-  "MIAMI HEAT": "HEAT",
-  "HEAT": "HEAT",
-  "DALLAS MAVERICKS": "MAVERICKS",
-  "MAVERICKS": "MAVERICKS",
-  "MAVS": "MAVERICKS",
-  "PHOENIX SUNS": "SUNS",
-  "SUNS": "SUNS",
-  "DENVER NUGGETS": "NUGGETS",
-  "NUGGETS": "NUGGETS",
-  "MINNESOTA TIMBERWOLVES": "TIMBERWOLVES",
-  "TIMBERWOLVES": "TIMBERWOLVES",
-  "WOLVES": "TIMBERWOLVES",
-  "OKLAHOMA CITY THUNDER": "THUNDER",
-  "THUNDER": "THUNDER",
-  "OKC": "THUNDER",
-  "PORTLAND TRAIL BLAZERS": "BLAZERS",
-  "TRAIL BLAZERS": "BLAZERS",
-  "BLAZERS": "BLAZERS",
-  "NEW ORLEANS PELICANS": "PELICANS",
-  "PELICANS": "PELICANS",
-  "SACRAMENTO KINGS": "KINGS",
-  "KINGS": "KINGS",
-  "TORONTO RAPTORS": "RAPTORS",
-  "RAPTORS": "RAPTORS",
-  "PHILADELPHIA 76ERS": "SIXERS",
-  "76ERS": "SIXERS",
-  "SIXERS": "SIXERS",
-  "MILWAUKEE BUCKS": "BUCKS",
-  "BUCKS": "BUCKS",
-  "CLEVELAND CAVALIERS": "CAVALIERS",
-  "CAVALIERS": "CAVALIERS",
-  "CAVS": "CAVALIERS",
-  "ATLANTA HAWKS": "HAWKS",
-  "HAWKS": "HAWKS",
-  "CHARLOTTE HORNETS": "HORNETS",
-  "HORNETS": "HORNETS",
-  "WASHINGTON WIZARDS": "WIZARDS",
-  "WIZARDS": "WIZARDS",
-  "LOS ANGELES CLIPPERS": "CLIPPERS",
-  "LA CLIPPERS": "CLIPPERS",
-  "CLIPPERS": "CLIPPERS",
-  "HOUSTON ROCKETS": "ROCKETS",
-  "ROCKETS": "ROCKETS",
-  // CBA (China Basketball Association)
-  "FUJIAN": "FUJIAN",
-  "NINGBO ROCKETS": "NINGBO",
-  "NINGBO": "NINGBO",
-  "GUANGZHOU": "GUANGZHOU",
-  "BEIJING": "BEIJING",
-  "JIANGSU DRAGONS": "JIANGSU",
-  "JIANGSU": "JIANGSU",
-  "NANJING TONGXI": "NANJING",
-  "NANJING": "NANJING",
-  "SHANDONG": "SHANDONG",
-  "QINGDAO": "QINGDAO",
-  "SICHUAN": "SICHUAN",
-  "SHANGHAI": "SHANGHAI",
-  "ZHEJIANG CHOUZHOU": "CHOUZHOU",
-  "CHOUZHOU": "CHOUZHOU",
-  "ZHEJIANG GUANGSHA": "GUANGSHA",
-  "GUANGSHA": "GUANGSHA"
-};
-
 var ContractMarket = {
   BANKER: "BANKER",
   SNIPER_MARGIN: "SNIPER_MARGIN",
@@ -134,27 +38,146 @@ var ContractMatchQuality = {
   NO_MATCH: "NO_MATCH"
 };
 
+
 // -----------------------------------------------------------------------------
-// NEW-1 — Dictionary-backed team normalizer (throws if unknown)
+// NEW-1 — Standings-backed team normalizer (per-satellite; no global dictionary)
 // -----------------------------------------------------------------------------
-function enforceTeamNameResolution_(rawName) {
-  var s = String(rawName == null ? "" : rawName).trim();
-  if (!s) {
-    throw new Error("Contract_Enforcer: empty team name");
+//
+// Standings is the source of truth. Canonical token is join-safe:
+//   "Ningbo Rockets" -> "NINGBO_ROCKETS"
+//
+// Optional Standings columns supported:
+//   - Team (or first column fallback)
+//   - Team_Token / Token (optional; overrides generated token)
+//   - Aliases (optional; comma/semicolon/pipe separated)
+//
+// Cache is per execution + invalidated if Standings size changes.
+//
+var __TEAM_RESOLUTION_CACHE__ = null;
+
+function _normTeamKey_(s) {
+  return String(s == null ? "" : s)
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9\s]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function _makeJoinSafeToken_(teamName) {
+  var t = String(teamName == null ? "" : teamName)
+    .trim()
+    .toUpperCase()
+    .replace(/[^A-Z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "")
+    .replace(/_+/g, "_");
+  if (!t) throw new Error("Contract_Enforcer: cannot build token for team: " + teamName);
+  return t;
+}
+
+function _getStandingsTeamResolutionMap_() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  if (!ss) throw new Error("Contract_Enforcer: no active spreadsheet for team resolution");
+
+  var standings = (typeof getSheetInsensitive === "function")
+    ? getSheetInsensitive(ss, "Standings")
+    : ss.getSheetByName("Standings");
+
+  if (!standings) throw new Error('Contract_Enforcer: missing required sheet "Standings"');
+
+  var lastRow = standings.getLastRow();
+  var lastCol = standings.getLastColumn();
+  if (lastRow < 2 || lastCol < 1) throw new Error('Contract_Enforcer: "Standings" has no team rows');
+
+  // Cache (per spreadsheet + dimensions)
+  var ssId = (typeof ss.getId === "function") ? ss.getId() : ss.getName();
+  if (__TEAM_RESOLUTION_CACHE__
+      && __TEAM_RESOLUTION_CACHE__.ssId === ssId
+      && __TEAM_RESOLUTION_CACHE__.lastRow === lastRow
+      && __TEAM_RESOLUTION_CACHE__.lastCol === lastCol
+      && __TEAM_RESOLUTION_CACHE__.map) {
+    return __TEAM_RESOLUTION_CACHE__.map;
   }
-  var upper = s.toUpperCase().replace(/\s+/g, " ");
-  if (TEAM_DICTIONARY[upper]) {
-    return TEAM_DICTIONARY[upper];
+
+  var values = standings.getRange(1, 1, lastRow, lastCol).getValues();
+  var map = {};
+
+  function addAlias(alias, token) {
+    var k = _normTeamKey_(alias);
+    if (!k) return;
+    map[k] = token;
+    map[k.replace(/\s+/g, "")] = token; // no-space variant
   }
-  var collapsed = upper.replace(/[^A-Z0-9\s]/g, "").replace(/\s+/g, " ");
-  var keys = Object.keys(TEAM_DICTIONARY);
-  for (var i = 0; i < keys.length; i++) {
-    var k = keys[i];
-    if (k.replace(/[^A-Z0-9\s]/g, "").replace(/\s+/g, " ") === collapsed) {
-      return TEAM_DICTIONARY[k];
+
+  // Active block state (changes when we encounter a new header)
+  var teamCol = -1;
+  var tokenCol = -1;
+  var aliasCol = -1;
+
+  for (var r = 0; r < values.length; r++) {
+    var row = values[r] || [];
+
+    // Detect header row (supports "Team name", repeated headers for East/West, etc.)
+    var hmap = createCanonicalHeaderMap_(row);
+
+    var detectedTeamCol = findHeaderIndex_(hmap, [
+      "team", "team_name", "team name", "teamname", "club", "squad"
+    ]);
+
+    // Require at least one “stats-ish” column so we don't treat "East" as header
+    var hasStatsCol =
+      findHeaderIndex_(hmap, ["gp", "w", "l", "pct", "pf", "pa", "position", "pos", "rank"]) >= 0;
+
+    if (detectedTeamCol >= 0 && hasStatsCol) {
+      teamCol  = detectedTeamCol;
+      tokenCol = findHeaderIndex_(hmap, ["team_token", "team token", "token", "id"]);
+      aliasCol = findHeaderIndex_(hmap, ["aliases", "alias", "aka", "alt", "alternate", "synonyms"]);
+      continue; // next rows are data until we hit another header
+    }
+
+    // Not inside a detected standings table yet
+    if (teamCol < 0) continue;
+
+    var teamName = String(row[teamCol] == null ? "" : row[teamCol]).trim();
+    if (!teamName) continue;
+
+    // Guard against accidentally reading the header row as data
+    var tn = teamName.toLowerCase();
+    if (tn === "team" || tn === "team name" || tn === "team_name") continue;
+
+    var token =
+      (tokenCol >= 0 && String(row[tokenCol] || "").trim())
+        ? String(row[tokenCol]).trim()
+        : _makeJoinSafeToken_(teamName);
+
+    addAlias(teamName, token);
+
+    if (aliasCol >= 0) {
+      var rawAliases = String(row[aliasCol] == null ? "" : row[aliasCol]).trim();
+      if (rawAliases) {
+        rawAliases.split(/[;,|]/g).forEach(function(a) {
+          a = String(a || "").trim();
+          if (a) addAlias(a, token);
+        });
+      }
     }
   }
-  throw new Error("Contract_Enforcer: unknown team (add to TEAM_DICTIONARY): " + rawName);
+
+  __TEAM_RESOLUTION_CACHE__ = { ssId: ssId, lastRow: lastRow, lastCol: lastCol, map: map };
+  return map;
+}
+
+function enforceTeamNameResolution_(rawName) {
+  var s = String(rawName == null ? "" : rawName).trim();
+  if (!s) throw new Error("Contract_Enforcer: empty team name");
+
+  var map = _getStandingsTeamResolutionMap_();
+  var k = _normTeamKey_(s);
+
+  if (map[k]) return map[k];
+  if (map[k.replace(/\s+/g, "")]) return map[k.replace(/\s+/g, "")];
+
+  throw new Error('Contract_Enforcer: unknown team (add to Standings "Team" or "Aliases"): ' + rawName);
 }
 
 // -----------------------------------------------------------------------------
