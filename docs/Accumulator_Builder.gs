@@ -742,12 +742,39 @@ function _robbers_normalizePick_(robber, config) {
   if (!robber) return null;
   config = config || {};
   
-  // ─── STEP 1: Validate and extract odds ─────────────────────────────────────
-  var odds = _robbers_toNum_(robber.odds || robber.underdogOdds, 0);
-  if (odds <= 1.01) {
-    // No valid odds — return unchanged
-    return robber;
+var odds = _robbers_toNum_(robber.odds || robber.underdogOdds, 0);
+
+if (odds <= 1.01) {
+  // No valid odds — but DO standardize tier/tierDisplay for consistency
+
+  var rawConf = _robbers_toNum_(robber.confidence, 50);
+  // keep decimals if you want, but tiering usually wants an integer:
+  var confPct = Math.round(rawConf);
+  confPct = Math.max(50, Math.min(95, confPct));
+
+  // Prefer unified tier object
+  var tierObj = null;
+  try { tierObj = (typeof getTierObject === 'function') ? getTierObject(confPct) : null; } catch (e) {}
+
+  robber.confidence = confPct;
+
+  // Keep existing tier if you prefer, otherwise derive from tierObj
+  if (tierObj && tierObj.tier) robber.tier = tierObj.tier;
+
+  // Consistent display:
+  if (tierObj && tierObj.display) {
+    robber.tierDisplay = tierObj.display;
+  } else {
+    // fallback: EV unknown, treat as 0 so evSymbol becomes ○
+    robber.tierDisplay = _robbers_buildTierDisplay_(confPct, 0);
   }
+
+  // EV/edge truly unknown without odds; pick one policy:
+  robber.ev = robber.ev ?? 0;     // or '' / null
+  robber.edge = robber.edge ?? 0; // or '' / null
+
+  return robber;
+}
   
   var impliedProb = 1.0 / odds;
   
