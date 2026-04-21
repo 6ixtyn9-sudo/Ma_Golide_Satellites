@@ -4732,12 +4732,19 @@ function t2ou_headerMap_(headers) {
 
 function t2ou_ensureColumnsIn2D_(data, colNames) {
   var headers = data[0];
-  var h = t2ou_headerMap_(headers);
 
   var missing = [];
   for (var i = 0; i < colNames.length; i++) {
-    var key = String(colNames[i]).toLowerCase();
-    if (h[key] === undefined) missing.push(colNames[i]);
+    var target = String(colNames[i]).toLowerCase().trim().replace(/[\\s_-]+/g, '');
+    var found = false;
+    for (var j = 0; j < headers.length; j++) {
+      var hStr = String(headers[j]).toLowerCase().trim().replace(/[\\s_-]+/g, '');
+      if (hStr === target) {
+        found = true;
+        break;
+      }
+    }
+    if (!found) missing.push(colNames[i]);
   }
   if (!missing.length) return data;
 

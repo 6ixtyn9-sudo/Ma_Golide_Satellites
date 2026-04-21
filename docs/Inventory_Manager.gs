@@ -4707,17 +4707,31 @@ function _ensureColumns(data, cols) {
   if (typeof t2ou_ensureColumnsIn2D_ === 'function') {
     return t2ou_ensureColumnsIn2D_(data, cols);
   }
-  var headerRow = data[0];
-  var h = _buildHeaderMap(headerRow);
-  cols.forEach(function(col) {
-    var key = col.toLowerCase().replace(/[\s_\-]+/g, '');
-    if (h[key] === undefined) {
-      headerRow.push(col);
-      for (var i = 1; i < data.length; i++) {
-        data[i].push('');
+  var headers = data[0];
+  var missing = [];
+  for (var i = 0; i < cols.length; i++) {
+    var target = String(cols[i]).toLowerCase().trim().replace(/[\s_-]+/g, '');
+    var found = false;
+    for (var j = 0; j < headers.length; j++) {
+      var hStr = String(headers[j]).toLowerCase().trim().replace(/[\s_-]+/g, '');
+      if (hStr === target) {
+        found = true;
+        break;
       }
     }
-  });
+    if (!found) missing.push(cols[i]);
+  }
+  
+  if (!missing.length) return data;
+
+  for (var m = 0; m < missing.length; m++) {
+    headers.push(missing[m]);
+  }
+
+  for (var r = 1; r < data.length; r++) {
+    while (data[r].length < headers.length) data[r].push('');
+  }
+  data[0] = headers;
   return data;
 }
 
@@ -4991,9 +5005,22 @@ function t2ou_normKey_(s) {
  * Usage: t2ou_h_(h, 'ou-q1') instead of h['ou-q1']
  * Works whether caller passes 'ou-q1', 'ou_q1', or 'ouq1'
  */
-function t2ou_h_(h, headerName) {
-  if (!h) return undefined;
-  return h[t2ou_normKey_(headerName)];
+function t2ou_h_(hMap, headerName) {
+  if (!hMap) return undefined;
+  var raw = String(headerName || '').toLowerCase().trim();
+  if (hMap[raw] !== undefined) return hMap[raw];
+  
+  var norm1 = raw.replace(/[\\s_-]+/g, '');
+  if (hMap[norm1] !== undefined) return hMap[norm1];
+  
+  for (var k in hMap) {
+    if (Object.prototype.hasOwnProperty.call(hMap, k)) {
+      if (String(k).toLowerCase().replace(/[\\s_-]+/g, '') === norm1) {
+        return hMap[k];
+      }
+    }
+  }
+  return undefined;
 }
 
 /**
