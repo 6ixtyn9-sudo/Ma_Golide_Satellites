@@ -2591,7 +2591,6 @@ function _shebang_scheduleResume_(nextStage) {
   props.setProperty('SHEBANG_TRIGGER_ID', trigger.getUniqueId());
   props.setProperty('SHEBANG_RESUME_STAGE', nextStage);
 }
-
 function _runWholeShebang_(opts) {
   opts = opts || {};
   const includeTuners = !!opts.includeTuners;
@@ -2603,16 +2602,24 @@ function _runWholeShebang_(opts) {
     : '';
   if (_resumeTarget) PropertiesService.getScriptProperties().deleteProperty('SHEBANG_RESUME_STAGE');
 
-  const ui = SpreadsheetApp.getUi();
+  // IMPORTANT: getUi() is forbidden in time-driven trigger context
   const ss = SpreadsheetApp.getActiveSpreadsheet();
+  let ui = null;
+  try { ui = SpreadsheetApp.getUi(); } catch (eUi) { ui = null; }
+
   const g  = (typeof globalThis !== 'undefined') ? globalThis : this;
 
+  // Interactive only when UI exists AND not resume
+  const interactive = !!ui && !isResume && !opts.noPrompt;
+
   if (isResume) {
-    ss.toast('▶ Resuming pipeline' + (_resumeTarget ? ' from: ' + _resumeTarget : '') + '...', 'Ma Golide', 8);
+    try {
+      ss.toast('▶ Resuming pipeline' + (_resumeTarget ? ' from: ' + _resumeTarget : '') + '...', 'Ma Golide', 8);
+    } catch (eToast) {}
     Logger.log('[Shebang] RESUMING from stage: ' + (_resumeTarget || 'beginning'));
-  } else {
+  } else if (interactive) {
     const confirm = ui.alert(
-      includeTuners ? '🚀 RUN THE WHOLE SHEBANG (WITH TUNING)?' : '🚀 RUN THE WHOLE SHEBANG?',
+      includeTuners ? 'RUN THE WHOLE SHEBANG (WITH TUNING)?' : 'RUN THE WHOLE SHEBANG?',
       'This will execute the Ma Golide pipeline.\n\n' +
         (includeTuners
           ? 'Includes Tuning (may hit the 6-minute limit).\n\n'
@@ -2621,9 +2628,13 @@ function _runWholeShebang_(opts) {
       ui.ButtonSet.YES_NO
     );
     if (confirm !== ui.Button.YES) {
-      ss.toast('Pipeline cancelled.', 'Ma Golide', 3);
+      try { ss.toast('Pipeline cancelled.', 'Ma Golide', 3); } catch (eToast2) {}
       return;
     }
+  } else {
+    // Non-interactive run (trigger / no UI available)
+    Logger.log('[Shebang] Non-interactive context (no UI). Auto-continuing without prompt.');
+    try { ss.toast('▶ Running (non-interactive, no UI prompt)...', 'Ma Golide', 6); } catch (eToast3) {}
   }
 
   Logger.log('===== INITIATING THE WHOLE SHEBANG =====');
@@ -2639,7 +2650,9 @@ function _runWholeShebang_(opts) {
   function timeGuard(label) {
     if (Date.now() - startMs > MAX_SAFE_MS) {
       _shebang_scheduleResume_(label);
-      ss.toast('⏸ Auto-paused before "' + label + '". Resuming in ~1 min...', 'Ma Golide', 15);
+      try {
+        ss.toast('⏸ Auto-paused before "' + label + '". Resuming in ~1 min...', 'Ma Golide', 15);
+      } catch (eToast) {}
       Logger.log('[Shebang] PAUSED before stage: ' + label + ' — resume trigger scheduled.');
       return true;
     }
@@ -2662,11 +2675,11 @@ function _runWholeShebang_(opts) {
 
   // Prefer underscore overlay API; allow fallback if your overlay uses non-underscore names.
   const zf = {
-    repair:         pickFn('_zf_repairSheet_',         'zf_repairSheet'),
-    bridge:         pickFn('_zf_bridgeConfig_',        'zf_bridgeConfig'),
-    installNumeric: pickFn('_zf_installNumericGuards_','zf_installNumericGuards'),
-    clearCaches:    pickFn('_zf_clearCaches_',         'zf_clearCaches'),
-    verifyHeaders:  pickFn('_zf_verifyHeaders_',       'zf_verifyHeaders')
+    repair:         pickFn('_zf_repairSheet_',          'zf_repairSheet'),
+    bridge:         pickFn('_zf_bridgeConfig_',         'zf_bridgeConfig'),
+    installNumeric: pickFn('_zf_installNumericGuards_', 'zf_installNumericGuards'),
+    clearCaches:    pickFn('_zf_clearCaches_',          'zf_clearCaches'),
+    verifyHeaders:  pickFn('_zf_verifyHeaders_',        'zf_verifyHeaders')
   };
 
   const zfDetected    = !!(zf.repair || zf.bridge || zf.installNumeric || zf.clearCaches || zf.verifyHeaders);
@@ -2716,7 +2729,8 @@ function _runWholeShebang_(opts) {
       return false;
     }
     if (timeGuard(label)) return true;
-    ss.toast(toastMsg, 'The Whole Shebang', 15);
+
+    try { ss.toast(toastMsg, 'The Whole Shebang', 15); } catch (eToast) {}
 
     const res = resolveFn(candidates);
     if (!res) { skipped.push(label + ' (not found)'); return false; }
@@ -2739,7 +2753,8 @@ function _runWholeShebang_(opts) {
       return false;
     }
     if (timeGuard(label)) return true;
-    ss.toast(toastMsg, 'The Whole Shebang', 20);
+
+    try { ss.toast(toastMsg, 'The Whole Shebang', 20); } catch (eToast) {}
 
     const res = resolveFn(candidates);
     if (!res) { skipped.push(label + ' (not found)'); return false; }
@@ -2781,17 +2796,17 @@ function _runWholeShebang_(opts) {
       Logger.log('[Shebang] ZERO_FALLBACK bootstrap error (non-fatal): ' + e.message);
     }
 
-    // Phase 3: Historical (keep plain unless you KNOW it writes schema-sensitive columns)
+    // Phase 3: Historical
     if (runPlainStage('Historical Analysis', 'Phase 3/7: Historical Analysis...', [
       { name: 'runAllHistoricalAnalyzers', passSs: true }
     ])) return;
 
-    // Phase 4: Tier 1 (writer => guarded)
+    // Phase 4: Tier 1
     if (runGuardedStage('Tier 1 Forecast', 'Phase 4/7: Tier 1 Forecast...', [
       { name: 'analyzeTier1', passSs: true }
     ])) return;
 
-    // T2 context init — runs unconditionally (fast, idempotent; needed by both Tier 2 stages)
+    // T2 context init
     try {
       if (typeof t2_resetSharedGameContext_ === 'function') {
         t2_resetSharedGameContext_(ss, { source: 'WholeShebang' });
@@ -2801,7 +2816,7 @@ function _runWholeShebang_(opts) {
       Logger.log('[Shebang] Context init failed: ' + eCtx.message);
     }
 
-    // Phase 5: Tier 2 writers (ONE canonical pass each)
+    // Phase 5: Tier 2
     if (runGuardedStage('Tier 2 Margins', 'Phase 5/7: Tier 2 Margins...', [
       { name: 'runTier2_DeepDive', passSs: false },
       { name: 'predictQuarters_Tier2', passSs: true }
@@ -2817,35 +2832,38 @@ function _runWholeShebang_(opts) {
       { name: 'runAllEnhancements', passSs: false }
     ])) return;
 
-    // Phase 6: Accumulator (writer => guarded)
+    // Phase 6: Accumulator
     if (runGuardedStage('Accumulator', 'Phase 6/7: Building Accumulators...', [
       { name: 'buildAccumulator', passSs: true },
       { name: 'buildModule8Accumulator', passSs: true },
       { name: 'runAccumulator', passSs: false }
     ])) return;
 
-    // Optional verify (non-critical, always safe to re-run)
+    // Optional verify
     if (zf.verifyHeaders) {
       try { zf.verifyHeaders(ss, 'UpcomingClean', zfLog); }
       catch (e) { Logger.log('[Shebang] Header verify error (non-fatal): ' + e.message); }
     }
 
-    // Phase 7: Reports (plain)
+    // Phase 7: Reports
     if (runPlainStage('Accuracy Report', 'Phase 7/7: Accuracy Report...', [
       { name: 'generateAccuracyReport', passSs: true }
     ])) return;
+
     if (runPlainStage('Tier 2 Accuracy Report', 'Phase 7/7: Tier 2 Accuracy...', [
       { name: 'buildTier2AccuracyReport', passSs: true }
     ])) return;
+
     if (runPlainStage('O/U Accuracy Report', 'Phase 7/7: O/U Accuracy...', [
       { name: 'buildOUAccuracyReport', passSs: true }
     ])) return;
 
-    // OPTIONAL (not recommended for menu/editor runs)
+    // OPTIONAL tuners
     if (includeTuners) {
       if (runPlainStage('Tier 1 Tuning', 'Phase 7/7: Tier 1 Tuning (proposal)...', [
         { name: 'tuneLeagueWeights', passSs: true }
       ])) return;
+
       if (runPlainStage('Tier 2 Tuning', 'Phase 7/7: Tier 2 Tuning (proposal)...', [
         { name: 'tuneTier2Config', passSs: true }
       ])) return;
@@ -2864,12 +2882,14 @@ function _runWholeShebang_(opts) {
 
     Logger.log('===== THE WHOLE SHEBANG COMPLETE =====');
     Logger.log(msg);
-    ss.toast('✅ Shebang complete in ' + Math.round((Date.now() - startMs) / 1000) + 's. See Bet_Slips for predictions.', 'Ma Golide', 8);
+    try {
+      ss.toast('✅ Shebang complete in ' + Math.round((Date.now() - startMs) / 1000) + 's. See Bet_Slips for predictions.', 'Ma Golide', 8);
+    } catch (eToastEnd) {}
 
   } catch (e) {
     Logger.log('!!! CRITICAL SHEBANG FAILURE: ' + e.message + '\nStack: ' + e.stack);
     if (zfLog.length) Logger.log('\n=== ZERO_FALLBACK LOG (PARTIAL) ===\n' + zfLog.join('\n'));
-    ss.toast('❌ Shebang failed: ' + e.message + ' — check Logs.', 'Ma Golide', 10);
+    try { ss.toast('❌ Shebang failed: ' + e.message + ' — check Logs.', 'Ma Golide', 10); } catch (eToastFail) {}
   }
 }
 
