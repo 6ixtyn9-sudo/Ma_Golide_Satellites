@@ -3378,14 +3378,20 @@ function _normalizeSelectionFields_(bet) {
   return bet;
 }
 
+
 /**
- * One machine row for Bet_Slips — BET_SLIPS_CONTRACT_23 (Phase 2 Patch 3B).
+ * One machine row for Bet_Slips — BET_SLIPS_CONTRACT_23 (patched).
+ * Forces Tier_Code + Tier_Display consistency.
+ *
  * cfgBundle: { t1, t2, acc } config version stamps.
  */
 function _formatBetSlipRow_(pick, market, period, cfgBundle, slipIndex,
   formatTime, formatOdds, formatEV, getTierDisplay, getTierLabel, confPct, typeLabel) {
+
+  // ─── IDs / metadata ────────────────────────────────────────────────────────
   var accVer = cfgBundle && cfgBundle.acc != null ? cfgBundle.acc : '';
   var ids = _m8_forensicIdsForSlip_(pick, market, period, accVer);
+
   var betRecordId = '';
   try {
     if (typeof buildBetRecordID_ === 'function' && ids.sourcePredictionRecordId) {
@@ -3394,26 +3400,68 @@ function _formatBetSlipRow_(pick, market, period, cfgBundle, slipIndex,
   } catch (eB) {
     Logger.log('[_formatBetSlipRow_] buildBetRecordID_: ' + eB.message);
   }
+
   var teams = (pick && pick.home && pick.away)
     ? { home: pick.home, away: pick.away }
     : _m8_parseMatchTeamsForIds_(pick && pick.match);
+
   var stdDate = (typeof standardizeDate_ === 'function')
     ? standardizeDate_(pick && pick.date)
     : '';
-  var confB = (typeof normalizeConfidenceBundle_ === 'function')
-    ? normalizeConfidenceBundle_(confPct)
-    : {
-      confidencePct: Number(confPct) || 0,
-      confidenceProb: (Number(confPct) || 0) / 100,
-      tierCode: (getTierLabel && getTierLabel(confPct)) || 'WEAK',
-      tierDisplay: (pick && pick.tierDisplay) || (getTierDisplay && getTierDisplay(confPct)) || ''
-    };
+
+  // ─── Confidence normalization (supports 0.57 -> 57) ────────────────────────
+  var c = Number(confPct);
+  if (!isFinite(c)) c = 0;
+  if (c > 0 && c <= 1) c = c * 100;             // probability -> percent
+  var confInt = Math.round(Math.max(0, Math.min(100, c)));
+  var confProb = confInt / 100;
+
+  // ─── Tier_Code (source of truth: pick.tier if provided) ────────────────────
+  var tierCode =
+    (pick && (pick.tier || pick.tierCode || pick.tier_code)) ||
+    (getTierLabel ? getTierLabel(confInt) : '') ||
+    '';
+
+  // If still empty, try getTierObject
+  if (!tierCode && typeof getTierObject === 'function') {
+    try {
+      var tObj = getTierObject(confInt);
+      if (tObj && tObj.tier) tierCode = tObj.tier;
+    } catch (eT) {}
+  }
+
+  // Final fallback
+  if (!tierCode) {
+    tierCode = (confInt >= 70) ? 'ELITE' :
+               (confInt >= 63) ? 'STRONG' :
+               (confInt >= 55) ? 'MEDIUM' : 'WEAK';
+  }
+
+  // ─── EV + odds handling for display ────────────────────────────────────────
+  var oddsNum = Number(pick && pick.odds);
+  var oddsValid = isFinite(oddsNum) && oddsNum > 1.01;
+
+  var evNum = Number(pick && pick.ev);
+  var evValid = isFinite(evNum);
+
+  // For Tier_Display symbol only: EV unknown if odds missing/invalid
+  var evForTierDisplay = (oddsValid && evValid) ? evNum : null;
+
+  // ─── Tier_Display (must follow Tier_Code) ──────────────────────────────────
+  var tierDisplay =
+    (pick && (pick.tierDisplay || pick.tier_display)) ||
+    (typeof _formatTierDisplay_ === 'function'
+      ? _formatTierDisplay_(confInt, evForTierDisplay, tierCode)
+      : ((getTierDisplay && getTierDisplay(confInt)) || ''));
+
+  // ─── Selection parsing ─────────────────────────────────────────────────────
   var pickStr = String((pick && pick.pick) || '');
   var pU = pickStr.toUpperCase();
-  var mkt = typeLabel != null ? typeLabel : (pick.type || market || '');
+
   var side = '';
   var lineStr = '';
   var selectionTeam = '';
+
   if (pU.indexOf('OVER') >= 0) {
     side = 'OVER';
     var _ovM = pickStr.match(/OVER\s*([+-]?\d+\.?\d*)/i);
@@ -3436,34 +3484,39 @@ function _formatBetSlipRow_(pick, market, period, cfgBundle, slipIndex,
     if (_marginM) lineStr = _marginM[1];
   }
 
-  var tempBet = {
-    market: market,
-    period: period,
-    home: teams.home || '',
-    away: teams.away || '',
-    selectionSide: side,
-    selectionLine: lineStr,
-    selectionTeam: selectionTeam,
-    selectionText: pickStr
-  };
-  
-  tempBet = _normalizeSelectionFields_(tempBet);
-  
-  side = tempBet.selectionSide;
-  lineStr = tempBet.selectionLine;
-  selectionTeam = tempBet.selectionTeam;
-  pickStr = tempBet.selectionText;
+  // Optional: normalize selection fields if your function exists
+  if (typeof _normalizeSelectionFields_ === 'function') {
+    var tempBet = {
+      market: market,
+      period: period,
+      home: teams.home || '',
+      away: teams.away || '',
+      selectionSide: side,
+      selectionLine: lineStr,
+      selectionTeam: selectionTeam,
+      selectionText: pickStr
+    };
 
-  var evDisp = formatEV(pick.ev);
+    tempBet = _normalizeSelectionFields_(tempBet);
+
+    side = tempBet.selectionSide;
+    lineStr = tempBet.selectionLine;
+    selectionTeam = tempBet.selectionTeam;
+    pickStr = tempBet.selectionText;
+  }
+
+  // ─── Output row ────────────────────────────────────────────────────────────
+  var evDisp = formatEV(pick && pick.ev);
   var t1 = (cfgBundle && cfgBundle.t1) || '';
   var t2 = (cfgBundle && cfgBundle.t2) || '';
   var acc = (cfgBundle && cfgBundle.acc) || '';
+
   return [
     betRecordId,
     ids.universalGameId || '',
     ids.sourcePredictionRecordId || '',
-    pick.league || '',
-    stdDate || pick.date || '',
+    (pick && pick.league) || '',
+    stdDate || (pick && pick.date) || '',
     teams.home || '',
     teams.away || '',
     market,
@@ -3472,12 +3525,12 @@ function _formatBetSlipRow_(pick, market, period, cfgBundle, slipIndex,
     lineStr,
     selectionTeam,
     pickStr,
-    formatOdds(pick.odds),
-    confB.confidencePct,
-    confB.confidenceProb,
+    formatOdds(pick && pick.odds),
+    confInt,
+    confProb,
     evDisp,
-    confB.tierCode || 'WEAK',
-    pick.tierDisplay || confB.tierDisplay || getTierDisplay(confPct),
+    tierCode,
+    tierDisplay,
     t1,
     t2,
     acc,
@@ -3485,37 +3538,31 @@ function _formatBetSlipRow_(pick, market, period, cfgBundle, slipIndex,
   ];
 }
 
+
+
 /**
- * _writeBetSlipsEnhanced — Write all picks to Bet_Slips sheet
+ * _writeBetSlipsEnhanced — Write all picks to Bet_Slips sheet (23-col contract)
  *
- * ROBBERS now use unified tier/confidence system:
- *   - Confidence column: Standard format (★ (64%) ●)
- *   - Tier column: ELITE/STRONG/MEDIUM/WEAK
- *   - Type column: Still shows "ROBBER" to identify pick type
- *
- * @param {Spreadsheet} ss — Google Spreadsheet
- * @param {Object} picks — Object with bankers, snipers, robbers, firstHalves, ftOUs arrays
- * @param {Object} config — Configuration object
- * @param {Object} tierCuts — Tier cutoffs (optional)
- * @param {boolean} enhancementsEnabled — Whether enhancements are active
+ * This version:
+ * - Fixes conf parsing (supports 0.57 -> 57%)
+ * - Forces Tier_Code and Tier_Display to be consistent
+ * - Uses pick.tier (if present) as the Tier_Code source of truth
+ * - Uses _formatTierDisplay_(confPct, ev, tierCode) for Tier_Display
+ * - Treats EV as unknown when odds are missing/invalid -> Tier_Display ends with "—"
  */
 function _writeBetSlipsEnhanced(ss, picks, config, tierCuts, enhancementsEnabled) {
   var fn = '_writeBetSlipsEnhanced';
-  
-  // ─── GET OR CREATE SHEET ───────────────────────────────────────────────────
-  var sheet = (typeof _getSheet === 'function') 
-    ? _getSheet(ss, 'Bet_Slips') 
-    : ss.getSheetByName('Bet_Slips');
-  
-  if (!sheet) {
-    sheet = ss.insertSheet('Bet_Slips');
-  }
 
-  // Append-only: do not clear the sheet (Patch 1C / contract runs stack).
+  // ─── GET OR CREATE SHEET ───────────────────────────────────────────────────
+  var sheet = (typeof _getSheet === 'function')
+    ? _getSheet(ss, 'Bet_Slips')
+    : ss.getSheetByName('Bet_Slips');
+
+  if (!sheet) sheet = ss.insertSheet('Bet_Slips');
+
+  // Append-only: do not clear the sheet
   var lastRowBefore = sheet.getLastRow();
-  try {
-    sheet.getRange('A:W').setNumberFormat('@');
-  } catch (eFmt) {}
+  try { sheet.getRange('A:W').setNumberFormat('@'); } catch (eFmt) {}
 
   // ─── NORMALIZE PICKS OBJECT ────────────────────────────────────────────────
   picks = picks || {};
@@ -3527,14 +3574,15 @@ function _writeBetSlipsEnhanced(ss, picks, config, tierCuts, enhancementsEnabled
 
   var NUM_COLS = 23;
   var slipSeq = 0;
+
   var cfgAcc = (config && (config.config_version_accumulator || config.acc_version || config.version)) ||
     (typeof CONTRACT_VERSION !== 'undefined' ? CONTRACT_VERSION : 'ACC');
-  var cfgVers = (typeof _m8_readConfigVersions_ === 'function') ? _m8_readConfigVersions_(ss) : { t1: '', t2: '' };
-  var cfgBundle = {
-    t1: cfgVers.t1 || '',
-    t2: cfgVers.t2 || '',
-    acc: cfgAcc
-  };
+
+  var cfgVers = (typeof _m8_readConfigVersions_ === 'function')
+    ? _m8_readConfigVersions_(ss)
+    : { t1: '', t2: '' };
+
+  var cfgBundle = { t1: cfgVers.t1 || '', t2: cfgVers.t2 || '', acc: cfgAcc };
 
   var headers = (typeof BET_SLIPS_CONTRACT_23 !== 'undefined')
     ? BET_SLIPS_CONTRACT_23.slice()
@@ -3568,77 +3616,119 @@ function _writeBetSlipsEnhanced(ss, picks, config, tierCuts, enhancementsEnabled
     if (p.indexOf('+') >= 0 || p.indexOf('-') >= 0) return 'SNIPER_MARGIN';
     return 'SNIPER';
   }
-  
-  // ─── HELPER FUNCTIONS ──────────────────────────────────────────────────────
-  
+
+  // ─── SAFE PARSERS/FORMATTERS ───────────────────────────────────────────────
   function parseConf(val) {
-    if (typeof val === 'number') return val;
-    var s = String(val || '').replace(/[%★●○\(\)]/g, '').trim();
-    var n = parseFloat(s);
-    return isFinite(n) ? n : 0;
+    var n;
+    if (typeof val === 'number') n = val;
+    else {
+      var s = String(val || '').replace(/[%★●○\(\)]/g, '').trim();
+      n = parseFloat(s);
+    }
+    if (!isFinite(n)) return 0;
+    // If it's probability 0..1, convert to %
+    if (n > 0 && n <= 1) n = n * 100;
+    return n;
   }
-  
-  function getTierDisplay(confPct) {
-    if (typeof getTierObject === 'function') {
-      try {
-        var tierObj = getTierObject(confPct);
-        if (tierObj && tierObj.display) return tierObj.display;
-      } catch (e) {}
+
+  function _parseEvDecimal_(ev) {
+    if (ev === undefined || ev === null || ev === '' || ev === '-') return null;
+    if (typeof ev === 'number') return isFinite(ev) ? ev : null;
+    var s = String(ev).trim();
+    // "15.6%" -> 0.156
+    if (s.indexOf('%') >= 0) {
+      var n1 = parseFloat(s.replace('%', ''));
+      return isFinite(n1) ? (n1 / 100) : null;
     }
-    if (enhancementsEnabled && typeof getOUTierDisplay === 'function') {
-      try { return getOUTierDisplay(confPct); } catch (e) {}
-    }
-    if (typeof _formatConfPct === 'function') {
-      try { return _formatConfPct(confPct); } catch (e) {}
-    }
-    return _robbers_buildTierDisplay_(confPct, 0);
+    var n = Number(s);
+    return isFinite(n) ? n : null;
   }
-  
-  function getTierLabel(confPct) {
-    if (typeof getTierObject === 'function') {
-      try {
-        var tierObj = getTierObject(confPct);
-        if (tierObj && tierObj.tier) return tierObj.tier;
-      } catch (e) {}
-    }
-    if (enhancementsEnabled && typeof getOUTier === 'function') {
-      try { return getOUTier(confPct); } catch (e) {}
-    }
-    if (typeof _getTier === 'function') {
-      try {
-        var tier = _getTier(confPct, tierCuts);
-        return tier.tier + (tier.symbol ? ' ' + tier.symbol : '');
-      } catch (e) {}
-    }
-    if (confPct >= 70) return 'ELITE';
-    if (confPct >= 63) return 'STRONG';
-    if (confPct >= 55) return 'MEDIUM';
-    return 'WEAK';
-  }
-  
+
   function formatEV(ev) {
     if (ev === undefined || ev === null || ev === '' || ev === '-') return '-';
     var n = Number(ev);
     if (!isFinite(n)) return '-';
     return (n * 100).toFixed(1) + '%';
   }
-  
+
   function formatTime(t) {
     if (typeof _formatTime === 'function') {
       try { return _formatTime(t); } catch (e) {}
     }
     return String(t || '');
   }
-  
+
   function formatOdds(odds) {
     if (odds === undefined || odds === null || odds === '' || odds === '-') return '-';
     var n = Number(odds);
     if (!isFinite(n) || n <= 0) return '-';
     return n.toFixed(2);
   }
-  
-  // ─── BUILD OUTPUT ──────────────────────────────────────────────────────────
 
+  function _isValidOdds_(odds) {
+    var n = Number(odds);
+    return isFinite(n) && n > 1.01;
+  }
+
+  // Decide final tierCode + tierDisplay for a pick row
+  function _finalTierForSlip_(pick, confPct) {
+    var confInt = Math.round(Number(confPct));
+    if (!isFinite(confInt)) confInt = 0;
+    confInt = Math.max(0, Math.min(100, confInt));
+
+    // Tier_Code: prefer pick.tier (source of truth)
+    var tierCode = pick.tier || pick.tierCode || pick.tier_code;
+
+    // If still missing, try getTierObject
+    if (!tierCode && typeof getTierObject === 'function') {
+      try {
+        var tObj = getTierObject(confInt);
+        if (tObj && tObj.tier) tierCode = tObj.tier;
+      } catch (e) {}
+    }
+
+    // Hard fallback
+    if (!tierCode) {
+      tierCode = (confInt >= 70) ? 'ELITE' :
+                 (confInt >= 63) ? 'STRONG' :
+                 (confInt >= 55) ? 'MEDIUM' : 'WEAK';
+    }
+
+    // EV known only if odds are valid
+    var evDec = _parseEvDecimal_(pick.ev);
+    var evForDisplay = (_isValidOdds_(pick.odds) ? evDec : null);
+
+    var tierDisplay = (typeof _formatTierDisplay_ === 'function')
+      ? _formatTierDisplay_(confInt, evForDisplay, tierCode)
+      : String(pick.tierDisplay || pick.tier_display || '');
+
+    return { tierCode: tierCode, tierDisplay: tierDisplay, confInt: confInt };
+  }
+
+  // Push a row with fixed tier functions (prevents any downstream recompute)
+  function _pushRow_(pickObj, market, period, typeLabel, confPct) {
+    var fin = _finalTierForSlip_(pickObj, confPct);
+
+    // Ensure pickObj carries the final tier fields (helpful for debugging)
+    pickObj.tier = fin.tierCode;
+    pickObj.tierCode = fin.tierCode;
+    pickObj.tier_code = fin.tierCode;
+    pickObj.tierDisplay = fin.tierDisplay;
+    pickObj.tier_display = fin.tierDisplay;
+
+    function tierDisplayFn_() { return fin.tierDisplay; }
+    function tierLabelFn_() { return fin.tierCode; }
+
+    slipSeq++;
+    output.push(_formatBetSlipRow_(
+      pickObj, market, period, cfgBundle, slipSeq,
+      formatTime, formatOdds, formatEV,
+      tierDisplayFn_, tierLabelFn_,
+      fin.confInt, typeLabel
+    ));
+  }
+
+  // ─── BUILD OUTPUT ──────────────────────────────────────────────────────────
   var output = [
     pad23(['Ma Golide Bet Slips - Generated: ' + new Date().toLocaleString() +
       (enhancementsEnabled ? ' [ENHANCED]' : '')]),
@@ -3651,7 +3741,7 @@ function _writeBetSlipsEnhanced(ss, picks, config, tierCuts, enhancementsEnabled
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // BANKERS SECTION
+  // BANKERS
   // ═══════════════════════════════════════════════════════════════════════════
   output.push(pad23(['──── BANKERS (>=' + (config.bankerThreshold || 60) + '% Confidence) ────']));
   output.push(headers);
@@ -3660,16 +3750,14 @@ function _writeBetSlipsEnhanced(ss, picks, config, tierCuts, enhancementsEnabled
     for (var bi = 0; bi < picks.bankers.length; bi++) {
       var b = picks.bankers[bi];
       var bConf = parseConf(b.confidence);
-      slipSeq++;
-      output.push(_formatBetSlipRow_(b, 'BANKER', 'FT', cfgBundle, slipSeq,
-        formatTime, formatOdds, formatEV, getTierDisplay, getTierLabel, bConf, 'BANKER'));
+      _pushRow_(b, 'BANKER', 'FT', 'BANKER', bConf);
     }
   } else {
     output.push(pad23(['No Bankers found']));
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // ROBBERS SECTION
+  // ROBBERS
   // ═══════════════════════════════════════════════════════════════════════════
   if (picks.robbers && picks.robbers.length > 0) {
     output.push(pad23([]));
@@ -3679,22 +3767,14 @@ function _writeBetSlipsEnhanced(ss, picks, config, tierCuts, enhancementsEnabled
     for (var ri = 0; ri < picks.robbers.length; ri++) {
       var r = picks.robbers[ri];
       var rConf = parseConf(r.confidence);
-      var tierLabelR = r.tier || getTierLabel(rConf);
-      if (typeof tierLabelR === 'string' && tierLabelR.indexOf('ROBBER') !== -1) {
-        tierLabelR = getTierLabel(rConf);
-      }
-      var rPick = {
-        league: r.league, date: r.date, time: r.time, match: r.match, pick: r.pick,
-        odds: r.odds, ev: r.ev, tierDisplay: r.tierDisplay || getTierDisplay(rConf), tier: tierLabelR
-      };
-      slipSeq++;
-      output.push(_formatBetSlipRow_(rPick, 'ROBBER', 'FT', cfgBundle, slipSeq,
-        formatTime, formatOdds, formatEV, getTierDisplay, getTierLabel, rConf, 'ROBBER'));
+
+      // Use robber object directly (keeps all fields _formatBetSlipRow_ might need)
+      _pushRow_(r, 'ROBBER', 'FT', 'ROBBER', rConf);
     }
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // FIRST HALF SECTION
+  // FIRST HALF
   // ═══════════════════════════════════════════════════════════════════════════
   if (picks.firstHalves && picks.firstHalves.length > 0) {
     output.push(pad23([]));
@@ -3704,14 +3784,12 @@ function _writeBetSlipsEnhanced(ss, picks, config, tierCuts, enhancementsEnabled
     for (var hi = 0; hi < picks.firstHalves.length; hi++) {
       var h = picks.firstHalves[hi];
       var hConf = parseConf(h.confidence);
-      slipSeq++;
-      output.push(_formatBetSlipRow_(h, 'FIRST_HALF_1X2', '1H', cfgBundle, slipSeq,
-        formatTime, formatOdds, formatEV, getTierDisplay, getTierLabel, hConf, '1H 1x2'));
+      _pushRow_(h, 'FIRST_HALF_1X2', '1H', '1H 1x2', hConf);
     }
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // FT O/U SECTION
+  // FT O/U
   // ═══════════════════════════════════════════════════════════════════════════
   if (picks.ftOUs && picks.ftOUs.length > 0) {
     output.push(pad23([]));
@@ -3721,14 +3799,12 @@ function _writeBetSlipsEnhanced(ss, picks, config, tierCuts, enhancementsEnabled
     for (var fi = 0; fi < picks.ftOUs.length; fi++) {
       var f = picks.ftOUs[fi];
       var fConf = parseConf(f.confidence);
-      slipSeq++;
-      output.push(_formatBetSlipRow_(f, 'FT_OU', 'FT', cfgBundle, slipSeq,
-        formatTime, formatOdds, formatEV, getTierDisplay, getTierLabel, fConf, 'FT O/U'));
+      _pushRow_(f, 'FT_OU', 'FT', 'FT O/U', fConf);
     }
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // SNIPERS SECTION
+  // SNIPERS
   // ═══════════════════════════════════════════════════════════════════════════
   output.push(pad23([]));
   output.push(pad23(['──── SNIPERS (Margin + O/U) ────']));
@@ -3740,16 +3816,14 @@ function _writeBetSlipsEnhanced(ss, picks, config, tierCuts, enhancementsEnabled
       var sConf = parseConf(s.confidence);
       var sMkt = slipMarketFromSniper_(s);
       var sPer = slipPeriodFromSniper_(s);
-      slipSeq++;
-      output.push(_formatBetSlipRow_(s, sMkt, sPer, cfgBundle, slipSeq,
-        formatTime, formatOdds, formatEV, getTierDisplay, getTierLabel, sConf, s.type || 'SNIPER'));
+      _pushRow_(s, sMkt, sPer, s.type || 'SNIPER', sConf);
     }
   } else {
     output.push(pad23(['No Snipers found']));
   }
 
   // ═══════════════════════════════════════════════════════════════════════════
-  // SUMMARY SECTION
+  // SUMMARY
   // ═══════════════════════════════════════════════════════════════════════════
   var totalPicks = picks.bankers.length + picks.snipers.length + picks.robbers.length +
     picks.firstHalves.length + picks.ftOUs.length;
@@ -3767,10 +3841,9 @@ function _writeBetSlipsEnhanced(ss, picks, config, tierCuts, enhancementsEnabled
   var writeStart = lastRowBefore + 1;
   sheet.getRange(writeStart, 1, output.length, NUM_COLS).setValues(output);
 
+  // Column widths
   var widths = [150, 200, 220, 80, 90, 100, 100, 100, 70, 80, 90, 70, 260, 60, 90, 90, 70, 70, 120, 120, 120, 120, 120];
-  for (var w = 0; w < widths.length; w++) {
-    sheet.setColumnWidth(w + 1, widths[w]);
-  }
+  for (var w = 0; w < widths.length; w++) sheet.setColumnWidth(w + 1, widths[w]);
 
   // ─── APPLY FORMATTING ──────────────────────────────────────────────────────
   for (var row = 0; row < output.length; row++) {
