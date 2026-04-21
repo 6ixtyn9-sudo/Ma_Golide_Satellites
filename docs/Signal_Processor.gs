@@ -2174,15 +2174,143 @@ function runParseResults(ss) {
 }
 
 /**
+ * STRICT PRESERVE AND RESTORE MODULE
+ * Zero-fallback architecture. Strict string-to-index mapping.
+ */
+
+function preserveUpcomingStrict(sheet) {
+  const dataRange = sheet.getDataRange();
+  const data = dataRange.getValues();
+  
+  if (data.length <= 1) {
+    return new Map();
+  }
+
+  const headers = data[0];
+  const preservedMap = new Map();
+
+  const homeIdx = headers.indexOf("Home");
+  const awayIdx = headers.indexOf("Away");
+
+  if (homeIdx === -1 || awayIdx === -1) {
+    Logger.log("[FATAL] Home or Away headers missing in UpcomingClean. Cannot establish match identity.");
+    return preservedMap;
+  }
+
+  const keysToPreserve = [
+    "Q1", "Q2", "Q3", "Q4", "OT", "Status", "FT Score",
+    "ou-q1", "ou-q1-conf", "ou-q1-ev", "ou-q1-edge", "ou-q1-push", "ou-q1-tier",
+    "ou-q2", "ou-q2-conf", "ou-q2-ev", "ou-q2-edge", "ou-q2-push", "ou-q2-tier",
+    "ou-q3", "ou-q3-conf", "ou-q3-ev", "ou-q3-edge", "ou-q3-push", "ou-q3-tier",
+    "ou-q4", "ou-q4-conf", "ou-q4-ev", "ou-q4-edge", "ou-q4-push", "ou-q4-tier",
+    "ou-edge-score", "ou-highest-est", "ou-fb-used", "ou-bayesian-used", "ou-best", "ou-best-q", "ou-best-ev", "ou-best-edge", "ou-game-tier", "ou-best-conf", "ou-best-dir",
+    "ou-game"
+  ];
+
+  const columnMap = new Map();
+  keysToPreserve.forEach(function(key) {
+    const idx = headers.indexOf(key);
+    if (idx !== -1) {
+      columnMap.set(key, idx);
+    }
+  });
+
+  for (let i = 1; i < data.length; i++) {
+    const row = data[i];
+    const homeTeam = row[homeIdx];
+    const awayTeam = row[awayIdx];
+    
+    if (String(homeTeam).trim() === "" || String(awayTeam).trim() === "") {
+      continue;
+    }
+
+    const matchId = String(homeTeam).trim() + "_" + String(awayTeam).trim();
+    const rowData = {};
+
+    columnMap.forEach(function(colIdx, key) {
+      rowData[key] = row[colIdx];
+    });
+
+    preservedMap.set(matchId, rowData);
+  }
+
+  Logger.log("[PRESERVE STRICT] Captured data for " + preservedMap.size + " games.");
+  return preservedMap;
+}
+
+function restoreUpcomingStrict(sheet, preservedMap) {
+  if (!preservedMap || preservedMap.size === 0) {
+    Logger.log("[RESTORE STRICT] No data to restore.");
+    return;
+  }
+
+  const dataRange = sheet.getDataRange();
+  const data = dataRange.getValues();
+  
+  if (data.length <= 1) {
+    return;
+  }
+
+  const headers = data[0];
+  const homeIdx = headers.indexOf("Home");
+  const awayIdx = headers.indexOf("Away");
+
+  if (homeIdx === -1 || awayIdx === -1) {
+    Logger.log("[FATAL] Home or Away headers missing during restore phase.");
+    return;
+  }
+
+  const keysToRestore = [
+    "Q1", "Q2", "Q3", "Q4", "OT", "Status", "FT Score",
+    "ou-q1", "ou-q1-conf", "ou-q1-ev", "ou-q1-edge", "ou-q1-push", "ou-q1-tier",
+    "ou-q2", "ou-q2-conf", "ou-q2-ev", "ou-q2-edge", "ou-q2-push", "ou-q2-tier",
+    "ou-q3", "ou-q3-conf", "ou-q3-ev", "ou-q3-edge", "ou-q3-push", "ou-q3-tier",
+    "ou-q4", "ou-q4-conf", "ou-q4-ev", "ou-q4-edge", "ou-q4-push", "ou-q4-tier",
+    "ou-edge-score", "ou-highest-est", "ou-fb-used", "ou-bayesian-used", "ou-best", "ou-best-q", "ou-best-ev", "ou-best-edge", "ou-game-tier", "ou-best-conf", "ou-best-dir",
+    "ou-game"
+  ];
+
+  const columnMap = new Map();
+  keysToRestore.forEach(function(key) {
+    const idx = headers.indexOf(key);
+    if (idx !== -1) {
+      columnMap.set(key, idx);
+    }
+  });
+
+  let restorationCount = 0;
+
+  for (let i = 1; i < data.length; i++) {
+    const homeTeam = data[i][homeIdx];
+    const awayTeam = data[i][awayIdx];
+    
+    if (String(homeTeam).trim() === "" || String(awayTeam).trim() === "") {
+      continue;
+    }
+
+    const matchId = String(homeTeam).trim() + "_" + String(awayTeam).trim();
+    const savedData = preservedMap.get(matchId);
+
+    if (savedData) {
+      columnMap.forEach(function(colIdx, key) {
+        if (savedData[key] !== undefined && savedData[key] !== "") {
+          data[i][colIdx] = savedData[key];
+        }
+      });
+      restorationCount++;
+    }
+  }
+
+  dataRange.setValues(data);
+  Logger.log("[RESTORE STRICT] Successfully restored data for " + restorationCount + " games using dynamic mapping.");
+}
+
+/**
  * ======================================================================
- * runParseUpcoming - PATCH (Preserve manual betting lines in Q1–Q4)
+ * runParseUpcoming - PATCH (Strict Preserve/Restore)
  * ======================================================================
- * FIX: When UpcomingClean is rebuilt, it was overwriting your manual
- *      betting line inputs in Q1/Q2/Q3/Q4 (and OT). This patch preserves
- *      those columns from the existing UpcomingClean and restores them
- *      onto the newly parsed rows (manual values WIN if present).
- *
- * Also keeps the original Tier-2 column guarantees (t2-q1..t2-q4).
+ * Replaces the old index-based preservation with a strict column-mapped
+ * preserve/restore cycle.
  *
  * Reads:  UpcomingRaw, Standings
  * Writes: UpcomingClean
@@ -2190,130 +2318,17 @@ function runParseResults(ss) {
  */
 function runParseUpcoming(ss) {
   ss = ss || SpreadsheetApp.getActiveSpreadsheet();
-  var tz = ss.getSpreadsheetTimeZone();
 
   Logger.log('Parsing "UpcomingRaw" sheet...');
 
-  // ----------------------------
-  // Helpers (local + robust)
-  // ----------------------------
-  function headerMap_(headers) {
-    var m = {};
-    for (var i = 0; i < headers.length; i++) {
-      var k = String(headers[i] || '').toLowerCase().trim();
-      if (k) m[k] = i;
-    }
-    return m;
-  }
-
-  function idx_(h, candidates) {
-    for (var i = 0; i < candidates.length; i++) {
-      var k = String(candidates[i]).toLowerCase().trim();
-      if (h[k] !== undefined) return h[k];
-    }
-    return undefined;
-  }
-
-  function isBlank_(v) {
-    return v === '' || v === null || v === undefined;
-  }
-
-  function safeStr_(v) {
-    return String(v || '').trim();
-  }
-
-  // ---------------------------------------------------------------
-  // PATCHED upcomingKey_  —  date/time independent, type-safe
-  // ---------------------------------------------------------------
-  // Root cause: t2ou_upcomingKey_ produces different keys for the
-  // SAME game when cell types differ (Date objects vs strings, raw
-  // time objects vs "HH:mm" strings).  Existing UpcomingClean has
-  // Date objects; freshly-parsed rows have strings or Date objects
-  // with month/day swapped.  Result: keys never match → nothing is
-  // restored.
-  //
-  // Fix: use league + away + home (lowercased).  For the Upcoming
-  // sheet the same two teams never appear twice in the same league,
-  // so this is a safe, stable key.
-  // ---------------------------------------------------------------
-  function upcomingKey_(row, h) {
-    var iHome   = idx_(h, ['home', 'home team']);
-    var iAway   = idx_(h, ['away', 'away team']);
-    var iLeague = idx_(h, ['league']);
-
-    var home   = iHome   !== undefined ? safeStr_(row[iHome]).toLowerCase()   : '';
-    var away   = iAway   !== undefined ? safeStr_(row[iAway]).toLowerCase()   : '';
-    var league = iLeague !== undefined ? safeStr_(row[iLeague]).toLowerCase() : '';
-
-    return league + '|' + away + '|' + home;
-  }
-
-  // ----------------------------
-  // 1) Preserve existing Q1–Q4/OT/FT Score/Status from UpcomingClean (manual betting lines)
-  // ----------------------------
-  var preservedQ = {}; // key -> { q1, q2, q3, q4, ot, ftscore, status }
-
+  // 1) PRESERVE EXISTING DATA USING STRICT MODULE
   var cleanSheetBefore = getSheetInsensitive(ss, 'UpcomingClean');
+  var preservedMap = new Map();
   if (cleanSheetBefore) {
-    var existing = cleanSheetBefore.getDataRange().getValues();
-    if (existing && existing.length > 1) {
-      var h0 = headerMap_(existing[0]);
-
-      var iHome0 = idx_(h0, ['home', 'home team']);
-      var iAway0 = idx_(h0, ['away', 'away team']);
-
-      // Only attempt preserve if we can identify games
-      if (iHome0 !== undefined && iAway0 !== undefined) {
-        var iQ1_0  = idx_(h0, ['q1']);
-        var iQ2_0  = idx_(h0, ['q2']);
-        var iQ3_0  = idx_(h0, ['q3']);
-        var iQ4_0  = idx_(h0, ['q4']);
-        var iOT_0  = idx_(h0, ['ot']);
-        var iFT_0  = idx_(h0, ['ft score']);
-        var iSt_0  = idx_(h0, ['status']);
-
-        for (var r = 1; r < existing.length; r++) {
-          var row = existing[r];
-          var key = upcomingKey_(row, h0);
-          if (!key) continue;
-
-          var obj = {};
-
-          if (iQ1_0 !== undefined && !isBlank_(row[iQ1_0])) obj.q1 = row[iQ1_0];
-          if (iQ2_0 !== undefined && !isBlank_(row[iQ2_0])) obj.q2 = row[iQ2_0];
-          if (iQ3_0 !== undefined && !isBlank_(row[iQ3_0])) obj.q3 = row[iQ3_0];
-          if (iQ4_0 !== undefined && !isBlank_(row[iQ4_0])) obj.q4 = row[iQ4_0];
-          if (iOT_0 !== undefined && !isBlank_(row[iOT_0])) obj.ot = row[iOT_0];
-          if (iFT_0 !== undefined && !isBlank_(row[iFT_0])) obj.ftscore = row[iFT_0];
-          if (iSt_0 !== undefined && !isBlank_(row[iSt_0])) obj.status = row[iSt_0];
-
-          // Only store if at least one manual value exists
-          if (Object.keys(obj).length) preservedQ[key] = obj;
-        }
-
-        Logger.log('[Q Preserve] Saved Q1–Q4/OT/FT Score/Status for ' + Object.keys(preservedQ).length + ' games');
-      } else {
-        Logger.log('[Q Preserve] Skipped (could not find Home/Away headers in UpcomingClean).');
-      }
-    }
+    preservedMap = preserveUpcomingStrict(cleanSheetBefore);
   }
 
-  // ----------------------------
-  // 2) Preserve any OU/book lines via your existing functions (unchanged)
-  // ----------------------------
-  var savedBookLines = {};
-  try {
-    if (typeof t2ou_preserveUpcomingBookLines_ === 'function') {
-      savedBookLines = t2ou_preserveUpcomingBookLines_(ss) || {};
-      Logger.log('[OU Preserve] Saved lines for ' + Object.keys(savedBookLines).length + ' games');
-    }
-  } catch (e) {
-    Logger.log('[OU Preserve] Failed (continuing): ' + e.message);
-  }
-
-  // ----------------------------
-  // 3) Parse UpcomingRaw
-  // ----------------------------
+  // 2) Parse UpcomingRaw
   var rawSheet = getSheetInsensitive(ss, 'UpcomingRaw');
   if (!rawSheet) {
     Logger.log('runParseUpcoming: Could not find sheet "UpcomingRaw". Skipping.');
@@ -2328,9 +2343,7 @@ function runParseUpcoming(ss) {
     return;
   }
 
-  // ----------------------------
-  // 4) Ensure required headers exist (Q + Tier2)
-  // ----------------------------
+  // 3) Ensure required headers exist (Q + Tier2 + OU)
   var headers = data[0];
   var columnsAdded = false;
 
@@ -2352,6 +2365,7 @@ function runParseUpcoming(ss) {
     ['ou-' + qk, 'ou-' + qk + '-conf', 'ou-' + qk + '-ev', 'ou-' + qk + '-edge', 'ou-' + qk + '-push', 'ou-' + qk + '-tier'].forEach(ensureHeader_);
   }
   ['ou-edge-score', 'ou-highest-est', 'ou-fb-used', 'ou-bayesian-used', 'ou-best', 'ou-best-q', 'ou-best-ev', 'ou-best-edge', 'ou-game-tier', 'ou-best-conf', 'ou-best-dir'].forEach(ensureHeader_);
+  ['ou-game'].forEach(ensureHeader_);
 
   if (columnsAdded) {
     for (var rr = 1; rr < data.length; rr++) {
@@ -2360,64 +2374,16 @@ function runParseUpcoming(ss) {
     data[0] = headers;
   }
 
-  // ----------------------------
-  // 5) Restore OU/book lines (unchanged)
-  // ----------------------------
-  try {
-    if (savedBookLines && Object.keys(savedBookLines).length > 0 && typeof t2ou_restoreUpcomingBookLines_ === 'function') {
-      t2ou_restoreUpcomingBookLines_(data, savedBookLines);
-      Logger.log('[OU Restore] Restored preserved book lines.');
-    }
-  } catch (e) {
-    Logger.log('[OU Restore] Failed (continuing): ' + e.message);
-  }
-
-  // ----------------------------
-  // 6) Restore manual Q1–Q4/OT/FT Score/Status betting lines (DO NOT OVERWRITE user inputs)
-  //    Manual values WIN if present.
-  // ----------------------------
-  if (preservedQ && Object.keys(preservedQ).length) {
-    var h1 = headerMap_(data[0]);
-
-    var iQ1 = idx_(h1, ['q1']);
-    var iQ2 = idx_(h1, ['q2']);
-    var iQ3 = idx_(h1, ['q3']);
-    var iQ4 = idx_(h1, ['q4']);
-    var iOT = idx_(h1, ['ot']);
-    var iFT = idx_(h1, ['ft score']);
-    var iSt = idx_(h1, ['status']);
-
-    var restoredCount = 0;
-    for (var r2 = 1; r2 < data.length; r2++) {
-      var row2 = data[r2];
-      var key2 = upcomingKey_(row2, h1);
-      var saved = preservedQ[key2];
-      if (!saved) continue;
-
-      restoredCount++;
-
-      // Only write back values the user had actually entered (non-blank preserved)
-      if (iQ1 !== undefined && saved.q1 !== undefined)      row2[iQ1] = saved.q1;
-      if (iQ2 !== undefined && saved.q2 !== undefined)      row2[iQ2] = saved.q2;
-      if (iQ3 !== undefined && saved.q3 !== undefined)      row2[iQ3] = saved.q3;
-      if (iQ4 !== undefined && saved.q4 !== undefined)      row2[iQ4] = saved.q4;
-      if (iOT !== undefined && saved.ot !== undefined)      row2[iOT] = saved.ot;
-      if (iFT !== undefined && saved.ftscore !== undefined) row2[iFT] = saved.ftscore;
-      if (iSt !== undefined && saved.status !== undefined)  row2[iSt] = saved.status;
-    }
-
-    Logger.log('[Q Restore] Restored manual Q1–Q4/OT/FT Score/Status for ' + restoredCount + '/' + (data.length - 1) + ' games.');
-  }
-
-  // ----------------------------
-  // 7) Write to UpcomingClean
-  // ----------------------------
+  // 4) Write to UpcomingClean
   var cleanSheet = getSheetInsensitive(ss, 'UpcomingClean');
   if (!cleanSheet) cleanSheet = ss.insertSheet('UpcomingClean');
 
   // Use clearContents so formats/validations survive (optional but usually nicer).
   cleanSheet.clearContents();
   cleanSheet.getRange(1, 1, data.length, data[0].length).setValues(data);
+
+  // 5) RESTORE PRESERVED DATA USING STRICT MODULE
+  restoreUpcomingStrict(cleanSheet, preservedMap);
 
   Logger.log('runParseUpcoming: Success. Wrote ' + (data.length - 1) + ' records to "UpcomingClean".');
 }
