@@ -1957,6 +1957,7 @@ function buildAccumulator(ss) {
     var q2Idx = ucMap['q2'];
     var q3Idx = ucMap['q3'];
     var q4Idx = ucMap['q4'];
+    var avgIdx = ucMap['avg'];
 
     for (var r = 1; r < ucData.length; r++) {
       var ucRow = ucData[r];
@@ -1983,6 +1984,11 @@ function buildAccumulator(ss) {
             q1 > 0 && q2 > 0 && q3 > 0 && q4 > 0) {
           ftLine = q1 + q2 + q3 + q4;
         }
+      }
+
+      if (!ftLine && avgIdx !== undefined && ucRow[avgIdx] !== undefined && ucRow[avgIdx] !== '') {
+        var avgVal = parseFloat(String(ucRow[avgIdx]).replace(/[^\d.-]/g, ''));
+        if (isFinite(avgVal) && avgVal > 100) ftLine = avgVal;
       }
 
       if (ftLine && ftLine > 100) {
@@ -2495,6 +2501,7 @@ if (config.includeHighestQuarter) {
 
       if (config.includeOUSignals && t2.ou) {
         var usedDominantThisGame = false;
+        var _lqProfileCache = null; // Caches the league profile for this game
 
         for (var oqi = 0; oqi < QUARTERS.length; oqi++) {
           var oq    = QUARTERS[oqi];
@@ -2505,6 +2512,43 @@ if (config.includeHighestQuarter) {
           // falling back to the predicted line from OU_Log or the attached bookLine.
           var bookLine = _getQuarterLineFromUpcomingClean(home, away, oq)
                       || (ouSig.bookLine && isFinite(ouSig.bookLine) && ouSig.bookLine > 0 ? ouSig.bookLine : null);
+
+          // Fallback to LeagueQuarterO_U_Stats if book line is still missing
+          if (!bookLine || bookLine <= 0) {
+            if (_lqProfileCache === null) {
+              _lqProfileCache = (typeof getLeagueProfile === 'function') ? getLeagueProfile(ss, league) : false;
+            }
+            if (_lqProfileCache && _lqProfileCache[oq] && isFinite(_lqProfileCache[oq].mean) && _lqProfileCache[oq].mean > 0) {
+              var qMean = _lqProfileCache[oq].mean;
+              var totalHist = _lqProfileCache.Q1.mean + _lqProfileCache.Q2.mean + _lqProfileCache.Q3.mean + _lqProfileCache.Q4.mean;
+              
+              var gameExpectedFT = null;
+              try {
+                var avgVal = t1Map['avg'] !== undefined ? parseFloat(row[t1Map['avg']]) : null;
+                if (!isFinite(avgVal) || avgVal <= 0) avgVal = null;
+
+                gameExpectedFT = _getFTLineFromUpcomingClean(home, away) 
+                              || _inlineExtractBookLine_(row, t1Map, t2)
+                              || avgVal
+                              || _inlineExtractForebetPrediction_(row, t1Map);
+              } catch(e) {}
+              if (!isFinite(gameExpectedFT) || gameExpectedFT <= 100) gameExpectedFT = totalHist;
+              
+              // 1. Proportional Scaling
+              var scaledLine = gameExpectedFT * (qMean / totalHist);
+              
+              // 2. Edge Constraints (Cap deviation from prediction)
+              if (ouSig.line && isFinite(ouSig.line) && ouSig.line > 0) {
+                 var maxDev = 3.5;
+                 if (scaledLine > ouSig.line + maxDev) scaledLine = ouSig.line + maxDev;
+                 if (scaledLine < ouSig.line - maxDev) scaledLine = ouSig.line - maxDev;
+              }
+              
+              // 3. Half-Point Rounding (Force .5)
+              bookLine = Math.floor(scaledLine) + 0.5;
+            }
+          }
+
           var lineToUse = bookLine || ouSig.line;
 
           var pickOU = _canonicalQOUPick_(oq, ouSig.direction, lineToUse);
