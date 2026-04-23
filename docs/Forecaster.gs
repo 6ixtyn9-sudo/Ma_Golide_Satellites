@@ -3179,7 +3179,7 @@ var __TEAM_VARIANCE_MAP_CACHE_SET = false;
 function _loadVarianceMap(ss) {
   ss = ss || SpreadsheetApp.getActiveSpreadsheet();
   var varianceMap = {};
-  var statsSheet = __s5_getSheet ? __s5_getSheet(ss, 'Team_Variance', false) : ss.getSheetByName('Team_Variance') ||
+  var statsSheet = (typeof __s5_getSheet__ === 'function') ? __s5_getSheet__(ss, 'Team_Variance', false) : ss.getSheetByName('Team_Variance') ||
                    ss.getSheetByName('Variance_Map') ||
                    ss.getSheetByName('Team_Stats') ||
                    ss.getSheetByName('Stats');
