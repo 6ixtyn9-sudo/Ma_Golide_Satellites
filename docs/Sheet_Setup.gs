@@ -2114,6 +2114,10 @@ function createConfigAccumulatorSheet(ss) {
  */
 function createConfigTier1Sheet(ss) {
   let sheet = ss.getSheetByName('Config_Tier1');
+  if (sheet && sheet.getLastRow() > 0) {
+    // PRESERVE: Already exists and has data.
+    return sheet;
+  }
   if (!sheet) {
     sheet = ss.insertSheet('Config_Tier1');
   }
