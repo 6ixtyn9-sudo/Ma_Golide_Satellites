@@ -3813,67 +3813,178 @@ function tuneLeagueWeights(ss) {
                ', tierStrong=' + curTierStrong);
 
     // ════════════════════════════════════════════════════════════════════════
-    // STEP 1: Load ALL available historical data (no filtering)
+    // STEP 1: Load ALL available historical data
+    // Sources (in priority order):
+    //   1. ResultsClean / Clean  — graded results (best signal, available later)
+    //   2. CleanH2H_N            — head-to-head history (available from day 1)
+    //   3. CleanRecentHome_N     — recent home form    (available from day 1)
+    //   4. CleanRecentAway_N     — recent away form    (available from day 1)
+    // This ensures the tuner can produce a real optimised config on new
+    // satellites before any results have been recorded.
     // ════════════════════════════════════════════════════════════════════════
-    const cleanSheet = getSheetInsensitive(ss, 'Clean');
-    const resultsSheet = getSheetInsensitive(ss, 'ResultsClean');
+    const cleanSheet     = getSheetInsensitive(ss, 'Clean');
+    const resultsSheet   = getSheetInsensitive(ss, 'ResultsClean');
     const standingsSheet = getSheetInsensitive(ss, 'Standings');
 
     let allGames = [];
-    let headers = null;
+    let headers  = null;
 
-    if (cleanSheet) {
-      const cleanData = cleanSheet.getDataRange().getValues();
-      if (cleanData.length > 1) {
-        headers = cleanData[0];
-        allGames = allGames.concat(cleanData.slice(1));
+    // ── Source 1: ResultsClean (graded results — best signal) ────────────
+    if (resultsSheet) {
+      const d = resultsSheet.getDataRange().getValues();
+      if (d.length > 1) {
+        if (!headers) headers = d[0];
+        allGames = allGames.concat(d.slice(1));
+        Logger.log('[Tuner] Loaded ' + (d.length - 1) + ' from ResultsClean');
       }
     }
 
-    if (resultsSheet) {
-      const resultsData = resultsSheet.getDataRange().getValues();
-      if (resultsData.length > 1) {
-        if (!headers) headers = resultsData[0];
-        allGames = allGames.concat(resultsData.slice(1));
+    // ── Source 2: Clean tab ───────────────────────────────────────────────
+    if (cleanSheet) {
+      const d = cleanSheet.getDataRange().getValues();
+      if (d.length > 1) {
+        if (!headers) headers = d[0];
+        allGames = allGames.concat(d.slice(1));
+        Logger.log('[Tuner] Loaded ' + (d.length - 1) + ' from Clean');
+      }
+    }
+
+    // ── Sources 3-5: CleanH2H, CleanRecentHome, CleanRecentAway ──────────
+    // Scan for up to 20 numbered tabs per type (same cap as Tier 2 tuner).
+    // These sheets have real FT scores and are populated from day one.
+    const _cleanSheetPrefixes = ['CleanH2H_', 'CleanRecentHome_', 'CleanRecentAway_'];
+    let _cleanExtraCount = 0;
+
+    _cleanSheetPrefixes.forEach(function(prefix) {
+      for (let n = 1; n <= 20; n++) {
+        const sh = getSheetInsensitive(ss, prefix + n);
+        if (!sh) break; // tabs are sequential — stop when one is missing
+
+        try {
+          const d = sh.getDataRange().getValues();
+          if (d.length < 2) continue; // empty tab
+
+          // Find the header row (scan first 5 rows for a row containing score/home/away)
+          let headerRowIdx = -1;
+          let shHeaders    = null;
+          for (let r = 0; r < Math.min(5, d.length); r++) {
+            const joined = d[r].join('').toLowerCase();
+            if (joined.includes('home') && (joined.includes('score') ||
+                joined.includes('ft') || joined.includes('away'))) {
+              headerRowIdx = r;
+              shHeaders    = d[r];
+              break;
+            }
+          }
+          if (headerRowIdx === -1) continue; // can't find header — skip this tab
+
+          // Use the first valid header we find as the master header if not yet set
+          if (!headers) headers = shHeaders;
+
+          const rows = d.slice(headerRowIdx + 1);
+          if (rows.length === 0) continue;
+
+          allGames = allGames.concat(rows);
+          _cleanExtraCount += rows.length;
+          Logger.log('[Tuner] Loaded ' + rows.length + ' from ' + prefix + n);
+
+        } catch (e) {
+          Logger.log('[Tuner] Skipped ' + prefix + n + ': ' + e.message);
+        }
+      }
+    });
+
+    if (_cleanExtraCount > 0) {
+      Logger.log('[Tuner] CleanH2H+Recent total: ' + _cleanExtraCount + ' additional games');
+    }
+
+    // ── Deduplicate rows (avoid double-counting if Clean + CleanRecent overlap) ─
+    // Simple dedup: convert each row to a string key, keep first occurrence.
+    // Key = home + away + date columns combined (robust even if col order varies).
+    if (allGames.length > 0 && headers) {
+      const _hm = {};
+      headers.forEach(function(h, i) { _hm[String(h).toLowerCase().trim()] = i; });
+      const _homeIdx = _hm['home'] !== undefined ? _hm['home'] :
+                       _hm['home team'] !== undefined ? _hm['home team'] : -1;
+      const _awayIdx = _hm['away'] !== undefined ? _hm['away'] :
+                       _hm['away team'] !== undefined ? _hm['away team'] : -1;
+      const _dateIdx = _hm['date'] !== undefined ? _hm['date'] :
+                       _hm['game date'] !== undefined ? _hm['game date'] : -1;
+
+      if (_homeIdx >= 0 && _awayIdx >= 0) {
+        const _seen  = {};
+        const _deduped = [];
+        allGames.forEach(function(row) {
+          const key = [
+            String(row[_homeIdx] || '').toLowerCase().trim(),
+            String(row[_awayIdx] || '').toLowerCase().trim(),
+            _dateIdx >= 0 ? String(row[_dateIdx] || '').trim() : ''
+          ].join('|');
+          if (!_seen[key]) {
+            _seen[key]  = true;
+            _deduped.push(row);
+          }
+        });
+        if (_deduped.length < allGames.length) {
+          Logger.log('[Tuner] Deduped: ' + allGames.length + ' → ' + _deduped.length + ' unique games');
+        }
+        allGames = _deduped;
       }
     }
 
     const dataConfidence = calculateConfidence(allGames.length, 50);
-    Logger.log('[Tuner] Loaded ' + allGames.length + ' games (confidence: ' + 
-               (dataConfidence * 100).toFixed(0) + '%)');
+    Logger.log('[Tuner] Total games for Tier 1 tuning: ' + allGames.length +
+        ' (confidence: ' + (dataConfidence * 100).toFixed(0) + '%)');
 
     // ════════════════════════════════════════════════════════════════════════
     // HANDLE LOW DATA GRACEFULLY
+    // With CleanH2H+Recent now included, allGames < 3 means the sheet is
+    // genuinely empty — no historical data of any kind. Use safe defaults.
     // ════════════════════════════════════════════════════════════════════════
-    if (allGames.length < 5) {
-      Logger.log('[Tuner] Very limited data. Using prior-weighted defaults.');
-      
-      const defaultResult = {
-        config: {
-          rank: 0, form: 2.5, h2h: 1.5, forebet: 3, variance: 1,
-          pctWeight: 3, netRtgWeight: 2, homeCourtWeight: 1,
-          momentumWeight: 1, streakWeight: 1,
-          homeAdv: 5, threshold: 25, confMin: 50, confMax: 95,
-          confidence_scale: 30, bayesian_blending: true,
-          tier_strong_min_score: 75, tier_medium_min_score: 60, tier_weak_min_score: 50
-        },
-        accuracy: 50, coverage: 0, weightedScore: 50, compositeScore: 50,
-        correct: 0, total: 0, risky: 0
+    if (allGames.length < 3) {
+      Logger.log('[Tuner] No historical data available. Satellite has no Clean, ' +
+                 'ResultsClean, or CleanH2H/Recent content yet.');
+
+      const _emptyStats = {
+        weightedScore:  50,
+        compositeScore: 50,
+        accuracy:       50,
+        coverage:        0,
+        correct:         0,
+        total:           0,
+        risky:           0,
+        tierCounts: { STRONG: 0, MEDIUM: 0, WEAK: 0, RISKY: 0 },
+        tierHits:   { STRONG: 0, MEDIUM: 0, WEAK: 0 }
       };
-      
-      writeEliteProposalSheet_(ss, currentConfig, defaultResult, defaultResult, defaultResult, 
-                               { accuracy: 50, coverage: 0, weightedScore: 50, compositeScore: 50,
-                                 correct: 0, total: 0, risky: 0 }, 0, dataConfidence);
-      
+      const _emptyConfig = {
+        rank: 0, form: 2.5, h2h: 1.5, forebet: 3, variance: 1,
+        pctWeight: 3, netRtgWeight: 2, homeCourtWeight: 1,
+        momentumWeight: 1, streakWeight: 1,
+        homeAdv: 5, threshold: 25, confMin: 50, confMax: 95,
+        confidence_scale: 30, bayesian_blending: true,
+        tier_strong_min_score: 75, tier_medium_min_score: 60, tier_weak_min_score: 50
+      };
+      // Shape: { config: {...}, stats: {...} } — matches writeEliteProposalSheet_ contract
+      const _emptyStub = { config: _emptyConfig, stats: _emptyStats };
+
+      writeEliteProposalSheet_(
+        ss,
+        currentConfig,
+        _emptyStub,   // best
+        _emptyStub,   // secondBest
+        _emptyStub,   // thirdBest
+        _emptyStats,  // currentStats
+        0,            // trainingSize
+        dataConfidence
+      );
+
       ui.alert(
-        'Elite Tuning (Limited Data)',
-        'Training data: ' + allGames.length + ' games\n\n' +
-        'Not enough data for reliable optimization.\n' +
-        'Using conservative prior-weighted defaults.\n\n' +
-        'Review proposals in "Config_Tier1_Proposals" sheet.',
+        'Elite Tuning — No Data Available',
+        'This satellite has no historical game data yet in any tab.\n\n' +
+        'Make sure CleanH2H, CleanRecentHome, and CleanRecentAway tabs\n' +
+        'are populated before tuning. No config changes have been written.',
         ui.ButtonSet.OK
       );
-      
       return;
     }
 
