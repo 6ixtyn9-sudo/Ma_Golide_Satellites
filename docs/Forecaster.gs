@@ -2657,7 +2657,7 @@ function analyzeTier1(ss) {
   } catch (e) {
     Logger.log('!!! ERROR in analyzeTier1: ' + e.message);
     Logger.log('Stack: ' + e.stack);
-    ui.alert('Module 4 Error', e.message, ui.ButtonSet.OK);
+    safeAlert_('Module 4 Error', e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -3978,7 +3978,7 @@ function tuneLeagueWeights(ss) {
         dataConfidence
       );
 
-      ui.alert(
+      safeAlert_(
         'Elite Tuning — No Data Available',
         'This satellite has no historical game data yet in any tab.\n\n' +
         'Make sure CleanH2H, CleanRecentHome, and CleanRecentAway tabs\n' +
@@ -4514,12 +4514,12 @@ function tuneLeagueWeights(ss) {
       '🚀 Improvement: ' + improvementStr + '\n\n' +
       'Review "Config_Tier1_Proposals" to apply.';
 
-    ui.alert('⭐ Elite Weight Tuning Complete', message, ui.ButtonSet.OK);
+    safeAlert_('⭐ Elite Weight Tuning Complete', message, ui.ButtonSet.OK);
     ss.toast('Done! Best weighted: ' + best.stats.weightedScore.toFixed(1) + '%', 'Ma Golide Elite', 8);
 
   } catch (e) {
     Logger.log('!!! ERROR in tuneLeagueWeights v5.1: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Tuning Error', e.message, ui.ButtonSet.OK);
+    safeAlert_('Tuning Error', e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -4693,7 +4693,7 @@ function tuneLeagueWeightsWrapper() {
   const ui = SpreadsheetApp.getUi();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   
-  const response = ui.alert(
+  const response = safeAlert_(
     '⭐ Elite Weight Tuning (v5.0)',
     'This will optimize your Tier 1 weights using Bayesian methods.\n\n' +
     '✨ Elite Features:\n' +
@@ -4736,13 +4736,13 @@ function cleanupDuplicateTier1Predictions() {
   const sheet = getSheetInsensitive(ss, 'Tier1_Predictions');
   
   if (!sheet) {
-    ui.alert('Cleanup', 'Tier1_Predictions sheet not found.', ui.ButtonSet.OK);
+    safeAlert_('Cleanup', 'Tier1_Predictions sheet not found.', ui.ButtonSet.OK);
     return;
   }
   
   const data = sheet.getDataRange().getValues();
   if (data.length < 2) {
-    ui.alert('Cleanup', 'No data to clean.', ui.ButtonSet.OK);
+    safeAlert_('Cleanup', 'No data to clean.', ui.ButtonSet.OK);
     return;
   }
   
@@ -4753,7 +4753,7 @@ function cleanupDuplicateTier1Predictions() {
   const timestampCol = headerMap['timestamp'];
   
   if (gameKeyCol === undefined || configCol === undefined) {
-    ui.alert('Cleanup', 'Required columns (game_key, config_version) not found.', ui.ButtonSet.OK);
+    safeAlert_('Cleanup', 'Required columns (game_key, config_version) not found.', ui.ButtonSet.OK);
     return;
   }
   
@@ -4787,7 +4787,7 @@ function cleanupDuplicateTier1Predictions() {
   sheet.setFrozenRows(1);
   
   Logger.log('[Cleanup] Complete. Removed ' + removedCount + ' duplicate rows.');
-  ui.alert('Cleanup Complete', 
+  safeAlert_('Cleanup Complete', 
     'Removed ' + removedCount + ' duplicate rows from Tier1_Predictions.\n\n' +
     'Remaining unique predictions: ' + (cleanedData.length - 1), 
     ui.ButtonSet.OK);
@@ -4950,7 +4950,7 @@ function runTier1Analysis(ss) {
       var errorMsg = 'Missing or empty required sheets:\n• ' + missingSheets.join('\n• ') +
                      '\n\nPlease run the appropriate parsers first.';
       Logger.log('[runTier1Analysis] ' + errorMsg);
-      ui.alert('Tier 1 Prerequisites Missing', errorMsg, ui.ButtonSet.OK);
+      safeAlert_('Tier 1 Prerequisites Missing', errorMsg, ui.ButtonSet.OK);
       return {
         success: false,
         gamesProcessed: 0,
@@ -4965,7 +4965,7 @@ function runTier1Analysis(ss) {
     if (upcomingCount <= 0) {
       var noGamesMsg = 'No upcoming games found in UpcomingClean.\nPlease import upcoming games first.';
       Logger.log('[runTier1Analysis] ' + noGamesMsg);
-      ui.alert('No Games to Analyze', noGamesMsg, ui.ButtonSet.OK);
+      safeAlert_('No Games to Analyze', noGamesMsg, ui.ButtonSet.OK);
       return {
         success: false,
         gamesProcessed: 0,
@@ -4992,7 +4992,7 @@ function runTier1Analysis(ss) {
     
   } catch (e) {
     Logger.log('[runTier1Analysis] ERROR: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Tier 1 Analysis Error', 'Error: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Tier 1 Analysis Error', 'Error: ' + e.message, ui.ButtonSet.OK);
     return {
       success: false,
       gamesProcessed: 0,
@@ -5407,7 +5407,7 @@ function applyTier1ProposalToConfig(ss, rankNumber) {
 
     var proposedKeys = Object.keys(proposed);
     if (proposedKeys.length === 0) {
-      ui.alert(
+      safeAlert_(
         'Apply Tier 1 Proposal',
         'No proposed values found for Rank #' + rankNumber + '.\n' +
         'The selected column may be blank or the header row was not detected.',
@@ -5471,7 +5471,7 @@ function applyTier1ProposalToConfig(ss, rankNumber) {
 
     Logger.log('[applyTier1ProposalToConfig] Updated ' + updatedCount + ', appended ' + toAppend.length + ' from Rank #' + rankNumber);
 
-    ui.alert(
+    safeAlert_(
       '✅ Config 1 Applied',
       'Rank #' + rankNumber + ' applied to Config_Tier1.\n\n' +
       'Updated existing: ' + updatedCount + '\n' +
@@ -5483,7 +5483,7 @@ function applyTier1ProposalToConfig(ss, rankNumber) {
 
   } catch (e) {
     Logger.log('[applyTier1ProposalToConfig] Error: ' + e.message);
-    ui.alert('Apply Config Error', e.message, ui.ButtonSet.OK);
+    safeAlert_('Apply Config Error', e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -5597,7 +5597,7 @@ function syncMissingConfigs() {
   results.push(backfill_('Config_Tier1', t1Master));
   results.push(backfill_('Config_Tier2', t2Master));
 
-  ui.alert(
+  safeAlert_(
     'Config Sync Complete',
     results.join('\n') + '\n\nExisting values were NOT touched.\nYou can now tune these in your config sheets.',
     ui.ButtonSet.OK

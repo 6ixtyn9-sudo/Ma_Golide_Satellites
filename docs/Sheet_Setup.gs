@@ -2200,14 +2200,14 @@ function generateRawSheetsForGameCount() {
   
   const gameCount = parseInt(response.getResponseText());
   if (isNaN(gameCount) || gameCount < 1 || gameCount > 50) {
-    ui.alert('Invalid Input', 'Please enter a valid number between 1 and 50.', ui.ButtonSet.OK);
+    safeAlert_('Invalid Input', 'Please enter a valid number between 1 and 50.', ui.ButtonSet.OK);
     return;
   }
   
   // Generate raw sheets
   const result = createRawSheetsForGames(ss, gameCount);
   
-  ui.alert(
+  safeAlert_(
     'Raw Sheets Generated',
     `Successfully created ${result.created} raw sheets for ${gameCount} games.\n\n` +
     `Sheets created:\n${result.sheets.join('\n')}`,
@@ -2710,7 +2710,7 @@ function runRobbersDetection() {
     var recentForm = loadRobbersRecentForm(ss, 10);
     var robbers = detectAllRobbers(games, h2hStats, recentForm, null);
     
-    ui.alert(
+    safeAlert_(
       '🔥 ROBBERS Detection Complete',
       'Found ' + robbers.length + ' potential upset picks.\n\n' +
       (robbers.length > 0 ? 
@@ -2723,7 +2723,7 @@ function runRobbersDetection() {
     
   } catch (e) {
     Logger.log('[ROBBERS] Error: ' + e.message);
-    ui.alert('ROBBERS Error', e.message, ui.ButtonSet.OK);
+    safeAlert_('ROBBERS Error', e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -2758,7 +2758,7 @@ function runFirstHalfPredictions() {
       }
     }
     
-    ui.alert(
+    safeAlert_(
       '⏱️ First Half 1x2 Complete',
       'Generated ' + predictions.length + ' predictions.\n\n' +
       'Run Build Accumulators to include 1H picks in bet slips.',
@@ -2767,7 +2767,7 @@ function runFirstHalfPredictions() {
     
   } catch (e) {
     Logger.log('[1H] Error: ' + e.message);
-    ui.alert('First Half Error', e.message, ui.ButtonSet.OK);
+    safeAlert_('First Half Error', e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -2782,7 +2782,7 @@ function runFTOUPredictions() {
       throw new Error('MODULE 9 not loaded. Add Enhancements.gs first.');
     }
     
-    ui.alert(
+    safeAlert_(
       '📊 FT O/U',
       'FT Over/Under predictions require book lines in UpcomingClean.\n\n' +
       'Ensure you have a "ft_line" or "ftline" column with the total line.\n\n' +
@@ -2792,7 +2792,7 @@ function runFTOUPredictions() {
     
   } catch (e) {
     Logger.log('[FT O/U] Error: ' + e.message);
-    ui.alert('FT O/U Error', e.message, ui.ButtonSet.OK);
+    safeAlert_('FT O/U Error', e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -2874,6 +2874,10 @@ function runTheWholeShebang_Resume() {
  */
 function runTheWholeShebang_AutoTune() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
+  var props = PropertiesService.getScriptProperties();
+  
+  // Set silent mode for this run to avoid blocking UI
+  props.setProperty('SHEBANG_SILENT_MODE', 'true');
   
   Logger.log('═══════════════════════════════════════════════════════════════');
   Logger.log(' RUNNING WHOLE SHEBANG WITH AUTO-TUNE');
@@ -2910,12 +2914,14 @@ function runTheWholeShebang_AutoTune() {
   } catch (e) {
     Logger.log('[AutoTune] FATAL ERROR: ' + e.message);
     // Hard stop — pipeline aborted.
+  } finally {
+    props.deleteProperty('SHEBANG_SILENT_MODE');
   }
 }
 
 /**
  * Silent version of applyTier1ProposalToConfig for trigger context.
- * Writes Rank 1 proposal to Config_Tier1 without ui.alert().
+ * Writes Rank 1 proposal to Config_Tier1 without safeAlert_().
  * 
  * @param {Spreadsheet} ss
  * @param {number} rankNumber
@@ -3029,6 +3035,23 @@ function _autoApplyTier1Config_(ss, rankNumber) {
   }
 }
 
+/**
+ * Safely displays an alert if a UI is available and SILENT_MODE is not active.
+ * Otherwise, logs the message and returns null.
+ */
+function safeAlert_(title, msg, buttons) {
+  var ui = null;
+  try { ui = SpreadsheetApp.getUi(); } catch (e) { return null; }
+  
+  var silent = PropertiesService.getScriptProperties().getProperty('SHEBANG_SILENT_MODE') === 'true';
+  if (silent) {
+    Logger.log('[SILENT ALERT] ' + title + ': ' + msg);
+    return null;
+  }
+  
+  return ui.alert(title, msg, buttons || ui.ButtonSet.OK);
+}
+
 function _runWholeShebang_(opts) {
   opts = opts || {};
   const includeTuners = !!opts.includeTuners;
@@ -3056,7 +3079,7 @@ function _runWholeShebang_(opts) {
     } catch (eToast) {}
     Logger.log('[Shebang] RESUMING from stage: ' + (_resumeTarget || 'beginning'));
   } else if (interactive) {
-    const confirm = ui.alert(
+    const confirm = safeAlert_(
       includeTuners ? 'RUN THE WHOLE SHEBANG (WITH TUNING)?' : 'RUN THE WHOLE SHEBANG?',
       'This will execute the Ma Golide pipeline.\n\n' +
         (includeTuners
@@ -3344,7 +3367,7 @@ function runTunersOnly() {
   const ui = SpreadsheetApp.getUi();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  const confirm = ui.alert(
+  const confirm = safeAlert_(
     '🧠 RUN TUNERS ONLY?',
     'This runs heavy optimization/proposal stages (may take a long time).\n\nContinue?',
     ui.ButtonSet.YES_NO
@@ -3372,7 +3395,7 @@ function runTunersOnly() {
     }
 
     const dur = Math.round((Date.now() - start) / 1000);
-    ui.alert(
+    safeAlert_(
       'Tuners Complete',
       'Done in ' + dur + 's\n\n' +
         'Completed:\n' + (done.length ? done.map(x => '  • ' + x).join('\n') : '  (none)') + '\n\n' +
@@ -3381,7 +3404,7 @@ function runTunersOnly() {
     );
 
   } catch (e) {
-    ui.alert('Tuners Failed', 'Error: ' + e.message + '\n\nCheck Logs.', ui.ButtonSet.OK);
+    safeAlert_('Tuners Failed', 'Error: ' + e.message + '\n\nCheck Logs.', ui.ButtonSet.OK);
   }
 }
 
@@ -3429,7 +3452,7 @@ function runFullAnalysis() {
       predictQuartersOU_Tier2(ss);
     }
 
-    ui.alert(
+    safeAlert_(
       'Full Analysis Complete!',
       'All predictions generated:\n\n' +
       '✅ Historical Analysis\n' +
@@ -3444,7 +3467,7 @@ function runFullAnalysis() {
 
   } catch (e) {
     Logger.log('!!! ERROR in runFullAnalysis: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Full Analysis Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Full Analysis Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -3580,7 +3603,7 @@ function parseRaw() {
 
   } catch (e) {
     Logger.log('!!! ERROR in parseRaw: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Parse Raw Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Parse Raw Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -3621,7 +3644,7 @@ function parseUpcomingMatches() {
 
   } catch (e) {
     Logger.log('!!! ERROR in parseUpcomingMatches: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Parse Upcoming Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Parse Upcoming Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -3656,7 +3679,7 @@ function runAllH2HParsers() {
 
   } catch (e) {
     Logger.log('!!! ERROR in runAllH2HParsers: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Parse All H2H Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Parse All H2H Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -3699,7 +3722,7 @@ function runAllRecentParsers() {
 
   } catch (e) {
     Logger.log('!!! ERROR in runAllRecentParsers: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Parse All Recent Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Parse All Recent Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -3730,7 +3753,7 @@ function runHistoricalAnalyzers() {
 
   } catch (e) {
     Logger.log('!!! ERROR in runHistoricalAnalyzers: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Historical Analyzers Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Historical Analyzers Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -3765,7 +3788,7 @@ function runTier1_Forecast() {
 
   } catch (e) {
     Logger.log('!!! ERROR in runTier1_Forecast: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Tier 1 Forecast Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Tier 1 Forecast Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -3801,7 +3824,7 @@ function runTier2_DeepDive() {
 
   } catch (e) {
     Logger.log('!!! ERROR in runTier2_DeepDive: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Tier 2 Deep Dive Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Tier 2 Deep Dive Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -3832,7 +3855,7 @@ function runTier2_DeepDive_Fixed() {
 
   } catch (e) {
     Logger.log('!!! ERROR in runTier2_DeepDive_Fixed: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Tier 2 Deep Dive (Fixed) Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Tier 2 Deep Dive (Fixed) Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -3863,7 +3886,7 @@ function runTier2Nuclear() {
 
   } catch (e) {
     Logger.log('!!! ERROR in runTier2Nuclear: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Tier 2 Nuclear Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Tier 2 Nuclear Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -3894,7 +3917,7 @@ function runTier2MarginOnly() {
 
   } catch (e) {
     Logger.log('!!! ERROR in runTier2MarginOnly: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Tier 2 Margin Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Tier 2 Margin Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -3929,7 +3952,7 @@ function runTier1Forensics() {
 
   } catch (e) {
     Logger.log('!!! ERROR in runTier1Forensics: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Tier 1 Forensics Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Tier 1 Forensics Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -3964,7 +3987,7 @@ function simulateTier1Configs() {
 
   } catch (e) {
     Logger.log('!!! ERROR in simulateTier1Configs: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Tier 1 Config Simulation Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Tier 1 Config Simulation Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -3999,7 +4022,7 @@ function tuneLeagueWeightsWrapper() {
 
   } catch (e) {
     Logger.log('!!! ERROR in tuneLeagueWeightsWrapper: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('League Weights Tuning Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('League Weights Tuning Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -4036,7 +4059,7 @@ function runTier2ConfigOptimization() {
 
   } catch (e) {
     Logger.log('!!! ERROR in runTier2ConfigOptimization: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Tier 2 Config Optimization Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Tier 2 Config Optimization Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -4059,7 +4082,7 @@ function showCurrentConfig() {
       config = getTunedConfig_(ss);
     }
   } catch (e) {
-    ui.alert('❌ Config Load Error', 'Failed to load config:\n' + e.message, ui.ButtonSet.OK);
+    safeAlert_('❌ Config Load Error', 'Failed to load config:\n' + e.message, ui.ButtonSet.OK);
     return;
   }
 
@@ -4067,7 +4090,7 @@ function showCurrentConfig() {
   Logger.log('[showCurrentConfig] Config has ' + keys.length + ' keys: ' + keys.join(', '));
 
   if (keys.length === 0) {
-    ui.alert('⚠️ Empty Config', 'loadTier2Config returned 0 keys.\nCheck that Config_Tier2 sheet exists and has data.', ui.ButtonSet.OK);
+    safeAlert_('⚠️ Empty Config', 'loadTier2Config returned 0 keys.\nCheck that Config_Tier2 sheet exists and has data.', ui.ButtonSet.OK);
     return;
   }
 
@@ -4226,7 +4249,7 @@ function clearMarginCache() {
 
   } catch (e) {
     Logger.log('!!! ERROR in clearMarginCache: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Clear Margin Cache Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Clear Margin Cache Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -4257,7 +4280,7 @@ function runAccuracyReportWrapper() {
 
   } catch (e) {
     Logger.log('!!! ERROR in runAccuracyReportWrapper: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Accuracy Report Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Accuracy Report Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -4288,7 +4311,7 @@ function generateTier2AccuracyReport_() {
 
   } catch (e) {
     Logger.log('!!! ERROR in generateTier2AccuracyReport_: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Tier 2 Accuracy Report Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Tier 2 Accuracy Report Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -4323,7 +4346,7 @@ function runAccumulator() {
 
   } catch (e) {
     Logger.log('!!! ERROR in runAccumulator: ' + e.message + '\nStack: ' + e.stack);
-    ui.alert('Acca Cooker Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
+    safeAlert_('Acca Cooker Error', 'An error occurred: ' + e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -4344,7 +4367,7 @@ function runTier2OU() {
     return predictQuarters_Tier2_OU(ss);
   } catch (e) {
     Logger.log('runTier2OU ERROR: ' + e.message + '\n' + e.stack);
-    SpreadsheetApp.getUi().alert('Error', e.message, SpreadsheetApp.getUi().ButtonSet.OK);
+    safeAlert_('Error', e.message, SpreadsheetApp.getUi().ButtonSet.OK);
   }
 }
 
@@ -4363,7 +4386,7 @@ function runOUAccuracyReport() {
     buildOUAccuracyReport(ss);
   } catch (e) {
     Logger.log('runOUAccuracyReport: ' + e.message);
-    SpreadsheetApp.getUi().alert('Error', e.message, SpreadsheetApp.getUi().ButtonSet.OK);
+    safeAlert_('Error', e.message, SpreadsheetApp.getUi().ButtonSet.OK);
   }
 }
 
@@ -4433,19 +4456,19 @@ function runHQAccuracyReport() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var dataSheet = ss.getSheetByName('HQ_Backtest_Report');
   if (!dataSheet || dataSheet.getLastRow() < 2) {
-    SpreadsheetApp.getUi().alert(
+    safeAlert_(
       'No backtest data yet.\n\nRun:\n1. Build HQ History\n2. Backtest HQ Model'
     );
     return;
   }
-  SpreadsheetApp.getUi().alert('HQ accuracy data is in the HQ_Backtest_Report sheet.');
+  safeAlert_('HQ accuracy data is in the HQ_Backtest_Report sheet.');
 }
 
 function runEnhancementDiagnostic() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var uc = ss.getSheetByName('UpcomingClean');
   if (!uc || uc.getLastRow() < 2) {
-    SpreadsheetApp.getUi().alert('UpcomingClean has no data.');
+    safeAlert_('UpcomingClean has no data.');
     return;
   }
   var headers = uc.getRange(1, 1, 1, uc.getLastColumn()).getValues()[0];
@@ -4453,7 +4476,7 @@ function runEnhancementDiagnostic() {
   for (var i = 0; i < headers.length; i++) {
     if (/^enh-/i.test(String(headers[i]))) enhCols.push(String(headers[i]));
   }
-  SpreadsheetApp.getUi().alert(
+  safeAlert_(
     'Enhancement Columns in UpcomingClean:\n\n' +
     (enhCols.length > 0 ? enhCols.join('\n') : 'NONE — run Enhancements first') +
     '\n\nTotal columns: ' + headers.length +
@@ -4465,13 +4488,13 @@ function createTier2ConfigSheet() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var existing = ss.getSheetByName('Config_Tier2');
   if (existing) {
-    SpreadsheetApp.getUi().alert('Config_Tier2 already exists with ' + existing.getLastRow() + ' rows.');
+    safeAlert_('Config_Tier2 already exists with ' + existing.getLastRow() + ' rows.');
     return;
   }
   var sh = ss.insertSheet('Config_Tier2');
   sh.getRange(1, 1, 1, 2).setValues([['Key', 'Value']]);
   sh.setFrozenRows(1);
-  SpreadsheetApp.getUi().alert('Config_Tier2 created. Add config keys manually.');
+  safeAlert_('Config_Tier2 created. Add config keys manually.');
 }
 
 /**
@@ -4692,7 +4715,7 @@ function runCreateHQSheets() {
     created.push(name);
   }
   
-  SpreadsheetApp.getUi().alert(
+  safeAlert_(
     created.length > 0
       ? 'Created ' + created.length + ' sheets:\n• ' + created.join('\n• ')
       : 'All HQ sheets already exist.'
@@ -4805,7 +4828,7 @@ function runBuildHQHistory() {
     var result = buildHighestQuarterHistory();
     ss.toast('Done: ' + result.rows + ' games from ' + result.sheets + ' sheets', 'Ma Golide', 5);
   } catch(e) {
-    SpreadsheetApp.getUi().alert('Error: ' + e.message);
+    safeAlert_('Error: ' + e.message);
   }
 }
 
@@ -5035,13 +5058,13 @@ function runHQBacktest() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var dataSheet = ss.getSheetByName('HQ_Backtest_Data');
   if (!dataSheet || dataSheet.getLastRow() < 2) {
-    SpreadsheetApp.getUi().alert('Run "Build HQ History" first.');
+    safeAlert_('Run "Build HQ History" first.');
     return;
   }
   ss.toast('Running HQ backtest...', 'Ma Golide', 30);
   try {
     var r = backtestHighestQuarter(ss);
-    SpreadsheetApp.getUi().alert(
+    safeAlert_(
       'HQ Backtest Results\n\n' +
       'Games: ' + r.total + ' | Skipped: ' + r.skipped + '\n' +
       'Correct: ' + r.correct + '/' + r.total + '\n' +
@@ -5052,7 +5075,7 @@ function runHQBacktest() {
       'See execution log for confidence bucket breakdown.'
     );
   } catch(e) {
-    SpreadsheetApp.getUi().alert('Backtest error: ' + e.message);
+    safeAlert_('Backtest error: ' + e.message);
   }
 }
 
@@ -5113,20 +5136,20 @@ function runHQTuner() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var dataSheet = ss.getSheetByName('HQ_Backtest_Data');
   if (!dataSheet || dataSheet.getLastRow() < 2) {
-    SpreadsheetApp.getUi().alert('Run "Build HQ History" first, then "Backtest HQ Model".');
+    safeAlert_('Run "Build HQ History" first, then "Backtest HQ Model".');
     return;
   }
   ss.toast('Tuning HQ parameters (may take minutes)...', 'Ma Golide', 120);
   try {
     var best = tuneHighestQConfig(ss);
-    SpreadsheetApp.getUi().alert(
+    safeAlert_(
       'HQ Tuning Complete\n\n' +
       'Best accuracy: ' + best.accuracy.toFixed(1) + '%\n' +
       'Best params: ' + JSON.stringify(best.params) + '\n\n' +
       'Results in Config_HighestQ_Proposals.\nReview and apply manually to Config_Tier2.'
     );
   } catch(e) {
-    SpreadsheetApp.getUi().alert('Tuner error: ' + e.message);
+    safeAlert_('Tuner error: ' + e.message);
   }
 }
 
@@ -5209,14 +5232,14 @@ function runHQStatusCheck() {
   }
   
   Logger.log(msg);
-  SpreadsheetApp.getUi().alert(msg);
+  safeAlert_(msg);
 }
 
 function runHQDiagnostic() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var uc = ss.getSheetByName('UpcomingClean');
   if (!uc || uc.getLastRow() < 2) {
-    SpreadsheetApp.getUi().alert('UpcomingClean has no games.');
+    safeAlert_('UpcomingClean has no games.');
     return;
   }
   
@@ -5316,7 +5339,7 @@ function runHQDiagnostic() {
   msg += '  Away "' + game.away + '" in stats: ' + awayFound + '\n';
   
   Logger.log(msg);
-  SpreadsheetApp.getUi().alert(msg);
+  safeAlert_(msg);
 }
 
 function diagHQDataAccess() {
@@ -5337,7 +5360,7 @@ function diagHQDataAccess() {
   }
   
   Logger.log(JSON.stringify(results, null, 2));
-  SpreadsheetApp.getUi().alert(
+  safeAlert_(
     'Data Access Check\n\n' +
     'Elite: ' + results.Elite_exists + ' (' + results.Elite_members.length + ' members)\n' +
     'processEnhancements: ' + results.processEnhancements + '\n' +
@@ -5351,7 +5374,7 @@ function diagHQDataAccess() {
 function cleanUpcomingCleanDuplicateColumns() {
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName('UpcomingClean');
-  if (!sheet) { SpreadsheetApp.getUi().alert('UpcomingClean not found.'); return; }
+  if (!sheet) { safeAlert_('UpcomingClean not found.'); return; }
   var headers = sheet.getRange(1,1,1,sheet.getLastColumn()).getValues()[0];
   var seen = {}, dupes = [];
   for (var i = 0; i < headers.length; i++) {
@@ -5362,7 +5385,7 @@ function cleanUpcomingCleanDuplicateColumns() {
   }
   dupes.sort(function(a,b){return b-a;});
   for (var d = 0; d < dupes.length; d++) sheet.deleteColumn(dupes[d]);
-  SpreadsheetApp.getUi().alert(dupes.length > 0
+  safeAlert_(dupes.length > 0
     ? 'Deleted ' + dupes.length + ' duplicate columns.'
     : 'No duplicates found.');
 }
@@ -5392,7 +5415,7 @@ function buildLeagueQuarterStats() {
   var cTie = hmap['wastieactual'] !== undefined ? hmap['wastieactual'] : hmap['wastie_actual'];
   
   if (cQ1 === undefined) {
-    SpreadsheetApp.getUi().alert('Cannot find Q1_Total column in HQ_Backtest_Data');
+    safeAlert_('Cannot find Q1_Total column in HQ_Backtest_Data');
     return;
   }
   
@@ -5499,7 +5522,7 @@ function runBuildLeagueQuarterStats() {
     var result = buildLeagueQuarterStats();
     ss.toast('Done: ' + result.leagues + ' leagues profiled', 'Ma Golide', 5);
   } catch(e) {
-    SpreadsheetApp.getUi().alert('Error: ' + e.message);
+    safeAlert_('Error: ' + e.message);
   }
 }
 

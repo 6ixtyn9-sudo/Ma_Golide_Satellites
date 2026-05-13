@@ -131,7 +131,7 @@ function runAllTier2Parsers_MODIFIED(ss) {
 
   } catch (e) {
     Logger.log('runAllTier2Parsers_MODIFIED ERROR: ' + e.message + '\n' + e.stack);
-    ui.alert('Tier 2 parsers FAILED: ' + e.message);
+    safeAlert_('Tier 2 parsers FAILED: ' + e.message);
     return { processed: 0, skipped: 0, error: e.message };
   }
 }
@@ -293,7 +293,7 @@ function runAllTier2DeepDives_MODIFIED(ss) {
   } catch (e) {
     clearAllTier2Caches();
     Logger.log('!!! FATAL ERROR in runAllTier2DeepDives_MODIFIED: ' + e.message + ' ' + e.stack);
-    ui.alert('Tier 2 Deep Dive FAILED: ' + e.message);
+    safeAlert_('Tier 2 Deep Dive FAILED: ' + e.message);
   }
 }
 
@@ -5232,7 +5232,7 @@ function _showResultsDialog(ui, stats, topElite, topStrong, topMedium, fbEnabled
 
 function _returnResult(games, picks, fb, version, showUI, ui) {
   if (showUI && ui) {
-    ui.alert('O/U', 'No games to process.', ui.ButtonSet.OK);
+    safeAlert_('O/U', 'No games to process.', ui.ButtonSet.OK);
   }
   return { games: games, picks: picks, forebetBlends: fb, version: version };
 }
@@ -5520,7 +5520,7 @@ function buildOUAccuracyReport(ss) {
   } catch (e) {
     Logger.log('ERROR: ' + e.message);
     Logger.log(e.stack);
-    ui.alert('O/U Accuracy Report Error', e.message, ui.ButtonSet.OK);
+    safeAlert_('O/U Accuracy Report Error', e.message, ui.ButtonSet.OK);
     return null;
   }
 }
@@ -7369,7 +7369,7 @@ function displayAccuracySummary_(ui, eval_) {
            eval_.highQtr.edgeVsRandom.toFixed(1) + '%\n';
   }
 
-  ui.alert('Report Complete', msg, ui.ButtonSet.OK);
+  safeAlert_('Report Complete', msg, ui.ButtonSet.OK);
 }
 
 
@@ -7949,20 +7949,20 @@ function buildTier2AccuracyReport(ss) {
   /* ── Locate sheets ─────────────────────────────────────────── */
   var logSheet = getSheetInsensitive(ss, 'Tier2_Log');
   if (!logSheet) {
-    SpreadsheetApp.getUi().alert('No "Tier2_Log" sheet found. Run Tier 2 predictions first.');
+    safeAlert_('No "Tier2_Log" sheet found. Run Tier 2 predictions first.');
     return;
   }
 
   var resultsSheet = getSheetInsensitive(ss, 'ResultsClean')
                   || getSheetInsensitive(ss, 'Clean');
   if (!resultsSheet) {
-    SpreadsheetApp.getUi().alert('No "ResultsClean" or "Clean" sheet found.');
+    safeAlert_('No "ResultsClean" or "Clean" sheet found.');
     return;
   }
 
   var resultsData = resultsSheet.getDataRange().getValues();
   if (resultsData.length < 2) {
-    SpreadsheetApp.getUi().alert('Results sheet has no data rows.');
+    safeAlert_('Results sheet has no data rows.');
     return;
   }
 
@@ -7970,7 +7970,7 @@ function buildTier2AccuracyReport(ss) {
   var resMap    = createHeaderMap(resHeader);
 
   if (resMap.home === undefined || resMap.away === undefined || resMap.date === undefined) {
-    SpreadsheetApp.getUi().alert('Results sheet missing "Home" / "Away" / "Date" headers.');
+    safeAlert_('Results sheet missing "Home" / "Away" / "Date" headers.');
     return;
   }
 
@@ -7984,7 +7984,7 @@ function buildTier2AccuracyReport(ss) {
              '  T2=' + useT2Cols);
 
   if (!useSeparateCols && !useConcatCols && !useT2Cols) {
-    SpreadsheetApp.getUi().alert(
+    safeAlert_(
       'ResultsClean has no quarter columns.\n\n' +
       'Expected Q1H/Q1A, Q1 (concat), or t2-q1.\n' +
       'Found: ' + resHeader.join(', ')
@@ -8141,7 +8141,7 @@ function buildTier2AccuracyReport(ss) {
      ================================================================ */
   var logData = logSheet.getDataRange().getValues();
   if (logData.length < 2) {
-    SpreadsheetApp.getUi().alert('"Tier2_Log" has no prediction rows to evaluate.');
+    safeAlert_('"Tier2_Log" has no prediction rows to evaluate.');
     return;
   }
 
@@ -8632,7 +8632,7 @@ function buildTier2AccuracyReport(ss) {
     'Derived: ' + summary.derivedCount +
     ' (tier: ' + summary.tierDerived + ', margin: ' + summary.marginDerived + ').');
 
-  SpreadsheetApp.getUi().alert(
+  safeAlert_(
     '✅ Tier 2 Accuracy Report (v3)\n\n' +
     '📊 Unique: ' + summary.totalUnique +
       ' (from ' + summary.totalRaw + ' raw)\n' +
@@ -8822,7 +8822,7 @@ function t2_logTunerBanner_(ss) {
  */
 function t2_handleTuneTier2Error_(ui, e) {
   Logger.log('!!! ERROR in tuneTier2Config v5.1: ' + e.message + '\n' + e.stack);
-  ui.alert('Elite Tuning Error', e.message, ui.ButtonSet.OK);
+  safeAlert_('Elite Tuning Error', e.message, ui.ButtonSet.OK);
 }
 
 
@@ -9528,7 +9528,7 @@ function t2_handleLowDataCase_(ss, ui, cfgMap, trainingSetLength) {
   writeProposalSheet_(ss, cfgMap, defaultConfig, defaultConfig, defaultConfig,
     defaultStats, defaultStats, trainingSetLength, defaultStats, defaultStats);
 
-  ui.alert(
+  safeAlert_(
     'Elite Tuning (Limited Data)',
     'Training data: ' + trainingSetLength + ' quarters\n\n' +
     'Not enough data for reliable optimization.\n' +
@@ -10538,7 +10538,7 @@ function t2_showFinalReport_(ss, ui, best, currentEval, trainingSetLength, dataC
              '%, side=' + best.stats.sideAccuracy.toFixed(1) +
              '%, coverage=' + best.stats.coverage.toFixed(1) + '%');
 
-  ui.alert(
+  safeAlert_(
     '✅ Elite Tier 2 Tuning Complete (v5.1)',
     'Training: ' + trainingSetLength + ' quarters\n' +
     'Data confidence: ' + (dataConfidence * 100).toFixed(0) + '%\n' +
@@ -11514,7 +11514,7 @@ function applyTier2ProposalToConfig_(ss, rankNumber) {
   }
 
   function safeAlert_(title, msg) {
-    try { SpreadsheetApp.getUi().alert(title, msg, SpreadsheetApp.getUi().ButtonSet.OK); }
+    try { safeAlert_(title, msg, SpreadsheetApp.getUi().ButtonSet.OK); }
     catch (e) { Logger.log(title + '\n' + msg); }
   }
 
@@ -11810,7 +11810,7 @@ function t2ou_applyProposalRankToConfig_(ss, rankNumber) {
   }
 
   function safeAlert_(title, msg) {
-    try { SpreadsheetApp.getUi().alert(title, msg, SpreadsheetApp.getUi().ButtonSet.OK); }
+    try { safeAlert_(title, msg, SpreadsheetApp.getUi().ButtonSet.OK); }
     catch (e) { Logger.log(title + '\n' + msg); }
   }
 
@@ -12043,7 +12043,7 @@ function tuneTier2ConfigWrapper() {
   var ui = SpreadsheetApp.getUi();
   var ss = SpreadsheetApp.getActiveSpreadsheet();
 
-  var response = ui.alert(
+  var response = safeAlert_(
     '⭐ Elite Tier 2 Config Optimizer (v5.0)',
     'This will optimize your Tier 2 configuration using Bayesian methods.\n\n' +
     '✨ Elite Features:\n' +
