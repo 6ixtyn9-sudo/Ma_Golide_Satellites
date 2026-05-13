@@ -44,25 +44,26 @@ function nukeAllTriggers() {
  * 3. Logs it clearly
  */
 function safeLaunch() {
-  // Safety net: remove any lingering runTheWholeShebang triggers
+  // Safety net: remove any lingering triggers for the main pipeline
   var cleared = 0;
   ScriptApp.getProjectTriggers().forEach(function(t) {
-    if (t.getHandlerFunction() === 'runTheWholeShebang') {
+    var handler = t.getHandlerFunction();
+    if (handler === 'runTheWholeShebang' || handler === 'runTheWholeShebang_AutoTune') {
       ScriptApp.deleteTrigger(t);
       cleared++;
     }
   });
   if (cleared > 0) {
-    Logger.log('⚠️  safeLaunch: Cleared ' + cleared + ' leftover runTheWholeShebang trigger(s) before launch.');
+    Logger.log('⚠️  safeLaunch: Cleared ' + cleared + ' leftover trigger(s) before launch.');
   }
 
-  // Create ONE clean 1-minute trigger
-  ScriptApp.newTrigger('runTheWholeShebang')
+  // Create ONE clean 1-minute trigger for the AUTO-TUNE pipeline
+  ScriptApp.newTrigger('runTheWholeShebang_AutoTune')
     .timeBased()
     .after(60000) // 1 minute
     .create();
 
-  var msg = '🚀 safeLaunch: Single trigger created. runTheWholeShebang fires in ~1 minute.';
+  var msg = '🚀 safeLaunch: Single trigger created. runTheWholeShebang_AutoTune fires in ~1 minute.';
   Logger.log(msg);
   SpreadsheetApp.getActiveSpreadsheet().toast(msg, 'Ma Golide Launch', 10);
 }
@@ -79,9 +80,10 @@ function safeLaunch() {
  * only ONE trigger exists at a time.
  */
 function setupOneTimeTrigger() {
-  // ── Guard: delete any existing triggers for runTheWholeShebang ──────────
+  // ── Guard: delete any existing triggers for the main pipeline ──────────
   var existing = ScriptApp.getProjectTriggers().filter(function(t) {
-    return t.getHandlerFunction() === 'runTheWholeShebang';
+    var h = t.getHandlerFunction();
+    return h === 'runTheWholeShebang' || h === 'runTheWholeShebang_AutoTune';
   });
   existing.forEach(function(t) {
     ScriptApp.deleteTrigger(t);
@@ -90,13 +92,13 @@ function setupOneTimeTrigger() {
     Logger.log('[setupOneTimeTrigger] Cleared ' + existing.length + ' existing trigger(s) before creating new one.');
   }
 
-  // ── Create exactly ONE fresh trigger ─────────────────────────────────────
-  ScriptApp.newTrigger('runTheWholeShebang')
+  // ── Create exactly ONE fresh trigger for the AUTO-TUNE pipeline ──────────
+  ScriptApp.newTrigger('runTheWholeShebang_AutoTune')
     .timeBased()
     .after(60000) // 1 minute
     .create();
 
-  Logger.log('[setupOneTimeTrigger] ✅ Single trigger created. runTheWholeShebang fires in ~1 minute.');
+  Logger.log('[setupOneTimeTrigger] ✅ Single trigger created. runTheWholeShebang_AutoTune fires in ~1 minute.');
 }
 
 
@@ -106,21 +108,38 @@ function setupOneTimeTrigger() {
  * Same principle: only ONE resume trigger at a time.
  * Prevents resume triggers from piling up if the 6-min wall is hit repeatedly.
  */
-function _shebang_scheduleResume_() {
+function _shebang_scheduleResume_(nextStage) {
   // Clear any existing resume triggers
   ScriptApp.getProjectTriggers().forEach(function(t) {
-    if (t.getHandlerFunction() === 'runTheWholeShebang') {
+    var h = t.getHandlerFunction();
+    if (h === 'runTheWholeShebang' || h === 'runTheWholeShebang_AutoTune' || h === 'runTheWholeShebang_Resume') {
       ScriptApp.deleteTrigger(t);
     }
   });
 
   // Schedule exactly ONE resume
-  ScriptApp.newTrigger('runTheWholeShebang')
+  var trigger = ScriptApp.newTrigger('runTheWholeShebang_Resume')
     .timeBased()
     .after(60000)
     .create();
 
+  var props = PropertiesService.getScriptProperties();
+  props.setProperty('SHEBANG_TRIGGER_ID', trigger.getUniqueId());
+  props.setProperty('SHEBANG_RESUME_STAGE', nextStage);
+
   Logger.log('[_shebang_scheduleResume_] ✅ Resume trigger set for ~1 minute from now.');
+}
+
+/** Remove any previously scheduled resume trigger using the stored ID. */
+function _shebang_clearResumeTrigger_() {
+  var props = PropertiesService.getScriptProperties();
+  var tid = props.getProperty('SHEBANG_TRIGGER_ID');
+  if (tid) {
+    ScriptApp.getProjectTriggers().forEach(function(t) {
+      if (String(t.getUniqueId()) === tid) ScriptApp.deleteTrigger(t);
+    });
+    props.deleteProperty('SHEBANG_TRIGGER_ID');
+  }
 }
 
 

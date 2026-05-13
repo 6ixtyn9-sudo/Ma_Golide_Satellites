@@ -2864,44 +2864,167 @@ function runTheWholeShebang_Resume() {
   _runWholeShebang_({ includeTuners: false, resume: true });
 }
 
-/** Remove any previously scheduled resume trigger. */
-function _shebang_clearResumeTrigger_() {
-  var props = PropertiesService.getScriptProperties();
-  var tid = props.getProperty('SHEBANG_TRIGGER_ID');
-  if (tid) {
-    ScriptApp.getProjectTriggers().forEach(function(t) {
-      if (String(t.getUniqueId()) === tid) ScriptApp.deleteTrigger(t);
-    });
-    props.deleteProperty('SHEBANG_TRIGGER_ID');
+/**
+ * The main pipeline: tune → apply → predict → bets.
+ * This is the entry point for the 1-minute launch trigger.
+ */
+function runTheWholeShebang_AutoTune() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  
+  Logger.log('═══════════════════════════════════════════════════════════════');
+  Logger.log(' RUNNING WHOLE SHEBANG WITH AUTO-TUNE');
+  Logger.log('═══════════════════════════════════════════════════════════════');
+
+  try {
+    // STEP 1: tuneLeagueWeights (Tier 1 Tuning)
+    Logger.log('[AutoTune] STEP 1: Tuning Tier 1...');
+    tuneLeagueWeights(ss);
+
+    // STEP 2: Auto-apply Tier 1 Rank 1 (Hard Stop on Failure)
+    Logger.log('[AutoTune] STEP 2: Applying Tier 1 Rank 1...');
+    _autoApplyTier1Config_(ss, 1);
+    SpreadsheetApp.flush();
+
+    // STEP 3: tuneTier2Config & tuneTier2OUConfig
+    Logger.log('[AutoTune] STEP 3: Tuning Tier 2 and O/U...');
+    tuneTier2Config(ss);
+    tuneTier2OUConfig(ss);
+
+    // STEP 4: applyTier2ProposalToConfig_ (Non-fatal Failure)
+    Logger.log('[AutoTune] STEP 4: Applying Tier 2 Rank 1...');
+    try {
+      applyTier2ProposalToConfig_(ss, 1);
+    } catch (e) {
+      Logger.log('[AutoTune] WARNING: Tier 2 apply failed, continuing: ' + e.message);
+    }
+    SpreadsheetApp.flush();
+
+    // STEP 5: _runWholeShebang_ (includeTuners: false as they already ran)
+    Logger.log('[AutoTune] STEP 5: Running prediction pipeline...');
+    _runWholeShebang_({ includeTuners: false, noPrompt: true });
+
+  } catch (e) {
+    Logger.log('[AutoTune] FATAL ERROR: ' + e.message);
+    // Hard stop — pipeline aborted.
   }
 }
 
 /**
- * HARDENED REPLACEMENT for _shebang_scheduleResume_()
- *
- * Same principle: only ONE resume trigger at a time.
- * Prevents resume triggers from piling up if the 6-min wall is hit repeatedly.
+ * Silent version of applyTier1ProposalToConfig for trigger context.
+ * Writes Rank 1 proposal to Config_Tier1 without ui.alert().
+ * 
+ * @param {Spreadsheet} ss
+ * @param {number} rankNumber
  */
-function _shebang_scheduleResume_(nextStage) {
-  // Clear any existing resume triggers
-  ScriptApp.getProjectTriggers().forEach(function(t) {
-    if (t.getHandlerFunction() === 'runTheWholeShebang' || t.getHandlerFunction() === 'runTheWholeShebang_Resume') {
-      ScriptApp.deleteTrigger(t);
+function _autoApplyTier1Config_(ss, rankNumber) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  rankNumber = rankNumber || 1;
+
+  try {
+    if (typeof getSheetInsensitive !== 'function') {
+      throw new Error('_autoApplyTier1Config_: getSheetInsensitive not found.');
     }
-  });
 
-  // Schedule exactly ONE resume
-  var trigger = ScriptApp.newTrigger('runTheWholeShebang_Resume')
-    .timeBased()
-    .after(60000)
-    .create();
+    var prop = getSheetInsensitive(ss, 'Config_Tier1_Proposals');
+    if (!prop) throw new Error('Config_Tier1_Proposals not found. Run tuning first.');
 
-  var props = PropertiesService.getScriptProperties();
-  props.setProperty('SHEBANG_TRIGGER_ID', trigger.getUniqueId());
-  props.setProperty('SHEBANG_RESUME_STAGE', nextStage);
+    var cfg = getSheetInsensitive(ss, 'Config_Tier1');
+    if (!cfg) cfg = ss.insertSheet('Config_Tier1');
 
-  Logger.log('[_shebang_scheduleResume_] ✅ Resume trigger set for ~1 minute from now.');
+    var data = prop.getDataRange().getValues();
+    if (!data || data.length < 2) throw new Error('Config_Tier1_Proposals is empty.');
+
+    function norm_(v) { return String(v || '').trim().toLowerCase(); }
+
+    // Find the real header row
+    var headerRow = -1;
+    for (var h = 0; h < Math.min(data.length, 25); h++) {
+      if (norm_(data[h][0]) === 'parameter') { headerRow = h; break; }
+    }
+    if (headerRow === -1) headerRow = 0;
+
+    var header = data[headerRow] || [];
+
+    // Determine value column
+    var valueCol = (rankNumber === 1) ? 1 : (rankNumber === 2) ? 3 : (rankNumber === 3) ? 4 : null;
+    function findCol_(regex) {
+      for (var c = 0; c < header.length; c++) {
+        if (regex.test(norm_(header[c]))) return c;
+      }
+      return -1;
+    }
+    if (rankNumber === 1) {
+      var fc1 = findCol_(/proposed|best|rank\s*#?\s*1/);
+      if (fc1 !== -1) valueCol = fc1;
+    } else if (rankNumber === 2) {
+      var fc2 = findCol_(/rank\s*#?\s*2|alt\s*2|candidate\s*2/);
+      if (fc2 !== -1) valueCol = fc2;
+    } else if (rankNumber === 3) {
+      var fc3 = findCol_(/rank\s*#?\s*3|alt\s*3|candidate\s*3/);
+      if (fc3 !== -1) valueCol = fc3;
+    }
+
+    if (valueCol === null || valueCol === -1) throw new Error('Could not find value column for rank ' + rankNumber);
+
+    // Build map of proposed key→value pairs
+    var proposed = {};
+    for (var r = headerRow + 1; r < data.length; r++) {
+      var keyOrig = String(data[r][0] || '').trim();
+      if (!keyOrig || keyOrig.indexOf('---') === 0 || norm_(keyOrig) === 'parameter') continue;
+      
+      var val = data[r][valueCol];
+      if (val === '' || val === null || val === undefined || val === '-') continue;
+      proposed[norm_(keyOrig)] = { original: keyOrig, value: val };
+    }
+
+    // Index existing Config_Tier1 rows
+    var cfgData = cfg.getDataRange().getValues();
+    var rowIndex = {};
+    for (var i = 0; i < cfgData.length; i++) {
+      rowIndex[norm_(cfgData[i][0])] = i + 1;
+    }
+
+    var updatedCount = 0;
+    var toAppend = [];
+    Object.keys(proposed).forEach(function(lk) {
+      var entry = proposed[lk];
+      var row = rowIndex[lk];
+      if (row) {
+        cfg.getRange(row, 2).setValue(entry.value);
+        updatedCount++;
+      } else {
+        toAppend.push([entry.original, entry.value]);
+      }
+    });
+
+    if (toAppend.length > 0) {
+      cfg.getRange(cfg.getLastRow() + 1, 1, toAppend.length, 2).setValues(toAppend);
+    }
+
+    // Metadata stamp
+    function setKV_(key, value) {
+      var lk = norm_(key);
+      var row = rowIndex[lk];
+      if (!row) {
+        row = cfg.getLastRow() + 1;
+        cfg.getRange(row, 1).setValue(key);
+        rowIndex[lk] = row;
+      }
+      cfg.getRange(row, 2).setValue(value);
+    }
+
+    setKV_('last_updated', new Date());
+    setKV_('updated_by', '_autoApplyTier1Config_ (rank ' + rankNumber + ')');
+
+    Logger.log('[_autoApplyTier1Config_] Updated ' + updatedCount + ', appended ' + toAppend.length + ' from Rank #' + rankNumber);
+    return true;
+
+  } catch (e) {
+    Logger.log('[_autoApplyTier1Config_] Error: ' + e.message);
+    throw e;
+  }
 }
+
 function _runWholeShebang_(opts) {
   opts = opts || {};
   const includeTuners = !!opts.includeTuners;
