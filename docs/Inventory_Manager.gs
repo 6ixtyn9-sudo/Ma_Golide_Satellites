@@ -9028,11 +9028,17 @@ function t2_loadTier2RawGameData_(ss, calcConfFn) {
     Logger.log('[Tuner] Found ' + tier2Sheets.length + ' data sources');
     for (var tsi = 0; tsi < tier2Sheets.length; tsi++) {
       var sh = tier2Sheets[tsi];
-      var data = sh.getDataRange().getValues();
+      
+      // PATCH: Safe load with retry + throttle
+      var data = _safeGetValuesWithRetry_(sh, 3);
+      
       if (data.length < 2) continue;
       if (!headers) headers = data[0];
       allGames = allGames.concat(data.slice(1));
       Logger.log('[Tuner] Loaded ' + (data.length - 1) + ' from ' + sh.getName());
+      
+      // Throttle to avoid Service Spreadsheets errors
+      Utilities.sleep(250); 
     }
   }
 
@@ -12088,4 +12094,29 @@ function t2_coreDiffCount_(a, b) {
   if (!!a.q4_flip !== !!b.q4_flip) d++;
 
   return d;
+}
+
+/**
+ * Internal helper to load sheet data with retries and exponential backoff.
+ * Mitigates "Service Spreadsheets failed" transient errors during bulk loads.
+ */
+function _safeGetValuesWithRetry_(sheet, maxRetries) {
+  if (!sheet) return [];
+  maxRetries = maxRetries || 3;
+  var lastErr = null;
+  for (var i = 0; i < maxRetries; i++) {
+    try {
+      return sheet.getDataRange().getValues();
+    } catch (e) {
+      lastErr = e;
+      var msg = e.message || '';
+      if (msg.indexOf('failed while accessing') !== -1 || msg.indexOf('Service Spreadsheets failed') !== -1) {
+        Logger.log('[RETRY] Sheet load failed (transient). Attempt ' + (i+1) + '/' + maxRetries + '. Wait=' + (i+1) + 's');
+        Utilities.sleep((i + 1) * 1000);
+      } else {
+        throw e; // rethrow non-transient errors
+      }
+    }
+  }
+  throw lastErr;
 }

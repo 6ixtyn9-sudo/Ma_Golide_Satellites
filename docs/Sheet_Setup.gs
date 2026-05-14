@@ -2864,52 +2864,161 @@ function runTheWholeShebang_WithTuners() {
  * picks up from the saved stage.
  */
 function runTheWholeShebang_Resume() {
+  var props = PropertiesService.getScriptProperties();
+  var stage = props.getProperty('SHEBANG_RESUME_STAGE') || '';
+  
   _shebang_clearResumeTrigger_();
-  _runWholeShebang_({ includeTuners: false, resume: true });
+  
+  if (stage.indexOf('STEP_') === 0) {
+    Logger.log('[Resume] Detected AutoTune stage: ' + stage + '. Redirecting to runTheWholeShebang_AutoTune.');
+    runTheWholeShebang_AutoTune({ resumeStage: stage });
+  } else {
+    Logger.log('[Resume] Detected pipeline stage: ' + stage + '. Resuming _runWholeShebang_.');
+    _runWholeShebang_({ includeTuners: false, resume: true });
+  }
 }
 
 /**
  * The main pipeline: tune → apply → predict → bets.
  * This is the entry point for the 1-minute launch trigger.
+ * 
+ * PATCH: Added skip-tuning gate and pre-arm resume pattern to prevent timeouts.
  */
-function runTheWholeShebang_AutoTune() {
+function runTheWholeShebang_AutoTune(opts) {
+  opts = opts || {};
+  var resumeStage = opts.resumeStage || '';
   var ss = SpreadsheetApp.getActiveSpreadsheet();
   var props = PropertiesService.getScriptProperties();
+  
+  // Set global start time for time guards
+  globalThis.SHEBANG_START_TIME = new Date();
   
   // Set silent mode for this run to avoid blocking UI
   props.setProperty('SHEBANG_SILENT_MODE', 'true');
   
   Logger.log('═══════════════════════════════════════════════════════════════');
-  Logger.log(' RUNNING WHOLE SHEBANG WITH AUTO-TUNE');
+  Logger.log(' RUNNING WHOLE SHEBANG WITH AUTO-TUNE' + (resumeStage ? ' [RESUME: ' + resumeStage + ']' : ''));
   Logger.log('═══════════════════════════════════════════════════════════════');
 
-  try {
-    // STEP 1: tuneLeagueWeights (Tier 1 Tuning)
-    Logger.log('[AutoTune] STEP 1: Tuning Tier 1...');
-    tuneLeagueWeights(ss);
-
-    // STEP 2: Auto-apply Tier 1 Rank 1 (Hard Stop on Failure)
-    Logger.log('[AutoTune] STEP 2: Applying Tier 1 Rank 1...');
-    _autoApplyTier1Config_(ss, 1);
-    SpreadsheetApp.flush();
-
-    // STEP 3: tuneTier2Config & tuneTier2OUConfig
-    Logger.log('[AutoTune] STEP 3: Tuning Tier 2 and O/U...');
-    tuneTier2Config(ss);
-    tuneTier2OUConfig(ss);
-
-    // STEP 4: applyTier2ProposalToConfig_ (Non-fatal Failure)
-    Logger.log('[AutoTune] STEP 4: Applying Tier 2 Rank 1...');
-    try {
-      applyTier2ProposalToConfig_(ss, 1);
-    } catch (e) {
-      Logger.log('[AutoTune] WARNING: Tier 2 apply failed, continuing: ' + e.message);
+  /** Internal helper to determine if we should skip a step during resume */
+  function _shouldSkipStep_(stepLabel) {
+    if (!resumeStage) return false;
+    if (resumeStage === stepLabel) { 
+      resumeStage = ''; // Found our target, stop skipping
+      return false; 
     }
-    SpreadsheetApp.flush();
+    Logger.log('[AutoTune] Resuming... skipping ' + stepLabel);
+    return true;
+  }
 
-    // STEP 5: _runWholeShebang_ (includeTuners: false as they already ran)
-    Logger.log('[AutoTune] STEP 5: Running prediction pipeline...');
-    _runWholeShebang_({ includeTuners: false, noPrompt: true });
+  try {
+    // ── PATCH 1: SKIP TUNING IF VERSION UNCHANGED ───────────────────────────
+    var skipTuning = false;
+    if (!resumeStage) {
+      var t1Config = (typeof loadTier1Config === 'function') ? loadTier1Config(ss) : null;
+      var t1Version = (t1Config && t1Config.version) ? t1Config.version : 'UNKNOWN';
+      var lastT1Version = props.getProperty('AG_LAST_TUNED_T1_VERSION') || '';
+
+      var t2Config = (typeof loadTier2Config === 'function') ? loadTier2Config(ss) : null;
+      var t2Version = (t2Config && t2Config.version) ? t2Config.version : 'UNKNOWN';
+      var lastT2Version = props.getProperty('AG_LAST_TUNED_T2_VERSION') || '';
+
+      if (t1Version !== 'UNKNOWN' && t2Version !== 'UNKNOWN' && 
+          t1Version === lastT1Version && t2Version === lastT2Version) {
+        Logger.log('[AutoTune] Config versions unchanged (T1=' + t1Version + ', T2=' + t2Version + '). Skipping tuning steps 1-3.');
+        skipTuning = true;
+      }
+    }
+
+    if (!skipTuning) {
+      // ── STEP 1: tuneLeagueWeights (Tier 1 Tuning) ─────────────────────────
+      if (!_shouldSkipStep_('STEP_1')) {
+        if (_shebang_hasTimeFor_('Step 1 Tier 1 Tune', 120)) {
+          _shebang_scheduleResume_('STEP_1'); // Pre-arm: if we die, retry Step 1
+          Logger.log('[AutoTune] STEP 1: Tuning Tier 1...');
+          tuneLeagueWeights(ss);
+          _shebang_clearResumeTrigger_();
+        } else {
+          _shebang_scheduleResume_('STEP_1');
+          return;
+        }
+      }
+
+      // ── STEP 2: Auto-apply Tier 1 Rank 1 ──────────────────────────────────
+      if (!_shouldSkipStep_('STEP_2')) {
+        if (_shebang_hasTimeFor_('Step 2 Apply Tier 1', 15)) {
+          _shebang_scheduleResume_('STEP_2');
+          Logger.log('[AutoTune] STEP 2: Applying Tier 1 Rank 1...');
+          _autoApplyTier1Config_(ss, 1);
+          
+          // SAVE PROGRESS: Mark T1 as tuned so we don't repeat Step 1/2 on crash
+          var t1ConfigFinal = loadTier1Config(ss);
+          if (t1ConfigFinal && t1ConfigFinal.version) {
+             props.setProperty('AG_LAST_TUNED_T1_VERSION', t1ConfigFinal.version);
+             Logger.log('[AutoTune] Progress Saved: T1 version pinned to ' + t1ConfigFinal.version);
+          }
+          
+          SpreadsheetApp.flush();
+          _shebang_clearResumeTrigger_();
+        } else {
+          _shebang_scheduleResume_('STEP_2');
+          return;
+        }
+      }
+
+      // ── STEP 3: tuneTier2Config & tuneTier2OUConfig ───────────────────────
+      if (!_shouldSkipStep_('STEP_3')) {
+        if (_shebang_hasTimeFor_('Step 3 Tier 2 + O/U Tune', 180)) {
+          _shebang_scheduleResume_('STEP_3');
+          Logger.log('[AutoTune] STEP 3: Tuning Tier 2 and O/U...');
+          tuneTier2Config(ss);
+          tuneTier2OUConfig(ss);
+          
+          // SAVE PROGRESS: Mark T2 as tuned
+          var t2ConfigFinal = loadTier2Config(ss);
+          if (t2ConfigFinal && t2ConfigFinal.version) {
+             props.setProperty('AG_LAST_TUNED_T2_VERSION', t2ConfigFinal.version);
+             Logger.log('[AutoTune] Progress Saved: T2 version pinned to ' + t2ConfigFinal.version);
+          }
+
+          _shebang_clearResumeTrigger_();
+        } else {
+          _shebang_scheduleResume_('STEP_3');
+          return;
+        }
+      }
+    }
+
+    // ── STEP 4: applyTier2ProposalToConfig_ ─────────────────────────────────
+    if (!_shouldSkipStep_('STEP_4')) {
+      if (_shebang_hasTimeFor_('Step 4 Apply Tier 2', 60)) {
+        _shebang_scheduleResume_('STEP_4');
+        Logger.log('[AutoTune] STEP 4: Applying Tier 2 Rank 1...');
+        try {
+          applyTier2ProposalToConfig_(ss, 1);
+        } catch (e) {
+          Logger.log('[AutoTune] WARNING: Tier 2 apply failed, continuing: ' + e.message);
+        }
+        SpreadsheetApp.flush();
+        _shebang_clearResumeTrigger_();
+      } else {
+        _shebang_scheduleResume_('STEP_4');
+        return;
+      }
+    }
+
+    // ── STEP 5: _runWholeShebang_ ───────────────────────────────────────────
+    if (!_shouldSkipStep_('STEP_5')) {
+      if (_shebang_hasTimeFor_('Step 5 Pipeline', 60)) {
+        _shebang_scheduleResume_('STEP_5');
+        Logger.log('[AutoTune] STEP 5: Running prediction pipeline...');
+        _runWholeShebang_({ includeTuners: false, noPrompt: true });
+        _shebang_clearResumeTrigger_();
+      } else {
+        _shebang_scheduleResume_('STEP_5');
+        return;
+      }
+    }
 
   } catch (e) {
     Logger.log('[AutoTune] FATAL ERROR: ' + e.message);
@@ -2917,6 +3026,24 @@ function runTheWholeShebang_AutoTune() {
   } finally {
     props.deleteProperty('SHEBANG_SILENT_MODE');
   }
+}
+
+/**
+ * WHY: Prevent GAS timeout by checking remaining time before starting long tasks.
+ * WHAT: Compares elapsed time since SHEBANG_START_TIME against a 300s safe wall.
+ */
+function _shebang_hasTimeFor_(taskName, minSecondsNeeded) {
+  var startTime = globalThis.SHEBANG_START_TIME;
+  if (!startTime) return true; // Fail safe if not set
+  
+  var elapsed = (new Date() - startTime) / 1000;
+  var remaining = 300 - elapsed; // 300s safe wall
+  
+  if (remaining < minSecondsNeeded) {
+    Logger.log('[AutoTune] ⏳ Not enough time for ' + taskName + '. Elapsed=' + elapsed.toFixed(1) + 's, remaining=' + remaining.toFixed(1) + 's, needed=' + minSecondsNeeded + 's.');
+    return false;
+  }
+  return true;
 }
 
 /**
