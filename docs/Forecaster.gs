@@ -566,84 +566,25 @@ function calculateNetRatingDifference_(homeStandings, awayStandings) {
 }
 
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * FUNCTION: calculateHomeCourtEffect_
- * ═══════════════════════════════════════════════════════════════════════════
- *
- * WHY: Some teams perform significantly better at home vs away.
- *
- * WHAT: Calculate home court advantage using home/away splits.
- *       Combines home team's home PCT vs away team's away PCT.
- *
- * HOW: (home team's homePct - away team's awayPct) * 100
- *
- * WHERE: Called by analyzeTier1 for homeCourtEffect feature
- *
- * @param {Object} homeStandings - Home team standings object
- * @param {Object} awayStandings - Away team standings object
- * @returns {number} Home court effect (scaled)
- */
-function calculateHomeCourtEffect_(homeStandings, awayStandings) {
-  var DEFAULT_PCT = 0.5;
-  
-  var homeHomePct = safeNum_(homeStandings && homeStandings.homePct, DEFAULT_PCT);
-  var awayAwayPct = safeNum_(awayStandings && awayStandings.awayPct, DEFAULT_PCT);
-  
-  return (homeHomePct - awayAwayPct) * 100;
-}
 
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * FUNCTION: calculateMomentumDifference_
- * ═══════════════════════════════════════════════════════════════════════════
- *
- * WHY: Recent form (L10) indicates current team momentum.
- *
- * WHAT: Calculate momentum difference based on last 10 games.
- *       Positive = home has better recent form.
- *
- * WHERE: Called by analyzeTier1 for momentumDiff feature
- *
- * @param {Object} homeStandings - Home team standings object
- * @param {Object} awayStandings - Away team standings object
- * @returns {number} Momentum difference (scaled)
- */
-function calculateMomentumDifference_(homeStandings, awayStandings) {
+function calculateMomentumDifference_(homeStandings, awayStandings, homeRecentStats, awayRecentStats) {
+  // Preferred: actual recent average margin (from CleanRecent quarters)
+  if (homeRecentStats && awayRecentStats &&
+      isFinite(homeRecentStats.avgMargin) && isFinite(awayRecentStats.avgMargin)) {
+    // NOTE: This is now "points per game" differential, not pct*100.
+    return (homeRecentStats.avgMargin - awayRecentStats.avgMargin);
+  }
+
+  // Fallback: old standings proxy
   var DEFAULT_L10 = 0.5;
-  
   var homeL10 = safeNum_(homeStandings && homeStandings.l10Pct, DEFAULT_L10);
   var awayL10 = safeNum_(awayStandings && awayStandings.l10Pct, DEFAULT_L10);
-  
   return (homeL10 - awayL10) * 100;
 }
 
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * FUNCTION: calculateStreakDifference_
- * ═══════════════════════════════════════════════════════════════════════════
- *
- * WHY: Win/loss streaks affect team confidence and momentum.
- *
- * WHAT: Calculate streak difference (home - away).
- *       Positive values favor home (home on win streak, away on loss streak).
- *
- * WHERE: Called by analyzeTier1 for streakDiff feature
- *
- * @param {Object} homeStandings - Home team standings object
- * @param {Object} awayStandings - Away team standings object
- * @returns {number} Streak difference
- */
-function calculateStreakDifference_(homeStandings, awayStandings) {
-  var DEFAULT_STREAK = 0;
-  
-  var homeStreak = safeNum_(homeStandings && homeStandings.streak, DEFAULT_STREAK);
-  var awayStreak = safeNum_(awayStandings && awayStandings.streak, DEFAULT_STREAK);
-  
-  return homeStreak - awayStreak;
-}
+
 
 
 /**
@@ -1479,266 +1420,62 @@ function getTeamFormFromStandings_(standings) {
 }
 
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * FUNCTION: calculateStreak (ROBUST - With Fallback)
- * ═══════════════════════════════════════════════════════════════════════════
- * WHY: Calculate streak from historical data if scores available.
- * WHAT: Returns streak or 'N/A' if not calculable.
- */
-function calculateStreak(teamName, beforeDate, allGames, headerMap) {
-  if (!teamName || !allGames || allGames.length < 2) {
-    return 'N/A';
-  }
-  
-  var teamLower = normalizeTeamName_(teamName);
-  
-  // Find column indices
-  var homeCol = getHeaderIndex_(headerMap, ['home', 'home team', 'hometeam']);
-  var awayCol = getHeaderIndex_(headerMap, ['away', 'away team', 'awayteam']);
-  var dateCol = getHeaderIndex_(headerMap, ['date', 'game date', 'gamedate']);
-  var homeScoreCol = getHeaderIndex_(headerMap, ['home score', 'homescore', 'home pts', 'homepts', 'hscore']);
-  var awayScoreCol = getHeaderIndex_(headerMap, ['away score', 'awayscore', 'away pts', 'awaypts', 'ascore']);
-  var winnerCol = getHeaderIndex_(headerMap, ['winner', 'result', 'win']);
-  
-  // Check if we have score columns
-  if (homeCol < 0 || awayCol < 0) {
-    return 'N/A';
-  }
-  
-  if (homeScoreCol < 0 && awayScoreCol < 0 && winnerCol < 0) {
-    // No way to determine winner
-    return 'N/A';
-  }
-  
-  // Collect team's games
-  var teamGames = [];
-  
-  for (var i = 1; i < allGames.length; i++) {
-    var row = allGames[i];
-    var home = normalizeTeamName_(row[homeCol]);
-    var away = normalizeTeamName_(row[awayCol]);
-    
-    if (home !== teamLower && away !== teamLower) continue;
-    
-    // Check date
-    if (dateCol >= 0 && beforeDate) {
-      var gameDate = row[dateCol];
-      if (gameDate instanceof Date && gameDate >= beforeDate) continue;
-      if (!(gameDate instanceof Date)) {
-        var parsed = new Date(gameDate);
-        if (!isNaN(parsed.getTime()) && parsed >= beforeDate) continue;
-      }
-    }
-    
-    // Determine if team won
-    var teamWon = null;
-    var isHome = (home === teamLower);
-    
-    if (winnerCol >= 0 && row[winnerCol]) {
-      var winner = normalizeTeamName_(row[winnerCol]);
-      teamWon = (winner === teamLower);
-    } else if (homeScoreCol >= 0 && awayScoreCol >= 0) {
-      var homeScore = safeNum_(row[homeScoreCol], -1);
-      var awayScore = safeNum_(row[awayScoreCol], -1);
-      if (homeScore >= 0 && awayScore >= 0) {
-        teamWon = isHome ? (homeScore > awayScore) : (awayScore > homeScore);
-      }
-    }
-    
-    if (teamWon !== null) {
-      teamGames.push({
-        date: row[dateCol],
-        won: teamWon
-      });
-    }
-  }
-  
-  if (teamGames.length === 0) {
-    return 'N/A';
-  }
-  
-  // Sort by date descending
-  teamGames.sort(function(a, b) {
-    var dateA = a.date instanceof Date ? a.date : new Date(a.date);
-    var dateB = b.date instanceof Date ? b.date : new Date(b.date);
-    return dateB - dateA;
-  });
-  
-  // Count streak
-  var streak = 0;
-  var streakType = teamGames[0].won;
-  
-  for (var j = 0; j < teamGames.length; j++) {
-    if (teamGames[j].won === streakType) {
-      streak++;
+function calculateStreak(team, gameDate, resultsData, header) {
+  if (!team || !header) return 'N/A';
+
+  // Works for both:
+  // - Clean/ResultsClean (date + ft score)
+  // - CleanRecent* (quarters; may not have date)
+  var games = _t1_extractTeamGames_(team, gameDate, resultsData, header);
+  if (!games.length) return 'N/A';
+
+  var streakCount = 0;
+  var lastResult = null;
+
+  for (var i = 0; i < games.length; i++) {
+    var res = games[i].result;
+    if (!res) continue;
+
+    if (lastResult === null) {
+      lastResult = res;
+      streakCount = 1;
+    } else if (res === lastResult) {
+      streakCount++;
     } else {
       break;
     }
   }
-  
-  return streakType ? streak : -streak;
+
+  return lastResult ? (lastResult + streakCount) : 'N/A';
 }
 
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * FUNCTION: calculateLastN (ROBUST - With Fallback)
- * ═══════════════════════════════════════════════════════════════════════════
- */
-function calculateLastN(teamName, beforeDate, n, allGames, headerMap) {
-  if (!teamName || !allGames || allGames.length < 2 || !n) {
-    return 'N/A';
+
+function calculateLastNHomeAway(team, gameDate, N, location, resultsData, header) {
+  if (!team || !header) return 'N/A';
+  N = Math.max(1, parseInt(N, 10) || 5);
+
+  var targetLocation = String(location || '').trim().toLowerCase();
+  if (targetLocation !== 'home' && targetLocation !== 'away') return 'N/A';
+
+  var games = _t1_extractTeamGames_(team, gameDate, resultsData, header);
+  if (!games.length) return 'N/A';
+
+  // Filter by venue for the team in those games
+  var venueGames = [];
+  for (var i = 0; i < games.length; i++) {
+    if (games[i].location === targetLocation) venueGames.push(games[i]);
   }
-  
-  var teamLower = normalizeTeamName_(teamName);
-  n = Math.max(1, parseInt(n, 10) || 10);
-  
-  var homeCol = getHeaderIndex_(headerMap, ['home', 'home team', 'hometeam']);
-  var awayCol = getHeaderIndex_(headerMap, ['away', 'away team', 'awayteam']);
-  var dateCol = getHeaderIndex_(headerMap, ['date', 'game date', 'gamedate']);
-  var homeScoreCol = getHeaderIndex_(headerMap, ['home score', 'homescore', 'home pts', 'homepts', 'hscore']);
-  var awayScoreCol = getHeaderIndex_(headerMap, ['away score', 'awayscore', 'away pts', 'awaypts', 'ascore']);
-  var winnerCol = getHeaderIndex_(headerMap, ['winner', 'result', 'win']);
-  
-  if (homeCol < 0 || awayCol < 0) return 'N/A';
-  if (homeScoreCol < 0 && awayScoreCol < 0 && winnerCol < 0) return 'N/A';
-  
-  var teamGames = [];
-  
-  for (var i = 1; i < allGames.length; i++) {
-    var row = allGames[i];
-    var home = normalizeTeamName_(row[homeCol]);
-    var away = normalizeTeamName_(row[awayCol]);
-    
-    if (home !== teamLower && away !== teamLower) continue;
-    
-    if (dateCol >= 0 && beforeDate) {
-      var gameDate = row[dateCol];
-      if (gameDate instanceof Date && gameDate >= beforeDate) continue;
-      if (!(gameDate instanceof Date)) {
-        var parsed = new Date(gameDate);
-        if (!isNaN(parsed.getTime()) && parsed >= beforeDate) continue;
-      }
-    }
-    
-    var teamWon = null;
-    var isHome = (home === teamLower);
-    
-    if (winnerCol >= 0 && row[winnerCol]) {
-      teamWon = (normalizeTeamName_(row[winnerCol]) === teamLower);
-    } else if (homeScoreCol >= 0 && awayScoreCol >= 0) {
-      var homeScore = safeNum_(row[homeScoreCol], -1);
-      var awayScore = safeNum_(row[awayScoreCol], -1);
-      if (homeScore >= 0 && awayScore >= 0) {
-        teamWon = isHome ? (homeScore > awayScore) : (awayScore > homeScore);
-      }
-    }
-    
-    if (teamWon !== null) {
-      teamGames.push({ date: row[dateCol], won: teamWon });
-    }
-  }
-  
-  if (teamGames.length === 0) return 'N/A';
-  
-  teamGames.sort(function(a, b) {
-    var dateA = a.date instanceof Date ? a.date : new Date(a.date);
-    var dateB = b.date instanceof Date ? b.date : new Date(b.date);
-    return dateB - dateA;
-  });
-  
-  var lastN = teamGames.slice(0, n);
+
+  var lastNGames = venueGames.slice(0, N);
+  if (!lastNGames.length) return 'N/A';
+
   var wins = 0, losses = 0;
-  
-  for (var j = 0; j < lastN.length; j++) {
-    if (lastN[j].won) wins++;
+  for (var j = 0; j < lastNGames.length; j++) {
+    if (lastNGames[j].result === 'W') wins++;
     else losses++;
   }
-  
-  return wins + '-' + losses;
-}
 
-
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * FUNCTION: calculateLastNHomeAway (ROBUST - With Fallback)
- * ═══════════════════════════════════════════════════════════════════════════
- */
-function calculateLastNHomeAway(teamName, beforeDate, n, venueType, allGames, headerMap) {
-  if (!teamName || !allGames || allGames.length < 2 || !n || !venueType) {
-    return 'N/A';
-  }
-  
-  var teamLower = normalizeTeamName_(teamName);
-  var isHomeVenue = (venueType.toLowerCase() === 'home');
-  n = Math.max(1, parseInt(n, 10) || 5);
-  
-  var homeCol = getHeaderIndex_(headerMap, ['home', 'home team', 'hometeam']);
-  var awayCol = getHeaderIndex_(headerMap, ['away', 'away team', 'awayteam']);
-  var dateCol = getHeaderIndex_(headerMap, ['date', 'game date', 'gamedate']);
-  var homeScoreCol = getHeaderIndex_(headerMap, ['home score', 'homescore', 'home pts', 'homepts']);
-  var awayScoreCol = getHeaderIndex_(headerMap, ['away score', 'awayscore', 'away pts', 'awaypts']);
-  var winnerCol = getHeaderIndex_(headerMap, ['winner', 'result', 'win']);
-  
-  if (homeCol < 0 || awayCol < 0) return 'N/A';
-  if (homeScoreCol < 0 && awayScoreCol < 0 && winnerCol < 0) return 'N/A';
-  
-  var teamGames = [];
-  
-  for (var i = 1; i < allGames.length; i++) {
-    var row = allGames[i];
-    var home = normalizeTeamName_(row[homeCol]);
-    var away = normalizeTeamName_(row[awayCol]);
-    
-    var isTeamHome = (home === teamLower);
-    var isTeamAway = (away === teamLower);
-    
-    if (isHomeVenue && !isTeamHome) continue;
-    if (!isHomeVenue && !isTeamAway) continue;
-    
-    if (dateCol >= 0 && beforeDate) {
-      var gameDate = row[dateCol];
-      if (gameDate instanceof Date && gameDate >= beforeDate) continue;
-      if (!(gameDate instanceof Date)) {
-        var parsed = new Date(gameDate);
-        if (!isNaN(parsed.getTime()) && parsed >= beforeDate) continue;
-      }
-    }
-    
-    var teamWon = null;
-    
-    if (winnerCol >= 0 && row[winnerCol]) {
-      teamWon = (normalizeTeamName_(row[winnerCol]) === teamLower);
-    } else if (homeScoreCol >= 0 && awayScoreCol >= 0) {
-      var homeScore = safeNum_(row[homeScoreCol], -1);
-      var awayScore = safeNum_(row[awayScoreCol], -1);
-      if (homeScore >= 0 && awayScore >= 0) {
-        teamWon = isTeamHome ? (homeScore > awayScore) : (awayScore > homeScore);
-      }
-    }
-    
-    if (teamWon !== null) {
-      teamGames.push({ date: row[dateCol], won: teamWon });
-    }
-  }
-  
-  if (teamGames.length === 0) return 'N/A';
-  
-  teamGames.sort(function(a, b) {
-    var dateA = a.date instanceof Date ? a.date : new Date(a.date);
-    var dateB = b.date instanceof Date ? b.date : new Date(b.date);
-    return dateB - dateA;
-  });
-  
-  var lastN = teamGames.slice(0, n);
-  var wins = 0, losses = 0;
-  
-  for (var j = 0; j < lastN.length; j++) {
-    if (lastN[j].won) wins++;
-    else losses++;
-  }
-  
   return wins + '-' + losses;
 }
 
@@ -1935,12 +1672,14 @@ function calculateNetRatingDifference_(homeStandings, awayStandings) {
 }
 
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * FUNCTION: calculateHomeCourtEffect_
- * ═══════════════════════════════════════════════════════════════════════════
- */
-function calculateHomeCourtEffect_(homeStandings, awayStandings) {
+function calculateHomeCourtEffect_(homeStandings, awayStandings, homeRecentStats, awayRecentStats) {
+  // Preferred: actual home/away win rates from CleanRecent sheets
+  if (homeRecentStats && awayRecentStats &&
+      isFinite(homeRecentStats.winPct) && isFinite(awayRecentStats.winPct)) {
+    return (homeRecentStats.winPct - awayRecentStats.winPct) * 100;
+  }
+
+  // Fallback: old standings proxy
   var DEFAULT_PCT = 0.5;
   var homeHomePct = safeNum_(homeStandings && homeStandings.homePct, DEFAULT_PCT);
   var awayAwayPct = safeNum_(awayStandings && awayStandings.awayPct, DEFAULT_PCT);
@@ -1948,27 +1687,19 @@ function calculateHomeCourtEffect_(homeStandings, awayStandings) {
 }
 
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * FUNCTION: calculateMomentumDifference_
- * ═══════════════════════════════════════════════════════════════════════════
- */
-function calculateMomentumDifference_(homeStandings, awayStandings) {
-  var DEFAULT_L10 = 0.5;
-  var homeL10 = safeNum_(homeStandings && homeStandings.l10Pct, DEFAULT_L10);
-  var awayL10 = safeNum_(awayStandings && awayStandings.l10Pct, DEFAULT_L10);
-  return (homeL10 - awayL10) * 100;
-}
 
 
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * FUNCTION: calculateStreakDifference_
- * ═══════════════════════════════════════════════════════════════════════════
- */
-function calculateStreakDifference_(homeStandings, awayStandings) {
-  var homeStreak = safeNum_(homeStandings && homeStandings.streak, 0);
-  var awayStreak = safeNum_(awayStandings && awayStandings.streak, 0);
+function calculateStreakDifference_(homeStandings, awayStandings, homeRecentStats, awayRecentStats) {
+  // Preferred: streak from CleanRecent sheets (converted to signed int)
+  if (homeRecentStats && awayRecentStats &&
+      isFinite(homeRecentStats.streakSigned) && isFinite(awayRecentStats.streakSigned)) {
+    return homeRecentStats.streakSigned - awayRecentStats.streakSigned;
+  }
+
+  // Fallback: old standings proxy
+  var DEFAULT_STREAK = 0;
+  var homeStreak = safeNum_(homeStandings && homeStandings.streak, DEFAULT_STREAK);
+  var awayStreak = safeNum_(awayStandings && awayStandings.streak, DEFAULT_STREAK);
   return homeStreak - awayStreak;
 }
 
@@ -2213,6 +1944,238 @@ function calculateMaGolideScore(features, config) {
 }
 
 
+
+/**
+ * Tier1 helper: load a CleanRecentHome_* / CleanRecentAway_* sheet bundle.
+ * Returns { name, data, header } or null.
+ */
+function _t1_loadCleanRecentBundle_(ss, sheetName) {
+  try {
+    var sh = (typeof getSheetInsensitive === 'function')
+      ? getSheetInsensitive(ss, sheetName)
+      : (ss ? ss.getSheetByName(sheetName) : null);
+
+    if (!sh) return null;
+
+    var data = sh.getDataRange().getValues();
+    if (!data || data.length < 2) return null;
+
+    var header = (typeof createHeaderMap === 'function') ? createHeaderMap(data[0]) : null;
+    if (!header) return null;
+
+    return { name: sheetName, data: data, header: header };
+  } catch (e) {
+    Logger.log('[Tier1] _t1_loadCleanRecentBundle_ failed for ' + sheetName + ': ' + e.message);
+    return null;
+  }
+}
+
+/** Header lookup with aliases (works across Clean vs CleanRecent). */
+function _t1_h_(header, aliases) {
+  if (!header) return undefined;
+  for (var i = 0; i < aliases.length; i++) {
+    var k = String(aliases[i]).toLowerCase();
+    if (header[k] !== undefined) return header[k];
+  }
+  return undefined;
+}
+
+/** Strict numeric parse; returns null if not a finite number. */
+function _t1_numStrict_(v) {
+  if (v === null || v === undefined || v === '') return null;
+  var s = String(v).trim();
+  if (!s) return null;
+  if (s.indexOf(':') !== -1) return null; // guard: time-like strings
+  var n = Number(s);
+  return isFinite(n) ? n : null;
+}
+
+/**
+ * Extract totals for a row:
+ * - Prefer FT score if available
+ * - Else sum quarters (q1h..q4a + optional OT)
+ */
+function _t1_getTotalsFromRow_(row, header) {
+  var ftIdx = _t1_h_(header, ['ft score', 'ftscore', 'final', 'final score', 'score']);
+  if (ftIdx !== undefined) {
+    var parsed = (typeof parseScore === 'function') ? parseScore(row[ftIdx]) : null;
+    if (parsed && isFinite(parsed[0]) && isFinite(parsed[1])) {
+      return { homeTotal: parsed[0], awayTotal: parsed[1], source: 'ft' };
+    }
+  }
+
+  // Quarter-based fallback (CleanRecent sheets)
+  var qPairs = [
+    ['q1h', 'q1a'],
+    ['q2h', 'q2a'],
+    ['q3h', 'q3a'],
+    ['q4h', 'q4a']
+  ];
+
+  var homeSum = 0;
+  var awaySum = 0;
+
+  for (var i = 0; i < qPairs.length; i++) {
+    var hIdx = _t1_h_(header, [qPairs[i][0]]);
+    var aIdx = _t1_h_(header, [qPairs[i][1]]);
+    if (hIdx === undefined || aIdx === undefined) return null;
+
+    var h = _t1_numStrict_(row[hIdx]);
+    var a = _t1_numStrict_(row[aIdx]);
+    if (h === null || a === null) return null;
+
+    homeSum += h;
+    awaySum += a;
+  }
+
+  // Optional OT
+  var othIdx = _t1_h_(header, ['oth']);
+  var otaIdx = _t1_h_(header, ['ota']);
+  if (othIdx !== undefined && otaIdx !== undefined) {
+    var oth = _t1_numStrict_(row[othIdx]);
+    var ota = _t1_numStrict_(row[otaIdx]);
+    if (oth !== null && ota !== null) {
+      homeSum += oth;
+      awaySum += ota;
+    }
+  }
+
+  return { homeTotal: homeSum, awayTotal: awaySum, source: 'quarters' };
+}
+
+/**
+ * Determine the team's W/L, margin, and location for one row.
+ * Returns null for non-matching team or ties/invalid totals.
+ */
+function _t1_teamOutcomeFromRow_(team, row, header) {
+  var homeIdx = _t1_h_(header, ['home', 'home team', 'hometeam']);
+  var awayIdx = _t1_h_(header, ['away', 'away team', 'awayteam']);
+  if (homeIdx === undefined || awayIdx === undefined) return null;
+
+  var homeName = row[homeIdx];
+  var awayName = row[awayIdx];
+  if (!homeName || !awayName) return null;
+
+  var teamKey = normalizeTeamName_(team);
+  var isHome = normalizeTeamName_(homeName) === teamKey;
+  var isAway = normalizeTeamName_(awayName) === teamKey;
+  if (!isHome && !isAway) return null;
+
+  var totals = _t1_getTotalsFromRow_(row, header);
+  if (!totals) return null;
+
+  var teamScore = isHome ? totals.homeTotal : totals.awayTotal;
+  var oppScore  = isHome ? totals.awayTotal : totals.homeTotal;
+
+  if (!isFinite(teamScore) || !isFinite(oppScore)) return null;
+  if (teamScore === oppScore) return null; // ignore ties
+
+  var result = (teamScore > oppScore) ? 'W' : 'L';
+  return {
+    result: result,
+    margin: teamScore - oppScore,
+    location: isHome ? 'home' : 'away'
+  };
+}
+
+/**
+ * Build ordered team games list:
+ * - If sheet has a valid date column: sort desc by date and filter rows >= gameDate
+ * - Else: keep sheet order (assumed already "most recent first" for CleanRecent*)
+ */
+function _t1_extractTeamGames_(team, gameDate, resultsData, header) {
+  if (!resultsData || resultsData.length < 2) return [];
+
+  var dateIdx = _t1_h_(header, ['date', 'game date', 'gamedate']);
+  var hasDate = (dateIdx !== undefined);
+
+  var games = [];
+  for (var r = 1; r < resultsData.length; r++) {
+    var row = resultsData[r];
+    if (!row) continue;
+
+    var rowDate = null;
+    if (hasDate) {
+      var v = row[dateIdx];
+      if (v instanceof Date) rowDate = v;
+      else if (v) {
+        var d = new Date(v);
+        if (!isNaN(d.getTime())) rowDate = d;
+      }
+      if (!rowDate) continue;
+      if (gameDate && rowDate >= gameDate) continue;
+    }
+
+    var out = _t1_teamOutcomeFromRow_(team, row, header);
+    if (!out) continue;
+
+    games.push({
+      idx: r,
+      date: rowDate,
+      result: out.result,
+      margin: out.margin,
+      location: out.location
+    });
+  }
+
+  if (hasDate) {
+    games.sort(function(a, b) { return b.date.getTime() - a.date.getTime(); });
+  }
+  return games;
+}
+
+/** "W3" => +3, "L2" => -2, "-" => 0, "N/A" => 0 */
+function _t1_streakSigned_(streakStr) {
+  if (streakStr === null || streakStr === undefined) return 0;
+  if (typeof streakStr === 'number' && isFinite(streakStr)) return streakStr;
+
+  var s = String(streakStr).trim();
+  if (!s || s === '-' || s.toLowerCase() === 'n/a') return 0;
+
+  var m = s.match(/^\s*([WwLl])\s*(\d+)\s*$/);
+  if (!m) return 0;
+
+  var n = parseInt(m[2], 10) || 0;
+  return (m[1].toUpperCase() === 'W') ? n : -n;
+}
+
+/**
+ * Recent-form stats from a given sheet dataset:
+ * winPct, avgMargin, streakStr, streakSigned, samples
+ */
+function _t1_recentFormStats_(team, gameDate, resultsData, header, maxGames) {
+  maxGames = Math.max(1, parseInt(maxGames, 10) || 10);
+
+  var games = _t1_extractTeamGames_(team, gameDate, resultsData, header);
+  if (!games.length) return null;
+
+  var slice = games.slice(0, maxGames);
+  var wins = 0, losses = 0, marginSum = 0;
+
+  for (var i = 0; i < slice.length; i++) {
+    if (slice[i].result === 'W') wins++;
+    else losses++;
+    marginSum += slice[i].margin;
+  }
+
+  var samples = wins + losses;
+  var winPct = samples > 0 ? (wins / samples) : 0.5;
+  var avgMargin = samples > 0 ? (marginSum / samples) : 0;
+
+  // streakStr computed by the (patched) calculateStreak()
+  var streakStr = calculateStreak(team, gameDate, resultsData, header);
+  var streakSigned = _t1_streakSigned_(streakStr);
+
+  return {
+    winPct: winPct,
+    avgMargin: avgMargin,
+    streakStr: streakStr,
+    streakSigned: streakSigned,
+    samples: samples
+  };
+}
+
+
 // ═══════════════════════════════════════════════════════════════════════════
 // SECTION 7: MAIN ORCHESTRATOR
 // ═══════════════════════════════════════════════════════════════════════════
@@ -2417,32 +2380,68 @@ function analyzeTier1(ss) {
       var momentumDiff = calculateMomentumDifference_(homeStandings, awayStandings);
       var streakDiff = calculateStreakDifference_(homeStandings, awayStandings);
 
-      // ══════════════════════════════════════════════════════════════════════
-      // STEP 9c: Historical form - TRY HISTORICAL, FALLBACK TO STANDINGS
-      // ══════════════════════════════════════════════════════════════════════
-      var homeStreakHist = calculateStreak(homeTeam, gameDate, allHistoricalGames, historicalHeader);
-      var awayStreakHist = calculateStreak(awayTeam, gameDate, allHistoricalGames, historicalHeader);
-      var homeL10 = calculateLastN(homeTeam, gameDate, 10, allHistoricalGames, historicalHeader);
-      var awayL10 = calculateLastN(awayTeam, gameDate, 10, allHistoricalGames, historicalHeader);
-      var homeL5Home = calculateLastNHomeAway(homeTeam, gameDate, 5, 'home', allHistoricalGames, historicalHeader);
-      var awayL5Away = calculateLastNHomeAway(awayTeam, gameDate, 5, 'away', allHistoricalGames, historicalHeader);
 
-      // FALLBACK: If historical calc failed, use standings data
-      if (homeStreakHist === 'N/A' || homeL10 === 'N/A') {
-        var homeForm = getTeamFormFromStandings_(homeStandings);
-        if (homeStreakHist === 'N/A') homeStreakHist = homeForm.streak;
-        if (homeL10 === 'N/A') homeL10 = homeForm.l10;
-        if (homeL5Home === 'N/A') homeL5Home = homeForm.homeSplit;
-      }
-      
-      if (awayStreakHist === 'N/A' || awayL10 === 'N/A') {
-        var awayForm = getTeamFormFromStandings_(awayStandings);
-        if (awayStreakHist === 'N/A') awayStreakHist = awayForm.streak;
-        if (awayL10 === 'N/A') awayL10 = awayForm.l10;
-        if (awayL5Away === 'N/A') awayL5Away = awayForm.awaySplit;
-      }
+// STEP 9c: Recent form - PREFER CleanRecent*, fallback to historical, then standings
+// ══════════════════════════════════════════════════════════════════════
+var homeRecentBundle = _t1_loadCleanRecentBundle_(ss, 'CleanRecentHome_' + i);
+var awayRecentBundle = _t1_loadCleanRecentBundle_(ss, 'CleanRecentAway_' + i);
 
-      var formDiff = calculateFormDifference_(homeStreakHist, awayStreakHist, homeL10, awayL10);
+var homeStreakHist = 'N/A';
+var awayStreakHist = 'N/A';
+var homeL10 = 'N/A';
+var awayL10 = 'N/A';
+var homeL5Home = 'N/A';
+var awayL5Away = 'N/A';
+
+var homeRecentStats = null;
+var awayRecentStats = null;
+
+// 1) Try CleanRecentHome_i / CleanRecentAway_i first
+if (homeRecentBundle) {
+  homeStreakHist = calculateStreak(homeTeam, gameDate, homeRecentBundle.data, homeRecentBundle.header);
+  homeL10 = calculateLastN(homeTeam, gameDate, 10, homeRecentBundle.data, homeRecentBundle.header);
+  homeL5Home = calculateLastNHomeAway(homeTeam, gameDate, 5, 'home', homeRecentBundle.data, homeRecentBundle.header);
+  homeRecentStats = _t1_recentFormStats_(homeTeam, gameDate, homeRecentBundle.data, homeRecentBundle.header, 10);
+}
+
+if (awayRecentBundle) {
+  awayStreakHist = calculateStreak(awayTeam, gameDate, awayRecentBundle.data, awayRecentBundle.header);
+  awayL10 = calculateLastN(awayTeam, gameDate, 10, awayRecentBundle.data, awayRecentBundle.header);
+  awayL5Away = calculateLastNHomeAway(awayTeam, gameDate, 5, 'away', awayRecentBundle.data, awayRecentBundle.header);
+  awayRecentStats = _t1_recentFormStats_(awayTeam, gameDate, awayRecentBundle.data, awayRecentBundle.header, 10);
+}
+
+// 2) Fallback to historical Clean if recent calc missing/failed
+if (homeStreakHist === 'N/A') homeStreakHist = calculateStreak(homeTeam, gameDate, allHistoricalGames, historicalHeader);
+if (awayStreakHist === 'N/A') awayStreakHist = calculateStreak(awayTeam, gameDate, allHistoricalGames, historicalHeader);
+
+if (homeL10 === 'N/A') homeL10 = calculateLastN(homeTeam, gameDate, 10, allHistoricalGames, historicalHeader);
+if (awayL10 === 'N/A') awayL10 = calculateLastN(awayTeam, gameDate, 10, allHistoricalGames, historicalHeader);
+
+if (homeL5Home === 'N/A') homeL5Home = calculateLastNHomeAway(homeTeam, gameDate, 5, 'home', allHistoricalGames, historicalHeader);
+if (awayL5Away === 'N/A') awayL5Away = calculateLastNHomeAway(awayTeam, gameDate, 5, 'away', allHistoricalGames, historicalHeader);
+
+// 3) Override Tier1 "new feature" proxies using CleanRecent-derived stats (with fallback inside functions)
+homeCourtEffect = calculateHomeCourtEffect_(homeStandings, awayStandings, homeRecentStats, awayRecentStats);
+momentumDiff = calculateMomentumDifference_(homeStandings, awayStandings, homeRecentStats, awayRecentStats);
+streakDiff = calculateStreakDifference_(homeStandings, awayStandings, homeRecentStats, awayRecentStats);
+
+// 4) Final fallback: if still missing, use standings form fields (if available)
+if (homeStreakHist === 'N/A' || homeL10 === 'N/A') {
+  var homeForm = getTeamFormFromStandings_(homeStandings);
+  if (homeStreakHist === 'N/A') homeStreakHist = homeForm.streak;
+  if (homeL10 === 'N/A') homeL10 = homeForm.l10;
+  if (homeL5Home === 'N/A') homeL5Home = homeForm.homeSplit;
+}
+
+if (awayStreakHist === 'N/A' || awayL10 === 'N/A') {
+  var awayForm = getTeamFormFromStandings_(awayStandings);
+  if (awayStreakHist === 'N/A') awayStreakHist = awayForm.streak;
+  if (awayL10 === 'N/A') awayL10 = awayForm.l10;
+  if (awayL5Away === 'N/A') awayL5Away = awayForm.awaySplit;
+}
+
+var formDiff = calculateFormDifference_(homeStreakHist, awayStreakHist, homeL10, awayL10);
 
       // ══════════════════════════════════════════════════════════════════════
       // STEP 9d: H2H features
@@ -2460,10 +2459,10 @@ function analyzeTier1(ss) {
         ['pred', 'prediction', 'forebet pred', 'forebetpred'], '');
       
       var forebetProbRaw = getGameValue_(game, upcomingHeader, 
-        ['prob %', 'prob%', 'prob', 'probability', 'forebet prob'], '');
+        ['prob %', 'prob%', 'prob', 'probability', 'prob_', 'forebet prob'], '');
       
       var predScoreRaw = getGameValue_(game, upcomingHeader, 
-        ['pred score', 'predscore', 'predicted score', 'forebet score'], '');
+        ['pred score',  'pred_score', 'predscore', 'predicted score', 'forebet score'], '');
       
       var avgRaw = getGameValue_(game, upcomingHeader, 
         ['avg', 'average', 'avg score'], '');
@@ -2657,7 +2656,7 @@ function analyzeTier1(ss) {
   } catch (e) {
     Logger.log('!!! ERROR in analyzeTier1: ' + e.message);
     Logger.log('Stack: ' + e.stack);
-    safeAlert_('Module 4 Error', e.message, ui.ButtonSet.OK);
+    ui.alert('Module 4 Error', e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -3435,144 +3434,27 @@ function calculateStreak(team, gameDate, resultsData, header) {
 }
 
 
-/**
- * WHY: Last N games record shows recent form.
- * WHAT: Calculate W-L record for the last N games before a date.
- * WHERE: Module 4 (local helper for analyzeTier1)
- */
 function calculateLastN(team, gameDate, N, resultsData, header) {
-  if (!team || !header || header['date'] === undefined || header['ft score'] === undefined) {
-    return 'N/A';
-  }
-  
-  const games = [];
+  if (!team || !header) return 'N/A';
+  N = Math.max(1, parseInt(N, 10) || 10);
 
-  for (let i = 1; i < resultsData.length; i++) {
-    const row = resultsData[i];
-    const rowDateStr = row[header['date']];
-    if (!rowDateStr) continue;
+  var games = _t1_extractTeamGames_(team, gameDate, resultsData, header);
+  if (!games.length) return 'N/A';
 
-    let rowDate;
-    if (rowDateStr instanceof Date) {
-      rowDate = rowDateStr;
-    } else {
-      rowDate = new Date(rowDateStr);
-    }
-    
-    if (isNaN(rowDate.getTime())) continue;
-    if (rowDate >= gameDate) continue;
+  var lastNGames = games.slice(0, N);
+  if (!lastNGames.length) return 'N/A';
 
-    const homeTeam = row[header['home']];
-    const awayTeam = row[header['away']];
-    
-    if (homeTeam === team || awayTeam === team) {
-      const parsed = parseScore(row[header['ft score']]);
-      if (!parsed) continue;
-      
-      const [homeScore, awayScore] = parsed;
-      let result = null;
-      
-      if (homeScore > awayScore) {
-        result = (homeTeam === team) ? 'W' : 'L';
-      } else if (awayScore > homeScore) {
-        result = (awayTeam === team) ? 'W' : 'L';
-      }
-      
-      if (result) {
-        games.push({ date: rowDate, result: result });
-      }
-    }
-  }
-
-  games.sort((a, b) => b.date - a.date);
-  
-  const lastNGames = games.slice(0, N);
-  if (lastNGames.length === 0) return 'N/A';
-  
-  let wins = 0;
-  let losses = 0;
-  
-  lastNGames.forEach(game => {
-    if (game.result === 'W') wins++;
+  var wins = 0, losses = 0;
+  for (var i = 0; i < lastNGames.length; i++) {
+    if (lastNGames[i].result === 'W') wins++;
     else losses++;
-  });
-  
+  }
+
   return wins + '-' + losses;
 }
 
 
-/**
- * WHY: Home/Away specific form is more predictive for that venue.
- * WHAT: Calculate W-L record for last N home OR away games only.
- * WHERE: Module 4 (local helper for analyzeTier1)
- */
-function calculateLastNHomeAway(team, gameDate, N, location, resultsData, header) {
-  if (!team || !header || header['date'] === undefined || header['ft score'] === undefined) {
-    return 'N/A';
-  }
-  
-  const games = [];
-  const targetLocation = location.trim().toLowerCase();
 
-  for (let i = 1; i < resultsData.length; i++) {
-    const row = resultsData[i];
-    const rowDateStr = row[header['date']];
-    if (!rowDateStr) continue;
-    
-    let rowDate;
-    if (rowDateStr instanceof Date) {
-      rowDate = rowDateStr;
-    } else {
-      rowDate = new Date(rowDateStr);
-    }
-    
-    if (isNaN(rowDate.getTime())) continue;
-    if (rowDate >= gameDate) continue;
-
-    const homeTeam = row[header['home']];
-    const awayTeam = row[header['away']];
-    
-    let teamLocation = null;
-    if (homeTeam === team) {
-      teamLocation = 'home';
-    } else if (awayTeam === team) {
-      teamLocation = 'away';
-    }
-
-    if (teamLocation !== targetLocation) continue;
-    
-    const parsed = parseScore(row[header['ft score']]);
-    if (!parsed) continue;
-    
-    const [homeScore, awayScore] = parsed;
-    let result = null;
-    
-    if (homeScore > awayScore) {
-      result = (homeTeam === team) ? 'W' : 'L';
-    } else if (awayScore > homeScore) {
-      result = (awayTeam === team) ? 'W' : 'L';
-    }
-    
-    if (result) {
-      games.push({ date: rowDate, result: result });
-    }
-  }
-
-  games.sort((a, b) => b.date - a.date);
-  
-  const lastNGames = games.slice(0, N);
-  if (lastNGames.length === 0) return 'N/A';
-  
-  let wins = 0;
-  let losses = 0;
-  
-  lastNGames.forEach(game => {
-    if (game.result === 'W') wins++;
-    else losses++;
-  });
-  
-  return wins + '-' + losses;
-}
 
 
 /**
@@ -3590,7 +3472,11 @@ function analyzeHistoricalHeadToHead(homeTeam, awayTeam, allHistoricalGames, hea
     awayQ1Avg: 0 
   };
   
-  if (!homeTeam || !awayTeam || !header || header['ft score'] === undefined) {
+    // [PATCHED] Check both 'ft score' and 'ft_score' since header map keeps underscores
+  var ftScoreIdx = header['ft score'];
+  if (ftScoreIdx === undefined) ftScoreIdx = header['ft_score'];
+  if (ftScoreIdx === undefined) ftScoreIdx = header['ftscore'];
+  if (!homeTeam || !awayTeam || !header || ftScoreIdx === undefined) {
     return defaultResult;
   }
   
@@ -3620,7 +3506,7 @@ function analyzeHistoricalHeadToHead(homeTeam, awayTeam, allHistoricalGames, hea
   let validGames = 0;
   
   h2hGames.forEach(game => {
-    const parsedFT = parseScore(game[header['ft score']]);
+    const parsedFT = parseScore(game[ftScoreIdx]);
     if (!parsedFT) return;
     
     const [homeScore, awayScore] = parsedFT;
@@ -3978,7 +3864,7 @@ function tuneLeagueWeights(ss) {
         dataConfidence
       );
 
-      safeAlert_(
+      ui.alert(
         'Elite Tuning — No Data Available',
         'This satellite has no historical game data yet in any tab.\n\n' +
         'Make sure CleanH2H, CleanRecentHome, and CleanRecentAway tabs\n' +
@@ -4514,12 +4400,12 @@ function tuneLeagueWeights(ss) {
       '🚀 Improvement: ' + improvementStr + '\n\n' +
       'Review "Config_Tier1_Proposals" to apply.';
 
-    safeAlert_('⭐ Elite Weight Tuning Complete', message, ui.ButtonSet.OK);
+    ui.alert('⭐ Elite Weight Tuning Complete', message, ui.ButtonSet.OK);
     ss.toast('Done! Best weighted: ' + best.stats.weightedScore.toFixed(1) + '%', 'Ma Golide Elite', 8);
 
   } catch (e) {
     Logger.log('!!! ERROR in tuneLeagueWeights v5.1: ' + e.message + '\nStack: ' + e.stack);
-    safeAlert_('Tuning Error', e.message, ui.ButtonSet.OK);
+    ui.alert('Tuning Error', e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -4693,7 +4579,7 @@ function tuneLeagueWeightsWrapper() {
   const ui = SpreadsheetApp.getUi();
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   
-  const response = safeAlert_(
+  const response = ui.alert(
     '⭐ Elite Weight Tuning (v5.0)',
     'This will optimize your Tier 1 weights using Bayesian methods.\n\n' +
     '✨ Elite Features:\n' +
@@ -4736,13 +4622,13 @@ function cleanupDuplicateTier1Predictions() {
   const sheet = getSheetInsensitive(ss, 'Tier1_Predictions');
   
   if (!sheet) {
-    safeAlert_('Cleanup', 'Tier1_Predictions sheet not found.', ui.ButtonSet.OK);
+    ui.alert('Cleanup', 'Tier1_Predictions sheet not found.', ui.ButtonSet.OK);
     return;
   }
   
   const data = sheet.getDataRange().getValues();
   if (data.length < 2) {
-    safeAlert_('Cleanup', 'No data to clean.', ui.ButtonSet.OK);
+    ui.alert('Cleanup', 'No data to clean.', ui.ButtonSet.OK);
     return;
   }
   
@@ -4753,7 +4639,7 @@ function cleanupDuplicateTier1Predictions() {
   const timestampCol = headerMap['timestamp'];
   
   if (gameKeyCol === undefined || configCol === undefined) {
-    safeAlert_('Cleanup', 'Required columns (game_key, config_version) not found.', ui.ButtonSet.OK);
+    ui.alert('Cleanup', 'Required columns (game_key, config_version) not found.', ui.ButtonSet.OK);
     return;
   }
   
@@ -4787,7 +4673,7 @@ function cleanupDuplicateTier1Predictions() {
   sheet.setFrozenRows(1);
   
   Logger.log('[Cleanup] Complete. Removed ' + removedCount + ' duplicate rows.');
-  safeAlert_('Cleanup Complete', 
+  ui.alert('Cleanup Complete', 
     'Removed ' + removedCount + ' duplicate rows from Tier1_Predictions.\n\n' +
     'Remaining unique predictions: ' + (cleanedData.length - 1), 
     ui.ButtonSet.OK);
@@ -4950,7 +4836,7 @@ function runTier1Analysis(ss) {
       var errorMsg = 'Missing or empty required sheets:\n• ' + missingSheets.join('\n• ') +
                      '\n\nPlease run the appropriate parsers first.';
       Logger.log('[runTier1Analysis] ' + errorMsg);
-      safeAlert_('Tier 1 Prerequisites Missing', errorMsg, ui.ButtonSet.OK);
+      ui.alert('Tier 1 Prerequisites Missing', errorMsg, ui.ButtonSet.OK);
       return {
         success: false,
         gamesProcessed: 0,
@@ -4965,7 +4851,7 @@ function runTier1Analysis(ss) {
     if (upcomingCount <= 0) {
       var noGamesMsg = 'No upcoming games found in UpcomingClean.\nPlease import upcoming games first.';
       Logger.log('[runTier1Analysis] ' + noGamesMsg);
-      safeAlert_('No Games to Analyze', noGamesMsg, ui.ButtonSet.OK);
+      ui.alert('No Games to Analyze', noGamesMsg, ui.ButtonSet.OK);
       return {
         success: false,
         gamesProcessed: 0,
@@ -4992,7 +4878,7 @@ function runTier1Analysis(ss) {
     
   } catch (e) {
     Logger.log('[runTier1Analysis] ERROR: ' + e.message + '\nStack: ' + e.stack);
-    safeAlert_('Tier 1 Analysis Error', 'Error: ' + e.message, ui.ButtonSet.OK);
+    ui.alert('Tier 1 Analysis Error', 'Error: ' + e.message, ui.ButtonSet.OK);
     return {
       success: false,
       gamesProcessed: 0,
@@ -5407,7 +5293,7 @@ function applyTier1ProposalToConfig(ss, rankNumber) {
 
     var proposedKeys = Object.keys(proposed);
     if (proposedKeys.length === 0) {
-      safeAlert_(
+      ui.alert(
         'Apply Tier 1 Proposal',
         'No proposed values found for Rank #' + rankNumber + '.\n' +
         'The selected column may be blank or the header row was not detected.',
@@ -5471,7 +5357,7 @@ function applyTier1ProposalToConfig(ss, rankNumber) {
 
     Logger.log('[applyTier1ProposalToConfig] Updated ' + updatedCount + ', appended ' + toAppend.length + ' from Rank #' + rankNumber);
 
-    safeAlert_(
+    ui.alert(
       '✅ Config 1 Applied',
       'Rank #' + rankNumber + ' applied to Config_Tier1.\n\n' +
       'Updated existing: ' + updatedCount + '\n' +
@@ -5483,7 +5369,7 @@ function applyTier1ProposalToConfig(ss, rankNumber) {
 
   } catch (e) {
     Logger.log('[applyTier1ProposalToConfig] Error: ' + e.message);
-    safeAlert_('Apply Config Error', e.message, ui.ButtonSet.OK);
+    ui.alert('Apply Config Error', e.message, ui.ButtonSet.OK);
   }
 }
 
@@ -5597,7 +5483,7 @@ function syncMissingConfigs() {
   results.push(backfill_('Config_Tier1', t1Master));
   results.push(backfill_('Config_Tier2', t2Master));
 
-  safeAlert_(
+  ui.alert(
     'Config Sync Complete',
     results.join('\n') + '\n\nExisting values were NOT touched.\nYou can now tune these in your config sheets.',
     ui.ButtonSet.OK
