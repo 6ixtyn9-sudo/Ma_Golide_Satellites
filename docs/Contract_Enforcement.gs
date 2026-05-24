@@ -3602,11 +3602,9 @@ function _writeBetSlipsEnhanced(ss, picks, config, tierCuts, enhancementsEnabled
 
   if (!sheet) sheet = ss.insertSheet('Bet_Slips');
 
-  // Clear sheet before writing (preserving headers)
-  if (sheet.getLastRow() > 1) {
-    sheet.getRange(2, 1, sheet.getLastRow() - 1, 25).clearContent();
-  }
-  var lastRowBefore = sheet.getLastRow();
+
+  sheet.clear();
+  var lastRowBefore = 0;
   try { sheet.getRange('A:Y').setNumberFormat('@'); } catch (eFmt) {}
 
   // ─── NORMALIZE PICKS OBJECT ────────────────────────────────────────────────
@@ -5455,4 +5453,3 @@ function _readVersionFromConfigSheet_(ss, sheetName) {
   } catch (e) {}
   return '';
 }
-
