@@ -3015,6 +3015,8 @@ function runTheWholeShebang_Resume() {
   }
 }
 
+
+
 /**
  * The main pipeline: tune → apply → predict → bets.
  * This is the entry point for the 1-minute launch trigger.
@@ -3165,6 +3167,33 @@ function runTheWholeShebang_AutoTune(opts) {
     props.deleteProperty('SHEBANG_SILENT_MODE');
   }
 }
+
+
+function MG_clearAutoTuneShortCircuit() {
+  const RX = /(AUTOTUNE|TUNE|TUNED|OOS|OUT[_ -]?OF[_ -]?SAMPLE|SHEBANG|RESUME|STAGE|LAST|PIN)/i;
+
+  const buckets = [
+    { name: "SCRIPT",   p: PropertiesService.getScriptProperties() },
+    { name: "USER",     p: PropertiesService.getUserProperties() },
+    { name: "DOCUMENT", p: PropertiesService.getDocumentProperties() },
+  ];
+
+  let deleted = 0;
+
+  buckets.forEach(b => {
+    const all = b.p.getProperties();            // {key: value}
+    Object.keys(all).forEach(k => {
+      if (RX.test(k)) {
+        b.p.deleteProperty(k);
+        deleted++;
+        Logger.log(`Deleted ${b.name} property: ${k}`);
+      }
+    });
+  });
+
+  Logger.log(`✅ Done. Deleted ${deleted} properties. Now rerun: RUNNING WHOLE SHEBANG WITH AUTO-TUNE`);
+}
+
 
 /**
  * WHY: Prevent GAS timeout by checking remaining time before starting long tasks.
