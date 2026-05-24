@@ -936,7 +936,19 @@ function parseUpcomingSheet(sheet, teamNamesSet, options) {
 
       const probStr = (r + 1 < data.length) ? data[r + 1][0] : '';
       const prob = splitConcatenated(probStr || '', 2);
-      const pred = (r + 2 < data.length) ? data[r + 2][0] : '';
+      // [PATCHED Section 6] Normalise unparseable tokens like "RISKY" into Home/Away predictions
+      let predRaw = (r + 2 < data.length) ? data[r + 2][0] : '';
+      let predStr = String(predRaw || '').trim().toUpperCase();
+      let pred = predRaw;
+      if (predStr && predStr !== '1' && predStr !== '2' && predStr !== 'HOME' && predStr !== 'AWAY') {
+        if (prob && prob.length >= 2) {
+          let pH = parseFloat(prob[0]);
+          let pA = parseFloat(prob[1]);
+          if (!isNaN(pH) && !isNaN(pA)) {
+            pred = (pH >= pA) ? '1' : '2';
+          }
+        }
+      }
       const predHome = (r + 3 < data.length) ? data[r + 3][0] : '0';
       const predAway = (r + 4 < data.length) ? data[r + 4][0] : '0';
       const avg = (r + 5 < data.length) ? data[r + 5][0] : '';
