@@ -3050,8 +3050,9 @@ function runTheWholeShebang_AutoTune(opts) {
 
   try {
     // ── PATCH 1: SKIP TUNING IF VERSION UNCHANGED ───────────────────────────
+    var forceTune = !!opts.forceTune;
     var skipTuning = false;
-    if (!resumeStage) {
+    if (!resumeStage && !forceTune) {
       var t1Config = (typeof loadTier1Config === 'function') ? loadTier1Config(ss) : null;
       var t1Version = (t1Config && t1Config.version) ? t1Config.version : 'UNKNOWN';
       var lastT1Version = props.getProperty('AG_LAST_TUNED_T1_VERSION') || '';
@@ -8546,4 +8547,3 @@ function writeResultsClean_(sheet, results) {
     validationErrors: validationErrors.length
   };
 }
-
