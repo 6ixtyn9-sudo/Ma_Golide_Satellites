@@ -586,34 +586,14 @@ function calculateMomentumDifference_(homeStandings, awayStandings, homeRecentSt
 
 
 
-
-/**
- * ═══════════════════════════════════════════════════════════════════════════
- * FUNCTION: calculateFormDifference_
- * ═══════════════════════════════════════════════════════════════════════════
- *
- * WHY: Historical form from game data provides additional context.
- *
- * WHAT: Calculate form difference from historical streak and L10 data.
- *
- * HOW: Combines streak differential with L10 record parsing.
- *
- * WHERE: Called by analyzeTier1 for formDiff feature
- *
- * @param {number|string} homeStreak - Home team streak value
- * @param {number|string} awayStreak - Away team streak value
- * @param {string} homeL10 - Home team L10 record (e.g., "7-3")
- * @param {string} awayL10 - Away team L10 record (e.g., "5-5")
- * @returns {number} Form difference
- */
 function calculateFormDifference_(homeStreak, awayStreak, homeL10, awayL10) {
-  // Parse streak values
-  var hStreak = safeNum_(homeStreak, 0);
-  var aStreak = safeNum_(awayStreak, 0);
-  
+  // Parse streak values: supports numeric, "W3"/"L2", "-" and "N/A"
+  var hStreak = (typeof _t1_streakSigned_ === 'function') ? _t1_streakSigned_(homeStreak) : safeNum_(homeStreak, 0);
+  var aStreak = (typeof _t1_streakSigned_ === 'function') ? _t1_streakSigned_(awayStreak) : safeNum_(awayStreak, 0);
+
   // Parse L10 records (e.g., "7-3" => 0.7)
   function parseL10(record) {
-    if (!record) return 0.5;
+    if (!record || record === 'N/A') return 0.5;
     var match = String(record).match(/(\d+)\s*[-–]\s*(\d+)/);
     if (!match) return 0.5;
     var wins = parseInt(match[1], 10) || 0;
@@ -621,14 +601,14 @@ function calculateFormDifference_(homeStreak, awayStreak, homeL10, awayL10) {
     var total = wins + losses;
     return total > 0 ? wins / total : 0.5;
   }
-  
+
   var homeL10Pct = parseL10(homeL10);
   var awayL10Pct = parseL10(awayL10);
-  
+
   // Combine streak and L10 factors
-  var streakFactor = (hStreak - aStreak) * 0.5;  // Scale down streak impact
+  var streakFactor = (hStreak - aStreak) * 0.5; // Scale down streak impact
   var l10Factor = (homeL10Pct - awayL10Pct) * 10; // Scale up L10 impact
-  
+
   return streakFactor + l10Factor;
 }
 
@@ -1988,13 +1968,10 @@ function _t1_numStrict_(v) {
   return isFinite(n) ? n : null;
 }
 
-/**
- * Extract totals for a row:
- * - Prefer FT score if available
- * - Else sum quarters (q1h..q4a + optional OT)
- */
+
 function _t1_getTotalsFromRow_(row, header) {
-  var ftIdx = _t1_h_(header, ['ft score', 'ftscore', 'final', 'final score', 'score']);
+  // Prefer FT score if available
+  var ftIdx = _t1_h_(header, ['ft', 'ft score', 'ft_score', 'ftscore', 'final', 'final score', 'score']);
   if (ftIdx !== undefined) {
     var parsed = (typeof parseScore === 'function') ? parseScore(row[ftIdx]) : null;
     if (parsed && isFinite(parsed[0]) && isFinite(parsed[1])) {
@@ -2003,13 +1980,7 @@ function _t1_getTotalsFromRow_(row, header) {
   }
 
   // Quarter-based fallback (CleanRecent sheets)
-  var qPairs = [
-    ['q1h', 'q1a'],
-    ['q2h', 'q2a'],
-    ['q3h', 'q3a'],
-    ['q4h', 'q4a']
-  ];
-
+  var qPairs = [['q1h', 'q1a'], ['q2h', 'q2a'], ['q3h', 'q3a'], ['q4h', 'q4a']];
   var homeSum = 0;
   var awaySum = 0;
 
@@ -2425,8 +2396,72 @@ function analyzeTier1(ss) {
 
 // STEP 9c: Recent form - PREFER CleanRecent*, fallback to historical, then standings
 // ══════════════════════════════════════════════════════════════════════
-var homeRecentBundle = _t1_loadCleanRecentBundle_(ss, 'CleanRecentHome_' + i);
-var awayRecentBundle = _t1_loadCleanRecentBundle_(ss, 'CleanRecentAway_' + i);
+var homeRecentBundle = _t1_findFirstBundleForTeam_(ss, 'CleanRecentHome_', homeTeam, 50) || _t1_loadCleanRecentBundle_(ss, 'CleanRecentHome_' + i);
+var awayRecentBundle = _t1_findFirstBundleForTeam_(ss, 'CleanRecentAway_', awayTeam, 50) || _t1_loadCleanRecentBundle_(ss, 'CleanRecentAway_' + i);
+var h2hBundle = _t1_findH2HBundleForMatchup_(ss, homeTeam, awayTeam, 50);
+
+function _t1_bundleHasTeam_(bundle, teamName) {
+  if (!bundle || !bundle.data || bundle.data.length < 2 || !bundle.header) return false;
+  var teamKey = normalizeTeamName_(teamName);
+  if (!teamKey) return false;
+
+  var homeIdx = _t1_h_(bundle.header, ['home', 'home team', 'hometeam']);
+  var awayIdx = _t1_h_(bundle.header, ['away', 'away team', 'awayteam']);
+  if (homeIdx === undefined || awayIdx === undefined) return false;
+
+  var limit = Math.min(bundle.data.length - 1, 60);
+  for (var r = 1; r <= limit; r++) {
+    var row = bundle.data[r];
+    if (!row) continue;
+    var h = normalizeTeamName_(row[homeIdx]);
+    var a = normalizeTeamName_(row[awayIdx]);
+    if (h === teamKey || a === teamKey) return true;
+  }
+  return false;
+}
+
+function _t1_findFirstBundleForTeam_(ss, prefix, teamName, maxN) {
+  maxN = Math.max(1, parseInt(maxN, 10) || 50);
+  for (var n = 1; n <= maxN; n++) {
+    var bundle = _t1_loadCleanRecentBundle_(ss, prefix + n);
+    if (!bundle) continue;
+    if (_t1_bundleHasTeam_(bundle, teamName)) return bundle;
+  }
+  return null;
+}
+
+function _t1_bundleHasMatchup_(bundle, homeKey, awayKey) {
+  if (!bundle || !bundle.data || bundle.data.length < 2 || !bundle.header) return false;
+
+  var homeIdx = _t1_h_(bundle.header, ['home', 'home team', 'hometeam']);
+  var awayIdx = _t1_h_(bundle.header, ['away', 'away team', 'awayteam']);
+  if (homeIdx === undefined || awayIdx === undefined) return false;
+
+  var limit = Math.min(bundle.data.length - 1, 60);
+  for (var r = 1; r <= limit; r++) {
+    var row = bundle.data[r];
+    if (!row) continue;
+    var h = normalizeTeamName_(row[homeIdx]);
+    var a = normalizeTeamName_(row[awayIdx]);
+    if ((h === homeKey && a === awayKey) || (h === awayKey && a === homeKey)) return true;
+  }
+  return false;
+}
+
+function _t1_findH2HBundleForMatchup_(ss, homeTeam, awayTeam, maxN) {
+  maxN = Math.max(1, parseInt(maxN, 10) || 50);
+
+  var homeKey = normalizeTeamName_(homeTeam);
+  var awayKey = normalizeTeamName_(awayTeam);
+  if (!homeKey || !awayKey) return null;
+
+  for (var n = 1; n <= maxN; n++) {
+    var bundle = _t1_loadCleanRecentBundle_(ss, 'CleanH2H_' + n);
+    if (!bundle) continue;
+    if (_t1_bundleHasMatchup_(bundle, homeKey, awayKey)) return bundle;
+  }
+  return null;
+}
 
 var homeStreakHist = 'N/A';
 var awayStreakHist = 'N/A';
@@ -2489,9 +2524,13 @@ var formDiff = calculateFormDifference_(homeStreakHist, awayStreakHist, homeL10,
       // STEP 9d: H2H features
       // ══════════════════════════════════════════════════════════════════════
       var h2hStats = { homeWins: 0, awayWins: 0, avgMargin: 0, totalGames: 0 };
-      if (typeof analyzeHistoricalHeadToHead === 'function') {
-        h2hStats = analyzeHistoricalHeadToHead(homeTeam, awayTeam, allHistoricalGames, historicalHeader);
-      }
+if (typeof analyzeHistoricalHeadToHead === 'function') {
+  if (h2hBundle) {
+    h2hStats = analyzeHistoricalHeadToHead(homeTeam, awayTeam, h2hBundle.data, h2hBundle.header);
+  } else {
+    h2hStats = analyzeHistoricalHeadToHead(homeTeam, awayTeam, allHistoricalGames, historicalHeader);
+  }
+}
       var h2hDiff = calculateH2HDifference_(h2hStats);
 
       // ══════════════════════════════════════════════════════════════════════
@@ -3427,91 +3466,133 @@ function calculateLastN(team, gameDate, N, resultsData, header) {
 
 
 
-
-/**
- * WHY: Head-to-head history provides matchup-specific insights.
- * WHAT: Analyze all historical games between two specific teams.
- * WHERE: Module 4 (local helper for analyzeTier1)
- */
 function analyzeHistoricalHeadToHead(homeTeam, awayTeam, allHistoricalGames, header) {
-  const defaultResult = { 
-    homeWins: 0, 
-    awayWins: 0, 
-    avgMargin: 0, 
-    totalGames: 0, 
-    homeQ1Avg: 0, 
-    awayQ1Avg: 0 
-  };
-  
-    // [PATCHED] Check both 'ft score' and 'ft_score' since header map keeps underscores
-  var ftScoreIdx = header['ft score'];
-  if (ftScoreIdx === undefined) ftScoreIdx = header['ft_score'];
-  if (ftScoreIdx === undefined) ftScoreIdx = header['ftscore'];
-  if (!homeTeam || !awayTeam || !header || ftScoreIdx === undefined) {
-    return defaultResult;
-  }
-  
-  const h2hGames = [];
-  
+  const defaultResult = { homeWins: 0, awayWins: 0, avgMargin: 0, totalGames: 0, homeQ1Avg: 0, awayQ1Avg: 0 };
+
+  if (!homeTeam || !awayTeam || !allHistoricalGames || allHistoricalGames.length < 2) return defaultResult;
+
+  header = header || ((typeof createHeaderMap === 'function') ? createHeaderMap(allHistoricalGames[0]) : {});
+  if (!header) return defaultResult;
+
+  var homeIdx = (header['home'] !== undefined) ? header['home']
+    : (header['home team'] !== undefined) ? header['home team']
+    : (header['hometeam'] !== undefined) ? header['hometeam']
+    : undefined;
+
+  var awayIdx = (header['away'] !== undefined) ? header['away']
+    : (header['away team'] !== undefined) ? header['away team']
+    : (header['awayteam'] !== undefined) ? header['awayteam']
+    : undefined;
+
+  if (homeIdx === undefined || awayIdx === undefined) return defaultResult;
+
+  var homeKey = normalizeTeamName_(homeTeam);
+  var awayKey = normalizeTeamName_(awayTeam);
+
+  // Try common FT keys (Clean uses "FT Score", CleanH2H may use "FT")
+  var ftIdx = header['ft score'];
+  if (ftIdx === undefined) ftIdx = header['ft_score'];
+  if (ftIdx === undefined) ftIdx = header['ftscore'];
+  if (ftIdx === undefined) ftIdx = header['ft'];
+  if (ftIdx === undefined) ftIdx = header['final'];
+  if (ftIdx === undefined) ftIdx = header['final score'];
+  if (ftIdx === undefined) ftIdx = header['score'];
+
+  // Q1 can be "Q1" (score string) OR "Q1H"/"Q1A" (numbers)
+  var q1Idx = header['q1'];
+  var q1hIdx = header['q1h'];
+  var q1aIdx = header['q1a'];
+
+  var homeWins = 0;
+  var awayWins = 0;
+  var totalMargin = 0;
+  var validGames = 0;
+
+  var homeQ1Total = 0;
+  var awayQ1Total = 0;
+  var q1Count = 0;
+
   for (let i = 1; i < allHistoricalGames.length; i++) {
-    const row = allHistoricalGames[i];
-    const gameHome = row[header['home']];
-    const gameAway = row[header['away']];
-    
-    if ((gameHome === homeTeam && gameAway === awayTeam) ||
-        (gameHome === awayTeam && gameAway === homeTeam)) {
-      h2hGames.push(row);
-    }
-  }
-  
-  if (h2hGames.length === 0) {
-    return defaultResult;
-  }
-  
-  let homeWins = 0;
-  let awayWins = 0;
-  let totalMargin = 0;
-  let homeQ1Total = 0;
-  let awayQ1Total = 0;
-  let q1Count = 0;
-  let validGames = 0;
-  
-  h2hGames.forEach(game => {
-    const parsedFT = parseScore(game[ftScoreIdx]);
-    if (!parsedFT) return;
-    
-    const [homeScore, awayScore] = parsedFT;
-    validGames++;
-    
-    if (game[header['home']] === homeTeam) {
-      totalMargin += homeScore - awayScore;
-      if (homeScore > awayScore) homeWins++;
-      else if (awayScore > homeScore) awayWins++;
-      
-      if (header['q1'] !== undefined && game[header['q1']]) {
-        const parsedQ1 = parseScore(game[header['q1']]);
-        if (parsedQ1) {
-          homeQ1Total += parsedQ1[0];
-          awayQ1Total += parsedQ1[1];
-          q1Count++;
-        }
+    var row = allHistoricalGames[i];
+    if (!row) continue;
+
+    var rowHomeKey = normalizeTeamName_(row[homeIdx]);
+    var rowAwayKey = normalizeTeamName_(row[awayIdx]);
+
+    var isMatch =
+      (rowHomeKey === homeKey && rowAwayKey === awayKey) ||
+      (rowHomeKey === awayKey && rowAwayKey === homeKey);
+
+    if (!isMatch) continue;
+
+    // Totals: prefer FT if parseable, else fall back to quarter-sum if available
+    var totals = null;
+
+    if (ftIdx !== undefined) {
+      var parsedFT = (typeof parseScore === 'function') ? parseScore(row[ftIdx]) : null;
+      if (parsedFT && isFinite(parsedFT[0]) && isFinite(parsedFT[1])) {
+        totals = { homeTotal: parsedFT[0], awayTotal: parsedFT[1], source: 'ft' };
       }
+    }
+
+    if (!totals && typeof _t1_getTotalsFromRow_ === 'function') {
+      totals = _t1_getTotalsFromRow_(row, header);
+    }
+
+    if (!totals) continue;
+
+    var rowHomeScore = totals.homeTotal;
+    var rowAwayScore = totals.awayTotal;
+    if (!isFinite(rowHomeScore) || !isFinite(rowAwayScore)) continue;
+    if (rowHomeScore === rowAwayScore) continue;
+
+    // Convert to "query home team" vs "query away team" orientation
+    var qHomeScore, qAwayScore;
+    if (rowHomeKey === homeKey) {
+      qHomeScore = rowHomeScore;
+      qAwayScore = rowAwayScore;
     } else {
-      totalMargin += awayScore - homeScore;
-      if (awayScore > homeScore) homeWins++;
-      else if (homeScore > awayScore) awayWins++;
-      
-      if (header['q1'] !== undefined && game[header['q1']]) {
-        const parsedQ1 = parseScore(game[header['q1']]);
-        if (parsedQ1) {
-          homeQ1Total += parsedQ1[1];
-          awayQ1Total += parsedQ1[0];
-          q1Count++;
-        }
+      qHomeScore = rowAwayScore;
+      qAwayScore = rowHomeScore;
+    }
+
+    var margin = qHomeScore - qAwayScore;
+    validGames++;
+    totalMargin += margin;
+
+    if (margin > 0) homeWins++;
+    else awayWins++;
+
+    // Optional Q1 averages
+    var rowQ1Home = null, rowQ1Away = null;
+
+    if (q1hIdx !== undefined && q1aIdx !== undefined) {
+      var h = Number(row[q1hIdx]);
+      var a = Number(row[q1aIdx]);
+      if (isFinite(h) && isFinite(a)) {
+        rowQ1Home = h;
+        rowQ1Away = a;
+      }
+    } else if (q1Idx !== undefined) {
+      var parsedQ1 = (typeof parseScore === 'function') ? parseScore(row[q1Idx]) : null;
+      if (parsedQ1 && isFinite(parsedQ1[0]) && isFinite(parsedQ1[1])) {
+        rowQ1Home = parsedQ1[0];
+        rowQ1Away = parsedQ1[1];
       }
     }
-  });
-  
+
+    if (rowQ1Home !== null && rowQ1Away !== null) {
+      if (rowHomeKey === homeKey) {
+        homeQ1Total += rowQ1Home;
+        awayQ1Total += rowQ1Away;
+      } else {
+        homeQ1Total += rowQ1Away;
+        awayQ1Total += rowQ1Home;
+      }
+      q1Count++;
+    }
+  }
+
   return {
     homeWins: homeWins,
     awayWins: awayWins,
@@ -5702,4 +5783,3 @@ function tolerantDataCleaning_(bet) {
   
   return bet;
 }
-
