@@ -183,44 +183,50 @@ function _elite_blendWithForebet(historical, forebet, weight, minV, maxV) {
  * @return {number|undefined} Column index or undefined
  */
 function _elite_findForebetColumn(headerMap, headerRow, config) {
+  // [PATCHED Section 3] Mirror robust lookup logic from Inventory_Manager.gs
   headerMap = headerMap || {};
   config = config || {};
   
-  // Check for config override
-  var override = config.forebet_predscore_col || config.predscore_col || config.pred_score_col;
+  // 1) Config override
+  var override = config.forebet_predscore_col || config.predscore_col || config.pred_score_col || config.forebet_col;
   if (override) {
     var target = String(override).toLowerCase().trim();
     if (headerRow && Array.isArray(headerRow)) {
       for (var i = 0; i < headerRow.length; i++) {
-        var h = String(headerRow[i] || '').toLowerCase().trim();
-        if (h === target) return i;
+        if (String(headerRow[i] || '').toLowerCase().trim() === target) return i;
       }
     }
   }
   
-  // Priority patterns (most specific first)
-  var patterns = [
-    'predscore', 'pred score', 'pred-score', 'pred_score',
+  // 2) Candidates
+  var candidates = [
+    'predscore', 'pred_score', 'pred score', 'pred-score',
     'predictedscore', 'predicted score',
     'forebet', 'forebetscore', 'forebet score',
-    'fbscore', 'fb score', 'fb-score'
+    'fbscore', 'fb score', 'fb-score',
+    'pred', 'prediction', 'forebetpick'
   ];
   
-  // Check header map (try both with and without spaces)
-  for (var j = 0; j < patterns.length; j++) {
-    var key = patterns[j].toLowerCase().replace(/[\s_\-]+/g, '');
-    if (headerMap[key] !== undefined) return headerMap[key];
-    
-    var keySpaced = patterns[j].toLowerCase();
-    if (headerMap[keySpaced] !== undefined) return headerMap[keySpaced];
+  // 3) Try both raw and stripped
+  for (var j = 0; j < candidates.length; j++) {
+    var raw = candidates[j].toLowerCase();
+    var stripped = raw.replace(/[\s_\-]+/g, '');
+    if (headerMap[raw] !== undefined)      return headerMap[raw];
+    if (headerMap[stripped] !== undefined) return headerMap[stripped];
+    if (headerMap[candidates[j]] !== undefined) return headerMap[candidates[j]];
   }
   
-  // Fallback: scan original header row
+  // 4) Brute force array scan
   if (headerRow && Array.isArray(headerRow)) {
     for (var k = 0; k < headerRow.length; k++) {
-      var hdr = String(headerRow[k] || '').toLowerCase();
+      var hdr = String(headerRow[k] || '').toLowerCase().trim();
+      if (!hdr) continue;
+      for (var c = 0; c < candidates.length; c++) {
+        if (hdr === candidates[c]) return k;
+      }
       if (hdr.indexOf('pred') > -1 && hdr.indexOf('score') > -1) return k;
-      if (hdr === 'forebet') return k;
+      if (hdr.indexOf('forebet') > -1) return k;
+      if (hdr === 'pred' || hdr === 'prediction') return k;
     }
   }
   
