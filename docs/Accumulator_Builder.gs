@@ -233,10 +233,20 @@ function _robbers_parseScore_(scoreStr) {
  * Parse prediction value - supports multiple formats
  */
 function _robbers_parsePick_(v) {
-  if (v === 1 || v === '1') return 1;
-  if (v === 2 || v === '2') return 2;
+  // [PATCHED Section 5] Guard against Google Sheets returning numeric objects
+  // that fail exact === comparison and String() coercion if not handled carefully.
+  if (v === null || v === undefined || v === '') return 0;
   
-  var s = String(v || '').trim().toLowerCase();
+  // Ensure primitive value
+  var p = v;
+  if (typeof v === 'object' && v.valueOf) {
+    p = v.valueOf();
+  }
+
+  if (p === 1 || p === '1') return 1;
+  if (p === 2 || p === '2') return 2;
+  
+  var s = String(p).trim().toLowerCase();
   if (s === 'home' || s === 'h' || s === '1') return 1;
   if (s === 'away' || s === 'a' || s === 'visitor' || s === '2') return 2;
   
@@ -2959,7 +2969,7 @@ function sumQuarterPredictions(team, venue, stats) {
 
   // ---- canonicalization (uses your canonical fn if present; otherwise safe fallback)
   var canon = (typeof _t2_teamKeyCanonical_ === 'function')
-    ? _t2_teamKeyCanonical_
+    ? function(s) { return _t2_teamKeyCanonical_(String(s || '')); } // [PATCHED Section 4] Force String
     : function (s) {
         s = (s == null) ? '' : String(s);
         s = s.trim().toLowerCase();
