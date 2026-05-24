@@ -4026,6 +4026,11 @@ function tuneLeagueWeights(ss) {
     const hsCol = findCol_(header, ['home score', 'homescore', 'home_score', 'home pts']);
     const asCol = findCol_(header, ['away score', 'awayscore', 'away_score', 'away pts']);
 
+
+    // PATCH 2026-05-24 (OOS): resolve date column for chronological holdout split.
+    const dateCol = findCol_(header, ['date', 'game date', 'gamedate', 'game_date',
+                                       'match date', 'matchdate', 'kickoff', 'datetime']);
+                                       
     // [P4] Diagnostic logging
     Logger.log('[Tuner] Column resolution: ftCol=' + ftCol + ' homeCol=' + homeCol +
                ' awayCol=' + awayCol + ' probCol=' + probCol + ' predScoreCol=' + predScoreCol +
@@ -4177,10 +4182,40 @@ function tuneLeagueWeights(ss) {
       // Calculate confidence based on features available
       featureConfidence = calculateConfidence(featuresUsed, 3);
 
+            // PATCH 2026-05-24 (OOS): capture parsed date for chronological holdout split.
+      var _oos_dateRaw = (dateCol !== undefined) ? row[dateCol] : null;
+      var _oos_dateMs  = null;
+      if (_oos_dateRaw != null && _oos_dateRaw !== '') {
+        var _oos_d;
+        if (_oos_dateRaw instanceof Date) {
+          _oos_d = _oos_dateRaw;
+        } else {
+          var _oos_s = String(_oos_dateRaw).trim();
+          // Handle dd/mm/yyyy (the format the sheet uses, e.g. "23/05/2026").
+          var _oos_m = _oos_s.match(/^(\d{1,2})[\/\-](\d{1,2})[\/\-](\d{2,4})/);
+          if (_oos_m) {
+            var _oos_dd = parseInt(_oos_m[1], 10);
+            var _oos_mm = parseInt(_oos_m[2], 10);
+            var _oos_yy = parseInt(_oos_m[3], 10);
+            if (_oos_yy < 100) _oos_yy += 2000;
+            // Sheet displays dd/mm/yyyy; assume that unless first part > 12.
+            var _oos_day, _oos_mon;
+            if (_oos_dd > 12) { _oos_day = _oos_dd; _oos_mon = _oos_mm; }
+            else if (_oos_mm > 12) { _oos_mon = _oos_dd; _oos_day = _oos_mm; }
+            else { _oos_day = _oos_dd; _oos_mon = _oos_mm; } // default dd/mm
+            _oos_d = new Date(_oos_yy, _oos_mon - 1, _oos_day);
+          } else {
+            _oos_d = new Date(_oos_s);
+          }
+        }
+        if (_oos_d && !isNaN(_oos_d.getTime())) _oos_dateMs = _oos_d.getTime();
+      }
+
       trainingSet.push({
         actual: actualWinner,
         homeTeam: homeTeam,
         awayTeam: awayTeam,
+        dateMs: _oos_dateMs,
         confidence: featureConfidence,
         featuresUsed: featuresUsed,
         features: {
@@ -4474,6 +4509,114 @@ function tuneLeagueWeights(ss) {
     Logger.log('[Tuner] Current: Weighted=' + currentStats.weightedScore.toFixed(1) +
                '%, Accuracy=' + currentStats.accuracy.toFixed(1) +
                '%, Coverage=' + currentStats.coverage.toFixed(1) + '%');
+
+    
+   
+    try {
+      var _oos_dated   = trainingSet.filter(function(g){ return g.dateMs != null; });
+      var _oos_undated = trainingSet.length - _oos_dated.length;
+      _oos_dated.sort(function(a, b){ return a.dateMs - b.dateMs; }); // oldest → newest
+
+      var _oos_testN    = Math.floor(_oos_dated.length * 0.10);
+      var _oos_trainN   = _oos_dated.length - _oos_testN;
+      var _oos_holdout  = _oos_dated.slice(_oos_trainN); // most-recent 10%
+
+      Logger.log('[Tuner][OOS] Holdout slice: n=' + _oos_holdout.length +
+                 ' of ' + _oos_dated.length + ' dated games' +
+                 ' (' + _oos_undated + ' undated → in-sample only)');
+
+      // Build a fastTrainingSet-shaped scratch array against the holdout
+      // so we can call the same inlined scorer used by evaluateConfig().
+      var _oos_fast = _oos_holdout.map(function(g){
+        return {
+          actual: g.actual,
+          conf:   g.confidence,
+          pctDiff: g.features.pctDiff || 0,
+          netRtgDiff: g.features.netRtgDiff || 0,
+          hcEffect:   g.features.homeCourtEffect || 0,
+          momDiff:    g.features.momentumDiff || 0,
+          strkDiff:   g.features.streakDiff || 0,
+          baseScore: (baseFormWeight * (g.features.formDiff || 0)) +
+                     (baseH2hWeight * (g.features.h2hDiff || 0)) +
+                     (baseForebetWeight * (g.features.forebetDiff || 0)) +
+                     (baseVarianceWeight * -(g.features.variancePenalty || 0))
+        };
+      });
+
+      // Mini-evaluator: same inlined math as evaluateConfig(), pointed at
+      // the holdout. Returns {correct,total,risky,acc,bankerCorrect,bankerTotal,
+      // robberCorrect,robberTotal} — gradable per Bet_Slips contract.
+      function _oos_evaluate(cfg, dataset) {
+        var pctW = cfg.pctWeight || 0;
+        var netW = cfg.netRtgWeight || 0;
+        var hcW  = cfg.homeCourtWeight || 0;
+        var momW = cfg.momentumWeight || 0;
+        var strkW = cfg.streakWeight || 0;
+        var ha   = cfg.homeAdv || 0;
+        var thresh = cfg.threshold || 5.0;
+        var tStrong = cfg.tier_strong_min_score || 75;
+        var tMedium = cfg.tier_medium_min_score || 60;
+
+        var c=0,t=0,r=0, bc=0,bt=0, rc=0,rt=0;
+        for (var i=0; i<dataset.length; i++) {
+          var g = dataset[i];
+          var score = (pctW*g.pctDiff) + (netW*g.netRtgDiff) + (hcW*g.hcEffect) +
+                      (momW*g.momDiff) + (strkW*g.strkDiff) + g.baseScore + ha;
+          var abs = Math.abs(score);
+          if (abs < thresh) { r++; continue; }
+          t++;
+          var pred = score > 0 ? 'HOME' : 'AWAY';
+          var ok = (pred === g.actual);
+          if (ok) c++;
+          // Bankers = STRONG-tier picks (high confidence)
+          if (abs >= tStrong) { bt++; if (ok) bc++; }
+          // Robbers = AWAY (upset) picks that cleared MEDIUM threshold
+          else if (abs >= tMedium && pred === 'AWAY') { rt++; if (ok) rc++; }
+        }
+        return {
+          correct: c, total: t, risky: r,
+          acc: t > 0 ? (c/t*100) : 0,
+          bankerCorrect: bc, bankerTotal: bt,
+          robberCorrect: rc, robberTotal: rt
+        };
+      }
+
+      var _oos_best    = _oos_evaluate(best.config, _oos_fast);
+      var _oos_current = _oos_evaluate(currentConfig, _oos_fast);
+
+      Logger.log('[Tuner][OOS] Best config: 1X2=' + _oos_best.correct + '/' + _oos_best.total +
+                 ' (' + _oos_best.acc.toFixed(1) + '%) | Bankers=' + _oos_best.bankerCorrect +
+                 '/' + _oos_best.bankerTotal + ' | Robbers=' + _oos_best.robberCorrect +
+                 '/' + _oos_best.robberTotal);
+      Logger.log('[Tuner][OOS] Current config: 1X2=' + _oos_current.correct + '/' + _oos_current.total +
+                 ' (' + _oos_current.acc.toFixed(1) + '%) | Bankers=' + _oos_current.bankerCorrect +
+                 '/' + _oos_current.bankerTotal + ' | Robbers=' + _oos_current.robberCorrect +
+                 '/' + _oos_current.robberTotal);
+
+      // Stash for the Stats sheet writer. Use ScriptProperties (script-scoped,
+      // not user-scoped) so the same Shebang invocation reads what we wrote.
+      try {
+        var _oos_payload = {
+          ts: new Date().toISOString(),
+          holdoutN: _oos_holdout.length,
+          datedN:   _oos_dated.length,
+          undatedN: _oos_undated,
+          inSample: {
+            best:    { acc: best.stats.accuracy, total: best.stats.total, correct: best.stats.correct },
+            current: { acc: currentStats.accuracy, total: currentStats.total, correct: currentStats.correct }
+          },
+          oos: { best: _oos_best, current: _oos_current }
+        };
+        PropertiesService.getScriptProperties().setProperty(
+          'OOS_TIER1_LAST',
+          JSON.stringify(_oos_payload)
+        );
+      } catch (eProp) {
+        Logger.log('[Tuner][OOS] Could not persist OOS payload: ' + eProp.message);
+      }
+    } catch (eOOS) {
+      Logger.log('[Tuner][OOS] Holdout evaluation failed (non-fatal): ' + eOOS.message);
+    }
 
     // ════════════════════════════════════════════════════════════════════════
     // STEP 10: Write proposals
@@ -5841,4 +5984,3 @@ function tolerantDataCleaning_(bet) {
   
   return bet;
 }
-
