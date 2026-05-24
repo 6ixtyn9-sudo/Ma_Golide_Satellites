@@ -4517,7 +4517,7 @@ function tuneLeagueWeights(ss) {
       var _oos_undated = trainingSet.length - _oos_dated.length;
       _oos_dated.sort(function(a, b){ return a.dateMs - b.dateMs; }); // oldest → newest
 
-      var _oos_testN    = Math.floor(_oos_dated.length * 0.10);
+      var _oos_testN    = Math.floor(_oos_dated.length * 0.20);
       var _oos_trainN   = _oos_dated.length - _oos_testN;
       var _oos_holdout  = _oos_dated.slice(_oos_trainN); // most-recent 10%
 
