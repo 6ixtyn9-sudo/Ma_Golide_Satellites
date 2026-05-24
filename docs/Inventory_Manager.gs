@@ -352,12 +352,25 @@ function _findTier2Sheets(ss) {
   try {
     var upcomingSheet = getSheetInsensitive(ss, 'UpcomingClean');
     if (upcomingSheet) {
+      // Data in UpcomingClean usually starts at row 2, and ends at lastRow.
+      // E.g., lastRow = 5 means 4 games. So max games is lastRow - 1.
       var lastRow = upcomingSheet.getLastRow();
-      numGames = Math.max(1, lastRow - 1); // Subtract header row
+      numGames = Math.max(1, lastRow - 1); 
     }
   } catch (e) {
     Logger.log('[_findTier2Sheets] Could not read UpcomingClean, using default limit: ' + e.message);
   }
+  
+  // [PATCHED Section 7] The UpcomingClean 'idx' references (RawH2H_1) are 1-indexed.
+  // But due to slicing logic `indices.slice(0, numGames)`, if there's a skip or hole
+  // in indices, or the slice happens before the loops...
+  // The correct fix: numGames is the exact number of games. But if we want up to index N,
+  // we just keep `idx <= numGames`. The bug might be that `numGames` needs to just be the
+  // raw length. Let's just use `numGames` directly as the upper limit.
+  // Actually, wait, let's keep the `numGames` but remove the strict `idx <= numGames`
+  // filter inside the loops, or rely ONLY on `slice(0, numGames)` at the end.
+  // We'll rely on `slice(0, numGames)` at the end to grab the FIRST N sheets,
+  // because if there's a hole (e.g., sheet 2 missing), we might need sheet 5!
   
   Logger.log('[_findTier2Sheets] Limiting discovery to ' + numGames + ' games');
   
@@ -393,49 +406,37 @@ function _findTier2Sheets(ss) {
     match = name.match(h2hRawPattern);
     if (match) {
       var idx = parseInt(match[1], 10);
-      if (idx <= numGames) {
-        h2hRawMap[idx] = name;
-      }
+      h2hRawMap[idx] = name;
     }
     
     match = name.match(h2hCleanPattern);
     if (match) {
       var idx = parseInt(match[1], 10);
-      if (idx <= numGames) {
-        h2hCleanMap[idx] = name;
-      }
+      h2hCleanMap[idx] = name;
     }
     
     match = name.match(homeRawPattern);
     if (match) {
       var idx = parseInt(match[1], 10);
-      if (idx <= numGames) {
-        homeRawMap[idx] = name;
-      }
+      homeRawMap[idx] = name;
     }
     
     match = name.match(homeCleanPattern);
     if (match) {
       var idx = parseInt(match[1], 10);
-      if (idx <= numGames) {
-        homeCleanMap[idx] = name;
-      }
+      homeCleanMap[idx] = name;
     }
     
     match = name.match(awayRawPattern);
     if (match) {
       var idx = parseInt(match[1], 10);
-      if (idx <= numGames) {
-        awayRawMap[idx] = name;
-      }
+      awayRawMap[idx] = name;
     }
     
     match = name.match(awayCleanPattern);
     if (match) {
       var idx = parseInt(match[1], 10);
-      if (idx <= numGames) {
-        awayCleanMap[idx] = name;
-      }
+      awayCleanMap[idx] = name;
     }
   }
   
@@ -1760,29 +1761,42 @@ function predictQuarters_Tier2(ss) {
     return { even: evenT, medium: medT, strong: strT, confidence: confT };
   }
 
-  function _estimateTierProb_(absMargin, thr) {
+  function _estimateTierProb_(absMargin, thr, sampleCount) {
+    // [PATCHED Section 7] Added sampleCount floor so low-data runs still produce
+    // actionable WEAK/MEDIUM tiers instead of collapsing everything to EVEN.
     absMargin = Math.max(0, Number(absMargin) || 0);
     var t = _sanitizeThresholdsCapped_(thr, 9999);
 
     if (absMargin <= 0) return 0.50;
+
+    var baseProb;
     if (absMargin < t.even) {
-      return 0.50 + (absMargin / t.even) * (TARGET_EVEN - 0.50);
-    }
-    if (absMargin < t.medium) {
-      return TARGET_EVEN + ((absMargin - t.even) / (t.medium - t.even)) * (TARGET_MED - TARGET_EVEN);
-    }
-    if (absMargin < t.strong) {
-      return TARGET_MED + ((absMargin - t.medium) / (t.strong - t.medium)) * (TARGET_STR - TARGET_MED);
+      baseProb = 0.50 + (absMargin / t.even) * (TARGET_EVEN - 0.50);
+    } else if (absMargin < t.medium) {
+      baseProb = TARGET_EVEN + ((absMargin - t.even) / (t.medium - t.even)) * (TARGET_MED - TARGET_EVEN);
+    } else if (absMargin < t.strong) {
+      baseProb = TARGET_MED + ((absMargin - t.medium) / (t.strong - t.medium)) * (TARGET_STR - TARGET_MED);
+    } else {
+      var over = absMargin - t.strong;
+      var scale = Math.max(1, t.strong * 0.75);
+      var f = 1 - Math.exp(-over / scale);
+      baseProb = TARGET_STR + f * (TARGET_MAX - TARGET_STR);
     }
 
-    var over = absMargin - t.strong;
-    var scale = Math.max(1, t.strong * 0.75);
-    var f = 1 - Math.exp(-over / scale);
-    return TARGET_STR + f * (TARGET_MAX - TARGET_STR);
+    // Floor: when sample count is very low, don't let Bayesian shrinkage collapse
+    // every margin to 50%. A 38% floor still produces WEAK tier picks.
+    var MIN_CONFIDENCE_FOR_TIERING = 0.38;
+    var hasLowData = (!sampleCount || sampleCount < 8);
+    if (hasLowData && baseProb < MIN_CONFIDENCE_FOR_TIERING) {
+      baseProb = MIN_CONFIDENCE_FOR_TIERING;
+    }
+
+    return baseProb;
   }
 
-  function _tierAlignedConfidencePct_(absMargin, thr, quality01) {
-    var baseProb = _estimateTierProb_(absMargin, thr);
+  function _tierAlignedConfidencePct_(absMargin, thr, quality01, sampleCount) {
+    // [PATCHED Section 7] Thread sampleCount through so the floor applies
+    var baseProb = _estimateTierProb_(absMargin, thr, sampleCount);
     var q = _clamp_(quality01, 0, 1);
     var shrink = _clamp_(0.30 + 0.70 * q, 0.30, 1.00);
     var finalProb = 0.50 + (baseProb - 0.50) * shrink;
@@ -2052,7 +2066,10 @@ function predictQuarters_Tier2(ss) {
 
       var thresholdConfidence = thrUse.confidence || thrSan.confidence || 0.35;
       var quality01 = _clamp_(dataConfidence * 0.6 + thresholdConfidence * 0.4, 0, 1);
-      var confPct = _tierAlignedConfidencePct_(absMargin, thrUse, quality01);
+      // [PATCHED Section 7] Pass total samples so the low-data floor activates
+      var _t2qSampleCount = ((homeStats && homeStats.samples) ? Number(homeStats.samples) : 0) +
+                            ((awayStats && awayStats.samples) ? Number(awayStats.samples) : 0);
+      var confPct = _tierAlignedConfidencePct_(absMargin, thrUse, quality01, _t2qSampleCount);
 
       var tierWeight = TIER_WEIGHTS[tier] || 0.1;
       var edgeScore = Math.round(absMargin * tierWeight * (confPct / 100) * 100) / 100;
@@ -3449,10 +3466,13 @@ function computeBacktestedTier2Thresholds_(ss, options) {
     : 30;
   
   // Prior thresholds
+  // [PATCHED Section 8] Tighter defaults so low-sample fallbacks still discriminate
+  // tiers. Wider defaults (2.5 / 4.5 / 6.5) meant margins had to be very large
+  // before producing MEDIUM/STRONG, leaving most low-data predictions as EVEN.
   var PRIOR = {
-    even: 2.5,
-    medium: 4.5,
-    strong: 6.5,
+    even: 1.5,
+    medium: 3.0,
+    strong: 5.0,
     confidence: 0.3
   };
   
@@ -4757,33 +4777,97 @@ function _loadConfig(ss) {
   return cfgLC;
 }
 
-function _findForebetColumn(h, headerRow) {
-  // Try common names
-  var candidates = ['predscore', 'pred_score', 'pred score', 'forebet', 'fb_score', 'fbscore'];
-  for (var i = 0; i < candidates.length; i++) {
-    var key = candidates[i].replace(/[\s_\-]+/g, '');
-    if (h[key] !== undefined) return h[key];
+function _findForebetColumn(h, headerRow, config) {
+  // [PATCHED] Robust normalisation: config override + dual-key map lookup + brute-force scan
+  config = config || {};
+  h = h || {};
+
+  // 1) Config override (same pattern as _elite_findForebetColumn in Data_Parser.gs)
+  var override = config.forebet_predscore_col || config.predscore_col || config.pred_score_col || config.forebet_col;
+  if (override) {
+    var target = String(override).toLowerCase().trim();
+    if (headerRow && Array.isArray(headerRow)) {
+      for (var i = 0; i < headerRow.length; i++) {
+        if (String(headerRow[i] || '').toLowerCase().trim() === target) return i;
+      }
+    }
   }
+
+  // 2) Candidate names (specific → general)
+  var candidates = [
+    'predscore', 'pred_score', 'pred score', 'pred-score',
+    'predictedscore', 'predicted score',
+    'forebet', 'forebetscore', 'forebet score',
+    'fbscore', 'fb score', 'fb-score',
+    'pred', 'prediction', 'forebetpick'
+  ];
+
+  // 3) Try BOTH raw key AND stripped key so we match t2ou_headerMap_ (underscored)
+  //    AND stripped-key maps used elsewhere
+  for (var j = 0; j < candidates.length; j++) {
+    var raw = candidates[j].toLowerCase();
+    var stripped = raw.replace(/[\s_\-]+/g, '');
+    if (h[raw] !== undefined)      return h[raw];
+    if (h[stripped] !== undefined) return h[stripped];
+    if (h[candidates[j]] !== undefined) return h[candidates[j]];
+  }
+
+  // 4) Last resort: brute-force scan of the original header row array
+  if (headerRow && Array.isArray(headerRow)) {
+    for (var k = 0; k < headerRow.length; k++) {
+      var hdr = String(headerRow[k] || '').toLowerCase().trim();
+      if (!hdr) continue;
+      for (var c = 0; c < candidates.length; c++) {
+        if (hdr === candidates[c]) return k;
+      }
+      if (hdr.indexOf('pred') > -1 && hdr.indexOf('score') > -1) return k;
+      if (hdr.indexOf('forebet') > -1) return k;
+      if (hdr === 'pred' || hdr === 'prediction') return k;
+    }
+  }
+
+  Logger.log('[_findForebetColumn] No Forebet column found in headers');
   return undefined;
 }
 
 function _parseForebetScore(raw) {
-  if (!raw) return { valid: false, total: NaN };
+  // [PATCHED] Handle directional codes (1=HOME, 2=AWAY, "RISKY") and validate score ranges
+  if (!raw) return { valid: false, total: NaN, isDirectional: false };
   var str = String(raw).trim();
-  
-  // Try "X-Y" format
-  var match = str.match(/(\d+)\s*[-:]\s*(\d+)/);
+
+  // Detect directional signals
+  var strUpper = str.toUpperCase();
+  if (str === '1' || strUpper === 'HOME' || strUpper === 'H') {
+    Logger.log('[_parseForebetScore] Directional signal: HOME (1)');
+    return { valid: false, total: NaN, isDirectional: true, direction: 1 };
+  }
+  if (str === '2' || strUpper === 'AWAY' || strUpper === 'A') {
+    Logger.log('[_parseForebetScore] Directional signal: AWAY (2)');
+    return { valid: false, total: NaN, isDirectional: true, direction: 2 };
+  }
+  if (strUpper === 'RISKY' || strUpper === 'EVEN' || strUpper === 'DRAW') {
+    Logger.log('[_parseForebetScore] Non-directional signal: ' + str);
+    return { valid: false, total: NaN, isDirectional: false };
+  }
+
+  // Try "X-Y" format (e.g., "82-78") with basketball range validation
+  var match = str.match(/(\d{2,3})\s*[-:]\s*(\d{2,3})/);
   if (match) {
-    return { valid: true, total: parseInt(match[1]) + parseInt(match[2]), home: parseInt(match[1]), away: parseInt(match[2]) };
+    var home = parseInt(match[1], 10);
+    var away = parseInt(match[2], 10);
+    if (home >= 50 && away >= 50 && home <= 180 && away <= 180) {
+      return { valid: true, total: home + away, home: home, away: away, isDirectional: false };
+    }
   }
-  
-  // Try single number
+
+  // Try single number — must be a valid basketball total
   var num = parseFloat(str);
-  if (!isNaN(num) && num > 0) {
-    return { valid: true, total: num };
+  if (!isNaN(num) && num >= 100 && num <= 350) {
+    return { valid: true, total: num, isDirectional: false };
   }
-  
-  return { valid: false, total: NaN };
+
+  Logger.log('[_parseForebetScore] Unrecognized value: "' + str + '"');
+  return { valid: false, total: NaN, isDirectional: false };
 }
 
 
@@ -12120,3 +12204,4 @@ function _safeGetValuesWithRetry_(sheet, maxRetries) {
   }
   throw lastErr;
 }
+
