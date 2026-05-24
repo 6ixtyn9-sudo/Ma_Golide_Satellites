@@ -335,3 +335,4 @@ function _writeSuggestionsToSheet(ss, suggestions, calib, bias, leagues) {
   sheet.setColumnWidth(3, 300);
   sheet.setColumnWidth(4, 400);
 }
+
