@@ -1434,19 +1434,6 @@ function runCompleteAccuracyReport() {
 
 
 
-/**
- * WHY: Main entry point that builds the entire Ma Golide infrastructure.
- * WHAT: Creates all core sheets, loop sheets, and output sheets required
- *       by the Project Charter and Presidential Genesis Mandate.
- * HOW:
- *   1. Get the active spreadsheet.
- *   2. Create core sheets (Raw, Clean, Standings, Upcoming..., Results..., Stats...).
- *   3. Create loop sheets (RawH2H_1..12, CleanH2H_1..12, RawRecentHome_1..12, etc.).
- *   4. Create output sheets (Bet_Slips, Acca_Central).
- *   5. Show a toast confirming completion.
- * WHERE:
- *   - This function operates on the ACTIVE spreadsheet (SpreadsheetApp.getActiveSpreadsheet()).
- */
 function setupAllSheets() {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   
@@ -1460,12 +1447,22 @@ function setupAllSheets() {
   createLoopSheets_(ss);
   createOutputSheets_(ss);
 
+  // PATCH: force tab order AFTER any missing sheets are created
+  try {
+    enforceGenesisSheetOrder_(ss);
+  } catch (e) {
+    Logger.log('Non-fatal: enforceGenesisSheetOrder_ failed: ' + e.message);
+  }
+
   Logger.log('========================================');
   Logger.log('MODULE 0: GENESIS - Complete');
   Logger.log('========================================');
   
   ss.toast('Ma Golide infrastructure built successfully – Genesis complete.', 'Ma Golide – Genesis');
 }
+
+
+
 
 /**
  * WHY: Convenience alias – some users might prefer a more "ceremonial" name.
@@ -1476,6 +1473,116 @@ function setupAllSheets() {
  */
 function runGenesis() {
   setupAllSheets();
+}
+
+
+function enforceGenesisSheetOrder_(ss) {
+  const prevActive = ss.getActiveSheet(); // so we can restore UI focus
+
+  // Must match your createCoreSheets_ canonical order
+  const coreSheets = [
+    'SportConfig',
+    'Raw',
+    'Clean',
+    'ResultsRaw',
+    'ResultsClean',
+    'Standings',
+    'UpcomingRaw',
+    'UpcomingClean',
+
+    'Config_Accumulator',
+    'Config_Tier1',
+    'Config_Tier1_Proposals',
+    'Config_Tier2',
+    'Config_Tier2_Proposals',
+
+    'Stats',
+    'LeagueQuarterStats',
+    'LeagueQuarterO_U_Stats',
+
+    'Analysis_Tier1',
+
+    'TeamQuarterStats_Tier2',
+    'Stats_Tier2_Accuracy',
+    'Stats_Tier2_Simulation',
+    'Stats_Tier2_Optimization',
+
+    'Satellite_Identity'
+  ];
+
+  // Outputs that MUST be the last tabs
+  const outputSheets = ['Bet_Slips', 'Acca_Central'];
+
+  const maxSlots = getMaxGenesisLoopSlotIndex_(ss);
+
+  // Build desired order list
+  const ordered = [];
+  for (let i = 0; i < coreSheets.length; i++) ordered.push(coreSheets[i]);
+
+  for (let i = 1; i <= maxSlots; i++) {
+    ordered.push(
+      'RawH2H_' + i,
+      'CleanH2H_' + i,
+      'RawRecentHome_' + i,
+      'CleanRecentHome_' + i,
+      'RawRecentAway_' + i,
+      'CleanRecentAway_' + i
+    );
+  }
+
+  for (let i = 0; i < outputSheets.length; i++) ordered.push(outputSheets[i]);
+
+  // Reorder using moveActiveSheet (Sheet.setIndex does NOT exist in GAS)
+  let pos = 1;
+  for (let i = 0; i < ordered.length; i++) {
+    const sh = ss.getSheetByName(ordered[i]);
+    if (sh) {
+      mg_moveSheetToPos_(ss, sh, pos);
+      pos++;
+    }
+  }
+
+  // HARD PIN: force outputs to be the LAST TWO tabs (fixes your exact symptom)
+  const n = ss.getSheets().length;
+  const bet = ss.getSheetByName('Bet_Slips');
+  const acca = ss.getSheetByName('Acca_Central');
+
+  if (bet && acca) {
+    mg_moveSheetToPos_(ss, bet, n - 1);
+    mg_moveSheetToPos_(ss, acca, n);
+  } else if (bet) {
+    mg_moveSheetToPos_(ss, bet, n);
+  } else if (acca) {
+    mg_moveSheetToPos_(ss, acca, n);
+  }
+
+  // Restore previously active sheet (optional but nice)
+  if (prevActive) ss.setActiveSheet(prevActive);
+}
+
+
+function mg_moveSheetToPos_(ss, sheet, pos) {
+  ss.setActiveSheet(sheet);
+  ss.moveActiveSheet(pos);
+}
+
+
+function getMaxGenesisLoopSlotIndex_(ss) {
+  // Detects whatever loop sheets actually exist (works even if slots != 12)
+  const re = /^(RawH2H|CleanH2H|RawRecentHome|CleanRecentHome|RawRecentAway|CleanRecentAway)_(\d+)$/;
+  const sheets = ss.getSheets();
+  let max = 0;
+
+  for (let i = 0; i < sheets.length; i++) {
+    const name = sheets[i].getName();
+    const m = name.match(re);
+    if (m) {
+      const n = parseInt(m[2], 10);
+      if (n > max) max = n;
+    }
+  }
+
+  return max; // 0 means "no loop tabs exist"
 }
 
 /**
@@ -1836,6 +1943,8 @@ function _initialiseTierConfigs_(ss) {
   Logger.log('--- Tier Configs Initialisation Complete ---');
 }
 
+
+
 /**
  * WHY: Create only as many H2H/Recent loop sheets as this league actually needs,
  *      preventing the creation of unnecessary, empty sheets.
@@ -1854,29 +1963,49 @@ function createLoopSheets_(ss) {
   const upcomingSheet = getSheetInsensitive_(ss, 'UpcomingRaw');
   let maxSlots = 12;
   const BUFFER = 2;
-
-  if (!upcomingSheet) {
-    Logger.log('UpcomingRaw: NOT FOUND - using default 12 slots');
-    ss.toast('UpcomingRaw sheet not found. Creating default 12 slots.', 'Genesis Warning', 10);
-  } else {
-    // READ ONLY - count blocks to determine game count
-    const values = upcomingSheet.getDataRange().getValues();
-    let gameCount = 0;
-    let inBlock = false;
-    
-    for (let i = 0; i < values.length; i++) {
-      const isRowEmpty = values[i].join('').trim() === '';
-      if (!isRowEmpty && !inBlock) {
-        gameCount++;
-        inBlock = true;
-      } else if (isRowEmpty) {
-        inBlock = false;
+  
+  // Prompt user for number of games
+  let promptedSlots = null;
+  try {
+    const ui = SpreadsheetApp.getUi();
+    const response = ui.prompt('Loop Sheets Count', 'How many games are we looking at? (Cancel to auto-detect from UpcomingRaw)', ui.ButtonSet.OK_CANCEL);
+    if (response.getSelectedButton() == ui.Button.OK) {
+      const input = parseInt(response.getResponseText(), 10);
+      if (!isNaN(input) && input > 0) {
+        promptedSlots = input;
       }
     }
-    
-    maxSlots = gameCount > 0 ? gameCount + BUFFER : 3;
-    Logger.log('UpcomingRaw: Found ' + gameCount + ' game blocks');
-    Logger.log('Loop slots to create: ' + maxSlots + ' (games + ' + BUFFER + ' buffer)');
+  } catch (e) {
+    Logger.log('UI prompt not available, falling back to auto-detect.');
+  }
+
+  if (promptedSlots !== null) {
+    maxSlots = promptedSlots;
+    Logger.log('User provided loop slots: ' + maxSlots);
+  } else {
+    if (!upcomingSheet) {
+      Logger.log('UpcomingRaw: NOT FOUND - using default 12 slots');
+      ss.toast('UpcomingRaw sheet not found. Creating default 12 slots.', 'Genesis Warning', 10);
+    } else {
+      // READ ONLY - count blocks to determine game count
+      const values = upcomingSheet.getDataRange().getValues();
+      let gameCount = 0;
+      let inBlock = false;
+      
+      for (let i = 0; i < values.length; i++) {
+        const isRowEmpty = values[i].join('').trim() === '';
+        if (!isRowEmpty && !inBlock) {
+          gameCount++;
+          inBlock = true;
+        } else if (isRowEmpty) {
+          inBlock = false;
+        }
+      }
+      
+      maxSlots = gameCount > 0 ? gameCount + BUFFER : 3;
+      Logger.log('UpcomingRaw: Found ' + gameCount + ' game blocks');
+      Logger.log('Loop slots to create: ' + maxSlots + ' (games + ' + BUFFER + ' buffer)');
+    }
   }
 
   ss.toast('Found ' + (maxSlots - BUFFER) + ' games. Creating ' + maxSlots + ' loop slots...', 'Genesis');
@@ -1906,6 +2035,13 @@ function createLoopSheets_(ss) {
   }
   
   Logger.log('Loop Sheets Summary: Created=' + createdCount + ', Already Existed=' + skippedCount);
+
+  // PATCH: re-order tabs immediately after creating any new loop sheets
+  try {
+    enforceGenesisSheetOrder_(ss);
+  } catch (e) {
+    Logger.log('Non-fatal: enforceGenesisSheetOrder_ failed (from createLoopSheets_): ' + e.message);
+  }
 }
 
 /**
@@ -1976,7 +2112,8 @@ function createSheetIfMissing_(ss, sheetName) {
   const existing = ss.getSheetByName(sheetName);
 
   if (!existing) {
-    ss.insertSheet(sheetName);
+    // Insert at the very end to avoid scattering sheets everywhere
+    ss.insertSheet(sheetName, ss.getSheets().length);
     Logger.log('  [CREATED] ' + sheetName);
     return true;
   }
@@ -1996,7 +2133,7 @@ function createConfigAccumulatorSheet(ss) {
   let sheet = ss.getSheetByName('Config_Accumulator');
   const isNew = !sheet;
   if (isNew) {
-    sheet = ss.insertSheet('Config_Accumulator');
+    sheet = ss.insertSheet('Config_Accumulator', ss.getSheets().length);
   }
 
   // Canonical full config — all keys the sheet must contain
@@ -2119,7 +2256,7 @@ function createConfigTier1Sheet(ss) {
     return sheet;
   }
   if (!sheet) {
-    sheet = ss.insertSheet('Config_Tier1');
+    sheet = ss.insertSheet('Config_Tier1', ss.getSheets().length);
   }
   sheet.clear();
 
@@ -2229,7 +2366,7 @@ function createRawSheetsForGames(ss, gameCount) {
   
   // Create main Raw sheet
   if (!ss.getSheetByName('Raw')) {
-    const rawSheet = ss.insertSheet('Raw');
+    const rawSheet = ss.insertSheet('Raw', ss.getSheets().length);
     createRawSheetStructure(rawSheet, gameCount);
     createdSheets.push('Raw');
     createdCount++;
@@ -2237,14 +2374,14 @@ function createRawSheetsForGames(ss, gameCount) {
   
   // Create RawRecentHome and RawRecentAway sheets
   if (!ss.getSheetByName('RawRecentHome')) {
-    const recentHomeSheet = ss.insertSheet('RawRecentHome');
+    const recentHomeSheet = ss.insertSheet('RawRecentHome', ss.getSheets().length);
     createRecentSheetStructure(recentHomeSheet, 'Home', gameCount);
     createdSheets.push('RawRecentHome');
     createdCount++;
   }
   
   if (!ss.getSheetByName('RawRecentAway')) {
-    const recentAwaySheet = ss.insertSheet('RawRecentAway');
+    const recentAwaySheet = ss.insertSheet('RawRecentAway', ss.getSheets().length);
     createRecentSheetStructure(recentAwaySheet, 'Away', gameCount);
     createdSheets.push('RawRecentAway');
     createdCount++;
@@ -2252,7 +2389,7 @@ function createRawSheetsForGames(ss, gameCount) {
   
   // Create RawH2H sheet
   if (!ss.getSheetByName('RawH2H')) {
-    const h2hSheet = ss.insertSheet('RawH2H');
+    const h2hSheet = ss.insertSheet('RawH2H', ss.getSheets().length);
     createH2HSheetStructure(h2hSheet, gameCount);
     createdSheets.push('RawH2H');
     createdCount++;
