@@ -2335,7 +2335,7 @@ function analyzeTier1(ss) {
       'F:Rank', 'F:PCT', 'F:NetRtg', 'F:HomeCourt', 'F:Momentum', 'F:Streak',
       'F:Form', 'F:H2H', 'F:Forebet', 'F:Variance', 'F:HomeAdv',
       'H2H Record', 'H2H Avg Margin', 'H2H Total Games',
-      'League Accuracy', 'Q1 Pred Accuracy'
+      'Forebet Bucket Acc', 'Q1 Win% (H/A)'
     ];
 
     var output = [outputHeaders];
@@ -2623,39 +2623,75 @@ if (typeof analyzeHistoricalHeadToHead === 'function') {
       // ══════════════════════════════════════════════════════════════════════
       // STEP 9h: Get supplementary stats (CASE-INSENSITIVE LOOKUP)
       // ══════════════════════════════════════════════════════════════════════
-      var leagueAcc = 'N/A';
+      // ──────────────────────────────────────────────────────────────────────
       var leagueLower = normalizeLeagueName_(league);
-      
-      if (statsData && statsData.league) {
-        var leagueStats = statsData.league[leagueLower] || 
-                          statsData.league[league] || 
+
+      // --- Forebet Bucket Accuracy --------------------------------------
+      var forebetBucketAcc = 'N/A';
+      var fbProbNum = safeNum_(forebetFavPct, NaN);
+      if (statsData && statsData.league && isFinite(fbProbNum) && fbProbNum >= 50) {
+        var bucketKey;
+        if      (fbProbNum >= 90) bucketKey = '90-100%';
+        else if (fbProbNum >= 80) bucketKey = '80-90%';
+        else if (fbProbNum >= 70) bucketKey = '70-80%';
+        else if (fbProbNum >= 60) bucketKey = '60-70%';
+        else                       bucketKey = '50-60%';
+
+        var bucketStats = statsData.league[bucketKey] ||
+                          statsData.league[bucketKey.toLowerCase()];
+
+        var MIN_BUCKET_N = 5; // guard against "100% (1/1)" mirages
+        if (bucketStats &&
+            bucketStats.winnerAccuracy !== undefined &&
+            (bucketStats.total === undefined || bucketStats.total >= MIN_BUCKET_N)) {
+          var bAcc = bucketStats.winnerAccuracy;
+          var bN   = (bucketStats.total !== undefined) ? bucketStats.total : null;
+          if (typeof bAcc === 'number') bAcc = bAcc.toFixed(1) + '%';
+          forebetBucketAcc = bN !== null
+            ? (bAcc + ' (' + bucketKey + ', n=' + bN + ')')
+            : (bAcc + ' (' + bucketKey + ')');
+        }
+      }
+
+      // Fallback: league overall when bucket missing/sparse OR Forebet % absent
+      if (forebetBucketAcc === 'N/A' && statsData && statsData.league) {
+        var leagueStats = statsData.league[leagueLower] ||
+                          statsData.league[league] ||
                           statsData.league['overall'];
-        
         if (leagueStats && leagueStats.winnerAccuracy !== undefined) {
-          leagueAcc = leagueStats.winnerAccuracy;
-          if (typeof leagueAcc === 'number') {
-            leagueAcc = leagueAcc.toFixed(1) + '%';
-          }
+          var lAcc = leagueStats.winnerAccuracy;
+          if (typeof lAcc === 'number') lAcc = lAcc.toFixed(1) + '%';
+          forebetBucketAcc = lAcc + ' (league avg)';
         }
       }
-      
-      var q1Acc = 'N/A';
-      if (quarterStats) {
-        var qStats = quarterStats[leagueLower] || 
-                     quarterStats[league] || 
-                     quarterStats['nba'] ||
-                     quarterStats['overall'];
-        
-        if (qStats && qStats['Q1']) {
-          var q1Data = qStats['Q1'];
-          if (q1Data.accuracy !== undefined) {
-            q1Acc = q1Data.accuracy;
-            if (typeof q1Acc === 'number') {
-              q1Acc = q1Acc.toFixed(1) + '%';
-            }
-          }
-        }
+
+      // --- Per-team Q1 Win% (Home / Away) -------------------------------
+      function _q1AccFor_(teamName) {
+        if (!quarterStats || !teamName) return null;
+        var key1 = teamName;
+        var key2 = (typeof normalizeTeamName_ === 'function')
+          ? normalizeTeamName_(teamName) : String(teamName).toLowerCase().trim();
+        var entry = quarterStats[key1] || quarterStats[key2];
+        if (!entry || !entry['Q1']) return null;
+        var acc = entry['Q1'].accuracy;
+        var n   = entry['Q1'].total;
+        if (typeof acc !== 'number' || !isFinite(acc)) return null;
+        return { acc: acc, n: (typeof n === 'number' ? n : null) };
       }
+
+      var q1Acc;
+      var q1H = _q1AccFor_(homeTeam);
+      var q1A = _q1AccFor_(awayTeam);
+      if (q1H && q1A) {
+        q1Acc = 'H ' + q1H.acc.toFixed(1) + '% / A ' + q1A.acc.toFixed(1) + '%';
+      } else if (q1H) {
+        q1Acc = 'H ' + q1H.acc.toFixed(1) + '% / A N/A';
+      } else if (q1A) {
+        q1Acc = 'H N/A / A ' + q1A.acc.toFixed(1) + '%';
+      } else {
+        q1Acc = 'N/A';
+      }
+      var leagueAcc = forebetBucketAcc; // keep var name used downstream
 
       // ══════════════════════════════════════════════════════════════════════
       // STEP 9i: Build output row
@@ -5805,3 +5841,4 @@ function tolerantDataCleaning_(bet) {
   
   return bet;
 }
+
