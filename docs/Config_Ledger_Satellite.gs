@@ -249,4 +249,3 @@ var ConfigLedger_Satellite = {
     return newCol;
   }
 };
-
