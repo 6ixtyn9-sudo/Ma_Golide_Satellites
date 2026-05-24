@@ -1423,9 +1423,7 @@ function getTeamFormFromStandings_(standings) {
 function calculateStreak(team, gameDate, resultsData, header) {
   if (!team || !header) return 'N/A';
 
-  // Works for both:
-  // - Clean/ResultsClean (date + ft score)
-  // - CleanRecent* (quarters; may not have date)
+  // Unified path: works for CleanRecent (q1h..q4a) and Clean (ft or quarters)
   var games = _t1_extractTeamGames_(team, gameDate, resultsData, header);
   if (!games.length) return 'N/A';
 
@@ -2078,32 +2076,70 @@ function _t1_teamOutcomeFromRow_(team, row, header) {
   };
 }
 
-/**
- * Build ordered team games list:
- * - If sheet has a valid date column: sort desc by date and filter rows >= gameDate
- * - Else: keep sheet order (assumed already "most recent first" for CleanRecent*)
- */
+
+function _t1_parseDateFlexible_(v) {
+  if (!v && v !== 0) return null;
+
+  // Already a Date (Apps Script often gives Date objects)
+  if (v instanceof Date) {
+    return isNaN(v.getTime()) ? null : v;
+  }
+
+  var s = String(v).trim();
+  if (!s) return null;
+
+  // ISO-like yyyy-mm-dd or yyyy/mm/dd
+  if (/^\d{4}[-\/]\d{1,2}[-\/]\d{1,2}/.test(s)) {
+    var dIso = new Date(s);
+    return isNaN(dIso.getTime()) ? null : dIso;
+  }
+
+  // dd/mm/yyyy or mm/dd/yyyy
+  var m = s.match(/^(\d{1,2})<!--citation:2--><!--citation:3-->/);
+  if (m) {
+    var a = parseInt(m[1], 10);
+    var b = parseInt(m[2], 10);
+    var y = parseInt(m[3], 10);
+    if (y < 100) y += 2000;
+
+    // Your sheets display like 24/05/2026 → treat ambiguous as dd/mm
+    var day, mon;
+    if (a > 12) { day = a; mon = b; }
+    else if (b > 12) { mon = a; day = b; }
+    else { day = a; mon = b; } // default dd/mm
+
+    var d = new Date(y, mon - 1, day);
+    return isNaN(d.getTime()) ? null : d;
+  }
+
+  // Last resort
+  var d2 = new Date(s);
+  return isNaN(d2.getTime()) ? null : d2;
+}
+
+
 function _t1_extractTeamGames_(team, gameDate, resultsData, header) {
   if (!resultsData || resultsData.length < 2) return [];
 
   var dateIdx = _t1_h_(header, ['date', 'game date', 'gamedate']);
-  var hasDate = (dateIdx !== undefined);
+  var hasDateCol = (dateIdx !== undefined);
 
   var games = [];
+  var datedCount = 0;
+
   for (var r = 1; r < resultsData.length; r++) {
     var row = resultsData[r];
     if (!row) continue;
 
     var rowDate = null;
-    if (hasDate) {
-      var v = row[dateIdx];
-      if (v instanceof Date) rowDate = v;
-      else if (v) {
-        var d = new Date(v);
-        if (!isNaN(d.getTime())) rowDate = d;
+    if (hasDateCol) {
+      rowDate = _t1_parseDateFlexible_(row[dateIdx]);
+      if (rowDate) {
+        datedCount++;
+        if (gameDate && rowDate >= gameDate) continue; // only filter if we have a real date
       }
-      if (!rowDate) continue;
-      if (gameDate && rowDate >= gameDate) continue;
+      // IMPORTANT: if rowDate is null, DO NOT skip the row.
+      // CleanRecent sheets are already “recent-only”; we can still use order.
     }
 
     var out = _t1_teamOutcomeFromRow_(team, row, header);
@@ -2118,9 +2154,15 @@ function _t1_extractTeamGames_(team, gameDate, resultsData, header) {
     });
   }
 
-  if (hasDate) {
-    games.sort(function(a, b) { return b.date.getTime() - a.date.getTime(); });
+  // Sort only if we have enough valid dates to trust sorting
+  if (datedCount >= Math.min(3, games.length)) {
+    games.sort(function(a, b) {
+      var ta = a.date ? a.date.getTime() : -Infinity;
+      var tb = b.date ? b.date.getTime() : -Infinity;
+      return tb - ta;
+    });
   }
+
   return games;
 }
 
@@ -3361,77 +3403,6 @@ function _findTeamInStandings(teamName, standingsData, header) {
 }
 
 
-/**
- * WHY: A team's current streak shows momentum.
- * WHAT: Calculate a team's win/loss streak leading up to a specific date.
- * WHERE: Module 4 (local helper for analyzeTier1)
- */
-function calculateStreak(team, gameDate, resultsData, header) {
-  if (!team || !header || header['date'] === undefined || header['ft score'] === undefined) {
-    return 'N/A';
-  }
-  
-  const games = [];
-  
-  for (let i = 1; i < resultsData.length; i++) {
-    const row = resultsData[i];
-    const rowDateStr = row[header['date']];
-    if (!rowDateStr) continue;
-    
-    let rowDate;
-    if (rowDateStr instanceof Date) {
-      rowDate = rowDateStr;
-    } else {
-      rowDate = new Date(rowDateStr);
-    }
-    
-    if (isNaN(rowDate.getTime())) continue;
-    if (rowDate >= gameDate) continue;
-
-    const homeTeam = row[header['home']];
-    const awayTeam = row[header['away']];
-    
-    if (homeTeam === team || awayTeam === team) {
-      games.push({ row: row, date: rowDate });
-    }
-  }
-
-  games.sort((a, b) => b.date - a.date);
-  
-  if (games.length === 0) return 'N/A';
-
-  let streakCount = 0;
-  let lastResult = null;
-
-  for (const game of games) {
-    const parsed = parseScore(game.row[header['ft score']]);
-    if (!parsed) continue;
-    
-    const [homeScore, awayScore] = parsed;
-    const homeTeam = game.row[header['home']];
-    const awayTeam = game.row[header['away']];
-    
-    let gameResult = null;
-    if (homeScore > awayScore) {
-      gameResult = (homeTeam === team) ? 'W' : 'L';
-    } else if (awayScore > homeScore) {
-      gameResult = (awayTeam === team) ? 'W' : 'L';
-    } else {
-      continue;
-    }
-
-    if (lastResult === null) {
-      lastResult = gameResult;
-      streakCount = 1;
-    } else if (gameResult === lastResult) {
-      streakCount++;
-    } else {
-      break;
-    }
-  }
-
-  return lastResult ? lastResult + streakCount : 'N/A';
-}
 
 
 function calculateLastN(team, gameDate, N, resultsData, header) {
