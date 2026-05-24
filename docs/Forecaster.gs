@@ -2402,6 +2402,7 @@ var h2hBundle = _t1_findH2HBundleForMatchup_(ss, homeTeam, awayTeam, 50);
 
 function _t1_bundleHasTeam_(bundle, teamName) {
   if (!bundle || !bundle.data || bundle.data.length < 2 || !bundle.header) return false;
+
   var teamKey = normalizeTeamName_(teamName);
   if (!teamKey) return false;
 
@@ -2410,14 +2411,23 @@ function _t1_bundleHasTeam_(bundle, teamName) {
   if (homeIdx === undefined || awayIdx === undefined) return false;
 
   var limit = Math.min(bundle.data.length - 1, 60);
+  var hits = 0;
+  var validRows = 0;
+
   for (var r = 1; r <= limit; r++) {
     var row = bundle.data[r];
     if (!row) continue;
+
     var h = normalizeTeamName_(row[homeIdx]);
     var a = normalizeTeamName_(row[awayIdx]);
-    if (h === teamKey || a === teamKey) return true;
+    if (!h && !a) continue;          // skip blank rows
+
+    validRows++;
+    if (h === teamKey || a === teamKey) hits++;
   }
-  return false;
+
+  if (validRows < 3) return false;   // too thin to trust
+  return (hits / validRows) >= 0.5;  // team must be the dominant participant
 }
 
 function _t1_findFirstBundleForTeam_(ss, prefix, teamName, maxN) {
@@ -2432,20 +2442,32 @@ function _t1_findFirstBundleForTeam_(ss, prefix, teamName, maxN) {
 
 function _t1_bundleHasMatchup_(bundle, homeKey, awayKey) {
   if (!bundle || !bundle.data || bundle.data.length < 2 || !bundle.header) return false;
+  if (!homeKey || !awayKey) return false;
 
   var homeIdx = _t1_h_(bundle.header, ['home', 'home team', 'hometeam']);
   var awayIdx = _t1_h_(bundle.header, ['away', 'away team', 'awayteam']);
   if (homeIdx === undefined || awayIdx === undefined) return false;
 
+
   var limit = Math.min(bundle.data.length - 1, 60);
+  var hits = 0;
+  var validRows = 0;
+
   for (var r = 1; r <= limit; r++) {
     var row = bundle.data[r];
     if (!row) continue;
+
     var h = normalizeTeamName_(row[homeIdx]);
     var a = normalizeTeamName_(row[awayIdx]);
-    if ((h === homeKey && a === awayKey) || (h === awayKey && a === homeKey)) return true;
+    if (!h && !a) continue;          // skip blank rows
+
+    validRows++;
+    if ((h === homeKey && a === awayKey) || (h === awayKey && a === homeKey)) hits++;
   }
-  return false;
+
+  if (validRows < 1) return false;   // empty sheet
+  if (validRows < 3) return hits === validRows;  // very small sheet → require 100% match
+  return (hits / validRows) >= 0.5;  // matchup must be the dominant one
 }
 
 function _t1_findH2HBundleForMatchup_(ss, homeTeam, awayTeam, maxN) {
