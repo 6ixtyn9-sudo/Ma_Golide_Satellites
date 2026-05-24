@@ -7798,3 +7798,4 @@ function processEnhancements(arg1, arg2, arg3, arg4, arg5) {
 function resetModule9Cache() {
   Elite.resetCache();
 }
+
