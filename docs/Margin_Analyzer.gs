@@ -737,14 +737,121 @@ function analyzeWinnerAccuracy(allGames, statsSheet) {
     output.push(__s5_padRow__(['Probability Range Breakdown'], NUM_COLS));
     output.push(__s5_padRow__(['Range', 'Accuracy', 'Correct', 'Total'], NUM_COLS));
     
-    for (var pi = 0; pi < probRanges.length; pi++) {
+        for (var pi = 0; pi < probRanges.length; pi++) {
       var range = probRanges[pi];
       var ps = probRangeStats[range];
       output.push(__s5_padRow__([range, pct(ps.correct, ps.total), ps.correct, ps.total], NUM_COLS));
     }
-    
+
+    // ═══════════════════════════════════════════════════════════════════
+    // PATCH 2026-05-24 (OOS): Out-of-Sample block.
+    //
+    // Reads OOS_TIER1_LAST from ScriptProperties (written by the Tier 1
+    // tuner in Forecaster.gs after its 70/20/10 holdout evaluation).
+    // Renders BOTH a one-line summary at the top of the sheet AND a full
+    // detail block at the bottom: 1X2, Bankers, Robbers — each with Picks,
+    // Won, Accuracy, and Wilson 95% CI. Sample-size guard: rows with n<30
+    // show 'INSUFFICIENT SAMPLE (n=X)' instead of a meaningless %.
+    //
+    // Wilson interval ref: https://en.wikipedia.org/wiki/Binomial_proportion_confidence_interval#Wilson_score_interval
+    // ═══════════════════════════════════════════════════════════════════
+    var _oos_payload = null;
+    try {
+      var _oos_raw = PropertiesService.getScriptProperties().getProperty('OOS_TIER1_LAST');
+      if (_oos_raw) _oos_payload = JSON.parse(_oos_raw);
+    } catch (eRead) {
+      Logger.log('[' + FN + '][OOS] Could not read OOS_TIER1_LAST: ' + eRead.message);
+    }
+
+    function _oos_wilson95_(wins, n) {
+      if (!n || n <= 0) return null;
+      var z = 1.96;
+      var p = wins / n;
+      var denom = 1 + (z * z) / n;
+      var centre = p + (z * z) / (2 * n);
+      var halfwidth = z * Math.sqrt((p * (1 - p) / n) + (z * z) / (4 * n * n));
+      var low  = (centre - halfwidth) / denom;
+      var high = (centre + halfwidth) / denom;
+      return [Math.max(0, low * 100), Math.min(100, high * 100)];
+    }
+
+    var MIN_N = 30; // Wilson is fine below this but business decisions aren't.
+    function _oos_renderRow_(label, correct, total) {
+      if (!total || total < MIN_N) {
+        return [label,
+                'INSUFFICIENT SAMPLE (n=' + (total || 0) + ')',
+                String(correct || 0),
+                String(total || 0)];
+      }
+      var p = (correct / total * 100);
+      var ci = _oos_wilson95_(correct, total);
+      var ciStr = ci ? ' [' + ci[0].toFixed(1) + '%, ' + ci[1].toFixed(1) + '%]' : '';
+      return [label, p.toFixed(1) + '%' + ciStr, String(correct), String(total)];
+    }
+
+    // --- Top-of-sheet summary (will be prepended below) -----------------
+    var _oos_topSummary = [];
+    if (_oos_payload && _oos_payload.oos && _oos_payload.oos.current) {
+      var oc = _oos_payload.oos.current;
+      var ob = _oos_payload.oos.best;
+      var hN = _oos_payload.holdoutN || 0;
+      var sumStr;
+      if (hN < MIN_N) {
+        sumStr = 'OOS holdout (last 10%, n=' + hN + '): INSUFFICIENT SAMPLE';
+      } else {
+        sumStr = 'OOS holdout (last 10%, n=' + hN + '): 1X2 Current=' +
+                 oc.acc.toFixed(1) + '% (' + oc.correct + '/' + oc.total + ')' +
+                 ' | Best=' + ob.acc.toFixed(1) + '% (' + ob.correct + '/' + ob.total + ')';
+      }
+      _oos_topSummary.push(__s5_padRow__(['── OUT-OF-SAMPLE SUMMARY ──'], NUM_COLS));
+      _oos_topSummary.push(__s5_padRow__([sumStr], NUM_COLS));
+      _oos_topSummary.push(__s5_padRow__([], NUM_COLS));
+    }
+
+    // --- Bottom-of-sheet detail block ----------------------------------
+    output.push(__s5_padRow__([], NUM_COLS));
+    output.push(__s5_padRow__(['── OUT-OF-SAMPLE (chronological last 10%) ──'], NUM_COLS));
+    if (!_oos_payload) {
+      output.push(__s5_padRow__(['No OOS data — run auto-tune first.'], NUM_COLS));
+    } else {
+      output.push(__s5_padRow__([
+        'Holdout: ' + (_oos_payload.holdoutN || 0) + ' games',
+        'Dated pool: ' + (_oos_payload.datedN || 0),
+        'Undated (in-sample only): ' + (_oos_payload.undatedN || 0),
+        ''
+      ], NUM_COLS));
+      output.push(__s5_padRow__([], NUM_COLS));
+      output.push(__s5_padRow__(['Metric (Current config)', 'Accuracy [95% CI]', 'Correct', 'Total'], NUM_COLS));
+      var oc2 = _oos_payload.oos && _oos_payload.oos.current ? _oos_payload.oos.current : {};
+      output.push(__s5_padRow__(_oos_renderRow_('1X2 Winner',  oc2.correct,       oc2.total),       NUM_COLS));
+      output.push(__s5_padRow__(_oos_renderRow_('Bankers',     oc2.bankerCorrect, oc2.bankerTotal), NUM_COLS));
+      output.push(__s5_padRow__(_oos_renderRow_('Robbers',     oc2.robberCorrect, oc2.robberTotal), NUM_COLS));
+      output.push(__s5_padRow__([], NUM_COLS));
+      output.push(__s5_padRow__(['Metric (Best config)',    'Accuracy [95% CI]', 'Correct', 'Total'], NUM_COLS));
+      var ob2 = _oos_payload.oos && _oos_payload.oos.best ? _oos_payload.oos.best : {};
+      output.push(__s5_padRow__(_oos_renderRow_('1X2 Winner',  ob2.correct,       ob2.total),       NUM_COLS));
+      output.push(__s5_padRow__(_oos_renderRow_('Bankers',     ob2.bankerCorrect, ob2.bankerTotal), NUM_COLS));
+      output.push(__s5_padRow__(_oos_renderRow_('Robbers',     ob2.robberCorrect, ob2.robberTotal), NUM_COLS));
+      output.push(__s5_padRow__([], NUM_COLS));
+      output.push(__s5_padRow__(['(n<30 → numbers suppressed as untrustworthy)'], NUM_COLS));
+      if (_oos_payload.inSample && _oos_payload.inSample.current && _oos_payload.inSample.best) {
+        output.push(__s5_padRow__([], NUM_COLS));
+        output.push(__s5_padRow__(['In-sample reference (training 90%):'], NUM_COLS));
+        var isC = _oos_payload.inSample.current;
+        var isB = _oos_payload.inSample.best;
+        output.push(__s5_padRow__(['Current', isC.acc.toFixed(1) + '%', String(isC.correct), String(isC.total)], NUM_COLS));
+        output.push(__s5_padRow__(['Best',    isB.acc.toFixed(1) + '%', String(isB.correct), String(isB.total)], NUM_COLS));
+      }
+    }
+
+    // Prepend the top summary AFTER the detail block has been pushed.
+    if (_oos_topSummary.length > 0) {
+      output = _oos_topSummary.concat(output);
+    }
+
     // Write output
     statsSheet.clear();
+    
     statsSheet.getRange(1, 1, output.length, NUM_COLS).setValues(output);
     
     try { statsSheet.autoResizeColumns(1, NUM_COLS); } catch (e) {}
@@ -5146,4 +5253,3 @@ function simulateTier1Configs(ss) {
     return [];
   }
 }
-
