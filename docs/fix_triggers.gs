@@ -160,3 +160,4 @@ function listAllTriggers() {
   });
   if (triggers.length === 0) Logger.log('(none — slate is clean)');
 }
+
