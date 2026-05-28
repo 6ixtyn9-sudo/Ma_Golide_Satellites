@@ -467,6 +467,98 @@ var BET_SLIPS_CONTRACT_25 = [
   "Book_Line_Source"
 ];
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FOREBET CONTRACT EXTENSION — appended after BET_SLIPS_CONTRACT_25
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Extended Forebet metadata columns appended after BET_SLIPS_CONTRACT_25 */
+var BET_SLIPS_CONTRACT_EXT_FB_META = [
+  'FB_Pick_Side',
+  'FB_Pick_Team',
+  'FB_Prob_Pct',
+  'FB_Bin',
+  'FB_Bin_N',
+  'FB_Bin_Win_Rate',
+  'FB_Bin_Shrunk_Rate',
+  'FB_Bin_Wilson_LB',
+  'FB_Reliable',
+  'MG_FB_Agree',
+  'MG_FB_Action',
+  'MG_FB_Trust',
+  'Adjusted_Confidence_Pct',
+  'Calibration_Action',
+  'Calibration_Reason',
+  'Correlation_Group',
+  'Same_Game_Leg_Rank',
+  'Gating_Run_ID'
+];
+
+/**
+ * Returns the Bet_Slips column contract.
+ * opts.enableFbMeta === true → appends FB metadata columns after base 25.
+ * Base is always BET_SLIPS_CONTRACT_25 — never downgraded.
+ */
+function getBetSlipsContract_(opts) {
+  opts = opts || {};
+  var base = (typeof BET_SLIPS_CONTRACT_25 !== 'undefined')
+    ? BET_SLIPS_CONTRACT_25.slice()
+    : [];
+  return opts.enableFbMeta === true
+    ? base.concat(BET_SLIPS_CONTRACT_EXT_FB_META)
+    : base;
+}
+
+/**
+ * Ensures Bet_Slips has canonical headers.
+ *  - Blank sheet → writes one canonical header row.
+ *  - Sectioned sheet → appends missing FB columns to every Bet_Record_ID header row.
+ *  - Never clears Bet_Slips, never flattens the sectioned layout, never reorders old columns.
+ */
+function ensureBetSlipsCanonicalHeaders_(ss, opts) {
+  opts = opts || {};
+  if (!opts.enableFbMeta) return;
+
+  var sh = (typeof getSheetInsensitive === 'function')
+    ? getSheetInsensitive(ss, 'Bet_Slips')
+    : ss.getSheetByName('Bet_Slips');
+  if (!sh) return; // Bet_Slips doesn't exist yet — safe to skip
+
+  var fbCols = BET_SLIPS_CONTRACT_EXT_FB_META;
+
+  if (sh.getLastRow() < 1) {
+    // Empty sheet — write full canonical header
+    var full = getBetSlipsContract_({ enableFbMeta: true });
+    sh.getRange(1, 1, 1, full.length).setValues([full]);
+    return;
+  }
+
+  var data = sh.getDataRange().getValues();
+  for (var r = 0; r < data.length; r++) {
+    var first = String(data[r][0] || '').trim();
+    if (first !== 'Bet_Record_ID' && first !== 'League') continue;
+
+    // Build existing header set for this row
+    var rowWidth = data[r].length;
+    var existing = {};
+    for (var c = 0; c < rowWidth; c++) {
+      var h = String(data[r][c] || '').trim();
+      if (h) existing[h.toLowerCase()] = true;
+    }
+
+    // Collect missing FB columns
+    var toAdd = [];
+    for (var i = 0; i < fbCols.length; i++) {
+      if (!existing[fbCols[i].toLowerCase()]) toAdd.push(fbCols[i]);
+    }
+    if (toAdd.length === 0) continue;
+
+    // Append them after the last occupied column in this header row
+    var startCol = rowWidth + 1;
+    sh.getRange(r + 1, startCol, 1, toAdd.length).setValues([toAdd]);
+  }
+}
+
 /** ResultsClean canonical machine columns (append-only header upgrade) */
 var RESULTS_CLEAN_CANONICAL_MIN = [
   "Universal_Game_ID",

@@ -2205,7 +2205,37 @@ function createConfigAccumulatorSheet(ss) {
     ['ft_ou_min_ev',            '0.005'],
     ['--- INFO ---',            ''],
     ['last_updated',            '15/03/2026'],
-    ['updated_by',              'applyTier1ProposalToConfig (rank 1)']
+    ['updated_by',              'applyTier1ProposalToConfig (rank 1)'],
+    ['--- FOREBET CONTRACT SETTINGS ---', ''],
+    ['fb_shebang_enabled',                 'TRUE'],
+    ['fb_shebang_fail_open',               'TRUE'],
+    ['fb_shebang_mode',                    'SHADOW'],
+    ['fb_shebang_run_pre_calibration',     'TRUE'],
+    ['fb_shebang_run_post_bets',           'TRUE'],
+    ['fb_shebang_run_evaluation',          'TRUE'],
+    ['enable_fb_contract_autotune',        'TRUE'],
+    ['enable_fb_contract_auto_apply',      'FALSE'],
+    ['fb_autotune_min_coverage',           '0.50'],
+    ['fb_autotune_min_holdout_n',          '30'],
+    ['fb_autotune_candidate_lbs',          '0.52,0.55,0.58,0.60,0.62,0.65'],
+    ['fb_autotune_candidate_corr_caps',    '1,2'],
+    ['enable_fb_meta_columns',             'TRUE'],
+    ['enable_fb_calibration_contract',     'FALSE'],
+    ['enable_mg_fb_synergy_shadow',        'TRUE'],
+    ['enable_mg_fb_synergy_gating',        'FALSE'],
+    ['enable_skip_highest_quarter_normal', 'TRUE'],
+    ['enable_satellite_correlation_guard', 'FALSE'],
+    ['gating_lookback_hours',              '24'],
+    ['fb_min_n_reliable',                  '30'],
+    ['fb_wilson_z',                        '1.645'],
+    ['fb_shrink_k',                        '30'],
+    ['fb_calib_min_lb',                    '0.55'],
+    ['synergy_min_n_reliable',             '30'],
+    ['synergy_shrink_k',                   '30'],
+    ['synergy_min_lb_default',             '0.60'],
+    ['max_legs_per_game_total',            '1'],
+    ['max_legs_per_game_side_cluster',     '1'],
+    ['max_legs_per_game_total_cluster',    '1']
   ];
 
   if (isNew) {
@@ -3070,6 +3100,25 @@ function runTheWholeShebang_AutoTune(opts) {
       }
     }
 
+
+    // ── STEP 0: Forebet Contract Calibration + AutoTune ───────────────────────
+    if (!_shouldSkipStep_('STEP_0')) {
+      if (_shebang_hasTimeFor_('Step 0 Forebet Contract AutoTune', 60)) {
+        _shebang_scheduleResume_('STEP_0');
+        Logger.log('[AutoTune] STEP 0: Forebet calibration + contract autotune...');
+        if (typeof runSatelliteForebetContract_ === 'function') {
+          runSatelliteForebetContract_(ss, 'PRE_BETS', { autoTune: true });
+        }
+        if (typeof tuneForebetContract_ === 'function') {
+          tuneForebetContract_(ss, {});
+        }
+        _shebang_clearResumeTrigger_();
+      } else {
+        _shebang_scheduleResume_('STEP_0');
+        return;
+      }
+    }
+
     if (!skipTuning) {
       // ── STEP 1: tuneLeagueWeights (Tier 1 Tuning) ─────────────────────────
       if (!_shouldSkipStep_('STEP_1')) {
@@ -3556,6 +3605,11 @@ function _runWholeShebang_(opts) {
       { name: 'runAllHistoricalAnalyzers', passSs: true }
     ])) return;
 
+    // Forebet: pre-bets calibration (runs after historical, before forecast)
+    if (runPlainStage('Forebet Pre-Bets', 'Forebet: calibration...', [
+      { name: 'runSatelliteForebetPreBets', passSs: true }
+    ])) return;
+
     // Phase 4: Tier 1
     if (runGuardedStage('Tier 1 Forecast', 'Phase 4/7: Tier 1 Forecast...', [
       { name: 'analyzeTier1', passSs: true }
@@ -3594,6 +3648,11 @@ function _runWholeShebang_(opts) {
       { name: 'runAccumulator', passSs: false }
     ])) return;
 
+    // Forebet: post-bets shadow/gating
+    if (runGuardedStage('Forebet Post-Bets', 'Forebet: shadow/gating...', [
+      { name: 'runSatelliteForebetPostBets', passSs: true }
+    ])) return;
+
     // Optional verify
     if (zf.verifyHeaders) {
       try { zf.verifyHeaders(ss, 'UpcomingClean', zfLog); }
@@ -3615,8 +3674,17 @@ function _runWholeShebang_(opts) {
     ])) return;
     */
 
+    // Forebet: evaluation report
+    if (runPlainStage('Forebet Evaluation', 'Forebet: evaluation report...', [
+      { name: 'runSatelliteForebetPostReport', passSs: true }
+    ])) return;
+
     // OPTIONAL tuners
     if (includeTuners) {
+      if (runPlainStage('Forebet Tuning', 'Forebet: autotune...', [
+        { name: 'tuneForebetContract_', passSs: true }
+      ])) return;
+
       if (runPlainStage('Tier 1 Tuning', 'Phase 7/7: Tier 1 Tuning (proposal)...', [
         { name: 'tuneLeagueWeights', passSs: true }
       ])) return;
