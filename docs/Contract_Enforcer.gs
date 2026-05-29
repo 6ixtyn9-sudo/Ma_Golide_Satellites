@@ -514,6 +514,13 @@ function getBetSlipsContract_(opts) {
  *  - Blank sheet → writes one canonical header row.
  *  - Sectioned sheet → appends missing FB columns to every Bet_Record_ID header row.
  *  - Never clears Bet_Slips, never flattens the sectioned layout, never reorders old columns.
+ *
+ * Blocker 4 fix:
+ *  - Header detection is now strict: only rows where first cell === 'Bet_Record_ID' are
+ *    treated as Bet_Slips machine-contract header rows.  Using 'League' as a trigger was
+ *    too broad and could match unrelated data sections.
+ *  - The append start column is computed as (last occupied cell in the header row) + 1,
+ *    NOT data[r].length + 1 which could be the full sheet column width and leave blank gaps.
  */
 function ensureBetSlipsCanonicalHeaders_(ss, opts) {
   opts = opts || {};
@@ -535,14 +542,15 @@ function ensureBetSlipsCanonicalHeaders_(ss, opts) {
 
   var data = sh.getDataRange().getValues();
   for (var r = 0; r < data.length; r++) {
-    var first = String(data[r][0] || '').trim();
-    if (first !== 'Bet_Record_ID' && first !== 'League') continue;
+    var row = data[r];
+    var first = String(row[0] || '').trim();
+    // Strict detection: only canonical Bet_Record_ID header rows
+    if (first !== 'Bet_Record_ID') continue;
 
     // Build existing header set for this row
-    var rowWidth = data[r].length;
     var existing = {};
-    for (var c = 0; c < rowWidth; c++) {
-      var h = String(data[r][c] || '').trim();
+    for (var c = 0; c < row.length; c++) {
+      var h = String(row[c] || '').trim();
       if (h) existing[h.toLowerCase()] = true;
     }
 
@@ -553,8 +561,13 @@ function ensureBetSlipsCanonicalHeaders_(ss, opts) {
     }
     if (toAdd.length === 0) continue;
 
-    // Append them after the last occupied column in this header row
-    var startCol = rowWidth + 1;
+    // Blocker 4 fix: find the last occupied (non-empty) cell in this header row.
+    // This prevents appending after blank gaps that inflate data[r].length.
+    var lastOccupied = 0;
+    for (var c2 = row.length - 1; c2 >= 0; c2--) {
+      if (String(row[c2] || '').trim() !== '') { lastOccupied = c2 + 1; break; }
+    }
+    var startCol = lastOccupied + 1; // 1-indexed column to start appending at
     sh.getRange(r + 1, startCol, 1, toAdd.length).setValues([toAdd]);
   }
 }

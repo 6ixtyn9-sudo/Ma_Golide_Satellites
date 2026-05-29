@@ -5522,10 +5522,17 @@ function fbContractNormalizeSide_(raw) {
   return 'UNKNOWN';
 }
 
-function fbContractMarketCluster_(market) {
+// Blocker 5 fix: accept optional selectionText so SNIPER rows with "Highest Quarter" in
+// Selection_Text are detected as HQ_CLUSTER even when Market is generic (e.g. "SNIPER").
+function fbContractMarketCluster_(market, selectionText) {
   var m = String(market || '').toUpperCase();
+  var s = String(selectionText || '').toUpperCase();
+  // HQ detection: market text or selection text contains HIGH+QTR/QUARTER keyword
   if (m.indexOf('HIGH') >= 0 && (m.indexOf('QTR') >= 0 || m.indexOf('QUARTER') >= 0)) return 'HQ_CLUSTER';
   if (m.indexOf('SNIPER_HIGH') >= 0) return 'HQ_CLUSTER';
+  // Selection-text fallback for HQ (e.g. Market=SNIPER, Selection_Text="Highest Quarter ...")
+  if ((s.indexOf('HIGH') >= 0 || s.indexOf('HIGHEST') >= 0) &&
+      (s.indexOf('QTR') >= 0 || s.indexOf('QUARTER') >= 0)) return 'HQ_CLUSTER';
   if (m.indexOf('OU') >= 0 || m.indexOf('O/U') >= 0 || m.indexOf('TOTAL') >= 0) return 'TOTAL_CLUSTER';
   if (m.indexOf('BANKER') >= 0 || m.indexOf('ROBBER') >= 0 || m.indexOf('1X2') >= 0 ||
       m.indexOf('WINNER') >= 0 || m.indexOf('MARGIN') >= 0 || m.indexOf('TIER1') >= 0) return 'SIDE_CLUSTER';
@@ -5684,6 +5691,32 @@ function fbContractBuildIndex_(ss, sheetName) {
 
 // ── METADATA BACKFILL ─────────────────────────────────────────────────────
 
+// ── BACKFILL HELPER: build a normalized date string for fallback keying ─────
+function _fbNormDateStr_(raw) {
+  if (!raw) return '';
+  if (raw instanceof Date) return Utilities.formatDate(raw, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  var s = String(raw).trim();
+  // Already ISO
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.substring(0, 10);
+  // DD/MM/YYYY or MM/DD/YYYY
+  var m = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})$/);
+  if (m) {
+    var a = parseInt(m[1], 10), b = parseInt(m[2], 10), y = parseInt(m[3], 10);
+    if (y < 100) y += 2000;
+    var dy = a > 12 ? a : b, mo = a > 12 ? b : a;
+    return y + '-' + ('0'+mo).slice(-2) + '-' + ('0'+dy).slice(-2);
+  }
+  // Spreadsheet serial
+  if (typeof raw === 'number' && isFinite(raw)) {
+    var epoch = new Date(1899, 11, 30);
+    var d = new Date(epoch.getTime() + raw * 86400000);
+    return Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  return s;
+}
+
+// Blocker 3 fix: backfill indexes BOTH Universal_Game_ID and Date|Home|Away fallback
+// in source sheets, and tries BOTH keys when matching Bet_Slips rows.
 function backfillBetSlipsForebetMeta_(ss, maxRows) {
   ss = ss || SpreadsheetApp.getActiveSpreadsheet();
   maxRows = maxRows || 5000;
@@ -5696,12 +5729,62 @@ function backfillBetSlipsForebetMeta_(ss, maxRows) {
   var sh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'Bet_Slips') : ss.getSheetByName('Bet_Slips');
   if (!sh || sh.getLastRow() < 2) return { updated: 0 };
 
-  // Build merged game index from multiple source sheets
+  // Build merged game index from multiple source sheets — index BOTH keys.
   var sources = ['UpcomingClean', 'Analysis_Tier1', 'Tier1_Predictions', 'Clean'];
   var merged = {};
   sources.forEach(function(src) {
-    var idx = fbContractBuildIndex_(ss, src);
-    Object.keys(idx).forEach(function(gid) { if (!merged[gid]) merged[gid] = idx[gid]; });
+    var sh2 = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, src) : ss.getSheetByName(src);
+    if (!sh2 || sh2.getLastRow() < 2) return;
+    var srcData = sh2.getDataRange().getValues();
+    var srcHdr = {};
+    (srcData[0] || []).forEach(function(h, i) {
+      var k = String(h || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+      if (k) srcHdr[k] = i;
+    });
+    function srcCol_(aliases) {
+      for (var ai = 0; ai < aliases.length; ai++) {
+        var k = String(aliases[ai] || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+        if (srcHdr[k] !== undefined) return srcHdr[k];
+      }
+      return -1;
+    }
+    var cUG   = srcCol_(['Universal_Game_ID', 'Game_ID', 'game_id']);
+    var cDate = srcCol_(['Date', 'Match Date', 'Game Date']);
+    var cHome = srcCol_(['Home', 'Home Team', 'home_team']);
+    var cAway = srcCol_(['Away', 'Away Team', 'Visitor', 'away_team']);
+    var cPred = srcCol_(['Pred', 'Prediction', 'Forebet Pred', 'Forebet_Prediction']);
+    var cProb = srcCol_(['Prob %', 'Prob%', 'Probability', 'Prob', 'Forebet %', 'Forebet_Prob', 'FB_Prob', 'Forebet_Confidence_Raw', 'FB_Prob_Pct']);
+    if (cPred < 0 || cProb < 0) return;
+    for (var r = 1; r < srcData.length; r++) {
+      var row0 = srcData[r];
+      var home0 = cHome >= 0 ? String(row0[cHome] || '').trim() : '';
+      var away0 = cAway >= 0 ? String(row0[cAway] || '').trim() : '';
+      var predV = row0[cPred];
+      var probV = row0[cProb];
+      var fbSide0 = 'UNKNOWN';
+      if (typeof interpretPredictionSide_ === 'function' && home0 && away0) {
+        try { fbSide0 = interpretPredictionSide_(predV, home0, away0) || 'UNKNOWN'; } catch(e) { fbSide0 = fbContractNormalizeSide_(predV); }
+      } else { fbSide0 = fbContractNormalizeSide_(predV); }
+      var fbProbPct0 = NaN;
+      if (typeof getForebetFavoredProbability_ === 'function' && home0 && away0) {
+        try { fbProbPct0 = getForebetFavoredProbability_(predV, probV, home0, away0); } catch(e) { fbProbPct0 = fbContractNormalizePct_(probV); }
+      } else { fbProbPct0 = fbContractNormalizePct_(probV); }
+      var fbPickTeam0 = fbSide0 === 'HOME' ? home0 : fbSide0 === 'AWAY' ? away0 : fbSide0 === 'DRAW' ? 'DRAW' : '';
+      var rec0 = { fbSide: fbSide0, fbProbPct: fbProbPct0, fbPickTeam: fbPickTeam0 };
+      // Index by Universal_Game_ID
+      if (cUG >= 0) {
+        var ugVal = String(row0[cUG] || '').trim();
+        if (ugVal && !merged[ugVal]) merged[ugVal] = rec0;
+      }
+      // Also index by Date|home|away fallback
+      if (cDate >= 0 && home0 && away0) {
+        var dStr = _fbNormDateStr_(row0[cDate]);
+        if (dStr) {
+          var fbKey = dStr + '|' + home0.toLowerCase() + '|' + away0.toLowerCase();
+          if (!merged[fbKey]) merged[fbKey] = rec0;
+        }
+      }
+    }
   });
 
   var parsedRows = fbContractFindBetSlipRows_(sh);
@@ -5722,17 +5805,33 @@ function backfillBetSlipsForebetMeta_(ss, maxRows) {
       return hdrMap[k] !== undefined ? hdrMap[k] : -1;
     }
 
-    var iGame = idx_('Universal_Game_ID');
     var iFBProb = idx_('FB_Prob_Pct');
-    if (iGame < 0 || iFBProb < 0) continue;
+    if (iFBProb < 0) continue;
 
     var existing = row[iFBProb];
     if (existing !== '' && existing != null) continue; // already filled
 
-    var gameId = String(row[iGame] || '').trim();
-    if (!gameId) continue;
+    // Try Universal_Game_ID first, then Date|Home|Away fallback
+    var iGame = idx_('Universal_Game_ID');
+    var gameId = (iGame >= 0) ? String(row[iGame] || '').trim() : '';
+    var rec = gameId ? merged[gameId] : null;
 
-    var rec = merged[gameId];
+    if (!rec) {
+      // Build fallback key from Bet_Slips Date/Home/Away columns
+      var iDate = idx_('Date');
+      var iHome = idx_('Home');
+      var iAway = idx_('Away');
+      if (iDate >= 0 && iHome >= 0 && iAway >= 0) {
+        var bsHome = String(row[iHome] || '').trim().toLowerCase();
+        var bsAway = String(row[iAway] || '').trim().toLowerCase();
+        var bsDate = _fbNormDateStr_(row[iDate]);
+        if (bsDate && bsHome && bsAway) {
+          var fallbackKey = bsDate + '|' + bsHome + '|' + bsAway;
+          rec = merged[fallbackKey];
+        }
+      }
+    }
+
     if (!rec) continue;
 
     var updates = [];
@@ -5744,12 +5843,14 @@ function backfillBetSlipsForebetMeta_(ss, maxRows) {
     add_('FB_Bin', fbContractProbToBin_(rec.fbProbPct));
 
     var market  = idx_('Market') >= 0 ? String(row[idx_('Market')] || '').trim() : '';
+    var selText = idx_('Selection_Text') >= 0 ? String(row[idx_('Selection_Text')] || '').trim() : '';
     var selSide = idx_('Selection_Side') >= 0 ? String(row[idx_('Selection_Side')] || '').trim().toUpperCase() : '';
     var fbSideN = String(rec.fbSide || '').toUpperCase();
     var agree   = !fbContractIsSideMarket_(market) || !selSide || selSide === 'UNKNOWN' || !fbSideN || fbSideN === 'UNKNOWN'
                   ? 'NA' : (selSide === fbSideN ? 'Y' : 'N');
     add_('MG_FB_Agree', agree);
-    add_('Correlation_Group', fbContractMarketCluster_(market));
+    // Blocker 5: pass Selection_Text so HQ rows in SNIPER market are clustered correctly
+    add_('Correlation_Group', fbContractMarketCluster_(market, selText));
 
     var iAct = idx_('Calibration_Action');
     if (iAct >= 0 && (!row[iAct] || row[iAct] === '')) add_('Calibration_Action', 'FB_META_ONLY');
@@ -5880,36 +5981,107 @@ function buildForebetCalibration() { buildForebetCalibration_(SpreadsheetApp.get
 
 // ── MG_FB_SYNERGY (from graded historical bet rows) ───────────────────────
 
+// Blocker 2 fix: buildMgFbSynergy_ no longer requires actual_result from ResultsClean.
+// It builds a result outcome index using Universal_Game_ID (preferred) OR Date|Home|Away
+// fallback, and parses FT Score to determine the winner side.  For SIDE_CLUSTER markets
+// (BANKER, ROBBER, 1X2, WINNER, MARGIN, TIER1) it grades by comparing Selection_Side to
+// the computed outcome side.  TOTAL_CLUSTER and HQ_CLUSTER rows are marked NA/skipped
+// in synergy until a robust market-specific grader is added, so the function never
+// returns zero rows just because actual_result is absent.
 function buildMgFbSynergy_(ss, opts) {
   ss = ss || SpreadsheetApp.getActiveSpreadsheet();
   opts = opts || {};
   var bsSh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'Bet_Slips') : ss.getSheetByName('Bet_Slips');
   var rcSh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'ResultsClean') : ss.getSheetByName('ResultsClean');
-  if (!bsSh || !rcSh) { Logger.log('buildMgFbSynergy_: Bet_Slips or ResultsClean not found'); return; }
+  if (!bsSh) { Logger.log('buildMgFbSynergy_: Bet_Slips not found'); return; }
 
   var cfg = fbContractReadCfgAcc_(ss);
   var z = fbContractCfgNum_(cfg, 'fb_wilson_z', 1.645);
   var minReliable = fbContractCfgNum_(cfg, 'synergy_min_n_reliable', 30);
   var k = fbContractCfgNum_(cfg, 'synergy_shrink_k', 30);
 
-  var rcData = rcSh.getDataRange().getValues();
-  var rcHdr = {};
-  if (typeof createCanonicalHeaderMap_ === 'function') {
-    rcHdr = createCanonicalHeaderMap_(rcData[0] || []);
-  } else {
-    (rcData[0] || []).forEach(function(h, i) {
-      var key = String(h || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
-      if (key) rcHdr[key] = i;
-    });
-  }
-  var iRcUg  = rcHdr['universal_game_id'];
-  var iRcRes = rcHdr['actual_result'];
-  if (iRcUg === undefined || iRcRes === undefined) { Logger.log('buildMgFbSynergy_: ResultsClean missing required columns'); return; }
+  // ── Build result outcome index from ResultsClean (if available) ─────────
+  // Keys: Universal_Game_ID (primary) and Date|home_lc|away_lc (fallback)
+  // Values: 'WIN' | 'LOSS' | 'DRAW' | 'UNKNOWN'
+  var resMap = {};  // gameKey → { outcome: 'WIN'|'LOSS'|'DRAW'|'UNKNOWN' }
 
-  var resMap = {};
-  for (var r = 1; r < rcData.length; r++) {
-    var ug = String(rcData[r][iRcUg] || '').trim();
-    if (ug) resMap[ug] = String(rcData[r][iRcRes] || '').trim().toUpperCase();
+  if (rcSh && rcSh.getLastRow() >= 2) {
+    var rcData = rcSh.getDataRange().getValues();
+    var rcHdr = {};
+    if (typeof createCanonicalHeaderMap_ === 'function') {
+      rcHdr = createCanonicalHeaderMap_(rcData[0] || []);
+    } else {
+      (rcData[0] || []).forEach(function(h, i) {
+        var key = String(h || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+        if (key) rcHdr[key] = i;
+      });
+    }
+    // Column indices — may be undefined (sheet may lack some columns)
+    function rcCol_(aliases) {
+      for (var ai = 0; ai < aliases.length; ai++) {
+        var k2 = String(aliases[ai] || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+        if (rcHdr[k2] !== undefined) return rcHdr[k2];
+      }
+      return -1;
+    }
+    var iRcUg   = rcCol_(['Universal_Game_ID', 'Game_ID', 'game_id']);
+    var iRcRes  = rcCol_(['actual_result']);
+    var iRcDate = rcCol_(['Date', 'Match_Date', 'Game_Date', 'event_date']);
+    var iRcHome = rcCol_(['Home', 'Home_Team', 'home_team']);
+    var iRcAway = rcCol_(['Away', 'Away_Team', 'Visitor', 'away_team']);
+    var iRcFT   = rcCol_(['FT Score', 'FT_Score', 'Score', 'Result', 'FT']);
+    var iRcFTH  = rcCol_(['FT_Home', 'FT Home', 'Home_Score', 'Score_Home']);
+    var iRcFTA  = rcCol_(['FT_Away', 'FT Away', 'Away_Score', 'Score_Away']);
+
+    for (var r = 1; r < rcData.length; r++) {
+      var rcRow = rcData[r];
+
+      // Determine outcome — prefer explicit actual_result, else parse FT score
+      var outcome = 'UNKNOWN';
+      if (iRcRes >= 0) {
+        var resRaw = String(rcRow[iRcRes] || '').trim().toUpperCase();
+        if (resRaw === 'WIN' || resRaw === 'LOSS' || resRaw === 'HALF_WIN' || resRaw === 'HALF_LOSS') {
+          // These values are Bet_Slips-relative; store as-is for legacy lookup
+          outcome = resRaw;
+        } else if (resRaw === 'HOME' || resRaw === 'AWAY' || resRaw === 'DRAW') {
+          outcome = resRaw;
+        }
+      }
+      if (outcome === 'UNKNOWN') {
+        // Parse FT score string ("2-1", "1:0", etc.)
+        if (iRcFT >= 0) {
+          outcome = fbContractWinnerSideFromScore_(String(rcRow[iRcFT] || ''));
+        }
+        // Or separate FT_Home / FT_Away columns
+        if (outcome === 'UNKNOWN' && iRcFTH >= 0 && iRcFTA >= 0) {
+          var fth = Number(rcRow[iRcFTH]), fta = Number(rcRow[iRcFTA]);
+          if (isFinite(fth) && isFinite(fta)) {
+            outcome = fth > fta ? 'HOME' : fta > fth ? 'AWAY' : 'DRAW';
+          }
+        }
+      }
+      if (outcome === 'UNKNOWN') continue;
+
+      // Index by Universal_Game_ID
+      if (iRcUg >= 0) {
+        var ugV = String(rcRow[iRcUg] || '').trim();
+        if (ugV) resMap[ugV] = outcome;
+      }
+      // Also index by Date|home_lc|away_lc fallback
+      var rcHome = iRcHome >= 0 ? String(rcRow[iRcHome] || '').trim().toLowerCase() : '';
+      var rcAway = iRcAway >= 0 ? String(rcRow[iRcAway] || '').trim().toLowerCase() : '';
+      if (iRcDate >= 0 && rcHome && rcAway) {
+        var rcDStr = _fbNormDateStr_(rcRow[iRcDate]);
+        if (rcDStr) {
+          var rcFbKey = rcDStr + '|' + rcHome + '|' + rcAway;
+          if (!resMap[rcFbKey]) resMap[rcFbKey] = outcome;
+        }
+      }
+    }
+  }
+
+  if (Object.keys(resMap).length === 0) {
+    Logger.log('buildMgFbSynergy_: ResultsClean missing or no gradeable rows; writing empty synergy sheet');
   }
 
   var parsedRows = fbContractFindBetSlipRows_(bsSh);
@@ -5923,14 +6095,53 @@ function buildMgFbSynergy_(ss, opts) {
       var kk = String(name || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
       return hdrMap[kk] !== undefined ? hdrMap[kk] : -1;
     }
-    var ug = idx_('Universal_Game_ID') >= 0 ? String(row[idx_('Universal_Game_ID')] || '').trim() : '';
-    if (!ug || !resMap[ug]) return;
 
-    var actRes = resMap[ug];
-    if (actRes !== 'WIN' && actRes !== 'LOSS' && actRes !== 'HALF_WIN' && actRes !== 'HALF_LOSS') return;
-    var isWin = (actRes === 'WIN' || actRes === 'HALF_WIN') ? 1 : 0;
+    // Resolve game result — try Universal_Game_ID first, then Date|Home|Away fallback
+    var outcome = 'UNKNOWN';
+    var ugIdx = idx_('Universal_Game_ID');
+    if (ugIdx >= 0) {
+      var ugV = String(row[ugIdx] || '').trim();
+      if (ugV && resMap[ugV]) outcome = resMap[ugV];
+    }
+    if (outcome === 'UNKNOWN') {
+      var iD = idx_('Date'), iH = idx_('Home'), iA = idx_('Away');
+      if (iD >= 0 && iH >= 0 && iA >= 0) {
+        var bsD = _fbNormDateStr_(row[iD]);
+        var bsH = String(row[iH] || '').trim().toLowerCase();
+        var bsA = String(row[iA] || '').trim().toLowerCase();
+        if (bsD && bsH && bsA) {
+          var bsKey = bsD + '|' + bsH + '|' + bsA;
+          if (resMap[bsKey]) outcome = resMap[bsKey];
+        }
+      }
+    }
+    if (outcome === 'UNKNOWN') return; // no graded result for this row
 
     var market  = idx_('Market') >= 0 ? String(row[idx_('Market')] || '').trim() : 'UNKNOWN';
+    var selText = idx_('Selection_Text') >= 0 ? String(row[idx_('Selection_Text')] || '').trim() : '';
+    var cluster = fbContractMarketCluster_(market, selText);
+
+    // Grade side markets by Selection_Side vs outcome side.
+    // Skip TOTAL_CLUSTER and HQ_CLUSTER (mark NA) as those need market-specific graders.
+    var isWin;
+    if (cluster === 'SIDE_CLUSTER') {
+      var selSide = idx_('Selection_Side') >= 0 ? String(row[idx_('Selection_Side')] || '').trim().toUpperCase() : '';
+      var outcomeSide = outcome; // 'HOME' | 'AWAY' | 'DRAW'
+      // Handle WIN/LOSS values from legacy actual_result
+      if (outcomeSide === 'WIN' || outcomeSide === 'HALF_WIN') {
+        // Legacy: WIN means the selection won — treat as a win
+        isWin = 1;
+      } else if (outcomeSide === 'LOSS' || outcomeSide === 'HALF_LOSS') {
+        isWin = 0;
+      } else {
+        if (!selSide || selSide === 'UNKNOWN') return;
+        isWin = (selSide === outcomeSide) ? 1 : 0;
+      }
+    } else {
+      // TOTAL_CLUSTER, HQ_CLUSTER, OTHER — skip for now; grading too complex without full context
+      return;
+    }
+
     var league  = idx_('League') >= 0 ? String(row[idx_('League')] || '').trim() : 'UNKNOWN';
     var fbBin   = idx_('FB_Bin') >= 0 ? String(row[idx_('FB_Bin')] || '').trim() : 'UNKNOWN';
     var agree   = idx_('MG_FB_Agree') >= 0 ? String(row[idx_('MG_FB_Agree')] || '').trim() : 'NA';
@@ -5966,7 +6177,11 @@ function buildMgFbSynergy_(ss, opts) {
   var synSh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'MG_FB_SYNERGY') : ss.getSheetByName('MG_FB_SYNERGY');
   if (!synSh) synSh = ss.insertSheet('MG_FB_SYNERGY');
   synSh.clear();
-  synSh.getRange(1, 1, outRows.length, outRows[0].length).setValues(outRows);
+  if (outRows.length > 1) {
+    synSh.getRange(1, 1, outRows.length, outRows[0].length).setValues(outRows);
+  } else {
+    synSh.getRange(1, 1, 1, outRows[0].length).setValues([outRows[0]]);
+  }
   Logger.log('buildMgFbSynergy_: wrote ' + (outRows.length - 1) + ' rows');
 }
 
@@ -6107,10 +6322,14 @@ function fbGateEnforceBetSlipsGating_(ss, opts) {
     var fbRel   = idx_('FB_Reliable') >= 0 ? String(row[idx_('FB_Reliable')] || '').toUpperCase() === 'TRUE' : false;
     var fbLb    = idx_('FB_Bin_Wilson_LB') >= 0 ? Number(row[idx_('FB_Bin_Wilson_LB')]) : 0;
 
+    // Blocker 6 fix: normalize SHADOW_ prefix before checking the action keyword
+    // so SHADOW_SKIP, SHADOW_ALLOW, SHADOW_PROMOTE etc. all resolve correctly.
+    var actionNorm = action.replace(/^SHADOW_/i, '').toUpperCase();
+
     var reason = '';
     if (skipHq && corrGrp === 'HQ_CLUSTER') {
       reason = 'HQ_CLUSTER_NORMAL_SKIPPED';
-    } else if (gateSynergy && fbRel && action.indexOf('SKIP') >= 0) {
+    } else if (gateSynergy && fbRel && actionNorm === 'SKIP') {
       reason = 'SYNERGY_SKIP';
     } else if (gateCalib && fbRel && fbLb < minFbLb) {
       reason = 'CALIBRATION_LB_TOO_LOW';
@@ -6333,12 +6552,20 @@ function runSatelliteForebetContract_(ss, mode, opts) {
         backfillBetSlipsForebetMeta_(ss, 5000);
       }
     } else if (mode === 'POST_BETS_SHADOW') {
+      // Blocker 1 fix: after Accumulator clears+rewrites Bet_Slips, fresh rows have no
+      // FB metadata. Ensure headers and backfill BEFORE synergy/shadow so annotations
+      // have something to work with.
       if (fbContractCfgBool_(cfg, 'fb_shebang_run_post_bets', true)) {
+        ensureBetSlipsCanonicalHeaders_(ss, { enableFbMeta: fbContractCfgBool_(cfg, 'enable_fb_meta_columns', true) });
+        backfillBetSlipsForebetMeta_(ss, 5000);
         buildMgFbSynergy_(ss, opts);
         annotateBetSlipsShadow_(ss, 5000, opts);
       }
     } else if (mode === 'POST_BETS_ENFORCE') {
+      // Same fix as POST_BETS_SHADOW — ensure+backfill first, then synergy/shadow/gating.
       if (fbContractCfgBool_(cfg, 'fb_shebang_run_post_bets', true)) {
+        ensureBetSlipsCanonicalHeaders_(ss, { enableFbMeta: fbContractCfgBool_(cfg, 'enable_fb_meta_columns', true) });
+        backfillBetSlipsForebetMeta_(ss, 5000);
         buildMgFbSynergy_(ss, opts);
         annotateBetSlipsShadow_(ss, 5000, opts);
         fbGateEnforceBetSlipsGating_(ss, opts);
