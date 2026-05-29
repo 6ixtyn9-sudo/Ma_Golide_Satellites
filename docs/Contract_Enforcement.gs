@@ -5491,6 +5491,36 @@ function fbContractCfgNum_(cfg, key, def) {
 
 // ── MATH HELPERS ─────────────────────────────────────────────────────────────
 
+function fbContractParseForebetFavoredProb_(pred, probRaw, home, away) {
+  var side = 'UNKNOWN';
+  if (typeof interpretPredictionSide_ === 'function') {
+    try { side = interpretPredictionSide_(pred, home, away) || 'UNKNOWN'; } catch (e) {}
+  }
+  if (side === 'UNKNOWN') {
+    side = fbContractNormalizeSide_(pred);
+    var p = String(pred || '').trim().toLowerCase();
+    if (side === 'UNKNOWN' && home && p === String(home).trim().toLowerCase()) side = 'HOME';
+    if (side === 'UNKNOWN' && away && p === String(away).trim().toLowerCase()) side = 'AWAY';
+  }
+
+  var s = String(probRaw == null ? '' : probRaw).trim();
+
+  // Pair parser
+  var m = s.match(/(\d+(?:\.\d+)?)\s*%?\s*[-:\/]\s*(\d+(?:\.\d+)?)\s*%?/);
+  if (m) {
+    var homeProb = Number(m[1]);
+    var awayProb = Number(m[2]);
+    if (homeProb > 0 && homeProb <= 1) homeProb *= 100;
+    if (awayProb > 0 && awayProb <= 1) awayProb *= 100;
+    if (side === 'HOME') return homeProb;
+    if (side === 'AWAY') return awayProb;
+    return NaN;
+  }
+
+  // Scalar fallback
+  return fbContractNormalizePct_(probRaw);
+}
+
 function fbContractNormalizePct_(v) {
   if (v == null || v === '') return NaN;
   var s = String(v).replace(/[%,\s]/g, '').trim();
@@ -5914,19 +5944,34 @@ function buildForebetCalibration_(ss, opts) {
   var cAway   = col_(['Away']);
   if (cLeague < 0 || cPred < 0 || cProb < 0) { Logger.log('buildForebetCalibration_: required columns missing'); return; }
 
+  var diag = {
+    scanned: 0,
+    skippedNoStatusOrScore: 0,
+    skippedMissingPred: 0,
+    skippedMissingProb: 0,
+    skippedBadProb: 0,
+    skippedDrawOrUnknownPred: 0,
+    skippedBadScore: 0,
+    usable: 0,
+    outputRows: 0
+  };
+
   var stats = {};
   var leagueTotals = {};
   var globalTotals = { n: 0, wins: 0 };
 
   for (var r = 1; r < data.length; r++) {
     var row = data[r];
+    diag.scanned++;
+
     var status  = String(row[cStatus] || '').trim().toUpperCase();
     var scoreStr = cScore >= 0 ? String(row[cScore] || '') : '';
     var hasFT = status.indexOf('FT') >= 0 || status.indexOf('AOT') >= 0 || !!fbContractParseFTScore_(scoreStr);
-    if (!hasFT) continue;
+    if (!hasFT) { diag.skippedNoStatusOrScore++; continue; }
 
     var pred = String(row[cPred] || '').trim();
-    var prob = fbContractNormalizePct_(row[cProb]);
+    if (!pred) { diag.skippedMissingPred++; continue; }
+
     var home = cHome >= 0 ? String(row[cHome] || '') : '';
     var away = cAway >= 0 ? String(row[cAway] || '') : '';
 
@@ -5935,14 +5980,27 @@ function buildForebetCalibration_(ss, opts) {
       try { fbSide = interpretPredictionSide_(pred, home, away) || 'UNKNOWN'; } catch(e) { fbSide = fbContractNormalizeSide_(pred); }
     } else { fbSide = fbContractNormalizeSide_(pred); }
 
-    if (fbSide !== 'HOME' && fbSide !== 'AWAY') continue;
-    if (!isFinite(prob)) continue;
+    if (fbSide !== 'HOME' && fbSide !== 'AWAY') { diag.skippedDrawOrUnknownPred++; continue; }
+
+    var probRaw = row[cProb];
+    if (probRaw == null || String(probRaw).trim() === '') { diag.skippedMissingProb++; continue; }
+
+    var prob = NaN;
+    if (typeof getForebetFavoredProbability_ === 'function') {
+      try { prob = getForebetFavoredProbability_(pred, probRaw, home, away); } catch (e) { prob = NaN; }
+    }
+    if (!isFinite(prob)) {
+      prob = fbContractParseForebetFavoredProb_(pred, probRaw, home, away);
+    }
+    if (!isFinite(prob)) { diag.skippedBadProb++; continue; }
+    
     var bin = fbContractProbToBin_(prob);
-    if (!bin) continue;
+    if (!bin) { diag.skippedBadProb++; continue; }
 
     var actualSide = fbContractWinnerSideFromScore_(scoreStr);
-    if (actualSide === 'UNKNOWN') continue;
+    if (actualSide === 'UNKNOWN') { diag.skippedBadScore++; continue; }
 
+    diag.usable++;
     var league = String(row[cLeague] || '').trim() || 'UNKNOWN';
     var isWin = (fbSide === actualSide) ? 1 : 0;
     var key = league + '|' + bin;
@@ -5974,6 +6032,8 @@ function buildForebetCalibration_(ss, opts) {
   if (!calibSh) calibSh = ss.insertSheet('FOREBET_CALIBRATION');
   calibSh.clear();
   calibSh.getRange(1, 1, outRows.length, outRows[0].length).setValues(outRows);
+  diag.outputRows = outRows.length - 1;
+  Logger.log('buildForebetCalibration_: diag=' + JSON.stringify(diag));
   Logger.log('buildForebetCalibration_: wrote ' + (outRows.length - 1) + ' rows');
 }
 
