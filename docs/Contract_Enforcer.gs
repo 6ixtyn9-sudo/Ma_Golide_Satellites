@@ -467,6 +467,114 @@ var BET_SLIPS_CONTRACT_25 = [
   "Book_Line_Source"
 ];
 
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FOREBET CONTRACT EXTENSION — appended after BET_SLIPS_CONTRACT_25
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Extended Forebet metadata columns appended after BET_SLIPS_CONTRACT_25 */
+var BET_SLIPS_CONTRACT_EXT_FB_META = [
+  'FB_Pick_Side',
+  'FB_Pick_Team',
+  'FB_Prob_Pct',
+  'FB_Bin',
+  'FB_Bin_N',
+  'FB_Bin_Win_Rate',
+  'FB_Bin_Shrunk_Rate',
+  'FB_Bin_Wilson_LB',
+  'FB_Reliable',
+  'MG_FB_Agree',
+  'MG_FB_Action',
+  'MG_FB_Trust',
+  'Adjusted_Confidence_Pct',
+  'Calibration_Action',
+  'Calibration_Reason',
+  'Correlation_Group',
+  'Same_Game_Leg_Rank',
+  'Gating_Run_ID'
+];
+
+/**
+ * Returns the Bet_Slips column contract.
+ * opts.enableFbMeta === true → appends FB metadata columns after base 25.
+ * Base is always BET_SLIPS_CONTRACT_25 — never downgraded.
+ */
+function getBetSlipsContract_(opts) {
+  opts = opts || {};
+  var base = (typeof BET_SLIPS_CONTRACT_25 !== 'undefined')
+    ? BET_SLIPS_CONTRACT_25.slice()
+    : [];
+  return opts.enableFbMeta === true
+    ? base.concat(BET_SLIPS_CONTRACT_EXT_FB_META)
+    : base;
+}
+
+/**
+ * Ensures Bet_Slips has canonical headers.
+ *  - Blank sheet → writes one canonical header row.
+ *  - Sectioned sheet → rewrites every detected header row to the full canonical contract.
+ *  - Never clears Bet_Slips, never flattens the sectioned layout, never reorders data rows.
+ *
+ * Fix 3: detection broadened to catch malformed title/header mixtures (A1 prefix) and
+ * partial repeated headers with blank FB column names. Detected header rows are rewritten
+ * in full rather than append-only, so stale/blank FB column names are always corrected.
+ */
+function ensureBetSlipsCanonicalHeaders_(ss, opts) {
+  opts = opts || {};
+  if (!opts.enableFbMeta) return;
+
+  var sh = (typeof getSheetInsensitive === 'function')
+    ? getSheetInsensitive(ss, 'Bet_Slips')
+    : ss.getSheetByName('Bet_Slips');
+  if (!sh) return; // Bet_Slips doesn't exist yet — safe to skip
+
+  if (sh.getLastRow() < 1) {
+    // Empty sheet — write full canonical header
+    var full = getBetSlipsContract_({ enableFbMeta: true });
+    sh.getRange(1, 1, 1, full.length).setValues([full]);
+    return;
+  }
+
+  var data = sh.getDataRange().getValues();
+  var fullContract = getBetSlipsContract_({ enableFbMeta: true });
+
+  for (var r = 0; r < data.length; r++) {
+    var row = data[r];
+    var first = String(row[0] || '').trim();
+
+    // Detect header rows robustly:
+    // Case A: first cell exactly 'Bet_Record_ID'
+    // Case B: first cell contains 'Bet_Record_ID' (title/header mixture) AND row has Universal_Game_ID
+    // Case C: row contains Universal_Game_ID + League + Market header tokens
+    var isHeaderRow = false;
+    if (first === 'Bet_Record_ID') {
+      isHeaderRow = true;
+    } else {
+      var rowTokens = {};
+      for (var c0 = 0; c0 < row.length; c0++) {
+        var cell = String(row[c0] || '').trim().toLowerCase();
+        if (cell) rowTokens[cell] = true;
+      }
+      if (first.indexOf('Bet_Record_ID') >= 0 && rowTokens['universal_game_id']) {
+        isHeaderRow = true;
+      } else if (rowTokens['universal_game_id'] && rowTokens['league'] && rowTokens['market']) {
+        isHeaderRow = true;
+      }
+    }
+
+    if (!isHeaderRow) continue;
+
+    // Rewrite the entire header row to the full canonical contract.
+    // This repairs malformed title/header mixtures and blank FB column names.
+    sh.getRange(r + 1, 1, 1, fullContract.length).setValues([fullContract]);
+    // Clear any stale columns beyond the contract width.
+    var shLastCol = sh.getLastColumn();
+    if (shLastCol > fullContract.length) {
+      sh.getRange(r + 1, fullContract.length + 1, 1, shLastCol - fullContract.length).clearContent();
+    }
+  }
+}
+
 /** ResultsClean canonical machine columns (append-only header upgrade) */
 var RESULTS_CLEAN_CANONICAL_MIN = [
   "Universal_Game_ID",

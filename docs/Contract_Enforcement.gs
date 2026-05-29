@@ -1,6 +1,6 @@
 /**
  * ======================================================================
- * MODULE 8:  
+ * MODULE 8:
  * PROJECT: Ma Golide
  * VERSION: 2.10 (Production-Ready)
  * ======================================================================
@@ -173,16 +173,16 @@ function _getTier(confPct, cuts) {
   if (typeof getTierObject === 'function') {
     return getTierObject(confPct);
   }
-  
+
   // Fallback to original logic
   if (!isFinite(confPct)) return { tier: 'EVEN', symbol: '', display: 'N/A' };
-  
+
   cuts = cuts || { strongMin: 75, mediumMin: 65, weakMin: 55 };
-  
+
   if (confPct >= cuts.strongMin) return { tier: 'STRONG', symbol: '★', display: '★ (' + Math.round(confPct) + '%)' };
   if (confPct >= cuts.mediumMin) return { tier: 'MEDIUM', symbol: '●', display: '● (' + Math.round(confPct) + '%)' };
   if (confPct >= cuts.weakMin) return { tier: 'WEAK', symbol: '○', display: '○ (' + Math.round(confPct) + '%)' };
-  
+
   return { tier: 'EVEN', symbol: '', display: '(' + Math.round(confPct) + '%)' };
 }
 
@@ -711,10 +711,10 @@ function _selectBankers(candidates, config) {
  * PHASE 3 (Module 8) - UNIFIED ACCUMULATOR & HIGH_QTR
  * Version: 3.0.0
  * ============================================================================
- * 
+ *
  * INSTALLATION: Replace ALL existing copies of these functions.
  * Do NOT paste multiple versions - only the last definition survives.
- * 
+ *
  * Functions (names preserved for compatibility):
  *   _deriveHighestQuarter_(game, marginStats, config, t2)
  *   _selectSnipers(candidates, config, tierCuts)
@@ -756,7 +756,7 @@ function m8_normOUPickKey(matchKey, pick) {
   if (typeof _normOUPickKey === 'function') return _normOUPickKey(matchKey, pick);
 
   var s = String(pick || '').toUpperCase();
-  
+
   // Strip symbols and brackets FIRST
   s = s.replace(/[★●○⭐]/g, ' ')
        .replace(/\([^)]*\)/g, ' ')
@@ -832,75 +832,75 @@ function _m8_parseConf_(raw) {
  */
 function diagnoseMarginStats_(marginStats, ss) {
   var FN = 'diagnoseMarginStats_';
-  
+
   Logger.log('[' + FN + '] ═══════════════════════════════════════════════════════════════');
   Logger.log('[' + FN + '] MARGINSTATS DIAGNOSTIC REPORT');
   Logger.log('[' + FN + '] ═══════════════════════════════════════════════════════════════');
-  
+
   // 1. Basic type check
   Logger.log('[' + FN + '] Type: ' + typeof marginStats);
   Logger.log('[' + FN + '] Is null: ' + (marginStats === null));
   Logger.log('[' + FN + '] Is undefined: ' + (marginStats === undefined));
-  
+
   if (!marginStats || typeof marginStats !== 'object') {
     Logger.log('[' + FN + '] CRITICAL: marginStats is not a valid object!');
     return { valid: false, reason: 'not_an_object' };
   }
-  
+
   // 2. Key analysis
   var keys = [];
   try { keys = Object.keys(marginStats); } catch (e) {
     Logger.log('[' + FN + '] ERROR getting keys: ' + e.message);
     return { valid: false, reason: 'keys_error', error: e.message };
   }
-  
+
   Logger.log('[' + FN + '] Total keys: ' + keys.length);
-  
+
   if (keys.length === 0) {
     Logger.log('[' + FN + '] CRITICAL: marginStats is EMPTY!');
     Logger.log('[' + FN + '] This means the stats loading function returned empty data.');
     Logger.log('[' + FN + '] Check: buildMarginStats_(), loadQuarterlyStats_(), or similar');
     return { valid: false, reason: 'empty_object', keyCount: 0 };
   }
-  
+
   // 3. Key format analysis
   Logger.log('[' + FN + '] First 10 keys: ' + JSON.stringify(keys.slice(0, 10)));
   Logger.log('[' + FN + '] Last 5 keys: ' + JSON.stringify(keys.slice(-5)));
-  
+
   // Check for case patterns
   var lowercaseKeys = keys.filter(function(k) { return k === k.toLowerCase(); });
   var uppercaseKeys = keys.filter(function(k) { return k === k.toUpperCase(); });
   var mixedKeys = keys.filter(function(k) { return k !== k.toLowerCase() && k !== k.toUpperCase(); });
-  
+
   Logger.log('[' + FN + '] Key case analysis:');
   Logger.log('[' + FN + ']   - All lowercase: ' + lowercaseKeys.length);
   Logger.log('[' + FN + ']   - All uppercase: ' + uppercaseKeys.length);
   Logger.log('[' + FN + ']   - Mixed case: ' + mixedKeys.length);
-  
+
   if (mixedKeys.length > 0) {
     Logger.log('[' + FN + ']   - Mixed case samples: ' + JSON.stringify(mixedKeys.slice(0, 5)));
   }
-  
+
   // 4. Value structure analysis
   var firstKey = keys[0];
   var firstValue = marginStats[firstKey];
-  
+
   Logger.log('[' + FN + '] Sample entry analysis for key: "' + firstKey + '"');
   Logger.log('[' + FN + ']   - Value type: ' + typeof firstValue);
-  
+
   if (firstValue && typeof firstValue === 'object') {
     var valueKeys = Object.keys(firstValue);
     Logger.log('[' + FN + ']   - Value keys: ' + JSON.stringify(valueKeys.slice(0, 20)));
-    
+
     // Check for expected quarterly data structure
     var hasQ1 = firstValue.hasOwnProperty('Q1') || firstValue.hasOwnProperty('q1');
     var hasQuarters = firstValue.hasOwnProperty('quarters');
     var hasMargin = firstValue.hasOwnProperty('margin') || firstValue.hasOwnProperty('avgMargin');
-    
+
     Logger.log('[' + FN + ']   - Has Q1 property: ' + hasQ1);
     Logger.log('[' + FN + ']   - Has quarters property: ' + hasQuarters);
     Logger.log('[' + FN + ']   - Has margin property: ' + hasMargin);
-    
+
     if (firstValue.Q1 !== undefined) {
       Logger.log('[' + FN + ']   - Q1 value: ' + JSON.stringify(firstValue.Q1));
     }
@@ -908,7 +908,7 @@ function diagnoseMarginStats_(marginStats, ss) {
       Logger.log('[' + FN + ']   - quarters value: ' + JSON.stringify(firstValue.quarters));
     }
   }
-  
+
   // 5. NBA team coverage check
   var nbaTeams = [
     'atlanta hawks', 'boston celtics', 'brooklyn nets', 'charlotte hornets',
@@ -920,11 +920,11 @@ function diagnoseMarginStats_(marginStats, ss) {
     'portland trail blazers', 'sacramento kings', 'san antonio spurs', 'toronto raptors',
     'utah jazz', 'washington wizards'
   ];
-  
+
   var keysLower = keys.map(function(k) { return k.toLowerCase(); });
   var foundTeams = [];
   var missingTeams = [];
-  
+
   nbaTeams.forEach(function(team) {
     var found = keysLower.indexOf(team) !== -1;
     if (!found) {
@@ -937,7 +937,7 @@ function diagnoseMarginStats_(marginStats, ss) {
       missingTeams.push(team);
     }
   });
-  
+
   Logger.log('[' + FN + '] NBA team coverage: ' + foundTeams.length + '/' + nbaTeams.length);
   if (missingTeams.length > 0 && missingTeams.length <= 10) {
     Logger.log('[' + FN + '] Missing teams: ' + JSON.stringify(missingTeams));
@@ -945,24 +945,24 @@ function diagnoseMarginStats_(marginStats, ss) {
     Logger.log('[' + FN + '] Missing teams (sample): ' + JSON.stringify(missingTeams.slice(0, 10)));
     Logger.log('[' + FN + '] ... and ' + (missingTeams.length - 10) + ' more');
   }
-  
+
   // 6. Check if spreadsheet has the expected data sheets
   if (ss) {
     Logger.log('[' + FN + '] Checking spreadsheet for data sheets...');
     var sheets = ss.getSheets();
     var sheetNames = sheets.map(function(s) { return s.getName(); });
-    
+
     var expectedSheets = ['CleanH2H', 'CleanRecent', 'Standings', 'TeamStats', 'QuarterStats'];
     expectedSheets.forEach(function(name) {
-      var found = sheetNames.some(function(sn) { 
-        return sn.toLowerCase().indexOf(name.toLowerCase()) !== -1; 
+      var found = sheetNames.some(function(sn) {
+        return sn.toLowerCase().indexOf(name.toLowerCase()) !== -1;
       });
       Logger.log('[' + FN + ']   - ' + name + ': ' + (found ? 'FOUND' : 'MISSING'));
     });
   }
-  
+
   Logger.log('[' + FN + '] ═══════════════════════════════════════════════════════════════');
-  
+
   return {
     valid: keys.length > 0,
     keyCount: keys.length,
@@ -985,7 +985,7 @@ function _m8_tierBonus_(gameTier) {
 /**
  * MASTER sanitization function for quarter values.
  * Extracts FIRST valid quarter from any string containing Q1-Q4.
- * 
+ *
  * @param {*} value - Any value that might contain quarter(s)
  * @return {Object} { quarter, valid, wasSanitized, original, reason }
  */
@@ -997,14 +997,14 @@ function _acc_sanitizeHighestQuarter(value) {
     original: value,
     reason: ''
   };
-  
+
   if (value === null || value === undefined || value === '') {
     result.reason = 'empty';
     return result;
   }
-  
+
   var str = String(value).trim().toUpperCase();
-  
+
   // Already valid single quarter?
   if (/^Q[1-4]$/.test(str)) {
     result.quarter = str;
@@ -1012,10 +1012,10 @@ function _acc_sanitizeHighestQuarter(value) {
     result.reason = 'already_valid';
     return result;
   }
-  
+
   // Detect if this looks like a tie/multi-quarter situation
   var looksLikeTie = /( OR |[\/&,]|TIE)/i.test(str);
-  
+
   // Extract FIRST valid quarter from compound values
   var match = str.match(/Q([1-4])/);
   if (match) {
@@ -1023,13 +1023,13 @@ function _acc_sanitizeHighestQuarter(value) {
     result.valid = true;
     result.wasSanitized = true;
     result.reason = looksLikeTie ? 'tie_resolved' : 'extracted';
-    
+
     if (looksLikeTie) {
       Logger.log('[_acc_sanitizeHighestQuarter] TIE FIX: "' + value + '" → "' + result.quarter + '"');
     }
     return result;
   }
-  
+
   result.reason = 'no_quarter_found';
   return result;
 }
@@ -1037,29 +1037,29 @@ function _acc_sanitizeHighestQuarter(value) {
 /**
  * Sanitizes pick TEXT that may contain tie patterns.
  * E.g., "Highest Q: Q1 or Q3" → "Highest Q: Q1"
- * 
+ *
  * @param {string} pickText - Raw pick text
  * @return {string} Sanitized pick text
  */
 function _acc_sanitizePickText(pickText) {
   if (!pickText) return pickText;
-  
+
   var str = String(pickText);
   var upper = str.toUpperCase();
-  
+
   // Only process if it looks like a Highest Quarter pick with potential tie
-  var isHighestQ = upper.indexOf('HIGHEST') >= 0 || 
+  var isHighestQ = upper.indexOf('HIGHEST') >= 0 ||
                    (upper.indexOf('HIGH') >= 0 && upper.indexOf('QTR') >= 0);
-  
+
   if (!isHighestQ) return str;
-  
+
   // Check for tie patterns
-  var hasTie = / OR /i.test(str) || 
+  var hasTie = / OR /i.test(str) ||
                /Q[1-4]\s*[\/&,]\s*Q[1-4]/i.test(str) ||
                /TIE/i.test(str);
-  
+
   if (!hasTie) return str;
-  
+
   // Extract first quarter and rebuild
   var s = _acc_sanitizeHighestQuarter(str);
   if (s.valid) {
@@ -1067,7 +1067,7 @@ function _acc_sanitizePickText(pickText) {
     Logger.log('[_acc_sanitizePickText] FIXED: "' + pickText + '" → "' + fixed + '"');
     return fixed;
   }
-  
+
   return str;
 }
 
@@ -1076,22 +1076,22 @@ function _acc_sanitizePickText(pickText) {
  */
 function _acc_isHighestQuarterPick(p) {
   if (!p || typeof p !== 'object') return false;
-  
+
   // Explicit flag
   if (p.isHighQtr === true) return true;
-  
+
   // Signal type / type field
   var st = String(p.signalType || '').toUpperCase();
   var ty = String(p.type || '').toUpperCase();
-  
+
   if (st.indexOf('HIGH_QTR') >= 0) return true;
   if (st.indexOf('HIGH') >= 0 && st.indexOf('QTR') >= 0) return true;
   if (ty.indexOf('HIGH') >= 0 && ty.indexOf('QTR') >= 0) return true;
-  
+
   // Pick text heuristics
   var pk = String(p.pick || '').toUpperCase();
   if (pk.indexOf('HIGHEST') >= 0 && pk.indexOf('Q') >= 0) return true;
-  
+
   return false;
 }
 
@@ -1101,26 +1101,26 @@ function _acc_isHighestQuarterPick(p) {
  */
 function _acc_sanitizePickObject(p) {
   if (!p || typeof p !== 'object') return p;
-  
+
   // Only process Highest Quarter picks
   if (!_acc_isHighestQuarterPick(p)) return p;
-  
+
   var rawPick = String(p.pick || '');
   var s = _acc_sanitizeHighestQuarter(rawPick);
-  
+
   if (!s.valid) return p;
-  
+
   // Check if tie was detected
   var wasTie = s.wasSanitized && s.reason === 'tie_resolved';
-  
+
   // Standardize the pick text
   p.pick = 'Highest Q: ' + s.quarter;
-  
+
   // Ensure proper flags
   p.signalType = p.signalType || 'HIGH_QTR';
   p.type = p.type || 'SNIPER HIGH QTR';
   p.isHighQtr = true;
-  
+
   // Confidence penalty for ties (cap at 55%)
   if (wasTie && p.confidence != null) {
     var conf = parseFloat(String(p.confidence).replace('%', ''));
@@ -1129,7 +1129,7 @@ function _acc_sanitizePickObject(p) {
       p.wasTie = true;
     }
   }
-  
+
   return p;
 }
 
@@ -1138,18 +1138,18 @@ function _acc_sanitizePickObject(p) {
  */
 function _acc_sanitizePicksBundle(bundle) {
   if (!bundle || typeof bundle !== 'object') return bundle;
-  
+
   var arrays = ['snipers', 'bankers', 'robbers', 'firstHalves', 'ftOUs'];
-  
+
   for (var i = 0; i < arrays.length; i++) {
     var arr = bundle[arrays[i]];
     if (!Array.isArray(arr)) continue;
-    
+
     for (var j = 0; j < arr.length; j++) {
       _acc_sanitizePickObject(arr[j]);
     }
   }
-  
+
   return bundle;
 }
 
@@ -1422,13 +1422,13 @@ function _acc_installWriteWrapper_() {
       Logger.log('[ACC-WRAP] _writeBetSlipsEnhanced not found, skipping wrapper');
       return false;
     }
-    
+
     if (_writeBetSlipsEnhanced._accSanitized === true) {
       return true; // Already wrapped
     }
-    
+
     var originalFn = _writeBetSlipsEnhanced;
-    
+
     _writeBetSlipsEnhanced = function(ss, bundle, config, tierCuts, enhEnabled) {
       // Sanitize bundle BEFORE writing
       try {
@@ -1437,14 +1437,14 @@ function _acc_installWriteWrapper_() {
       } catch (e) {
         Logger.log('[ACC-WRAP] Pre-sanitize error (non-fatal): ' + e.message);
       }
-      
+
       return originalFn(ss, bundle, config, tierCuts, enhEnabled);
     };
-    
+
     _writeBetSlipsEnhanced._accSanitized = true;
     Logger.log('[ACC-WRAP] Installed sanitization wrapper on _writeBetSlipsEnhanced');
     return true;
-    
+
   } catch (e) {
     Logger.log('[ACC-WRAP] Install failed: ' + e.message);
     return false;
@@ -1465,14 +1465,14 @@ function _acc_installWriteWrapper_() {
 function _acc_scrubBetSlipsSheet_(ss) {
   ss = ss || SpreadsheetApp.getActiveSpreadsheet();
   if (!ss) return { ok: false, touched: 0, reason: 'no_ss' };
-  
+
   var sheetNames = ['BET_SLIPS', 'Bet_Slips', 'BetSlips', 'BETSLIPS', 'Accumulator'];
   var touched = 0;
   var blanked = 0;
-  
+
   for (var si = 0; si < sheetNames.length; si++) {
     var sheet = null;
-    
+
     // Case-insensitive lookup
     var allSheets = ss.getSheets();
     var target = sheetNames[si].toLowerCase();
@@ -1482,18 +1482,18 @@ function _acc_scrubBetSlipsSheet_(ss) {
         break;
       }
     }
-    
+
     if (!sheet) continue;
-    
+
     var range = sheet.getDataRange();
     var values = range.getValues();
     var modified = false;
-    
+
     for (var r = 0; r < values.length; r++) {
       for (var c = 0; c < values[r].length; c++) {
         var cell = values[r][c];
         if (!cell) continue;
-        
+
         var txt = String(cell);
         var upper = txt.toUpperCase();
 
@@ -1508,19 +1508,19 @@ function _acc_scrubBetSlipsSheet_(ss) {
           continue;
         }
         // ── END TIE SCRUB FIX ─────────────────────────────────────
-        
+
         // Only target Highest Quarter cells with non-OR tie patterns
-        var isHighestQ = upper.indexOf('HIGHEST') >= 0 || 
+        var isHighestQ = upper.indexOf('HIGHEST') >= 0 ||
                         (upper.indexOf('HIGH') >= 0 && upper.indexOf('QTR') >= 0);
-        
+
         if (!isHighestQ) continue;
-        
+
         // Remaining tie patterns (slash, ampersand, comma, explicit TIE label)
-        var hasTie = /[\/&,]/.test(txt) || 
+        var hasTie = /[\/&,]/.test(txt) ||
                      /TIE/i.test(txt);
-        
+
         if (!hasTie) continue;
-        
+
         var s = _acc_sanitizeHighestQuarter(txt);
         if (s.valid) {
           values[r][c] = 'Highest Q: ' + s.quarter;
@@ -1530,13 +1530,13 @@ function _acc_scrubBetSlipsSheet_(ss) {
         }
       }
     }
-    
+
     if (modified) {
       range.setValues(values);
       Logger.log('[ACC-SCRUB] Sheet "' + sheet.getName() + '" updated — touched=' + touched + ', blanked=' + blanked);
     }
   }
-  
+
   return { ok: true, touched: touched, blanked: blanked };
 }
 
@@ -2521,29 +2521,29 @@ if (config.includeHighestQuarter) {
             if (_lqProfileCache && _lqProfileCache[oq] && isFinite(_lqProfileCache[oq].mean) && _lqProfileCache[oq].mean > 0) {
               var qMean = _lqProfileCache[oq].mean;
               var totalHist = _lqProfileCache.Q1.mean + _lqProfileCache.Q2.mean + _lqProfileCache.Q3.mean + _lqProfileCache.Q4.mean;
-              
+
               var gameExpectedFT = null;
               try {
                 var avgVal = t1Map['avg'] !== undefined ? parseFloat(row[t1Map['avg']]) : null;
                 if (!isFinite(avgVal) || avgVal <= 0) avgVal = null;
 
-                gameExpectedFT = _getFTLineFromUpcomingClean(home, away) 
+                gameExpectedFT = _getFTLineFromUpcomingClean(home, away)
                               || _inlineExtractBookLine_(row, t1Map, t2)
                               || avgVal
                               || _inlineExtractForebetPrediction_(row, t1Map);
               } catch(e) {}
               if (!isFinite(gameExpectedFT) || gameExpectedFT <= 100) gameExpectedFT = totalHist;
-              
+
               // 1. Proportional Scaling
               var scaledLine = gameExpectedFT * (qMean / totalHist);
-              
+
               // 2. Edge Constraints (Cap deviation from prediction)
               if (ouSig.line && isFinite(ouSig.line) && ouSig.line > 0) {
                  var maxDev = 3.5;
                  if (scaledLine > ouSig.line + maxDev) scaledLine = ouSig.line + maxDev;
                  if (scaledLine < ouSig.line - maxDev) scaledLine = ouSig.line - maxDev;
               }
-              
+
               // 3. Half-Point Rounding (Force .5)
               bookLine = Math.floor(scaledLine) + 0.5;
             }
@@ -2888,7 +2888,7 @@ if (config.includeHighestQuarter) {
     robberCandidates.sort(function(a, b) {
       return toNum(b.confidence, 0) - toNum(a.confidence, 0);
     });
-    
+
     var robbers = [];
     for (var ri = 0; ri < robberCandidates.length; ri++) {
       var p = robberCandidates[ri];
@@ -2985,7 +2985,7 @@ if (config.includeHighestQuarter) {
 function _buildFTConfig_(ss) {
   ss = ss || SpreadsheetApp.getActiveSpreadsheet();
   var sheet = ss.getSheetByName('Config_Tier2');
-  
+
   // Default config if sheet not found
   var defaults = {
     ft: {
@@ -3004,12 +3004,12 @@ function _buildFTConfig_(ss) {
       debugLogging: false
     }
   };
-  
+
   if (!sheet) {
     Logger.log('[_buildFTConfig_] Config_Tier2 not found, using defaults');
     return defaults;
   }
-  
+
   var data = sheet.getDataRange().getValues();
   var raw = {};
   for (var i = 0; i < data.length; i++) {
@@ -3019,7 +3019,7 @@ function _buildFTConfig_(ss) {
       raw[key] = val;
     }
   }
-  
+
   function toNum(v, d) { var n = parseFloat(v); return isFinite(n) ? n : d; }
   function toBool(v, d) {
     if (v === true || v === false) return v;
@@ -3028,7 +3028,7 @@ function _buildFTConfig_(ss) {
     if (s === 'false') return false;
     return d;
   }
-  
+
   return {
     raw: raw,
     ft: {
@@ -3063,7 +3063,7 @@ function _m8_extractFTLine_(t2, row, t1Map) {
     var v = parseFloat(t2.ftLine);
     if (isFinite(v) && v > 0) return v;
   }
-  
+
   // Then check various column names in row
   var cols = ['avg', 'ft_line', 'ftline', 'total', 'line', 'ft_total', 'fttotal'];
   for (var i = 0; i < cols.length; i++) {
@@ -3072,7 +3072,7 @@ function _m8_extractFTLine_(t2, row, t1Map) {
       if (isFinite(val) && val > 0) return val;
     }
   }
-  
+
   return 0;
 }
 
@@ -3106,7 +3106,7 @@ function injectH1Caches(config, h2hStats, recentForm) {
 
 /**
  * runAccumulator - ROBUST v3.5.0
- * 
+ *
  * 4-LAYER DEFENSE:
  *   Layer 1: _deriveHighestQuarter_() returns single quarter
  *   Layer 2: buildAccumulator() belt-and-suspenders check
@@ -3115,20 +3115,20 @@ function injectH1Caches(config, h2hStats, recentForm) {
  */
 function runAccumulator(ss) {
   Logger.log('[runAccumulator] ROBUST v3.5.0 (4-Layer Quarter Sanitization)');
-  
+
   ss = ss || SpreadsheetApp.getActiveSpreadsheet();
-  
+
   // LAYER 3: Install pre-write sanitization wrapper
   _acc_installWriteWrapper_();
-  
+
   // LAYERS 1 & 2: Run buildAccumulator
   var result = buildAccumulator(ss);
-  
+
 // LAYER 4: Post-write sheet scrub
   try {
     var scrub = _acc_scrubBetSlipsSheet_(ss);
     Logger.log('[runAccumulator] Layer 4 post-scrub: ' + (scrub.touched || 0) + ' cells fixed');
-    
+
     if (scrub.touched > 0 && result.diagnostics) {
       result.diagnostics.postScrubFixed = scrub.touched;
     }
@@ -3146,21 +3146,21 @@ function runAccumulator(ss) {
 function _capSnipersPerGame(snipers, maxPerGame) {
   if (!Array.isArray(snipers)) return [];
   if (!isFinite(maxPerGame) || maxPerGame <= 0) return snipers;
-  
+
   var counts = {};
   var result = [];
   var dropped = 0;
-  
+
   for (var i = 0; i < snipers.length; i++) {
     var s = snipers[i];
     if (!s) continue;
-    
+
     // HIGH_QTR always exempt
     if (s.isHighQtr) { result.push(s); continue; }
-    
+
     var key = _m8_normMatch_(s.match) || '__unknown__';
     counts[key] = counts[key] || 0;
-    
+
     if (counts[key] < maxPerGame) {
       result.push(s);
       counts[key]++;
@@ -3168,7 +3168,7 @@ function _capSnipersPerGame(snipers, maxPerGame) {
       dropped++;
     }
   }
-  
+
   if (dropped > 0) {
     Logger.log('[_capSnipersPerGame] Dropped ' + dropped + ' (max ' + maxPerGame + '/game)');
   }
@@ -3182,7 +3182,7 @@ function _capSnipersPerGame(snipers, maxPerGame) {
  * WHY: Initialize/reset accumulator configuration with all enhancement flags.
  * WHAT: Creates Config_Accumulator sheet with MODULE 9 options enabled.
  * HOW: Writes config key-value pairs with descriptions, applies formatting.
- * 
+ *
  * WHERE: Called from menu or during system initialization.
  * SAFE: Uses fallback if _getSheet() unavailable.
  * ======================================================================
@@ -3575,7 +3575,7 @@ function _formatBetSlipRow_(pick, market, period, cfgBundle, slipIndex,
     t2,
     acc,
     typeLabel || 'M8_ACCUMULATOR',
-    (cfgBundle && cfgBundle.stamp) || '', 
+    (cfgBundle && cfgBundle.stamp) || '',
     (pick && (pick.lineSource || pick.source)) || 'DERIVED'
   ];
 }
@@ -3622,10 +3622,10 @@ function _writeBetSlipsEnhanced(ss, picks, config, tierCuts, enhancementsEnabled
     (typeof CONTRACT_VERSION !== 'undefined' ? CONTRACT_VERSION : 'ACC');
 
   var cfgVers = readConfigVersionsWithFallback_(ss);
-  var cfgBundle = { 
-    t1: cfgVers.t1 || '', 
-    t2: cfgVers.t2 || '', 
-    acc: cfgAcc 
+  var cfgBundle = {
+    t1: cfgVers.t1 || '',
+    t2: cfgVers.t2 || '',
+    acc: cfgAcc
   };
   cfgBundle.stamp = generateConfigStamp_(cfgBundle, ss);
 
@@ -3862,7 +3862,7 @@ function _writeBetSlipsEnhanced(ss, picks, config, tierCuts, enhancementsEnabled
       var sConf = parseConf(s.confidence);
       var sMkt = slipMarketFromSniper_(s);
       var sPer = slipPeriodFromSniper_(s);
-      
+
       // Granular Module Labeling
       var sText = String(s.selectionText || s.pick || '').toUpperCase();
       var sMod = 'M8_SNIPER';
@@ -4247,9 +4247,9 @@ function loadBetSlipsSniperOUPicks_(ss) {
   function parsePickDirLine_(pickU) {
     // Robust pattern: look for O/U/OVER/UNDER followed by a number
     // Handle cases like "O 58.5", "OVER 58.5", "U58.5", "Q1: UNDER 59.0"
-    var dm = pickU.match(/\b(OVER|UNDER|O|U)\b\s*([0-9]+(?:\.[0-9]+)?)/i) || 
+    var dm = pickU.match(/\b(OVER|UNDER|O|U)\b\s*([0-9]+(?:\.[0-9]+)?)/i) ||
              pickU.match(/(OVER|UNDER|O|U)\s*([0-9]+(?:\.[0-9]+)?)/i);
-             
+
     if (!dm) return { dir: '', line: NaN };
     var dirRaw = dm[1].toUpperCase();
     var dir = (dirRaw === 'O' || dirRaw === 'OVER') ? 'OVER' : 'UNDER';
@@ -4271,7 +4271,7 @@ function loadBetSlipsSniperOUPicks_(ss) {
 
     // 1. Context Check
     var inSniperContext = (typeU.indexOf('SNIPER') !== -1) || (secU.indexOf('SNIPER') !== -1);
-    
+
     // 2. Quarter Check
     var q = quarterFrom_(periodU, pickU);
     var isQuarter = !!q;
@@ -4298,7 +4298,7 @@ function loadBetSlipsSniperOUPicks_(ss) {
 
     // Logging for troubleshooting
     if (idx < 5 || (inSniperContext && idx < 20)) {
-      Logger.log(FN + ' Row ' + (idx + 1) + ' Debug: ' + 
+      Logger.log(FN + ' Row ' + (idx + 1) + ' Debug: ' +
                  'Match=' + r.match + ' | ' +
                  'Type=' + typeU + ' | ' +
                  'Sec=' + secU + ' | ' +
@@ -4335,8 +4335,8 @@ function loadBetSlipsSniperOUPicks_(ss) {
 
   Logger.log(FN + ' FINAL: Loaded ' + picks.length + ' Sniper O/U picks');
   if (picks.length === 0) {
-    Logger.log(FN + ' SKIP SUMMARY: context=' + skippedCounts.context + 
-               ', quarter=' + skippedCounts.quarter + 
+    Logger.log(FN + ' SKIP SUMMARY: context=' + skippedCounts.context +
+               ', quarter=' + skippedCounts.quarter +
                ', ou=' + skippedCounts.ou);
   }
 
@@ -4365,15 +4365,15 @@ function evaluateBetSlipsOUPicks_(slipPicks, resultMapData, resH, quarterFormat)
     composite:   { bets: 0, correct: 0, incorrect: 0, push: 0, accuracy: 0 },
     directional: { bets: 0, correct: 0, incorrect: 0, push: 0, accuracy: 0 },
 
-    byQuarter: { 
-      Q1: { c: 0, t: 0 }, 
-      Q2: { c: 0, t: 0 }, 
-      Q3: { c: 0, t: 0 }, 
-      Q4: { c: 0, t: 0 } 
+    byQuarter: {
+      Q1: { c: 0, t: 0 },
+      Q2: { c: 0, t: 0 },
+      Q3: { c: 0, t: 0 },
+      Q4: { c: 0, t: 0 }
     },
-    byDirection: { 
-      OVER:  { c: 0, t: 0 }, 
-      UNDER: { c: 0, t: 0 } 
+    byDirection: {
+      OVER:  { c: 0, t: 0 },
+      UNDER: { c: 0, t: 0 }
     },
     byLeague: {},
     byType: {},
@@ -4410,9 +4410,9 @@ function evaluateBetSlipsOUPicks_(slipPicks, resultMapData, resH, quarterFormat)
       String(p.type || '').toUpperCase()
     ].join('|');
 
-    if (seen[dedupKey]) { 
-      eval_.duplicatesSkipped++; 
-      continue; 
+    if (seen[dedupKey]) {
+      eval_.duplicatesSkipped++;
+      continue;
     }
     seen[dedupKey] = true;
 
@@ -4424,11 +4424,11 @@ function evaluateBetSlipsOUPicks_(slipPicks, resultMapData, resH, quarterFormat)
 
     if (!resultRow) {
       eval_.all.pending++;
-      eval_.lookupFailures.push({ 
-        date: dateStr || p.dateRaw, 
-        home: p.home, 
-        away: p.away, 
-        reason: 'No result found' 
+      eval_.lookupFailures.push({
+        date: dateStr || p.dateRaw,
+        home: p.home,
+        away: p.away,
+        reason: 'No result found'
       });
       continue;
     }
@@ -4436,11 +4436,11 @@ function evaluateBetSlipsOUPicks_(slipPicks, resultMapData, resH, quarterFormat)
     var qTotals = getQuarterTotals_(resultRow, resH, quarterFormat);
     if (!qTotals || !isFinite(qTotals[p.quarter])) {
       eval_.all.pending++;
-      eval_.lookupFailures.push({ 
-        date: dateStr || p.dateRaw, 
-        home: p.home, 
-        away: p.away, 
-        reason: 'No ' + p.quarter + ' total in results' 
+      eval_.lookupFailures.push({
+        date: dateStr || p.dateRaw,
+        home: p.home,
+        away: p.away,
+        reason: 'No ' + p.quarter + ' total in results'
       });
       continue;
     }
@@ -4655,19 +4655,19 @@ function loadAccumulatorConfig(ss) {
  * WHY: Remove empty placeholder sheets that clutter the spreadsheet.
  * WHAT: Deletes sheets with only header row or completely empty.
  * HOW: Iterates all sheets, checks row count, deletes if <= 1 row.
- * 
- * SAFETY: 
+ *
+ * SAFETY:
  *   - Skips protected sheets (Config_*, Clean, Results*, Upcoming*, etc.)
  *   - Requires confirmation before bulk delete
  *   - Logs all deletions
- * 
+ *
  * WHERE: Called from Menu.gs or manually for cleanup
  * ======================================================================
  */
 function cleanEmptySheets(ss) {
   ss = ss || SpreadsheetApp.getActiveSpreadsheet();
   var ui = SpreadsheetApp.getUi();
-  
+
   // Protected sheet name patterns - never delete these even if empty
   var protectedPatterns = [
     /^config/i,
@@ -4686,23 +4686,23 @@ function cleanEmptySheets(ss) {
     /^accuracy/i,
     /^inventory/i
   ];
-  
+
   function isProtected(sheetName) {
     for (var i = 0; i < protectedPatterns.length; i++) {
       if (protectedPatterns[i].test(sheetName)) return true;
     }
     return false;
   }
-  
+
   var sheets = ss.getSheets();
   var emptySheets = [];
   var protectedEmpty = [];
-  
+
   for (var i = 0; i < sheets.length; i++) {
     var sheet = sheets[i];
     var name = sheet.getName();
     var lastRow = sheet.getLastRow();
-    
+
     // Check if empty (0 rows) or only header (1 row)
     if (lastRow <= 1) {
       if (isProtected(name)) {
@@ -4712,7 +4712,7 @@ function cleanEmptySheets(ss) {
       }
     }
   }
-  
+
   if (emptySheets.length === 0) {
     Logger.log('[cleanEmptySheets] No empty sheets found to delete');
     if (protectedEmpty.length > 0) {
@@ -4721,35 +4721,35 @@ function cleanEmptySheets(ss) {
     ss.toast('No empty sheets to clean up', 'Ma Golide', 3);
     return { deleted: 0, protected: protectedEmpty };
   }
-  
+
   // Show confirmation
   var sheetList = emptySheets.slice(0, 20).map(function(s) { return s.name; }).join('\n');
   if (emptySheets.length > 20) {
     sheetList += '\n... and ' + (emptySheets.length - 20) + ' more';
   }
-  
+
   var response = ui.alert(
     'Delete Empty Sheets?',
-    'Found ' + emptySheets.length + ' empty sheets to delete:\n\n' + sheetList + 
+    'Found ' + emptySheets.length + ' empty sheets to delete:\n\n' + sheetList +
     '\n\nProtected sheets (not deleted): ' + protectedEmpty.length +
     '\n\nProceed with deletion?',
     ui.ButtonSet.YES_NO
   );
-  
+
   if (response !== ui.Button.YES) {
     ss.toast('Cleanup cancelled', 'Ma Golide', 3);
     return { deleted: 0, cancelled: true };
   }
-  
+
   // Delete empty sheets
   var deleted = [];
   var failed = [];
-  
+
   for (var j = 0; j < emptySheets.length; j++) {
     try {
       var sheetToDelete = emptySheets[j].sheet;
       var sheetName = emptySheets[j].name;
-      
+
       // Double-check sheet still exists and is still empty
       if (sheetToDelete.getLastRow() <= 1) {
         ss.deleteSheet(sheetToDelete);
@@ -4761,15 +4761,15 @@ function cleanEmptySheets(ss) {
       Logger.log('[cleanEmptySheets] Failed to delete ' + emptySheets[j].name + ': ' + e.message);
     }
   }
-  
+
   var summary = 'Deleted ' + deleted.length + ' empty sheets';
   if (failed.length > 0) {
     summary += ', ' + failed.length + ' failed';
   }
-  
+
   Logger.log('[cleanEmptySheets] ' + summary);
   ss.toast(summary, 'Ma Golide', 5);
-  
+
   return {
     deleted: deleted.length,
     deletedSheets: deleted,
@@ -4786,39 +4786,39 @@ function cleanEmptySheets(ss) {
  * WHY: Fix orphan bug where sheets appear in both categories AND orphans.
  * WHAT: Writes sheet inventory with proper orphan deduplication.
  * HOW: Filters orphans to exclude any sheet already in a known category.
- * 
+ *
  * WHERE: Called during audit/inventory generation
  * ======================================================================
  */
 function writeInventorySheet(ss, inventory) {
   ss = ss || SpreadsheetApp.getActiveSpreadsheet();
-  
+
   if (!inventory) {
     Logger.log('[writeInventorySheet] No inventory data provided');
     return;
   }
-  
+
   var sheet = _getSheet(ss, 'Sheet_Inventory');
   if (!sheet) {
     sheet = ss.insertSheet('Sheet_Inventory');
   }
   sheet.clear();
-  
+
   // ═══════════════════════════════════════════════════════════════════════
   // PATCH: Build set of all categorized sheet names for orphan deduplication
   // ═══════════════════════════════════════════════════════════════════════
   var categorizedSheets = {};
-  
+
   var categoryKeys = [
-    'config', 'raw', 'clean', 'stats', 'analysis', 'results', 
+    'config', 'raw', 'clean', 'stats', 'analysis', 'results',
     'upcoming', 'standings', 'tier1', 'tier2', 'ou', 'betslips',
     'h2h', 'recentHome', 'recentAway', 'proposals', 'logs', 'accuracy'
   ];
-  
+
   for (var ck = 0; ck < categoryKeys.length; ck++) {
     var key = categoryKeys[ck];
     var sheetsInCategory = inventory[key] || inventory[key + 'Sheets'] || [];
-    
+
     if (Array.isArray(sheetsInCategory)) {
       for (var si = 0; si < sheetsInCategory.length; si++) {
         var sheetName = sheetsInCategory[si];
@@ -4830,7 +4830,7 @@ function writeInventorySheet(ss, inventory) {
       }
     }
   }
-  
+
   // Also add from nested objects if present
   if (inventory.categories) {
     for (var catKey in inventory.categories) {
@@ -4847,22 +4847,22 @@ function writeInventorySheet(ss, inventory) {
       }
     }
   }
-  
+
   Logger.log('[writeInventorySheet] Categorized sheets count: ' + Object.keys(categorizedSheets).length);
-  
+
   // ═══════════════════════════════════════════════════════════════════════
   // PATCH: Filter orphans to remove any that appear in categories
   // ═══════════════════════════════════════════════════════════════════════
   var rawOrphans = inventory.orphans || inventory.orphanSheets || [];
   var dedupedOrphans = [];
   var removedDuplicates = [];
-  
+
   for (var oi = 0; oi < rawOrphans.length; oi++) {
     var orphan = rawOrphans[oi];
     var orphanName = typeof orphan === 'string' ? orphan : (orphan && orphan.name ? orphan.name : '');
-    
+
     if (!orphanName) continue;
-    
+
     if (categorizedSheets[orphanName.toLowerCase()]) {
       removedDuplicates.push(orphanName);
       Logger.log('[writeInventorySheet] Removed duplicate orphan: ' + orphanName);
@@ -4870,16 +4870,16 @@ function writeInventorySheet(ss, inventory) {
       dedupedOrphans.push(orphan);
     }
   }
-  
+
   if (removedDuplicates.length > 0) {
     Logger.log('[writeInventorySheet] Removed ' + removedDuplicates.length + ' duplicate orphans');
   }
-  
+
   // ═══════════════════════════════════════════════════════════════════════
   // Build output
   // ═══════════════════════════════════════════════════════════════════════
   var output = [];
-  
+
   output.push(['Sheet Inventory - Generated: ' + new Date().toLocaleString()]);
   output.push(['']);
   output.push(['──── SUMMARY ────']);
@@ -4888,27 +4888,27 @@ function writeInventorySheet(ss, inventory) {
   output.push(['Orphans:', dedupedOrphans.length]);
   output.push(['Empty:', inventory.emptyCount || 0]);
   output.push(['']);
-  
+
   // Write categories
   output.push(['──── CATEGORIZED SHEETS ────']);
   output.push(['Category', 'Sheet Name', 'Rows', 'Status']);
-  
+
   for (var catKey2 in inventory.categories || {}) {
     var catList = inventory.categories[catKey2];
     if (!Array.isArray(catList)) continue;
-    
+
     for (var cli = 0; cli < catList.length; cli++) {
       var item = catList[cli];
       var itemName = typeof item === 'string' ? item : (item.name || '');
       var itemRows = typeof item === 'object' ? (item.rows || '-') : '-';
       var itemStatus = typeof item === 'object' ? (item.status || 'OK') : 'OK';
-      
+
       output.push([catKey2, itemName, itemRows, itemStatus]);
     }
   }
-  
+
   output.push(['']);
-  
+
   // Write orphans (DEDUPLICATED)
   output.push(['──── ORPHAN SHEETS (Uncategorized) ────']);
   if (dedupedOrphans.length === 0) {
@@ -4920,11 +4920,11 @@ function writeInventorySheet(ss, inventory) {
       var dName = typeof dOrphan === 'string' ? dOrphan : (dOrphan.name || '');
       var dRows = typeof dOrphan === 'object' ? (dOrphan.rows || '-') : '-';
       var dNotes = typeof dOrphan === 'object' ? (dOrphan.notes || '') : '';
-      
+
       output.push([dName, dRows, dNotes]);
     }
   }
-  
+
   // Note about removed duplicates
   if (removedDuplicates.length > 0) {
     output.push(['']);
@@ -4937,7 +4937,7 @@ function writeInventorySheet(ss, inventory) {
       output.push(['  ... and ' + (removedDuplicates.length - 20) + ' more']);
     }
   }
-  
+
   // Pad rows to be rectangular
   var maxCols = 4;
   for (var ri = 0; ri < output.length; ri++) {
@@ -4945,15 +4945,15 @@ function writeInventorySheet(ss, inventory) {
       output[ri].push('');
     }
   }
-  
+
   // Write to sheet
   sheet.getRange(1, 1, output.length, maxCols).setValues(output);
-  
+
   // Formatting
   sheet.getRange(1, 1).setFontWeight('bold').setFontSize(12);
   sheet.getRange('A3').setFontWeight('bold');
   sheet.autoResizeColumns(1, maxCols);
-  
+
   // Highlight orphans section
   for (var hi = 0; hi < output.length; hi++) {
     if (output[hi][0] === '=== ORPHAN SHEETS (Uncategorized) ===') {
@@ -4961,9 +4961,9 @@ function writeInventorySheet(ss, inventory) {
       break;
     }
   }
-  
+
   Logger.log('[writeInventorySheet] Inventory written with ' + dedupedOrphans.length + ' orphans');
-  
+
   return {
     totalSheets: inventory.totalSheets || ss.getSheets().length,
     categorized: Object.keys(categorizedSheets).length,
@@ -4999,10 +4999,10 @@ function normalizeConfidence_(confidence) {
   if (typeof createCanonicalHeaderMap_ !== 'undefined') {
     return createCanonicalHeaderMap_(BET_SLIPS_CONTRACT, [confidence]);
   }
-  
+
   const pct = Math.max(0, Math.min(1, confidence));
   const prob = pct;
-  
+
   // Determine tier using normalized thresholds
   let tierCode, tierDisplay;
   if (pct >= 0.85) {
@@ -5021,7 +5021,7 @@ function normalizeConfidence_(confidence) {
     tierCode = "AVOID";
     tierDisplay = "Avoid (<45%)";
   }
-  
+
   return {
     pct: pct,
     prob: prob,
@@ -5040,19 +5040,19 @@ function createBetSlipsHeaderMap_(actualHeaders) {
   if (typeof createCanonicalHeaderMap_ !== 'undefined') {
     return createCanonicalHeaderMap_(BET_SLIPS_CONTRACT, actualHeaders);
   }
-  
+
   // Fallback implementation
   const map = {};
-  const normalizedActual = actualHeaders.map(h => 
+  const normalizedActual = actualHeaders.map(h =>
     String(h).toLowerCase().replace(/[\s_]/g, "")
   );
-  
+
   BET_SLIPS_CONTRACT.forEach((canonical, idx) => {
     const normalized = canonical.toLowerCase().replace(/[\s_]/g, "");
     const actualIdx = normalizedActual.indexOf(normalized);
     map[canonical] = actualIdx >= 0 ? actualIdx : idx;
   });
-  
+
   return map;
 }
 
@@ -5064,7 +5064,7 @@ function createBetSlipsHeaderMap_(actualHeaders) {
 function validateBetSlipsRow_(bet) {
   const errors = [];
   const warnings = [];
-  
+
   // Required fields
   const required = ['bet_id', 'league', 'team', 'side_total'];
   required.forEach(field => {
@@ -5072,7 +5072,7 @@ function validateBetSlipsRow_(bet) {
       errors.push(`Missing required field: ${field}`);
     }
   });
-  
+
   // Confidence normalization
   if (bet.confidence_pct !== undefined && bet.confidence_pct !== null) {
     const normalized = normalizeConfidence_(bet.confidence_pct);
@@ -5082,7 +5082,7 @@ function validateBetSlipsRow_(bet) {
   } else {
     warnings.push('Missing confidence_pct - tier cannot be determined');
   }
-  
+
   // EV calculation
   if (bet.implied_prob && bet.confidence_pct && !bet.ev) {
     // Calculate EV using ContractEnforcer function
@@ -5096,7 +5096,7 @@ function validateBetSlipsRow_(bet) {
       bet.ev = (winProb * payout) - loseProb;
     }
   }
-  
+
   return {
     valid: errors.length === 0,
     errors: errors,
@@ -5112,7 +5112,7 @@ function validateBetSlipsRow_(bet) {
  */
 function writeBetSlips_(sheet, bets) {
   if (!sheet || !bets) return { success: false, error: 'Invalid parameters' };
-  
+
   // Ensure sheet has correct headers
   if (sheet.getLastRow() === 0) {
     sheet.getRange(1, 1, 1, BET_SLIPS_CONTRACT.length).setValues([BET_SLIPS_CONTRACT])
@@ -5121,19 +5121,19 @@ function writeBetSlips_(sheet, bets) {
       .setFontColor("#FFD700");
     sheet.setFrozenRows(1);
   }
-  
+
   // Clear existing data (preserve header)
   const lastRow = sheet.getLastRow();
   if (lastRow > 1) {
     sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).clearContent();
   }
-  
+
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const headerMap = createBetSlipsHeaderMap_(headers);
-  
+
   const rows = [];
   const validationErrors = [];
-  
+
   bets.forEach((bet, index) => {
     // Validate bet
     const validation = validateBetSlipsRow_(bet);
@@ -5141,32 +5141,32 @@ function writeBetSlips_(sheet, bets) {
       validationErrors.push({ index: index, errors: validation.errors });
       return;
     }
-    
+
     // Apply confidence normalization
     if (bet.confidence_pct !== undefined) {
       const normalized = normalizeConfidence_(bet.confidence_pct);
       Object.assign(bet, normalized);
     }
-    
+
     // Map to contract columns
     const row = BET_SLIPS_CONTRACT.map(column => {
       const colIdx = headerMap[column];
       return colIdx >= 0 ? bet[column] || '' : '';
     });
-    
+
     rows.push(row);
   });
-  
+
   // Write data
   if (rows.length > 0) {
     sheet.getRange(2, 1, rows.length, rows[0].length).setValues(rows);
   }
-  
+
   // Log validation issues
   if (validationErrors.length > 0) {
     Logger.log('[writeBetSlips_] Validation errors: ' + JSON.stringify(validationErrors));
   }
-  
+
   return {
     success: true,
     rowsWritten: rows.length,
@@ -5198,19 +5198,19 @@ function createForensicLogsHeaderMap_(actualHeaders) {
   if (typeof createCanonicalHeaderMap_ !== 'undefined') {
     return createCanonicalHeaderMap_(FORENSIC_LOGS_CONTRACT, actualHeaders);
   }
-  
+
   // Fallback implementation
   const map = {};
-  const normalizedActual = actualHeaders.map(h => 
+  const normalizedActual = actualHeaders.map(h =>
     String(h).toLowerCase().replace(/[\s_]/g, "")
   );
-  
+
   FORENSIC_LOGS_CONTRACT.forEach((canonical, idx) => {
     const normalized = canonical.toLowerCase().replace(/[\s_]/g, "");
     const actualIdx = normalizedActual.indexOf(normalized);
     map[canonical] = actualIdx >= 0 ? actualIdx : idx;
   });
-  
+
   return map;
 }
 
@@ -5222,7 +5222,7 @@ function createForensicLogsHeaderMap_(actualHeaders) {
 function validateForensicLogRow_(log) {
   const errors = [];
   const warnings = [];
-  
+
   // Required fields
   const required = ['log_id', 'timestamp', 'league', 'team', 'side_total'];
   required.forEach(field => {
@@ -5230,7 +5230,7 @@ function validateForensicLogRow_(log) {
       errors.push(`Missing required field: ${field}`);
     }
   });
-  
+
   // Confidence and tier validation
   if (log.confidence !== undefined && log.confidence !== null) {
     const normalized = normalizeConfidence_(log.confidence);
@@ -5243,12 +5243,12 @@ function validateForensicLogRow_(log) {
   } else {
     warnings.push('Missing confidence - tier may be inconsistent');
   }
-  
+
   // EV calculation if missing
   if (log.line && log.confidence && !log.ev) {
     // Calculate implied probability from line (simplified)
     const impliedProb = log.line > 0 ? 1 / (log.line + 1) : Math.abs(log.line) / (Math.abs(log.line) + 1);
-    
+
     // Calculate EV using ContractEnforcer function
     if (typeof calculateExpectedValue_ !== 'undefined') {
       log.ev = calculateExpectedValue_(impliedProb, log.confidence, log.line);
@@ -5260,7 +5260,7 @@ function validateForensicLogRow_(log) {
       log.ev = (winProb * payout) - loseProb;
     }
   }
-  
+
   return {
     valid: errors.length === 0,
     errors: errors,
@@ -5276,7 +5276,7 @@ function validateForensicLogRow_(log) {
  */
 function writeForensicLogs_(sheet, logs) {
   if (!sheet || !logs) return { success: false, error: 'Invalid parameters' };
-  
+
   // Ensure sheet has correct headers
   if (sheet.getLastRow() === 0) {
     sheet.getRange(1, 1, 1, FORENSIC_LOGS_CONTRACT.length).setValues([FORENSIC_LOGS_CONTRACT])
@@ -5285,19 +5285,19 @@ function writeForensicLogs_(sheet, logs) {
       .setFontColor("#FFD700");
     sheet.setFrozenRows(1);
   }
-  
+
   // Clear existing data (preserve header)
   const lastRow = sheet.getLastRow();
   if (lastRow > 1) {
     sheet.getRange(2, 1, lastRow - 1, sheet.getLastColumn()).clearContent();
   }
-  
+
   const headers = sheet.getRange(1, 1, 1, sheet.getLastColumn()).getValues()[0];
   const headerMap = createForensicLogsHeaderMap_(headers);
-  
+
   const rows = [];
   const validationErrors = [];
-  
+
   logs.forEach((log, index) => {
     // Validate log
     const validation = validateForensicLogRow_(log);
@@ -5305,32 +5305,32 @@ function writeForensicLogs_(sheet, logs) {
       validationErrors.push({ index: index, errors: validation.errors });
       return;
     }
-    
+
     // Apply confidence normalization
     if (log.confidence !== undefined) {
       const normalized = normalizeConfidence_(log.confidence);
       Object.assign(log, normalized);
     }
-    
+
     // Map to contract columns
     const row = FORENSIC_LOGS_CONTRACT.map(column => {
       const colIdx = headerMap[column];
       return colIdx >= 0 ? log[column] || '' : '';
     });
-    
+
     rows.push(row);
   });
-  
+
   // Write data
   if (rows.length > 0) {
     sheet.getRange(2, 1, rows.length, rows[0].length).setValues(rows);
   }
-  
+
   // Log validation issues
   if (validationErrors.length > 0) {
     Logger.log('[writeForensicLogs_] Validation errors: ' + JSON.stringify(validationErrors));
   }
-  
+
   return {
     success: true,
     rowsWritten: rows.length,
@@ -5346,32 +5346,32 @@ function writeForensicLogs_(sheet, logs) {
 function alignForensicLogsToContract_(ss) {
   const forensicSheets = ['Tier1_Predictions', 'Tier2_Log', 'OU_Log'];
   const results = {};
-  
+
   forensicSheets.forEach(sheetName => {
     const sheet = ss.getSheetByName(sheetName);
     if (!sheet) {
       results[sheetName] = { success: false, error: 'Sheet not found' };
       return;
     }
-    
+
     const data = sheet.getDataRange().getValues();
     if (data.length < 2) {
       results[sheetName] = { success: false, error: 'No data to align' };
       return;
     }
-    
+
     const headers = data[0];
     const logs = [];
-    
+
     // Convert existing data to log objects
     for (let i = 1; i < data.length; i++) {
       const row = data[i];
       const log = {};
-      
+
       // Map existing columns to contract
       headers.forEach((header, idx) => {
         const normalizedHeader = String(header).toLowerCase().replace(/[\s_]/g, "");
-        
+
         // Try to match to contract columns
         FORENSIC_LOGS_CONTRACT.forEach(contractCol => {
           const normalizedContract = contractCol.toLowerCase().replace(/[\s_]/g, "");
@@ -5380,21 +5380,21 @@ function alignForensicLogsToContract_(ss) {
           }
         });
       });
-      
+
       // Add missing required fields with defaults
       if (!log.log_id) log.log_id = 'LOG_' + Utilities.getUuid();
       if (!log.timestamp) log.timestamp = new Date().toISOString();
       if (!log.source) log.source = sheetName;
       if (!log.notes) log.notes = 'Aligned from existing data';
-      
+
       logs.push(log);
     }
-    
+
     // Write aligned data
     const writeResult = writeForensicLogs_(sheet, logs);
     results[sheetName] = writeResult;
   });
-  
+
   return results;
 }
 
@@ -5454,3 +5454,1266 @@ function _readVersionFromConfigSheet_(ss, sheetName) {
   return '';
 }
 
+
+// ============================================================================
+// FOREBET CONTRACT — metadata, calibration, synergy, shadow, gating, evaluation
+// Integrated into Contract_Enforcement.gs — zero new .gs files
+// ============================================================================
+
+// ── CONFIG HELPERS ──────────────────────────────────────────────────────────
+
+function fbContractReadCfgAcc_(ss) {
+  if (typeof readCfgAcc === 'function') return readCfgAcc(ss);
+  var sh = (typeof getSheetInsensitive === 'function')
+    ? getSheetInsensitive(ss, 'Config_Accumulator')
+    : ss.getSheetByName('Config_Accumulator');
+  if (!sh) return {};
+  var data = sh.getDataRange().getValues();
+  var cfg = {};
+  for (var i = 1; i < data.length; i++) {
+    var k = String(data[i][0] || '').trim().toLowerCase().replace(/[\s_\-]+/g, '_');
+    if (k) cfg[k] = data[i][1];
+  }
+  return cfg;
+}
+
+function fbContractCfgBool_(cfg, key, def) {
+  if (!cfg || !(key in cfg)) return def;
+  var v = String(cfg[key] || '').trim().toUpperCase();
+  return (v === 'TRUE' || v === '1' || v === 'YES');
+}
+
+function fbContractCfgNum_(cfg, key, def) {
+  if (!cfg || !(key in cfg)) return def;
+  var n = Number(cfg[key]);
+  return isFinite(n) ? n : def;
+}
+
+// ── MATH HELPERS ─────────────────────────────────────────────────────────────
+
+function fbContractParseForebetFavoredProb_(pred, probRaw, home, away) {
+  var side = 'UNKNOWN';
+  if (typeof interpretPredictionSide_ === 'function') {
+    try { side = interpretPredictionSide_(pred, home, away) || 'UNKNOWN'; } catch (e) {}
+  }
+  if (side === 'UNKNOWN') {
+    side = fbContractNormalizeSide_(pred);
+    var p = String(pred || '').trim().toLowerCase();
+    if (side === 'UNKNOWN' && home && p === String(home).trim().toLowerCase()) side = 'HOME';
+    if (side === 'UNKNOWN' && away && p === String(away).trim().toLowerCase()) side = 'AWAY';
+  }
+
+  var s = String(probRaw == null ? '' : probRaw).trim();
+
+  // Pair parser
+  var m = s.match(/(\d+(?:\.\d+)?)\s*%?\s*[-:\/]\s*(\d+(?:\.\d+)?)\s*%?/);
+  if (m) {
+    var homeProb = Number(m[1]);
+    var awayProb = Number(m[2]);
+    if (homeProb > 0 && homeProb <= 1) homeProb *= 100;
+    if (awayProb > 0 && awayProb <= 1) awayProb *= 100;
+    if (side === 'HOME') return homeProb;
+    if (side === 'AWAY') return awayProb;
+    return NaN;
+  }
+
+  // Scalar fallback
+  return fbContractNormalizePct_(probRaw);
+}
+
+function fbContractNormalizePct_(v) {
+  if (v == null || v === '') return NaN;
+  var s = String(v).replace(/[%,\s]/g, '').trim();
+  if (!s) return NaN;
+  var n = Number(s);
+  if (!isFinite(n)) return NaN;
+  if (n > 0 && n <= 1) n = n * 100;
+  return n;
+}
+
+function fbContractProbToBin_(pct) {
+  var p = Number(pct);
+  if (!isFinite(p)) return '';
+  p = Math.max(0, Math.min(100, p));
+  if (p < 50) return '';
+  if (p < 60) return '50-60';
+  if (p < 70) return '60-70';
+  if (p < 80) return '70-80';
+  if (p < 90) return '80-90';
+  return '90-100';
+}
+
+function fbContractNormalizeSide_(raw) {
+  var s = String(raw || '').trim().toUpperCase();
+  if (!s) return 'UNKNOWN';
+  if (s === '1' || s === 'H' || s === 'HOME') return 'HOME';
+  if (s === '2' || s === 'A' || s === 'AWAY') return 'AWAY';
+  if (s === 'X' || s === 'D' || s === 'DRAW') return 'DRAW';
+  return 'UNKNOWN';
+}
+
+// Blocker 5 fix: accept optional selectionText so SNIPER rows with "Highest Quarter" in
+// Selection_Text are detected as HQ_CLUSTER even when Market is generic (e.g. "SNIPER").
+function fbContractMarketCluster_(market, selectionText) {
+  // Bug 2 fix: combine market + selectionText for robust HQ detection.
+  var combined = (String(market || '') + ' ' + String(selectionText || '')).toUpperCase();
+
+  // HQ_CLUSTER: \bHQ\b, HIGHEST Q (optional digit), HIGH Q (optional digit),
+  //             HIGH_Q, HIGH-Q, HIGH_QTR, HIGHEST_QTR, HIGHEST_QUARTER, HIGH+QUARTER/QTR
+  if (
+    /\bHQ\b/.test(combined) ||
+    /HIGHEST\s*Q(?:[1-4])?\b/.test(combined) ||
+    /HIGH\s*Q(?:[1-4])?\b/.test(combined) ||
+    /HIGH[_\-]Q/.test(combined) ||
+    (combined.indexOf('HIGH') >= 0 && (combined.indexOf('QTR') >= 0 || combined.indexOf('QUARTER') >= 0))
+  ) return 'HQ_CLUSTER';
+
+  var m = String(market || '').toUpperCase();
+  if (m.indexOf('OU') >= 0 || m.indexOf('O/U') >= 0 || m.indexOf('TOTAL') >= 0) return 'TOTAL_CLUSTER';
+  if (m.indexOf('BANKER') >= 0 || m.indexOf('ROBBER') >= 0 || m.indexOf('1X2') >= 0 ||
+      m.indexOf('WINNER') >= 0 || m.indexOf('MARGIN') >= 0 || m.indexOf('TIER1') >= 0) return 'SIDE_CLUSTER';
+  return 'OTHER';
+}
+
+function fbContractParseFTScore_(score) {
+  var m = String(score || '').trim().match(/(\d+)\s*[-:]\s*(\d+)/);
+  if (!m) return null;
+  return { home: parseInt(m[1], 10), away: parseInt(m[2], 10) };
+}
+
+function fbContractWinnerSideFromScore_(score) {
+  var p = fbContractParseFTScore_(score);
+  if (!p) return 'UNKNOWN';
+  if (p.home > p.away) return 'HOME';
+  if (p.away > p.home) return 'AWAY';
+  return 'DRAW';
+}
+
+function fbContractWilsonLowerBound_(wins, n, z) {
+  if (n <= 0) return 0;
+  var p = wins / n;
+  var z2 = z * z;
+  var denom = 1 + z2 / n;
+  var centre = p + z2 / (2 * n);
+  var spread = z * Math.sqrt((p * (1 - p)) / n + z2 / (4 * n * n));
+  return (centre - spread) / denom;
+}
+
+function fbContractIsSideMarket_(market) {
+  var m = String(market || '').toUpperCase();
+  return (m.indexOf('BANKER') >= 0 || m.indexOf('ROBBER') >= 0 || m.indexOf('1X2') >= 0 ||
+          m.indexOf('WINNER') >= 0 || m.indexOf('MARGIN') >= 0 || m.indexOf('TIER1') >= 0);
+}
+
+// ── SECTIONED BET_SLIPS PARSER ────────────────────────────────────────────
+
+/**
+ * Parses the sectioned Bet_Slips layout.
+ * Returns array of { rowNumber, values, headers, headerMap, section }.
+ * Skips title/section/summary rows. Handles repeated Bet_Record_ID headers.
+ *
+ * Bug 1 fix: stricter row validation — a row must have a valid machine-generated
+ * Bet_Record_ID (contains __SLIP_ or matches YYYYMMDD-prefix pattern), a
+ * Universal_Game_ID, a Market, and a Selection_Text. Summary rows (Bankers:,
+ * TOTAL PICKS:, etc.) are explicitly filtered out before the data-row check.
+ */
+function fbContractFindBetSlipRows_(sheet) {
+  if (!sheet || sheet.getLastRow() < 2) return [];
+  var data = sheet.getDataRange().getValues();
+  var out = [];
+  var currentSection = '';
+  var currentHeaders = [];
+  var currentHeaderMap = {};
+  var foundHeader = false;
+
+  // Known summary-row prefixes — never treat these as real bet rows.
+  var SUMMARY_RE = /^(Ma Golide|──|===|SUMMARY|Total Bankers|No |TOTAL PICKS|Bankers:|Snipers:|ROBBERS:|1H:|FT O\/U:)/i;
+
+  for (var r = 0; r < data.length; r++) {
+    var row = data[r];
+    var first = String(row[0] || '').trim();
+    if (!first) continue;
+
+    // Section dividers / summary rows — update section label and skip.
+    if (SUMMARY_RE.test(first)) {
+      var secM = first.match(/^[─=]+\s*(.+?)\s*[─=]+$/);
+      if (secM) currentSection = secM[1];
+      continue;
+    }
+
+    // Header row detection: first cell is exactly 'Bet_Record_ID', OR
+    // the row has 'Bet_Record_ID' as one of its cell values (handles title-prefix rows).
+    if (first === 'Bet_Record_ID') {
+      currentHeaders = row;
+      currentHeaderMap = {};
+      if (typeof createCanonicalHeaderMap_ === 'function') {
+        currentHeaderMap = createCanonicalHeaderMap_(row);
+      } else {
+        row.forEach(function(h, i) {
+          var k = String(h || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+          if (k) currentHeaderMap[k] = i;
+        });
+      }
+      foundHeader = true;
+      continue;
+    }
+
+    if (!foundHeader) continue;
+
+    // Bug 1 fix: strict data-row validation.
+    var brIdCol = currentHeaderMap['bet_record_id'];
+    var ugCol   = currentHeaderMap['universal_game_id'];
+    var mktCol  = currentHeaderMap['market'];
+    var selCol  = currentHeaderMap['selection_text'];
+
+    var brId   = brIdCol !== undefined ? String(row[brIdCol] || '').trim() : '';
+    var ug     = ugCol   !== undefined ? String(row[ugCol]   || '').trim() : '';
+    var market = mktCol  !== undefined ? String(row[mktCol]  || '').trim() : '';
+    var selTxt = selCol  !== undefined ? String(row[selCol]  || '').trim() : '';
+
+    // A real bet row must have a machine-generated ID *and* core bet fields.
+    var looksLikeBetId  = brId.indexOf('__SLIP_') >= 0 || /^\d{8}/.test(brId);
+    var looksLikeGameId = ug.indexOf('__') >= 0 || /^\d{8}/.test(ug);
+    var hasCoreBetFields = !!market && !!selTxt;
+
+    if (looksLikeBetId && looksLikeGameId && hasCoreBetFields) {
+      out.push({ rowNumber: r + 1, values: row, headers: currentHeaders, headerMap: currentHeaderMap, section: currentSection });
+    }
+  }
+  return out;
+}
+
+// ── SOURCE INDEX (UpcomingClean / Clean → game-keyed FB metadata) ──────────
+
+function fbContractBuildIndex_(ss, sheetName) {
+  var sh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, sheetName) : ss.getSheetByName(sheetName);
+  if (!sh || sh.getLastRow() < 2) return {};
+  var data = sh.getDataRange().getValues();
+  var hdr = {};
+  if (typeof createCanonicalHeaderMap_ === 'function') {
+    hdr = createCanonicalHeaderMap_(data[0] || []);
+  } else {
+    (data[0] || []).forEach(function(h, i) {
+      var k = String(h || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+      if (k) hdr[k] = i;
+    });
+  }
+  function col_(aliases) {
+    if (typeof findHeaderIndex_ === 'function') return findHeaderIndex_(hdr, aliases);
+    for (var i = 0; i < aliases.length; i++) {
+      var k = String(aliases[i] || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+      if (hdr[k] !== undefined) return hdr[k];
+    }
+    return -1;
+  }
+  var cDate = col_(['Date', 'Match Date', 'Game Date']);
+  var cHome = col_(['Home', 'Home Team', 'home_team']);
+  var cAway = col_(['Away', 'Away Team', 'Visitor', 'away_team']);
+  var cUG   = col_(['Universal_Game_ID', 'Game_ID', 'game_id']);
+  var cPred = col_(['Pred', 'Prediction', 'Forebet Pred', 'Forebet_Prediction']);
+  var cProb = col_(['Prob %', 'Prob%', 'Probability', 'Prob', 'Forebet %', 'Forebet_Prob', 'FB_Prob', 'Forebet_Confidence_Raw', 'FB_Prob_Pct']);
+  if (cPred < 0 || cProb < 0) return {};
+
+  var out = {};
+  for (var r = 1; r < data.length; r++) {
+    var row = data[r];
+    var home = cHome >= 0 ? String(row[cHome] || '').trim() : '';
+    var away = cAway >= 0 ? String(row[cAway] || '').trim() : '';
+    var gameId = '';
+    if (cUG >= 0 && String(row[cUG] || '').trim()) {
+      gameId = String(row[cUG]).trim();
+    } else if (cDate >= 0 && home && away) {
+      var d = row[cDate];
+      if (d instanceof Date) d = Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+      gameId = [String(d).trim(), home.toLowerCase(), away.toLowerCase()].join('|');
+    }
+    if (!gameId || out[gameId]) continue;
+
+    var predV = row[cPred];
+    var probV = row[cProb];
+    var fbSide = 'UNKNOWN';
+    if (typeof interpretPredictionSide_ === 'function' && home && away) {
+      try { fbSide = interpretPredictionSide_(predV, home, away) || 'UNKNOWN'; } catch (e) { fbSide = fbContractNormalizeSide_(predV); }
+    } else { fbSide = fbContractNormalizeSide_(predV); }
+
+    var fbProbPct = NaN;
+    if (typeof getForebetFavoredProbability_ === 'function' && home && away) {
+      try { fbProbPct = getForebetFavoredProbability_(predV, probV, home, away); } catch (e) { fbProbPct = fbContractNormalizePct_(probV); }
+    } else { fbProbPct = fbContractNormalizePct_(probV); }
+
+    var fbPickTeam = fbSide === 'HOME' ? home : fbSide === 'AWAY' ? away : fbSide === 'DRAW' ? 'DRAW' : '';
+    out[gameId] = { fbSide: fbSide, fbProbPct: fbProbPct, fbPickTeam: fbPickTeam };
+  }
+  return out;
+}
+
+// ── METADATA BACKFILL ─────────────────────────────────────────────────────
+
+// ── BACKFILL HELPER: build a normalized date string for fallback keying ─────
+function _fbNormDateStr_(raw) {
+  if (!raw) return '';
+  if (raw instanceof Date) return Utilities.formatDate(raw, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  var s = String(raw).trim();
+  // Already ISO
+  if (/^\d{4}-\d{2}-\d{2}/.test(s)) return s.substring(0, 10);
+  // DD/MM/YYYY or MM/DD/YYYY
+  var m = s.match(/^(\d{1,2})[\/.\-](\d{1,2})[\/.\-](\d{2,4})$/);
+  if (m) {
+    var a = parseInt(m[1], 10), b = parseInt(m[2], 10), y = parseInt(m[3], 10);
+    if (y < 100) y += 2000;
+    var dy = a > 12 ? a : b, mo = a > 12 ? b : a;
+    return y + '-' + ('0'+mo).slice(-2) + '-' + ('0'+dy).slice(-2);
+  }
+  // Spreadsheet serial
+  if (typeof raw === 'number' && isFinite(raw)) {
+    var epoch = new Date(1899, 11, 30);
+    var d = new Date(epoch.getTime() + raw * 86400000);
+    return Utilities.formatDate(d, Session.getScriptTimeZone(), 'yyyy-MM-dd');
+  }
+  return s;
+}
+
+// Blocker 3 fix: backfill indexes BOTH Universal_Game_ID and Date|Home|Away fallback
+// in source sheets, and tries BOTH keys when matching Bet_Slips rows.
+function backfillBetSlipsForebetMeta_(ss, maxRows) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  maxRows = maxRows || 5000;
+
+  var cfg = fbContractReadCfgAcc_(ss);
+  if (fbContractCfgBool_(cfg, 'enable_fb_meta_columns', true)) {
+    ensureBetSlipsCanonicalHeaders_(ss, { enableFbMeta: true });
+  }
+
+  var sh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'Bet_Slips') : ss.getSheetByName('Bet_Slips');
+  if (!sh || sh.getLastRow() < 2) return { updated: 0 };
+
+  // Build merged game index from multiple source sheets — index BOTH keys.
+  var sources = ['UpcomingClean', 'Analysis_Tier1', 'Tier1_Predictions', 'Clean'];
+  var merged = {};
+  sources.forEach(function(src) {
+    var sh2 = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, src) : ss.getSheetByName(src);
+    if (!sh2 || sh2.getLastRow() < 2) return;
+    var srcData = sh2.getDataRange().getValues();
+    var srcHdr = {};
+    (srcData[0] || []).forEach(function(h, i) {
+      var k = String(h || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+      if (k) srcHdr[k] = i;
+    });
+    function srcCol_(aliases) {
+      for (var ai = 0; ai < aliases.length; ai++) {
+        var k = String(aliases[ai] || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+        if (srcHdr[k] !== undefined) return srcHdr[k];
+      }
+      return -1;
+    }
+    var cUG   = srcCol_(['Universal_Game_ID', 'Game_ID', 'game_id']);
+    var cDate = srcCol_(['Date', 'Match Date', 'Game Date']);
+    var cHome = srcCol_(['Home', 'Home Team', 'home_team']);
+    var cAway = srcCol_(['Away', 'Away Team', 'Visitor', 'away_team']);
+    var cPred = srcCol_(['Pred', 'Prediction', 'Forebet Pred', 'Forebet_Prediction']);
+    var cProb = srcCol_(['Prob %', 'Prob%', 'Probability', 'Prob', 'Forebet %', 'Forebet_Prob', 'FB_Prob', 'Forebet_Confidence_Raw', 'FB_Prob_Pct']);
+    if (cPred < 0 || cProb < 0) return;
+    for (var r = 1; r < srcData.length; r++) {
+      var row0 = srcData[r];
+      var home0 = cHome >= 0 ? String(row0[cHome] || '').trim() : '';
+      var away0 = cAway >= 0 ? String(row0[cAway] || '').trim() : '';
+      var predV = row0[cPred];
+      var probV = row0[cProb];
+      var fbSide0 = 'UNKNOWN';
+      if (typeof interpretPredictionSide_ === 'function' && home0 && away0) {
+        try { fbSide0 = interpretPredictionSide_(predV, home0, away0) || 'UNKNOWN'; } catch(e) { fbSide0 = fbContractNormalizeSide_(predV); }
+      } else { fbSide0 = fbContractNormalizeSide_(predV); }
+      var fbProbPct0 = NaN;
+      if (typeof getForebetFavoredProbability_ === 'function' && home0 && away0) {
+        try { fbProbPct0 = getForebetFavoredProbability_(predV, probV, home0, away0); } catch(e) { fbProbPct0 = NaN; }
+      }
+      // Guard: if pair cell like '26 - 74' was parsed as scalar (first number), correct it.
+      var pairProb0 = fbContractParseForebetFavoredProb_(predV, probV, home0, away0);
+      if (isFinite(pairProb0) && (!isFinite(fbProbPct0) || fbProbPct0 < 50)) {
+        fbProbPct0 = pairProb0;
+      }
+      if (!isFinite(fbProbPct0)) fbProbPct0 = fbContractNormalizePct_(probV);
+      var fbPickTeam0 = fbSide0 === 'HOME' ? home0 : fbSide0 === 'AWAY' ? away0 : fbSide0 === 'DRAW' ? 'DRAW' : '';
+      var rec0 = { fbSide: fbSide0, fbProbPct: fbProbPct0, fbPickTeam: fbPickTeam0 };
+      // Index by Universal_Game_ID
+      if (cUG >= 0) {
+        var ugVal = String(row0[cUG] || '').trim();
+        if (ugVal && !merged[ugVal]) merged[ugVal] = rec0;
+      }
+      // Also index by Date|home|away fallback
+      if (cDate >= 0 && home0 && away0) {
+        var dStr = _fbNormDateStr_(row0[cDate]);
+        if (dStr) {
+          var fbKey = dStr + '|' + home0.toLowerCase() + '|' + away0.toLowerCase();
+          if (!merged[fbKey]) merged[fbKey] = rec0;
+        }
+      }
+    }
+  });
+
+  var parsedRows = fbContractFindBetSlipRows_(sh);
+  if (parsedRows.length === 0) return { updated: 0 };
+
+  var diag = {
+    parsedRows: parsedRows.length,
+    sourceKeys: Object.keys(merged).length,
+    updated: 0,
+    repairedBadProb: 0,
+    skippedNoMatch: 0,
+    skippedAlreadyGood: 0
+  };
+  var updated = 0;
+  var runTs = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd_HHmmss');
+
+  for (var i = 0; i < parsedRows.length; i++) {
+    var pr = parsedRows[i];
+    var rowNum = pr.rowNumber;
+    var row = pr.values;
+    var hdrMap = pr.headerMap;
+
+    function idx_(name) {
+      if (typeof findHeaderIndex_ === 'function') return findHeaderIndex_(hdrMap, [name]);
+      var k = String(name || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+      return hdrMap[k] !== undefined ? hdrMap[k] : -1;
+    }
+
+    var iFBProb = idx_('FB_Prob_Pct');
+    if (iFBProb < 0) continue;
+
+    // Fix 2: repair idempotency — also overwrite bad existing values.
+    var iFBBin = idx_('FB_Bin');
+    var existingProb = row[iFBProb];
+    var existingBinVal = (iFBBin >= 0) ? String(row[iFBBin] || '').trim() : '';
+    var existingProbNum = Number(existingProb);
+
+    // Try Universal_Game_ID first, then Date|Home|Away fallback
+    var iGame = idx_('Universal_Game_ID');
+    var gameId = (iGame >= 0) ? String(row[iGame] || '').trim() : '';
+    var rec = gameId ? merged[gameId] : null;
+
+    if (!rec) {
+      // Build fallback key from Bet_Slips Date/Home/Away columns
+      var iDate = idx_('Date');
+      var iHome = idx_('Home');
+      var iAway = idx_('Away');
+      if (iDate >= 0 && iHome >= 0 && iAway >= 0) {
+        var bsHome = String(row[iHome] || '').trim().toLowerCase();
+        var bsAway = String(row[iAway] || '').trim().toLowerCase();
+        var bsDate = _fbNormDateStr_(row[iDate]);
+        if (bsDate && bsHome && bsAway) {
+          var fallbackKey = bsDate + '|' + bsHome + '|' + bsAway;
+          rec = merged[fallbackKey];
+        }
+      }
+    }
+
+    if (!rec) { diag.skippedNoMatch++; continue; }
+
+    // Fix 2: decide whether to fill / repair this row
+    var sourceProb = Number(rec.fbProbPct);
+    var sourceBin  = fbContractProbToBin_(sourceProb);
+    var shouldFill = false;
+    if (existingProb === '' || existingProb == null) shouldFill = true;
+    if (!existingBinVal && sourceBin) shouldFill = true;
+    if (isFinite(existingProbNum) && existingProbNum < 50 && isFinite(sourceProb) && sourceProb >= 50) {
+      shouldFill = true;
+      diag.repairedBadProb++;
+    }
+    if (!shouldFill) { diag.skippedAlreadyGood++; continue; }
+
+    var updates = [];
+    function add_(name, val) { var c = idx_(name); if (c >= 0) updates.push({ c: c + 1, v: val }); }
+
+    add_('FB_Pick_Side', rec.fbSide || 'UNKNOWN');
+    add_('FB_Pick_Team', rec.fbPickTeam || '');
+    add_('FB_Prob_Pct', isFinite(rec.fbProbPct) ? rec.fbProbPct : '');
+    add_('FB_Bin', fbContractProbToBin_(rec.fbProbPct));
+
+    var market  = idx_('Market') >= 0 ? String(row[idx_('Market')] || '').trim() : '';
+    var selText = idx_('Selection_Text') >= 0 ? String(row[idx_('Selection_Text')] || '').trim() : '';
+    var selSide = idx_('Selection_Side') >= 0 ? String(row[idx_('Selection_Side')] || '').trim().toUpperCase() : '';
+    var fbSideN = String(rec.fbSide || '').toUpperCase();
+    var agree   = !fbContractIsSideMarket_(market) || !selSide || selSide === 'UNKNOWN' || !fbSideN || fbSideN === 'UNKNOWN'
+                  ? 'NA' : (selSide === fbSideN ? 'Y' : 'N');
+    add_('MG_FB_Agree', agree);
+    // Blocker 5: pass Selection_Text so HQ rows in SNIPER market are clustered correctly
+    add_('Correlation_Group', fbContractMarketCluster_(market, selText));
+
+    var iAct = idx_('Calibration_Action');
+    if (iAct >= 0 && (!row[iAct] || row[iAct] === '')) add_('Calibration_Action', 'FB_META_ONLY');
+    var iWhy = idx_('Calibration_Reason');
+    if (iWhy >= 0 && (!row[iWhy] || row[iWhy] === '')) add_('Calibration_Reason', 'backfill');
+    var iAdj = idx_('Adjusted_Confidence_Pct');
+    if (iAdj >= 0 && (row[iAdj] === '' || row[iAdj] == null)) {
+      var iConf = idx_('Confidence_Pct');
+      add_('Adjusted_Confidence_Pct', iConf >= 0 && row[iConf] != null ? row[iConf] : '');
+    }
+    var iRunId = idx_('Gating_Run_ID');
+    if (iRunId >= 0 && (!row[iRunId] || row[iRunId] === '')) add_('Gating_Run_ID', 'META_' + runTs);
+
+    updates.forEach(function(u) { sh.getRange(rowNum, u.c).setValue(u.v); });
+    updated++;
+    diag.updated++;
+  }
+  Logger.log('backfillBetSlipsForebetMeta_: diag=' + JSON.stringify(diag));
+  return { updated: updated };
+}
+
+function backfillBetSlipsForebetMeta() {
+  backfillBetSlipsForebetMeta_(SpreadsheetApp.getActiveSpreadsheet(), 5000);
+}
+
+// ── FOREBET CALIBRATION (from Clean) ─────────────────────────────────────
+
+function buildForebetCalibration_(ss, opts) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  opts = opts || {};
+  var cleanSh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'Clean') : ss.getSheetByName('Clean');
+  if (!cleanSh) { Logger.log('buildForebetCalibration_: Clean sheet not found'); return; }
+
+  var cfg = fbContractReadCfgAcc_(ss);
+  var z = fbContractCfgNum_(cfg, 'fb_wilson_z', 1.645);
+  var minReliable = fbContractCfgNum_(cfg, 'fb_min_n_reliable', 30);
+  var k = fbContractCfgNum_(cfg, 'fb_shrink_k', 30);
+
+  var data = cleanSh.getDataRange().getValues();
+  var hdr = {};
+  if (typeof createCanonicalHeaderMap_ === 'function') {
+    hdr = createCanonicalHeaderMap_(data[0] || []);
+  } else {
+    (data[0] || []).forEach(function(h, i) {
+      var key = String(h || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+      if (key) hdr[key] = i;
+    });
+  }
+  function col_(aliases) {
+    if (typeof findHeaderIndex_ === 'function') return findHeaderIndex_(hdr, aliases);
+    for (var i = 0; i < aliases.length; i++) {
+      var kk = String(aliases[i] || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+      if (hdr[kk] !== undefined) return hdr[kk];
+    }
+    return -1;
+  }
+  var cLeague = col_(['League']);
+  var cPred   = col_(['Pred', 'Forebet Pred']);
+  var cProb   = col_(['Prob %', 'Forebet %', 'Prob']);
+  var cStatus = col_(['Status']);
+  var cScore  = col_(['FT Score', 'Score']);
+  var cHome   = col_(['Home']);
+  var cAway   = col_(['Away']);
+  if (cLeague < 0 || cPred < 0 || cProb < 0) { Logger.log('buildForebetCalibration_: required columns missing'); return; }
+
+  var diag = {
+    scanned: 0,
+    skippedNoStatusOrScore: 0,
+    skippedMissingPred: 0,
+    skippedMissingProb: 0,
+    skippedBadProb: 0,
+    skippedDrawOrUnknownPred: 0,
+    skippedBadScore: 0,
+    usable: 0,
+    outputRows: 0
+  };
+
+  var stats = {};
+  var leagueTotals = {};
+  var globalTotals = { n: 0, wins: 0 };
+
+  for (var r = 1; r < data.length; r++) {
+    var row = data[r];
+    diag.scanned++;
+
+    var status  = String(row[cStatus] || '').trim().toUpperCase();
+    var scoreStr = cScore >= 0 ? String(row[cScore] || '') : '';
+    var hasFT = status.indexOf('FT') >= 0 || status.indexOf('AOT') >= 0 || !!fbContractParseFTScore_(scoreStr);
+    if (!hasFT) { diag.skippedNoStatusOrScore++; continue; }
+
+    var pred = String(row[cPred] || '').trim();
+    if (!pred) { diag.skippedMissingPred++; continue; }
+
+    var home = cHome >= 0 ? String(row[cHome] || '') : '';
+    var away = cAway >= 0 ? String(row[cAway] || '') : '';
+
+    var fbSide = 'UNKNOWN';
+    if (typeof interpretPredictionSide_ === 'function' && home && away) {
+      try { fbSide = interpretPredictionSide_(pred, home, away) || 'UNKNOWN'; } catch(e) { fbSide = fbContractNormalizeSide_(pred); }
+    } else { fbSide = fbContractNormalizeSide_(pred); }
+
+    if (fbSide !== 'HOME' && fbSide !== 'AWAY') { diag.skippedDrawOrUnknownPred++; continue; }
+
+    var probRaw = row[cProb];
+    if (probRaw == null || String(probRaw).trim() === '') { diag.skippedMissingProb++; continue; }
+
+    var prob = NaN;
+    if (typeof getForebetFavoredProbability_ === 'function') {
+      try { prob = getForebetFavoredProbability_(pred, probRaw, home, away); } catch (e) { prob = NaN; }
+    }
+    if (!isFinite(prob)) {
+      prob = fbContractParseForebetFavoredProb_(pred, probRaw, home, away);
+    }
+    if (!isFinite(prob)) { diag.skippedBadProb++; continue; }
+
+    var bin = fbContractProbToBin_(prob);
+    if (!bin) { diag.skippedBadProb++; continue; }
+
+    var actualSide = fbContractWinnerSideFromScore_(scoreStr);
+    if (actualSide === 'UNKNOWN') { diag.skippedBadScore++; continue; }
+
+    diag.usable++;
+    var league = String(row[cLeague] || '').trim() || 'UNKNOWN';
+    var isWin = (fbSide === actualSide) ? 1 : 0;
+    var key = league + '|' + bin;
+    if (!stats[key]) stats[key] = { n: 0, wins: 0, losses: 0 };
+    stats[key].n++; if (isWin) stats[key].wins++; else stats[key].losses++;
+    if (!leagueTotals[league]) leagueTotals[league] = { n: 0, wins: 0 };
+    leagueTotals[league].n++; if (isWin) leagueTotals[league].wins++;
+    globalTotals.n++; if (isWin) globalTotals.wins++;
+  }
+
+  var globalRate = globalTotals.n > 0 ? (globalTotals.wins / globalTotals.n) : 0.60;
+  var timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+  var outRows = [['League','FB_Bin','n','wins','losses','win_rate','shrunk_rate','wilson_lb','reliable','prior_rate','source','cutoff_date','updated_at']];
+
+  Object.keys(stats).forEach(function(key) {
+    var parts = key.split('|');
+    var league = parts[0], bin = parts[1];
+    var s = stats[key];
+    var lt = leagueTotals[league];
+    var prior = (lt && lt.n >= 30) ? (lt.wins / lt.n) : globalRate;
+    var wr = s.n > 0 ? (s.wins / s.n) : 0;
+    var sr = (s.wins + k * prior) / (s.n + k);
+    var wlb = fbContractWilsonLowerBound_(s.wins, s.n, z);
+    var rel = s.n >= minReliable;
+    outRows.push([league, bin, s.n, s.wins, s.losses, wr, sr, wlb, rel, prior, 'Clean', timestamp, timestamp]);
+  });
+
+  var calibSh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'FOREBET_CALIBRATION') : ss.getSheetByName('FOREBET_CALIBRATION');
+  if (!calibSh) calibSh = ss.insertSheet('FOREBET_CALIBRATION');
+  calibSh.clear();
+  calibSh.getRange(1, 1, outRows.length, outRows[0].length).setValues(outRows);
+  diag.outputRows = outRows.length - 1;
+  Logger.log('buildForebetCalibration_: diag=' + JSON.stringify(diag));
+  Logger.log('buildForebetCalibration_: wrote ' + (outRows.length - 1) + ' rows');
+}
+
+function buildForebetCalibration() { buildForebetCalibration_(SpreadsheetApp.getActiveSpreadsheet(), {}); }
+
+// ── MG_FB_SYNERGY (from graded historical bet rows) ───────────────────────
+
+// Blocker 2 fix: buildMgFbSynergy_ no longer requires actual_result from ResultsClean.
+// It builds a result outcome index using Universal_Game_ID (preferred) OR Date|Home|Away
+// fallback, and parses FT Score to determine the winner side.  For SIDE_CLUSTER markets
+// (BANKER, ROBBER, 1X2, WINNER, MARGIN, TIER1) it grades by comparing Selection_Side to
+// the computed outcome side.  TOTAL_CLUSTER and HQ_CLUSTER rows are marked NA/skipped
+// in synergy until a robust market-specific grader is added, so the function never
+// returns zero rows just because actual_result is absent.
+function buildMgFbSynergy_(ss, opts) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  opts = opts || {};
+  var bsSh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'Bet_Slips') : ss.getSheetByName('Bet_Slips');
+  var rcSh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'ResultsClean') : ss.getSheetByName('ResultsClean');
+  if (!bsSh) { Logger.log('buildMgFbSynergy_: Bet_Slips not found'); return; }
+
+  var cfg = fbContractReadCfgAcc_(ss);
+  var z = fbContractCfgNum_(cfg, 'fb_wilson_z', 1.645);
+  var minReliable = fbContractCfgNum_(cfg, 'synergy_min_n_reliable', 30);
+  var k = fbContractCfgNum_(cfg, 'synergy_shrink_k', 30);
+
+  // ── Build result outcome index from ResultsClean (if available) ─────────
+  // Keys: Universal_Game_ID (primary) and Date|home_lc|away_lc (fallback)
+  // Values: 'WIN' | 'LOSS' | 'DRAW' | 'UNKNOWN'
+  var resMap = {};  // gameKey → { outcome: 'WIN'|'LOSS'|'DRAW'|'UNKNOWN' }
+
+  if (rcSh && rcSh.getLastRow() >= 2) {
+    var rcData = rcSh.getDataRange().getValues();
+    var rcHdr = {};
+    if (typeof createCanonicalHeaderMap_ === 'function') {
+      rcHdr = createCanonicalHeaderMap_(rcData[0] || []);
+    } else {
+      (rcData[0] || []).forEach(function(h, i) {
+        var key = String(h || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+        if (key) rcHdr[key] = i;
+      });
+    }
+    // Column indices — may be undefined (sheet may lack some columns)
+    function rcCol_(aliases) {
+      for (var ai = 0; ai < aliases.length; ai++) {
+        var k2 = String(aliases[ai] || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+        if (rcHdr[k2] !== undefined) return rcHdr[k2];
+      }
+      return -1;
+    }
+    var iRcUg   = rcCol_(['Universal_Game_ID', 'Game_ID', 'game_id']);
+    var iRcRes  = rcCol_(['actual_result']);
+    var iRcDate = rcCol_(['Date', 'Match_Date', 'Game_Date', 'event_date']);
+    var iRcHome = rcCol_(['Home', 'Home_Team', 'home_team']);
+    var iRcAway = rcCol_(['Away', 'Away_Team', 'Visitor', 'away_team']);
+    var iRcFT   = rcCol_(['FT Score', 'FT_Score', 'Score', 'Result', 'FT']);
+    var iRcFTH  = rcCol_(['FT_Home', 'FT Home', 'Home_Score', 'Score_Home']);
+    var iRcFTA  = rcCol_(['FT_Away', 'FT Away', 'Away_Score', 'Score_Away']);
+
+    for (var r = 1; r < rcData.length; r++) {
+      var rcRow = rcData[r];
+
+      // Determine outcome — prefer explicit actual_result, else parse FT score
+      var outcome = 'UNKNOWN';
+      if (iRcRes >= 0) {
+        var resRaw = String(rcRow[iRcRes] || '').trim().toUpperCase();
+        if (resRaw === 'WIN' || resRaw === 'LOSS' || resRaw === 'HALF_WIN' || resRaw === 'HALF_LOSS') {
+          // These values are Bet_Slips-relative; store as-is for legacy lookup
+          outcome = resRaw;
+        } else if (resRaw === 'HOME' || resRaw === 'AWAY' || resRaw === 'DRAW') {
+          outcome = resRaw;
+        }
+      }
+      if (outcome === 'UNKNOWN') {
+        // Parse FT score string ("2-1", "1:0", etc.)
+        if (iRcFT >= 0) {
+          outcome = fbContractWinnerSideFromScore_(String(rcRow[iRcFT] || ''));
+        }
+        // Or separate FT_Home / FT_Away columns
+        if (outcome === 'UNKNOWN' && iRcFTH >= 0 && iRcFTA >= 0) {
+          var fth = Number(rcRow[iRcFTH]), fta = Number(rcRow[iRcFTA]);
+          if (isFinite(fth) && isFinite(fta)) {
+            outcome = fth > fta ? 'HOME' : fta > fth ? 'AWAY' : 'DRAW';
+          }
+        }
+      }
+      if (outcome === 'UNKNOWN') continue;
+
+      // Index by Universal_Game_ID
+      if (iRcUg >= 0) {
+        var ugV = String(rcRow[iRcUg] || '').trim();
+        if (ugV) resMap[ugV] = outcome;
+      }
+      // Also index by Date|home_lc|away_lc fallback
+      var rcHome = iRcHome >= 0 ? String(rcRow[iRcHome] || '').trim().toLowerCase() : '';
+      var rcAway = iRcAway >= 0 ? String(rcRow[iRcAway] || '').trim().toLowerCase() : '';
+      if (iRcDate >= 0 && rcHome && rcAway) {
+        var rcDStr = _fbNormDateStr_(rcRow[iRcDate]);
+        if (rcDStr) {
+          var rcFbKey = rcDStr + '|' + rcHome + '|' + rcAway;
+          if (!resMap[rcFbKey]) resMap[rcFbKey] = outcome;
+        }
+      }
+    }
+  }
+
+  if (Object.keys(resMap).length === 0) {
+    Logger.log('buildMgFbSynergy_: ResultsClean missing or no gradeable rows; writing empty synergy sheet');
+  }
+
+  var parsedRows = fbContractFindBetSlipRows_(bsSh);
+  var stats = {};
+  var marketTotals = {};
+
+  parsedRows.forEach(function(pr) {
+    var row = pr.values;
+    var hdrMap = pr.headerMap;
+    function idx_(name) {
+      var kk = String(name || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+      return hdrMap[kk] !== undefined ? hdrMap[kk] : -1;
+    }
+
+    // Resolve game result — try Universal_Game_ID first, then Date|Home|Away fallback
+    var outcome = 'UNKNOWN';
+    var ugIdx = idx_('Universal_Game_ID');
+    if (ugIdx >= 0) {
+      var ugV = String(row[ugIdx] || '').trim();
+      if (ugV && resMap[ugV]) outcome = resMap[ugV];
+    }
+    if (outcome === 'UNKNOWN') {
+      var iD = idx_('Date'), iH = idx_('Home'), iA = idx_('Away');
+      if (iD >= 0 && iH >= 0 && iA >= 0) {
+        var bsD = _fbNormDateStr_(row[iD]);
+        var bsH = String(row[iH] || '').trim().toLowerCase();
+        var bsA = String(row[iA] || '').trim().toLowerCase();
+        if (bsD && bsH && bsA) {
+          var bsKey = bsD + '|' + bsH + '|' + bsA;
+          if (resMap[bsKey]) outcome = resMap[bsKey];
+        }
+      }
+    }
+    if (outcome === 'UNKNOWN') return; // no graded result for this row
+
+    var market  = idx_('Market') >= 0 ? String(row[idx_('Market')] || '').trim() : 'UNKNOWN';
+    var selText = idx_('Selection_Text') >= 0 ? String(row[idx_('Selection_Text')] || '').trim() : '';
+    var cluster = fbContractMarketCluster_(market, selText);
+
+    // Grade side markets by Selection_Side vs outcome side.
+    // Skip TOTAL_CLUSTER and HQ_CLUSTER (mark NA) as those need market-specific graders.
+    var isWin;
+    if (cluster === 'SIDE_CLUSTER') {
+      var selSide = idx_('Selection_Side') >= 0 ? String(row[idx_('Selection_Side')] || '').trim().toUpperCase() : '';
+      var outcomeSide = outcome; // 'HOME' | 'AWAY' | 'DRAW'
+      // Handle WIN/LOSS values from legacy actual_result
+      if (outcomeSide === 'WIN' || outcomeSide === 'HALF_WIN') {
+        // Legacy: WIN means the selection won — treat as a win
+        isWin = 1;
+      } else if (outcomeSide === 'LOSS' || outcomeSide === 'HALF_LOSS') {
+        isWin = 0;
+      } else {
+        if (!selSide || selSide === 'UNKNOWN') return;
+        isWin = (selSide === outcomeSide) ? 1 : 0;
+      }
+    } else {
+      // TOTAL_CLUSTER, HQ_CLUSTER, OTHER — skip for now; grading too complex without full context
+      return;
+    }
+
+    var league  = idx_('League') >= 0 ? String(row[idx_('League')] || '').trim() : 'UNKNOWN';
+    var fbBin   = idx_('FB_Bin') >= 0 ? String(row[idx_('FB_Bin')] || '').trim() : 'UNKNOWN';
+    var agree   = idx_('MG_FB_Agree') >= 0 ? String(row[idx_('MG_FB_Agree')] || '').trim() : 'NA';
+    var conf    = idx_('Confidence_Pct') >= 0 ? Number(row[idx_('Confidence_Pct')]) : 0;
+    var mgBin   = isFinite(conf) ? (conf >= 70 ? '70+' : conf >= 60 ? '60-70' : '50-60') : 'UNKNOWN';
+
+    var key = [market, league, mgBin, fbBin, agree].join('|');
+    if (!stats[key]) stats[key] = { n: 0, wins: 0, losses: 0 };
+    stats[key].n++; if (isWin) stats[key].wins++; else stats[key].losses++;
+    if (!marketTotals[market]) marketTotals[market] = { n: 0, wins: 0 };
+    marketTotals[market].n++; if (isWin) marketTotals[market].wins++;
+  });
+
+  var thresholds = { 'BANKER': 0.62, 'SNIPER_MARGIN': 0.60, 'FIRST_HALF_1X2': 0.58, '1H_1X2': 0.58, 'ROBBER': 0.58, 'SNIPER_OU': 0.56, 'FT_OU': 0.58 };
+  var timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+  var outRows = [['Market','League','MG_Conf_Bin','FB_Bin','MG_FB_Agree','n','wins','losses','win_rate','baseline_rate','shrunk_rate','wilson_lb','reliable','Action','updated_at']];
+
+  Object.keys(stats).forEach(function(key) {
+    var parts = key.split('|');
+    var market = parts[0], league = parts[1], mgBin = parts[2], fbBin = parts[3], agree = parts[4];
+    var s = stats[key];
+    var mt = marketTotals[market];
+    var baseline = (mt && mt.n > 0) ? (mt.wins / mt.n) : 0.55;
+    var wr  = s.n > 0 ? (s.wins / s.n) : 0;
+    var sr  = (s.wins + k * baseline) / (s.n + k);
+    var wlb = fbContractWilsonLowerBound_(s.wins, s.n, z);
+    var rel = s.n >= minReliable;
+    var thresh = thresholds[market] || 0.60;
+    var action = !rel ? 'HOLD' : wlb >= 0.68 ? 'PROMOTE' : wlb >= thresh ? 'ALLOW' : wlb >= 0.57 ? 'DOWNGRADE' : 'SKIP';
+    outRows.push([market, league, mgBin, fbBin, agree, s.n, s.wins, s.losses, wr, baseline, sr, wlb, rel, action, timestamp]);
+  });
+
+  var synSh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'MG_FB_SYNERGY') : ss.getSheetByName('MG_FB_SYNERGY');
+  if (!synSh) synSh = ss.insertSheet('MG_FB_SYNERGY');
+  synSh.clear();
+  if (outRows.length > 1) {
+    synSh.getRange(1, 1, outRows.length, outRows[0].length).setValues(outRows);
+  } else {
+    synSh.getRange(1, 1, 1, outRows[0].length).setValues([outRows[0]]);
+  }
+  Logger.log('buildMgFbSynergy_: wrote ' + (outRows.length - 1) + ' rows');
+}
+
+function buildMgFbSynergy() { buildMgFbSynergy_(SpreadsheetApp.getActiveSpreadsheet(), {}); }
+
+// ── SHADOW ANNOTATOR ─────────────────────────────────────────────────────
+
+function annotateBetSlipsShadow_(ss, maxRows, opts) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  opts = opts || {};
+  var sh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'Bet_Slips') : ss.getSheetByName('Bet_Slips');
+  if (!sh || sh.getLastRow() < 2) return;
+
+  // Load calibration and synergy maps
+  var calibMap = {};
+  var calibSh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'FOREBET_CALIBRATION') : ss.getSheetByName('FOREBET_CALIBRATION');
+  if (calibSh && calibSh.getLastRow() >= 2) {
+    var cData = calibSh.getDataRange().getValues();
+    var cHdr = {};
+    cData[0].forEach(function(h, i) { cHdr[String(h || '').toLowerCase().replace(/[\s_]+/g, '_').trim()] = i; });
+    for (var r = 1; r < cData.length; r++) {
+      var lg = String(cData[r][cHdr['league']] || '').trim();
+      var bin = String(cData[r][cHdr['fb_bin']] || '').trim();
+      if (bin) calibMap[lg + '|' + bin] = {
+        n: Number(cData[r][cHdr['n']] || 0),
+        wr: Number(cData[r][cHdr['win_rate']] || 0),
+        sr: Number(cData[r][cHdr['shrunk_rate']] || 0),
+        wlb: Number(cData[r][cHdr['wilson_lb']] || 0),
+        rel: String(cData[r][cHdr['reliable']] || '').toUpperCase() === 'TRUE'
+      };
+    }
+  }
+
+  var synMap = {};
+  var synSh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'MG_FB_SYNERGY') : ss.getSheetByName('MG_FB_SYNERGY');
+  if (synSh && synSh.getLastRow() >= 2) {
+    var sData = synSh.getDataRange().getValues();
+    var sHdr = {};
+    sData[0].forEach(function(h, i) { sHdr[String(h || '').toLowerCase().replace(/[\s_]+/g, '_').trim()] = i; });
+    for (var r = 1; r < sData.length; r++) {
+      var mkt  = String(sData[r][sHdr['market']] || '').trim().toUpperCase();
+      var slg  = String(sData[r][sHdr['league']] || '').trim();
+      var mgBn = String(sData[r][sHdr['mg_conf_bin']] || '').trim();
+      var fbn  = String(sData[r][sHdr['fb_bin']] || '').trim();
+      var agr  = String(sData[r][sHdr['mg_fb_agree']] || '').trim();
+      if (mkt && fbn) synMap[[mkt, slg, mgBn, fbn, agr].join('|')] = String(sData[r][sHdr['action']] || 'HOLD').trim();
+    }
+  }
+
+  var parsedRows = fbContractFindBetSlipRows_(sh);
+
+  parsedRows.forEach(function(pr) {
+    var row = pr.values;
+    var hdrMap = pr.headerMap;
+    function idx_(name) {
+      var kk = String(name || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+      return hdrMap[kk] !== undefined ? hdrMap[kk] : -1;
+    }
+    var lg     = idx_('League') >= 0 ? String(row[idx_('League')] || '').trim() : '';
+    var fbBin  = idx_('FB_Bin') >= 0 ? String(row[idx_('FB_Bin')] || '').trim() : '';
+    var mkt    = idx_('Market') >= 0 ? String(row[idx_('Market')] || '').trim().toUpperCase() : '';
+    var conf   = idx_('Confidence_Pct') >= 0 ? Number(row[idx_('Confidence_Pct')]) : 0;
+    var mgBin  = isFinite(conf) ? (conf >= 70 ? '70+' : conf >= 60 ? '60-70' : '50-60') : 'UNKNOWN';
+    var agree  = idx_('MG_FB_Agree') >= 0 ? String(row[idx_('MG_FB_Agree')] || '').trim() : 'NA';
+
+    var calib = calibMap[lg + '|' + fbBin] || calibMap['UNKNOWN|' + fbBin] || { n: 0, wr: 0, sr: 0, wlb: 0, rel: false };
+    var synKey = [mkt, lg, mgBin, fbBin, agree].join('|');
+    var action = synMap[synKey] || synMap[[mkt, 'UNKNOWN', mgBin, fbBin, agree].join('|')] || 'HOLD';
+
+    var updates = [];
+    function add_(name, val) { var c = idx_(name); if (c >= 0) updates.push({ c: c + 1, v: val }); }
+    add_('FB_Bin_N', calib.n);
+    add_('FB_Bin_Win_Rate', calib.wr);
+    add_('FB_Bin_Shrunk_Rate', calib.sr);
+    add_('FB_Bin_Wilson_LB', calib.wlb);
+    add_('FB_Reliable', calib.rel);
+    add_('MG_FB_Action', 'SHADOW_' + action);
+    add_('MG_FB_Trust', calib.rel ? (calib.wlb >= 0.55 ? 'HIGH' : 'LOW') : 'INSUFFICIENT');
+    add_('Calibration_Action', 'SHADOW_' + action);
+
+    updates.forEach(function(u) { sh.getRange(pr.rowNumber, u.c).setValue(u.v); });
+  });
+}
+
+function annotateBetSlipsShadow() { annotateBetSlipsShadow_(SpreadsheetApp.getActiveSpreadsheet(), 5000, {}); }
+
+// ── GATING + SKIPPED BETS ────────────────────────────────────────────────
+
+function fbGateEnsureSkippedBetsHeaders_(ss) {
+  var bsSh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'Bet_Slips') : ss.getSheetByName('Bet_Slips');
+  if (!bsSh) return null;
+  var data = bsSh.getDataRange().getValues();
+  var bsHdrRow = [];
+  for (var i = 0; i < data.length; i++) {
+    if (String(data[i][0] || '') === 'Bet_Record_ID') { bsHdrRow = data[i]; break; }
+  }
+  var sbSh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'Skipped_Bets') : ss.getSheetByName('Skipped_Bets');
+  if (!sbSh) sbSh = ss.insertSheet('Skipped_Bets');
+  var currentHdr = sbSh.getLastRow() >= 1 ? sbSh.getRange(1, 1, 1, Math.max(sbSh.getLastColumn(), 1)).getValues()[0] : [];
+  if (currentHdr.length < bsHdrRow.length + 5) {
+    var newHdr = bsHdrRow.slice();
+    newHdr.push('Skip_Reason', 'Skipped_At', 'Gating_Run_ID', 'Original_Row_Number', 'Original_Section');
+    sbSh.getRange(1, 1, 1, newHdr.length).setValues([newHdr]);
+  }
+  return sbSh;
+}
+
+function fbGateEnforceBetSlipsGating_(ss, opts) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  opts = opts || {};
+  var cfg = fbContractReadCfgAcc_(ss);
+  var skipHq      = fbContractCfgBool_(cfg, 'enable_skip_highest_quarter_normal', true);
+  var gateSynergy = fbContractCfgBool_(cfg, 'enable_mg_fb_synergy_gating', false);
+  var gateCalib   = fbContractCfgBool_(cfg, 'enable_fb_calibration_contract', false);
+  var gateCorr    = fbContractCfgBool_(cfg, 'enable_satellite_correlation_guard', false);
+  var minFbLb     = fbContractCfgNum_(cfg, 'fb_calib_min_lb', 0.55);
+
+  var bsSh = (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, 'Bet_Slips') : ss.getSheetByName('Bet_Slips');
+  if (!bsSh || bsSh.getLastRow() < 2) return;
+
+  var sbSh = fbGateEnsureSkippedBetsHeaders_(ss);
+  var parsedRows = fbContractFindBetSlipRows_(bsSh);
+  var toArchive = [];
+  var gameScores = {};
+  var runId = 'GATE_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd_HHmmss');
+  var timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+
+  // Pass 1: individual row gating
+  parsedRows.forEach(function(pr) {
+    var row = pr.values;
+    var hdrMap = pr.headerMap;
+    function idx_(name) {
+      var kk = String(name || '').toLowerCase().replace(/[\s_\-\.]+/g, '_').trim();
+      return hdrMap[kk] !== undefined ? hdrMap[kk] : -1;
+    }
+    var corrGrp = idx_('Correlation_Group') >= 0 ? String(row[idx_('Correlation_Group')] || '').trim() : '';
+    var action  = idx_('MG_FB_Action') >= 0 ? String(row[idx_('MG_FB_Action')] || '').trim() : '';
+    var fbRel   = idx_('FB_Reliable') >= 0 ? String(row[idx_('FB_Reliable')] || '').toUpperCase() === 'TRUE' : false;
+    var fbLb    = idx_('FB_Bin_Wilson_LB') >= 0 ? Number(row[idx_('FB_Bin_Wilson_LB')]) : 0;
+
+    // Blocker 6 fix: normalize SHADOW_ prefix before checking the action keyword
+    // so SHADOW_SKIP, SHADOW_ALLOW, SHADOW_PROMOTE etc. all resolve correctly.
+    var actionNorm = action.replace(/^SHADOW_/i, '').toUpperCase();
+
+    var reason = '';
+    if (skipHq && corrGrp === 'HQ_CLUSTER') {
+      reason = 'HQ_CLUSTER_NORMAL_SKIPPED';
+    } else if (gateSynergy && fbRel && actionNorm === 'SKIP') {
+      reason = 'SYNERGY_SKIP';
+    } else if (gateCalib && fbRel && fbLb < minFbLb) {
+      reason = 'CALIBRATION_LB_TOO_LOW';
+    }
+
+    if (reason) { toArchive.push({ pr: pr, reason: reason }); pr.skipReason = reason; }
+
+    // Accumulate correlation scores for Pass 2
+    if (gateCorr && !reason && (corrGrp === 'SIDE_CLUSTER' || corrGrp === 'TOTAL_CLUSTER')) {
+      var gameId = idx_('Universal_Game_ID') >= 0 ? String(row[idx_('Universal_Game_ID')] || '') : '';
+      if (gameId) {
+        var conf = idx_('Adjusted_Confidence_Pct') >= 0 ? Number(row[idx_('Adjusted_Confidence_Pct')]) : (idx_('Confidence_Pct') >= 0 ? Number(row[idx_('Confidence_Pct')]) : 0);
+        var score = conf + (fbRel ? 100 * fbLb : 0) + (action.indexOf('PROMOTE') >= 0 ? 2 : action.indexOf('DOWNGRADE') >= 0 ? -5 : 0);
+        var gKey = gameId + '|' + corrGrp;
+        if (!gameScores[gKey]) gameScores[gKey] = [];
+        gameScores[gKey].push({ pr: pr, score: score });
+      }
+    }
+  });
+
+  // Pass 2: correlation deduplication
+  if (gateCorr) {
+    Object.keys(gameScores).forEach(function(gKey) {
+      var items = gameScores[gKey];
+      if (items.length > 1) {
+        items.sort(function(a, b) { return b.score - a.score; });
+        for (var j = 1; j < items.length; j++) {
+          if (!items[j].pr.skipReason) {
+            toArchive.push({ pr: items[j].pr, reason: 'CORRELATION_DEDUP_RANK_' + (j + 1) });
+            items[j].pr.skipReason = 'CORRELATION_DEDUP';
+          }
+        }
+      }
+    });
+  }
+
+  // Archive and delete bottom-to-top
+  if (toArchive.length > 0 && sbSh) {
+    toArchive.sort(function(a, b) { return b.pr.rowNumber - a.pr.rowNumber; });
+    var sbRows = [];
+    toArchive.forEach(function(arc) {
+      var newRow = arc.pr.values.slice();
+      newRow.push(arc.reason, timestamp, runId, arc.pr.rowNumber, arc.pr.section);
+      sbRows.push(newRow);
+      bsSh.deleteRow(arc.pr.rowNumber);
+    });
+    sbSh.getRange(sbSh.getLastRow() + 1, 1, sbRows.length, sbRows[0].length).setValues(sbRows);
+  }
+  Logger.log('fbGateEnforceBetSlipsGating_: archived ' + toArchive.length + ' rows');
+}
+
+function enforceBetSlipsGating() { fbGateEnforceBetSlipsGating_(SpreadsheetApp.getActiveSpreadsheet(), {}); }
+
+// ── EVALUATION REPORT ────────────────────────────────────────────────────
+
+function buildSatelliteForebetEvaluation_(ss, opts) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  opts = opts || {};
+  function getSh_(name) {
+    return (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, name) : ss.getSheetByName(name);
+  }
+  var runId = 'EVAL_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd_HHmmss');
+  var timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+
+  var bsSh = getSh_('Bet_Slips');
+  var sbSh = getSh_('Skipped_Bets');
+  var calibSh = getSh_('FOREBET_CALIBRATION');
+  var synSh = getSh_('MG_FB_SYNERGY');
+
+  var bsRows = 0;
+  var shadowActions = {};
+  if (bsSh) {
+    var parsedRows = fbContractFindBetSlipRows_(bsSh);
+    bsRows = parsedRows.length;
+    parsedRows.forEach(function(pr) {
+      var actCol = pr.headerMap['calibration_action'];
+      if (actCol !== undefined) {
+        var act = String(pr.values[actCol] || '').trim();
+        if (act) shadowActions[act] = (shadowActions[act] || 0) + 1;
+      }
+    });
+  }
+
+  var sbRows = 0;
+  var skipReasons = {};
+  if (sbSh && sbSh.getLastRow() > 1) {
+    var sbData = sbSh.getDataRange().getValues();
+    sbRows = sbData.length - 1;
+    var hdr = {};
+    sbData[0].forEach(function(h, i) { hdr[String(h).toLowerCase().trim()] = i; });
+    var rCol = hdr['skip_reason'];
+    if (rCol !== undefined) {
+      for (var r = 1; r < sbData.length; r++) {
+        var rsn = String(sbData[r][rCol] || '').trim();
+        if (rsn) skipReasons[rsn] = (skipReasons[rsn] || 0) + 1;
+      }
+    }
+  }
+
+  var calibRows = calibSh ? Math.max(0, calibSh.getLastRow() - 1) : 0;
+  var synRows   = synSh   ? Math.max(0, synSh.getLastRow() - 1)   : 0;
+  var total = bsRows + sbRows;
+  var coverage = total > 0 ? ((bsRows / total) * 100).toFixed(2) + '%' : '0%';
+
+  var metrics = [
+    ['metric', 'value', 'run_id', 'generated_at'],
+    ['Bet_Slips actual bet rows', bsRows, runId, timestamp],
+    ['Skipped_Bets rows', sbRows, runId, timestamp],
+    ['Coverage kept %', coverage, runId, timestamp],
+    ['FOREBET_CALIBRATION rows', calibRows, runId, timestamp],
+    ['MG_FB_SYNERGY rows', synRows, runId, timestamp]
+  ];
+  Object.keys(skipReasons).forEach(function(k) { metrics.push(['Skipped reason: ' + k, skipReasons[k], runId, timestamp]); });
+  Object.keys(shadowActions).forEach(function(k) { metrics.push(['Shadow action: ' + k, shadowActions[k], runId, timestamp]); });
+
+  var evalSh = getSh_('Satellite_Evaluation');
+  if (!evalSh) evalSh = ss.insertSheet('Satellite_Evaluation');
+  evalSh.clear();
+  evalSh.getRange(1, 1, metrics.length, metrics[0].length).setValues(metrics);
+  Logger.log('buildSatelliteForebetEvaluation_: ' + (metrics.length - 1) + ' metrics written');
+}
+
+function buildSatelliteForebetEvaluation() { buildSatelliteForebetEvaluation_(SpreadsheetApp.getActiveSpreadsheet(), {}); }
+
+// ── AUTOTUNE ─────────────────────────────────────────────────────────────
+
+function tuneForebetContract_(ss, opts) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  opts = opts || {};
+  function getSh_(name) {
+    return (typeof getSheetInsensitive === 'function') ? getSheetInsensitive(ss, name) : ss.getSheetByName(name);
+  }
+  var cfg = fbContractReadCfgAcc_(ss);
+  if (!fbContractCfgBool_(cfg, 'enable_fb_contract_autotune', true)) {
+    Logger.log('tuneForebetContract_: disabled'); return;
+  }
+  var autoApply = fbContractCfgBool_(cfg, 'enable_fb_contract_auto_apply', false);
+  var runId = 'TUNE_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd_HHmmss');
+  var timestamp = Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyy-MM-dd HH:mm:ss');
+
+  var calibSh = getSh_('FOREBET_CALIBRATION');
+  if (!calibSh || calibSh.getLastRow() < 2) {
+    Logger.log('tuneForebetContract_: no calibration data. Run buildForebetCalibration first.'); return;
+  }
+  var calibData = calibSh.getDataRange().getValues();
+  var cHdr = {};
+  calibData[0].forEach(function(h, i) { cHdr[String(h || '').toLowerCase().replace(/[\s_]+/g, '_').trim()] = i; });
+
+  var currentMinLb = fbContractCfgNum_(cfg, 'fb_calib_min_lb', 0.55);
+  var candidates = [0.50, 0.52, 0.55, 0.58, 0.60, 0.62, 0.65];
+  var rows = [['run_id','candidate','fb_calib_min_lb','rows_above_lb','reliable_rows_above_lb','avg_win_rate_above_lb','coverage_pct','score','selected','updated_at']];
+
+  candidates.forEach(function(lb) {
+    var aboveLb = 0, reliableAbove = 0, wrSum = 0, totalRows = calibData.length - 1;
+    for (var r = 1; r < calibData.length; r++) {
+      var wlb = Number(calibData[r][cHdr['wilson_lb']] || 0);
+      var wr  = Number(calibData[r][cHdr['win_rate']]  || 0);
+      var rel = String(calibData[r][cHdr['reliable']]  || '').toUpperCase() === 'TRUE';
+      if (wlb >= lb) { aboveLb++; wrSum += wr; if (rel) reliableAbove++; }
+    }
+    var coverage = totalRows > 0 ? ((aboveLb / totalRows) * 100).toFixed(1) + '%' : '0%';
+    var avgWr = aboveLb > 0 ? (wrSum / aboveLb).toFixed(4) : '0';
+    var score = (reliableAbove * 2 + aboveLb) - Math.max(0, 20 - reliableAbove);
+    var selected = Math.abs(lb - currentMinLb) < 0.001 ? (autoApply ? 'YES_AUTO_APPLIED' : 'CURRENT') : 'NO';
+    rows.push([runId, 'LB_' + lb, lb, aboveLb, reliableAbove, avgWr, coverage, score, selected, timestamp]);
+  });
+
+  // NOTE: Full train/holdout split is TODO — candidate_corr_caps evaluation is TODO
+  var tuneSh = getSh_('FOREBET_AUTOTUNE');
+  if (!tuneSh) tuneSh = ss.insertSheet('FOREBET_AUTOTUNE');
+  if (tuneSh.getLastRow() < 1) {
+    tuneSh.getRange(1, 1, rows.length, rows[0].length).setValues(rows);
+  } else {
+    var dataRows = rows.slice(1);
+    tuneSh.getRange(tuneSh.getLastRow() + 1, 1, dataRows.length, dataRows[0].length).setValues(dataRows);
+  }
+  Logger.log('tuneForebetContract_: evaluated ' + candidates.length + ' candidates');
+}
+
+// ── PUBLIC RUNNERS ───────────────────────────────────────────────────────
+
+function runSatelliteForebetMetaOnly() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  ensureBetSlipsCanonicalHeaders_(ss, { enableFbMeta: true });
+  backfillBetSlipsForebetMeta_(ss, 5000);
+}
+
+function runSatelliteForebetShadow() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  ensureBetSlipsCanonicalHeaders_(ss, { enableFbMeta: true });
+  backfillBetSlipsForebetMeta_(ss, 5000);
+  buildForebetCalibration_(ss, {});
+  buildMgFbSynergy_(ss, {});
+  annotateBetSlipsShadow_(ss, 5000, {});
+}
+
+function runSatelliteAccuracyEnforcement() {
+  var ss = SpreadsheetApp.getActiveSpreadsheet();
+  runSatelliteForebetShadow();
+  fbGateEnforceBetSlipsGating_(ss, {});
+}
+
+// ── SHEBANG ORCHESTRATION WRAPPERS ───────────────────────────────────────
+
+function runSatelliteForebetContract_(ss, mode, opts) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  mode = mode || 'PRE_BETS';
+  opts = opts || {};
+  var cfg = fbContractReadCfgAcc_(ss);
+  if (!fbContractCfgBool_(cfg, 'fb_shebang_enabled', true)) {
+    Logger.log('[Forebet] Shebang disabled via config'); return { ok: true, skipped: true };
+  }
+  var failOpen = fbContractCfgBool_(cfg, 'fb_shebang_fail_open', true);
+  var runId = 'FB_' + mode + '_' + Utilities.formatDate(new Date(), Session.getScriptTimeZone(), 'yyyyMMdd_HHmmss');
+  try {
+    if (mode === 'PRE_BETS') {
+      if (fbContractCfgBool_(cfg, 'fb_shebang_run_pre_calibration', true)) {
+        ensureBetSlipsCanonicalHeaders_(ss, { enableFbMeta: fbContractCfgBool_(cfg, 'enable_fb_meta_columns', true) });
+        buildForebetCalibration_(ss, opts);
+        backfillBetSlipsForebetMeta_(ss, 5000);
+      }
+    } else if (mode === 'POST_BETS_SHADOW') {
+      // Blocker 1 fix: after Accumulator clears+rewrites Bet_Slips, fresh rows have no
+      // FB metadata. Ensure headers and backfill BEFORE synergy/shadow so annotations
+      // have something to work with.
+      if (fbContractCfgBool_(cfg, 'fb_shebang_run_post_bets', true)) {
+        ensureBetSlipsCanonicalHeaders_(ss, { enableFbMeta: fbContractCfgBool_(cfg, 'enable_fb_meta_columns', true) });
+        backfillBetSlipsForebetMeta_(ss, 5000);
+        buildMgFbSynergy_(ss, opts);
+        annotateBetSlipsShadow_(ss, 5000, opts);
+      }
+    } else if (mode === 'POST_BETS_ENFORCE') {
+      // Same fix as POST_BETS_SHADOW — ensure+backfill first, then synergy/shadow/gating.
+      if (fbContractCfgBool_(cfg, 'fb_shebang_run_post_bets', true)) {
+        ensureBetSlipsCanonicalHeaders_(ss, { enableFbMeta: fbContractCfgBool_(cfg, 'enable_fb_meta_columns', true) });
+        backfillBetSlipsForebetMeta_(ss, 5000);
+        buildMgFbSynergy_(ss, opts);
+        annotateBetSlipsShadow_(ss, 5000, opts);
+        fbGateEnforceBetSlipsGating_(ss, opts);
+      }
+    } else if (mode === 'POST_REPORT') {
+      if (fbContractCfgBool_(cfg, 'fb_shebang_run_evaluation', true)) {
+        buildSatelliteForebetEvaluation_(ss, opts);
+      }
+    }
+    return { ok: true, mode: mode, runId: runId };
+  } catch (e) {
+    Logger.log('[Forebet] Error in mode ' + mode + ': ' + e.message);
+    if (!failOpen) throw e;
+    return { ok: false, mode: mode, runId: runId, error: e.message };
+  }
+}
+
+function runSatelliteForebetPreBets(ss) {
+  return runSatelliteForebetContract_(ss || SpreadsheetApp.getActiveSpreadsheet(), 'PRE_BETS', {});
+}
+
+function runSatelliteForebetPostBets(ss) {
+  ss = ss || SpreadsheetApp.getActiveSpreadsheet();
+  var cfg = fbContractReadCfgAcc_(ss);
+  var mode = String(cfg['fb_shebang_mode'] || 'SHADOW').trim().toUpperCase();
+  if (mode === 'OFF') return { ok: true, skipped: true };
+  return runSatelliteForebetContract_(ss, mode === 'ENFORCE' ? 'POST_BETS_ENFORCE' : 'POST_BETS_SHADOW', {});
+}
+
+function runSatelliteForebetPostReport(ss) {
+  return runSatelliteForebetContract_(ss || SpreadsheetApp.getActiveSpreadsheet(), 'POST_REPORT', {});
+}
