@@ -5479,8 +5479,12 @@ function fbContractReadCfgAcc_(ss) {
 
 function fbContractCfgBool_(cfg, key, def) {
   if (!cfg || !(key in cfg)) return def;
-  var v = String(cfg[key] || '').trim().toUpperCase();
-  return (v === 'TRUE' || v === '1' || v === 'YES');
+  var val = cfg[key];
+  if (val === null || val === undefined || String(val).trim() === '') return def;
+  var v = String(val).trim().toUpperCase();
+  if (v === 'TRUE' || v === '1' || v === 'YES' || v === 'Y' || v === 'ON') return true;
+  if (v === 'FALSE' || v === '0' || v === 'NO' || v === 'N' || v === 'OFF') return false;
+  return def;
 }
 
 function fbContractCfgNum_(cfg, key, def) {
@@ -6483,6 +6487,13 @@ function fbGateEnforceBetSlipsGating_(ss, opts) {
         }
       }
     });
+  }
+
+  // Fail-open safety check: do not empty Bet_Slips completely if configured not to
+  var minLive = fbContractCfgNum_(cfg, 'fb_gate_fail_open_min_live_rows', 1);
+  if (toArchive.length > 0 && (parsedRows.length - toArchive.length) < minLive) {
+    Logger.log('fbGateEnforceBetSlipsGating_: FAIL-OPEN — would archive ' + toArchive.length + '/' + parsedRows.length + ' rows, leaving fewer than ' + minLive + ' live bet row(s). Bet_Slips preserved; inspect Skipped_Bets/gate reasons.');
+    return;
   }
 
   // Archive and delete bottom-to-top

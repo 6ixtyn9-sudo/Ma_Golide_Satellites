@@ -2225,6 +2225,7 @@ function createConfigAccumulatorSheet(ss) {
     ['enable_mg_fb_synergy_gating',        'FALSE'],
     ['enable_skip_highest_quarter_normal', 'TRUE'],
     ['enable_satellite_correlation_guard', 'FALSE'],
+    ['fb_gate_fail_open_min_live_rows',    '1'],
     ['gating_lookback_hours',              '24'],
     ['fb_min_n_reliable',                  '30'],
     ['fb_wilson_z',                        '1.645'],
