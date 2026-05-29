@@ -512,15 +512,12 @@ function getBetSlipsContract_(opts) {
 /**
  * Ensures Bet_Slips has canonical headers.
  *  - Blank sheet → writes one canonical header row.
- *  - Sectioned sheet → appends missing FB columns to every Bet_Record_ID header row.
- *  - Never clears Bet_Slips, never flattens the sectioned layout, never reorders old columns.
+ *  - Sectioned sheet → rewrites every detected header row to the full canonical contract.
+ *  - Never clears Bet_Slips, never flattens the sectioned layout, never reorders data rows.
  *
- * Blocker 4 fix:
- *  - Header detection is now strict: only rows where first cell === 'Bet_Record_ID' are
- *    treated as Bet_Slips machine-contract header rows.  Using 'League' as a trigger was
- *    too broad and could match unrelated data sections.
- *  - The append start column is computed as (last occupied cell in the header row) + 1,
- *    NOT data[r].length + 1 which could be the full sheet column width and leave blank gaps.
+ * Fix 3: detection broadened to catch malformed title/header mixtures (A1 prefix) and
+ * partial repeated headers with blank FB column names. Detected header rows are rewritten
+ * in full rather than append-only, so stale/blank FB column names are always corrected.
  */
 function ensureBetSlipsCanonicalHeaders_(ss, opts) {
   opts = opts || {};
@@ -531,8 +528,6 @@ function ensureBetSlipsCanonicalHeaders_(ss, opts) {
     : ss.getSheetByName('Bet_Slips');
   if (!sh) return; // Bet_Slips doesn't exist yet — safe to skip
 
-  var fbCols = BET_SLIPS_CONTRACT_EXT_FB_META;
-
   if (sh.getLastRow() < 1) {
     // Empty sheet — write full canonical header
     var full = getBetSlipsContract_({ enableFbMeta: true });
@@ -541,34 +536,42 @@ function ensureBetSlipsCanonicalHeaders_(ss, opts) {
   }
 
   var data = sh.getDataRange().getValues();
+  var fullContract = getBetSlipsContract_({ enableFbMeta: true });
+
   for (var r = 0; r < data.length; r++) {
     var row = data[r];
     var first = String(row[0] || '').trim();
-    // Strict detection: only canonical Bet_Record_ID header rows
-    if (first !== 'Bet_Record_ID') continue;
 
-    // Build existing header set for this row
-    var existing = {};
-    for (var c = 0; c < row.length; c++) {
-      var h = String(row[c] || '').trim();
-      if (h) existing[h.toLowerCase()] = true;
+    // Detect header rows robustly:
+    // Case A: first cell exactly 'Bet_Record_ID'
+    // Case B: first cell contains 'Bet_Record_ID' (title/header mixture) AND row has Universal_Game_ID
+    // Case C: row contains Universal_Game_ID + League + Market header tokens
+    var isHeaderRow = false;
+    if (first === 'Bet_Record_ID') {
+      isHeaderRow = true;
+    } else {
+      var rowTokens = {};
+      for (var c0 = 0; c0 < row.length; c0++) {
+        var cell = String(row[c0] || '').trim().toLowerCase();
+        if (cell) rowTokens[cell] = true;
+      }
+      if (first.indexOf('Bet_Record_ID') >= 0 && rowTokens['universal_game_id']) {
+        isHeaderRow = true;
+      } else if (rowTokens['universal_game_id'] && rowTokens['league'] && rowTokens['market']) {
+        isHeaderRow = true;
+      }
     }
 
-    // Collect missing FB columns
-    var toAdd = [];
-    for (var i = 0; i < fbCols.length; i++) {
-      if (!existing[fbCols[i].toLowerCase()]) toAdd.push(fbCols[i]);
-    }
-    if (toAdd.length === 0) continue;
+    if (!isHeaderRow) continue;
 
-    // Blocker 4 fix: find the last occupied (non-empty) cell in this header row.
-    // This prevents appending after blank gaps that inflate data[r].length.
-    var lastOccupied = 0;
-    for (var c2 = row.length - 1; c2 >= 0; c2--) {
-      if (String(row[c2] || '').trim() !== '') { lastOccupied = c2 + 1; break; }
+    // Rewrite the entire header row to the full canonical contract.
+    // This repairs malformed title/header mixtures and blank FB column names.
+    sh.getRange(r + 1, 1, 1, fullContract.length).setValues([fullContract]);
+    // Clear any stale columns beyond the contract width.
+    var shLastCol = sh.getLastColumn();
+    if (shLastCol > fullContract.length) {
+      sh.getRange(r + 1, fullContract.length + 1, 1, shLastCol - fullContract.length).clearContent();
     }
-    var startCol = lastOccupied + 1; // 1-indexed column to start appending at
-    sh.getRange(r + 1, startCol, 1, toAdd.length).setValues([toAdd]);
   }
 }
 
