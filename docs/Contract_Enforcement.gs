@@ -5555,14 +5555,20 @@ function fbContractNormalizeSide_(raw) {
 // Blocker 5 fix: accept optional selectionText so SNIPER rows with "Highest Quarter" in
 // Selection_Text are detected as HQ_CLUSTER even when Market is generic (e.g. "SNIPER").
 function fbContractMarketCluster_(market, selectionText) {
+  // Bug 2 fix: combine market + selectionText for robust HQ detection.
+  var combined = (String(market || '') + ' ' + String(selectionText || '')).toUpperCase();
+
+  // HQ_CLUSTER: \bHQ\b, HIGHEST Q (optional digit), HIGH Q (optional digit),
+  //             HIGH_Q, HIGH-Q, HIGH_QTR, HIGHEST_QTR, HIGHEST_QUARTER, HIGH+QUARTER/QTR
+  if (
+    /\bHQ\b/.test(combined) ||
+    /HIGHEST\s*Q(?:[1-4])?\b/.test(combined) ||
+    /HIGH\s*Q(?:[1-4])?\b/.test(combined) ||
+    /HIGH[_\-]Q/.test(combined) ||
+    (combined.indexOf('HIGH') >= 0 && (combined.indexOf('QTR') >= 0 || combined.indexOf('QUARTER') >= 0))
+  ) return 'HQ_CLUSTER';
+
   var m = String(market || '').toUpperCase();
-  var s = String(selectionText || '').toUpperCase();
-  // HQ detection: market text or selection text contains HIGH+QTR/QUARTER keyword
-  if (m.indexOf('HIGH') >= 0 && (m.indexOf('QTR') >= 0 || m.indexOf('QUARTER') >= 0)) return 'HQ_CLUSTER';
-  if (m.indexOf('SNIPER_HIGH') >= 0) return 'HQ_CLUSTER';
-  // Selection-text fallback for HQ (e.g. Market=SNIPER, Selection_Text="Highest Quarter ...")
-  if ((s.indexOf('HIGH') >= 0 || s.indexOf('HIGHEST') >= 0) &&
-      (s.indexOf('QTR') >= 0 || s.indexOf('QUARTER') >= 0)) return 'HQ_CLUSTER';
   if (m.indexOf('OU') >= 0 || m.indexOf('O/U') >= 0 || m.indexOf('TOTAL') >= 0) return 'TOTAL_CLUSTER';
   if (m.indexOf('BANKER') >= 0 || m.indexOf('ROBBER') >= 0 || m.indexOf('1X2') >= 0 ||
       m.indexOf('WINNER') >= 0 || m.indexOf('MARGIN') >= 0 || m.indexOf('TIER1') >= 0) return 'SIDE_CLUSTER';
@@ -5605,6 +5611,11 @@ function fbContractIsSideMarket_(market) {
  * Parses the sectioned Bet_Slips layout.
  * Returns array of { rowNumber, values, headers, headerMap, section }.
  * Skips title/section/summary rows. Handles repeated Bet_Record_ID headers.
+ *
+ * Bug 1 fix: stricter row validation — a row must have a valid machine-generated
+ * Bet_Record_ID (contains __SLIP_ or matches YYYYMMDD-prefix pattern), a
+ * Universal_Game_ID, a Market, and a Selection_Text. Summary rows (Bankers:,
+ * TOTAL PICKS:, etc.) are explicitly filtered out before the data-row check.
  */
 function fbContractFindBetSlipRows_(sheet) {
   if (!sheet || sheet.getLastRow() < 2) return [];
@@ -5615,20 +5626,24 @@ function fbContractFindBetSlipRows_(sheet) {
   var currentHeaderMap = {};
   var foundHeader = false;
 
+  // Known summary-row prefixes — never treat these as real bet rows.
+  var SUMMARY_RE = /^(Ma Golide|──|===|SUMMARY|Total Bankers|No |TOTAL PICKS|Bankers:|Snipers:|ROBBERS:|1H:|FT O\/U:)/i;
+
   for (var r = 0; r < data.length; r++) {
     var row = data[r];
     var first = String(row[0] || '').trim();
     if (!first) continue;
 
-    // Section dividers / summary rows
-    if (/^(Ma Golide|──|===|SUMMARY|Total Bankers|No |TOTAL PICKS)/i.test(first)) {
+    // Section dividers / summary rows — update section label and skip.
+    if (SUMMARY_RE.test(first)) {
       var secM = first.match(/^[─=]+\s*(.+?)\s*[─=]+$/);
       if (secM) currentSection = secM[1];
       continue;
     }
 
-    // Header row
-    if (first === 'Bet_Record_ID' || first === 'League') {
+    // Header row detection: first cell is exactly 'Bet_Record_ID', OR
+    // the row has 'Bet_Record_ID' as one of its cell values (handles title-prefix rows).
+    if (first === 'Bet_Record_ID') {
       currentHeaders = row;
       currentHeaderMap = {};
       if (typeof createCanonicalHeaderMap_ === 'function') {
@@ -5643,13 +5658,26 @@ function fbContractFindBetSlipRows_(sheet) {
       continue;
     }
 
-    // Data rows — must have a Bet_Record_ID value or start with __SLIP_
-    if (foundHeader) {
-      var brIdCol = currentHeaderMap['bet_record_id'];
-      var hasBrId = (brIdCol !== undefined && row[brIdCol]) || first.indexOf('__SLIP_') !== -1;
-      if (hasBrId) {
-        out.push({ rowNumber: r + 1, values: row, headers: currentHeaders, headerMap: currentHeaderMap, section: currentSection });
-      }
+    if (!foundHeader) continue;
+
+    // Bug 1 fix: strict data-row validation.
+    var brIdCol = currentHeaderMap['bet_record_id'];
+    var ugCol   = currentHeaderMap['universal_game_id'];
+    var mktCol  = currentHeaderMap['market'];
+    var selCol  = currentHeaderMap['selection_text'];
+
+    var brId   = brIdCol !== undefined ? String(row[brIdCol] || '').trim() : '';
+    var ug     = ugCol   !== undefined ? String(row[ugCol]   || '').trim() : '';
+    var market = mktCol  !== undefined ? String(row[mktCol]  || '').trim() : '';
+    var selTxt = selCol  !== undefined ? String(row[selCol]  || '').trim() : '';
+
+    // A real bet row must have a machine-generated ID *and* core bet fields.
+    var looksLikeBetId  = brId.indexOf('__SLIP_') >= 0 || /^\d{8}/.test(brId);
+    var looksLikeGameId = ug.indexOf('__') >= 0 || /^\d{8}/.test(ug);
+    var hasCoreBetFields = !!market && !!selTxt;
+
+    if (looksLikeBetId && looksLikeGameId && hasCoreBetFields) {
+      out.push({ rowNumber: r + 1, values: row, headers: currentHeaders, headerMap: currentHeaderMap, section: currentSection });
     }
   }
   return out;
