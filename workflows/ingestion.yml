@@ -1,0 +1,195 @@
+# Automatic NBA + EuroLeague + Chinese CBA + NCAA men + NCAA women service.
+# Copy to .github/workflows/ingestion.yml with a token that has `workflows`
+# permission. There are deliberately NO league/date/mode/write dispatch inputs.
+
+name: "Ma Golide — all-league DuckDB service"
+
+on:
+  schedule:
+    - cron: "11 */3 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: magolide-all-league-main
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install project and test dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install '.[dev]'
+      - name: Static checks
+        run: ruff check .
+      - name: Hermetic regression tests
+        run: python -m pytest -q
+
+  league:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        include:
+          - label: NBA
+            league: NBA
+            state_key: nba
+          - label: EuroLeague
+            league: EuroLeague
+            state_key: euroleague
+          - label: Chinese CBA
+            league: CBA
+            state_key: cba
+          - label: NCAA men
+            league: NCAA_M
+            state_key: ncaa_m
+          - label: NCAA women
+            league: NCAA_W
+            state_key: ncaa_w
+    name: ${{ matrix.label }}
+    env:
+      LOCALDATA: localdata/${{ matrix.state_key }}
+      MAGOLIDE_WAREHOUSE: localdata/${{ matrix.state_key }}/warehouse.duckdb
+      PREDIXSPORT_API_KEY: ${{ secrets.PREDIXSPORT_API_KEY }}
+      THERUNDOWN_API_KEY: ${{ secrets.THERUNDOWN_API_KEY }}
+      SPORTSGAMEODDS_API_KEY: ${{ secrets.SPORTSGAMEODDS_API_KEY }}
+      THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+      ISPORTS_API_KEY: ${{ secrets.ISPORTS_API_KEY }}
+      SPORTRADAR_API_KEY: ${{ secrets.SPORTRADAR_API_KEY }}
+      SPORTRADAR_ACCESS_LEVEL: ${{ vars.SPORTRADAR_ACCESS_LEVEL || 'trial' }}
+      ALLOW_MAGOLIDE_WRITES: ${{ vars.ALLOW_MAGOLIDE_WRITES || 'false' }}
+      WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
+      WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
+      WHATSAPP_RECIPIENT: ${{ secrets.WHATSAPP_RECIPIENT }}
+      ALLOW_NOTIFICATION_WRITES: ${{ vars.ALLOW_NOTIFICATION_WRITES || 'false' }}
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install project dependencies
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install .
+
+      - name: Restore league-isolated DuckDB/CSV state
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.LOCALDATA }}
+          key: magolide-localdata-v2-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            magolide-localdata-v2-${{ matrix.state_key }}-
+
+      - name: Resolve league acquisition date automatically
+        id: target
+        env:
+          LEAGUE: ${{ matrix.league }}
+        run: |
+          DATE="$(python - <<'PY'
+          from datetime import datetime
+          import os
+          from zoneinfo import ZoneInfo
+          from ingestion.pipeline import ACQUISITION_TZ
+          league = os.environ["LEAGUE"].upper()
+          print(datetime.now(ZoneInfo(ACQUISITION_TZ[league])).strftime("%Y-%m-%d"))
+          PY
+          )"
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+
+      - name: Execute this league automatically
+        env:
+          LEAGUE: ${{ matrix.league }}
+          TARGET_DATE: ${{ steps.target.outputs.date }}
+        run: |
+          set -euo pipefail
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$ALLOW_MAGOLIDE_WRITES" != "true" ]; then
+            # Disabled schedules do not burn paid provider quota or create
+            # canonical files. Manual dispatch remains a live all-league dry run.
+            python - <<'PY' > daily-output.json
+          import json
+          print(json.dumps({
+              "status": "skipped",
+              "reason": "ALLOW_MAGOLIDE_WRITES is not true; scheduled live acquisition disabled",
+              "mode": "scheduled_noop"
+          }, indent=2))
+          PY
+            exit 0
+          fi
+
+          ARGS=(
+            --auto-once
+            --league "$LEAGUE"
+            --date "$TARGET_DATE"
+            --warehouse "$MAGOLIDE_WAREHOUSE"
+            --localdata "$LOCALDATA"
+            --run-id "${GITHUB_RUN_ID}_${LEAGUE,,}"
+          )
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
+            ARGS+=(--write)
+            if [ "$ALLOW_NOTIFICATION_WRITES" = "true" ]; then
+              ARGS+=(--notify --send-notifications)
+            fi
+          else
+            echo "Live dry run for $LEAGUE: canonical writes are disabled."
+          fi
+          python scripts/daily.py "${ARGS[@]}" | tee daily-output.json
+
+      - name: Redacted operational summary
+        if: always()
+        env:
+          LEAGUE: ${{ matrix.league }}
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          import os
+          from pathlib import Path
+          print(f"## {os.environ['LEAGUE']}")
+          path = Path("daily-output.json")
+          if not path.exists():
+              print("No daily report produced; inspect the failed step log.")
+          else:
+              data = json.loads(path.read_text())
+              summary = {key: data.get(key) for key in (
+                  "status", "reason", "run_id", "target_date", "league", "mode",
+                  "verification", "system_of_record", "counts", "ledgers",
+                  "notification", "report_path"
+              ) if key in data}
+              print("```json")
+              print(json.dumps(summary, indent=2, default=str))
+              print("```")
+          PY
+
+      - name: Persist league-isolated DuckDB/CSV state
+        if: success() && github.event_name == 'schedule' && env.ALLOW_MAGOLIDE_WRITES == 'true'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.LOCALDATA }}
+          key: magolide-localdata-v2-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Upload league reports and immutable ledgers
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MaGolide-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.LOCALDATA }}/reports/*.json
+            ${{ env.LOCALDATA }}/ledgers/
+            ${{ env.LOCALDATA }}/assay_*.json
+            daily-output.json
+          if-no-files-found: ignore
+          retention-days: 14

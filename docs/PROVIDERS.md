@@ -10,23 +10,38 @@ No live-provider claim should be inferred from a passing offline suite.
 | Provider | League | Capabilities | Authentication | Current evidence |
 | --- | --- | --- | --- | --- |
 | ESPN | NBA | Scoreboard discovery, BPI predictions, summaries, recent finals, standings | Public endpoints | Committed live-captured fixtures plus offline regressions |
+| ESPN | NCAA_M / NCAA_W | Separate Division-I men's/women's scoreboards, BPI predictions, summaries, recent finals | Public endpoints | Hermetic endpoint and two-half/OT regressions; no authenticated/live coverage claim |
 | EuroLeague | EuroLeague | Schedule discovery, game results, quarter/OT reconciliation, standings | Public endpoints | Fixture-based parser regressions; live availability must be checked at run time |
+| iSportsAPI | CBA | Exact Chinese league discovery, UTC schedule/results, four-quarter/OT reconciliation | `ISPORTS_API_KEY` | `DOCUMENTATION_ONLY`; fixture-tested adapter, paid access and live league ID not verified |
 
 Only final, reconciled results enter grading. In-progress scores, inconsistent
-quarter sums, invalid overtime totals, and irreconcilable team identities are
-quarantined. Missing periods remain missing.
+native-period sums, invalid overtime totals, and irreconcilable team identities
+are quarantined. Missing periods remain missing. NBA, EuroLeague, and CBA use
+Q1–Q4; NCAA men and women retain native H1/H2 and are never relabelled as
+quarters. CBA schedule acquisition uses the provider's documented UTC calendar
+window, while its display and ledger grouping use Asia/Shanghai.
 
 ## Prediction providers
 
-Priority is `espn`, `hardwood`, then `predixsport` by default. One coherent
-provider bundle is selected; probabilities and expected scores from different
-providers are never averaged.
+Priority is `espn`, `hardwood`, `predixsport`, then `sportradar` by default.
+One coherent provider bundle is selected; probabilities and expected scores
+from different providers are never averaged. Bookmaker prices are never
+converted into prediction records.
 
 | Provider | League | Prediction fields | Key / freshness |
 | --- | --- | --- | --- |
-| ESPN BPI | NBA | Home/away probabilities; expected scores, total, and margin when present | Public; per-prediction source modification time |
+| ESPN BPI | NBA, NCAA_M, NCAA_W | Home/away probabilities; expected scores, total, and margin when present | Public; per-prediction source modification time |
 | Hardwood | NBA | One artifact's probabilities, expected scores, total, margin, model provenance | Public artifact; generated-at freshness and team/time/ID join |
 | Predixsport | NBA and EuroLeague | Probabilities; detail endpoint can add expected total/margin and derived scores | `PREDIXSPORT_API_KEY`; disabled without a key; documentation-only endpoint schema |
+| Sportradar Global Basketball | CBA | Independent pre-match 2-way home/away probabilities; no expected scores or totals | `SPORTRADAR_API_KEY`, optional `SPORTRADAR_ACCESS_LEVEL=trial|production`; `DOCUMENTATION_ONLY` |
+
+Sportradar discovery requires one unique men's `CBA` competition in category
+`CHN`, then one non-disabled season containing the target date. Its documented
+Season Probabilities feed is paginated. An event joins an iSportsAPI fixture
+only through a unique one-to-one match on both canonical team identities and
+the exact confirmed UTC start time. Missing, duplicate, unconfirmed, live, or
+removed probability evidence remains a gap; it is never replaced with implied
+book probabilities.
 
 A probabilities-only prediction remains partial: it may support moneyline, but
 missing expected scores are not invented. Predixsport score derivation uses
@@ -43,7 +58,8 @@ prices remain missing.
 
 | Provider | Implemented markets | Periods | League / key |
 | --- | --- | --- | --- |
-| TheOddsAPI | h2h, totals, spreads; first-half h2h includes draw prices | Full-game h2h/total/spread; Q1–Q4 total/spread; H1 h2h | NBA; `THE_ODDS_API_KEY` |
+| TheOddsAPI | h2h, totals, spreads; half markets use native H1/H2 | NBA: full game, Q1–Q4, H1 h2h; NCAA_M/NCAA_W: full game and H1/H2 markets | NBA, NCAA_M, NCAA_W; `THE_ODDS_API_KEY` |
+| iSportsAPI | Moneyline, totals, spreads | Full game, H1 spread/total, Q1–Q4 spread/total | CBA; `ISPORTS_API_KEY`; `DOCUMENTATION_ONLY` |
 | SportsGameOdds | Totals only | Full game and Q1–Q4 | NBA; `SPORTSGAMEODDS_API_KEY` |
 | TheRundown | Moneyline and totals | Full game only | NBA; `THERUNDOWN_API_KEY` |
 
@@ -55,7 +71,11 @@ Important restrictions:
 - SportsGameOdds does not infer quarter coverage from an oddID pattern alone;
   only literal documented total IDs in a response are parsed.
 - TheOddsAPI quarter/half markets come from the per-event endpoint. H1 is not
-  Q1+Q2 inference and Q1 is never relabelled as H1.
+  Q1+Q2 inference and Q1 is never relabelled as H1. NCAA requests use the
+  native half markets and do not request quarter markets.
+- iSportsAPI prices are Hong Kong odds and are converted to decimal by adding
+  one. Spread, total, and European-moneyline bookmaker IDs remain in their
+  separate documented namespaces. In-play fields never become pre-match facts.
 - EuroLeague book coverage is not enabled by these adapters. An empty or
   unsupported book response is not converted into an invented market.
 - No current book adapter supplies highest-quarter prices. Highest-quarter
@@ -86,6 +106,9 @@ slots and cannot replace frozen pre-tip facts.
 ```bash
 python -m ingestion.cli smoke --league NBA --date 2026-11-07
 python -m ingestion.cli smoke --league EuroLeague --date 2026-11-07
+python -m ingestion.cli smoke --league CBA --date 2026-11-07
+python -m ingestion.cli smoke --league NCAA_M --date 2026-11-07
+python -m ingestion.cli smoke --league NCAA_W --date 2026-11-07
 ```
 
 Smoke is read-only; `--write` is rejected. Provider health distinguishes

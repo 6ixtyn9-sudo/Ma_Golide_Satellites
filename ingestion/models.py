@@ -34,6 +34,7 @@ from typing import Any, Dict, List, Optional, Tuple
 class League(str, Enum):
     NBA = "NBA"
     EUROLEAGUE = "EUROLEAGUE"
+    CBA = "CBA"  # Chinese Basketball Association
     WNBA = "WNBA"
     NCAA_M = "NCAA_M"
     NCAA_W = "NCAA_W"
@@ -181,11 +182,26 @@ class ActualResult:
     source: str = ""
 
     def reconciles(self, tolerance: float = 0.0) -> Tuple[bool, str]:
-        """Check ``Q1+Q2+Q3+Q4+OT == FT`` independently for both teams."""
-        if self.period_kind != PeriodKind.QUARTERS:
-            return False, f"period kind {self.period_kind.value} is not quarters"
-        if len(self.home_quarters) != 4 or len(self.away_quarters) != 4:
-            return False, "expected exactly four quarter values per team"
+        """Check native regulation periods plus OT against each final score.
+
+        Quarter competitions require exactly Q1..Q4. NCAA-style competitions
+        require exactly H1/H2; those two values remain in the legacy
+        ``home_quarters``/``away_quarters`` storage fields but are never
+        interpreted or graded as quarters.
+        """
+        if self.period_kind is PeriodKind.QUARTERS:
+            expected_periods = 4
+            length_error = "expected exactly four quarter values per team"
+        elif self.period_kind is PeriodKind.HALVES:
+            expected_periods = 2
+            length_error = "expected exactly two half values per team"
+        else:
+            return False, f"period kind {self.period_kind.value} is not reconcilable"
+        if (
+            len(self.home_quarters) != expected_periods
+            or len(self.away_quarters) != expected_periods
+        ):
+            return False, length_error
         if any(v is None for v in self.home_quarters + self.away_quarters):
             return False, "incomplete periods"
         if self.home_final is None or self.away_final is None:

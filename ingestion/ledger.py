@@ -11,7 +11,13 @@ from zoneinfo import ZoneInfo
 from .duckdb_store import DuckDBStore
 from .models import League
 
-_DEFAULT_TZ = {"NBA": "America/New_York", "EUROLEAGUE": "Europe/Paris"}
+_DEFAULT_TZ = {
+    "NBA": "America/New_York",
+    "EUROLEAGUE": "Europe/Paris",
+    "CBA": "Asia/Shanghai",
+    "NCAA_M": "America/New_York",
+    "NCAA_W": "America/New_York",
+}
 
 
 class LedgerConflictError(RuntimeError):

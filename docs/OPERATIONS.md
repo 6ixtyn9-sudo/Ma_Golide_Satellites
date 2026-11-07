@@ -55,7 +55,11 @@ python scripts/daily.py --auto-once --date 2026-11-07 --league NBA
 
 Useful options:
 
-- `--timezone Africa/Johannesburg` controls local slate dates (the default).
+- `--timezone Africa/Johannesburg` controls local reporting dates. League
+  defaults are America/New_York (NBA/NCAA), Europe/Paris (EuroLeague), and
+  Asia/Shanghai (CBA). CBA schedule acquisition itself uses iSportsAPI's
+  documented UTC calendar window.
+- An omitted `--date` is derived in the selected league's acquisition timezone.
 - `--skip-results` performs pregame/freeze/markets only.
 - `--skip-markets` skips the derived forecast report.
 - `--acca-legs 3` requests exact three-leg combinations (allowed: 2–6).
@@ -68,6 +72,45 @@ Useful options:
 
 There is no in-repository daemon. The workflow schedule triggers this command
 every three hours; local cron or another scheduler can do the same.
+
+## Automatic five-league workflow
+
+`workflows/ingestion.yml` is the reviewed workflow source. Install it as
+`.github/workflows/ingestion.yml` with a GitHub credential that has the
+`workflows` permission; merely editing the local source does not activate it.
+It has a schedule (`11 */3 * * *`, UTC) and a manual dispatch with **no
+league/date/mode/write inputs**. A preflight job runs Ruff and the hermetic
+suite, then five fail-independent matrix jobs automatically run `NBA`,
+`EuroLeague`, `CBA`, `NCAA_M`, and `NCAA_W` together.
+
+Each matrix job has isolated state and artifacts:
+
+- `localdata/nba`, `localdata/euroleague`, `localdata/cba`, `localdata/ncaa_m`,
+  and `localdata/ncaa_w`;
+- a league-specific DuckDB path, cache prefix, run ID, and artifact name;
+- an acquisition date derived automatically in that league's acquisition
+  timezone, never a dispatch-selected date.
+
+Safety behavior is deliberate:
+
+- Manual dispatch is a live all-league **dry run**. It may consume provider
+  quota but never adds `--write` and never sends notifications.
+- Scheduled runs add `--write` only when repository variable
+  `ALLOW_MAGOLIDE_WRITES=true`. Otherwise they emit a scheduled-noop report
+  without calling paid providers or creating canonical state.
+- Cache saves occur only for successful scheduled runs with canonical writes
+  enabled. Reports and immutable ledgers are uploaded on every outcome when
+  present.
+- Notifications additionally require `ALLOW_NOTIFICATION_WRITES=true` and the
+  WhatsApp secrets; they are sent only on write-enabled scheduled runs.
+
+Configure provider secrets `PREDIXSPORT_API_KEY`, `THERUNDOWN_API_KEY`,
+`SPORTSGAMEODDS_API_KEY`, `THE_ODDS_API_KEY`, `ISPORTS_API_KEY`, and
+`SPORTRADAR_API_KEY` as needed. `SPORTRADAR_ACCESS_LEVEL` defaults to `trial`
+and may be set to `production` as a repository variable for a production key.
+Missing credentials disable only the affected provider and remain visible as
+coverage gaps; they do not fabricate substitute evidence. CBA/NCAA provider
+coverage is `DOCUMENTATION_ONLY` until authenticated smoke runs succeed.
 
 ## Hermetic rehearsal
 

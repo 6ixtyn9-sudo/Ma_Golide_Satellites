@@ -30,7 +30,7 @@ from .models import BookSnapshot, CoverageGap, CoverageState, Game, Prediction, 
 
 # Provider priority for complete-bundle selection (NBA). "espn" is the
 # provider label used by providers/espn.py for BPI predictions.
-DEFAULT_PROVIDER_ORDER = ("espn", "hardwood", "predixsport")
+DEFAULT_PROVIDER_ORDER = ("espn", "hardwood", "predixsport", "sportradar")
 
 # A complete bundle contains probabilities, both scores, and total.
 COMPLETE_FIELDS = ("prob_home", "prob_away", "expected_home_score",

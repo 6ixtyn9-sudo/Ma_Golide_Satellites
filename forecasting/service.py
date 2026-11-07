@@ -17,6 +17,7 @@ from ingestion.books import (
     select_total_snapshots,
 )
 from ingestion.identity import parse_utc
+from ingestion.leagues import line_periods, native_periods, supports_highest_quarter
 from ingestion.models import (
     BookSnapshot,
     Game,
@@ -25,7 +26,7 @@ from ingestion.models import (
     Period,
     Prediction,
 )
-from ingestion.predictions import DEFAULT_PROVIDER_ORDER, is_complete
+from ingestion.predictions import DEFAULT_PROVIDER_ORDER
 
 from .accas import build_accas
 from .harness import (
@@ -64,7 +65,12 @@ class MarketForecastService:
         as_of = parse_utc(as_of_utc)
         by_provider: Dict[str, Prediction] = {}
         for prediction in self.store.get_predictions(game.game_id):
-            if not prediction.pre_tip or not is_complete(prediction):
+            if not prediction.pre_tip:
+                continue
+            # Moneyline needs only a coherent probability pair. Expected
+            # scores remain optional for NCAA BPI and Sportradar CBA
+            # probabilities; history supplies score distributions.
+            if prediction.prob_home is None or prediction.prob_away is None:
                 continue
             observed = parse_utc(prediction.observed_utc)
             if observed >= tip or observed > as_of:
@@ -162,12 +168,13 @@ class MarketForecastService:
                 frozen_books,
             )
         )
+        periods = native_periods(game.league)
         line_snapshots: List[BookSnapshot] = []
-        for period in (Period.FULL_GAME, *QUARTERS):
+        for period in line_periods(game.league):
             line_snapshots.extend(
                 select_total_snapshots(snapshots, self.book_config, period)
             )
-        for period in QUARTERS:
+        for period in periods:
             line_snapshots.extend(
                 select_spread_snapshots(snapshots, self.book_config, period)
             )
@@ -181,7 +188,8 @@ class MarketForecastService:
                 prediction_frozen,
             )
         )
-        forecasts.extend(self.model.highest_quarter(game, history))
+        if supports_highest_quarter(game.league):
+            forecasts.extend(self.model.highest_quarter(game, history))
         return sorted(
             forecasts,
             key=lambda forecast: (
