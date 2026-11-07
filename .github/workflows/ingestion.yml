@@ -1,16 +1,17 @@
-# Ma Golide autonomous DuckDB/CSV service, following Edge Factory's operating
-# pattern. Canonical and direct-read state lives in the restored localdata
-# cache. No Google credentials, external database, or worksheets are used.
+# Ma Golide autonomous DuckDB/CSV service. Canonical and direct-read state
+# lives in the restored localdata cache. No spreadsheet or external database
+# credentials are required.
 
 name: "Ma Golide — 3-hour DuckDB service"
 
 on:
   schedule:
+    # 11 minutes past every third UTC hour. GitHub may delay scheduled runs.
     - cron: "11 */3 * * *"
   workflow_dispatch:
     inputs:
       mode:
-        description: "auto-once | pregame-only"
+        description: "Acquisition scope"
         required: false
         default: "auto-once"
         type: choice
@@ -18,7 +19,7 @@ on:
           - auto-once
           - pregame-only
       league:
-        description: "NBA | EuroLeague"
+        description: "League"
         required: false
         default: "NBA"
         type: choice
@@ -29,8 +30,17 @@ on:
         description: "Slate date YYYY-MM-DD (blank = today, Africa/Johannesburg)"
         required: false
         default: ""
+        type: string
+      offline_fixture:
+        description: "Use committed fixtures; no live provider requests (dry run only)"
+        required: false
+        default: "false"
+        type: choice
+        options:
+          - "false"
+          - "true"
       allow_writes:
-        description: "Must be true and ALLOW_MAGOLIDE_WRITES variable must also be true"
+        description: "Persist canonical state (also requires ALLOW_MAGOLIDE_WRITES=true)"
         required: false
         default: "false"
         type: choice
@@ -38,7 +48,7 @@ on:
           - "false"
           - "true"
       send_notifications:
-        description: "Send deduplicated WhatsApp heartbeat (requires writes and notification opt-in)"
+        description: "Send heartbeat (requires canonical writes and ALLOW_NOTIFICATION_WRITES=true)"
         required: false
         default: "false"
         type: choice
@@ -50,6 +60,7 @@ permissions:
   contents: read
 
 concurrency:
+  # All leagues share one warehouse, so do not overlap canonical writers.
   group: magolide-duckdb-main
   cancel-in-progress: false
 
@@ -71,107 +82,171 @@ jobs:
       ALLOW_NOTIFICATION_WRITES: ${{ vars.ALLOW_NOTIFICATION_WRITES || 'false' }}
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Check out repository
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-python@v5
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
 
-      - name: Install dependencies
+      - name: Install project and development dependencies
         run: |
+          set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install 'requests>=2.32' 'duckdb>=1.1,<2' \
-            'gspread>=6.2' 'google-auth>=2.49' pytest
+          python -m pip install -e '.[dev]'
 
       - name: Restore DuckDB/CSV state
         uses: actions/cache/restore@v4
         with:
           path: localdata
-          key: magolide-localdata-v1-${{ github.run_id }}
+          key: magolide-localdata-v2-${{ github.run_id }}
           restore-keys: |
-            magolide-localdata-v1-
+            magolide-localdata-v2-
 
-      - name: Hermetic regression tests
+      - name: Run hermetic regression tests
         run: python -m pytest tests -q
 
       - name: Resolve target date
         id: target
+        env:
+          REQUESTED_DATE: ${{ github.event.inputs.date }}
         run: |
-          DATE="${{ github.event.inputs.date }}"
-          if [ -z "$DATE" ]; then DATE="$(TZ=Africa/Johannesburg date +%F)"; fi
+          set -euo pipefail
+          DATE="$REQUESTED_DATE"
+          if [ -z "$DATE" ]; then
+            DATE="$(TZ=Africa/Johannesburg date +%F)"
+          fi
+          if [[ ! "$DATE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
+            echo "Invalid date '$DATE'; expected YYYY-MM-DD." >&2
+            exit 2
+          fi
           echo "date=$DATE" >> "$GITHUB_OUTPUT"
 
       - name: Execute one autonomous iteration
         id: pipeline
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          MODE_INPUT: ${{ github.event.inputs.mode || 'auto-once' }}
+          LEAGUE_INPUT: ${{ github.event.inputs.league || 'NBA' }}
+          OFFLINE_FIXTURE_INPUT: ${{ github.event.inputs.offline_fixture || 'false' }}
+          ALLOW_WRITES_INPUT: ${{ github.event.inputs.allow_writes || 'false' }}
+          SEND_NOTIFICATIONS_INPUT: ${{ github.event.inputs.send_notifications || 'false' }}
         run: |
           set -euo pipefail
           ARGS=(--auto-once --date "${{ steps.target.outputs.date }}")
-          ARGS+=(--league "${{ github.event.inputs.league || 'NBA' }}")
-          if [ "${{ github.event.inputs.mode }}" = "pregame-only" ]; then
+          ARGS+=(--tz Africa/Johannesburg --league "$LEAGUE_INPUT")
+
+          if [ "$MODE_INPUT" = "pregame-only" ]; then
             ARGS+=(--skip-results)
           fi
+
           WRITE=0
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
+          if [ "$EVENT_NAME" = "schedule" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
             WRITE=1
-          elif [ "${{ github.event.inputs.allow_writes }}" = "true" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
+          elif [ "$ALLOW_WRITES_INPUT" = "true" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
             WRITE=1
           fi
+
+          if [ "$OFFLINE_FIXTURE_INPUT" = "true" ] && [ "$WRITE" = "1" ]; then
+            echo "Offline fixtures cannot be combined with canonical writes." >&2
+            exit 2
+          fi
+
+          if [ "$SEND_NOTIFICATIONS_INPUT" = "true" ] && [ "$WRITE" != "1" ]; then
+            echo "Notification delivery requires canonical writes to be enabled." >&2
+            exit 2
+          fi
+          if [ "$SEND_NOTIFICATIONS_INPUT" = "true" ] && [ "$ALLOW_NOTIFICATION_WRITES" != "true" ]; then
+            echo "Notification delivery requires ALLOW_NOTIFICATION_WRITES=true." >&2
+            exit 2
+          fi
+
           if [ "$WRITE" = "1" ]; then
             ARGS+=(--write)
-            if [ "${{ github.event_name }}" = "schedule" ] && [ "$ALLOW_NOTIFICATION_WRITES" = "true" ]; then
-              ARGS+=(--notify --send-notifications)
-            elif [ "${{ github.event.inputs.send_notifications }}" = "true" ] && [ "$ALLOW_NOTIFICATION_WRITES" = "true" ]; then
-              ARGS+=(--notify --send-notifications)
+            # On scheduled write runs, ALLOW_NOTIFICATION_WRITES=true enables
+            # delivery. Manual runs additionally require send_notifications=true.
+            if [ "$ALLOW_NOTIFICATION_WRITES" = "true" ]; then
+              if [ "$EVENT_NAME" = "schedule" ] || [ "$SEND_NOTIFICATIONS_INPUT" = "true" ]; then
+                ARGS+=(--notify --send-notifications)
+              fi
             fi
           else
-            if [ "${{ github.event_name }}" = "schedule" ]; then
-              # A disabled scheduled service must not consume authenticated
-              # provider quota without persisting state. Manual dry runs are
-              # the deliberate live-coverage preview path.
+            if [ "$EVENT_NAME" = "schedule" ] || [ "$OFFLINE_FIXTURE_INPUT" = "true" ]; then
+              # A disabled scheduled service, or an explicitly offline manual
+              # run, must not consume provider quota without persisting state.
               ARGS+=(--offline-fixture)
             fi
             echo "Dry run: canonical writes are disabled."
           fi
-          python scripts/daily.py "${ARGS[@]}" | tee daily-output.json
 
-      - name: Redacted operational summary
+          echo "write_enabled=$WRITE" >> "$GITHUB_OUTPUT"
+          python scripts/daily.py "${ARGS[@]}" > daily-output.json
+
+      - name: Publish redacted operational summary
         if: always()
+        env:
+          WRITE_ENABLED: ${{ steps.pipeline.outputs.write_enabled }}
         run: |
           python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json
+          import os
           from pathlib import Path
-          path = Path('daily-output.json')
-          if not path.exists():
-              print('No daily report produced.')
-          else:
+
+          path = Path("daily-output.json")
+          try:
               data = json.loads(path.read_text())
-              summary = {key: data.get(key) for key in (
-                  'run_id', 'target_date', 'league', 'mode', 'verification',
-                  'system_of_record', 'counts', 'ledgers', 'notification',
-                  'report_path'
-              )}
-              print('```json')
+          except (OSError, ValueError):
+              print("No valid daily report was produced; inspect the job log and artifacts.")
+          else:
+              markets = data.get("markets") or {}
+              walk_forward = markets.get("walk_forward") or {}
+              accas = markets.get("accas") or {}
+              summary = {
+                  key: data.get(key)
+                  for key in (
+                      "run_id",
+                      "target_date",
+                      "league",
+                      "mode",
+                      "verification",
+                      "system_of_record",
+                      "counts",
+                      "ledgers",
+                      "notification",
+                      "report_path",
+                      "market_report_path",
+                  )
+              }
+              summary["write_enabled"] = os.environ.get("WRITE_ENABLED") == "1"
+              summary["markets"] = {
+                  "forecast_count": markets.get("forecast_count"),
+                  "graded_walk_forward_forecasts": walk_forward.get("graded_forecasts"),
+                  "acca_count": len(accas.get("results") or []),
+              }
+              print("```json")
               print(json.dumps(summary, indent=2, default=str))
-              print('```')
+              print("```")
           PY
 
-      - name: Persist DuckDB/CSV state
+      - name: Persist DuckDB/CSV state after a canonical write
+        if: success() && steps.pipeline.outputs.write_enabled == '1'
         uses: actions/cache/save@v4
-        if: success()
         with:
           path: localdata
-          key: magolide-localdata-v1-${{ github.run_id }}
+          key: magolide-localdata-v2-${{ github.run_id }}
 
-      - name: Upload run reports and immutable ledgers
+      - name: Upload reports, immutable ledgers, and recovery exports
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: MaGolide-DuckDB-Reports-${{ github.run_id }}
           path: |
+            daily-output.json
             localdata/reports/*.json
             localdata/ledgers/
             localdata/assay_*.json
-            daily-output.json
+            localdata/csv/*.csv.gz
           if-no-files-found: ignore
           retention-days: 14
