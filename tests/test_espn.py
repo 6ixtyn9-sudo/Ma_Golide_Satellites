@@ -1,0 +1,563 @@
+"""ESPN provider tests — fixture-based, no network.
+
+Golden: event 401909938 (Denver Nuggets at Indiana Pacers, BPI observed
+2026-11-06T21:51Z with statistics on ``awayTeam``) must render exactly the
+legacy display bundle. Orientation tests prove the mapping flips through
+team ids when the statistics sit on the other side, and that an
+unreconcilable stats-side team id (or identical predictor refs) is
+rejected, never guessed. Result tests prove quarter/OT aggregation and
+reconciliation; standings tests prove points for/against stay cumulative.
+"""
+
+from __future__ import annotations
+
+from typing import Any, Dict
+
+import pytest
+
+from ingestion.http import HttpClient
+from ingestion.models import FinalStatus, Game, GameStatus, League, PeriodKind
+from ingestion.providers import IdentityError
+from ingestion.providers.espn import (
+    discover_games,
+    fetch_bpi,
+    fetch_game_result,
+    fetch_recent_results,
+    fetch_standings,
+    smoke,
+)
+
+GOLDEN_EVENT = "401909938"
+GOLDEN_DISPLAY = {
+    "Prob %": "23.1 - 76.9",
+    "Pred": 2,
+    "Pred Score": "111-120",
+    "Avg": "230.6",
+}
+PREDICTOR_KEY = f"competitions/{GOLDEN_EVENT}/predictor"
+
+
+def _golden_game() -> Game:
+    return Game(
+        game_id=GOLDEN_EVENT,
+        league=League.NBA,
+        season="2027",
+        home_team_id="11",
+        away_team_id="7",
+        home_name="Indiana Pacers",
+        away_name="Denver Nuggets",
+        scheduled_utc="2026-11-07T00:00:00Z",
+        provider_ids={"espn": GOLDEN_EVENT},
+    )
+
+
+def _summary_game() -> Game:
+    return Game(
+        game_id="401909936",
+        league=League.NBA,
+        season="2027",
+        home_team_id="21",
+        away_team_id="19",
+        home_name="Phoenix Suns",
+        away_name="Orlando Magic",
+        scheduled_utc="2026-11-06T02:00:00Z",
+        provider_ids={"espn": "401909936"},
+    )
+
+
+def _mutated_golden(load_fixture, stat_name: str, value: float) -> Dict[str, Any]:
+    """Golden predictor payload with one statistic value tampered."""
+    payload: Dict[str, Any] = load_fixture("espn/predictor_401909938.json")
+    for stat in payload["awayTeam"]["statistics"]:
+        if stat["name"] == stat_name:
+            stat["value"] = value
+            return payload
+    raise AssertionError(f"stat {stat_name!r} not found in golden fixture")  # pragma: no cover
+
+
+# ---------------------------------------------------------------------------
+# BPI golden + orientation
+# ---------------------------------------------------------------------------
+
+
+def test_golden_bpi_401909938_renders_exact_display(load_fixture, fixture_fetch):
+    # No game passed: orientation falls back to the payload's homeTeam/
+    # awayTeam keys (refs 11 vs 7 are present and distinct). Stats sit on
+    # awayTeam (Denver), so 76.938 is the AWAY win probability.
+    prediction = fetch_bpi(
+        GOLDEN_EVENT, fixture_fetch({PREDICTOR_KEY: "espn/predictor_401909938.json"})
+    )
+    assert prediction.display() == GOLDEN_DISPLAY
+    assert prediction.provider == "espn"
+    assert prediction.model == "espn-bpi"
+    assert prediction.game_id == GOLDEN_EVENT
+    assert prediction.prob_home == pytest.approx(0.23062)
+    assert prediction.prob_away == pytest.approx(0.76938)
+    assert prediction.expected_home_score == pytest.approx(110.540)
+    assert prediction.expected_away_score == pytest.approx(120.046)
+    assert prediction.expected_total == pytest.approx(230.586)
+    assert prediction.expected_margin == pytest.approx(-9.506)
+    assert prediction.source_modified_utc == "2026-11-06T21:51:00Z"
+    assert prediction.source_revision == "2026-11-06T21:51Z"
+    assert prediction.pre_tip is True
+
+
+def test_golden_bpi_with_game_object(load_fixture, fixture_fetch):
+    # No event fixture in the mapping: passing the discovered game must be
+    # enough — the event id comes from game.provider_ids["espn"] and the
+    # stats side (away, id 7) is reconciled against the game's team ids.
+    prediction = fetch_bpi(
+        GOLDEN_EVENT,
+        fixture_fetch({PREDICTOR_KEY: "espn/predictor_401909938.json"}),
+        game=_golden_game(),
+    )
+    assert prediction.display() == GOLDEN_DISPLAY
+
+
+def test_bpi_orientation_when_stats_on_home_side(load_fixture, fixture_fetch):
+    # Synthetic copy of the golden predictor with the statistics moved to
+    # homeTeam (team id 11) and recomputed values: orientation must come
+    # from the team refs matched against the game's competitor ids, never
+    # from payload side order or array position.
+    game = _golden_game()
+    prediction = fetch_bpi(
+        GOLDEN_EVENT,
+        fixture_fetch(
+            {PREDICTOR_KEY: "espn/predictor_401909938_home_stats.json"}
+        ),
+        game=game,
+    )
+    assert prediction.prob_home == pytest.approx(0.55)
+    assert prediction.prob_away == pytest.approx(0.45)
+    assert prediction.expected_home_score == pytest.approx(118.0)
+    assert prediction.expected_away_score == pytest.approx(112.0)
+    assert prediction.expected_total == pytest.approx(230.0)
+    assert prediction.expected_margin == pytest.approx(6.0)
+    assert prediction.display() == {
+        "Prob %": "55.0 - 45.0",
+        "Pred": 1,
+        "Pred Score": "118-112",
+        "Avg": "230.0",
+    }
+
+
+def test_bpi_unknown_team_reference_raises_identity_error(load_fixture, fixture_fetch):
+    # Stats-side team id 99 matches neither competitor (11 home, 7 away):
+    # rejected, never guessed.
+    with pytest.raises(IdentityError):
+        fetch_bpi(
+            GOLDEN_EVENT,
+            fixture_fetch(
+                {PREDICTOR_KEY: "espn/predictor_401909938_mismatch.json"}
+            ),
+            game=_golden_game(),
+        )
+
+
+def test_bpi_identical_team_refs_raises_identity_error(load_fixture, fixture_fetch):
+    # Both predictor sides reference team 7: without competitor ids the
+    # sides cannot be reconciled, so the fallback path must quarantine.
+    fetch = fixture_fetch(
+        {PREDICTOR_KEY: "espn/predictor_401909938_identical_refs.json"}
+    )
+    with pytest.raises(IdentityError):
+        fetch_bpi(GOLDEN_EVENT, fetch)
+    with pytest.raises(IdentityError):
+        fetch_bpi(GOLDEN_EVENT, fetch, game=_golden_game())
+
+
+def test_bpi_missing_expected_scores_keeps_probabilities_and_gaps(
+    load_fixture, fixture_fetch
+):
+    # WNBA/NCAA pattern: probabilities only, no teamExpectedPts/
+    # oppExpectedPts — probabilities stay usable, scores stay blank, and
+    # smoke must report the expected_scores gap instead of imputing.
+    partial_event = "409900001"
+    partial_game = Game(
+        game_id=partial_event,
+        league=League.WNBA,
+        season="2026",
+        home_team_id="11",
+        away_team_id="7",
+        home_name="Las Vegas Aces",
+        away_name="New York Liberty",
+        scheduled_utc="2026-06-10T02:00:00Z",
+        provider_ids={"espn": partial_event},
+    )
+    prediction = fetch_bpi(
+        partial_event,
+        fixture_fetch(
+            {f"competitions/{partial_event}/predictor": "espn/predictor_409900001_partial.json"}
+        ),
+        game=partial_game,
+    )
+    assert prediction.prob_away == pytest.approx(0.554)
+    assert prediction.prob_home == pytest.approx(0.446)
+    assert prediction.expected_home_score is None
+    assert prediction.expected_away_score is None
+    assert prediction.expected_total is None
+    assert prediction.expected_margin is None
+    display = prediction.display()
+    assert display["Prob %"] == "44.6 - 55.4"
+    assert display["Pred"] == 2
+    assert display["Pred Score"] is None
+    assert display["Avg"] is None
+
+    scoreboard = {
+        "events": [
+            {
+                "id": partial_event,
+                "date": "2026-06-10T02:00Z",
+                "name": "New York Liberty at Las Vegas Aces",
+                "season": {"year": 2026},
+                "competitions": [
+                    {
+                        "date": "2026-06-10T02:00Z",
+                        "status": {"type": {"state": "pre"}},
+                        "competitors": [
+                            {
+                                "homeAway": "home",
+                                "team": {"id": "11", "displayName": "Las Vegas Aces"},
+                            },
+                            {
+                                "homeAway": "away",
+                                "team": {"id": "7", "displayName": "New York Liberty"},
+                            },
+                        ],
+                    }
+                ],
+            }
+        ]
+    }
+    report = smoke(
+        "20260610",
+        fixture_fetch(
+            {
+                "dates=20260610": scoreboard,
+                f"competitions/{partial_event}/predictor": "espn/predictor_409900001_partial.json",
+            }
+        ),
+    )
+    assert report["fixtures_found"] == 1
+    assert report["bpi_complete"] == {"complete": 0, "total": 1}
+    gap = next(g for g in report["gaps"] if g["required_field"] == "expected_scores")
+    assert gap["game_id"] == partial_event
+    assert [g["required_field"] for g in report["gaps"]] == ["expected_scores", "total"]
+
+
+def test_bpi_probability_sum_violation_raises(load_fixture, fixture_fetch):
+    payload = _mutated_golden(load_fixture, "gameProjection", 65.938)  # 65.938 + 23.062 != 100
+    with pytest.raises(ValueError):
+        fetch_bpi(
+            GOLDEN_EVENT,
+            fixture_fetch({PREDICTOR_KEY: payload}),
+            game=_golden_game(),
+        )
+
+
+def test_score_margin_contradiction_raises(load_fixture, fixture_fetch):
+    payload = _mutated_golden(load_fixture, "teamPredPtDiff", 19.506)  # scores say 9.506
+    with pytest.raises(ValueError):
+        fetch_bpi(
+            GOLDEN_EVENT,
+            fixture_fetch({PREDICTOR_KEY: payload}),
+            game=_golden_game(),
+        )
+
+
+# ---------------------------------------------------------------------------
+# Idempotent mapping
+# ---------------------------------------------------------------------------
+
+
+def test_fetch_bpi_idempotent(load_fixture, fixture_fetch):
+    fetch = fixture_fetch({PREDICTOR_KEY: "espn/predictor_401909938.json"})
+    first = fetch_bpi(GOLDEN_EVENT, fetch)
+    second = fetch_bpi(GOLDEN_EVENT, fetch)
+
+    def payload_fields(prediction):
+        return {k: v for k, v in prediction.__dict__.items() if k != "observed_utc"}
+
+    assert payload_fields(first) == payload_fields(second)
+
+
+def test_discover_games_idempotent(load_fixture, fixture_fetch):
+    fetch = fixture_fetch({"dates=20261106": "espn/scoreboard_20261106.json"})
+    assert discover_games("20261106", fetch) == discover_games("20261106", fetch)
+
+
+# ---------------------------------------------------------------------------
+# Discovery
+# ---------------------------------------------------------------------------
+
+
+def test_discover_games_from_scoreboard(load_fixture, fixture_fetch):
+    games = discover_games(
+        "20261106", fixture_fetch({"dates=20261106": "espn/scoreboard_20261106.json"})
+    )
+    assert len(games) == 9
+    hawks = next(g for g in games if g.game_id == "401909287")
+    # WSH @ ATL: home/away orientation from the homeAway markers.
+    assert hawks.home_name == "Atlanta Hawks"
+    assert hawks.away_name == "Washington Wizards"
+    assert hawks.home_team_id == "1"
+    assert hawks.away_team_id == "27"
+    assert hawks.provider_ids == {"espn": "401909287"}
+    # dates=20261106 is the US Eastern slate day; event datetime is UTC.
+    assert hawks.scheduled_utc == "2026-11-07T00:00:00Z"
+    assert hawks.status is GameStatus.SCHEDULED
+    assert hawks.league is League.NBA
+    assert hawks.season == "2027"
+    assert hawks.phase == "League"
+    assert all(g.scheduled_utc.endswith("Z") for g in games)
+    assert all(g.provider_ids.get("espn") == g.game_id for g in games)
+    names = {g.home_name for g in games} | {g.away_name for g in games}
+    assert "Oklahoma City Thunder" in names  # canonicalised via identity aliases
+    assert "Philadelphia 76ers" in names
+
+
+# ---------------------------------------------------------------------------
+# Results
+# ---------------------------------------------------------------------------
+
+
+def test_finals_reconcile_quarters(load_fixture, fixture_fetch):
+    # Scoreboard finals: quarter linescores sum to the final for both
+    # teams (117 = 33+30+33+21, 104 = 26+25+22+31), no OT, FT status.
+    recent = fetch_recent_results(
+        "20261105", fixture_fetch({"dates=20261105": "espn/scoreboard_20261105.json"})
+    )
+    assert len(recent) == 2
+    assert all(g.status is GameStatus.FINAL for g in recent)
+    suns = next(g for g in recent if g.game_id == "401909936")
+    assert suns.home_name == "Phoenix Suns"
+    assert suns.away_name == "Orlando Magic"
+    assert suns.actual is not None
+    assert suns.actual.period_kind is PeriodKind.QUARTERS
+    assert suns.actual.source == "espn"
+    assert suns.actual.home_quarters == [33.0, 30.0, 33.0, 21.0]
+    assert suns.actual.away_quarters == [26.0, 25.0, 22.0, 31.0]
+    assert suns.actual.home_final == 117.0
+    assert suns.actual.away_final == 104.0
+    assert suns.actual.home_overtime is None
+    assert suns.actual.away_overtime is None
+    assert suns.actual.overtime_periods == 0
+    assert suns.final_status() is FinalStatus.FT
+    assert suns.actual.reconciles() == (True, "")
+    heat = next(g for g in recent if g.game_id == "401909937")
+    assert (heat.actual.home_final, heat.actual.away_final) == (120.0, 100.0)
+    assert all(g.actual is not None and g.actual.reconciles()[0] for g in recent)
+
+
+def test_ot_linescores_aggregate_into_single_ot(load_fixture, fixture_fetch):
+    # Synthetic scoreboard with a 5-period linescore: the 5th element is
+    # OT, summed into the single combined OT pair (legacy OT cell), never
+    # treated as a 5th quarter.
+    games = fetch_recent_results(
+        "20261104", fixture_fetch({"dates=20261104": "espn/scoreboard_20261104_ot.json"})
+    )
+    assert len(games) == 1
+    game = games[0]
+    assert game.status is GameStatus.FINAL
+    assert game.actual is not None
+    assert game.actual.home_quarters == [28.0, 26.0, 31.0, 25.0]
+    assert game.actual.away_quarters == [29.0, 28.0, 26.0, 28.0]
+    assert game.actual.home_overtime == 12.0
+    assert game.actual.away_overtime == 7.0
+    assert game.actual.overtime_periods == 1
+    assert (game.actual.home_final, game.actual.away_final) == (122.0, 118.0)
+    assert game.final_status() is FinalStatus.AOT
+    assert game.actual.reconciles()[0] is True
+
+
+def test_game_result_from_summary(load_fixture, fixture_fetch):
+    game = fetch_game_result(
+        "401909936", fixture_fetch({"summary?event=401909936": "espn/summary_401909936.json"})
+    )
+    assert game.status is GameStatus.FINAL
+    assert game.final_status() is FinalStatus.FT
+    assert game.home_name == "Phoenix Suns"
+    assert game.away_name == "Orlando Magic"
+    assert game.actual is not None
+    assert game.actual.period_kind is PeriodKind.QUARTERS
+    assert game.actual.source == "espn"
+    assert game.actual.home_quarters == [33.0, 30.0, 33.0, 21.0]
+    assert game.actual.away_quarters == [26.0, 25.0, 22.0, 31.0]
+    assert (game.actual.home_final, game.actual.away_final) == (117.0, 104.0)
+    assert game.actual.reconciles() == (True, "")
+
+
+def test_result_fills_existing_game_without_mutation(load_fixture, fixture_fetch):
+    mapping = {"summary?event=401909936": "espn/summary_401909936.json"}
+    game = _summary_game()
+    result = fetch_game_result("401909936", fixture_fetch(mapping), game=game)
+    assert game.actual is None  # input game untouched
+    assert result.game_id == "401909936"
+    assert result.provider_ids == {"espn": "401909936"}
+    assert result.home_team_id == "21"
+    assert result.away_team_id == "19"
+    assert result.status is GameStatus.FINAL
+    assert result.final_status() is FinalStatus.FT
+
+
+def test_result_ot_aggregation(load_fixture, fixture_fetch):
+    mapping = {"summary?event=401909939": "espn/summary_401909939_ot.json"}
+    game = fetch_game_result("401909939", fixture_fetch(mapping))
+    assert game.actual is not None
+    assert game.actual.home_quarters == [33.0, 30.0, 30.0, 27.0]
+    assert game.actual.away_quarters == [26.0, 25.0, 32.0, 34.0]
+    assert game.actual.home_overtime == 3.0
+    assert game.actual.away_overtime == 3.0
+    assert game.actual.overtime_periods == 1
+    assert game.actual.home_final == 123.0
+    assert game.actual.away_final == 120.0
+    assert game.status is GameStatus.FINAL
+    assert game.final_status() is FinalStatus.AOT
+    assert game.actual.reconciles()[0] is True
+
+
+def test_result_double_ot_aggregation(load_fixture, fixture_fetch):
+    mapping = {"summary?event=401909940": "espn/summary_401909940_2ot.json"}
+    game = fetch_game_result("401909940", fixture_fetch(mapping))
+    assert game.actual is not None
+    assert game.actual.home_overtime == 5.0  # OT1 3 + OT2 2
+    assert game.actual.away_overtime == 4.0  # OT1 2 + OT2 2
+    assert game.actual.overtime_periods == 2
+    assert game.actual.home_final == 123.0
+    assert game.actual.away_final == 122.0
+    assert game.final_status() is FinalStatus.AOT
+    assert game.actual.reconciles()[0] is True
+
+
+def test_result_live_is_quarantined(load_fixture, fixture_fetch):
+    mapping = {"summary?event=401909941": "espn/summary_401909941_live.json"}
+    with pytest.raises(IdentityError):
+        fetch_game_result("401909941", fixture_fetch(mapping))
+
+
+def test_result_missing_linescores_is_quarantined(load_fixture, fixture_fetch):
+    payload = load_fixture("espn/summary_401909936.json")
+    for competitor in payload["header"]["competitions"][0]["competitors"]:
+        competitor["linescores"] = []
+    mapping = {"summary?event=401909936": payload}
+    with pytest.raises(IdentityError):
+        fetch_game_result("401909936", fixture_fetch(mapping))
+
+
+# ---------------------------------------------------------------------------
+# Standings
+# ---------------------------------------------------------------------------
+
+
+def test_standings_cumulative_pf_pa(load_fixture, fixture_fetch):
+    rows = fetch_standings(
+        fixture_fetch({"basketball/nba/standings": "espn/standings.json"})
+    )
+    assert len(rows) == 30
+    bulls = next(r for r in rows if r.team_name == "Chicago Bulls")
+    assert bulls.points_for == 893.0  # cumulative, stored as-is
+    assert bulls.points_against == 1037.0  # never divided by games played
+    # Cumulative guard: 893 is far above the 3 x 8 plausibility floor.
+    assert bulls.points_for > 3 * bulls.games_played
+    assert bulls.win_pct == pytest.approx(0.125)
+    assert bulls.streak == -6  # ESPN "L6" losing streak encoded negative
+    assert bulls.games_played == 8  # wins + losses (payload omits gamesPlayed)
+    assert bulls.wins == 1
+    assert bulls.losses == 7
+    assert bulls.position == 14  # mirrors playoffSeed — NOT a guaranteed rank
+    assert bulls.section == "Eastern Conference"  # child name kept verbatim
+    assert bulls.source == "espn"
+    sections = {r.section for r in rows}
+    assert sections == {"Eastern Conference", "Western Conference"}
+
+
+def test_standings_rejects_non_cumulative_points_for(load_fixture, fixture_fetch):
+    # Guard: pointsFor <= 3 x games_played cannot be a cumulative total —
+    # someone wrote an average into the cumulative field. Quarantine.
+    payload = load_fixture("espn/standings.json")
+    for child in payload["children"]:
+        for entry in child["standings"]["entries"]:
+            if entry["team"]["id"] == "4":
+                for stat in entry["stats"]:
+                    if stat["name"] == "pointsFor":
+                        stat["value"] = 20.0
+    with pytest.raises(ValueError):
+        fetch_standings(
+            fixture_fetch({"basketball/nba/standings": payload})
+        )
+
+
+# ---------------------------------------------------------------------------
+# Smoke coverage
+# ---------------------------------------------------------------------------
+
+
+def test_smoke_reports_actual_coverage(load_fixture, fixture_fetch):
+    mapping = {
+        "dates=20261106": "espn/scoreboard_20261106.json",
+        "competitions/401909287/predictor": "espn/predictor_401909287.json",
+    }
+    report = smoke("20261106", fixture_fetch(mapping))
+    assert report["fixtures_found"] == 9
+    assert report["bpi_complete"] == {"complete": 1, "total": 9}
+    # Only 401909287 has a predictor fixture; the other 8 events each miss
+    # prob/expected_scores/total.
+    assert len(report["gaps"]) == 24
+    assert all(gap["detail"].startswith("KeyError") for gap in report["gaps"])
+    assert report["results_reconciled"] == {
+        "finals": 0,
+        "reconciled": 0,
+        "flagged": 0,
+    }
+    assert report["verification"] == "FIXTURE_VERIFIED"
+
+
+def test_smoke_flags_reconciliation_gap(load_fixture, fixture_fetch):
+    # A final whose quarter sums contradict the final score keeps its
+    # record but is flagged — no residual is folded into OT.
+    payload = load_fixture("espn/scoreboard_20261105.json")
+    competitors = payload["events"][0]["competitions"][0]["competitors"]
+    home = next(c for c in competitors if c["homeAway"] == "home")
+    home["linescores"][0]["value"] = 30.0  # Q1 33 -> 30: sums to 114 != 117
+    report = smoke(
+        "20261105", fixture_fetch({"dates=20261105": payload})
+    )
+    assert report["results_reconciled"] == {"finals": 2, "reconciled": 1, "flagged": 1}
+    gap = next(g for g in report["gaps"] if g["required_field"] == "reconciliation")
+    assert gap["game_id"] == "401909936"
+    assert "114" in gap["detail"]
+
+
+def test_smoke_verification_live_with_http_client(load_fixture):
+    # A real HttpClient (with a fake session) earns the LIVE_VERIFIED
+    # label; a bare fixture loader stays FIXTURE_VERIFIED.
+    class _FakeResponse:
+        status_code = 200
+        headers: Dict[str, str] = {}
+
+        def __init__(self, text: str) -> None:
+            self.text = text
+
+    class _FakeSession:
+        def __init__(self, mapping: Dict[str, Any]) -> None:
+            self.mapping = mapping
+
+        def get(self, url: str, headers=None, timeout=None) -> "_FakeResponse":
+            for needle, payload in self.mapping.items():
+                if needle in url:
+                    return _FakeResponse(payload)
+            raise KeyError(f"no fixture mapped for URL: {url}")
+
+    import json
+
+    scoreboard_text = json.dumps(load_fixture("espn/scoreboard_20261106.json"))
+    predictor_text = json.dumps(load_fixture("espn/predictor_401909287.json"))
+    client = HttpClient(
+        session=_FakeSession(
+            {"dates=20261106": scoreboard_text, "competitions/401909287/predictor": predictor_text}
+        ),
+        retries=0,
+    )
+    report = smoke("20261106", client.get_json)
+    assert report["verification"] == "LIVE_VERIFIED"
+    assert report["bpi_complete"]["complete"] == 1

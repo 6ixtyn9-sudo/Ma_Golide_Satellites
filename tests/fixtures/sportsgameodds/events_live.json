@@ -1,0 +1,27 @@
+{
+  "_note": "DOCUMENTATION_ONLY synthetic fixture authored from the documented SportsGameOdds getEvents schema. NOT a captured API response. Status 'in-progress' (live): the adapter must set pre_match=False (never mark live data as pre-match) while still emitting snapshots; books.select_total_snapshots(pre_match_only=True) excludes them downstream.",
+  "data": [
+    {
+      "eventID": "sgo-evt-live",
+      "leagueID": "NBA",
+      "status": "in-progress",
+      "startTime": "2026-11-07T00:30:00Z",
+      "teams": [
+        {"name": "Atlanta Hawks", "abbreviation": "ATL", "home": true},
+        {"name": "Denver Nuggets", "abbreviation": "DEN", "home": false}
+      ],
+      "markets": {
+        "points-all-game-ou-over": {
+          "price": -105,
+          "line": 240.5,
+          "bookOdds": {"draftkings": {"price": -105}}
+        },
+        "points-all-game-ou-under": {
+          "price": -115,
+          "line": 240.5,
+          "bookOdds": {"draftkings": {"price": -115}}
+        }
+      }
+    }
+  ]
+}

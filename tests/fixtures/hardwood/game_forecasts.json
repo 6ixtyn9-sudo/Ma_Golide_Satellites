@@ -1,0 +1,178 @@
+{
+ "season": 2027,
+ "season_start": "2026-10-20T19:00:00+00:00",
+ "generated_at": "2026-11-06T17:50:17+00:00",
+ "ingestion": {
+  "source": "espn",
+  "status": "ok",
+  "attempted_at": "2026-11-06T17:50:11+00:00",
+  "seasons": [
+   2027
+  ],
+  "last_success_at": "2026-11-06T17:50:11+00:00",
+  "event_count": 1273,
+  "warehouse_updated": true,
+  "error": null,
+  "stats": {
+   "games": 190,
+   "scheduled": 1077,
+   "skipped": 6
+  }
+ },
+ "model_version": "2026.08.1+0d463d63",
+ "trained_through": "2026-11-06T03:00:00+00:00",
+ "artifact_sha256": "9f61ad305c6cf38cb9acf494a6510530ee8f66e9c72f393be89f565804283ef0",
+ "games": [
+  {
+   "game_id": "401909287",
+   "date_utc": "2026-11-07T00:00:00+00:00",
+   "venue": "State Farm Arena",
+   "neutral_site": false,
+   "home": {
+    "team_id": 1,
+    "name": "Atlanta Hawks",
+    "abbreviation": "ATL",
+    "conference": "Eastern Conference",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/atl.png",
+    "elo": 1533.7
+   },
+   "away": {
+    "team_id": 30,
+    "name": "Washington Wizards",
+    "abbreviation": "WSH",
+    "conference": "Eastern Conference",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/wsh.png",
+    "elo": 1370.0
+   },
+   "p_home": 0.713845,
+   "p_away": 0.286155,
+   "exp_margin": 7.636,
+   "exp_total": 226.57,
+   "exp_home_score": 117.1,
+   "exp_away_score": 109.47,
+   "margin_sd": 12.638,
+   "total_sd": 18.985
+  },
+  {
+   "game_id": "401909938",
+   "date_utc": "2026-11-07T22:00:00+00:00",
+   "venue": "Arena CDMX",
+   "neutral_site": true,
+   "home": {
+    "team_id": 12,
+    "name": "Indiana Pacers",
+    "abbreviation": "IND",
+    "conference": "Eastern Conference",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/ind.png",
+    "elo": 1380.4
+   },
+   "away": {
+    "team_id": 8,
+    "name": "Denver Nuggets",
+    "abbreviation": "DEN",
+    "conference": "Western Conference",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/den.png",
+    "elo": 1559.5
+   },
+   "p_home": 0.21267,
+   "p_away": 0.78733,
+   "exp_margin": -9.575,
+   "exp_total": 225.23,
+   "exp_home_score": 107.83,
+   "exp_away_score": 117.4,
+   "margin_sd": 12.638,
+   "total_sd": 18.985
+  },
+  {
+   "game_id": "401909288",
+   "date_utc": "2026-11-07T00:00:00+00:00",
+   "venue": "Spectrum Center",
+   "neutral_site": false,
+   "home": {
+    "team_id": 4,
+    "name": "Charlotte Hornets",
+    "abbreviation": "CHA",
+    "conference": "Eastern Conference",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/cha.png",
+    "elo": 1474.2
+   },
+   "away": {
+    "team_id": 2,
+    "name": "Boston Celtics",
+    "abbreviation": "BOS",
+    "conference": "Eastern Conference",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/bos.png",
+    "elo": 1595.4
+   },
+   "p_home": 0.379889,
+   "p_away": 0.620111,
+   "exp_margin": -3.364,
+   "exp_total": 212.25,
+   "exp_home_score": 104.44,
+   "exp_away_score": 107.81,
+   "margin_sd": 12.638,
+   "total_sd": 18.985
+  },
+  {
+   "game_id": "401909289",
+   "date_utc": "2026-11-07T00:30:00+00:00",
+   "venue": "Rocket Arena",
+   "neutral_site": false,
+   "home": {
+    "team_id": 6,
+    "name": "Cleveland Cavaliers",
+    "abbreviation": "CLE",
+    "conference": "Eastern Conference",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/cle.png",
+    "elo": 1553.5
+   },
+   "away": {
+    "team_id": 23,
+    "name": "Philadelphia 76ers",
+    "abbreviation": "PHI",
+    "conference": "Eastern Conference",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/phi.png",
+    "elo": 1574.9
+   },
+   "p_home": 0.520347,
+   "p_away": 0.479653,
+   "exp_margin": 1.145,
+   "exp_total": 225.93,
+   "exp_home_score": 113.54,
+   "exp_away_score": 112.39,
+   "margin_sd": 12.638,
+   "total_sd": 18.985
+  },
+  {
+   "game_id": "401909290",
+   "date_utc": "2026-11-07T01:00:00+00:00",
+   "venue": "American Airlines Center",
+   "neutral_site": false,
+   "home": {
+    "team_id": 7,
+    "name": "Dallas Mavericks",
+    "abbreviation": "DAL",
+    "conference": "Western Conference",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/dal.png",
+    "elo": 1442.8
+   },
+   "away": {
+    "team_id": 29,
+    "name": "Utah Jazz",
+    "abbreviation": "UTAH",
+    "conference": "Western Conference",
+    "logo": "https://a.espncdn.com/i/teamlogos/nba/500/utah.png",
+    "elo": 1331.7
+   },
+   "p_home": 0.67837,
+   "p_away": 0.32163,
+   "exp_margin": 6.353,
+   "exp_total": 231.56,
+   "exp_home_score": 118.96,
+   "exp_away_score": 112.6,
+   "margin_sd": 12.638,
+   "total_sd": 18.985
+  }
+ ],
+ "n_games_sliced": 5
+}

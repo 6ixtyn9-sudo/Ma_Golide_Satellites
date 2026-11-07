@@ -1,0 +1,28 @@
+{
+  "_evidence": "DOCUMENTATION_ONLY — synthetic payload authored 2026-11-06 from Predixsport's public docs/OpenAPI description. Unauthenticated baseline calls returned 'Missing Authorization header'; no authenticated live response has been observed. Do not treat this file as LIVE_VERIFIED evidence.",
+  "matches": [
+    {
+      "match_id": "px-nba-401909287",
+      "tipoff_utc": "2026-11-07T00:00:00Z",
+      "home": "Atlanta Hawks",
+      "away": "Washington Wizards",
+      "probabilities": { "home": 0.713845, "away": 0.286155 },
+      "predicted_point_diff": 7.636,
+      "produced_by": "predixsport-nba-earlyseason"
+    },
+    {
+      "match_id": "px-nba-401909938",
+      "tipoff_utc": "2026-11-07T22:00:00Z",
+      "home": "Indiana Pacers",
+      "away": "Denver Nuggets",
+      "probabilities": { "home": 0.21267, "away": 0.78733 },
+      "predicted_point_diff": -9.575,
+      "produced_by": "predixsport-nba-earlyseason"
+    },
+    {
+      "match_id": "px-nba-malformed",
+      "home": "Chicago Bulls",
+      "away": "New York Knicks"
+    }
+  ]
+}

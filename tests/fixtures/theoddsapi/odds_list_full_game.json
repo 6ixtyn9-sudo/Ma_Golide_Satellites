@@ -1,0 +1,40 @@
+[
+  {
+    "id": "odds-evt-1",
+    "sport_key": "basketball_nba",
+    "commence_time": "2099-11-07T00:30:00Z",
+    "home_team": "Atlanta Hawks",
+    "away_team": "Denver Nuggets",
+    "bookmakers": [
+      {
+        "key": "draftkings",
+        "title": "DraftKings",
+        "last_update": "2026-11-06T21:50:00Z",
+        "markets": [
+          {
+            "key": "h2h",
+            "outcomes": [
+              {"name": "Denver Nuggets", "price": 2.05},
+              {"name": "Atlanta Hawks", "price": 1.85}
+            ]
+          },
+          {
+            "key": "totals",
+            "outcomes": [
+              {"name": "Over", "price": 1.9, "point": 232.5},
+              {"name": "Under", "price": 1.92, "point": 232.5}
+            ]
+          }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "odds-evt-offdate",
+    "sport_key": "basketball_nba",
+    "commence_time": "2099-11-08T00:30:00Z",
+    "home_team": "Boston Celtics",
+    "away_team": "New York Knicks",
+    "bookmakers": []
+  }
+]

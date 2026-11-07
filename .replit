@@ -4,7 +4,7 @@ expertMode = true
 
 [nix]
 channel = "stable-25_05"
-packages = ["openssl", "postgresql"]
+packages = ["openssl"]
 
 [workflows]
 runButton = "Project"
@@ -16,25 +16,12 @@ author = "agent"
 
 [[workflows.workflow.tasks]]
 task = "workflow.run"
-args = "Start application"
+args = "DuckDB dry-run verification"
 
 [[workflows.workflow]]
-name = "Start application"
+name = "DuckDB dry-run verification"
 author = "agent"
-
-[workflows.workflow.metadata]
-outputType = "webview"
 
 [[workflows.workflow.tasks]]
 task = "shell.exec"
-args = "gunicorn --bind 0.0.0.0:5000 --reuse-port --reload main:app"
-waitForPort = 5000
-
-[[ports]]
-localPort = 5000
-externalPort = 80
-
-[deployment]
-deploymentTarget = "autoscale"
-publicDir = "."
-run = ["gunicorn", "--bind", "0.0.0.0:5000", "main:app"]
+args = "python scripts/daily.py --auto-once --offline-fixture --warehouse /tmp/magolide-replit/warehouse.duckdb --localdata /tmp/magolide-replit --notify"

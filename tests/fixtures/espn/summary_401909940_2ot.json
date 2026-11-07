@@ -1,0 +1,42 @@
+{
+  "header": {
+    "id": "401909940",
+    "season": {"year": 2027, "type": 2},
+    "competitions": [
+      {
+        "date": "2026-11-07T04:00Z",
+        "status": {
+          "type": {"id": "3", "name": "STATUS_FINAL", "state": "post", "completed": true, "description": "Final", "detail": "Final/2OT", "shortDetail": "Final/2OT"}
+        },
+        "competitors": [
+          {
+            "homeAway": "home",
+            "team": {"id": "14", "displayName": "Los Angeles Lakers", "abbreviation": "LAL"},
+            "score": "123",
+            "linescores": [
+              {"displayValue": "30"},
+              {"displayValue": "28"},
+              {"displayValue": "33"},
+              {"displayValue": "27"},
+              {"displayValue": "3"},
+              {"displayValue": "2"}
+            ]
+          },
+          {
+            "homeAway": "away",
+            "team": {"id": "16", "displayName": "Miami Heat", "abbreviation": "MIA"},
+            "score": "122",
+            "linescores": [
+              {"displayValue": "28"},
+              {"displayValue": "30"},
+              {"displayValue": "31"},
+              {"displayValue": "29"},
+              {"displayValue": "2"},
+              {"displayValue": "2"}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

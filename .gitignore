@@ -1,0 +1,27 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.venv/
+.env
+
+# Runtime registry and credentials are not source artifacts.
+registry/registry.json
+auth/*service*.json
+auth/*credential*.json
+service-account*.json
+
+# DuckDB/CSV state belongs in the bounded orchestration cache, not Git.
+localdata/*
+!localdata/README.md
+*.duckdb
+*.duckdb.wal
+*.tmp
+
+# Test/build outputs.
+.coverage
+htmlcov/
+build/
+dist/
+*.egg-info/

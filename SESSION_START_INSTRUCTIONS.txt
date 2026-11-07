@@ -1,143 +1,117 @@
-============================================================
-GOLD UNIVERSE ORCHESTRATOR — SESSION RESUME INSTRUCTIONS
-Generated: 2026-04-15
-============================================================
+MA GOLIDE — CURRENT SESSION / ARCHITECTURE INSTRUCTIONS
+Updated: 2026-11-07
 
-WHAT HAS BEEN BUILT SO FAR
-----------------------------
-A fully functional Python/Flask web application called the "Gold Universe
-Orchestrator" is running in Replit on port 5000. It connects to hundreds of
-Google Sheets satellite spreadsheets, runs the Ma Assayer purity engine on
-their data, and displays results in a live dark-theme dashboard.
+START HERE
+----------
+Read these files before changing code:
 
-The project contains THREE complete Google Apps Script codebases (stored as
-.gs files, NOT running in Replit — they run inside Google Sheets):
-  1. Ma Golide Satellites (docs/)     — per-league prediction machines
-  2. Ma Assayer (ma_assayer/docs/)    — purity/edge-discovery engine
-  3. Ma Golide Mothership (ma_golide_mothership/doc/) — central brain / acca builder
+1. docs/DATA_ACQUISITION_BUILD_PROMPT.md
+   Authoritative build and operations contract.
+2. docs/DUCKDB_ARCHITECTURE.md
+   Edge Factory local-data patterns mapped to Ma Golide.
+3. docs/INGESTION_RUNBOOK.md
+   Dry-run, write, cache, recovery, notification and troubleshooting commands.
 
-The Python Orchestrator is the Replit-native version that connects them all.
+CURRENT DIRECTION
+-----------------
+Ma Golide is fully headless and follows Edge Factory's local-data approach:
 
+- CSV + DuckDB is the system of record and direct read/research surface.
+- localdata/ is restored/saved as runtime state.
+- scripts/daily.py --auto-once is the single unattended orchestrator.
+- Content-addressed pregame/freeze/result ledgers are immutable.
+- SQL, the coverage CLI and research commands provide read access.
+- WhatsApp is an optional deduplicated operational heartbeat.
 
-THE ONE THING STILL NEEDED TO MAKE IT LIVE
---------------------------------------------
-The Google Service Account secret has NOT been set yet.
+There is no web server, external database, or read-model synchronization
+service. Do not reintroduce them.
 
-ACTION REQUIRED:
-  1. Go to console.cloud.google.com
-  2. IAM & Admin → Service Accounts → Create a Service Account
-  3. Create a JSON key for it → download the .json file
-  4. In Replit: Secrets tab → Add secret:
-       Key:   GOOGLE_SERVICE_ACCOUNT_JSON
-       Value: [paste the entire contents of the .json file]
-  5. Share each satellite spreadsheet with the service account email address
-     (it looks like: something@project-name.iam.gserviceaccount.com)
-     OR share the entire Drive folder containing all satellite sheets.
+Google Sheets is NOT the target system of record. Do not add a Google service
+account to make the default runtime work. Do not reintroduce satellite
+registration, worksheet acquisition, or Apps Script deployment into the daily
+path. Legacy Sheets adapters are for explicit historical migration or guarded
+compatibility export only, with packages isolated in the legacy extra.
 
-Once the secret is set, the dashboard will show "Google Connected" and all
-Fetch / Assay buttons will be enabled.
+PRIMARY COMMANDS
+----------------
+Offline verification:
 
+  python -m pytest tests -q
 
-SATELLITE SHEETS CONTEXT
---------------------------
-- Satellites are individual Google Sheets, one per league per day.
-- They started appearing from 10 JANUARY 2026 (J10 = January 10).
-- Naming convention: "United States (NBA) J10", "Europe (EuroLeague) J11", etc.
-- Some are LEGACY format (old code, sheets: Predictions, Results, BetSlips).
-- Some are GOLD UNIVERSE format (new code, sheets: Side, Totals, MA_Vault, etc.).
-- The Orchestrator auto-detects which format each satellite uses.
-- Known real-world example: NBA J10 had 26 bets with 57.69% hit rate,
-  strongest markets: BANKER/FT O/U/1H 1X2.
+Hermetic orchestration preview (no canonical DB file or external writes):
 
-HOW TO ADD SATELLITES TO THE REGISTRY
----------------------------------------
-Option A — Single add (via dashboard sidebar):
-  - Open the dashboard at port 5000
-  - Fill in: Sheet ID (from the Google Sheets URL), Date, League
-  - Click "Add to Registry"
+  python scripts/daily.py --auto-once --offline-fixture \
+    --warehouse /tmp/magolide-check/warehouse.duckdb \
+    --localdata /tmp/magolide-check --notify
 
-Option B — Bulk add (via dashboard sidebar JSON box):
-  Paste a JSON array like:
-  [
-    {"sheet_id": "1abc...", "sheet_name": "NBA J10", "date": "2026-01-10", "league": "NBA"},
-    {"sheet_id": "1def...", "sheet_name": "EuroLeague J11", "date": "2026-01-11", "league": "EuroLeague"}
-  ]
+Deliberate canonical persistence:
 
-Option C — API call:
-  POST /api/satellites/bulk-add
-  Body: {"entries": [...same format as above...]}
+  ALLOW_MAGOLIDE_WRITES=true python scripts/daily.py --auto-once --write
 
+Headless reads:
 
-RUNNING THE ORCHESTRATOR
---------------------------
-The workflow "Start application" runs: python3 app.py
-Flask serves on 0.0.0.0:5000.
-No build step needed — just restart the workflow if the server stops.
+  python -m ingestion.cli coverage --league NBA
+  python scripts/mine_assay.py --league NBA
+  python scripts/build_warehouse.py
 
+KEY IMPLEMENTATION FILES
+------------------------
+ingestion/duckdb_store.py   Canonical tables, freeze durability, CSV.GZ export.
+ingestion/warehouse.py      Temporary SQL research views.
+ingestion/ledger.py         Immutable content-addressed evidence.
+ingestion/mining.py         Frozen-prediction research assay.
+scripts/daily.py            One autonomous entry point.
+scripts/build_warehouse.py  Canonical CSV materialization.
+scripts/recover_warehouse.py Guarded CSV-to-DuckDB recovery.
+scripts/mine_assay.py       Standalone research assay.
+scripts/notify.py           Operational notification and dedupe.
 
-WHAT TO BUILD NEXT (PHASE 2 PRIORITIES)
------------------------------------------
-1. GOOGLE AUTH — Set the secret (see above). Verify with one test satellite.
+DOMAIN RULES THAT STILL APPLY
+-----------------------------
+- Join providers by exact canonical home + away + aware start, or known
+  provider event identity with metadata validation. Quarantine ambiguity.
+- Keep one provider's prediction bundle coherent; never splice providers.
+- Never fabricate quarter/alternate/live/team-total bookmaker markets.
+- Expected totals and margins are model outputs, not book lines.
+- Preserve separate pre/post prediction and book slots.
+- Frozen pre-tip evidence rejects changed overwrites and accepts identical
+  replays, including after DuckDB reload.
+- Official quarter + overtime scores must reconcile independently to each
+  team's final before research use.
+- Missing provider keys disable only that provider and remain visible in
+  coverage. Fixture verification is not live verification.
 
-2. POPULATE THE REGISTRY — Add all satellite sheet IDs from Jan 10 onwards.
-   You can do this by bulk-adding the JSON array of all your sheet IDs.
-   Group them by date (e.g. all J10 sheets, all J11 sheets, etc.).
+RESEARCH / PICK GATE
+--------------------
+The current assay evaluates frozen pre-tip moneyline predictions against
+reconciled official finals. Every edge remains research_only and certified:
+false. Do not publish official picks until chronological walk-forward
+validation, actual-price ROI, CLV, decay handling, deterministic pick IDs and
+freeze/replay tests exist.
 
-3. RUN FIRST BATCH ASSAY — Once auth works and a few satellites are registered:
-   Click "Fetch All Satellites" → wait for completion → "Run Full Assay on All"
-   Each satellite will show its Banker/Robber count and overall win rate.
+BANKER / ROBBER REFERENCE
+-------------------------
+The existing assayer domain classification remains:
 
-4. MOTHERSHIP ACCA BUILDER (Phase 2 feature to build):
-   After assay runs, implement a /api/build-accas endpoint that:
-   - Takes all BANKER edges across satellites
-   - Groups by date + confidence tier
-   - Assembles combinations (2-fold, 3-fold accas)
-   - Returns a bet slip preview sorted by EV
+BANKER  = lower_bound >= 0.60 AND win_rate >= 0.72
+       OR lower_bound >= 0.55 AND win_rate >= 0.62
+ROBBER  = n < 10 OR win_rate < 0.50
+NEUTRAL = remaining positive but uncertain segments
 
-5. LEAGUE PURITY DASHBOARD (Phase 2 feature to build):
-   A dedicated /leagues page showing all leagues sorted by win rate,
-   with gold/silver/bronze purity grades and trend over time.
+Minimum absolute lift: 0.03. Wilson z: 1.645. Shrinkage prior: alpha=2,
+beta=2. These labels are research classifications, not automatic betting
+authorization.
 
-6. LEGACY SHEET SUPPORT (Phase 2 feature to build):
-   Legacy sheets use different column names (Predictions instead of Side).
-   The fetcher currently pulls them but the assayer may not parse all columns.
-   Add a legacy column mapping layer in fetcher/sheet_fetcher.py.
+EXTERNAL WRITE BOUNDARIES
+-------------------------
+Canonical writes: ALLOW_MAGOLIDE_WRITES=true plus --write.
+Fixture persistence: ALLOW_FIXTURE_WRITES=true plus an isolated warehouse.
+WhatsApp sends: credentials, ALLOW_NOTIFICATION_WRITES=true plus send option.
+Legacy Sheets writes additionally require ALLOW_SHEET_WRITES=true and an
+explicit legacy CLI flag.
 
+Never place credentials in localdata/, Git, reports or logs. Fixture reports
+can be previewed but cannot trigger external notification. No live external
+write is implied by a passing offline suite.
 
-FILE LOCATIONS CHEATSHEET
----------------------------
-app.py                          Main Flask server + all routes
-auth/google_auth.py             Google Service Account auth
-registry/satellite_registry.py Satellite CRUD + registry.json persistence
-fetcher/sheet_fetcher.py        Rate-limited gspread batch fetcher
-assayer/assayer_engine.py       Ma Assayer Python port (Wilson CI, grades, tiers)
-templates/dashboard.html        Full dashboard UI
-orchestrator_backup.py          Single-file backup of all Orchestrator logic
-GOLD_UNIVERSE_STATE.md          Full architecture + Banker/Robber logic reference
-
-
-BANKER vs ROBBER CLASSIFICATION (QUICK REFERENCE)
----------------------------------------------------
-BANKER  = lower_bound >= 0.60 AND win_rate >= 0.72  (Gold+ grade)
-        OR lower_bound >= 0.55 AND win_rate >= 0.62  (Silver grade)
-ROBBER  = n < 10 (too few samples)
-        OR win_rate < 0.50 (below coinflip — use as fade)
-NEUTRAL = everything else (positive but uncertain)
-
-Minimum lift to qualify as an edge: abs(win_rate - 0.50) >= 0.03
-Wilson z-score: 1.645 (80% one-sided confidence interval)
-Shrinkage prior: alpha=2, beta=2 (Bayes toward 50%)
-
-
-KEY DESIGN RULES (DO NOT CHANGE IN PHASE 1)
----------------------------------------------
-- Manual control only — no automated triggers
-- No audit logs
-- No automated rollback
-- Rate limit: 1.1 seconds between Google API calls
-- Registry is a flat JSON file (registry/registry.json), no database
-- "Bankers" = safe tier, "Robbers" = risky tier (opposite of bankers)
-
-============================================================
-END OF SESSION RESUME INSTRUCTIONS
-============================================================
+END OF CURRENT SESSION INSTRUCTIONS
