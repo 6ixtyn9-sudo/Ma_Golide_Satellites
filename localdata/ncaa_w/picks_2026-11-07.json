@@ -683,6 +683,63 @@
   },
   {
     "alternative_probabilities": {
+      "over": 0.47,
+      "under": 0.53
+    },
+    "away": "Northern Colorado Bears",
+    "book": {
+      "book": "DraftKings",
+      "frozen": false,
+      "main_line": true,
+      "observed_utc": "2026-11-07T20:28:56Z",
+      "pre_match": true,
+      "provider": "espn",
+      "selected_decimal_price": 1.9090909090909092,
+      "source_modified_utc": null
+    },
+    "bucket": "CAUTION",
+    "calibrated_probability": 0.53,
+    "calibration": {
+      "adjustment": 0.0,
+      "n": 0,
+      "status": "no_history",
+      "sufficient_for_accas": false
+    },
+    "date": "2026-11-07",
+    "eligibility": {
+      "acca_eligible": false,
+      "evidence_state": "current_pre_tip_unfrozen",
+      "reasons": [
+        "insufficient_walk_forward_samples"
+      ]
+    },
+    "expected_margin": 23.530099798116872,
+    "expected_total": 132.84866562678428,
+    "forecast_id": "4ae424ce72fed66a66f8",
+    "game_id": "401918841",
+    "grade_status": "pending",
+    "home": "Texas Longhorns",
+    "league": "NCAA_W",
+    "line": 132.5,
+    "market": "total",
+    "model": "team_history_empirical_v1",
+    "model_version": "team_history_empirical_v1",
+    "outcome": null,
+    "paper_only": true,
+    "period": "full_game",
+    "pick_id": "4ae424ce72fed66a66f8",
+    "prediction": null,
+    "price_evidence": "NAMED_BOOKMAKER_PRICE",
+    "push_probability": 0.0,
+    "raw_probability": 0.53,
+    "residual_games": 100,
+    "role": null,
+    "scheduled_utc": "2026-11-08T01:00:00Z",
+    "selection": "under",
+    "training_games": 200
+  },
+  {
+    "alternative_probabilities": {
       "away": 0.28,
       "draw": 0.0,
       "home": 0.72
