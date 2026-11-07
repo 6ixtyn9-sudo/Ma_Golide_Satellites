@@ -24,6 +24,7 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from forecasting.operator import publish_operator_reports  # noqa: E402
 from forecasting.service import MarketForecastService, write_market_report  # noqa: E402
 from ingestion.books import BookConfig  # noqa: E402
 from ingestion.cli import _offline_fixture_fetch  # noqa: E402
@@ -194,6 +195,16 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
         # canonical writes being enabled.
         pruned_reports = _prune_report_files(localdata, cutoff_utc)
 
+        operator = publish_operator_reports(
+            store,
+            config.league_enum,
+            market_report,
+            localdata,
+            target_date=args.date,
+            generated_utc=args.started_utc,
+            run_id=run_id,
+        )
+
         assay = mine_prediction_assay(store, config.league_enum)
         assay_path = (
             write_assay(str(localdata / f"assay_{args.league}.json"), assay)
@@ -218,6 +229,7 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             "commands": reports,
             "markets": market_report,
             "market_report_path": market_report_path,
+            "operator": operator,
             "ledgers": ledgers,
             "assay": assay,
             "assay_path": assay_path,

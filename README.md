@@ -6,8 +6,9 @@ bookmaker observations; freezes pre-tip evidence; measures historical market
 reliability; and emits current market and accumulator research reports.
 
 There is no web server, spreadsheet store, external database, worksheet
-registry, JSON-file datastore, or external betting writer. JSON is used only
-for complete row payloads inside DuckDB and for disposable derived reports.
+registry, canonical JSON-file datastore, or external betting writer. JSON is used for
+complete row payloads inside DuckDB and for derived local operator reports,
+receipts, and audit state; DuckDB remains the canonical sports system of record.
 
 ## League and provider coverage
 
@@ -64,10 +65,12 @@ python scripts/daily.py \
   --localdata /tmp/magolide-check --notify
 ```
 
-This writes derived reports under `/tmp/magolide-check/reports`, but does not
-create a DuckDB file or CSV exports. Its verification label is
-`FIXTURE_VERIFIED`; it proves neither live provider coverage nor betting
-performance.
+This writes derived operational reports under `/tmp/magolide-check/reports`
+and Edge-style pick cards, paper-ticket state, and grading reports directly
+under `/tmp/magolide-check`, but does not create a DuckDB file or CSV exports.
+Its verification label is `FIXTURE_VERIFIED`; it proves neither live provider
+coverage nor betting performance. See [Operator picks and paper-ticket
+grading](docs/OPERATOR-REPORTS.md) for the files and settlement rules.
 
 A live acquisition attempt remains a canonical dry run unless `--write` is
 present:
@@ -143,6 +146,9 @@ writes.
   recovery.
 - `localdata/ledgers/`: immutable, content-addressed stage snapshots.
 - `localdata/reports/`: derived operational and market JSON reports.
+- `localdata/picks_*`: current/dated categorized pick cards and rolling audits.
+- `localdata/auto_tickets_*`: immutable paper receipts, write-once state, and
+  reconstructed grading/performance reports; see `docs/OPERATOR-REPORTS.md`.
 - `localdata/notification_ledger.json`: bounded notification deduplication
   metadata, not canonical sports evidence.
 
