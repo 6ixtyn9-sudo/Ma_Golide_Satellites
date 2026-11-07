@@ -30,7 +30,7 @@ from ingestion.cli import _offline_fixture_fetch  # noqa: E402
 from ingestion.duckdb_store import DuckDBStore  # noqa: E402
 from ingestion.ledger import write_canonical_ledger  # noqa: E402
 from ingestion.mining import mine_prediction_assay, write_assay  # noqa: E402
-from ingestion.pipeline import Pipeline, PipelineConfig  # noqa: E402
+from ingestion.pipeline import ACQUISITION_TZ, Pipeline, PipelineConfig  # noqa: E402
 from ingestion.warehouse import DEFAULT_WAREHOUSE  # noqa: E402
 from ingestion.write_guards import assert_fixture_write_isolation  # noqa: E402
 
@@ -265,9 +265,14 @@ def main() -> int:
     )
     parser.add_argument(
         "--date",
-        default=datetime.now(ZoneInfo("Africa/Johannesburg")).strftime("%Y-%m-%d"),
+        default=None,
+        help="slate date (default: today in the league's acquisition timezone)",
     )
-    parser.add_argument("--league", default="NBA", choices=["NBA", "EuroLeague"])
+    parser.add_argument(
+        "--league",
+        default="NBA",
+        choices=["NBA", "EuroLeague", "CBA", "NCAA_M", "NCAA_W"],
+    )
     parser.add_argument("--tz", default=None)
     parser.add_argument(
         "--warehouse", default=os.environ.get("MAGOLIDE_WAREHOUSE", DEFAULT_WAREHOUSE)
@@ -293,7 +298,7 @@ def main() -> int:
     parser.add_argument(
         "--book-provider",
         default="none",
-        choices=["none", "therundown", "sportsgameodds", "theoddsapi"],
+        choices=["none", "therundown", "sportsgameodds", "theoddsapi", "isportsapi"],
     )
     parser.add_argument(
         "--notify", action="store_true", help="build an operations heartbeat"
@@ -304,6 +309,10 @@ def main() -> int:
         help="send the heartbeat through configured WhatsApp credentials",
     )
     args = parser.parse_args()
+    if args.date is None:
+        args.date = datetime.now(
+            ZoneInfo(ACQUISITION_TZ[args.league.upper()])
+        ).strftime("%Y-%m-%d")
     try:
         args.date = datetime.strptime(
             args.date.replace("-", ""), "%Y%m%d"

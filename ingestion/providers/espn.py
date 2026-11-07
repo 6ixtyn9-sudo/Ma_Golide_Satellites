@@ -35,6 +35,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 from ..http import HttpClient
 from ..identity import canonical_team_name, normalize_team_name, now_utc_iso, parse_utc, to_utc_iso
+from ..leagues import period_kind
 from ..models import (
     ActualResult,
     CoverageGap,
@@ -61,6 +62,53 @@ BPI_URL = (
     "https://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/"
     "events/{event_id}/competitions/{event_id}/predictor"
 )
+
+LEAGUE_SLUGS = {
+    League.NBA: "nba",
+    League.WNBA: "wnba",  # existing predictor-only compatibility
+    League.NCAA_M: "mens-college-basketball",
+    League.NCAA_W: "womens-college-basketball",
+}
+
+
+def _league_slug(league: League) -> str:
+    try:
+        return LEAGUE_SLUGS[league]
+    except KeyError:
+        raise ValueError(f"ESPN acquisition is not enabled for {league.value}") from None
+
+
+def _scoreboard_url(date_yyyymmdd: str, league: League) -> str:
+    slug = _league_slug(league)
+    if league is League.NBA:
+        return SCOREBOARD_URL.format(yyyymmdd=date_yyyymmdd)
+    # NCAA Division I slates exceed the default page size; groups=50 selects
+    # Division I and limit=500 prevents silent truncation.
+    return (
+        f"https://site.api.espn.com/apis/site/v2/sports/basketball/{slug}/"
+        f"scoreboard?dates={date_yyyymmdd}&groups=50&limit=500"
+    )
+
+
+def _summary_url(event_id: str, league: League) -> str:
+    slug = _league_slug(league)
+    if league is League.NBA:
+        return SUMMARY_URL.format(event_id=event_id)
+    return (
+        f"https://site.api.espn.com/apis/site/v2/sports/basketball/{slug}/"
+        f"summary?event={event_id}"
+    )
+
+
+def _bpi_url(event_id: str, league: League) -> str:
+    slug = _league_slug(league)
+    if league is League.NBA:
+        return BPI_URL.format(event_id=event_id)
+    return (
+        f"https://sports.core.api.espn.com/v2/sports/basketball/leagues/{slug}/"
+        f"events/{event_id}/competitions/{event_id}/predictor"
+    )
+
 
 # Payload probabilities arrive as percentages (0-100); they are stored as
 # Probabilities remain canonical 0-1 fractions in stored prediction facts.
@@ -216,38 +264,41 @@ def _final_score(competitor: Dict[str, Any]) -> float:
 
 
 def _actual_from_competitors(
-    home: Dict[str, Any], away: Dict[str, Any], source: str
+    home: Dict[str, Any],
+    away: Dict[str, Any],
+    source: str,
+    league: League = League.NBA,
 ) -> ActualResult:
-    """Build an ActualResult from competitor linescores.
+    """Build an ActualResult from native competitor linescores.
 
-    Exactly 4 elements map to Q1..Q4; every further element is one overtime
-    period. All OT elements are SUMMED into the single combined OT pair
-    (cumulative overtime semantics; no residual is folded elsewhere) and
-    ``overtime_periods`` records how many there were. Fewer than 4
-    elements, mismatched side lengths or unparseable numbers raise
-    ``IdentityError`` — quarantine, no guessing. A quarter-sum that does
-    not reach the final is NOT corrected here: the record is returned as-is
-    and ``smoke`` flags it with a ``reconciliation`` gap.
+    NBA uses four quarters; NCAA uses two halves. Every further element is
+    one overtime period, summed into the canonical combined OT pair. Missing
+    native periods, mismatched lengths, and unparseable values quarantine the
+    result rather than relabelling or backfilling it.
     """
     home_values = _linescore_values(home)
     away_values = _linescore_values(away)
-    if len(home_values) < 4 or len(away_values) < 4:
-        raise IdentityError("linescores missing or incomplete (need at least Q1..Q4)")
+    native_count = 2 if period_kind(league) is PeriodKind.HALVES else 4
+    period_label = "H1/H2" if native_count == 2 else "Q1..Q4"
+    if len(home_values) < native_count or len(away_values) < native_count:
+        raise IdentityError(
+            f"linescores missing or incomplete (need at least {period_label})"
+        )
     if len(home_values) != len(away_values):
         raise IdentityError(
             f"mismatched linescore lengths: home {len(home_values)} vs away {len(away_values)}"
         )
-    home_ot = sum(home_values[4:]) if len(home_values) > 4 else None
-    away_ot = sum(away_values[4:]) if len(away_values) > 4 else None
+    home_ot = sum(home_values[native_count:]) if len(home_values) > native_count else None
+    away_ot = sum(away_values[native_count:]) if len(away_values) > native_count else None
     return ActualResult(
-        period_kind=PeriodKind.QUARTERS,
-        home_quarters=home_values[:4],
-        away_quarters=away_values[:4],
+        period_kind=period_kind(league),
+        home_quarters=home_values[:native_count],
+        away_quarters=away_values[:native_count],
         home_overtime=home_ot,
         away_overtime=away_ot,
         home_final=_final_score(home),
         away_final=_final_score(away),
-        overtime_periods=max(len(home_values), len(away_values)) - 4,
+        overtime_periods=max(len(home_values), len(away_values)) - native_count,
         source=source,
     )
 
@@ -269,7 +320,7 @@ def discover_games(
     stamped ``2026-11-07T00:00Z`` and later. Home/away come from the
     competitors' ``homeAway`` markers, never array order.
     """
-    payload = fetch(SCOREBOARD_URL.format(yyyymmdd=date_yyyymmdd)) or {}
+    payload = fetch(_scoreboard_url(date_yyyymmdd, league)) or {}
     return [
         _game_from_event(event, _competition(event), league)
         for event in payload.get("events", [])
@@ -285,6 +336,7 @@ def fetch_bpi(
     fetch: FetchFn,
     game: Optional[Game] = None,
     now_utc: Optional[str] = None,
+    league: League = League.NBA,
 ) -> Prediction:
     """Fetch the ESPN BPI predictor and normalise it to a canonical Prediction.
 
@@ -316,7 +368,8 @@ def fetch_bpi(
     """
     if game is not None:
         event_id = str(game.provider_ids.get("espn") or event_id)
-    payload = fetch(BPI_URL.format(event_id=event_id))
+    league = game.league if game is not None else league
+    payload = fetch(_bpi_url(event_id, league))
     if not isinstance(payload, dict) or not payload:
         raise ValueError(f"event {event_id}: empty predictor payload")
 
@@ -435,7 +488,12 @@ def fetch_bpi(
     return prediction
 
 
-def fetch_game_result(event_id: str, fetch: FetchFn, game: Optional[Game] = None) -> Game:
+def fetch_game_result(
+    event_id: str,
+    fetch: FetchFn,
+    game: Optional[Game] = None,
+    league: League = League.NBA,
+) -> Game:
     """Fetch the summary endpoint and fill ``actual`` from competitor linescores.
 
     Raises ``IdentityError`` while the game is not final (state != 'post')
@@ -444,7 +502,8 @@ def fetch_game_result(event_id: str, fetch: FetchFn, game: Optional[Game] = None
     (never mutated) with ``actual`` and FINAL status; otherwise a Game is
     built from the summary header.
     """
-    payload = fetch(SUMMARY_URL.format(event_id=event_id)) or {}
+    league = game.league if game is not None else league
+    payload = fetch(_summary_url(event_id, league)) or {}
     header = payload.get("header") or {}
     competitions = header.get("competitions") or []
     if not competitions:
@@ -457,7 +516,7 @@ def fetch_game_result(event_id: str, fetch: FetchFn, game: Optional[Game] = None
             "result quarantined"
         )
     home, away = _home_away_competitors(comp)
-    actual = _actual_from_competitors(home, away, source="espn")
+    actual = _actual_from_competitors(home, away, source="espn", league=league)
     if game is not None:
         return replace(
             game,
@@ -469,7 +528,7 @@ def fetch_game_result(event_id: str, fetch: FetchFn, game: Optional[Game] = None
     year = season.get("year")
     return Game(
         game_id=str(event_id),
-        league=League.NBA,
+        league=league,
         season=str(year) if year is not None else "",
         home_team_id=_competitor_team_id(home),
         away_team_id=_competitor_team_id(away),
@@ -483,7 +542,9 @@ def fetch_game_result(event_id: str, fetch: FetchFn, game: Optional[Game] = None
     )
 
 
-def fetch_recent_results(date_yyyymmdd: str, fetch: FetchFn) -> List[Game]:
+def fetch_recent_results(
+    date_yyyymmdd: str, fetch: FetchFn, league: League = League.NBA
+) -> List[Game]:
     """Completed games (state 'post') from a past-date scoreboard.
 
     Same ActualResult parsing as the summary path: exactly 4 linescore
@@ -493,15 +554,15 @@ def fetch_recent_results(date_yyyymmdd: str, fetch: FetchFn) -> List[Game]:
     caller/smoke flags those with a ``reconciliation`` gap instead of
     folding a residual into OT.
     """
-    payload = fetch(SCOREBOARD_URL.format(yyyymmdd=date_yyyymmdd)) or {}
+    payload = fetch(_scoreboard_url(date_yyyymmdd, league)) or {}
     results: List[Game] = []
     for event in payload.get("events", []):
         comp = _competition(event)
         if _state(comp) != "post":
             continue
         home, away = _home_away_competitors(comp)
-        actual = _actual_from_competitors(home, away, source="espn")
-        results.append(replace(_game_from_event(event, comp, League.NBA), actual=actual))
+        actual = _actual_from_competitors(home, away, source="espn", league=league)
+        results.append(replace(_game_from_event(event, comp, league), actual=actual))
     return results
 
 
@@ -586,7 +647,9 @@ def fetch_standings(fetch: FetchFn) -> List[StandingsRow]:
     return rows
 
 
-def smoke(date_yyyymmdd: str, fetch: FetchFn) -> Dict[str, Any]:
+def smoke(
+    date_yyyymmdd: str, fetch: FetchFn, league: League = League.NBA
+) -> Dict[str, Any]:
     """Coverage smoke over one slate date; reports ACTUAL coverage.
 
     Evidence label: ``LIVE_VERIFIED`` when ``fetch`` is a real
@@ -602,9 +665,9 @@ def smoke(date_yyyymmdd: str, fetch: FetchFn) -> Dict[str, Any]:
     score keeps its record and is flagged with a ``reconciliation`` gap
     (no residual is folded into OT).
     """
-    scoreboard_payload = fetch(SCOREBOARD_URL.format(yyyymmdd=date_yyyymmdd)) or {}
+    scoreboard_payload = fetch(_scoreboard_url(date_yyyymmdd, league)) or {}
     events = scoreboard_payload.get("events", [])
-    games = [_game_from_event(event, _competition(event), League.NBA) for event in events]
+    games = [_game_from_event(event, _competition(event), league) for event in events]
 
     accumulator = CoverageAccumulator()
     bpi_complete = 0
@@ -650,7 +713,7 @@ def smoke(date_yyyymmdd: str, fetch: FetchFn) -> Dict[str, Any]:
         game_id = str(event.get("id") or "")
         try:
             home, away = _home_away_competitors(comp)
-            actual = _actual_from_competitors(home, away, source="espn")
+            actual = _actual_from_competitors(home, away, source="espn", league=league)
         except IdentityError as exc:
             accumulator.gaps.append(
                 CoverageGap(

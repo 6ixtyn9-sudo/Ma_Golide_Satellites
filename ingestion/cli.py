@@ -73,7 +73,9 @@ def main(argv: Optional[List[str]] = None) -> int:
 
     def add_common(command_parser) -> None:
         command_parser.add_argument(
-            "--league", default="NBA", choices=["NBA", "EuroLeague"]
+            "--league",
+            default="NBA",
+            choices=["NBA", "EuroLeague", "CBA", "NCAA_M", "NCAA_W"],
         )
         command_parser.add_argument(
             "--date", default=None, help="league-local slate date YYYYMMDD"
@@ -99,7 +101,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         command_parser.add_argument(
             "--book-provider",
             default="none",
-            choices=["none", "therundown", "sportsgameodds", "theoddsapi"],
+            choices=["none", "therundown", "sportsgameodds", "theoddsapi", "isportsapi"],
             help="restrict book evidence to one provider",
         )
         command_parser.add_argument(
@@ -112,7 +114,9 @@ def main(argv: Optional[List[str]] = None) -> int:
         add_common(subcommands.add_parser(command))
     coverage_parser = subcommands.add_parser("coverage")
     coverage_parser.add_argument(
-        "--league", default="NBA", choices=["NBA", "EuroLeague"]
+        "--league",
+        default="NBA",
+        choices=["NBA", "EuroLeague", "CBA", "NCAA_M", "NCAA_W"],
     )
     coverage_parser.add_argument("--warehouse", default=None)
 

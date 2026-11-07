@@ -9,6 +9,23 @@ There is no web server, spreadsheet store, external database, worksheet
 registry, JSON-file datastore, or external betting writer. JSON is used only
 for complete row payloads inside DuckDB and for disposable derived reports.
 
+## League and provider coverage
+
+| League | Native regulation periods | Schedule / results | Independent predictions | Books |
+| --- | --- | --- | --- | --- |
+| NBA | Q1–Q4 | ESPN | ESPN BPI, Hardwood, Predixsport | TheRundown, SportsGameOdds, TheOddsAPI |
+| EuroLeague | Q1–Q4 | EuroLeague | Predixsport | No supported EuroLeague book adapter |
+| CBA | Q1–Q4 | iSportsAPI | Sportradar Global Basketball | iSportsAPI |
+| NCAA_M | H1/H2 | ESPN men's Division-I endpoint | ESPN BPI | TheOddsAPI |
+| NCAA_W | H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | TheOddsAPI |
+
+NCAA halves are never relabelled as quarters, and quarter/highest-quarter
+products are not generated for NCAA. CBA predictions and books deliberately
+come from independent providers; book-implied probabilities are not stored as
+model predictions. CBA and NCAA live provider coverage remains
+`DOCUMENTATION_ONLY` until authenticated smoke tests verify it. Offline tests
+prove parsing, reconciliation, routing, and forecast behavior only.
+
 ## Canonical market coverage
 
 | Canonical market | Periods / selections | Evidence rule |
@@ -16,10 +33,10 @@ for complete row payloads inside DuckDB and for disposable derived reports.
 | Moneyline | Full game: home or away | Valid provider probabilities; an exact priced bookmaker snapshot is required before acca eligibility |
 | Favorite / underdog role | Full-game moneyline | A role on the same moneyline forecast, derived from real home/away prices—not a separate wager model |
 | Total | Full game: over or under | The posted bookmaker line is mandatory; a provider expected total is only a model baseline |
-| Totals | Q1, Q2, Q3, Q4 | Exact period, exact posted line, and over/under prices |
-| Spreads | Q1, Q2, Q3, Q4 | Exact period and home-oriented posted line with both side prices |
+| Totals | Q1–Q4 for quarter leagues; H1/H2 for NCAA | Exact native period, exact posted line, and over/under prices |
+| Spreads | Q1–Q4 for quarter leagues; H1/H2 for NCAA | Exact native period and home-oriented posted line with both side prices |
 | 1X2 | First half: home, draw, or away | Exact first-half book, including a draw price when the draw is selected |
-| Highest quarter | Q1, Q2, Q3, or Q4 | History-only research forecast; an exact priced highest-quarter book and dead-heat rules are required for acca use |
+| Highest quarter | Q1, Q2, Q3, or Q4 for quarter leagues only | History-only research forecast; an exact priced highest-quarter book and dead-heat rules are required for acca use |
 
 The forecasting model covers every market family in the former betting
 contract without restoring its worksheet-era names or wrappers. Current book
@@ -56,8 +73,16 @@ A live acquisition attempt remains a canonical dry run unless `--write` is
 present:
 
 ```bash
-python scripts/daily.py --auto-once --date 2026-11-07
+python scripts/daily.py --auto-once --date 2026-11-07 --league NBA
+python scripts/daily.py --auto-once --date 2026-11-07 --league CBA
+python scripts/daily.py --auto-once --date 2026-11-07 --league NCAA_W
 ```
+
+Live CBA acquisition requires `ISPORTS_API_KEY` for fixtures/results/books and
+`SPORTRADAR_API_KEY` for independent probabilities. Set
+`SPORTRADAR_ACCESS_LEVEL=production` only for a production Sportradar key.
+NCAA book acquisition uses `THE_ODDS_API_KEY`; a missing key disables that
+provider rather than inventing book evidence.
 
 Deliberate persistence requires both the CLI flag and environment opt-in:
 

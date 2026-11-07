@@ -7,7 +7,7 @@ import hashlib
 import math
 from typing import Any, Dict, Optional
 
-from ingestion.models import BookSnapshot, Game, Market, Period
+from ingestion.models import BookSnapshot, Game, Market, Period, PeriodKind
 
 MODEL_VERSION = "team_history_empirical_v1"
 
@@ -188,10 +188,31 @@ def _period_scores(game: Game, period: Period) -> Optional[tuple[float, float]]:
         if actual.home_final is None or actual.away_final is None:
             return None
         return float(actual.home_final), float(actual.away_final)
-    if period is Period.H1:
-        home = actual.home_quarters[:2]
-        away = actual.away_quarters[:2]
+
+    home: list[Optional[float]]
+    away: list[Optional[float]]
+    if period in {Period.H1, Period.H2}:
+        if actual.period_kind is PeriodKind.HALVES:
+            if len(actual.home_quarters) != 2 or len(actual.away_quarters) != 2:
+                return None
+            index = 0 if period is Period.H1 else 1
+            home = [actual.home_quarters[index]]
+            away = [actual.away_quarters[index]]
+        elif actual.period_kind is PeriodKind.QUARTERS:
+            if len(actual.home_quarters) != 4 or len(actual.away_quarters) != 4:
+                return None
+            bounds = (0, 2) if period is Period.H1 else (2, 4)
+            home = actual.home_quarters[slice(*bounds)]
+            away = actual.away_quarters[slice(*bounds)]
+        else:
+            return None
     elif period in {Period.Q1, Period.Q2, Period.Q3, Period.Q4}:
+        if (
+            actual.period_kind is not PeriodKind.QUARTERS
+            or len(actual.home_quarters) != 4
+            or len(actual.away_quarters) != 4
+        ):
+            return None
         index = int(period.value[1]) - 1
         home = [actual.home_quarters[index]]
         away = [actual.away_quarters[index]]

@@ -28,7 +28,11 @@ from ingestion.warehouse import DEFAULT_WAREHOUSE  # noqa: E402
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--warehouse", default=DEFAULT_WAREHOUSE)
-    parser.add_argument("--league", default="NBA", choices=["NBA", "EUROLEAGUE"])
+    parser.add_argument(
+        "--league",
+        default="NBA",
+        choices=["NBA", "EUROLEAGUE", "CBA", "NCAA_M", "NCAA_W"],
+    )
     parser.add_argument("--date", default=None, help="optional local YYYYMMDD slate")
     parser.add_argument("--tz", default="UTC", help="IANA timezone for --date")
     parser.add_argument("--as-of", default=None, help="forecast cutoff ISO timestamp")

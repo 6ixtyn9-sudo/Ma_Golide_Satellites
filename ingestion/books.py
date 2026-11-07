@@ -8,7 +8,7 @@ derives one period's line from another period.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from typing import Dict, List, Optional
+from typing import Dict, Iterable, List, Optional
 
 from .identity import parse_utc
 from .models import BookSnapshot, Market, Period
@@ -128,17 +128,23 @@ def newest_snapshot(snapshots: List[BookSnapshot]) -> Optional[BookSnapshot]:
     return max(snapshots, key=lambda snapshot: parse_utc(snapshot.observed_utc))
 
 
+def period_coverage(
+    snapshots: List[BookSnapshot], config: BookConfig, periods: Iterable[Period]
+) -> Dict[str, int]:
+    """Count distinct games with a real total line in each native period."""
+    return {
+        period.value: len({
+            snapshot.game_id
+            for snapshot in select_total_snapshots(snapshots, config, period)
+        })
+        for period in periods
+    }
+
+
 def quarter_coverage(
     snapshots: List[BookSnapshot], config: BookConfig
 ) -> Dict[str, int]:
-    """Count distinct games with an observed line in each exact quarter."""
-
-    counts: Dict[str, int] = {}
-    for period in (Period.Q1, Period.Q2, Period.Q3, Period.Q4):
-        counts[period.value] = len(
-            {
-                snapshot.game_id
-                for snapshot in select_total_snapshots(snapshots, config, period)
-            }
-        )
-    return counts
+    """Backward-compatible quarter coverage for quarter-format leagues."""
+    return period_coverage(
+        snapshots, config, (Period.Q1, Period.Q2, Period.Q3, Period.Q4)
+    )

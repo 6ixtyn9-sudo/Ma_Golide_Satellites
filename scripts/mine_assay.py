@@ -20,7 +20,11 @@ from ingestion.warehouse import DEFAULT_WAREHOUSE  # noqa: E402
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--warehouse", default=DEFAULT_WAREHOUSE)
-    parser.add_argument("--league", default="NBA", choices=["NBA", "EuroLeague"])
+    parser.add_argument(
+        "--league",
+        default="NBA",
+        choices=["NBA", "EuroLeague", "CBA", "NCAA_M", "NCAA_W"],
+    )
     parser.add_argument(
         "--output",
         default=None,

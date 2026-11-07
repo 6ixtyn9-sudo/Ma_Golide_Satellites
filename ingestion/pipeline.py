@@ -16,7 +16,7 @@ from typing import Any, Callable, Dict, List, Optional, Sequence
 from .books import (
     BookConfig,
     newest_snapshot,
-    quarter_coverage,
+    period_coverage,
     select_moneyline_snapshots,
     select_total_snapshots,
 )
@@ -47,12 +47,32 @@ from .predictions import (
     resolve_frozen_bundle,
     select_prediction,
 )
-from .providers import espn, euroleague, hardwood
+from .leagues import native_periods
+from .providers import espn, euroleague, hardwood, isportsapi, sportradar
 
 logger = logging.getLogger(__name__)
 
-DEFAULT_TZ = {"NBA": "America/New_York", "EUROLEAGUE": "Europe/Paris"}
+DEFAULT_TZ = {
+    "NBA": "America/New_York",
+    "EUROLEAGUE": "Europe/Paris",
+    "CBA": "Asia/Shanghai",
+    "NCAA_M": "America/New_York",
+    "NCAA_W": "America/New_York",
+}
+# iSportsAPI schedule dates are documented as GMT+0 calendar windows; the
+# other providers use their competition-local slate date.
+ACQUISITION_TZ = {**DEFAULT_TZ, "CBA": "UTC"}
 BOOK_PROVIDERS = ("therundown", "sportsgameodds", "theoddsapi")
+BOOK_PROVIDERS_BY_LEAGUE = {
+    "CBA": ("isportsapi",),
+    "NCAA_M": ("theoddsapi",),
+    "NCAA_W": ("theoddsapi",),
+}
+
+
+def _book_providers(league: str) -> Sequence[str]:
+    # NBA/EuroLeague retain the existing overrideable provider tuple.
+    return BOOK_PROVIDERS_BY_LEAGUE.get(league.upper(), BOOK_PROVIDERS)
 BOOK_STALENESS_HOURS = 24.0
 
 
@@ -113,9 +133,26 @@ class Pipeline:
 
         self._reset_stage()
         league = self.config.league.upper()
-        if league == "NBA":
-            report = espn.smoke(self.config.date_yyyymmdd, self.fetch)
-            report["hardwood"] = self._hardwood_smoke()
+        if league in {"NBA", "NCAA_M", "NCAA_W"}:
+            report = espn.smoke(
+                self.config.date_yyyymmdd, self.fetch, self.config.league_enum
+            )
+            if league == "NBA":
+                report["hardwood"] = self._hardwood_smoke()
+            report["bookmakers"] = self._bookmakers_smoke()
+            return report
+        if league == "CBA":
+            report = isportsapi.schedule_smoke(
+                self.config.date_yyyymmdd, self.fetch, self.config.league_enum
+            )
+            try:
+                report["sportradar"] = sportradar.smoke(
+                    self.config.date_yyyymmdd, self.fetch
+                )
+            except Exception as exc:
+                report["sportradar"] = {
+                    "status": "PROVIDER_ERROR", "detail": str(exc)[:200]
+                }
             report["bookmakers"] = self._bookmakers_smoke()
             return report
         if league == "EUROLEAGUE":
@@ -160,7 +197,17 @@ class Pipeline:
                     "odds": odds,
                     "odds_evidence": odds_evidence,
                     "full_game_line": full_game_line,
-                    "quarters": quarter_lines,
+                    "quarters": (
+                        quarter_lines
+                        if game.league not in {League.NCAA_M, League.NCAA_W}
+                        else {}
+                    ),
+                    "halves": (
+                        quarter_lines
+                        if game.league in {League.NCAA_M, League.NCAA_W}
+                        else {}
+                    ),
+                    "native_periods": quarter_lines,
                     "book_evidence": book_evidence,
                 }
             )
@@ -272,7 +319,8 @@ class Pipeline:
         any_book = BookConfig()
         with_preds = 0
         with_fg_line = 0
-        per_quarter: Dict[str, int] = {q: 0 for q in ("Q1", "Q2", "Q3", "Q4")}
+        native_labels = [period.value for period in native_periods(self.config.league_enum)]
+        per_period: Dict[str, int] = {label: 0 for label in native_labels}
         finals = 0
         for game in games:
             if self.store.get_predictions(game.game_id):
@@ -280,9 +328,11 @@ class Pipeline:
             snapshots = self.store.get_book_snapshots(game.game_id)
             if select_total_snapshots(snapshots, any_book):
                 with_fg_line += 1
-            counts = quarter_coverage(snapshots, any_book)
-            for quarter in per_quarter:
-                per_quarter[quarter] += counts.get(quarter, 0)
+            counts = period_coverage(
+                snapshots, any_book, native_periods(self.config.league_enum)
+            )
+            for label in per_period:
+                per_period[label] += counts.get(label, 0)
             if (
                 game.status is GameStatus.FINAL
                 and game.actual is not None
@@ -300,8 +350,15 @@ class Pipeline:
                     "with_line": with_fg_line,
                     "total_games": len(games),
                 },
-                "quarter_lines": per_quarter,
-                "quarter_line_coverage": per_quarter,
+                "quarter_lines": (
+                    per_period if native_labels == ["Q1", "Q2", "Q3", "Q4"] else {}
+                ),
+                "quarter_line_coverage": (
+                    per_period if native_labels == ["Q1", "Q2", "Q3", "Q4"] else {}
+                ),
+                "half_lines": per_period if native_labels == ["H1", "H2"] else {},
+                "native_period_lines": per_period,
+                "native_period_line_coverage": per_period,
                 "finals_reconciled": finals,
                 "gaps": [],
             },
@@ -310,12 +367,21 @@ class Pipeline:
     # -- acquisition helpers -------------------------------------------------
 
     def _discover_games(self) -> List[Game]:
-        if self.config.league.upper() == "NBA":
-            games = espn.discover_games(self.config.date_yyyymmdd, self.fetch)
-        else:
+        league = self.config.league_enum
+        if league in {League.NBA, League.NCAA_M, League.NCAA_W}:
+            games = espn.discover_games(
+                self.config.date_yyyymmdd, self.fetch, league
+            )
+        elif league is League.CBA:
+            games = isportsapi.discover_games(
+                self.config.date_yyyymmdd, self.fetch, league
+            )
+        elif league is League.EUROLEAGUE:
             games = euroleague.discover_games(
                 _iso(self.config.date_yyyymmdd), self.fetch
             )
+        else:
+            raise ValueError(f"unsupported league for discovery: {league.value}")
         for game in games:
             self.store.upsert_game(game)
         return games
@@ -340,6 +406,40 @@ class Pipeline:
                     )
                 )
 
+        cba_probabilities: Dict[str, Prediction] = {}
+        if self.config.league_enum is League.CBA:
+            if sportradar.is_enabled():
+                try:
+                    cba_probabilities = sportradar.fetch_cba_probabilities(
+                        self.config.date_yyyymmdd,
+                        games,
+                        self.fetch,
+                        now_utc=self.config.fixture_now_utc,
+                    )
+                except Exception as exc:
+                    logger.warning("Sportradar CBA probabilities unavailable: %s", exc)
+                    self.gaps.append(
+                        CoverageGap(
+                            game_id=None,
+                            required_field="sportradar_probabilities",
+                            reason=CoverageState.PROVIDER_ERROR,
+                            provider="sportradar",
+                            detail=str(exc)[:200],
+                            observed_utc=now,
+                        )
+                    )
+            else:
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=None,
+                        required_field="sportradar_probabilities",
+                        reason=CoverageState.UNAUTHORIZED,
+                        provider="sportradar",
+                        detail="missing SPORTRADAR_API_KEY",
+                        observed_utc=now,
+                    )
+                )
+
         for game in games:
             # Stored pre-tip observations compete with fresh observations. A
             # transient provider failure must not blank a still-fresh bundle.
@@ -348,7 +448,8 @@ class Pipeline:
                 for pred in self.store.get_predictions(game.game_id)
                 if pred.pre_tip
             ]
-            if self.config.league.upper() == "NBA":
+            league = self.config.league_enum
+            if league in {League.NBA, League.NCAA_M, League.NCAA_W}:
                 try:
                     candidates.append(
                         espn.fetch_bpi(
@@ -369,11 +470,15 @@ class Pipeline:
                             observed_utc=now,
                         )
                     )
-                if artifact is not None:
+                if league is League.NBA and artifact is not None:
                     candidates.extend(
                         _hardwood_candidates(game, artifact, self.fetch, self.gaps)
                     )
-            else:
+            elif league is League.CBA:
+                prediction = cba_probabilities.get(game.game_id)
+                if prediction is not None:
+                    candidates.append(prediction)
+            elif league is League.EUROLEAGUE:
                 candidates.extend(_predixsport_candidates(game, self.fetch_factory))
 
             selection = select_prediction(
@@ -403,7 +508,7 @@ class Pipeline:
 
     def _acquire_book_lines(self, games: List[Game]) -> Dict[str, List[BookSnapshot]]:
         raw_snapshots: List[BookSnapshot] = []
-        for provider in BOOK_PROVIDERS:
+        for provider in _book_providers(self.config.league):
             module = _book_module(provider)
             if module is None or not module.is_enabled():
                 continue
@@ -505,10 +610,7 @@ class Pipeline:
         evidence: Dict[str, Optional[Dict[str, Any]]] = {}
         gaps: List[CoverageGap] = []
         periods = (
-            ("Q1", Period.Q1),
-            ("Q2", Period.Q2),
-            ("Q3", Period.Q3),
-            ("Q4", Period.Q4),
+            *((period.value, period) for period in native_periods(game.league)),
             ("full_game", Period.FULL_GAME),
         )
         full_game_line = None
@@ -618,11 +720,18 @@ class Pipeline:
         ]
 
     def _fetch_finals(self) -> List[Game]:
-        if self.config.league.upper() == "NBA":
+        league = self.config.league_enum
+        if league in {League.NBA, League.NCAA_M, League.NCAA_W}:
             return espn.fetch_recent_results(
-                self.config.date_yyyymmdd, self.fetch
+                self.config.date_yyyymmdd, self.fetch, league
             )
-        return self._euroleague_finals(self._discover_games())
+        if league is League.CBA:
+            return isportsapi.fetch_recent_results(
+                self.config.date_yyyymmdd, self.fetch, league
+            )
+        if league is League.EUROLEAGUE:
+            return self._euroleague_finals(self._discover_games())
+        raise ValueError(f"unsupported league for results: {league.value}")
 
     def _euroleague_finals(self, games: List[Game]) -> List[Game]:
         finals = []
@@ -685,7 +794,7 @@ class Pipeline:
 
     def _bookmakers_smoke(self) -> Dict[str, Any]:
         output = {}
-        for provider in BOOK_PROVIDERS:
+        for provider in _book_providers(self.config.league):
             module = _book_module(provider)
             if module is None:
                 continue
@@ -878,12 +987,13 @@ def _default_fetch_factory(provider: str):
 
 
 def _book_module(provider: str):
-    from .providers import sportsgameodds, theoddsapi, therundown
+    from .providers import isportsapi, sportsgameodds, theoddsapi, therundown
 
     return {
         "therundown": therundown,
         "sportsgameodds": sportsgameodds,
         "theoddsapi": theoddsapi,
+        "isportsapi": isportsapi,
     }[provider]
 
 

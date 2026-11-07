@@ -60,10 +60,16 @@ BASE_URL = "https://api.the-odds-api.com/v4"
 # EuroLeague key here on purpose: EuroLeague coverage is unproven and the
 # adapter raises for it instead of fabricating a key.
 NBA_SPORT_KEY = "basketball_nba"
+SPORT_KEYS = {
+    "NBA": NBA_SPORT_KEY,
+    "NCAA_M": "basketball_ncaab",
+    "NCAA_W": "basketball_wncaab",
+}
 
 MONEYLINE_MARKET_KEYS: Dict[str, Period] = {
     "h2h": Period.FULL_GAME,
     "h2h_h1": Period.H1,
+    "h2h_h2": Period.H2,
 }
 TOTALS_MARKET_KEYS: Dict[str, Period] = {
     "totals": Period.FULL_GAME,
@@ -71,6 +77,8 @@ TOTALS_MARKET_KEYS: Dict[str, Period] = {
     "totals_q2": Period.Q2,
     "totals_q3": Period.Q3,
     "totals_q4": Period.Q4,
+    "totals_h1": Period.H1,
+    "totals_h2": Period.H2,
 }
 SPREAD_MARKET_KEYS: Dict[str, Period] = {
     "spreads": Period.FULL_GAME,
@@ -78,11 +86,16 @@ SPREAD_MARKET_KEYS: Dict[str, Period] = {
     "spreads_q2": Period.Q2,
     "spreads_q3": Period.Q3,
     "spreads_q4": Period.Q4,
+    "spreads_h1": Period.H1,
+    "spreads_h2": Period.H2,
 }
 FULL_GAME_MARKETS_PARAM = "h2h,totals,spreads"
 QUARTER_MARKETS_PARAM = (
     "totals_q1,totals_q2,totals_q3,totals_q4,"
     "spreads_q1,spreads_q2,spreads_q3,spreads_q4,h2h_h1"
+)
+HALF_MARKETS_PARAM = (
+    "totals_h1,totals_h2,spreads_h1,spreads_h2,h2h_h1,h2h_h2"
 )
 DEFAULT_REGIONS = "us"
 DEFAULT_BOOKMAKERS = "draftkings"
@@ -169,13 +182,17 @@ def _call(fetch: Callable[[str], Any], url: str) -> Tuple[Any, Dict[str, str]]:
 
 
 def _require_supported_league(league: str) -> str:
-    """NBA only (case-insensitive). EuroLeague has NO verified sport key:
-    raise instead of fabricating one."""
-    normalized = str(league or "").strip().upper()
+    """Return a verified The Odds API sport mapping, never a guessed key."""
+    normalized = str(league or "").strip().upper().replace("-", "_")
+    aliases = {"NCAAB": "NCAA_M", "WNCAAB": "NCAA_W"}
+    normalized = aliases.get(normalized, normalized)
     if normalized == "EUROLEAGUE":
         raise ValueError("not enabled for this league yet")
-    if normalized != "NBA":
-        raise ValueError(f"league {league!r} is not enabled for the {PROVIDER} adapter (NBA only)")
+    if normalized not in SPORT_KEYS:
+        raise ValueError(
+            f"league {league!r} is not enabled for the {PROVIDER} adapter; "
+            f"verified mappings: {', '.join(SPORT_KEYS)}"
+        )
     return normalized
 
 
@@ -191,8 +208,9 @@ def _api_key() -> str:
     return os.environ.get(ENV_KEY, "")
 
 
-def _full_game_odds_url() -> str:
+def _full_game_odds_url(league: str = "NBA") -> str:
     """Documented list endpoint: full-game h2h + totals, decimal odds."""
+    league = _require_supported_league(league)
     params = {
         "apiKey": _api_key(),
         "regions": _regions(),
@@ -201,20 +219,21 @@ def _full_game_odds_url() -> str:
         "oddsFormat": "decimal",
         "dateFormat": "iso",
     }
-    return f"{BASE_URL}/sports/{NBA_SPORT_KEY}/odds/?{urlencode(params)}"
+    return f"{BASE_URL}/sports/{SPORT_KEYS[league]}/odds/?{urlencode(params)}"
 
 
-def _event_odds_url(event_id: str) -> str:
-    """Documented per-event endpoint: the ONLY source of quarter markets."""
+def _event_odds_url(event_id: str, league: str = "NBA") -> str:
+    """Per-event native period markets (quarters for NBA, halves for NCAA)."""
+    league = _require_supported_league(league)
     params = {
         "apiKey": _api_key(),
         "regions": _regions(),
-        "markets": QUARTER_MARKETS_PARAM,
+        "markets": HALF_MARKETS_PARAM if league.startswith("NCAA_") else QUARTER_MARKETS_PARAM,
         "bookmakers": _bookmakers(),
         "oddsFormat": "decimal",
         "dateFormat": "iso",
     }
-    return f"{BASE_URL}/sports/{NBA_SPORT_KEY}/events/{event_id}/odds?{urlencode(params)}"
+    return f"{BASE_URL}/sports/{SPORT_KEYS[league]}/events/{event_id}/odds?{urlencode(params)}"
 
 
 # ---------------------------------------------------------------------------
@@ -583,11 +602,11 @@ def fetch_odds(
     _reset_gaps()
     if not is_enabled():
         return []
-    _require_supported_league(league)
+    league = _require_supported_league(league)
     fetch = fetch_factory(PROVIDER)
     now = now_utc or identity.now_utc_iso()
     observed_utc = now
-    list_payload, _headers = _call(fetch, _full_game_odds_url())
+    list_payload, _headers = _call(fetch, _full_game_odds_url(league))
     events = [e for e in (list_payload if isinstance(list_payload, list) else []) if isinstance(e, dict)]
 
     snapshots: List[BookSnapshot] = []
@@ -612,7 +631,7 @@ def fetch_odds(
             continue
         _extend(parse_event(event, observed_utc, now))
         # Quarter markets exist only on the per-event endpoint.
-        quarter_payload, _q_headers = _call(fetch, _event_odds_url(game_id))
+        quarter_payload, _q_headers = _call(fetch, _event_odds_url(game_id, league))
         _extend(parse_event(quarter_payload if isinstance(quarter_payload, dict) else {}, observed_utc, now))
     return snapshots
 
@@ -664,7 +683,7 @@ def smoke(
             quota.update(parse_quota(headers))
         return payload
 
-    list_payload = _fetch_and_track(_full_game_odds_url())
+    list_payload = _fetch_and_track(_full_game_odds_url(league_name))
     events = [e for e in (list_payload if isinstance(list_payload, list) else []) if isinstance(e, dict)]
     snapshots: List[BookSnapshot] = []
     seen: set = set()  # (game_id, book, market, period) — list endpoint wins
@@ -692,7 +711,7 @@ def smoke(
         if _event_pre_match(event, now):
             pre_match_count += 1
         _extend(parse_event(event, observed_utc, now))
-        quarter_payload = _fetch_and_track(_event_odds_url(game_id))
+        quarter_payload = _fetch_and_track(_event_odds_url(game_id, league_name))
         _extend(parse_event(quarter_payload if isinstance(quarter_payload, dict) else {}, observed_utc, now))
 
     presence = _period_presence(snapshots)
@@ -702,14 +721,24 @@ def smoke(
         "provider": PROVIDER,
         "league": league_name,
         "date": date_yyyymmdd,
-        "sport_key": NBA_SPORT_KEY,
+        "sport_key": SPORT_KEYS[league_name],
         "verification": DOCUMENTATION_ONLY,
         "events_checked": events_checked,
         "full_game_totals_present": len(presence.get(Period.FULL_GAME.value, set())),
-        "quarters": {
-            f"Q{i}": {"present": len(presence.get(f"Q{i}", set())), "total": events_checked}
-            for i in range(1, 5)
+        "native_periods": {
+            period: {"present": len(presence.get(period, set())), "total": events_checked}
+            for period in (
+                ("H1", "H2") if league_name.startswith("NCAA_") else ("Q1", "Q2", "Q3", "Q4")
+            )
         },
+        **({
+            "halves" if league_name.startswith("NCAA_") else "quarters": {
+                period: {"present": len(presence.get(period, set())), "total": events_checked}
+                for period in (
+                    ("H1", "H2") if league_name.startswith("NCAA_") else ("Q1", "Q2", "Q3", "Q4")
+                )
+            }
+        }),
         "pre_match_vs_live": {
             "pre_match": pre_match_count,
             "not_pre_match": events_checked - pre_match_count,
