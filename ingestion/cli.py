@@ -75,7 +75,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         command_parser.add_argument(
             "--league",
             default="NBA",
-            choices=["NBA", "EuroLeague", "CBA", "NCAA_M", "NCAA_W"],
+            choices=["NBA", "EuroLeague", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
         )
         command_parser.add_argument(
             "--date", default=None, help="league-local slate date YYYYMMDD"
@@ -101,7 +101,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         command_parser.add_argument(
             "--book-provider",
             default="none",
-            choices=["none", "therundown", "sportsgameodds", "theoddsapi", "isportsapi"],
+            choices=["none", "therundown", "sportsgameodds", "theoddsapi", "isportsapi", "espn"],
             help="restrict book evidence to one provider",
         )
         command_parser.add_argument(
@@ -116,7 +116,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     coverage_parser.add_argument(
         "--league",
         default="NBA",
-        choices=["NBA", "EuroLeague", "CBA", "NCAA_M", "NCAA_W"],
+        choices=["NBA", "EuroLeague", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
     )
     coverage_parser.add_argument("--warehouse", default=None)
 
@@ -187,6 +187,7 @@ def _offline_fixture_fetch():
         # Match the Hardwood artifact before the ESPN predictor substring.
         "game_forecasts": "hardwood/game_forecasts.json",
         "competitions/401909938/predictor": "espn/predictor_401909938.json",
+        "summary?event=401909938": "espn/summary_401909938_context.json",
         "seasons/E2026/games": "euroleague/schedule.json",
         "Boxscore": "euroleague/boxscore_97.json",
         "standings": "espn/standings.json",
@@ -200,6 +201,7 @@ def _offline_fixture_fetch():
 
         raise HttpError(404, url, "no offline fixture mapped")
 
+    fetch.magolide_acquisition_source = "fixture"
     return fetch, (lambda _provider: fetch)
 
 

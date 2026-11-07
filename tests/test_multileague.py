@@ -300,7 +300,14 @@ def test_ncaa_pipeline_uses_espn_and_native_half_books(monkeypatch):
         )
         for period, line in ((Period.H1, 68.5), (Period.H2, 71.5))
     ]
-    monkeypatch.setattr(espn, "discover_games", lambda *_args: [game])
+    monkeypatch.setattr(
+        espn,
+        "discover_games_with_evidence",
+        lambda *_args, **_kwargs: ([game], {}),
+    )
+    monkeypatch.setattr(
+        espn, "fetch_game_context", lambda _event, _fetch, value, **_kwargs: value
+    )
     monkeypatch.setattr(espn, "fetch_bpi", lambda *_args, **_kwargs: prediction)
     monkeypatch.setattr(theoddsapi, "is_enabled", lambda: True)
     calls = []
@@ -340,7 +347,7 @@ def test_cba_and_ncaa_results_use_their_native_provider(monkeypatch):
         scheduled_utc="2026-11-07T23:00:00Z",
     )
     monkeypatch.setattr(isportsapi, "fetch_recent_results", lambda *_args: [cba_final])
-    monkeypatch.setattr(espn, "fetch_recent_results", lambda *_args: [ncaa_final])
+    monkeypatch.setattr(espn, "fetch_recent_results", lambda *_args, **_kwargs: [ncaa_final])
     cba_pipeline = Pipeline(
         PipelineConfig(league="CBA", date_yyyymmdd="20261107"), InMemoryStore()
     )

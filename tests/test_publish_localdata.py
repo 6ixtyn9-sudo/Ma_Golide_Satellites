@@ -28,6 +28,7 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
     artifact_file(tmp_path, "nba-artifact", "nba", "warehouse.duckdb", b"canonical")
     artifact_file(tmp_path, "nba-artifact", "nba", "picks_unapproved.json", b"unexpected")
     artifact_file(tmp_path, "cba-artifact", "cba", "picks_today.json", b"cba\n")
+    artifact_file(tmp_path, "wnba-artifact", "wnba", "picks_today.json", b"wnba\n")
     skipped = tmp_path / "artifacts" / "skipped-cba"
     skipped.mkdir(parents=True)
     (skipped / "daily-output.json").write_text("{}")
@@ -38,9 +39,10 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
 
     report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
 
-    assert report["copied_count"] == 4
+    assert report["copied_count"] == 5
     assert (repo / "localdata" / "nba" / "picks_today.json").read_bytes() == b"today\n"
     assert (repo / "localdata" / "cba" / "picks_today.json").read_bytes() == b"cba\n"
+    assert (repo / "localdata" / "wnba" / "picks_today.json").read_bytes() == b"wnba\n"
     assert historical.read_text() == "retain me"
     assert not (repo / "localdata" / "nba" / "warehouse.duckdb").exists()
     assert not (repo / "localdata" / "nba" / "picks_unapproved.json").exists()

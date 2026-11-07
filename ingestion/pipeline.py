@@ -8,11 +8,13 @@ enables canonical writes.
 
 from __future__ import annotations
 
-from datetime import timedelta
+from datetime import datetime, timedelta
 import logging
 from dataclasses import dataclass, field, replace
 from typing import Any, Callable, Dict, List, Optional, Sequence
+from zoneinfo import ZoneInfo
 
+from .acquisition import AcquisitionClient
 from .books import (
     BookConfig,
     newest_snapshot,
@@ -38,6 +40,7 @@ from .models import (
     League,
     Period,
     Prediction,
+    ProviderHealth,
 )
 from .predictions import (
     DEFAULT_PROVIDER_ORDER,
@@ -56,6 +59,7 @@ DEFAULT_TZ = {
     "NBA": "America/New_York",
     "EUROLEAGUE": "Europe/Paris",
     "CBA": "Asia/Shanghai",
+    "WNBA": "America/New_York",
     "NCAA_M": "America/New_York",
     "NCAA_W": "America/New_York",
 }
@@ -67,7 +71,10 @@ BOOK_PROVIDERS_BY_LEAGUE = {
     "CBA": ("isportsapi",),
     "NCAA_M": ("theoddsapi",),
     "NCAA_W": ("theoddsapi",),
+    "WNBA": ("theoddsapi",),
 }
+
+ESPN_LEAGUES = {League.NBA, League.WNBA, League.NCAA_M, League.NCAA_W}
 
 
 def _book_providers(league: str) -> Sequence[str]:
@@ -84,6 +91,14 @@ class PipelineConfig:
     book: BookConfig = field(default_factory=BookConfig)
     freshness_hours: float = 12.0
     provider_order: Sequence[str] = DEFAULT_PROVIDER_ORDER
+    # Bounded acquisition plan; these are code/config defaults, never workflow
+    # dispatch inputs. Backfill acquires official results, not invented training.
+    history_days: int = 7
+    history_request_budget: int = 7
+    deep_history_event_budget: int = 25
+    deep_history_start_season: Optional[int] = None
+    context_request_budget: int = 40
+    http_request_budget: int = 1200
     # Used only by committed offline fixtures so replay evidence is stable.
     fixture_now_utc: Optional[str] = None
 
@@ -110,10 +125,26 @@ class Pipeline:
         self.config = config
         self.store = store
         self.fetch = fetch or HttpClient().get_json
+        cache_dir = None
+        store_path = getattr(store, "path", None)
+        if fetch is None and store_path and store_path != ":memory:":
+            # ESPN is keyless: its durable cache contains no credentialed URLs.
+            # Other providers continue to use their existing bounded HttpClient.
+            from pathlib import Path
+
+            cache_dir = str(Path(store_path).parent / "http-cache" / "espn")
+        self.acquisition = AcquisitionClient(
+            self.fetch,
+            cache_dir=cache_dir,
+            request_budget=config.http_request_budget,
+            now_fn=self._now_iso,
+        )
+        self.espn_fetch = self.acquisition
         self.fetch_factory = fetch_factory or _default_fetch_factory
         self.allow_writes = allow_writes
         self.gaps: List[CoverageGap] = []
         self.quota: Dict[str, Any] = {}
+        self.context_report: Dict[str, Any] = {}
 
     def _now_iso(self) -> str:
         if self.config.fixture_now_utc:
@@ -125,6 +156,7 @@ class Pipeline:
 
         self.gaps = []
         self.quota = {}
+        self.context_report = {}
 
     # -- commands ------------------------------------------------------------
 
@@ -133,9 +165,9 @@ class Pipeline:
 
         self._reset_stage()
         league = self.config.league.upper()
-        if league in {"NBA", "NCAA_M", "NCAA_W"}:
+        if league in {"NBA", "WNBA", "NCAA_M", "NCAA_W"}:
             report = espn.smoke(
-                self.config.date_yyyymmdd, self.fetch, self.config.league_enum
+                self.config.date_yyyymmdd, self.espn_fetch, self.config.league_enum
             )
             if league == "NBA":
                 report["hardwood"] = self._hardwood_smoke()
@@ -167,6 +199,7 @@ class Pipeline:
 
         self._reset_stage()
         games = self._discover_games()
+        games = self._acquire_context(games)
         selections = self._acquire_predictions(games)
         self._acquire_book_lines(games)
 
@@ -220,6 +253,7 @@ class Pipeline:
                 "predictions_selected": _count_by(
                     [s.provider for s in selections.values() if s.provider]
                 ),
+                "espn_context": self.context_report,
             },
         )
 
@@ -368,9 +402,13 @@ class Pipeline:
 
     def _discover_games(self) -> List[Game]:
         league = self.config.league_enum
-        if league in {League.NBA, League.NCAA_M, League.NCAA_W}:
-            games = espn.discover_games(
-                self.config.date_yyyymmdd, self.fetch, league
+        espn_books: Dict[str, List[BookSnapshot]] = {}
+        if league in ESPN_LEAGUES:
+            games, espn_books = espn.discover_games_with_evidence(
+                self.config.date_yyyymmdd,
+                self.espn_fetch,
+                league,
+                observed_utc=self._now_iso(),
             )
         elif league is League.CBA:
             games = isportsapi.discover_games(
@@ -384,6 +422,85 @@ class Pipeline:
             raise ValueError(f"unsupported league for discovery: {league.value}")
         for game in games:
             self.store.upsert_game(game)
+        for game_id, snapshots in espn_books.items():
+            for snapshot in snapshots:
+                try:
+                    self.store.upsert_book_snapshot(snapshot)
+                except Exception as exc:
+                    logger.warning("ESPN scoreboard book store failed: %s", exc)
+                    self.gaps.append(
+                        CoverageGap(
+                            game_id=game_id,
+                            required_field="espn_scoreboard_book",
+                            reason=CoverageState.PROVIDER_ERROR,
+                            provider="espn",
+                            detail=str(exc)[:200],
+                            observed_utc=self._now_iso(),
+                        )
+                    )
+        return games
+
+    def _acquire_context(self, games: List[Game]) -> List[Game]:
+        """Enrich upcoming ESPN games with bounded summary/form/injury evidence."""
+
+        if self.config.league_enum not in ESPN_LEAGUES:
+            return games
+        now = parse_utc(self._now_iso())
+        eligible = [
+            index
+            for index, game in enumerate(games)
+            if game.status is GameStatus.SCHEDULED
+            and parse_utc(game.scheduled_utc) > now
+        ]
+        eligible.sort(key=lambda index: parse_utc(games[index].scheduled_utc))
+        attempted = 0
+        enriched = 0
+        for index in eligible[: self.config.context_request_budget]:
+            game = games[index]
+            attempted += 1
+            try:
+                games[index] = espn.fetch_game_context(
+                    game.provider_ids.get("espn", game.game_id),
+                    self.espn_fetch,
+                    game,
+                    observed_utc=self._now_iso(),
+                )
+                self.store.upsert_game(games[index])
+                enriched += 1
+            except Exception as exc:
+                logger.warning("ESPN summary context failed for %s: %s", game.game_id, exc)
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="espn_summary_context",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider="espn",
+                        detail=str(exc)[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+        skipped = max(0, len(eligible) - attempted)
+        if skipped:
+            self.gaps.append(
+                CoverageGap(
+                    game_id=None,
+                    required_field="espn_summary_context_budget",
+                    reason=CoverageState.UNSUPPORTED,
+                    provider="espn",
+                    detail=(
+                        f"{skipped} upcoming games exceeded the per-run summary "
+                        f"budget of {self.config.context_request_budget}"
+                    ),
+                    observed_utc=self._now_iso(),
+                )
+            )
+        self.context_report = {
+            "eligible_upcoming_games": len(eligible),
+            "attempted": attempted,
+            "enriched": enriched,
+            "budget": self.config.context_request_budget,
+            "budget_skipped": skipped,
+        }
         return games
 
     def _acquire_predictions(self, games: List[Game]) -> Dict[str, SelectionResult]:
@@ -449,12 +566,12 @@ class Pipeline:
                 if pred.pre_tip
             ]
             league = self.config.league_enum
-            if league in {League.NBA, League.NCAA_M, League.NCAA_W}:
+            if league in ESPN_LEAGUES:
                 try:
                     candidates.append(
                         espn.fetch_bpi(
                             game.provider_ids.get("espn", game.game_id),
-                            self.fetch,
+                            self.espn_fetch,
                             game,
                             now_utc=self.config.fixture_now_utc,
                         )
@@ -719,11 +836,366 @@ class Pipeline:
             if parse_utc(game.scheduled_utc) <= now
         ]
 
+    def _default_history_start_season(self) -> int:
+        target = datetime.strptime(self.config.date_yyyymmdd, "%Y%m%d").date()
+        current = target.year
+        if self.config.league_enum is not League.WNBA and target.month >= 10:
+            current += 1
+        return current - 1
+
+    def _store_history_cursor(
+        self, season: int, event_index: int, index_year: int, event_count: int
+    ) -> None:
+        now = self._now_iso()
+        self.store.upsert_provider_health(
+            ProviderHealth(
+                provider="espn-history",
+                league=self.config.league_enum,
+                last_attempt_utc=now,
+                last_success_utc=now,
+                state=CoverageState.OK,
+                detail="durable deep-history acquisition cursor",
+                coverage={
+                    "next_season": int(season),
+                    "next_event_index": int(event_index),
+                    "last_index_year": int(index_year),
+                    "last_index_event_count": int(event_count),
+                    "floor_season": espn.HISTORY_FLOORS[self.config.league_enum],
+                },
+            )
+        )
+
+    def _backfill_deep_history(self) -> Dict[str, Any]:
+        """Ingest a bounded batch from the core season/event manifest."""
+
+        budget = max(0, int(self.config.deep_history_event_budget))
+        if not budget:
+            return {"status": "disabled", "event_budget": 0, "ledger_dates": []}
+        base = {
+            "event_budget": budget,
+            "ledger_dates": [],
+            "events_acquired": 0,
+            "final_scores_written": 0,
+            "already_persisted": 0,
+            "coverage": {},
+            "learning_or_calibration_claimed": False,
+        }
+        if not (self.allow_writes and getattr(self.store, "persist", False)):
+            return {
+                **base,
+                "status": "disabled_canonical_write_required",
+                "detail": "dry runs cannot advance a cursor past unpersisted history",
+            }
+
+        health = self.store.get_provider_health(
+            "espn-history", self.config.league_enum
+        )
+        previous = health.coverage if health else {}
+        default_start = self._default_history_start_season()
+        if self.config.deep_history_start_season is not None:
+            season = int(self.config.deep_history_start_season)
+            event_index = 0
+        else:
+            season = int(previous.get("next_season") or default_start)
+            event_index = int(previous.get("next_event_index") or 0)
+        season = min(season, default_start)
+        floor = espn.HISTORY_FLOORS[self.config.league_enum]
+        base["floor_season"] = floor
+        base["start_cursor"] = {"season": season, "event_index": event_index}
+        if season < floor:
+            return {
+                **base,
+                "status": "complete_to_verified_index_floor",
+                "cursor": {"season": season, "event_index": event_index},
+            }
+
+        def index_fetch(url: str):
+            return self.acquisition.get_json(
+                url, use_cache=True, ttl_seconds=7 * 86400
+            )
+
+        try:
+            manifest = espn.season_event_index(
+                season, index_fetch, self.config.league_enum
+            )
+        except Exception as exc:
+            self.gaps.append(
+                CoverageGap(
+                    game_id=None,
+                    required_field="deep_history_season_index",
+                    reason=CoverageState.PROVIDER_ERROR,
+                    provider="espn",
+                    detail=f"{season}: {str(exc)[:180]}",
+                    observed_utc=self._now_iso(),
+                )
+            )
+            return {
+                **base,
+                "status": "provider_error",
+                "cursor": {"season": season, "event_index": event_index},
+            }
+
+        event_ids = manifest["event_ids"]
+        base["index"] = {
+            "season": season,
+            "provider_count": manifest["count"],
+            "resolved_event_ids": len(event_ids),
+            "completeness": manifest["completeness"],
+        }
+        if not event_ids:
+            next_season = season - 1
+            self._store_history_cursor(next_season, 0, season, 0)
+            return {
+                **base,
+                "status": "index_empty",
+                "cursor": {"season": next_season, "event_index": 0},
+            }
+
+        acquired = 0
+        final_scores = 0
+        already = 0
+        coverage_counts: Dict[str, int] = {}
+        ledger_dates = set()
+        processed = 0
+        status = "acquired"
+        while event_index < len(event_ids) and processed < budget:
+            event_id = event_ids[event_index]
+            existing = self.store.get_game(event_id)
+            existing_espn = (existing.evidence.get("espn") or {}) if existing else {}
+            if existing and existing_espn.get("history") and existing_espn.get("summary"):
+                already += 1
+                event_index += 1
+                processed += 1
+                self._store_history_cursor(
+                    season, event_index, season, len(event_ids)
+                )
+                continue
+            try:
+                game = espn.fetch_historical_event(
+                    event_id,
+                    self.espn_fetch,
+                    self.config.league_enum,
+                    observed_utc=self._now_iso(),
+                    index_year=season,
+                )
+            except Exception as exc:
+                logger.warning("ESPN deep history failed for %s: %s", event_id, exc)
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=event_id,
+                        required_field="deep_history_event",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider="espn",
+                        detail=str(exc)[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                status = "provider_error_cursor_retained"
+                break
+
+            self.store.upsert_game(game)
+            acquired += 1
+            processed += 1
+            event_index += 1
+            coverage = game.evidence["espn"]["history"]["coverage"]
+            coverage_counts[coverage] = coverage_counts.get(coverage, 0) + 1
+            if game.actual and game.actual.home_final is not None:
+                final_scores += 1
+            local_date = (
+                parse_utc(game.scheduled_utc)
+                .astimezone(ZoneInfo(self.config.timezone))
+                .strftime("%Y%m%d")
+            )
+            ledger_dates.add(local_date)
+            if coverage == "final_score_only":
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=event_id,
+                        required_field="native_periods",
+                        reason=CoverageState.MISSING,
+                        provider="espn",
+                        detail=game.evidence["espn"]["history"]["period_note"],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+            elif coverage in {"unreconciled_periods", "non_final_provider_status"}:
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=event_id,
+                        required_field="historical_result_integrity",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider="espn",
+                        detail=game.evidence["espn"]["history"]["period_note"],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+            self._store_history_cursor(season, event_index, season, len(event_ids))
+
+        if event_index >= len(event_ids):
+            season -= 1
+            event_index = 0
+            self._store_history_cursor(season, 0, season + 1, len(event_ids))
+        return {
+            **base,
+            "status": status,
+            "events_acquired": acquired,
+            "final_scores_written": final_scores,
+            "already_persisted": already,
+            "coverage": coverage_counts,
+            "ledger_dates": sorted(ledger_dates),
+            "cursor": {"season": season, "event_index": event_index},
+        }
+
+    def backfill(self) -> Dict[str, Any]:
+        """Acquire recent scoreboards plus a bounded durable deep-history batch.
+
+        Historical evidence never implies training, calibration, or acca
+        eligibility. Only write-enabled runs advance the deep event cursor.
+        """
+
+        self._reset_stage()
+        configured_days = max(0, int(self.config.history_days))
+        budget = max(0, int(self.config.history_request_budget))
+        days = min(configured_days, budget)
+        espn_enabled = self.config.league_enum in ESPN_LEAGUES
+        total_found = 0
+        total_written = 0
+        date_reports = []
+        ledger_dates = set()
+        if espn_enabled and configured_days > budget:
+            self.gaps.append(
+                CoverageGap(
+                    game_id=None,
+                    required_field="historical_backfill_budget",
+                    reason=CoverageState.UNSUPPORTED,
+                    provider="espn",
+                    detail=(
+                        f"requested {configured_days} days; bounded to {budget} "
+                        "scoreboard requests in this run"
+                    ),
+                    observed_utc=self._now_iso(),
+                )
+            )
+
+        target = datetime.strptime(self.config.date_yyyymmdd, "%Y%m%d").date()
+        if espn_enabled and days:
+            for offset in range(1, days + 1):
+                day = target - timedelta(days=offset)
+                date = day.strftime("%Y%m%d")
+
+                def cached_fetch(url: str):
+                    return self.acquisition.get_json(
+                        url, use_cache=True, ttl_seconds=86400
+                    )
+
+                found = 0
+                written = 0
+                reconciled = 0
+                try:
+                    finals = espn.fetch_recent_results(
+                        date,
+                        cached_fetch,
+                        self.config.league_enum,
+                        observed_utc=lambda: (
+                            self.acquisition.last_observed_utc or self._now_iso()
+                        ),
+                    )
+                except Exception as exc:
+                    logger.warning("ESPN historical backfill failed for %s: %s", date, exc)
+                    self.gaps.append(
+                        CoverageGap(
+                            game_id=None,
+                            required_field="historical_results",
+                            reason=CoverageState.PROVIDER_ERROR,
+                            provider="espn",
+                            detail=f"{date}: {str(exc)[:180]}",
+                            observed_utc=self._now_iso(),
+                        )
+                    )
+                    date_reports.append(
+                        {"date": date, "status": "provider_error", "finals_found": 0}
+                    )
+                    continue
+                for game in finals:
+                    found += 1
+                    total_found += 1
+                    if game.actual is None:
+                        continue
+                    ok, reason = game.actual.reconciles()
+                    if not ok:
+                        self.gaps.append(
+                            CoverageGap(
+                                game_id=game.game_id,
+                                required_field=(
+                                    "native_periods"
+                                    if game.actual.period_kind.value == "unknown"
+                                    else "historical_reconciliation"
+                                ),
+                                reason=(
+                                    CoverageState.MISSING
+                                    if game.actual.period_kind.value == "unknown"
+                                    else CoverageState.PROVIDER_ERROR
+                                ),
+                                provider="espn",
+                                detail=reason,
+                                observed_utc=self._now_iso(),
+                            )
+                        )
+                    else:
+                        reconciled += 1
+                    self.store.upsert_game(game)
+                    written += 1
+                    total_written += 1
+                if written:
+                    ledger_dates.add(date)
+                date_reports.append(
+                    {
+                        "date": date,
+                        "status": "acquired",
+                        "finals_found": found,
+                        "finals_reconciled": reconciled,
+                        "canonical_persistence": (
+                            "duckdb_csv" if self.allow_writes else "dry_run_not_persisted"
+                        ),
+                    }
+                )
+
+        deep = (
+            self._backfill_deep_history()
+            if espn_enabled
+            else {"status": "unsupported_league", "ledger_dates": []}
+        )
+        ledger_dates.update(deep.get("ledger_dates") or [])
+        status = (
+            "disabled"
+            if not days and deep["status"] in {"disabled", "unsupported_league"}
+            else "acquired"
+        )
+        return self._report(
+            mode="write" if self.allow_writes else "dry_run",
+            fixtures_found=total_found + int(deep.get("events_acquired") or 0),
+            extra={
+                "finals_written": total_written + int(deep.get("final_scores_written") or 0),
+                "backfill": {
+                    "status": status,
+                    "requested_days": configured_days,
+                    "request_budget": budget,
+                    "dates": date_reports,
+                    "ledger_dates": sorted(ledger_dates),
+                    "deep_history": deep,
+                    "learning_or_calibration_claimed": False,
+                },
+            },
+        )
+
     def _fetch_finals(self) -> List[Game]:
         league = self.config.league_enum
-        if league in {League.NBA, League.NCAA_M, League.NCAA_W}:
+        if league in ESPN_LEAGUES:
             return espn.fetch_recent_results(
-                self.config.date_yyyymmdd, self.fetch, league
+                self.config.date_yyyymmdd,
+                self.espn_fetch,
+                league,
+                observed_utc=self._now_iso(),
             )
         if league is League.CBA:
             return isportsapi.fetch_recent_results(
@@ -843,6 +1315,7 @@ class Pipeline:
             "DuckDBStore": "duckdb",
             "InMemoryStore": "in_memory_ephemeral",
         }.get(type(self.store).__name__, type(self.store).__name__)
+        report_dict["acquisition"] = self.acquisition.telemetry()
         report_dict["persistence"] = {
             "kind": store_kind,
             "write_enabled": bool(getattr(self.store, "persist", False)),

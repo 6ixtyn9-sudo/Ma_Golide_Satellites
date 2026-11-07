@@ -9,8 +9,9 @@ No live-provider claim should be inferred from a passing offline suite.
 
 | Provider | League | Capabilities | Authentication | Current evidence |
 | --- | --- | --- | --- | --- |
-| ESPN | NBA | Scoreboard discovery, BPI predictions, summaries, recent finals, standings | Public endpoints | Committed live-captured fixtures plus offline regressions |
-| ESPN | NCAA_M / NCAA_W | Separate Division-I men's/women's scoreboards, BPI predictions, summaries, recent finals | Public endpoints | Hermetic endpoint and two-half/OT regressions; no authenticated/live coverage claim |
+| ESPN | NBA | Scoreboard discovery/books, BPI predictions, summaries, recent and indexed deep history | Public endpoints | Live read-only probes plus committed fixtures and offline regressions |
+| ESPN | WNBA | Scoreboard discovery/books, BPI predictions, summaries, event-native halves/quarters, indexed deep history | Public endpoints | Live read-only probes plus hermetic end-to-end league regressions |
+| ESPN | NCAA_M / NCAA_W | Separate Division-I men's/women's scoreboards/books, BPI predictions, summaries, recent and indexed deep history | Public endpoints | Historical probes and hermetic endpoint/two-half/OT regressions; scheduled smoke still required |
 | EuroLeague | EuroLeague | Schedule discovery, game results, quarter/OT reconciliation, standings | Public endpoints | Fixture-based parser regressions; live availability must be checked at run time |
 | iSportsAPI | CBA | Exact Chinese league discovery, UTC schedule/results, four-quarter/OT reconciliation | `ISPORTS_API_KEY` | `DOCUMENTATION_ONLY`; fixture-tested adapter, paid access and live league ID not verified |
 
@@ -18,8 +19,12 @@ Only final, reconciled results enter grading. In-progress scores, inconsistent
 native-period sums, invalid overtime totals, and irreconcilable team identities
 are quarantined. Missing periods remain missing. NBA, EuroLeague, and CBA use
 Q1–Q4; NCAA men and women retain native H1/H2 and are never relabelled as
-quarters. CBA schedule acquisition uses the provider's documented UTC calendar
-window, while its display and ledger grouping use Asia/Shanghai.
+quarters. Early WNBA events declaring two halves retain H1/H2; later declared
+four-quarter events retain Q1–Q4. Historical finals without usable linescores
+are stored as final-score-only evidence, not period-reconciled results. See
+[ESPN acquisition and history](ESPN-ACQUISITION.md) for the bounded cursor and
+verified index floors. CBA schedule acquisition uses the provider's documented
+UTC calendar window, while its display and ledger grouping use Asia/Shanghai.
 
 ## Prediction providers
 
@@ -30,7 +35,7 @@ converted into prediction records.
 
 | Provider | League | Prediction fields | Key / freshness |
 | --- | --- | --- | --- |
-| ESPN BPI | NBA, NCAA_M, NCAA_W | Home/away probabilities; expected scores, total, and margin when present | Public; per-prediction source modification time |
+| ESPN BPI | NBA, WNBA, NCAA_M, NCAA_W | Home/away probabilities; expected scores, total, and margin when present | Public; per-prediction source modification time |
 | Hardwood | NBA | One artifact's probabilities, expected scores, total, margin, model provenance | Public artifact; generated-at freshness and team/time/ID join |
 | Predixsport | NBA and EuroLeague | Probabilities; detail endpoint can add expected total/margin and derived scores | `PREDIXSPORT_API_KEY`; disabled without a key; documentation-only endpoint schema |
 | Sportradar Global Basketball | CBA | Independent pre-match 2-way home/away probabilities; no expected scores or totals | `SPORTRADAR_API_KEY`, optional `SPORTRADAR_ACCESS_LEVEL=trial|production`; `DOCUMENTATION_ONLY` |
@@ -58,6 +63,7 @@ prices remain missing.
 
 | Provider | Implemented markets | Periods | League / key |
 | --- | --- | --- | --- |
+| ESPN scoreboard | Moneyline, totals, spreads when explicitly offered | Full game | NBA, WNBA, NCAA_M, NCAA_W; public, independently timestamped canonical snapshots |
 | TheOddsAPI | h2h, totals, spreads; half markets use native H1/H2 | NBA: full game, Q1–Q4, H1 h2h; NCAA_M/NCAA_W: full game and H1/H2 markets | NBA, NCAA_M, NCAA_W; `THE_ODDS_API_KEY` |
 | iSportsAPI | Moneyline, totals, spreads | Full game, H1 spread/total, Q1–Q4 spread/total | CBA; `ISPORTS_API_KEY`; `DOCUMENTATION_ONLY` |
 | SportsGameOdds | Totals only | Full game and Q1–Q4 | NBA; `SPORTSGAMEODDS_API_KEY` |
@@ -65,6 +71,9 @@ prices remain missing.
 
 Important restrictions:
 
+- ESPN scoreboard books are stored even when no prediction exists. Opening
+  values without their own observation timestamps remain context and cannot be
+  used as closing-line-value evidence; betting links are discarded.
 - TheRundown has no code path that can emit quarter or half markets. Its
   requested spread reference data is deliberately not mapped to canonical
   bets.
@@ -105,6 +114,7 @@ slots and cannot replace frozen pre-tip facts.
 
 ```bash
 python -m ingestion.cli smoke --league NBA --date 2026-11-07
+python -m ingestion.cli smoke --league WNBA --date 2026-11-07
 python -m ingestion.cli smoke --league EuroLeague --date 2026-11-07
 python -m ingestion.cli smoke --league CBA --date 2026-11-07
 python -m ingestion.cli smoke --league NCAA_M --date 2026-11-07

@@ -126,6 +126,13 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             date_yyyymmdd=args.date.replace("-", ""),
             tz_name=args.tz,
             freshness_hours=args.freshness_hours,
+            history_days=(
+                0 if args.offline_fixture else getattr(args, "history_days", 7)
+            ),
+            history_request_budget=getattr(args, "history_requests", 7),
+            deep_history_event_budget=(
+                0 if args.offline_fixture else getattr(args, "deep_history_events", 25)
+            ),
             book=BookConfig(
                 provider=(
                     None
@@ -147,6 +154,21 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             fetch_factory=fetch_factory,
             allow_writes=args.write,
         )
+
+        backfill_report = pipeline.backfill()
+        backfill_ledgers: Dict[str, Any] = {}
+        if backfill_report["backfill"]["status"] not in {"disabled", "unsupported_league"}:
+            store.record_run(run_id, "backfill", args.date, backfill_report)
+            if args.write:
+                for date in backfill_report["backfill"].get("ledger_dates", []):
+                    backfill_ledgers[date] = write_canonical_ledger(
+                        store,
+                        config.league_enum,
+                        date,
+                        "backfill",
+                        str(localdata / "ledgers"),
+                        config.timezone,
+                    )
 
         commands = ["pregame", "freeze"] + ([] if args.skip_results else ["results"])
         market_report = None
@@ -226,6 +248,8 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             "warehouse": args.warehouse,
             "started_utc": args.started_utc,
             "finished_utc": _utc_now(),
+            "backfill": backfill_report,
+            "backfill_ledgers": backfill_ledgers,
             "commands": reports,
             "markets": market_report,
             "market_report_path": market_report_path,
@@ -283,7 +307,7 @@ def main() -> int:
     parser.add_argument(
         "--league",
         default="NBA",
-        choices=["NBA", "EuroLeague", "CBA", "NCAA_M", "NCAA_W"],
+        choices=["NBA", "EuroLeague", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
     )
     parser.add_argument("--tz", default=None)
     parser.add_argument(
@@ -301,6 +325,24 @@ def main() -> int:
         "--write", action="store_true", help="persist canonical DuckDB/CSV/ledgers"
     )
     parser.add_argument("--offline-fixture", action="store_true")
+    parser.add_argument(
+        "--history-days",
+        type=int,
+        default=7,
+        help="rolling ESPN result lookback (offline fixtures disable backfill)",
+    )
+    parser.add_argument(
+        "--history-requests",
+        type=int,
+        default=7,
+        help="maximum historical scoreboard requests per league run",
+    )
+    parser.add_argument(
+        "--deep-history-events",
+        type=int,
+        default=25,
+        help="maximum indexed historical events per write-enabled league run",
+    )
     parser.add_argument("--skip-results", action="store_true")
     parser.add_argument("--skip-markets", action="store_true")
     parser.add_argument("--acca-legs", type=int, default=3)
@@ -310,7 +352,7 @@ def main() -> int:
     parser.add_argument(
         "--book-provider",
         default="none",
-        choices=["none", "therundown", "sportsgameodds", "theoddsapi", "isportsapi"],
+        choices=["none", "therundown", "sportsgameodds", "theoddsapi", "isportsapi", "espn"],
     )
     parser.add_argument(
         "--notify", action="store_true", help="build an operations heartbeat"

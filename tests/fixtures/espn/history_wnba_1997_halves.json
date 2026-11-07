@@ -1,0 +1,41 @@
+{
+  "header": {
+    "id": "170621006",
+    "season": {"year": 1997, "type": 2},
+    "competitions": [
+      {
+        "id": "170621006",
+        "date": "1997-06-21T20:00Z",
+        "status": {"type": {"state": "post", "completed": true, "name": "STATUS_FINAL"}},
+        "competitors": [
+          {
+            "homeAway": "home",
+            "team": {"id": "6", "displayName": "Los Angeles Sparks"},
+            "score": "67",
+            "linescores": [{"value": 30}, {"value": 37}]
+          },
+          {
+            "homeAway": "away",
+            "team": {"id": "9", "displayName": "New York Liberty"},
+            "score": "71",
+            "linescores": [{"value": 35}, {"value": 36}]
+          }
+        ]
+      }
+    ]
+  },
+  "format": {
+    "regulation": {"periods": 2, "displayName": "Half", "clock": 1200},
+    "overtime": {"displayName": "Half", "clock": 300}
+  },
+  "boxscore": {
+    "teams": [
+      {"team": {"id": "6"}, "statistics": [{"name": "points", "displayValue": "67"}]},
+      {"team": {"id": "9"}, "statistics": [{"name": "points", "displayValue": "71"}]}
+    ]
+  },
+  "gameInfo": {"venue": {"fullName": "Los Angeles Arena"}},
+  "lastFiveGames": [],
+  "injuries": [],
+  "article": {}
+}

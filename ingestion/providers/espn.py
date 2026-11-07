@@ -29,23 +29,36 @@ home/away are never swapped to make data fit. Partial payloads
 
 from __future__ import annotations
 
+import math
 import re
 from dataclasses import replace
 from typing import Any, Dict, List, Optional, Tuple
 
+from ..acquisition import AcquisitionClient
+from ..books import american_to_decimal
 from ..http import HttpClient
-from ..identity import canonical_team_name, normalize_team_name, now_utc_iso, parse_utc, to_utc_iso
+from ..identity import (
+    canonical_team_name,
+    normalize_team_name,
+    now_utc_iso,
+    parse_utc,
+    to_utc_iso,
+)
 from ..leagues import period_kind
 from ..models import (
     ActualResult,
+    BookSnapshot,
     CoverageGap,
     CoverageState,
     Game,
     GameStatus,
     League,
+    Market,
+    Period,
     PeriodKind,
     Prediction,
     StandingsRow,
+    payload_hash as make_payload_hash,
 )
 from . import CoverageAccumulator, FetchFn, IdentityError
 
@@ -65,10 +78,20 @@ BPI_URL = (
 
 LEAGUE_SLUGS = {
     League.NBA: "nba",
-    League.WNBA: "wnba",  # existing predictor-only compatibility
+    League.WNBA: "wnba",
     League.NCAA_M: "mens-college-basketball",
     League.NCAA_W: "womens-college-basketball",
 }
+
+# Earliest non-empty core event-index years verified live on 2026-11-07.
+# They are acquisition floors, not claims of complete season coverage.
+HISTORY_FLOORS = {
+    League.NBA: 1947,
+    League.WNBA: 1997,
+    League.NCAA_M: 2001,
+    League.NCAA_W: 2001,
+}
+_EVENT_REF_RE = re.compile(r"/events/(\d+)(?:[?/]|$)")
 
 
 def _league_slug(league: League) -> str:
@@ -82,11 +105,16 @@ def _scoreboard_url(date_yyyymmdd: str, league: League) -> str:
     slug = _league_slug(league)
     if league is League.NBA:
         return SCOREBOARD_URL.format(yyyymmdd=date_yyyymmdd)
-    # NCAA Division I slates exceed the default page size; groups=50 selects
-    # Division I and limit=500 prevents silent truncation.
+    if league in {League.NCAA_M, League.NCAA_W}:
+        # NCAA Division I slates exceed the default page size; groups=50
+        # selects Division I. That group filter is not valid WNBA routing.
+        return (
+            f"https://site.api.espn.com/apis/site/v2/sports/basketball/{slug}/"
+            f"scoreboard?dates={date_yyyymmdd}&groups=50&limit=500"
+        )
     return (
         f"https://site.api.espn.com/apis/site/v2/sports/basketball/{slug}/"
-        f"scoreboard?dates={date_yyyymmdd}&groups=50&limit=500"
+        f"scoreboard?dates={date_yyyymmdd}&limit=100"
     )
 
 
@@ -107,6 +135,14 @@ def _bpi_url(event_id: str, league: League) -> str:
     return (
         f"https://sports.core.api.espn.com/v2/sports/basketball/leagues/{slug}/"
         f"events/{event_id}/competitions/{event_id}/predictor"
+    )
+
+
+def _season_events_url(season: int, league: League, page: int) -> str:
+    slug = _league_slug(league)
+    return (
+        f"https://sports.core.api.espn.com/v2/sports/basketball/leagues/{slug}/"
+        f"events?dates={int(season)}&limit=1000&page={int(page)}"
     )
 
 
@@ -235,6 +271,393 @@ def _game_from_event(event: Dict[str, Any], comp: Dict[str, Any], league: League
     )
 
 
+_CONTEXT_DROP_KEYS = {
+    "$ref",
+    "categories",
+    "footer",
+    "headshot",
+    "images",
+    "link",
+    "links",
+    "logo",
+    "logodark",
+    "logos",
+    "propbets",
+    "tracking",
+    "video",
+    "videos",
+}
+
+
+def _public_context(value: Any) -> Any:
+    """Retain public facts while dropping links, tracking, and bulky media."""
+
+    if isinstance(value, dict):
+        cleaned = {}
+        for key, item in value.items():
+            normalized = str(key).lower()
+            if normalized in _CONTEXT_DROP_KEYS or "link" in normalized:
+                continue
+            cleaned[str(key)] = _public_context(item)
+        return cleaned
+    if isinstance(value, list):
+        return [_public_context(item) for item in value[:100]]
+    if isinstance(value, str):
+        return value[:20000]
+    if value is None or isinstance(value, (bool, int, float)):
+        return value
+    return str(value)[:1000]
+
+
+def _nested(mapping: Dict[str, Any], *path: str) -> Any:
+    value: Any = mapping
+    for key in path:
+        if not isinstance(value, dict):
+            return None
+        value = value.get(key)
+    return value
+
+
+def _line_number(value: Any) -> Optional[float]:
+    if value is None or isinstance(value, bool):
+        return None
+    text = str(value).strip()
+    if text[:1].lower() in {"o", "u"}:
+        text = text[1:]
+    try:
+        number = float(text)
+    except (TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def _decimal_price(value: Any) -> Optional[float]:
+    if value is None or isinstance(value, bool):
+        return None
+    try:
+        american = float(str(value).strip())
+        if american == 0 or not math.isfinite(american):
+            return None
+        price = american_to_decimal(american)
+    except (TypeError, ValueError):
+        return None
+    return price if math.isfinite(price) and 1.0 < price <= 1000.0 else None
+
+
+def _odds_context(offer: Dict[str, Any]) -> Dict[str, Any]:
+    """Extract open/current numbers without retaining affiliate/tracking links."""
+
+    provider = offer.get("provider") or {}
+    context: Dict[str, Any] = {
+        "book": str(
+            provider.get("displayName") or provider.get("name") or provider.get("id") or ""
+        ),
+        "provider_id": str(provider.get("id") or ""),
+    }
+    for market_name, sides in (
+        ("moneyline", ("home", "away")),
+        ("pointSpread", ("home", "away")),
+        ("total", ("over", "under")),
+    ):
+        market = offer.get(market_name) or {}
+        cleaned_market = {}
+        for side in sides:
+            phases = {}
+            for phase in ("open", "close"):
+                values = market.get(side, {}).get(phase) or {}
+                phases[phase] = {
+                    key: values.get(key)
+                    for key in ("line", "odds")
+                    if values.get(key) is not None
+                }
+            if any(phases.values()):
+                cleaned_market[side] = phases
+        if cleaned_market:
+            context[market_name] = cleaned_market
+    for key in ("details", "overUnder", "spread"):
+        if offer.get(key) is not None:
+            context[key] = offer[key]
+    return context
+
+
+def _book_snapshots_for_offer(
+    event_id: str,
+    game: Game,
+    offer: Dict[str, Any],
+    observed_utc: str,
+    pre_match: bool,
+) -> Tuple[List[BookSnapshot], List[str]]:
+    provider = offer.get("provider") or {}
+    book = str(
+        provider.get("displayName") or provider.get("name") or provider.get("id") or ""
+    ).strip()
+    if not book:
+        return [], ["odds offer without a provider/book identity was ignored"]
+    common = {
+        "game_id": game.game_id,
+        "provider": "espn",
+        "book": book,
+        "period": Period.FULL_GAME,
+        "observed_utc": observed_utc,
+        "pre_match": pre_match,
+        "main_line": True,
+        "provider_event_id": str(event_id),
+        "home_name": game.home_name,
+        "away_name": game.away_name,
+        "scheduled_utc": game.scheduled_utc,
+    }
+    context_hash = make_payload_hash(_odds_context(offer))
+    snapshots: List[BookSnapshot] = []
+    notes: List[str] = []
+
+    home_price = _decimal_price(_nested(offer, "moneyline", "home", "close", "odds"))
+    away_price = _decimal_price(_nested(offer, "moneyline", "away", "close", "odds"))
+    # Older scoreboard/summary variants expose only these flat American prices.
+    if home_price is None:
+        home_price = _decimal_price(_nested(offer, "homeTeamOdds", "moneyLine"))
+    if away_price is None:
+        away_price = _decimal_price(_nested(offer, "awayTeamOdds", "moneyLine"))
+    if home_price is not None or away_price is not None:
+        snapshots.append(
+            BookSnapshot(
+                **common,
+                market=Market.MONEYLINE,
+                home_price_decimal=home_price,
+                away_price_decimal=away_price,
+                payload_hash=context_hash,
+            )
+        )
+
+    spread_home = offer.get("pointSpread", {}).get("home", {})
+    spread_away = offer.get("pointSpread", {}).get("away", {})
+    home_line = _line_number(_nested(spread_home, "close", "line"))
+    away_line = _line_number(_nested(spread_away, "close", "line"))
+    if home_line is None and away_line is not None:
+        home_line = -away_line
+    if home_line is not None and away_line is not None:
+        if abs(home_line + away_line) > 0.001:
+            notes.append(f"{book}: contradictory home/away spread lines ignored")
+            home_line = None
+    if home_line is not None:
+        snapshots.append(
+            BookSnapshot(
+                **common,
+                market=Market.SPREAD,
+                line=home_line,
+                home_price_decimal=_decimal_price(
+                    _nested(spread_home, "close", "odds")
+                ),
+                away_price_decimal=_decimal_price(
+                    _nested(spread_away, "close", "odds")
+                ),
+                payload_hash=context_hash,
+            )
+        )
+
+    over = offer.get("total", {}).get("over", {})
+    under = offer.get("total", {}).get("under", {})
+    over_line = _line_number(_nested(over, "close", "line"))
+    under_line = _line_number(_nested(under, "close", "line"))
+    total_line = over_line if over_line is not None else under_line
+    if total_line is None:
+        total_line = _line_number(offer.get("overUnder"))
+    if over_line is not None and under_line is not None:
+        if abs(over_line - under_line) > 0.001:
+            notes.append(f"{book}: contradictory over/under total lines ignored")
+            total_line = None
+    if total_line is not None:
+        snapshots.append(
+            BookSnapshot(
+                **common,
+                market=Market.TOTAL,
+                line=total_line,
+                over_price_decimal=_decimal_price(_nested(over, "close", "odds")),
+                under_price_decimal=_decimal_price(_nested(under, "close", "odds")),
+                payload_hash=context_hash,
+            )
+        )
+    return snapshots, notes
+
+
+def book_snapshots_from_event(
+    event: Dict[str, Any], game: Game, observed_utc: Optional[str] = None
+) -> List[BookSnapshot]:
+    """Return full-game named-book markets embedded in a scoreboard event.
+
+    Only current/close prices become timestamped snapshots. Open values are
+    retained by scoreboard context but have no provider observation timestamp,
+    so they are never misrepresented as opening snapshots or used for CLV.
+    Spread lines are home-oriented; total lines are points, never prices.
+    """
+
+    observed = to_utc_iso(parse_utc(observed_utc or now_utc_iso()))
+    comp = _competition(event)
+    pre_match = _state(comp) == "pre" and parse_utc(observed) < parse_utc(
+        game.scheduled_utc
+    )
+    snapshots: List[BookSnapshot] = []
+    for offer in comp.get("odds") or []:
+        if isinstance(offer, dict):
+            parsed, _notes = _book_snapshots_for_offer(
+                str(event.get("id") or game.game_id), game, offer, observed, pre_match
+            )
+            snapshots.extend(parsed)
+    return snapshots
+
+
+def _scoreboard_context(
+    event: Dict[str, Any],
+    comp: Dict[str, Any],
+    observed_utc: str,
+    book_parse_notes: List[str],
+) -> Dict[str, Any]:
+    home, away = _home_away_competitors(comp)
+    teams = {}
+    for side, competitor in (("home", home), ("away", away)):
+        teams[side] = _public_context(
+            {
+                "team_id": _competitor_team_id(competitor),
+                "team": competitor.get("team") or {},
+                "records": competitor.get("records") or [],
+                "statistics": competitor.get("statistics") or [],
+                "leaders": competitor.get("leaders") or [],
+            }
+        )
+    return {
+        "schema_version": "magolide.espn.scoreboard-context.v1",
+        "observed_utc": observed_utc,
+        "source_payload_hash": make_payload_hash(event),
+        "event_status": _public_context(comp.get("status") or event.get("status") or {}),
+        "season": _public_context(event.get("season") or {}),
+        "venue": _public_context(comp.get("venue") or {}),
+        "neutral_site": comp.get("neutralSite"),
+        "conference_competition": comp.get("conferenceCompetition"),
+        "notes": _public_context(comp.get("notes") or []),
+        "broadcasts": _public_context(comp.get("broadcasts") or []),
+        "teams": teams,
+        "odds": [
+            _odds_context(offer)
+            for offer in comp.get("odds") or []
+            if isinstance(offer, dict)
+        ],
+        "book_parse_notes": book_parse_notes,
+    }
+
+
+def _summary_context(
+    payload: Dict[str, Any], game: Game, observed_utc: str
+) -> Dict[str, Any]:
+    """Retain validated high-value summary evidence, not league-wide news noise."""
+
+    header = payload.get("header") or {}
+    competitions = header.get("competitions") or []
+    comp = competitions[0] if competitions else {}
+    if competitions:
+        home, away = _home_away_competitors(comp)
+        ids = {_competitor_team_id(home), _competitor_team_id(away)}
+        if ids != {str(game.home_team_id), str(game.away_team_id)}:
+            raise IdentityError(
+                f"event {game.game_id}: summary competitors contradict scoreboard teams"
+            )
+    article = payload.get("article") or {}
+    modified = article.get("lastModified") or article.get("published")
+    try:
+        source_modified = to_utc_iso(parse_utc(modified)) if modified else None
+    except (TypeError, ValueError):
+        source_modified = None
+    boxscore = payload.get("boxscore") or {}
+    return {
+        "schema_version": "magolide.espn.summary-context.v1",
+        "observed_utc": observed_utc,
+        "source_modified_utc": source_modified,
+        "source_payload_hash": make_payload_hash(payload),
+        "game_info": _public_context(payload.get("gameInfo") or {}),
+        "format": _public_context(payload.get("format") or comp.get("format") or {}),
+        "period_evidence": _public_context(
+            {
+                "status": comp.get("status") or {},
+                "competitors": [
+                    {
+                        "homeAway": competitor.get("homeAway"),
+                        "team_id": _competitor_team_id(competitor),
+                        "score": competitor.get("score"),
+                        "linescores": competitor.get("linescores") or [],
+                    }
+                    for competitor in comp.get("competitors") or []
+                ],
+            }
+        ),
+        "team_boxscore": _public_context(boxscore.get("teams") or []),
+        "last_five_games": _public_context(payload.get("lastFiveGames") or []),
+        "injuries": _public_context(payload.get("injuries") or []),
+        "article": _public_context(article),
+        "predictor": _public_context(payload.get("predictor") or {}),
+        "against_the_spread": _public_context(payload.get("againstTheSpread") or []),
+    }
+
+
+def season_event_index(
+    season: int, fetch: FetchFn, league: League
+) -> Dict[str, Any]:
+    """Enumerate one core event-index year with bounded pagination.
+
+    The index is an acquisition manifest, not a completeness guarantee. Older
+    seasons can contain only playoff events or lack period/boxscore sources.
+    """
+
+    event_ids: List[str] = []
+    count = 0
+    page_count = 0
+    metadata = []
+    for page in range(1, 26):
+        payload = fetch(_season_events_url(season, league, page)) or {}
+        if not isinstance(payload, dict) or payload.get("code"):
+            raise ValueError(f"season {season}: invalid core event index")
+        if page == 1:
+            count = int(payload.get("count") or 0)
+            page_count = int(payload.get("pageCount") or 0)
+        if payload.get("$meta"):
+            metadata.append(_public_context(payload["$meta"]))
+        for item in payload.get("items") or []:
+            match = _EVENT_REF_RE.search(str(item.get("$ref") or ""))
+            if match and match.group(1) not in event_ids:
+                event_ids.append(match.group(1))
+        if page >= page_count:
+            break
+    else:
+        raise ValueError(f"season {season}: event index exceeds 25-page bound")
+    if count and not event_ids:
+        raise IdentityError(f"season {season}: event index has no resolvable event refs")
+    return {
+        "schema_version": "magolide.espn.season-index.v1",
+        "index_year": int(season),
+        "count": count,
+        "page_count": page_count,
+        "event_ids": event_ids,
+        "metadata": metadata,
+        "completeness": "provider_index_only_not_a_complete_season_claim",
+    }
+
+
+def fetch_game_context(
+    event_id: str,
+    fetch: FetchFn,
+    game: Game,
+    observed_utc: Optional[str] = None,
+) -> Game:
+    """Fetch one event summary and attach validated context to a copied game."""
+
+    payload = fetch(_summary_url(event_id, game.league)) or {}
+    if not isinstance(payload, dict) or not payload:
+        raise ValueError(f"event {event_id}: empty summary payload")
+    observed = to_utc_iso(parse_utc(observed_utc or now_utc_iso()))
+    espn_evidence = dict(game.evidence.get("espn") or {})
+    espn_evidence["summary"] = _summary_context(payload, game, observed)
+    return replace(
+        game, evidence={**game.evidence, "espn": espn_evidence}
+    )
+
+
 def _linescore_values(competitor: Dict[str, Any]) -> List[float]:
     """Numeric linescore values, preferring ``value`` over ``displayValue``.
 
@@ -268,6 +691,7 @@ def _actual_from_competitors(
     away: Dict[str, Any],
     source: str,
     league: League = League.NBA,
+    regulation_periods: Optional[int] = None,
 ) -> ActualResult:
     """Build an ActualResult from native competitor linescores.
 
@@ -278,7 +702,14 @@ def _actual_from_competitors(
     """
     home_values = _linescore_values(home)
     away_values = _linescore_values(away)
-    native_count = 2 if period_kind(league) is PeriodKind.HALVES else 4
+    if regulation_periods not in {None, 2, 4}:
+        raise IdentityError(
+            f"unsupported regulation period count: {regulation_periods!r}"
+        )
+    native_count = regulation_periods or (
+        2 if period_kind(league) is PeriodKind.HALVES else 4
+    )
+    native_kind = PeriodKind.HALVES if native_count == 2 else PeriodKind.QUARTERS
     period_label = "H1/H2" if native_count == 2 else "Q1..Q4"
     if len(home_values) < native_count or len(away_values) < native_count:
         raise IdentityError(
@@ -291,7 +722,7 @@ def _actual_from_competitors(
     home_ot = sum(home_values[native_count:]) if len(home_values) > native_count else None
     away_ot = sum(away_values[native_count:]) if len(away_values) > native_count else None
     return ActualResult(
-        period_kind=period_kind(league),
+        period_kind=native_kind,
         home_quarters=home_values[:native_count],
         away_quarters=away_values[:native_count],
         home_overtime=home_ot,
@@ -301,6 +732,65 @@ def _actual_from_competitors(
         overtime_periods=max(len(home_values), len(away_values)) - native_count,
         source=source,
     )
+
+
+def _regulation_periods(
+    comp: Dict[str, Any], payload: Optional[Dict[str, Any]] = None
+) -> Optional[int]:
+    format_info = comp.get("format") or (payload or {}).get("format") or {}
+    value = _nested(format_info, "regulation", "periods")
+    try:
+        periods = int(value)
+    except (TypeError, ValueError):
+        return None
+    return periods if periods in {2, 4} else None
+
+
+def _actual_for_history(
+    home: Dict[str, Any],
+    away: Dict[str, Any],
+    comp: Dict[str, Any],
+    league: League,
+    payload: Optional[Dict[str, Any]] = None,
+) -> Tuple[ActualResult, str]:
+    """Preserve final scores even when native period evidence is absent/broken."""
+
+    regulation = _regulation_periods(comp, payload)
+    if not home.get("linescores") and not away.get("linescores"):
+        return (
+            ActualResult(
+                period_kind=PeriodKind.UNKNOWN,
+                home_quarters=[],
+                away_quarters=[],
+                home_final=_final_score(home),
+                away_final=_final_score(away),
+                source="espn",
+            ),
+            "final score present without native linescores",
+        )
+    try:
+        return (
+            _actual_from_competitors(
+                home,
+                away,
+                source="espn",
+                league=league,
+                regulation_periods=regulation,
+            ),
+            "",
+        )
+    except IdentityError as exc:
+        return (
+            ActualResult(
+                period_kind=PeriodKind.UNKNOWN,
+                home_quarters=[],
+                away_quarters=[],
+                home_final=_final_score(home),
+                away_final=_final_score(away),
+                source="espn",
+            ),
+            str(exc),
+        )
 
 
 # ---------------------------------------------------------------------------
@@ -325,6 +815,48 @@ def discover_games(
         _game_from_event(event, _competition(event), league)
         for event in payload.get("events", [])
     ]
+
+
+def discover_games_with_evidence(
+    date_yyyymmdd: str,
+    fetch: FetchFn,
+    league: League = League.NBA,
+    observed_utc: Optional[str] = None,
+) -> Tuple[List[Game], Dict[str, List[BookSnapshot]]]:
+    """Discover games plus same-response context and full-game book snapshots."""
+
+    payload = fetch(_scoreboard_url(date_yyyymmdd, league)) or {}
+    observed = to_utc_iso(parse_utc(observed_utc or now_utc_iso()))
+    games: List[Game] = []
+    books: Dict[str, List[BookSnapshot]] = {}
+    for event in payload.get("events", []):
+        comp = _competition(event)
+        game = _game_from_event(event, comp, league)
+        game_books: List[BookSnapshot] = []
+        notes: List[str] = []
+        for offer in comp.get("odds") or []:
+            if not isinstance(offer, dict):
+                continue
+            pre_match = _state(comp) == "pre" and parse_utc(observed) < parse_utc(
+                game.scheduled_utc
+            )
+            parsed, parse_notes = _book_snapshots_for_offer(
+                str(event.get("id") or game.game_id),
+                game,
+                offer,
+                observed,
+                pre_match,
+            )
+            game_books.extend(parsed)
+            notes.extend(parse_notes)
+        espn_evidence = dict(game.evidence.get("espn") or {})
+        espn_evidence["scoreboard"] = _scoreboard_context(
+            event, comp, observed, notes
+        )
+        game.evidence = {**game.evidence, "espn": espn_evidence}
+        games.append(game)
+        books[game.game_id] = game_books
+    return games, books
 
 
 def _stats_by_name(statistics: List[Dict[str, Any]]) -> Dict[str, Any]:
@@ -542,8 +1074,79 @@ def fetch_game_result(
     )
 
 
+def fetch_historical_event(
+    event_id: str,
+    fetch: FetchFn,
+    league: League,
+    observed_utc: Optional[str] = None,
+    index_year: Optional[int] = None,
+) -> Game:
+    """Acquire one indexed summary without requiring period-complete evidence."""
+
+    payload = fetch(_summary_url(event_id, league)) or {}
+    if not isinstance(payload, dict) or not payload:
+        raise ValueError(f"event {event_id}: empty historical summary")
+    header = payload.get("header") or {}
+    competitions = header.get("competitions") or []
+    if not competitions:
+        raise IdentityError(f"event {event_id}: summary carries no competition")
+    comp = competitions[0]
+    home, away = _home_away_competitors(comp)
+    season = header.get("season") or {}
+    year = season.get("year")
+    season_type = season.get("type")
+    observed = to_utc_iso(parse_utc(observed_utc or now_utc_iso()))
+    state = _state(comp)
+    game = Game(
+        game_id=str(event_id),
+        league=league,
+        season=str(year) if year is not None else "",
+        home_team_id=_competitor_team_id(home),
+        away_team_id=_competitor_team_id(away),
+        home_name=_canonical_name(str((home.get("team") or {}).get("displayName") or "")),
+        away_name=_canonical_name(str((away.get("team") or {}).get("displayName") or "")),
+        scheduled_utc=_scheduled_iso(comp, header.get("date")),
+        status=_map_status(state),
+        phase="Playoffs" if season_type == 3 else "League",
+        provider_ids={"espn": str(event_id)},
+    )
+    actual = None
+    period_note = ""
+    if state == "post":
+        actual, period_note = _actual_for_history(
+            home, away, comp, league, payload
+        )
+        game.status = GameStatus.FINAL
+        game.actual = actual
+        if actual.period_kind is PeriodKind.UNKNOWN:
+            coverage = "final_score_only"
+        elif actual.reconciles()[0]:
+            coverage = "reconciled_periods"
+        else:
+            coverage = "unreconciled_periods"
+    else:
+        coverage = "non_final_provider_status"
+        period_note = f"provider status is {state!r}, not post"
+    espn_evidence = {
+        "summary": _summary_context(payload, game, observed),
+        "history": {
+            "schema_version": "magolide.espn.history-event.v1",
+            "index_year": index_year,
+            "coverage": coverage,
+            "period_note": period_note,
+            "provider_event_state": state,
+            "regulation_periods": _regulation_periods(comp, payload),
+        },
+    }
+    game.evidence = {"espn": espn_evidence}
+    return game
+
+
 def fetch_recent_results(
-    date_yyyymmdd: str, fetch: FetchFn, league: League = League.NBA
+    date_yyyymmdd: str,
+    fetch: FetchFn,
+    league: League = League.NBA,
+    observed_utc: Optional[Any] = None,
 ) -> List[Game]:
     """Completed games (state 'post') from a past-date scoreboard.
 
@@ -555,14 +1158,30 @@ def fetch_recent_results(
     folding a residual into OT.
     """
     payload = fetch(_scoreboard_url(date_yyyymmdd, league)) or {}
+    observed_value = observed_utc() if callable(observed_utc) else observed_utc
+    observed = to_utc_iso(parse_utc(observed_value or now_utc_iso()))
     results: List[Game] = []
     for event in payload.get("events", []):
         comp = _competition(event)
         if _state(comp) != "post":
             continue
         home, away = _home_away_competitors(comp)
-        actual = _actual_from_competitors(home, away, source="espn", league=league)
-        results.append(replace(_game_from_event(event, comp, league), actual=actual))
+        actual, period_note = _actual_for_history(home, away, comp, league)
+        game = _game_from_event(event, comp, league)
+        coverage = (
+            "final_score_only"
+            if actual.period_kind is PeriodKind.UNKNOWN
+            else "reconciled_periods"
+            if actual.reconciles()[0]
+            else "unreconciled_periods"
+        )
+        game.evidence = {
+            "espn": {
+                "scoreboard": _scoreboard_context(event, comp, observed, []),
+                "history": {"coverage": coverage, "period_note": period_note},
+            }
+        }
+        results.append(replace(game, actual=actual))
     return results
 
 
@@ -739,7 +1358,26 @@ def smoke(
                 )
             )
 
+    book_markets = {market.value: 0 for market in (Market.MONEYLINE, Market.SPREAD, Market.TOTAL)}
+    games_with_books = 0
+    games_with_team_statistics = 0
+    games_with_venue = 0
+    for event, game in zip(events, games):
+        snapshots = book_snapshots_from_event(event, game)
+        if snapshots:
+            games_with_books += 1
+        for snapshot in snapshots:
+            book_markets[snapshot.market.value] += 1
+        comp = _competition(event)
+        if any(c.get("statistics") for c in comp.get("competitors") or []):
+            games_with_team_statistics += 1
+        if comp.get("venue"):
+            games_with_venue += 1
+
     fetch_target = getattr(fetch, "__self__", fetch)  # bound method -> client
+    if isinstance(fetch_target, AcquisitionClient):
+        wrapped = fetch_target.fetch
+        fetch_target = getattr(wrapped, "__self__", wrapped)
     verification = (
         "LIVE_VERIFIED" if isinstance(fetch_target, HttpClient) else "FIXTURE_VERIFIED"
     )
@@ -750,6 +1388,16 @@ def smoke(
             "finals": finals,
             "reconciled": reconciled,
             "flagged": finals - reconciled,
+        },
+        "scoreboard_books": {
+            "games_with_odds": games_with_books,
+            "total_games": len(games),
+            "market_snapshots": book_markets,
+        },
+        "scoreboard_context": {
+            "games_with_team_statistics": games_with_team_statistics,
+            "games_with_venue": games_with_venue,
+            "total_games": len(games),
         },
         "verification": verification,
         "gaps": [

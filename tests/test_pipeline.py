@@ -33,6 +33,7 @@ def _nba_fetch(
     mapping = {
         "scoreboard": scoreboard,
         "competitions/401909938/predictor": predictor,
+        "summary?event=401909938": "espn/summary_401909938_context.json",
         "game_forecasts": hardwood_path,
     }
 
@@ -140,6 +141,57 @@ def test_pregame_uses_only_fresh_exact_book_evidence():
     assert row["book_evidence"]["Q1"]["provider"] == "sportsgameodds"
     assert row["quarters"]["Q2"] is None
     assert row["book_evidence"]["Q2"] is None
+
+
+def test_bounded_backfill_acquires_reconciled_history_without_learning_claim():
+    store = InMemoryStore()
+    calls = []
+
+    def fetch(url):
+        calls.append(url)
+        assert "dates=20261106" in url
+        with open(os.path.join(FIXTURES, "espn/scoreboard_20261105.json")) as handle:
+            return json.load(handle)
+
+    pipeline = Pipeline(
+        _config(history_days=1, history_request_budget=1), store, fetch=fetch
+    )
+    report = pipeline.backfill()
+    assert report["backfill"]["requested_days"] == 1
+    assert report["backfill"]["learning_or_calibration_claimed"] is False
+    assert report["backfill"]["dates"] == [
+        {
+            "date": "20261106",
+            "status": "acquired",
+            "finals_found": 2,
+            "finals_reconciled": 2,
+            "canonical_persistence": "dry_run_not_persisted",
+        }
+    ]
+    assert report["finals_written"] == 2
+    assert len(store.list_games(league=League.NBA)) == 2
+    assert all(game.status is GameStatus.FINAL for game in store.list_games())
+    assert len(calls) == 1
+    assert report["acquisition"]["network_requests"] == 1
+
+
+def test_backfill_budget_is_explicitly_bounded():
+    store = InMemoryStore()
+    calls = []
+
+    def fetch(_url):
+        calls.append(1)
+        return {"events": []}
+
+    report = Pipeline(
+        _config(history_days=5, history_request_budget=2), store, fetch=fetch
+    ).backfill()
+    assert len(calls) == 2
+    assert len(report["backfill"]["dates"]) == 2
+    assert any(
+        gap["required_field"] == "historical_backfill_budget"
+        for gap in report["gaps"]
+    )
 
 
 def test_pipeline_stage_gaps_do_not_accumulate_between_commands():

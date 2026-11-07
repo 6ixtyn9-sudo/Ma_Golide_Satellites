@@ -56,7 +56,7 @@ python scripts/daily.py --auto-once --date 2026-11-07 --league NBA
 Useful options:
 
 - `--timezone Africa/Johannesburg` controls local reporting dates. League
-  defaults are America/New_York (NBA/NCAA), Europe/Paris (EuroLeague), and
+  defaults are America/New_York (NBA/WNBA/NCAA), Europe/Paris (EuroLeague), and
   Asia/Shanghai (CBA). CBA schedule acquisition itself uses iSportsAPI's
   documented UTC calendar window.
 - An omitted `--date` is derived in the selected league's acquisition timezone.
@@ -65,6 +65,9 @@ Useful options:
 - `--acca-legs 3` requests exact three-leg combinations (allowed: 2–6).
 - `--acca-limit 5` bounds returned combinations.
 - `--freshness-hours 24` controls prediction freshness.
+- `--history-days 7` and `--history-requests 7` bound recent daily backfill.
+- `--deep-history-events 25` bounds indexed historical summaries per
+  write-enabled league run; dry runs never advance that cursor.
 - `--book draftkings` and `--book-provider theoddsapi` restrict book evidence.
 - `--localdata PATH` redirects reports/ledgers/exports.
 - `--warehouse PATH` overrides the canonical DuckDB path.
@@ -73,21 +76,21 @@ Useful options:
 There is no in-repository daemon. The workflow schedule triggers this command
 every three hours; local cron or another scheduler can do the same.
 
-## Automatic five-league workflow
+## Automatic six-league workflow
 
 `workflows/ingestion.yml` is the reviewed workflow source. Install it as
 `.github/workflows/ingestion.yml` with a GitHub credential that has the
 `workflows` permission; merely editing the local source does not activate it.
 It has a schedule (`11 */3 * * *`, UTC) and a manual dispatch with **no
 league/date/mode/write inputs**. A preflight job runs Ruff and the hermetic
-suite, then five fail-independent matrix jobs automatically run `NBA`,
+suite, then six fail-independent matrix jobs automatically run `NBA`, `WNBA`,
 `EuroLeague`, `CBA`, `NCAA_M`, and `NCAA_W` together. One serialized publisher
 then merges and commits their allowlisted operator reports to `main`.
 
 Each matrix job has isolated state and artifacts:
 
-- `localdata/nba`, `localdata/euroleague`, `localdata/cba`, `localdata/ncaa_m`,
-  and `localdata/ncaa_w`;
+- `localdata/nba`, `localdata/wnba`, `localdata/euroleague`, `localdata/cba`,
+  `localdata/ncaa_m`, and `localdata/ncaa_w`;
 - a league-specific DuckDB path, cache prefix, run ID, and artifact name;
 - an acquisition date derived automatically in that league's acquisition
   timezone, never a dispatch-selected date.
@@ -99,15 +102,23 @@ Safety behavior is deliberate:
 - Scheduled runs add `--write` only when repository variable
   `ALLOW_MAGOLIDE_WRITES=true`. Otherwise they still acquire every available
   provider as a canonical dry run; missing credentials remain visible gaps.
-- Cache saves occur only for successful scheduled runs with canonical writes
-  enabled. Reports and immutable ledgers are uploaded on every outcome when
-  present. Git is authoritative for operator files after cache recovery.
+- Successful scheduled runs save league state even during canonical dry runs,
+  preserving public acquisition caches and receipts. This does not persist
+  DuckDB/CSV sports state or advance deep-history cursors. Reports and
+  immutable ledgers are uploaded on every outcome when present. Git is
+  authoritative for operator files after cache recovery.
 - Manual and scheduled runs both publish derived `picks_*` and `auto_tickets_*`
   files to `localdata/<league>` on `main`. This Git publication does not relax
   the canonical-write or notification gates, and it never includes warehouses,
   CSV exports, acquisition ledgers, or credentials.
 - Notifications additionally require `ALLOW_NOTIFICATION_WRITES=true` and the
   WhatsApp secrets; they are sent only on write-enabled scheduled runs.
+
+Every ESPN league run also attempts seven recent result dates and, when
+canonical writes are enabled, 25 deep indexed events. Deep cursors, historical
+coverage classes, verified index floors, and cache policy are documented in
+[ESPN acquisition and history](ESPN-ACQUISITION.md). Historical rows alone do
+not satisfy pre-tip prediction/book requirements or establish calibration.
 
 Configure provider secrets `PREDIXSPORT_API_KEY`, `THERUNDOWN_API_KEY`,
 `SPORTSGAMEODDS_API_KEY`, `THE_ODDS_API_KEY`, `ISPORTS_API_KEY`, and

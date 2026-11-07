@@ -10,22 +10,22 @@ The lockfile was regenerated with `uv lock`. Removed spreadsheet
 authentication/client packages are absent from both `pyproject.toml` and
 `uv.lock`.
 
-A new virtual environment was populated from the lockfile:
+The test virtual environment was recreated and the project installed with its
+development dependencies:
 
 ```bash
-uv venv /tmp/ma_golide_clean_venv
-VIRTUAL_ENV=/tmp/ma_golide_clean_venv uv sync --active --extra dev
+python -m venv /tmp/magolide-test-venv
+/tmp/magolide-test-venv/bin/pip install -e '.[dev]'
 ```
 
-The resulting runtime installed the project at version 0.3.0 with DuckDB,
-Requests, Pytest, and Ruff. The complete offline suite and static checks then
-passed:
+The resulting runtime includes the project, DuckDB, Requests, Pytest, and
+Ruff. The complete offline suite and static checks then passed:
 
 ```text
-$ /tmp/ma_golide_clean_venv/bin/python -m pytest -q
-193 passed, 4 deselected in 2.13s
+$ /tmp/magolide-test-venv/bin/python -m pytest -q
+242 passed, 4 deselected in 4.78s
 
-$ /tmp/ma_golide_clean_venv/bin/ruff check .
+$ /tmp/magolide-test-venv/bin/ruff check .
 All checks passed!
 
 $ git diff --check
@@ -41,6 +41,14 @@ are not included in any live-coverage claim.
 
 - ESPN and EuroLeague schedule/result fixtures, team orientation, quarter and
   combined-overtime reconciliation, and invalid/partial result quarantine;
+- WNBA discovery, BPI, scoreboard books, summaries, native current quarters,
+  isolated DuckDB storage, workflow routing, and operator publication;
+- timestamped ESPN books independent of predictions, summary context,
+  redacted request telemetry, retry/cooldown behavior, request budgets, and
+  durable public-cache hits retaining original observation timestamps;
+- core season-index discovery, durable deep-history cursors, the 1947 NBA
+  final-score-only case, early WNBA native halves, DuckDB cursor reopen, and
+  proof that dry runs cannot advance unpersisted history;
 - strict timezone-aware timestamps and chronological selection;
 - finite/nonnegative prediction expectations and finite book lines/decimal
   prices, rejecting NaN, Infinity, and invalid odds;
@@ -134,11 +142,14 @@ prediction and correctly reported zero reconciled finals.
 
 ## Remaining limitations
 
-- No authenticated live provider smoke was run in this cleanup. Provider
-  documentation/fixtures do not prove current quota, availability, or schema
-  stability.
-- The scheduled GitHub Actions workflow was not triggered as part of these
-  offline checks.
+- Public ESPN scoreboard, summary, predictor, and historical index probes were
+  performed read-only; authenticated CBA/book-provider coverage remains
+  unverified. Documentation/fixtures do not prove current quota, availability,
+  or schema stability.
+- The historical index floors are observed nonempty/empty query boundaries,
+  not proof of exhaustive coverage. See `docs/ESPN-ACQUISITION.md`.
+- The scheduled GitHub Actions workflow still requires post-change run
+  inspection for WNBA cache restoration, deep cursor creation, and ledgers.
 - Highest-quarter book prices are not supplied by a current adapter, so HQ
   forecasts cannot enter accas.
 - EuroLeague book coverage remains unenabled; full-game spread observations

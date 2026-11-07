@@ -1,5 +1,5 @@
 # Ma Golide automatic multi-league acquisition, with no dispatch selections.
-# - NBA, EuroLeague, NCAA_M and NCAA_W use public providers without keys.
+# - NBA, WNBA, EuroLeague, NCAA_M and NCAA_W use public providers without keys.
 # - CBA runs only when ISPORTS_API_KEY exists; Sportradar remains optional.
 # - Optional book/prediction keys degrade to reported gaps, never fabricated data.
 # - Scheduled runs ALWAYS acquire available evidence. ALLOW_MAGOLIDE_WRITES
@@ -50,14 +50,18 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
-      # One unavailable/failed league never cancels the other four.
+      # One unavailable/failed league never cancels the other five.
       fail-fast: false
-      max-parallel: 5
+      max-parallel: 6
       matrix:
         include:
           - label: NBA
             league: NBA
             state_key: nba
+            required_secret: ""
+          - label: WNBA
+            league: WNBA
+            state_key: wnba
             required_secret: ""
           - label: EuroLeague
             league: EuroLeague
@@ -248,12 +252,11 @@ jobs:
               print("```")
           PY
 
-      - name: Persist league-isolated DuckDB/CSV state
+      - name: Persist league-isolated acquisition and canonical state
         if: >-
           success() &&
           steps.capability.outputs.available == 'true' &&
-          github.event_name == 'schedule' &&
-          env.ALLOW_MAGOLIDE_WRITES == 'true'
+          github.event_name == 'schedule'
         uses: actions/cache/save@v4
         with:
           path: ${{ env.LOCALDATA }}
