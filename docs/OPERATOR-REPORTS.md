@@ -1,9 +1,23 @@
 # Operator picks and paper-ticket grading
 
 `scripts/daily.py` now publishes an Edge-style operator layer directly under
-the selected league's `localdata` directory. The workflow artifact include-list
-in `workflows/ingestion.yml` uploads these files alongside the operational and
-market reports. Keep each league on its own `LOCALDATA` path.
+the selected league's `localdata` directory. Keep each league on its own
+`LOCALDATA` path.
+
+The workflow has two complementary outputs:
+
+- artifacts retain operational reports and recovery evidence for 14 days;
+- the serialized `publish-localdata` job commits the allowlisted pick, ticket,
+  audit, and performance files to `localdata/<league>` on `main`, making them
+  visible in the repository and durable across cold caches, as Edge does.
+
+The publisher overlays current files without deleting older history and aborts
+if a recovered immutable decision receipt differs from the repository receipt.
+After cache restoration, Git-tracked operator state takes precedence over stale
+cached copies. DuckDB, CSV, acquisition ledgers, and credentials are never
+committed by this publisher. Derived Git publication runs for both manual and
+scheduled executions; it is independent of the canonical `ALLOW_MAGOLIDE_WRITES`
+gate.
 
 This is a presentation and paper-settlement layer. It does not change forecast
 selection, alter calibrated probabilities, place bets, or write to a bookmaker.
