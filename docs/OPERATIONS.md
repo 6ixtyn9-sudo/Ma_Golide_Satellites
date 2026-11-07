@@ -81,7 +81,8 @@ every three hours; local cron or another scheduler can do the same.
 It has a schedule (`11 */3 * * *`, UTC) and a manual dispatch with **no
 league/date/mode/write inputs**. A preflight job runs Ruff and the hermetic
 suite, then five fail-independent matrix jobs automatically run `NBA`,
-`EuroLeague`, `CBA`, `NCAA_M`, and `NCAA_W` together.
+`EuroLeague`, `CBA`, `NCAA_M`, and `NCAA_W` together. One serialized publisher
+then merges and commits their allowlisted operator reports to `main`.
 
 Each matrix job has isolated state and artifacts:
 
@@ -93,14 +94,18 @@ Each matrix job has isolated state and artifacts:
 
 Safety behavior is deliberate:
 
-- Manual dispatch is a live all-league **dry run**. It may consume provider
-  quota but never adds `--write` and never sends notifications.
+- Manual dispatch is a live all-league canonical **dry run**. It may consume
+  provider quota but never adds `--write` and never sends notifications.
 - Scheduled runs add `--write` only when repository variable
-  `ALLOW_MAGOLIDE_WRITES=true`. Otherwise they emit a scheduled-noop report
-  without calling paid providers or creating canonical state.
+  `ALLOW_MAGOLIDE_WRITES=true`. Otherwise they still acquire every available
+  provider as a canonical dry run; missing credentials remain visible gaps.
 - Cache saves occur only for successful scheduled runs with canonical writes
   enabled. Reports and immutable ledgers are uploaded on every outcome when
-  present.
+  present. Git is authoritative for operator files after cache recovery.
+- Manual and scheduled runs both publish derived `picks_*` and `auto_tickets_*`
+  files to `localdata/<league>` on `main`. This Git publication does not relax
+  the canonical-write or notification gates, and it never includes warehouses,
+  CSV exports, acquisition ledgers, or credentials.
 - Notifications additionally require `ALLOW_NOTIFICATION_WRITES=true` and the
   WhatsApp secrets; they are sent only on write-enabled scheduled runs.
 

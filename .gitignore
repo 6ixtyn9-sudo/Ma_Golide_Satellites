@@ -10,7 +10,16 @@ __pycache__/
 service-account*.json
 
 # DuckDB/CSV state belongs in the bounded orchestration cache, not Git.
+# Like Edge, only the derived operator picks/tickets/audits are durable Git
+# evidence. Re-include each league directory, then allowlist root report files.
 localdata/*
+!localdata/*/
+localdata/*/*
+!localdata/*/picks_*.json
+!localdata/*/picks_*.txt
+!localdata/*/picks_*.md
+!localdata/*/auto_tickets_*.json
+!localdata/*/auto_tickets_*.txt
 *.duckdb
 *.duckdb.wal
 *.tmp

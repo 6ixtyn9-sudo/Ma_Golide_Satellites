@@ -146,11 +146,19 @@ writes.
   recovery.
 - `localdata/ledgers/`: immutable, content-addressed stage snapshots.
 - `localdata/reports/`: derived operational and market JSON reports.
-- `localdata/picks_*`: current/dated categorized pick cards and rolling audits.
-- `localdata/auto_tickets_*`: immutable paper receipts, write-once state, and
-  reconstructed grading/performance reports; see `docs/OPERATOR-REPORTS.md`.
+- `localdata/<league>/picks_*`: current/dated categorized pick cards and
+  rolling audits, allowlisted for durable Git publication by the workflow.
+- `localdata/<league>/auto_tickets_*`: immutable paper receipts, write-once
+  state, and reconstructed grading/performance reports, also allowlisted for
+  durable Git publication; see `docs/OPERATOR-REPORTS.md`.
 - `localdata/notification_ledger.json`: bounded notification deduplication
   metadata, not canonical sports evidence.
+
+After each GitHub run, one serialized publisher merges the league artifacts and
+commits the allowlisted operator files to `main`; it never deletes older dated
+history or overwrites a conflicting immutable ticket receipt. This makes picks
+and paper performance visible in the repository like Edge. Canonical DuckDB,
+CSV, acquisition ledgers, and caches remain outside Git.
 
 ```bash
 python -m ingestion.cli coverage --league NBA
@@ -179,7 +187,8 @@ ALLOW_MAGOLIDE_WRITES=true python scripts/recover_warehouse.py \
 - Pre-tip means strictly `observed_utc < scheduled_utc`. Historical training
   requires immutable frozen rows finalized at/after tip; current reports use
   the latest visible pre-tip evidence.
-- Dry runs never create or modify canonical DuckDB/CSV state.
+- Dry runs never create or modify canonical DuckDB/CSV state. Their derived
+  operator reports may still be committed to Git by the explicit publisher.
 - Fixture persistence needs `ALLOW_FIXTURE_WRITES=true`, the normal write
   opt-in, and paths isolated from canonical state.
 - Notifications are optional operational heartbeats, not betting advice.

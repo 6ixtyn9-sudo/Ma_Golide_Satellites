@@ -166,11 +166,17 @@ an explicit conflict rather than overwriting history.
 ## Deployment state
 
 GitHub Actions has one three-hour schedule. It restores/saves `localdata/` as a
-cache and uploads run reports/ledgers as artifacts. A disabled scheduled write
-uses the offline fixture path to avoid consuming authenticated provider quota
-without persisting state. Manual live dry runs remain available for coverage
-checks.
+cache and uploads run reports/ledgers as artifacts. Disabled canonical writes
+still run live acquisition as a dry run; they do not create or modify canonical
+DuckDB/CSV state. Manual live dry runs use the same acquisition path.
+
+After the league matrix, one publisher merges the allowlisted derived pick and
+paper-ticket files and commits them to `localdata/<league>` on `main`. Existing
+history is retained and conflicting immutable receipts fail closed. Git wins
+over stale cached operator files on the next run. This is the durable operator
+view; artifacts remain bounded recovery evidence.
 
 A CI cache is an operational optimization, not an archival guarantee. Export
 and retain CSV.GZ/ledger artifacts according to the desired recovery policy.
-Runtime state and credentials are excluded from Git.
+Canonical runtime state and credentials are excluded from Git; only the narrow
+derived operator allowlist is committed.
