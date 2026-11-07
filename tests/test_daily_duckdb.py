@@ -50,6 +50,10 @@ def test_daily_dry_run_creates_no_warehouse_and_builds_market_report(tmp_path):
     assert summary["markets"]["forecasts"][0]["prediction"]["frozen"] is False
     assert Path(summary["market_report_path"]).exists()
     assert Path(summary["report_path"]).exists()
+    assert summary["operator"]["paper_only"] is True
+    assert summary["operator"]["counts"]["current_picks"] == 1
+    assert Path(summary["operator"]["picks_text"]).exists()
+    assert Path(summary["operator"]["performance_text"]).exists()
 
 
 def test_dry_run_prunes_daily_and_market_report_retention(tmp_path):

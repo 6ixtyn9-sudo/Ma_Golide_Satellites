@@ -1,0 +1,889 @@
+"""Edge-style operator pick cards, paper tickets, settlement, and audits.
+
+This module is a presentation/settlement layer only. It does not select a
+winner, alter a probability, or place a bet. Current forecasts come from
+``MarketForecastService``; outcomes come only from reconciled official finals.
+
+Durable contracts (all beneath one league's localdata directory):
+- ``picks_YYYY-MM-DD.json``: cumulative pick evidence keyed by forecast id.
+- ``picks_YYYY-MM-DD.txt``: every archived pick, categorized and human-readable.
+- ``picks_today.json``: the current scan, not a replacement for dated history.
+- ``picks_audit_rolling.json`` / ``picks_audit_YYYY-MM-DD.md``: rolling grades.
+- ``auto_tickets_YYYY-MM-DD_decision.json``: immutable paper ticket receipt.
+- ``auto_tickets_YYYY-MM-DD.txt``: receipt rendered with current leg grades.
+- ``auto_tickets_state.json``: write-once date locks and bounded scan telemetry.
+- ``auto_tickets_performance.json`` / ``.txt``: reconstructed paper performance.
+
+A known losing leg settles its acca as a loss even when other legs are still
+pending. Push legs are removed from the effective price once every other leg
+has resolved. Pending tickets never count as wins or losses. Empty scans never
+cancel or rotate a frozen receipt. All stakes are flat one paper unit per acca.
+"""
+
+from __future__ import annotations
+
+from collections import Counter, defaultdict
+from copy import deepcopy
+from datetime import datetime, timedelta, timezone
+import json
+import math
+import os
+from pathlib import Path
+from typing import Any, Dict, List, Optional
+from zoneinfo import ZoneInfo
+
+from ingestion.identity import parse_utc
+from ingestion.models import Game, GameStatus, League
+
+from .types import BookEvidence, Forecast, grade_forecast
+
+OPERATOR_SCHEMA = "magolide.operator.v1"
+TICKET_SCHEMA = "magolide.paper_ticket_receipt.v1"
+STATE_SCHEMA = "magolide.paper_ticket_state.v1"
+BASE_PAPER_UNITS = 100.0
+STAKE_UNITS_PER_ACCA = 1.0
+BUCKET_ORDER = [
+    "ELIGIBLE_CLEAN",
+    "CAUTION",
+    "WATCHLIST_NO_ODDS",
+    "WATCHLIST_INSUFFICIENT_CONTEXT",
+    "SKIPPED_INELIGIBLE",
+]
+BUCKET_LABELS = {
+    "ELIGIBLE_CLEAN": "ELIGIBLE CLEAN PICKS",
+    "CAUTION": "CAUTION PICKS",
+    "WATCHLIST_NO_ODDS": "WATCHLIST — NO MATCHED ODDS",
+    "WATCHLIST_INSUFFICIENT_CONTEXT": "WATCHLIST — INSUFFICIENT CONTEXT",
+    "SKIPPED_INELIGIBLE": "SKIPPED — INELIGIBLE",
+}
+UTC = timezone.utc
+
+
+def _atomic_bytes(path: Path, raw: bytes) -> str:
+    path.parent.mkdir(parents=True, exist_ok=True)
+    if path.exists() and path.read_bytes() == raw:
+        return str(path)
+    temporary = path.with_name(path.name + ".tmp")
+    temporary.write_bytes(raw)
+    os.replace(temporary, path)
+    return str(path)
+
+
+def _write_json(path: Path, value: Any) -> str:
+    raw = (json.dumps(value, indent=2, sort_keys=True, default=str) + "\n").encode()
+    return _atomic_bytes(path, raw)
+
+
+def _write_text(path: Path, text: str) -> str:
+    return _atomic_bytes(path, text.encode())
+
+
+def _read_json(path: Path, default: Any) -> Any:
+    if not path.exists():
+        return deepcopy(default)
+    try:
+        return json.loads(path.read_text())
+    except (OSError, ValueError) as exc:
+        # Financial/evidence state must never silently reset to a fresh bank or
+        # an empty card. Corruption is an operator-visible failure.
+        raise ValueError(f"cannot parse operator state {path}: {exc}") from exc
+
+
+def _local_time(value: str, timezone_name: str) -> str:
+    return parse_utc(value).astimezone(ZoneInfo(timezone_name)).strftime("%Y-%m-%d %H:%M %Z")
+
+
+def _bucket(forecast: Dict[str, Any]) -> str:
+    book = forecast.get("book") or {}
+    price = book.get("selected_decimal_price")
+    eligibility = forecast.get("eligibility") or {}
+    reasons = set(eligibility.get("reasons") or [])
+    if eligibility.get("acca_eligible"):
+        return "ELIGIBLE_CLEAN"
+    if price is None:
+        return "WATCHLIST_NO_ODDS"
+    if reasons == {"insufficient_walk_forward_samples"}:
+        return "CAUTION"
+    if "insufficient_walk_forward_samples" in reasons and not (
+        reasons - {"insufficient_walk_forward_samples", "below_calibrated_probability_floor"}
+    ):
+        return "WATCHLIST_INSUFFICIENT_CONTEXT"
+    return "SKIPPED_INELIGIBLE"
+
+
+def _price_evidence(forecast: Dict[str, Any]) -> str:
+    book = forecast.get("book") or {}
+    if book.get("selected_decimal_price") is not None:
+        return "NAMED_BOOKMAKER_PRICE"
+    if book:
+        return "MATCHED_BUT_SELECTED_PRICE_MISSING"
+    return "UNMATCHED"
+
+
+def _pick_row(forecast: Dict[str, Any], target_date: str) -> Dict[str, Any]:
+    row = deepcopy(forecast)
+    row["pick_id"] = row["forecast_id"]
+    row["date"] = target_date
+    row["bucket"] = _bucket(row)
+    row["price_evidence"] = _price_evidence(row)
+    row["grade_status"] = "pending"
+    row["outcome"] = None
+    row["paper_only"] = True
+    return row
+
+
+def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
+    book_row = row.get("book")
+    book = None
+    if book_row:
+        book = BookEvidence(
+            provider=str(book_row.get("provider") or "unknown"),
+            book=str(book_row.get("book") or "unknown"),
+            observed_utc=str(book_row["observed_utc"]),
+            source_modified_utc=book_row.get("source_modified_utc"),
+            pre_match=bool(book_row.get("pre_match", True)),
+            main_line=bool(book_row.get("main_line", True)),
+            frozen=bool(book_row.get("frozen", False)),
+            prices={str(row["selection"]): book_row.get("selected_decimal_price")},
+        )
+    prediction = row.get("prediction") or {}
+    return Forecast(
+        game_id=str(row["game_id"]),
+        league=str(row["league"]),
+        scheduled_utc=str(row["scheduled_utc"]),
+        home_name=str(row["home"]),
+        away_name=str(row["away"]),
+        market=str(row["market"]),
+        period=str(row["period"]),
+        selection=str(row["selection"]),
+        raw_probability=float(row["raw_probability"]),
+        alternative_probabilities=dict(row.get("alternative_probabilities") or {}),
+        source=str(row.get("model") or "unknown"),
+        line=row.get("line"),
+        push_probability=float(row.get("push_probability") or 0.0),
+        expected_margin=row.get("expected_margin"),
+        expected_total=row.get("expected_total"),
+        training_games=int(row.get("training_games") or 0),
+        residual_games=int(row.get("residual_games") or 0),
+        book=book,
+        prediction_provider=prediction.get("provider"),
+        prediction_observed_utc=prediction.get("observed_utc"),
+        prediction_frozen=bool(prediction.get("frozen", False)),
+        role=row.get("role"),
+        outcome=row.get("outcome"),
+        calibrated_probability=row.get("calibrated_probability"),
+        calibration=dict(row.get("calibration") or {}),
+        eligibility=dict(row.get("eligibility") or {}),
+    )
+
+
+def _grade_row(row: Dict[str, Any], games: Dict[str, Game]) -> Optional[str]:
+    game = games.get(str(row["game_id"]))
+    if game is None or game.status is not GameStatus.FINAL:
+        return None
+    return grade_forecast(_forecast_from_row(row), game)
+
+
+def _set_grade(row: Dict[str, Any], games: Dict[str, Game]) -> None:
+    outcome = _grade_row(row, games)
+    row["outcome"] = outcome
+    row["grade_status"] = outcome or "pending"
+
+
+def _selection_label(row: Dict[str, Any]) -> str:
+    market = str(row.get("market") or "?").replace("_", " ").upper()
+    period = str(row.get("period") or "?")
+    selection = str(row.get("selection") or "?").upper()
+    line = row.get("line")
+    line_text = "" if line is None else f" {float(line):g}"
+    return f"{market} {period}{line_text} -> {selection}"
+
+
+def _render_picks(
+    rows: List[Dict[str, Any]],
+    *,
+    league: str,
+    target_date: str,
+    generated_utc: str,
+    timezone_name: str,
+) -> str:
+    lines = [
+        f"Ma Golide Picks — {league} {target_date}",
+        "=" * 72,
+        f"Generated at: {_local_time(generated_utc, timezone_name)}",
+        "PAPER ONLY · eligibility labels are evidence states, not profit guarantees.",
+        "",
+    ]
+    grouped: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        grouped[str(row.get("bucket") or "UNKNOWN")].append(row)
+    order = [*BUCKET_ORDER, *sorted(set(grouped) - set(BUCKET_ORDER))]
+    for bucket in order:
+        picks = grouped.get(bucket, [])
+        lines.extend(["", BUCKET_LABELS.get(bucket, bucket), "=" * 72])
+        if not picks:
+            lines.append("  (none)")
+            continue
+        picks.sort(
+            key=lambda row: (
+                -(row.get("calibrated_probability") or row["raw_probability"]),
+                row["home"],
+                row["away"],
+                row["pick_id"],
+            )
+        )
+        for row in picks:
+            probability = row.get("calibrated_probability")
+            if probability is None:
+                probability = row["raw_probability"]
+            price = (row.get("book") or {}).get("selected_decimal_price")
+            price_text = f"@{float(price):.3f}" if price is not None else "@n/a"
+            book_name = (row.get("book") or {}).get("book") or "no matched book"
+            lines.append(
+                f"  [{row.get('model')}/{row.get('model_version')}] "
+                f"{row['home']} vs {row['away']} · "
+                f"KO {_local_time(row['scheduled_utc'], timezone_name)}"
+            )
+            lines.append(
+                f"      {_selection_label(row)} · p={probability:.1%} "
+                f"(raw {row['raw_probability']:.1%}) {price_text} {book_name}"
+            )
+            eligibility = row.get("eligibility") or {}
+            reasons = ",".join(eligibility.get("reasons") or []) or "none"
+            calibration = row.get("calibration") or {}
+            lines.append(
+                f"      bucket={bucket} · price_evidence={row['price_evidence']} "
+                f"· acca_eligible={bool(eligibility.get('acca_eligible'))} "
+                f"· grade={row['grade_status'].upper()}"
+            )
+            lines.append(
+                f"      calibration={calibration.get('status', 'unknown')} "
+                f"n={calibration.get('n', 0)} · reasons={reasons} "
+                f"· prediction={(row.get('prediction') or {}).get('provider', 'history')}"
+            )
+    rendered = sum(len(grouped.get(bucket, [])) for bucket in order)
+    if rendered != len(rows):
+        raise RuntimeError(f"daily report dropped picks: ledger={len(rows)} rendered={rendered}")
+    counts = Counter(row["bucket"] for row in rows)
+    lines.extend(
+        [
+            "",
+            "Summary: " + " ".join(f"{bucket}={counts.get(bucket, 0)}" for bucket in order),
+            f"Total archived picks in this report: {len(rows)}",
+            "Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.",
+            "Bet only what you can afford to lose.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _dated_pick_files(localdata: Path) -> List[Path]:
+    return sorted(localdata.glob("picks_????-??-??.json"))
+
+
+def _write_pick_audit(
+    localdata: Path, *, target_date: str, generated_utc: str, timezone_name: str
+) -> Dict[str, Any]:
+    end = datetime.strptime(target_date, "%Y-%m-%d").date()
+    start = end - timedelta(days=29)
+    ledger: List[Dict[str, Any]] = []
+    for path in _dated_pick_files(localdata):
+        payload = _read_json(path, [])
+        if not isinstance(payload, list):
+            raise ValueError(f"dated pick ledger must be a list: {path}")
+        ledger.extend(payload)
+    window = [row for row in ledger if start.isoformat() <= row["date"] <= target_date]
+    eligible = [row for row in window if row["date"] < target_date]
+    settled = [row for row in eligible if row["grade_status"] in {"win", "loss", "push"}]
+    decisions = [row for row in settled if row["grade_status"] != "push"]
+    wins = sum(row["grade_status"] == "win" for row in decisions)
+    pushes = sum(row["grade_status"] == "push" for row in settled)
+    pending = sum(row["grade_status"] == "pending" for row in eligible)
+    priced = [
+        row for row in settled if (row.get("book") or {}).get("selected_decimal_price") is not None
+    ]
+    profit = 0.0
+    for row in priced:
+        price = float(row["book"]["selected_decimal_price"])
+        if row["grade_status"] == "win":
+            profit += price - 1.0
+        elif row["grade_status"] == "loss":
+            profit -= 1.0
+    by_bucket: Dict[str, Dict[str, Any]] = {}
+    for row in settled:
+        group = by_bucket.setdefault(
+            row["bucket"],
+            {"settled": 0, "wins": 0, "pushes": 0, "priced_profit_units": 0.0},
+        )
+        group["settled"] += 1
+        group["wins"] += int(row["grade_status"] == "win")
+        group["pushes"] += int(row["grade_status"] == "push")
+        if (row.get("book") or {}).get("selected_decimal_price") is not None:
+            price = float(row["book"]["selected_decimal_price"])
+            if row["grade_status"] == "win":
+                group["priced_profit_units"] += price - 1.0
+            elif row["grade_status"] == "loss":
+                group["priced_profit_units"] -= 1.0
+    report = {
+        "schema_version": OPERATOR_SCHEMA,
+        "generated_utc": generated_utc,
+        "window": {"start": start.isoformat(), "end": target_date, "days": 30},
+        "archived_pick_rows": len(window),
+        "same_day_rows_excluded": len(window) - len(eligible),
+        "eligible_prior_picks": len(eligible),
+        "settled_picks": len(settled),
+        "pending_picks": pending,
+        "wins": wins,
+        "losses": len(decisions) - wins,
+        "pushes": pushes,
+        "hit_rate": wins / len(decisions) if decisions else None,
+        "priced_sample": len(priced),
+        "roi": profit / len(priced) if priced else None,
+        "profit_units": profit,
+        "stake_policy": "flat_one_paper_unit_per_priced_pick",
+        "by_bucket": by_bucket,
+        "grading_basis": "reconciled_official_finals_only; pending_is_not_a_loss",
+        "ledger": window,
+    }
+    _write_json(localdata / "picks_audit_rolling.json", report)
+    lines = [
+        f"Ma Golide recent picks audit — {start.isoformat()} to {target_date}",
+        "=" * 72,
+        f"Archived pick rows: {len(window)}",
+        f"Same-day rows excluded: {len(window) - len(eligible)}",
+        f"Eligible prior picks: {len(eligible)}",
+        f"Settled picks: {len(settled)} (pushes: {pushes})",
+        f"Pending/unmatched result picks: {pending}",
+        f"Hit rate: {report['hit_rate']:.1%}" if decisions else "Hit rate: n/a",
+        f"ROI: {report['roi']:+.1%}" if priced else "ROI: n/a (no settled priced picks)",
+        "",
+        "Bucket diagnostics",
+        "-" * 72,
+    ]
+    for bucket, group in sorted(by_bucket.items()):
+        lines.append(
+            f"  {bucket}: settled={group['settled']} wins={group['wins']} "
+            f"priced_profit={group['priced_profit_units']:+.3f} units"
+        )
+    lines.extend(
+        [
+            "",
+            "Grades use reconciled official finals only. Pending rows are not losses.",
+            "Flat one-paper-unit ROI is descriptive history, not proof of future performance.",
+            "",
+        ]
+    )
+    _write_text(localdata / f"picks_audit_{target_date}.md", "\n".join(lines))
+    return report
+
+
+def _load_state(localdata: Path) -> Dict[str, Any]:
+    state = _read_json(
+        localdata / "auto_tickets_state.json",
+        {
+            "schema_version": STATE_SCHEMA,
+            "base_paper_units": BASE_PAPER_UNITS,
+            "stake_units_per_acca": STAKE_UNITS_PER_ACCA,
+            "frozen_by_date": {},
+            "scans": [],
+        },
+    )
+    if not isinstance(state, dict) or state.get("schema_version") != STATE_SCHEMA:
+        raise ValueError("unsupported or corrupt auto ticket state; refusing to reset it")
+    state.setdefault("frozen_by_date", {})
+    state.setdefault("scans", [])
+    return state
+
+
+def _new_receipt(
+    *,
+    league: League,
+    target_date: str,
+    captured_utc: str,
+    run_id: str,
+    accas: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    ticket_rows = []
+    for index, acca in enumerate(accas, 1):
+        legs = [_pick_row(leg, target_date) for leg in acca["legs"]]
+        books = sorted({(leg.get("book") or {}).get("book") for leg in legs} - {None})
+        ticket_rows.append(
+            {
+                "ticket_id": acca["acca_id"],
+                "publication_index": index,
+                "combined_decimal_odds": acca["combined_decimal_odds"],
+                "stake_units": STAKE_UNITS_PER_ACCA,
+                "estimated_joint_win_probability": acca["estimated_joint_win_probability"],
+                "bookmakers": books,
+                "legs": legs,
+            }
+        )
+    return {
+        "schema_version": TICKET_SCHEMA,
+        "date": target_date,
+        "league": league.value,
+        "decision_id": run_id,
+        "status": "frozen",
+        "paper_only": True,
+        "captured_at": captured_utc,
+        "frozen_at": captured_utc,
+        "stake_units_per_acca": STAKE_UNITS_PER_ACCA,
+        "accas": ticket_rows,
+    }
+
+
+def _ticket_receipt(
+    localdata: Path,
+    *,
+    state: Dict[str, Any],
+    league: League,
+    target_date: str,
+    captured_utc: str,
+    run_id: str,
+    accas: List[Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
+    path = localdata / f"auto_tickets_{target_date}_decision.json"
+    lock = state["frozen_by_date"].get(target_date)
+    if lock is not None:
+        locked_path = localdata / str(lock.get("receipt_path") or path.name)
+        if not locked_path.exists():
+            raise FileNotFoundError(
+                f"frozen ticket receipt is missing: {locked_path}; refusing to rotate the card"
+            )
+        receipt = _read_json(locked_path, {})
+        if receipt.get("schema_version") != TICKET_SCHEMA:
+            raise ValueError(f"invalid frozen ticket receipt: {locked_path}")
+        return receipt
+    if path.exists():
+        # A receipt is itself immutable evidence. Adopt its lock rather than
+        # rebuilding a potentially different card after a state-cache loss.
+        receipt = _read_json(path, {})
+        if receipt.get("schema_version") != TICKET_SCHEMA:
+            raise ValueError(f"invalid frozen ticket receipt: {path}")
+        state["frozen_by_date"][target_date] = {
+            "frozen_at": receipt["frozen_at"],
+            "final": True,
+            "lock_source": "immutable_receipt",
+            "receipt_path": path.name,
+        }
+        return receipt
+    if not accas:
+        return None
+    receipt = _new_receipt(
+        league=league,
+        target_date=target_date,
+        captured_utc=captured_utc,
+        run_id=run_id,
+        accas=accas,
+    )
+    _write_json(path, receipt)
+    state["frozen_by_date"][target_date] = {
+        "frozen_at": captured_utc,
+        "final": True,
+        "lock_source": "state",
+        "receipt_path": path.name,
+    }
+    return receipt
+
+
+def _grade_receipt(receipt: Dict[str, Any], games: Dict[str, Game]) -> Dict[str, Any]:
+    graded = deepcopy(receipt)
+    for acca in graded["accas"]:
+        outcomes: List[Optional[str]] = []
+        for leg in acca["legs"]:
+            _set_grade(leg, games)
+            outcomes.append(leg["outcome"])
+        acca["leg_outcomes"] = outcomes
+        acca["push_legs"] = sum(outcome == "push" for outcome in outcomes)
+        acca["unresolved_legs"] = sum(outcome is None for outcome in outcomes)
+        stake = float(acca["stake_units"])
+        effective_odds = math.prod(
+            float((leg.get("book") or {})["selected_decimal_price"])
+            for leg in acca["legs"]
+            if leg["outcome"] != "push"
+        )
+        acca["effective_decimal_odds"] = effective_odds
+        if any(outcome == "loss" for outcome in outcomes):
+            status = "loss"
+            profit = -stake
+        elif any(outcome is None for outcome in outcomes):
+            status = "pending"
+            profit = None
+        elif outcomes and all(outcome == "push" for outcome in outcomes):
+            status = "push"
+            profit = 0.0
+        else:
+            status = "win"
+            profit = stake * (effective_odds - 1.0)
+        acca["grade_status"] = status
+        acca["profit_units"] = profit
+    return graded
+
+
+def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict[str, Any]:
+    history = [_grade_receipt(receipt, games) for receipt in receipts]
+    accas = [acca for receipt in history for acca in receipt["accas"]]
+    settled = [acca for acca in accas if acca["profit_units"] is not None]
+    pending = [acca for acca in accas if acca["profit_units"] is None]
+    profit = sum(float(acca["profit_units"]) for acca in settled)
+    staked = sum(float(acca["stake_units"]) for acca in settled)
+    committed = sum(float(acca["stake_units"]) for acca in pending)
+    wins = sum(acca["grade_status"] == "win" for acca in settled)
+    losses = sum(acca["grade_status"] == "loss" for acca in settled)
+    pushes = sum(acca["grade_status"] == "push" for acca in settled)
+    unresolved_legs = sum(acca["unresolved_legs"] for acca in accas)
+    brier = []
+    seen_legs = set()
+    for receipt in history:
+        for acca in receipt["accas"]:
+            for leg in acca["legs"]:
+                identity = (receipt["date"], leg["pick_id"])
+                if identity in seen_legs or leg["outcome"] not in {"win", "loss"}:
+                    continue
+                seen_legs.add(identity)
+                probability = leg.get("calibrated_probability")
+                if probability is None:
+                    probability = leg["raw_probability"]
+                brier.append((probability - float(leg["outcome"] == "win")) ** 2)
+    days = []
+    equity = BASE_PAPER_UNITS
+    for receipt in sorted(history, key=lambda row: row["date"]):
+        daily = receipt["accas"]
+        daily_settled = [acca for acca in daily if acca["profit_units"] is not None]
+        daily_pending = [acca for acca in daily if acca["profit_units"] is None]
+        daily_stake = sum(float(acca["stake_units"]) for acca in daily_settled)
+        daily_profit = sum(float(acca["profit_units"]) for acca in daily_settled)
+        daily_pending_stake = sum(float(acca["stake_units"]) for acca in daily_pending)
+        equity += daily_profit
+        days.append(
+            {
+                "date": receipt["date"],
+                "league": receipt["league"],
+                "decision_id": receipt["decision_id"],
+                "frozen_at": receipt["frozen_at"],
+                "wins": sum(acca["grade_status"] == "win" for acca in daily_settled),
+                "losses": sum(acca["grade_status"] == "loss" for acca in daily_settled),
+                "pushes": sum(acca["grade_status"] == "push" for acca in daily_settled),
+                "staked_units": daily_stake,
+                "returned_units": daily_stake + daily_profit if daily_settled else None,
+                "profit_units": daily_profit if daily_settled else None,
+                "pending_units": daily_pending_stake,
+                "bank_units": equity,
+                "accas": daily,
+            }
+        )
+    return {
+        "schema_version": OPERATOR_SCHEMA,
+        "paper_only": True,
+        "base_paper_units": BASE_PAPER_UNITS,
+        "paper_bank_units": BASE_PAPER_UNITS + profit,
+        "paper_free_units": BASE_PAPER_UNITS + profit - committed,
+        "paper_committed_units": committed,
+        "settled_stake_units": staked,
+        "settled_accas": len(settled),
+        "wins": wins,
+        "losses": losses,
+        "pushes": pushes,
+        "hit_rate": wins / (wins + losses) if wins + losses else None,
+        "pending_accas": len(pending),
+        "unresolved_result_legs": unresolved_legs,
+        "profit_units": profit,
+        "roi": profit / staked if staked else None,
+        "selected_leg_brier_score": sum(brier) / len(brier) if brier else None,
+        "stake_policy": "flat_one_paper_unit_per_acca_no_refill_no_real_money",
+        "drawdown_basis": "not_a_settlement_time_equity_curve",
+        "history": days,
+    }
+
+
+def _render_ticket_card(
+    receipt: Dict[str, Any], performance: Dict[str, Any], timezone_name: str
+) -> str:
+    lines = [
+        f"MA GOLIDE PAPER TICKETS — {receipt['league']} {receipt['date']}",
+        "=" * 72,
+        f"CURRENT PAPER BANK (all dates): {performance['paper_bank_units']:.3f} units "
+        f"· free {performance['paper_free_units']:.3f} / reserved {performance['paper_committed_units']:.3f}",
+        f"{len(receipt['accas'])} paper accas · 1 ticket publication · times in {timezone_name}",
+        "PAPER ONLY — flat one unit per acca; no automatic betting writes.",
+        "Frozen tickets retain their original decision basis; empty scans do not cancel them.",
+        "",
+    ]
+    if not receipt["accas"]:
+        lines.extend(["NO PAPER BET — no qualifying eligible acca at publication.", ""])
+    for index, acca in enumerate(receipt["accas"], 1):
+        books = ", ".join(acca.get("bookmakers") or []) or "multiple/no book"
+        lines.append(
+            f"[PAPER ACCA #{index}] @{acca['combined_decimal_odds']:.3f} "
+            f"— {acca['stake_units']:.6f} paper units — {books} "
+            f"· {acca['grade_status'].upper()}"
+        )
+        lines.append(
+            f"   Published {_local_time(receipt['frozen_at'], timezone_name)} "
+            f"· reference P1/{index} · joint p={acca['estimated_joint_win_probability']:.1%}"
+        )
+        for leg in acca["legs"]:
+            price = (leg.get("book") or {}).get("selected_decimal_price")
+            probability = leg.get("calibrated_probability")
+            if probability is None:
+                probability = leg["raw_probability"]
+            lines.extend(
+                [
+                    f"   {leg['home']} vs {leg['away']} · "
+                    f"KICKOFF {_local_time(leg['scheduled_utc'], timezone_name)}",
+                    f"      {_selection_label(leg)} @{float(price):.3f} "
+                    f"· ML {probability:.1%} · {leg['bucket']} · {leg['grade_status'].upper()}",
+                ]
+            )
+        lines.append("")
+    lines.extend(
+        [
+            f"FROZEN AT {_local_time(receipt['frozen_at'], timezone_name)[11:16]} - FINAL",
+            "Existing tickets are unchanged by later scans or corrected forecasts.",
+            "Paper only. No real-money stakes or automatic promotion.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _render_empty_ticket_scan(
+    *,
+    league: League,
+    target_date: str,
+    generated_utc: str,
+    performance: Dict[str, Any],
+    timezone_name: str,
+) -> str:
+    """A mutable latest-scan view, never a frozen no-bet receipt."""
+    return "\n".join(
+        [
+            f"MA GOLIDE PAPER TICKETS — {league.value} {target_date}",
+            "=" * 72,
+            f"CURRENT PAPER BANK (all dates): {performance['paper_bank_units']:.3f} units "
+            f"· free {performance['paper_free_units']:.3f} / reserved {performance['paper_committed_units']:.3f}",
+            f"Latest scan: {_local_time(generated_utc, timezone_name)}",
+            "",
+            "NO PAPER BET — no qualifying eligible acca in this scan.",
+            "This scan card is not a frozen receipt; a later qualifying scan may publish tickets.",
+            "Empty scans never cancel or resize earlier frozen positions.",
+            "Paper only. No real-money stakes or automatic promotion.",
+            "",
+        ]
+    )
+
+
+def _render_performance(report: Dict[str, Any], timezone_name: str) -> str:
+    lines = [
+        "MA GOLIDE AUTO-TICKETS (ROLLING) — paper performance",
+        "=" * 72,
+        f"BANK     {report['paper_bank_units']:.3f} units   "
+        f"x{report['paper_bank_units'] / BASE_PAPER_UNITS:.3f} of the {BASE_PAPER_UNITS:.0f}-unit base",
+        f"CAPITAL  {report['paper_free_units']:.3f} free / "
+        f"{report['paper_committed_units']:.3f} reserved paper units",
+    ]
+    if report["wins"] + report["losses"]:
+        lines.append(
+            f"RECORD   {report['wins']}W / {report['losses']}L / {report['pushes']}P "
+            f"({report['hit_rate']:.1%} hit) · ROI {report['roi']:+.1%}"
+        )
+    elif report["settled_accas"]:
+        lines.append(
+            f"RECORD   no win/loss decisions yet · {report['pushes']} pushes · "
+            f"ROI {report['roi']:+.1%}"
+        )
+    else:
+        lines.append("RECORD   no settled accas yet")
+    lines.extend(
+        [
+            f"OPEN     {report['pending_accas']} held accas · "
+            f"{report['unresolved_result_legs']} unresolved leg results",
+            f"LEGS     Brier {report['selected_leg_brier_score']:.4f}"
+            if report["selected_leg_brier_score"] is not None
+            else "LEGS     Brier n/a",
+            "",
+            f"BET-DAYS, oldest first ({len(report['history'])})",
+        ]
+    )
+    for day in report["history"]:
+        returned = f"{day['returned_units']:.3f}" if day["returned_units"] is not None else "—"
+        profit = f"{day['profit_units']:+.3f}" if day["profit_units"] is not None else "—"
+        lines.append(
+            f"  {day['date']}  {day['wins']}W/{day['losses']}L/{day['pushes']}P "
+            f"staked {day['staked_units']:.3f} returned {returned} net {profit} "
+            f"pending {day['pending_units']:.3f} bank* {day['bank_units']:.3f}"
+        )
+    lines.append("")
+    lines.append("HELD (not yet settled; stake counted as committed)")
+    held = False
+    for day in report["history"]:
+        for index, acca in enumerate(day["accas"], 1):
+            if acca["grade_status"] != "pending":
+                continue
+            held = True
+            lines.append(
+                f"  {day['date']} ACCA #{index} @{acca['combined_decimal_odds']:.3f} "
+                f"stake {acca['stake_units']:.3f} · receipt {day['decision_id']}"
+            )
+            for leg in acca["legs"]:
+                lines.append(
+                    f"      {leg['home']} vs {leg['away']} · {_selection_label(leg)} "
+                    f"· {leg['grade_status'].upper()}"
+                )
+    if not held:
+        lines.append("  None.")
+    lines.extend(
+        [
+            "",
+            "NOTES",
+            "  bank* is reconstructed from latest known results by ticket date; pending is held at cost.",
+            "  This is not a settlement-time equity curve or certified betting ROI.",
+            "  A known losing leg settles its acca as a loss even if other legs remain unresolved.",
+            "  Push legs are removed from effective price after every other leg resolves.",
+            "  Empty scans never cancel tickets. Frozen receipts are never resized or rotated.",
+            "  Paper only. No real-money stakes or automatic promotion.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def publish_operator_reports(
+    store,
+    league: League,
+    market_report: Optional[Dict[str, Any]],
+    localdata: Path,
+    *,
+    target_date: str,
+    generated_utc: str,
+    run_id: str,
+    timezone_name: str = "Africa/Johannesburg",
+) -> Dict[str, Any]:
+    """Publish current picks and grade every retained pick/ticket in localdata."""
+    localdata.mkdir(parents=True, exist_ok=True)
+    games = {game.game_id: game for game in store.list_games(league=league)}
+    current = [
+        _pick_row(row, target_date)
+        for row in deepcopy((market_report or {}).get("forecasts") or [])
+    ]
+    dated_path = localdata / f"picks_{target_date}.json"
+    prior = _read_json(dated_path, [])
+    if not isinstance(prior, list):
+        raise ValueError(f"dated pick ledger must be a list: {dated_path}")
+    merged = {str(row["pick_id"]): row for row in prior}
+    merged.update({row["pick_id"]: row for row in current})
+    archived = sorted(
+        merged.values(),
+        key=lambda row: (row["scheduled_utc"], row["game_id"], row["pick_id"]),
+    )
+    for row in archived:
+        _set_grade(row, games)
+    # picks_today is the current scan only; the dated file retains earlier
+    # frozen rows even when a later scan produces no fresh forecast for them.
+    for row in current:
+        if row["pick_id"] in merged:
+            row.update(merged[row["pick_id"]])
+    _write_json(localdata / "picks_today.json", current)
+    _write_json(dated_path, archived)
+    picks_txt = _render_picks(
+        archived,
+        league=league.value,
+        target_date=target_date,
+        generated_utc=generated_utc,
+        timezone_name=timezone_name,
+    )
+    _write_text(localdata / f"picks_{target_date}.txt", picks_txt)
+    audit = _write_pick_audit(
+        localdata,
+        target_date=target_date,
+        generated_utc=generated_utc,
+        timezone_name=timezone_name,
+    )
+
+    state = _load_state(localdata)
+    receipt = _ticket_receipt(
+        localdata,
+        state=state,
+        league=league,
+        target_date=target_date,
+        captured_utc=generated_utc,
+        run_id=run_id,
+        accas=deepcopy((market_report or {}).get("accas", {}).get("results") or []),
+    )
+    state["scans"].append(
+        {
+            "run_id": run_id,
+            "captured_at": generated_utc,
+            "fresh_accas": len((market_report or {}).get("accas", {}).get("results") or []),
+            "receipt_present": receipt is not None,
+        }
+    )
+    state["scans"] = state["scans"][-100:]
+    receipts = []
+    for path in sorted(localdata.glob("auto_tickets_????-??-??_decision.json")):
+        candidate = _read_json(path, {})
+        if candidate.get("schema_version") != TICKET_SCHEMA:
+            raise ValueError(f"invalid paper ticket receipt: {path}")
+        receipts.append(candidate)
+    performance = _performance(receipts, games)
+    performance["generated_utc"] = generated_utc
+    performance["league"] = league.value
+    _write_json(localdata / "auto_tickets_performance.json", performance)
+    _write_text(
+        localdata / "auto_tickets_performance.txt",
+        _render_performance(performance, timezone_name),
+    )
+    ticket_path = None
+    if receipt is not None:
+        graded_receipt = next(
+            row
+            for row in performance["history"]
+            if (row["date"], row["decision_id"]) == (receipt["date"], receipt["decision_id"])
+        )
+        ticket_path = _write_text(
+            localdata / f"auto_tickets_{target_date}.txt",
+            _render_ticket_card(graded_receipt, performance, timezone_name),
+        )
+    else:
+        ticket_path = _write_text(
+            localdata / f"auto_tickets_{target_date}.txt",
+            _render_empty_ticket_scan(
+                league=league,
+                target_date=target_date,
+                generated_utc=generated_utc,
+                performance=performance,
+                timezone_name=timezone_name,
+            ),
+        )
+    state["last_generated_utc"] = generated_utc
+    state["paper_bank_units"] = performance["paper_bank_units"]
+    _write_json(localdata / "auto_tickets_state.json", state)
+    return {
+        "paper_only": True,
+        "picks_today": str(localdata / "picks_today.json"),
+        "dated_picks": str(dated_path),
+        "picks_text": str(localdata / f"picks_{target_date}.txt"),
+        "rolling_audit": str(localdata / "picks_audit_rolling.json"),
+        "dated_audit": str(localdata / f"picks_audit_{target_date}.md"),
+        "ticket_receipt": (
+            str(localdata / f"auto_tickets_{target_date}_decision.json")
+            if receipt is not None
+            else None
+        ),
+        "ticket_text": ticket_path,
+        "ticket_state": str(localdata / "auto_tickets_state.json"),
+        "performance": str(localdata / "auto_tickets_performance.json"),
+        "performance_text": str(localdata / "auto_tickets_performance.txt"),
+        "counts": {
+            "current_picks": len(current),
+            "archived_picks": len(archived),
+            "graded_prior_picks": audit["settled_picks"],
+            "published_accas": len(receipt["accas"]) if receipt else 0,
+            "settled_accas": performance["settled_accas"],
+            "pending_accas": performance["pending_accas"],
+        },
+    }
+
+
+__all__ = ["publish_operator_reports"]

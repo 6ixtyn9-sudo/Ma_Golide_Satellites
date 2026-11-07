@@ -1,0 +1,301 @@
+from __future__ import annotations
+
+import json
+from pathlib import Path
+
+import pytest
+
+from forecasting.operator import publish_operator_reports
+from ingestion.models import ActualResult, Game, GameStatus, League, PeriodKind
+
+DATE = "2026-11-07"
+AS_OF = "2026-11-07T18:00:00Z"
+
+
+class Store:
+    def __init__(self, games):
+        self.games = list(games)
+
+    def list_games(self, league=None):
+        return [game for game in self.games if game.league is league]
+
+
+def game(number: int, *, home_score=None, away_score=None, total=None):
+    if total is not None:
+        home_score = total / 2
+        away_score = total / 2
+    scheduled = home_score is None and away_score is None
+    actual = None
+    if home_score is not None:
+        actual = ActualResult(
+            period_kind=PeriodKind.QUARTERS,
+            home_quarters=[home_score / 4] * 4,
+            away_quarters=[away_score / 4] * 4,
+            home_final=home_score,
+            away_final=away_score,
+        )
+    return Game(
+        game_id=f"game-{number}",
+        league=League.NBA,
+        season="2026-27",
+        home_team_id=f"home-{number}",
+        away_team_id=f"away-{number}",
+        home_name=f"Home {number}",
+        away_name=f"Away {number}",
+        scheduled_utc=f"2026-11-{6 + number:02d}T20:00:00Z",
+        status=GameStatus.SCHEDULED if scheduled else GameStatus.FINAL,
+        actual=actual,
+    )
+
+
+def forecast(
+    number: int,
+    *,
+    market="moneyline",
+    selection="home",
+    price=1.8,
+    eligible=True,
+    reasons=None,
+    calibration_n=40,
+):
+    if reasons is None:
+        reasons = [] if eligible else ["below_calibrated_probability_floor"]
+    book = None
+    if price is not None:
+        book = {
+            "provider": "test-books",
+            "book": "Test Book",
+            "observed_utc": "2026-11-07T17:00:00Z",
+            "source_modified_utc": None,
+            "pre_match": True,
+            "main_line": True,
+            "frozen": False,
+            "selected_decimal_price": price,
+            "selected_bookmaker_implied_probability": 1 / price,
+            "bookmaker_bid_ask_probability_sum": None,
+            "vig": None,
+        }
+    line = 200.0 if market == "total" else None
+    return {
+        "forecast_id": f"forecast-{number}-{market}-{selection}",
+        "game_id": f"game-{number}",
+        "league": "NBA",
+        "scheduled_utc": f"2026-11-{6 + number:02d}T20:00:00Z",
+        "home": f"Home {number}",
+        "away": f"Away {number}",
+        "market": market,
+        "period": "full_game",
+        "selection": selection,
+        "line": line,
+        "raw_probability": 0.60,
+        "calibrated_probability": 0.62,
+        "alternative_probabilities": {"away": 0.40} if market == "moneyline" else {"over": 0.40},
+        "push_probability": 0.0 if market == "moneyline" else 0.02,
+        "expected_margin": 4.0 if market == "moneyline" else None,
+        "expected_total": None if market == "moneyline" else 200.0,
+        "model": "provider-history",
+        "model_version": "test-v1",
+        "training_games": 30,
+        "residual_games": 30,
+        "book": book,
+        "prediction": {
+            "provider": "history",
+            "observed_utc": AS_OF,
+            "frozen": False,
+            "model": "provider-history",
+            "model_version": "test-v1",
+        },
+        "role": "basketball_native",
+        "outcome": None,
+        "calibration": {
+            "status": "calibrated" if calibration_n >= 30 else "provisional",
+            "n": calibration_n,
+            "sufficient_for_accas": calibration_n >= 30,
+        },
+        "eligibility": {
+            "acca_eligible": eligible,
+            "reasons": reasons,
+            "evidence_state": "current_pre_tip_unfrozen",
+        },
+    }
+
+
+def acca(rows, *, acca_id="acca-original"):
+    joint = 0.62 ** len(rows)
+    odds = 1.8 ** len(rows)
+    return {
+        "acca_id": acca_id,
+        "rank": 1,
+        "legs": rows,
+        "leg_count": len(rows),
+        "estimated_joint_win_probability": joint,
+        "combined_decimal_odds": odds,
+        "bookmaker_implied_probability": 1 / odds,
+        "estimated_ev_per_unit": joint * odds - 1,
+    }
+
+
+def report(rows, tickets=None):
+    return {"forecasts": rows, "accas": {"results": tickets or []}}
+
+
+def publish(tmp_path, store, market_report, run_id="run-1"):
+    return publish_operator_reports(
+        store,
+        League.NBA,
+        market_report,
+        tmp_path,
+        target_date=DATE,
+        generated_utc=AS_OF,
+        run_id=run_id,
+    )
+
+
+def test_ticket_is_frozen_empty_scans_do_not_cancel_and_known_leg_loss_settles(tmp_path):
+    rows = [forecast(number) for number in (1, 2, 3)]
+    games = [game(number) for number in (1, 2, 3)]
+    store = Store(games)
+    first = publish(tmp_path, store, report(rows, [acca(rows)]))
+    receipt_path = Path(first["ticket_receipt"])
+    frozen_bytes = receipt_path.read_bytes()
+    performance = json.loads(Path(first["performance"]).read_text())
+    assert performance["paper_bank_units"] == 100.0
+    assert performance["paper_committed_units"] == 1.0
+    assert performance["pending_accas"] == 1
+    assert "FROZEN AT 20:00 - FINAL" in Path(first["ticket_text"]).read_text()
+
+    # A later empty scan and a different candidate set cannot rotate the slip.
+    publish(tmp_path, store, report(rows), run_id="empty-scan")
+    publish(
+        tmp_path,
+        store,
+        report(rows, [acca(rows, acca_id="acca-rotated")]),
+        run_id="later-scan",
+    )
+    assert receipt_path.read_bytes() == frozen_bytes
+    assert json.loads(receipt_path.read_text())["decision_id"] == "run-1"
+
+    # One known losing leg settles the whole acca even with two unresolved legs.
+    games[0] = game(1, home_score=90, away_score=100)
+    store.games = games
+    publish(tmp_path, store, report(rows), run_id="grading-scan")
+    performance = json.loads(Path(first["performance"]).read_text())
+    assert performance["losses"] == 1
+    assert performance["pending_accas"] == 0
+    assert performance["unresolved_result_legs"] == 2
+    assert performance["profit_units"] == -1.0
+    assert performance["paper_bank_units"] == 99.0
+    ticket_text = Path(first["ticket_text"]).read_text()
+    assert "[PAPER ACCA #1]" in ticket_text
+    assert "LOSS" in ticket_text
+    assert receipt_path.read_bytes() == frozen_bytes
+
+    # Missing immutable financial evidence fails closed; it never triggers a rebuild.
+    receipt_path.unlink()
+    with pytest.raises(FileNotFoundError, match="refusing to rotate"):
+        publish(tmp_path, store, report(rows), run_id="missing-receipt")
+
+
+def test_push_leg_is_removed_from_effective_acca_price(tmp_path):
+    rows = [
+        forecast(1, price=2.0),
+        forecast(
+            2,
+            market="total",
+            selection="under",
+            price=1.5,
+            reasons=["push_risk_requires_leg_void_rules"],
+            eligible=False,
+        ),
+    ]
+    ticket = acca(rows)
+    ticket["combined_decimal_odds"] = 3.0
+    games = [
+        game(1, home_score=110, away_score=100),
+        game(2, total=200),
+    ]
+    first = publish(tmp_path, Store(games), report(rows, [ticket]))
+    performance = json.loads(Path(first["performance"]).read_text())
+    settled = performance["history"][0]["accas"][0]
+    assert settled["leg_outcomes"] == ["win", "push"]
+    assert settled["grade_status"] == "win"
+    assert settled["effective_decimal_odds"] == 2.0
+    assert settled["profit_units"] == pytest.approx(1.0)
+    picks = json.loads(Path(first["dated_picks"]).read_text())
+    assert [row["grade_status"] for row in picks] == ["win", "push"]
+
+
+def test_all_push_acca_returns_stake_without_a_win_loss_decision(tmp_path):
+    rows = [
+        forecast(1, market="total", selection="under", price=1.5, eligible=False),
+        forecast(2, market="total", selection="under", price=1.5, eligible=False),
+    ]
+    ticket = acca(rows)
+    ticket["combined_decimal_odds"] = 2.25
+    result = publish(
+        tmp_path,
+        Store([game(1, total=200), game(2, total=200)]),
+        report(rows, [ticket]),
+    )
+    performance = json.loads(Path(result["performance"]).read_text())
+    assert performance["settled_accas"] == 1
+    assert performance["pushes"] == 1
+    assert performance["hit_rate"] is None
+    assert performance["profit_units"] == 0.0
+    assert performance["roi"] == 0.0
+    assert performance["paper_bank_units"] == 100.0
+    assert "no win/loss decisions yet" in Path(result["performance_text"]).read_text()
+
+
+def test_pick_buckets_render_every_row_and_rolling_audit_excludes_same_day(tmp_path):
+    rows = [
+        forecast(1),
+        forecast(2, eligible=False, reasons=["insufficient_walk_forward_samples"], calibration_n=4),
+        forecast(
+            3,
+            price=None,
+            eligible=False,
+            reasons=["no_exact_bookmaker_market", "insufficient_walk_forward_samples"],
+            calibration_n=0,
+        ),
+        forecast(4, eligible=False),
+    ]
+    result = publish(tmp_path, Store([game(number) for number in range(1, 5)]), report(rows))
+    text = Path(result["picks_text"]).read_text()
+    assert "ELIGIBLE CLEAN PICKS" in text
+    assert "CAUTION PICKS" in text
+    assert "WATCHLIST — NO MATCHED ODDS" in text
+    assert "SKIPPED — INELIGIBLE" in text
+    assert "Total archived picks in this report: 4" in text
+    assert result["ticket_receipt"] is None
+    assert "NO PAPER BET" in Path(result["ticket_text"]).read_text()
+    buckets = {row["bucket"] for row in json.loads(Path(result["dated_picks"]).read_text())}
+    assert buckets == {"ELIGIBLE_CLEAN", "CAUTION", "WATCHLIST_NO_ODDS", "SKIPPED_INELIGIBLE"}
+    audit = json.loads(Path(result["rolling_audit"]).read_text())
+    assert audit["archived_pick_rows"] == 4
+    assert audit["same_day_rows_excluded"] == 4
+    assert audit["settled_picks"] == 0
+
+
+def test_prior_dated_picks_are_graded_without_changing_frozen_evidence(tmp_path):
+    row = forecast(1)
+    first = publish(tmp_path, Store([game(1)]), report([row]))
+    dated_path = Path(first["dated_picks"])
+    original = json.loads(dated_path.read_text())[0]
+    assert original["grade_status"] == "pending"
+    frozen_probability = original["calibrated_probability"]
+    frozen_price = original["book"]["selected_decimal_price"]
+
+    publish(
+        tmp_path,
+        Store([game(1, home_score=105, away_score=100)]),
+        report([]),
+        run_id="results-only",
+    )
+    graded = json.loads(dated_path.read_text())[0]
+    assert graded["grade_status"] == "win"
+    assert graded["calibrated_probability"] == frozen_probability
+    assert graded["book"]["selected_decimal_price"] == frozen_price
+    audit = json.loads(Path(first["rolling_audit"]).read_text())
+    assert audit["same_day_rows_excluded"] == 1
+    assert audit["settled_picks"] == 0
