@@ -268,6 +268,10 @@ class Game:
     provider_ids: Dict[str, str] = field(default_factory=dict)  # provider -> event id
     actual: Optional[ActualResult] = None
     rescheduled_from: Optional[str] = None
+    # Timestamped, provider-specific context (team form/statistics, venue,
+    # injuries/news metadata). Kept as evidence, never silently promoted to
+    # model features or mixed across leagues/providers.
+    evidence: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         _require_utc(self.scheduled_utc, "scheduled_utc")
@@ -281,6 +285,8 @@ class Game:
     def final_status(self) -> Optional[FinalStatus]:
         """Canonical final label using the ``FT``/``AOT`` convention."""
         if self.status is not GameStatus.FINAL or self.actual is None:
+            return None
+        if self.actual.period_kind is PeriodKind.UNKNOWN:
             return None
         if self.actual.overtime_periods > 0:
             return FinalStatus.AOT

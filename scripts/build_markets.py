@@ -31,7 +31,7 @@ def main() -> int:
     parser.add_argument(
         "--league",
         default="NBA",
-        choices=["NBA", "EUROLEAGUE", "CBA", "NCAA_M", "NCAA_W"],
+        choices=["NBA", "EUROLEAGUE", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
     )
     parser.add_argument("--date", default=None, help="optional local YYYYMMDD slate")
     parser.add_argument("--tz", default="UTC", help="IANA timezone for --date")

@@ -23,7 +23,7 @@ def main() -> int:
     parser.add_argument(
         "--league",
         default="NBA",
-        choices=["NBA", "EuroLeague", "CBA", "NCAA_M", "NCAA_W"],
+        choices=["NBA", "EuroLeague", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
     )
     parser.add_argument(
         "--output",

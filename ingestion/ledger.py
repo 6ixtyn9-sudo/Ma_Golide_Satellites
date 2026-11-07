@@ -15,6 +15,7 @@ _DEFAULT_TZ = {
     "NBA": "America/New_York",
     "EUROLEAGUE": "Europe/Paris",
     "CBA": "Asia/Shanghai",
+    "WNBA": "America/New_York",
     "NCAA_M": "America/New_York",
     "NCAA_W": "America/New_York",
 }
@@ -131,7 +132,7 @@ def write_canonical_ledger(
     directory: str = "localdata/ledgers",
     tz_name: str | None = None,
 ) -> Dict[str, Any]:
-    if kind not in {"pregame", "freeze", "results"}:
+    if kind not in {"pregame", "freeze", "results", "backfill"}:
         raise ValueError(f"unsupported ledger kind: {kind}")
     snapshot = canonical_snapshot(store, league, target_date, tz_name)
     snapshot["ledger_kind"] = kind

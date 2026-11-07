@@ -14,14 +14,16 @@ receipts, and audit state; DuckDB remains the canonical sports system of record.
 
 | League | Native regulation periods | Schedule / results | Independent predictions | Books |
 | --- | --- | --- | --- | --- |
-| NBA | Q1–Q4 | ESPN | ESPN BPI, Hardwood, Predixsport | TheRundown, SportsGameOdds, TheOddsAPI |
+| NBA | Q1–Q4 | ESPN | ESPN BPI, Hardwood, Predixsport | ESPN scoreboard, TheRundown, SportsGameOdds, TheOddsAPI |
+| WNBA | Event-declared H1/H2 or Q1–Q4 | ESPN | ESPN BPI | ESPN scoreboard |
 | EuroLeague | Q1–Q4 | EuroLeague | Predixsport | No supported EuroLeague book adapter |
 | CBA | Q1–Q4 | iSportsAPI | Sportradar Global Basketball | iSportsAPI |
-| NCAA_M | H1/H2 | ESPN men's Division-I endpoint | ESPN BPI | TheOddsAPI |
-| NCAA_W | H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | TheOddsAPI |
+| NCAA_M | H1/H2 | ESPN men's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI |
+| NCAA_W | H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI |
 
 NCAA halves are never relabelled as quarters, and quarter/highest-quarter
-products are not generated for NCAA. CBA predictions and books deliberately
+products are not generated for NCAA. Early WNBA two-half games likewise remain
+halves; current event-declared four-quarter games remain quarters. CBA predictions and books deliberately
 come from independent providers; book-implied probabilities are not stored as
 model predictions. CBA and NCAA live provider coverage remains
 `DOCUMENTATION_ONLY` until authenticated smoke tests verify it. Offline tests
@@ -77,9 +79,16 @@ present:
 
 ```bash
 python scripts/daily.py --auto-once --date 2026-11-07 --league NBA
+python scripts/daily.py --auto-once --date 2026-11-07 --league WNBA
 python scripts/daily.py --auto-once --date 2026-11-07 --league CBA
 python scripts/daily.py --auto-once --date 2026-11-07 --league NCAA_W
 ```
+
+Write-enabled runs also ingest a bounded deep-history batch from ESPN's
+season/event indexes. Durable per-league cursors currently begin at verified
+nonempty index years (NBA 1947, WNBA 1997, NCAA 2001), while preserving old
+final-only scores and native WNBA halves without claiming exhaustive coverage.
+See [ESPN acquisition and history](docs/ESPN-ACQUISITION.md).
 
 Live CBA acquisition requires `ISPORTS_API_KEY` for fixtures/results/books and
 `SPORTRADAR_API_KEY` for independent probabilities. Set
@@ -203,6 +212,7 @@ ALLOW_MAGOLIDE_WRITES=true python scripts/recover_warehouse.py \
 - [Data and forecasting contract](docs/CONTRACT.md)
 - [Operations runbook](docs/OPERATIONS.md)
 - [Provider matrix](docs/PROVIDERS.md)
+- [ESPN acquisition and history](docs/ESPN-ACQUISITION.md)
 - [Research methodology](docs/RESEARCH.md)
 - [Verification and limitations](docs/VERIFICATION.md)
 - [Contributor checks](docs/CONTRIBUTING.md)

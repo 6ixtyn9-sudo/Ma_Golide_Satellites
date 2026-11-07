@@ -54,6 +54,17 @@ def _same(a, b) -> bool:
     return a == b
 
 
+def _merge_evidence(existing, fresh):
+    """Merge context namespaces without letting a partial refresh erase evidence."""
+
+    if isinstance(existing, dict) and isinstance(fresh, dict):
+        merged = dict(existing)
+        for key, value in fresh.items():
+            merged[key] = _merge_evidence(merged.get(key), value) if key in merged else value
+        return merged
+    return fresh
+
+
 class Store(ABC):
     """Canonical persistence contract."""
 
@@ -133,6 +144,8 @@ class InMemoryStore(Store):
             existing = self.games.get(game.game_id)
             if existing and existing.rescheduled_from and not game.rescheduled_from:
                 game.rescheduled_from = existing.rescheduled_from
+            if existing is not None and existing.evidence:
+                game.evidence = _merge_evidence(existing.evidence, game.evidence)
             if (
                 existing is not None
                 and existing.status is GameStatus.FINAL
@@ -261,6 +274,7 @@ def _game_to_dict(g: Game) -> dict:
         phase=g.phase,
         provider_ids=g.provider_ids,
         rescheduled_from=g.rescheduled_from,
+        evidence=g.evidence,
     )
     if g.actual is not None:
         d["actual"] = dict(
@@ -308,6 +322,7 @@ def _game_from_dict(d: dict) -> Game:
         provider_ids=d.get("provider_ids", {}),
         actual=actual,
         rescheduled_from=d.get("rescheduled_from"),
+        evidence=d.get("evidence", {}),
     )
 
 

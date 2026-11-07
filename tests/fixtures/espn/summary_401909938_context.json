@@ -1,0 +1,103 @@
+{
+  "header": {
+    "id": "401909938",
+    "competitions": [
+      {
+        "id": "401909938",
+        "date": "2026-11-07T22:00Z",
+        "status": {"type": {"state": "pre"}},
+        "competitors": [
+          {"homeAway": "home", "team": {"id": "11", "displayName": "Indiana Pacers"}},
+          {"homeAway": "away", "team": {"id": "7", "displayName": "Denver Nuggets"}}
+        ]
+      }
+    ],
+    "season": {"year": 2027}
+  },
+  "gameInfo": {
+    "venue": {"id": "999", "fullName": "Mexico City Arena"},
+    "attendance": 0,
+    "officials": [{"id": "official-1", "fullName": "Example Official"}]
+  },
+  "boxscore": {
+    "teams": [
+      {
+        "team": {"id": "11", "displayName": "Indiana Pacers"},
+        "statistics": [
+          {"name": "avgPoints", "label": "Points Per Game", "displayValue": "112.3"},
+          {"name": "avgRebounds", "label": "Rebounds Per Game", "displayValue": "41.0"}
+        ]
+      },
+      {
+        "team": {"id": "7", "displayName": "Denver Nuggets"},
+        "statistics": [
+          {"name": "avgPoints", "label": "Points Per Game", "displayValue": "115.4"},
+          {"name": "avgRebounds", "label": "Rebounds Per Game", "displayValue": "41.6"}
+        ]
+      }
+    ]
+  },
+  "lastFiveGames": [
+    {
+      "team": {"id": "11", "displayName": "Indiana Pacers"},
+      "events": [
+        {
+          "id": "401909900",
+          "gameDate": "2026-11-05T00:00Z",
+          "atVs": "vs",
+          "gameResult": "W",
+          "score": "112-108",
+          "opponent": {"id": "1", "displayName": "Atlanta Hawks", "links": [{"href": "https://example.invalid/team"}]}
+        }
+      ]
+    },
+    {
+      "team": {"id": "7", "displayName": "Denver Nuggets"},
+      "events": [
+        {
+          "id": "401909901",
+          "gameDate": "2026-11-05T02:00Z",
+          "atVs": "@",
+          "gameResult": "L",
+          "score": "105-110",
+          "opponent": {"id": "2", "displayName": "Boston Celtics"}
+        }
+      ]
+    }
+  ],
+  "injuries": [
+    {
+      "team": {"id": "11"},
+      "injuries": [
+        {
+          "athlete": {"id": " athlete-1", "displayName": "Example Player"},
+          "status": "Out",
+          "details": {"type": "Hamstring", "detail": "Left hamstring"}
+        }
+      ]
+    }
+  ],
+  "predictor": {
+    "header": "Matchup Predictor",
+    "homeTeam": {"id": "11", "gameProjection": "22.9"},
+    "awayTeam": {"id": "7", "gameProjection": "77.1"}
+  },
+  "againstTheSpread": [
+    {"team": {"id": "11", "displayName": "Indiana Pacers"}, "records": [{"summary": "4-5"}]}
+  ],
+  "article": {
+    "id": 50397480,
+    "type": "Preview",
+    "headline": "Indiana takes on Denver in Mexico City",
+    "description": "Denver Nuggets vs. Indiana Pacers",
+    "published": "2026-11-06T07:02:48Z",
+    "lastModified": "2026-11-07T06:02:49Z",
+    "source": "Data Skrive",
+    "story": "INJURIES: Pacers: Example Player: out (hamstring).\n\nNuggets: No injuries reported.",
+    "links": {"web": {"href": "https://example.invalid/story?token=do-not-store"}},
+    "categories": [{"description": "large taxonomy omitted"}]
+  },
+  "news": {
+    "articles": [{"headline": "Unrelated league-wide article should not be retained"}]
+  }
+}

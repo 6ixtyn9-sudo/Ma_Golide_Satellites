@@ -20,7 +20,7 @@ from pathlib import Path
 import re
 from typing import Any, Dict, Iterable
 
-STATE_KEYS = frozenset({"nba", "euroleague", "cba", "ncaa_m", "ncaa_w"})
+STATE_KEYS = frozenset({"nba", "wnba", "euroleague", "cba", "ncaa_m", "ncaa_w"})
 DATE = r"\d{4}-\d{2}-\d{2}"
 ALLOWED_NAMES = tuple(
     re.compile(pattern)

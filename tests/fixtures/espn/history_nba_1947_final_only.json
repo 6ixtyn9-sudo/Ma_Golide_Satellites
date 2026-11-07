@@ -1,0 +1,36 @@
+{
+  "header": {
+    "id": "1770402009",
+    "season": {"year": 1947, "type": 3},
+    "competitions": [
+      {
+        "id": "1770402009",
+        "date": "1947-04-02T05:00Z",
+        "status": {"type": {"state": "post", "completed": true, "name": "STATUS_FINAL"}},
+        "format": {"regulation": {"periods": 4}},
+        "competitors": [
+          {
+            "homeAway": "home",
+            "winner": true,
+            "team": {"id": "9", "displayName": "Philadelphia Warriors"},
+            "score": "73",
+            "statistics": []
+          },
+          {
+            "homeAway": "away",
+            "winner": false,
+            "team": {"id": "76", "displayName": "St. Louis Bombers"},
+            "score": "68",
+            "statistics": []
+          }
+        ]
+      }
+    ]
+  },
+  "format": {"regulation": {"periods": 4, "displayName": "Quarter"}},
+  "boxscore": {"teams": []},
+  "gameInfo": {},
+  "lastFiveGames": [],
+  "injuries": [],
+  "article": {}
+}

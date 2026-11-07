@@ -1,0 +1,35 @@
+{
+  "header": {
+    "id": "409900001",
+    "season": {"year": 2026},
+    "competitions": [
+      {
+        "id": "409900001",
+        "date": "2026-11-08T02:00Z",
+        "status": {"type": {"state": "pre"}},
+        "competitors": [
+          {"homeAway": "home", "team": {"id": "11", "displayName": "Las Vegas Aces"}},
+          {"homeAway": "away", "team": {"id": "7", "displayName": "New York Liberty"}}
+        ]
+      }
+    ]
+  },
+  "gameInfo": {"venue": {"fullName": "Las Vegas Arena"}},
+  "boxscore": {
+    "teams": [
+      {"team": {"id": "11"}, "statistics": [{"name": "avgPoints", "displayValue": "86.2"}]},
+      {"team": {"id": "7"}, "statistics": [{"name": "avgPoints", "displayValue": "88.1"}]}
+    ]
+  },
+  "lastFiveGames": [],
+  "injuries": [],
+  "article": {
+    "headline": "Liberty at Aces",
+    "lastModified": "2026-11-07T12:00:00Z",
+    "story": "No structured injuries were supplied by this fixture."
+  },
+  "predictor": {
+    "homeTeam": {"id": "11", "gameProjection": "44.6"},
+    "awayTeam": {"id": "7", "gameProjection": "55.4"}
+  }
+}

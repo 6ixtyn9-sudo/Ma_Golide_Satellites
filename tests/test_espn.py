@@ -16,11 +16,13 @@ from typing import Any, Dict
 import pytest
 
 from ingestion.http import HttpClient
-from ingestion.models import FinalStatus, Game, GameStatus, League, PeriodKind
+from ingestion.models import FinalStatus, Game, GameStatus, League, Market, PeriodKind
 from ingestion.providers import IdentityError
 from ingestion.providers.espn import (
     discover_games,
+    discover_games_with_evidence,
     fetch_bpi,
+    fetch_game_context,
     fetch_game_result,
     fetch_recent_results,
     fetch_standings,
@@ -301,6 +303,73 @@ def test_discover_games_from_scoreboard(load_fixture, fixture_fetch):
     assert "Philadelphia 76ers" in names
 
 
+def test_rich_scoreboard_retains_context_and_named_full_game_books(fixture_fetch):
+    games, books = discover_games_with_evidence(
+        "20261107",
+        fixture_fetch({"dates=20261107": "espn/scoreboard_rich_401909938.json"}),
+        observed_utc="2026-11-07T18:00:00Z",
+    )
+    assert len(games) == 1
+    game = games[0]
+    snapshots = {snapshot.market: snapshot for snapshot in books[game.game_id]}
+    assert set(snapshots) == {Market.MONEYLINE, Market.SPREAD, Market.TOTAL}
+    moneyline = snapshots[Market.MONEYLINE]
+    assert moneyline.provider == "espn"
+    assert moneyline.book == "DraftKings"
+    assert moneyline.home_price_decimal == pytest.approx(3.61)
+    assert moneyline.away_price_decimal == pytest.approx(1 + 100 / 324)
+    assert moneyline.pre_match is True
+    assert moneyline.observed_utc == "2026-11-07T18:00:00Z"
+    assert snapshots[Market.SPREAD].line == pytest.approx(7.5)
+    assert snapshots[Market.SPREAD].home_price_decimal == pytest.approx(1 + 100 / 105)
+    assert snapshots[Market.TOTAL].line == pytest.approx(229.5)
+    assert snapshots[Market.TOTAL].over_price_decimal == pytest.approx(1 + 100 / 107)
+    # Open values are context, not three extra falsely timestamped snapshots.
+    assert len(books[game.game_id]) == 3
+
+    scoreboard = game.evidence["espn"]["scoreboard"]
+    assert scoreboard["neutral_site"] is True
+    assert scoreboard["venue"]["fullName"] == "Mexico City Arena"
+    assert scoreboard["teams"]["home"]["records"][0]["summary"] == "3-6"
+    assert scoreboard["teams"]["away"]["statistics"][0]["displayValue"] == "115.4"
+    assert scoreboard["odds"][0]["moneyline"]["home"]["open"]["odds"] == "+199"
+    import json
+
+    serialized = json.dumps(game.evidence)
+    assert "must-not-persist" not in serialized
+    assert "do-not-store" not in serialized
+    assert "affiliate" not in serialized
+
+
+def test_summary_context_retains_form_injuries_and_article_without_links(fixture_fetch):
+    fetch = fixture_fetch(
+        {
+            "dates=20261107": "espn/scoreboard_rich_401909938.json",
+            "summary?event=401909938": "espn/summary_401909938_context.json",
+        }
+    )
+    games, _books = discover_games_with_evidence(
+        "20261107", fetch, observed_utc="2026-11-07T18:00:00Z"
+    )
+    game = fetch_game_context(
+        GOLDEN_EVENT, fetch, games[0], observed_utc="2026-11-07T18:01:00Z"
+    )
+    summary = game.evidence["espn"]["summary"]
+    assert summary["observed_utc"] == "2026-11-07T18:01:00Z"
+    assert summary["source_modified_utc"] == "2026-11-07T06:02:49Z"
+    assert summary["team_boxscore"][0]["statistics"][0]["displayValue"] == "112.3"
+    assert summary["last_five_games"][0]["events"][0]["gameResult"] == "W"
+    assert summary["injuries"][0]["injuries"][0]["status"] == "Out"
+    assert "INJURIES:" in summary["article"]["story"]
+    assert "news" not in summary
+    import json
+
+    serialized = json.dumps(summary)
+    assert "do-not-store" not in serialized
+    assert "large taxonomy omitted" not in serialized
+    assert "Unrelated league-wide" not in serialized
+
+
 # ---------------------------------------------------------------------------
 # Results
 # ---------------------------------------------------------------------------
@@ -546,3 +615,11 @@ def test_smoke_verification_live_with_http_client(load_fixture):
     report = smoke("20261106", client.get_json)
     assert report["verification"] == "LIVE_VERIFIED"
     assert report["bpi_complete"]["complete"] == 1
+
+    from ingestion.acquisition import AcquisitionClient
+
+    wrapped = smoke(
+        "20261106", AcquisitionClient(client.get_json, request_budget=100)
+    )
+    assert wrapped["verification"] == "LIVE_VERIFIED"
+    assert wrapped["bpi_complete"]["complete"] == 1

@@ -62,6 +62,9 @@ BASE_URL = "https://api.the-odds-api.com/v4"
 NBA_SPORT_KEY = "basketball_nba"
 SPORT_KEYS = {
     "NBA": NBA_SPORT_KEY,
+    # Documented WNBA key; authenticated coverage remains unverified until a
+    # credentialed smoke run succeeds. Keyless ESPN markets remain independent.
+    "WNBA": "basketball_wnba",
     "NCAA_M": "basketball_ncaab",
     "NCAA_W": "basketball_wncaab",
 }

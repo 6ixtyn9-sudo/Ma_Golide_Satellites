@@ -1,0 +1,107 @@
+{
+  "events": [
+    {
+      "id": "401909938",
+      "date": "2026-11-07T22:00Z",
+      "name": "Denver Nuggets at Indiana Pacers",
+      "season": {"year": 2027, "type": 2, "slug": "regular-season"},
+      "competitions": [
+        {
+          "id": "401909938",
+          "date": "2026-11-07T22:00Z",
+          "neutralSite": true,
+          "conferenceCompetition": false,
+          "venue": {
+            "id": "999",
+            "fullName": "Mexico City Arena",
+            "address": {"city": "Mexico City"},
+            "indoor": true
+          },
+          "notes": [{"type": "event", "headline": "NBA Mexico City Game"}],
+          "broadcasts": [{"market": "national", "names": ["NBA TV"]}],
+          "status": {
+            "type": {"state": "pre", "completed": false, "description": "Scheduled"}
+          },
+          "competitors": [
+            {
+              "id": "11",
+              "homeAway": "home",
+              "team": {"id": "11", "displayName": "Indiana Pacers", "abbreviation": "IND"},
+              "score": "0",
+              "records": [
+                {"name": "overall", "type": "total", "summary": "3-6"},
+                {"name": "Home", "type": "home", "summary": "0-4"}
+              ],
+              "statistics": [
+                {"name": "avgPoints", "abbreviation": "PTS", "displayValue": "112.3"},
+                {"name": "fieldGoalPct", "abbreviation": "FG%", "displayValue": "45.6", "rankDisplayValue": "12th"}
+              ],
+              "leaders": [
+                {
+                  "name": "pointsPerGame",
+                  "leaders": [{
+                    "displayValue": "21.2",
+                    "value": 21.25,
+                    "athlete": {"id": "3149673", "displayName": "Pascal Siakam", "headshot": "https://example.invalid/secret-free-headshot.png"}
+                  }]
+                }
+              ]
+            },
+            {
+              "id": "7",
+              "homeAway": "away",
+              "team": {"id": "7", "displayName": "Denver Nuggets", "abbreviation": "DEN"},
+              "score": "0",
+              "records": [{"name": "overall", "type": "total", "summary": "4-3"}],
+              "statistics": [
+                {"name": "avgPoints", "abbreviation": "PTS", "displayValue": "115.4"},
+                {"name": "fieldGoalPct", "abbreviation": "FG%", "displayValue": "49.0", "rankDisplayValue": "3rd"}
+              ],
+              "leaders": []
+            }
+          ],
+          "odds": [
+            {
+              "provider": {"id": "100", "name": "DraftKings", "displayName": "DraftKings"},
+              "details": "DEN -7.5",
+              "overUnder": 229.5,
+              "moneyline": {
+                "home": {
+                  "open": {"odds": "+199"},
+                  "close": {"odds": "+261", "link": {"href": "https://sportsbook.invalid/bet?token=must-not-persist"}}
+                },
+                "away": {
+                  "open": {"odds": "-241"},
+                  "close": {"odds": "-324"}
+                }
+              },
+              "pointSpread": {
+                "home": {
+                  "open": {"line": "+6.5", "odds": "-106"},
+                  "close": {"line": "+7.5", "odds": "-105"}
+                },
+                "away": {
+                  "open": {"line": "-6.5", "odds": "-114"},
+                  "close": {"line": "-7.5", "odds": "-115"}
+                }
+              },
+              "total": {
+                "over": {
+                  "open": {"line": "o228.5", "odds": "-106"},
+                  "close": {"line": "o229.5", "odds": "-107"}
+                },
+                "under": {
+                  "open": {"line": "u228.5", "odds": "-114"},
+                  "close": {"line": "u229.5", "odds": "-113"}
+                }
+              },
+              "link": {"href": "https://sportsbook.invalid/?apiKey=do-not-store"},
+              "footer": {"disclaimer": "not needed as evidence"}
+            }
+          ]
+        }
+      ],
+      "status": {"type": {"state": "pre", "completed": false}}
+    }
+  ]
+}

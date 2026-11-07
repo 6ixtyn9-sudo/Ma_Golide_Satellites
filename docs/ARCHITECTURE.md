@@ -45,6 +45,8 @@ immutable audit ledgers.
 
 - `ingestion/providers/`: source-specific HTTP parsing and identity
   reconciliation. Adapters return canonical models, never report rows.
+- `ingestion/acquisition.py`: bounded requests, retries/cooldowns, public
+  payload caching, original observation timestamps, and redacted telemetry.
 - `ingestion/models.py`: strict games, results, predictions, book snapshots,
   periods, markets, coverage gaps, and health records.
 - `ingestion/pipeline.py`: pregame acquisition, freeze, result reconciliation,
@@ -75,7 +77,7 @@ The canonical tables are:
 | `predictions` | One pre/post observation slot per game/provider |
 | `book_snapshots` | One pre/post slot per game/provider/book/market/period |
 | `team_aliases` | Explicit normalized team-name aliases |
-| `provider_health` | Last attempt/success and structured coverage |
+| `provider_health` | Last attempt/success, structured coverage, and durable `espn-history` cursors |
 | `pipeline_runs` | Per-run/per-stage operational reports |
 
 `book_snapshots` includes typed moneyline home/away/draw prices, total
@@ -151,13 +153,14 @@ mechanism does not make reports canonical evidence.
 
 `scripts/daily.py --auto-once` performs:
 
-1. `pregame` acquisition and canonical stage ledger when writes are enabled;
-2. current market/accuracy/acca report generation from visible pre-tip facts;
-3. immutable `freeze` of tip-passed evidence and its canonical stage ledger;
-4. `results` reconciliation unless `--skip-results` is set;
-5. bounded operational-run/report retention;
-6. descriptive prediction assay, CSV exports, and final operational report;
-7. optional independently guarded notification.
+1. bounded recent/deep `backfill`; deep cursors advance only on canonical writes;
+2. `pregame` acquisition and canonical stage ledger when writes are enabled;
+3. current market/accuracy/acca report generation from visible pre-tip facts;
+4. immutable `freeze` of tip-passed evidence and its canonical stage ledger;
+5. `results` reconciliation unless `--skip-results` is set;
+6. bounded operational-run/report retention;
+7. descriptive prediction assay, CSV exports, and final operational report;
+8. optional independently guarded notification.
 
 The same `run_id` identifies every stage. Immutable ledgers use content hashes,
 so identical replays are no-ops and conflicting content receives a new path or
