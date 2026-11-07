@@ -1,0 +1,8 @@
+{
+  "_evidence": "DOCUMENTATION_ONLY — SYNTHETIC payload authored 2026-11-06 from Predixsport's public docs/OpenAPI description (schema unconfirmed). Unauthenticated baseline calls returned 'Missing Authorization header'; no authenticated live response has been observed. Never treat this file as LIVE_VERIFIED evidence. Purpose: independent-model disagreement — the probability model favours AWAY (0.58) while the margin model favours HOME (+6.2); both must be preserved, never reconciled.",
+  "match_id": "px-nba-disagreement",
+  "probabilities": { "home": 0.42, "away": 0.58 },
+  "predicted_total_points": 228.4,
+  "predicted_point_diff": 6.2,
+  "produced_by": "predixsport-nba-earlyseason"
+}

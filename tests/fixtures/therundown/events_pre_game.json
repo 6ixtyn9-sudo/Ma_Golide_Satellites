@@ -1,0 +1,20 @@
+{
+  "_note": "DOCUMENTATION_ONLY synthetic fixture authored from the documented TheRundown v1 events schema (docs.therundown.io): events[] with event_id/event_status_phase/teams(is_home)/lines keyed by market id '1' (moneyline) and '3' (full-game total), American prices. NOT a captured API response. One pre-game event, FanDuel (affiliate_id 23).",
+  "events": [
+    {
+      "event_id": 11879001,
+      "event_date": "2026-11-07T00:30:00Z",
+      "event_status_phase": "pre-game",
+      "sport_id": 2,
+      "last_modified": "2026-11-06T21:51:00Z",
+      "teams": [
+        {"team_id": 1610612737, "nickname": "Hawks", "full_name": "Atlanta Hawks", "is_home": true},
+        {"team_id": 1610612743, "nickname": "Nuggets", "full_name": "Denver Nuggets", "is_home": false}
+      ],
+      "lines": {
+        "1": {"moneyline_home": -150, "moneyline_away": 130, "last_modified": "2026-11-06T21:51:00Z"},
+        "3": {"total": 232.0, "over_price": -110, "under_price": -110, "last_modified": "2026-11-06T21:51:00Z"}
+      }
+    }
+  ]
+}

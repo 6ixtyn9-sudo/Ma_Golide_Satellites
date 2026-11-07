@@ -1,16 +1,41 @@
 [project]
-name = "repl-nix-workspace"
-version = "0.1.0"
-description = "Add your description here"
+name = "magolide-satellites"
+version = "0.2.0"
+description = "Headless DuckDB/CSV-first basketball acquisition, research, and operations"
 requires-python = ">=3.11"
 dependencies = [
-    "email-validator>=2.3.0",
-    "flask>=3.1.3",
-    "flask-sqlalchemy>=3.1.1",
+    "duckdb>=1.1,<2",
+    "requests>=2.32.0",
+]
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["assayer*", "auth*", "fetcher*", "ingestion*", "registry*", "scripts*"]
+exclude = ["attached_assets*", "localdata*", "tests*"]
+
+[project.optional-dependencies]
+dev = [
+    "pytest>=8",
+    "ruff>=0.8",
+    # Required only by the retained legacy-adapter regression tests.
+    "gspread>=6.2.1",
+    "google-auth>=2.49.2",
+]
+legacy = [
+    "gspread>=6.2.1",
     "google-auth>=2.49.2",
     "google-auth-httplib2>=0.3.1",
     "google-auth-oauthlib>=1.3.1",
-    "gspread>=6.2.1",
-    "gunicorn>=25.3.0",
-    "psycopg2-binary>=2.9.11",
+]
+
+[tool.pytest.ini_options]
+# Ordinary tests are hermetic: committed fixtures, sockets blocked by the
+# conftest guard. Live smoke tests are explicit: pytest -m live
+addopts = "-m 'not live'"
+markers = [
+    "live: explicitly invoked live smoke tests (network, keyless, redacted)",
 ]

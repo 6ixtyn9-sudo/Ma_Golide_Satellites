@@ -1,0 +1,40 @@
+{
+  "header": {
+    "id": "401909939",
+    "season": {"year": 2027, "type": 2},
+    "competitions": [
+      {
+        "date": "2026-11-07T03:00Z",
+        "status": {
+          "type": {"id": "3", "name": "STATUS_FINAL", "state": "post", "completed": true, "description": "Final", "detail": "Final/OT", "shortDetail": "Final/OT"}
+        },
+        "competitors": [
+          {
+            "homeAway": "home",
+            "team": {"id": "2", "displayName": "Boston Celtics", "abbreviation": "BOS"},
+            "score": "123",
+            "linescores": [
+              {"displayValue": "33"},
+              {"displayValue": "30"},
+              {"displayValue": "30"},
+              {"displayValue": "27"},
+              {"displayValue": "3"}
+            ]
+          },
+          {
+            "homeAway": "away",
+            "team": {"id": "17", "displayName": "New York Knicks", "abbreviation": "NYK"},
+            "score": "120",
+            "linescores": [
+              {"displayValue": "26"},
+              {"displayValue": "25"},
+              {"displayValue": "32"},
+              {"displayValue": "34"},
+              {"displayValue": "3"}
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

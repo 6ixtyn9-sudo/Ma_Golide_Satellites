@@ -1,0 +1,25 @@
+{
+  "_note": "DOCUMENTATION_ONLY synthetic fixture authored from the documented SportsGameOdds getEvents schema. NOT a captured API response. The full-game over/under market pair has bookOdds prices but NO 'line'/'points' field: the adapter must emit a total snapshot with line=None, which is NOT usable for sheet writes and is counted under smoke['not_usable'].",
+  "data": [
+    {
+      "eventID": "sgo-evt-noline",
+      "leagueID": "NBA",
+      "status": "upcoming",
+      "startTime": "2026-11-07T00:30:00Z",
+      "teams": [
+        {"name": "Atlanta Hawks", "abbreviation": "ATL", "home": true},
+        {"name": "Denver Nuggets", "abbreviation": "DEN", "home": false}
+      ],
+      "markets": {
+        "points-all-game-ou-over": {
+          "price": -110,
+          "bookOdds": {"draftkings": {"price": -110}}
+        },
+        "points-all-game-ou-under": {
+          "price": -110,
+          "bookOdds": {"draftkings": {"price": -110}}
+        }
+      }
+    }
+  ]
+}

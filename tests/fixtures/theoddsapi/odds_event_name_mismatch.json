@@ -1,0 +1,23 @@
+{
+  "_note": "DOCUMENTATION_ONLY synthetic per-event h2h payload authored from The Odds API v4 documented schema. NOT a captured API response. The second h2h outcome name matches NEITHER event team: the adapter must skip that outcome with a coverage gap instead of guessing the home/away side.",
+  "id": "odds-evt-1",
+  "sport_key": "basketball_nba",
+  "commence_time": "2099-11-07T00:30:00Z",
+  "home_team": "Atlanta Hawks",
+  "away_team": "Denver Nuggets",
+  "bookmakers": [
+    {
+      "key": "draftkings",
+      "title": "DraftKings",
+      "markets": [
+        {
+          "key": "h2h",
+          "outcomes": [
+            {"name": "Atlanta Hawks", "price": 1.85},
+            {"name": "Mystery Team", "price": 2.05}
+          ]
+        }
+      ]
+    }
+  ]
+}

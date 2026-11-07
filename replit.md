@@ -1,95 +1,86 @@
-# MA GOLIDE — Gold Universe Orchestrator v2
+# Ma Golide — headless DuckDB operations and research
 
 ## Overview
-Elite unified Python/Flask web orchestrator connecting to Google Sheets satellite spreadsheets.
-Runs the Ma Assayer purity engine, the complete accuracy engine (all 7 bet types),
-the elite Highest Quarter pipeline, and displays results in a live dashboard.
+
+Ma Golide is a CSV + DuckDB-first basketball acquisition and research system,
+following Edge Factory's local-data operating patterns. It runs through CLI
+commands and GitHub Actions. The autonomous orchestrator owns all canonical
+writes.
+
+There is no web server, external database, or read-model synchronizer. Google
+Sheets is legacy migration/compatibility only.
 
 ## Architecture
 
-```
-Satellites (Google Sheets)
-    ↓ read_client (readonly scopes)
-Fetcher → Side, Totals, ResultsClean, UpcomingClean, Bet_Slips
+```text
+Official/keyless fixtures + configured prediction/book providers
     ↓
-Assay Engine (assayer_engine.py)   ← ISOLATED, never modified
+Canonical identity, prediction, book and result adapters
     ↓
-BetRecord (bet_record.py)          ← Universal contract for ALL pipelines
+localdata/warehouse.duckdb (system of record)
     ↓
-Accuracy Engine (accuracy_engine.py) ← Reads Bet_Slips + ResultsClean ONLY
+CSV.GZ + immutable content-addressed ledgers
     ↓
-HQ Pipeline (highest_quarter.py)   ← Softmax + Bayesian + Forebet blend
+Research-only frozen-prediction assay
     ↓
-Pipeline Writer (pipeline_writer.py) ← Central writer to Bet_Slips
-    ↓ write_client (read/write scopes)
-Bet_Slips sheet (Google Sheets)
-    ↓
-Dashboard (dashboard.html)         ← Live UI with all 7 bet type reports
+DuckDB SQL / coverage CLI / optional deduplicated WhatsApp heartbeat
+
+scripts/daily.py → sole unattended write orchestrator
 ```
 
-## Key Files
+## Key files
+
+- `ingestion/duckdb_store.py` — durable canonical tables and freeze semantics.
+- `ingestion/warehouse.py` — research SQL views.
+- `ingestion/ledger.py` — immutable evidence.
+- `ingestion/mining.py` — research-only assay.
+- `scripts/daily.py` — one autonomous entry point.
+- `scripts/build_warehouse.py` — canonical CSV.GZ materialization.
+- `scripts/recover_warehouse.py` — guarded CSV.GZ recovery.
+- `scripts/mine_assay.py` — standalone research assay.
+- `scripts/notify.py` — operational heartbeat.
+
+The existing `assayer/` engines remain reusable domain logic. The current assay
+uses only frozen pre-tip moneyline predictions and reconciled finals. It does
+not certify official picks without walk-forward, odds-aware ROI, and CLV gates.
+
+## Runtime configuration
+
+- `MAGOLIDE_WAREHOUSE` — defaults to `localdata/warehouse.duckdb`.
+- `ALLOW_MAGOLIDE_WRITES=true` — canonical write opt-in.
+- `ALLOW_FIXTURE_WRITES=true` — separate isolated fixture-write opt-in.
+- `WHATSAPP_TOKEN` / `WHATSAPP_PHONE_NUMBER_ID` / `WHATSAPP_RECIPIENT` — optional.
+- `ALLOW_NOTIFICATION_WRITES=true` — notification send opt-in.
+
+Optional provider keys are documented in `docs/INGESTION_RUNBOOK.md`. The
+default runtime needs only DuckDB and Requests. Legacy Google packages are
+isolated in the `legacy` extra.
+
+## Headless read access
+
+```bash
+python -m ingestion.cli coverage --league NBA
+python scripts/mine_assay.py --league NBA
+python scripts/build_warehouse.py
 ```
-app.py                          # Flask server — all API routes
-auth/google_auth.py             # Read + Write Google Service Account clients
-registry/satellite_registry.py # JSON-based satellite registry (CRUD)
-registry/registry.json          # Auto-created: satellite data store
-fetcher/sheet_fetcher.py        # Rate-limited fetcher + Bet_Slips/ResultsClean readers
-assayer/assayer_engine.py       # Ma Assayer purity engine (ISOLATED — do not modify)
-assayer/bet_record.py           # Universal BetRecord dataclass + to/from_bet_slip_row()
-assayer/accuracy_engine.py      # MA GOLIDE COMPLETE ACCURACY REPORT — all 7 bet types
-assayer/highest_quarter.py      # Elite HQ pipeline: softmax + Bayesian + Forebet blend
-assayer/pipeline_writer.py      # Central pipeline writer with Coverage % tracking
-templates/dashboard.html        # Dashboard UI with Report + Run HQ buttons
+
+For detailed facts, open `localdata/warehouse.duckdb` through
+`ingestion.warehouse.connect()` and query `prediction_facts`, `book_facts`,
+`latest_pregame_predictions`, or `game_results`.
+
+## Common commands
+
+```bash
+# Offline suite
+python -m pytest tests -q
+
+# Hermetic daily dry run
+python scripts/daily.py --auto-once --offline-fixture
+
+# Persist canonical state deliberately
+ALLOW_MAGOLIDE_WRITES=true python scripts/daily.py --auto-once --write
 ```
 
-## BET_TYPES (all 7)
-- BANKER — Moneyline high-confidence winner
-- ROBBER — Underdog/upset moneyline pick
-- SNIPER_OU — Quarter Over/Under totals
-- SNIPER_MARGIN — Quarter spread/side bets
-- FIRST_HALF_1X2 — First Half winner (1=home, X=draw, 2=away)
-- FT_OU — Full-Time Over/Under totals
-- HIGHEST_QUARTER — Highest scoring quarter prediction
-
-## ORIGIN_CONFIGS (all 4)
-- TIER1 — Config 1 only (deterministic)
-- TIER2 — Config 2 only (deterministic)
-- BLENDED — Combination of T1+T2
-- LEGACY — Pre-v2 or untagged
-
-## HQ Pipeline Thresholds
-- STRONG ≥ 58% confidence → accepted
-- MEDIUM ≥ 54% confidence → accepted
-- Anything < 54% → auto-rejected
-
-## Secrets Required
-- `GOOGLE_SERVICE_ACCOUNT_JSON` — Full JSON of a Google Service Account key.
-  Share satellites Drive folder with the service account email. Account needs
-  spreadsheets write permission for HQ pipeline to write to Bet_Slips.
-
-## API Endpoints
-- `GET /` — Dashboard
-- `GET /api/status` — Health + satellite count
-- `GET /api/satellites` — List registry (filters: date, league, format)
-- `POST /api/satellites/add` — Add one satellite
-- `POST /api/satellites/bulk-add` — Bulk add from JSON array
-- `DELETE /api/satellites/<id>` — Remove from registry
-- `GET /api/satellites/<id>` — Get one satellite
-- `POST /api/fetch/<id>` — Fetch one satellite's sheet data
-- `POST /api/assay/<id>` — Fetch + run Ma Assayer purity engine
-- `POST /api/fetch-all` — Background batch fetch all satellites
-- `POST /api/assay-all` — Background batch assay all satellites
-- `GET /api/job/<job_id>` — Poll background job status
-- `POST /api/accuracy-report/<id>?origin_config=TIER1|TIER2|BLENDED|LEGACY` — MA GOLIDE COMPLETE ACCURACY REPORT
-- `POST /api/run-hq/<id>` — Run HQ pipeline → write BetRecords to Bet_Slips
-- `GET /api/bet-slips-count/<id>` — Count rows in Bet_Slips tab
-- `POST /api/reset-auth` — Clear auth cache
-
-## Design Decisions
-- Rate limiting: 1.1s between all Google API calls
-- Registry stored as registry/registry.json (portable, no DB needed)
-- Background threading for bulk operations (non-blocking UI)
-- Accuracy engine reads ONLY from Bet_Slips + ResultsClean — zero fallbacks
-- Pipeline Writer tracks predictions_generated vs written for Coverage %
-- Write client uses full spreadsheets+drive scopes; read client uses readonly scopes
-- assayer_engine.py is isolated and must never be modified
+The Replit run button executes the isolated fixture dry run, not a web service.
+See `docs/DUCKDB_ARCHITECTURE.md` and `docs/INGESTION_RUNBOOK.md` for full
+operations and migration boundaries.

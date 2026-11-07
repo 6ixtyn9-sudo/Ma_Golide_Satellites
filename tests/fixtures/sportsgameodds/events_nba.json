@@ -1,0 +1,42 @@
+{
+  "_note": "DOCUMENTATION_ONLY synthetic fixture authored from the documented SportsGameOdds getEvents schema (sportsgameodds.com/docs/endpoints/getEvents): data[] with eventID/status/startTime/teams and markets keyed by oddID ('points-all-game-ou-over/-under', 'points-all-1q-ou-*', 'points-all-4q-ou-over'), each carrying price/line/bookOdds. NOT a captured API response. One pre-match event; Q2/Q3 deliberately absent so partial-quarter behaviour is visible.",
+  "data": [
+    {
+      "eventID": "sgo-evt-1",
+      "leagueID": "NBA",
+      "status": "upcoming",
+      "startTime": "2026-11-07T00:30:00Z",
+      "teams": [
+        {"name": "Atlanta Hawks", "abbreviation": "ATL", "home": true},
+        {"name": "Denver Nuggets", "abbreviation": "DEN", "home": false}
+      ],
+      "markets": {
+        "points-all-game-ou-over": {
+          "price": -108,
+          "line": 232.5,
+          "bookOdds": {"draftkings": {"price": -110}, "fanduel": {"price": -106}}
+        },
+        "points-all-game-ou-under": {
+          "price": -112,
+          "line": 232.5,
+          "bookOdds": {"draftkings": {"price": -110}, "fanduel": {"price": -114}}
+        },
+        "points-all-1q-ou-over": {
+          "price": -105,
+          "line": 58.5,
+          "bookOdds": {"draftkings": {"price": -105}}
+        },
+        "points-all-1q-ou-under": {
+          "price": -115,
+          "line": 58.5,
+          "bookOdds": {"draftkings": {"price": -115}}
+        },
+        "points-all-4q-ou-over": {
+          "price": -102,
+          "line": 56.5,
+          "bookOdds": {"draftkings": {"price": -102}}
+        }
+      }
+    }
+  ]
+}

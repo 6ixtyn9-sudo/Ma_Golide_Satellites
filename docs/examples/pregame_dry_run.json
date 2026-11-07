@@ -1,0 +1,52 @@
+{
+ "league": "NBA",
+ "generated_utc": "2026-11-06T21:30:08Z",
+ "mode": "dry_run",
+ "fixtures_found": 1,
+ "predictions_selected": {
+  "espn": 1
+ },
+ "full_game_line_coverage": {},
+ "quarter_line_coverage": {},
+ "finals_written": 0,
+ "frozen_predictions_used": 0,
+ "gaps": [
+  {
+   "game_id": "401909938",
+   "required_field": "book_q2_line",
+   "reason": "unsupported",
+   "provider": "none",
+   "detail": "no fresh pre-match Q2 total line for configured book",
+   "observed_utc": "2026-11-06T21:30:08Z"
+  },
+  {
+   "game_id": "401909938",
+   "required_field": "book_q3_line",
+   "reason": "unsupported",
+   "provider": "none",
+   "detail": "no fresh pre-match Q3 total line for configured book",
+   "observed_utc": "2026-11-06T21:30:08Z"
+  }
+ ],
+ "provider_health": [],
+ "quota": {},
+ "rows": [
+  {
+   "game_id": "401909938",
+   "matchup": "Denver Nuggets @ Indiana Pacers",
+   "tip_utc": "2026-11-07T22:00:00Z",
+   "prediction_provider": "espn",
+   "prediction_reason": "complete_bundle",
+   "prob_pct": "23.1 - 76.9",
+   "avg": "230.6",
+   "odds": 1.55,
+   "full_game_line": 231.0,
+   "quarters": {
+    "Q1": 57.5,
+    "Q2": null,
+    "Q3": null,
+    "Q4": 59.0
+   }
+  }
+ ]
+}
