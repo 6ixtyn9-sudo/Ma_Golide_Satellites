@@ -13,14 +13,17 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List
 
-from assayer.assayer_engine import assay_side_data
+from assayer.assayer_engine import assay_prediction_outcomes
 from .duckdb_store import DuckDBStore
-from .models import League
+from .identity import parse_utc
+from .models import GameStatus, League
 
 
 def prediction_outcome_rows(store: DuckDBStore, league: League) -> List[Dict[str, Any]]:
     rows: List[Dict[str, Any]] = []
     for game in store.list_games(league=league):
+        if game.status is not GameStatus.FINAL:
+            continue
         if game.actual is None or not game.actual.reconciles()[0]:
             continue
         if game.actual.home_final is None or game.actual.away_final is None:
@@ -37,6 +40,10 @@ def prediction_outcome_rows(store: DuckDBStore, league: League) -> List[Dict[str
                 continue
             if prediction.prob_home is None or prediction.prob_away is None:
                 continue
+            if abs(prediction.prob_home + prediction.prob_away - 1.0) > 0.01:
+                continue
+            if parse_utc(prediction.observed_utc) >= parse_utc(game.scheduled_utc):
+                continue
             if prediction.prob_home == prediction.prob_away:
                 continue
             selected_side = (
@@ -46,8 +53,8 @@ def prediction_outcome_rows(store: DuckDBStore, league: League) -> List[Dict[str
                 {
                     "game_id": game.game_id,
                     "league": league.value,
-                    "quarter": "full_game",
-                    "tier": "provider_moneyline",
+                    "period": "full_game",
+                    "market": "moneyline",
                     "side": selected_side,
                     "confidence": max(prediction.prob_home, prediction.prob_away),
                     "outcome": "win" if selected_side == actual_side else "loss",
@@ -63,18 +70,14 @@ def prediction_outcome_rows(store: DuckDBStore, league: League) -> List[Dict[str
 
 def mine_prediction_assay(store: DuckDBStore, league: League) -> Dict[str, Any]:
     outcome_rows = prediction_outcome_rows(store, league)
-    edges = []
-    for provider in sorted({row["provider"] for row in outcome_rows}):
-        provider_rows = [row for row in outcome_rows if row["provider"] == provider]
-        for edge in assay_side_data(provider_rows, source_label=provider):
-            edge["status"] = "research_only"
-            edge["certified"] = False
-            edge["certification_reason"] = "walk_forward_validation_required"
-            edges.append(edge)
-    edges.sort(key=lambda edge: (edge["segment"][-1], -edge["win_rate"], -edge["n"]))
+    edges = assay_prediction_outcomes(outcome_rows)
+    for edge in edges:
+        edge["status"] = "research_only"
+        edge["certified"] = False
+        edge["certification_reason"] = "walk_forward_validation_required"
     outcomes = Counter(row["outcome"] for row in outcome_rows)
     return {
-        "schema_version": "magolide.research_assay.v1",
+        "schema_version": "magolide.research_assay.v2",
         "league": league.value,
         "status": "research_only",
         "certified_picks": 0,
@@ -82,7 +85,8 @@ def mine_prediction_assay(store: DuckDBStore, league: League) -> Dict[str, Any]:
         "exclusions": [
             "post_tip_predictions",
             "unfrozen_predictions",
-            "missing_or_tied_probabilities",
+            "missing_tied_or_incoherent_probabilities",
+            "predictions_not_observed_strictly_before_tip",
             "unreconciled_or_tied_finals",
             "expected_total_to_ou_conversion",
         ],

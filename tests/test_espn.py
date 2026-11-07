@@ -1,8 +1,8 @@
 """ESPN provider tests — fixture-based, no network.
 
 Golden: event 401909938 (Denver Nuggets at Indiana Pacers, BPI observed
-2026-11-06T21:51Z with statistics on ``awayTeam``) must render exactly the
-legacy display bundle. Orientation tests prove the mapping flips through
+2026-11-06T21:51Z with statistics on ``awayTeam``) must map to exact canonical
+prediction facts. Orientation tests prove the mapping flips through
 team ids when the statistics sit on the other side, and that an
 unreconcilable stats-side team id (or identical predictor refs) is
 rejected, never guessed. Result tests prove quarter/OT aggregation and
@@ -28,12 +28,6 @@ from ingestion.providers.espn import (
 )
 
 GOLDEN_EVENT = "401909938"
-GOLDEN_DISPLAY = {
-    "Prob %": "23.1 - 76.9",
-    "Pred": 2,
-    "Pred Score": "111-120",
-    "Avg": "230.6",
-}
 PREDICTOR_KEY = f"competitions/{GOLDEN_EVENT}/predictor"
 
 
@@ -80,14 +74,13 @@ def _mutated_golden(load_fixture, stat_name: str, value: float) -> Dict[str, Any
 # ---------------------------------------------------------------------------
 
 
-def test_golden_bpi_401909938_renders_exact_display(load_fixture, fixture_fetch):
+def test_golden_bpi_401909938_maps_exact_prediction_facts(load_fixture, fixture_fetch):
     # No game passed: orientation falls back to the payload's homeTeam/
     # awayTeam keys (refs 11 vs 7 are present and distinct). Stats sit on
     # awayTeam (Denver), so 76.938 is the AWAY win probability.
     prediction = fetch_bpi(
         GOLDEN_EVENT, fixture_fetch({PREDICTOR_KEY: "espn/predictor_401909938.json"})
     )
-    assert prediction.display() == GOLDEN_DISPLAY
     assert prediction.provider == "espn"
     assert prediction.model == "espn-bpi"
     assert prediction.game_id == GOLDEN_EVENT
@@ -111,7 +104,9 @@ def test_golden_bpi_with_game_object(load_fixture, fixture_fetch):
         fixture_fetch({PREDICTOR_KEY: "espn/predictor_401909938.json"}),
         game=_golden_game(),
     )
-    assert prediction.display() == GOLDEN_DISPLAY
+    assert prediction.prob_home == pytest.approx(0.23062)
+    assert prediction.prob_away == pytest.approx(0.76938)
+    assert prediction.expected_total == pytest.approx(230.586)
 
 
 def test_bpi_orientation_when_stats_on_home_side(load_fixture, fixture_fetch):
@@ -133,12 +128,6 @@ def test_bpi_orientation_when_stats_on_home_side(load_fixture, fixture_fetch):
     assert prediction.expected_away_score == pytest.approx(112.0)
     assert prediction.expected_total == pytest.approx(230.0)
     assert prediction.expected_margin == pytest.approx(6.0)
-    assert prediction.display() == {
-        "Prob %": "55.0 - 45.0",
-        "Pred": 1,
-        "Pred Score": "118-112",
-        "Avg": "230.0",
-    }
 
 
 def test_bpi_unknown_team_reference_raises_identity_error(load_fixture, fixture_fetch):
@@ -197,11 +186,7 @@ def test_bpi_missing_expected_scores_keeps_probabilities_and_gaps(
     assert prediction.expected_away_score is None
     assert prediction.expected_total is None
     assert prediction.expected_margin is None
-    display = prediction.display()
-    assert display["Prob %"] == "44.6 - 55.4"
-    assert display["Pred"] == 2
-    assert display["Pred Score"] is None
-    assert display["Avg"] is None
+    assert prediction.prob_away > prediction.prob_home
 
     scoreboard = {
         "events": [
@@ -351,7 +336,7 @@ def test_finals_reconcile_quarters(load_fixture, fixture_fetch):
 
 def test_ot_linescores_aggregate_into_single_ot(load_fixture, fixture_fetch):
     # Synthetic scoreboard with a 5-period linescore: the 5th element is
-    # OT, summed into the single combined OT pair (legacy OT cell), never
+    # OT, summed into the single combined canonical OT pair, never
     # treated as a 5th quarter.
     games = fetch_recent_results(
         "20261104", fixture_fetch({"dates=20261104": "espn/scoreboard_20261104_ot.json"})

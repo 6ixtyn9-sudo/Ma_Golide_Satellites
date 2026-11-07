@@ -29,7 +29,6 @@ def fixture_fetch(*paths: str) -> FetchFn:
     serves one URL independent of the requested URL. Alternatively pass
     ``{url_substring: relative_path}`` mappings via :func:`fixture_fetch_map`.
     """
-    import pytest
 
     if len(paths) == 1 and isinstance(paths[0], tuple):
         rel = os.path.join(*paths[0])

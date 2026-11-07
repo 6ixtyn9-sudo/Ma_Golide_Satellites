@@ -28,7 +28,7 @@ until then. Documented contract used here:
   guessed), ``totals`` → FULL_GAME TOTAL, ``totals_q1``..``totals_q4`` →
   exactly Q1..Q4. The total ``line`` is the outcome ``point`` (e.g. 232.5),
   never a price; a total without a point yields ``line=None`` and is NOT
-  usable for sheet writes (smoke reports it under ``not_usable``).
+  usable for total forecasts (smoke reports it under ``not_usable``).
 - Quota: ``x-requests-remaining``/``x-requests-used`` headers via
   :func:`parse_quota`.
 - Date narrowing is applied client-side on ``commence_time`` (UTC calendar
@@ -61,8 +61,10 @@ BASE_URL = "https://api.the-odds-api.com/v4"
 # adapter raises for it instead of fabricating a key.
 NBA_SPORT_KEY = "basketball_nba"
 
-H2H_KEY = "h2h"
-# Documented market keys -> canonical period (quarters only via per-event odds).
+MONEYLINE_MARKET_KEYS: Dict[str, Period] = {
+    "h2h": Period.FULL_GAME,
+    "h2h_h1": Period.H1,
+}
 TOTALS_MARKET_KEYS: Dict[str, Period] = {
     "totals": Period.FULL_GAME,
     "totals_q1": Period.Q1,
@@ -70,8 +72,18 @@ TOTALS_MARKET_KEYS: Dict[str, Period] = {
     "totals_q3": Period.Q3,
     "totals_q4": Period.Q4,
 }
-FULL_GAME_MARKETS_PARAM = "h2h,totals"
-QUARTER_MARKETS_PARAM = "totals_q1,totals_q2,totals_q3,totals_q4"
+SPREAD_MARKET_KEYS: Dict[str, Period] = {
+    "spreads": Period.FULL_GAME,
+    "spreads_q1": Period.Q1,
+    "spreads_q2": Period.Q2,
+    "spreads_q3": Period.Q3,
+    "spreads_q4": Period.Q4,
+}
+FULL_GAME_MARKETS_PARAM = "h2h,totals,spreads"
+QUARTER_MARKETS_PARAM = (
+    "totals_q1,totals_q2,totals_q3,totals_q4,"
+    "spreads_q1,spreads_q2,spreads_q3,spreads_q4,h2h_h1"
+)
 DEFAULT_REGIONS = "us"
 DEFAULT_BOOKMAKERS = "draftkings"
 
@@ -262,6 +274,7 @@ def _event_pre_match(event: Dict[str, Any], now_utc: str) -> bool:
 
 def _moneyline_snapshot(
     market: Dict[str, Any],
+    period: Period,
     game_id: str,
     book: str,
     observed_utc: str,
@@ -272,11 +285,15 @@ def _moneyline_snapshot(
 ) -> Optional[BookSnapshot]:
     home_price: Optional[float] = None
     away_price: Optional[float] = None
+    draw_price: Optional[float] = None
     for outcome in market.get("outcomes") or []:
         if not isinstance(outcome, dict):
             _record_gap(game_id, "h2h_outcome", "non-dict outcome skipped", CoverageState.PROVIDER_ERROR)
             continue
         name = str(outcome.get("name") or "")
+        if name.strip().lower() in {"draw", "x"}:
+            draw_price = _number(outcome.get("price"))
+            continue
         side = _team_side(name, home_team, away_team)
         if side is None:
             _record_gap(
@@ -291,14 +308,14 @@ def _moneyline_snapshot(
             home_price = price
         else:
             away_price = price
-    if home_price is None and away_price is None:
+    if home_price is None and away_price is None and draw_price is None:
         return None
     return BookSnapshot(
         game_id=game_id,
         provider=PROVIDER,
         book=book,
         market=Market.MONEYLINE,
-        period=Period.FULL_GAME,
+        period=period,
         observed_utc=observed_utc,
         source_modified_utc=str(market.get("last_update")) if market.get("last_update") else None,
         pre_match=pre_match,
@@ -308,6 +325,7 @@ def _moneyline_snapshot(
         payload_hash=payload_hash(event),
         home_price_decimal=home_price,
         away_price_decimal=away_price,
+        draw_price_decimal=draw_price,
     )
 
 
@@ -338,7 +356,7 @@ def _total_snapshot(
                 f"unexpected outcome {str(outcome.get('name'))!r} skipped",
             )
     # The LINE VALUE is the outcome "point" (e.g. 232.5) — never a price.
-    # Missing point -> line=None: NOT usable for sheet writes (totals need
+    # Missing point -> line=None: NOT usable for total forecasts (totals need
     # the line); smoke reports it under "not_usable".
     line = _number((over or {}).get("point"))
     if line is None:
@@ -362,6 +380,78 @@ def _total_snapshot(
         line=line,
         over_price_decimal=over_price,  # decimal AS-IS
         under_price_decimal=under_price,  # decimal AS-IS
+    )
+
+
+def _spread_snapshot(
+    market: Dict[str, Any],
+    period: Period,
+    game_id: str,
+    book: str,
+    observed_utc: str,
+    pre_match: bool,
+    home_team: str,
+    away_team: str,
+    event: Dict[str, Any],
+) -> Optional[BookSnapshot]:
+    """Normalize a two-sided spread with a home-oriented line.
+
+    The provider's home and away points must be exact opposites when both
+    are present. Contradictory lines are rejected rather than averaged.
+    """
+    home: Optional[Dict[str, Any]] = None
+    away: Optional[Dict[str, Any]] = None
+    for outcome in market.get("outcomes") or []:
+        if not isinstance(outcome, dict):
+            _record_gap(
+                game_id, "spread_outcome", "non-dict outcome skipped",
+                CoverageState.PROVIDER_ERROR,
+            )
+            continue
+        side = _team_side(str(outcome.get("name") or ""), home_team, away_team)
+        if side == "home" and home is None:
+            home = outcome
+        elif side == "away" and away is None:
+            away = outcome
+        else:
+            _record_gap(
+                game_id,
+                f"spreads_{period.value.lower()}",
+                f"unexpected outcome {str(outcome.get('name'))!r} skipped",
+            )
+    home_line = _number((home or {}).get("point"))
+    away_line = _number((away or {}).get("point"))
+    if home_line is not None and away_line is not None:
+        if abs(home_line + away_line) > 1e-9:
+            _record_gap(
+                game_id,
+                f"spread_line_{period.value.lower()}",
+                "home/away spread points are not exact opposites; market rejected",
+                CoverageState.PROVIDER_ERROR,
+            )
+            return None
+    elif home_line is None and away_line is not None:
+        home_line = -away_line
+    home_price = _number((home or {}).get("price"))
+    away_price = _number((away or {}).get("price"))
+    if home_line is None and home_price is None and away_price is None:
+        return None
+    return BookSnapshot(
+        game_id=game_id,
+        provider=PROVIDER,
+        book=book,
+        market=Market.SPREAD,
+        period=period,
+        observed_utc=observed_utc,
+        source_modified_utc=(
+            str(market.get("last_update")) if market.get("last_update") else None
+        ),
+        pre_match=pre_match,
+        main_line=True,
+        payload_hash=payload_hash(event),
+        line=home_line,
+        home_price_decimal=home_price,
+        away_price_decimal=away_price,
     )
 
 
@@ -409,13 +499,20 @@ def parse_event(
                 _record_gap(game_id, "market", "non-dict/keyless market skipped", CoverageState.PROVIDER_ERROR)
                 continue
             key = str(market["key"])
-            if key == H2H_KEY:
+            if key in MONEYLINE_MARKET_KEYS:
                 snapshot = _moneyline_snapshot(
-                    market, game_id, book, observed_utc, pre_match, home_team, away_team, event
+                    market, MONEYLINE_MARKET_KEYS[key], game_id, book,
+                    observed_utc, pre_match, home_team, away_team, event,
                 )
             elif key in TOTALS_MARKET_KEYS:
                 snapshot = _total_snapshot(
-                    market, TOTALS_MARKET_KEYS[key], game_id, book, observed_utc, pre_match, event
+                    market, TOTALS_MARKET_KEYS[key], game_id, book,
+                    observed_utc, pre_match, event,
+                )
+            elif key in SPREAD_MARKET_KEYS:
+                snapshot = _spread_snapshot(
+                    market, SPREAD_MARKET_KEYS[key], game_id, book,
+                    observed_utc, pre_match, home_team, away_team, event,
                 )
             else:
                 continue  # not requested; nothing to normalise
@@ -486,7 +583,7 @@ def fetch_odds(
     _reset_gaps()
     if not is_enabled():
         return []
-    league_name = _require_supported_league(league)
+    _require_supported_league(league)
     fetch = fetch_factory(PROVIDER)
     now = now_utc or identity.now_utc_iso()
     observed_utc = now

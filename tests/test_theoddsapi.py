@@ -350,3 +350,77 @@ def test_smoke_reports_counts_and_quota():
     }
     assert result["pre_match_vs_live"] == {"pre_match": 1, "not_pre_match": 0}
     assert result["not_usable"] == 0
+
+
+def test_quarter_spread_and_first_half_1x2_are_exact_facts():
+    payload = {
+        "id": "odds-extended",
+        "commence_time": "2099-11-07T00:30:00Z",
+        "home_team": "Atlanta Hawks",
+        "away_team": "Denver Nuggets",
+        "bookmakers": [
+            {
+                "key": "draftkings",
+                "markets": [
+                    {
+                        "key": "spreads_q1",
+                        "last_update": "2026-11-06T21:59:00Z",
+                        "outcomes": [
+                            {"name": "Atlanta Hawks", "price": 1.9, "point": -2.5},
+                            {"name": "Denver Nuggets", "price": 1.92, "point": 2.5},
+                        ],
+                    },
+                    {
+                        "key": "h2h_h1",
+                        "outcomes": [
+                            {"name": "Denver Nuggets", "price": 2.1},
+                            {"name": "Draw", "price": 11.0},
+                            {"name": "Atlanta Hawks", "price": 1.85},
+                        ],
+                    },
+                ],
+            }
+        ],
+    }
+    snapshots = theoddsapi.parse_event(payload, OBSERVED, now_utc=OBSERVED)
+    spread = next(row for row in snapshots if row.market is Market.SPREAD)
+    assert spread.period is Period.Q1
+    assert spread.line == -2.5  # home-oriented, never inferred from a price
+    assert spread.home_price_decimal == 1.9
+    assert spread.away_price_decimal == 1.92
+    first_half = next(
+        row
+        for row in snapshots
+        if row.market is Market.MONEYLINE and row.period is Period.H1
+    )
+    assert first_half.home_price_decimal == 1.85
+    assert first_half.away_price_decimal == 2.1
+    assert first_half.draw_price_decimal == 11.0
+
+
+def test_contradictory_spread_points_fail_closed():
+    payload = {
+        "id": "odds-bad-spread",
+        "commence_time": "2099-11-07T00:30:00Z",
+        "home_team": "Atlanta Hawks",
+        "away_team": "Denver Nuggets",
+        "bookmakers": [
+            {
+                "key": "draftkings",
+                "markets": [
+                    {
+                        "key": "spreads_q1",
+                        "outcomes": [
+                            {"name": "Atlanta Hawks", "price": 1.9, "point": -2.5},
+                            {"name": "Denver Nuggets", "price": 1.9, "point": 3.5},
+                        ],
+                    }
+                ],
+            }
+        ],
+    }
+    theoddsapi._reset_gaps()
+    assert theoddsapi.parse_event(payload, OBSERVED, now_utc=OBSERVED) == []
+    assert any(
+        gap.required_field == "spread_line_q1" for gap in theoddsapi.last_gaps()
+    )

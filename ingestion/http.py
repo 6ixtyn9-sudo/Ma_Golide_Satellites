@@ -17,7 +17,7 @@ import logging
 import os
 import re
 import time
-from typing import Any, Callable, Dict, List, Optional
+from typing import Any, Callable, Dict, Optional
 
 import requests
 
@@ -43,12 +43,11 @@ QUOTA_HEADERS = [
 ]
 
 REDACT_KEYS = (
-    "GOOGLE_SERVICE_ACCOUNT_JSON",
     "PREDIXSPORT_API_KEY",
     "THERUNDOWN_API_KEY",
     "SPORTSGAMEODDS_API_KEY",
     "THE_ODDS_API_KEY",
-    "ALLOW_SHEET_WRITES",
+    "WHATSAPP_TOKEN",
 )
 
 
@@ -72,7 +71,7 @@ def redact(text: str) -> str:
         value = os.environ.get(key, "")
         if value:
             out = out.replace(value, f"[REDACTED:{key}]")
-    # Service account private keys, bearer tokens, generic api keys.
+    # Private keys, bearer tokens, and generic API keys.
     out = re.sub(r"-----BEGIN[ A-Z]*PRIVATE KEY-----[\s\S]*?-----END[ A-Z]*PRIVATE KEY-----", "[REDACTED:PRIVATE_KEY]", out)
     out = re.sub(r"(?i)bearer\s+[A-Za-z0-9._\-]+", "bearer [REDACTED]", out)
     out = re.sub(r"(?i)(api[_-]?key|apikey|token|secret)\s*[=:]\s*['\"]?[A-Za-z0-9._\-]{8,}", r"\1=[REDACTED]", out)

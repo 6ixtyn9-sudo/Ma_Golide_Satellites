@@ -50,7 +50,8 @@ def connect(path: str = DEFAULT_WAREHOUSE, *, read_only: bool = True):
         SELECT
             game_id, provider, book, market, period, observed_utc,
             source_modified_utc, line, over_price_decimal, under_price_decimal,
-            home_price_decimal, away_price_decimal, pre_match, main_line,
+            home_price_decimal, away_price_decimal, draw_price_decimal,
+            pre_match, main_line,
             payload_hash, frozen, payload_json
         FROM book_snapshots;
 
@@ -60,7 +61,8 @@ def connect(path: str = DEFAULT_WAREHOUSE, *, read_only: bool = True):
             SELECT p.*,
                    row_number() OVER (
                        PARTITION BY game_id
-                       ORDER BY captured_at DESC, provider ASC
+                       ORDER BY TRY_CAST(captured_at AS TIMESTAMPTZ) DESC NULLS LAST,
+                                provider ASC
                    ) AS rn
             FROM prediction_facts p
             WHERE pre_tip

@@ -1,6 +1,6 @@
 """Official EuroLeague provider adapter (schedule / boxscore / standings).
 
-Evidence status (see PROVIDER_GUIDE ground rule 7)
+Evidence status (see docs/PROVIDERS.md)
 --------------------------------------------------
 - Schedule + Boxscore endpoints are ``LIVE_VERIFIED``: observed live on
   2026-11-06 and captured into the committed fixtures under
@@ -65,7 +65,7 @@ STANDINGS_URL = (
     "https://api-live.euroleague.net/v2/competitions/E/seasons/{seasoncode}/standings"
 )
 
-# Evidence labels (PROVIDER_GUIDE ground rule 7).
+# Evidence labels used by smoke reports.
 VERIFICATION_LIVE = "LIVE_VERIFIED (live captures 2026-11-06)"
 VERIFICATION_FIXTURE = "FIXTURE_VERIFIED"
 EVIDENCE_STANDINGS = "DOCUMENTATION_ONLY"  # standings endpoint not confirmed
@@ -131,7 +131,7 @@ def _game_from_schedule_row(row: Dict[str, Any], seasoncode: str) -> Game:
     """Map one schedule row to a canonical Game.
 
     Status: ``played=True`` -> FINAL, else SCHEDULED.  Phase is the official
-    ``roundName`` (e.g. ``Round 38``), used as the sheet ``Game Type``.
+    ``roundName`` (e.g. ``Round 38``), used as the canonical game phase.
     Home/away orientation is validated: identical local/road club codes (or,
     when codes are absent, identical club names) raise ``IdentityError``.
     """

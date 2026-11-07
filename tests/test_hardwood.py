@@ -5,8 +5,7 @@ Offline: the artifact comes from the committed fixture
 the public artifact on 2026-11-06 — LIVE_VERIFIED).  Helpers carry the unique
 ``hw_`` prefix so they cannot collide with other agents' conftest helpers.
 
-``Prob %`` display: ``models.fmt_prob`` takes the stored 0..1 fractions and
-converts to percentages itself, so callers must NOT pre-scale by 100.
+Probabilities remain canonical 0..1 fractions throughout acquisition.
 """
 
 from __future__ import annotations
@@ -187,14 +186,14 @@ def test_never_averages_providers():
     assert prediction.provider == "hardwood"  # exactly one provider label
     assert prediction.model == "hardwood"
     assert prediction.produced_by == "roni-altshuler/nba_predictor"
-    # Every displayed field belongs to the same single artifact entry.
-    bundle = prediction.display()
-    assert bundle["Prob %"] == "71.4 - 28.6"  # 0..1 -> percent at render only
-    assert bundle["Pred"] == 1
-    assert bundle["Pred Score"] == "117-109"  # round(117.1), round(109.47)
-    assert bundle["Avg"] == "226.6"  # Hardwood exp_total, one decimal
-    # The ESPN BPI golden total (230.6) must never leak into this bundle.
-    assert bundle["Avg"] != "230.6"
+    # Every field belongs to the same single artifact entry.
+    assert prediction.prob_home == pytest.approx(0.713845)
+    assert prediction.prob_away == pytest.approx(0.286155)
+    assert prediction.expected_home_score == pytest.approx(117.1)
+    assert prediction.expected_away_score == pytest.approx(109.47)
+    assert prediction.expected_total == pytest.approx(226.57)
+    # The ESPN BPI golden total (230.586) must never leak into this bundle.
+    assert prediction.expected_total != pytest.approx(230.586)
 
 
 # ---------------------------------------------------------------------------

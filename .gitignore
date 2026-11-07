@@ -6,15 +6,11 @@ __pycache__/
 .venv/
 .env
 
-# Runtime registry and credentials are not source artifacts.
-registry/registry.json
-auth/*service*.json
-auth/*credential*.json
+# Credentials are never source artifacts.
 service-account*.json
 
 # DuckDB/CSV state belongs in the bounded orchestration cache, not Git.
 localdata/*
-!localdata/README.md
 *.duckdb
 *.duckdb.wal
 *.tmp

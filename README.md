@@ -1,90 +1,130 @@
 # Ma Golide Satellites
 
-Ma Golide is a **headless CSV + DuckDB-first sports data and research system**,
-using Edge Factory's local-data operating patterns. Google Sheets is no longer
-the system of record or a requirement of acquisition or scheduling. There is no
-web service, external database, or synchronization service.
+Ma Golide is a **headless, DuckDB/CSV.GZ-first sports evidence and forecasting
+system**. It acquires schedules, official results, provider predictions, and
+bookmaker observations; freezes pre-tip evidence; measures historical market
+reliability; and emits current market and accumulator research reports.
 
-## Architecture
+There is no web server, spreadsheet store, external database, worksheet
+registry, JSON-file datastore, or external betting writer. JSON is used only
+for complete row payloads inside DuckDB and for disposable derived reports.
 
-```text
-ESPN / EuroLeague / Hardwood / configured book providers
-                         │
-                         ▼
-             canonical provider adapters
-                         │
-                         ▼
-          localdata/warehouse.duckdb  ◀── system of record
-                         │
-             ┌───────────┴────────────┐
-             ▼                        ▼
-   localdata/csv/*.csv.gz   content-addressed immutable ledgers
-             │                        │
-             └───────────┬────────────┘
-                         ▼
-          frozen-prediction research assay
-             (research-only, not auto-certified)
-                         │
-             ┌───────────┴────────────┐
-             ▼                        ▼
-     DuckDB SQL / coverage CLI   optional deduplicated WhatsApp heartbeat
-```
+## Canonical market coverage
 
-The scheduled entry point is one orchestrator:
+| Canonical market | Periods / selections | Evidence rule |
+| --- | --- | --- |
+| Moneyline | Full game: home or away | Valid provider probabilities; an exact priced bookmaker snapshot is required before acca eligibility |
+| Favorite / underdog role | Full-game moneyline | A role on the same moneyline forecast, derived from real home/away prices—not a separate wager model |
+| Total | Full game: over or under | The posted bookmaker line is mandatory; a provider expected total is only a model baseline |
+| Totals | Q1, Q2, Q3, Q4 | Exact period, exact posted line, and over/under prices |
+| Spreads | Q1, Q2, Q3, Q4 | Exact period and home-oriented posted line with both side prices |
+| 1X2 | First half: home, draw, or away | Exact first-half book, including a draw price when the draw is selected |
+| Highest quarter | Q1, Q2, Q3, or Q4 | History-only research forecast; an exact priced highest-quarter book and dead-heat rules are required for acca use |
 
-```bash
-python scripts/daily.py --auto-once --date 2026-11-07
-```
-
-GitHub Actions restores and saves `localdata/` as a cache. Canonical writes and
-WhatsApp delivery have separate opt-ins.
+The forecasting model covers every market family in the former betting
+contract without restoring its worksheet-era names or wrappers. Current book
+adapters do not yet supply highest-quarter prices, so those forecasts remain
+research-only until such evidence exists.
 
 ## Quick start
 
-Python 3.11+ is required. The default runtime needs only DuckDB and Requests;
-the development extra also installs test and legacy-adapter test dependencies.
+Python 3.11+ is required. Runtime dependencies are DuckDB and Requests; the
+development extra adds Pytest and Ruff. `uv` can be installed separately for
+locked environment synchronization.
 
 ```bash
 python -m pip install -e '.[dev]'
-python -m pytest tests -q
+python -m pytest -q
+ruff check .
+```
 
-# Hermetic end-to-end preview: committed fixtures, no credentials, no DB file.
+Run a deterministic, credential-free rehearsal:
+
+```bash
 python scripts/daily.py \
   --auto-once --date 2026-11-07 --offline-fixture \
   --warehouse /tmp/magolide-check/warehouse.duckdb \
   --localdata /tmp/magolide-check --notify
+```
 
-# Live capture, still a dry run for canonical state.
+This writes derived reports under `/tmp/magolide-check/reports`, but does not
+create a DuckDB file or CSV exports. Its verification label is
+`FIXTURE_VERIFIED`; it proves neither live provider coverage nor betting
+performance.
+
+A live acquisition attempt remains a canonical dry run unless `--write` is
+present:
+
+```bash
 python scripts/daily.py --auto-once --date 2026-11-07
+```
 
-# Deliberately persist DuckDB, CSV.GZ and immutable ledgers.
+Deliberate persistence requires both the CLI flag and environment opt-in:
+
+```bash
 ALLOW_MAGOLIDE_WRITES=true python scripts/daily.py \
   --auto-once --date 2026-11-07 --write
 ```
 
-A dry run never creates or changes the DuckDB file. The fixture path is always
-labelled `FIXTURE_VERIFIED`; it is not live provider coverage. Fixture
-persistence requires a separate `ALLOW_FIXTURE_WRITES=true` and an isolated
-warehouse. Fixture reports cannot trigger external notifications.
+## Forecast and acca reports
 
-## Storage and read access
+The three-hour orchestrator runs pregame acquisition, current market
+generation, immutable pre-tip freezing, and (unless skipped) result
+reconciliation.
+Generate a report directly from an existing warehouse with:
+
+```bash
+python scripts/build_markets.py \
+  --league NBA --date 2026-11-07 --as-of 2026-11-07T18:00:00Z \
+  --tz Africa/Johannesburg --legs 3 --limit 5 \
+  --output /tmp/markets.json
+```
+
+For current fixtures, `--as-of` must be before scheduled tip. For historical
+backtests, only reconciled finals available at each simulated cutoff are used.
+The default result-availability delay is four hours.
+
+The walk-forward harness fits separate reliability profiles by league, market,
+period, and model source. Each profile uses only earlier graded outcomes. Its
+shrunken observed-minus-claimed adjustment changes later calibrated
+probabilities; at least 30 graded samples are required before a segment can
+supply acca legs.
+
+An acca is eligible only when every leg has:
+
+- an exact real bookmaker market, period, line where applicable, and selected
+  decimal price;
+- visible pre-tip book evidence and provider evidence where used, with freeze
+  state reported explicitly;
+- enough walk-forward samples and a calibrated probability at least 0.50;
+- acceptable push risk for totals and spreads.
+
+Accas contain exactly the requested number of legs (two through six) and are
+ranked by the product of calibrated leg probabilities. Same-game legs are
+prohibited. Cross-game conditional independence is an explicit simplifying
+assumption, not a measured guarantee. “Highest” therefore means highest under
+that model among eligible combinations—not a guaranteed winner or an
+empirically certified global maximum.
+
+Reports have schema `magolide.market_forecasts.v1` and status
+`decision_support_only`. They cannot place bets or trigger external betting
+writes.
+
+## System of record and read access
 
 - `localdata/warehouse.duckdb`: canonical games, prediction slots, book
-  snapshots, team aliases, provider health, and per-stage run reports.
-- `localdata/csv/*.csv.gz`: materialized canonical tables for SQL research and
-  audit. Materialize with `python scripts/build_warehouse.py`; recover a new
-  warehouse with `scripts/recover_warehouse.py`.
-- `localdata/ledgers/`: immutable content-addressed pregame, freeze, and result
-  snapshots. Identical reruns are no-ops; changed content gets a new hash.
-- `localdata/reports/`: one operational report per orchestrator invocation.
-- `localdata/notification_ledger.json`: hashes of sent operational heartbeats,
-  used to suppress duplicates.
-
-Inspect state without a web application:
+  snapshots, aliases, provider health, and operational run records.
+- `localdata/csv/*.csv.gz`: six materialized canonical tables for audit and
+  recovery.
+- `localdata/ledgers/`: immutable, content-addressed stage snapshots.
+- `localdata/reports/`: derived operational and market JSON reports.
+- `localdata/notification_ledger.json`: bounded notification deduplication
+  metadata, not canonical sports evidence.
 
 ```bash
 python -m ingestion.cli coverage --league NBA
 python scripts/mine_assay.py --league NBA
+python scripts/build_warehouse.py
 
 python - <<'PY'
 from ingestion.warehouse import connect
@@ -94,31 +134,35 @@ con.close()
 PY
 ```
 
-Runtime state is ignored by Git. See `localdata/README.md` for the cache
-boundary and never store credentials there.
-
-## Legacy Google Sheets boundary
-
-The old Sheets adapters and non-destructive writer remain only for explicit
-migration/compatibility work. Install their packages only when needed:
+Recover into a **new** path; recovery never overwrites an existing warehouse:
 
 ```bash
-python -m pip install -e '.[legacy]'
+ALLOW_MAGOLIDE_WRITES=true python scripts/recover_warehouse.py \
+  --warehouse /tmp/recovered.duckdb --csv-dir localdata/csv
 ```
 
-Legacy storage is never selected from `DATA_STORE_SPREADSHEET_ID` implicitly. A
-legacy operation requires an explicit `--data-store-id` or `--sheet-id`, plus
-the legacy write guard when applicable. The default runtime has no satellite
-registry, worksheet, Apps Script, Google service-account, or web dependency.
+## Safety boundaries
+
+- Prediction and book evidence are separate; neither is synthesized from the
+  other.
+- Pre-tip means strictly `observed_utc < scheduled_utc`. Historical training
+  requires immutable frozen rows finalized at/after tip; current reports use
+  the latest visible pre-tip evidence.
+- Dry runs never create or modify canonical DuckDB/CSV state.
+- Fixture persistence needs `ALLOW_FIXTURE_WRITES=true`, the normal write
+  opt-in, and paths isolated from canonical state.
+- Notifications are optional operational heartbeats, not betting advice.
+  Delivery has a separate `ALLOW_NOTIFICATION_WRITES=true` gate and fixture
+  reports can never send.
+- Live-only tests are deselected by default. Offline tests make no network
+  calls and no external writes.
 
 ## Documentation
 
-- `docs/DATA_ACQUISITION_BUILD_PROMPT.md` — authoritative architecture/build
-  contract for future agents.
-- `docs/DUCKDB_ARCHITECTURE.md` — Edge Factory pattern mapped to Ma Golide.
-- `docs/INGESTION_RUNBOOK.md` — operations, gates, cache recovery, and queries.
-- `docs/ACQUISITION_FINAL_REPORT.md` — implemented scope and verification.
-- `ingestion/PROVIDER_GUIDE.md` — provider identity and market constraints.
-
-No live production migration, WhatsApp send, or authenticated provider
-validation is implied by the offline tests.
+- [Architecture](docs/ARCHITECTURE.md)
+- [Data and forecasting contract](docs/CONTRACT.md)
+- [Operations runbook](docs/OPERATIONS.md)
+- [Provider matrix](docs/PROVIDERS.md)
+- [Research methodology](docs/RESEARCH.md)
+- [Verification and limitations](docs/VERIFICATION.md)
+- [Contributor checks](docs/CONTRIBUTING.md)

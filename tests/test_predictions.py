@@ -1,13 +1,11 @@
 """Tests: prediction selection, coherence, freezing, and odds binding."""
 
-from datetime import datetime, timedelta, timezone
 
 import pytest
 
-from ingestion.models import BookSnapshot, CoverageState, Game, GameStatus, League, Market, Period, Prediction
+from ingestion.models import BookSnapshot, Game, League, Market, Period, Prediction
 from ingestion.predictions import (
     freeze_game_predictions,
-    is_complete,
     latest_pre_tip,
     odds_for_prediction,
     resolve_frozen_bundle,
@@ -110,8 +108,9 @@ def test_rounded_scores_may_disagree_with_favorite_and_survive():
               expected_home_score=110.4, expected_away_score=110.6,
               expected_total=221.0, expected_margin=-0.2)
     result = select_prediction([p], _game(), NOW)
-    assert result.selected.display()["Pred"] == 1      # home favorite
-    assert result.selected.display()["Pred Score"] == "110-111"  # away rounded higher
+    assert result.selected.prob_home > result.selected.prob_away
+    assert result.selected.expected_home_score == 110.4
+    assert result.selected.expected_away_score == 110.6
 
 
 def test_identity_mismatch_excluded():
@@ -140,7 +139,9 @@ def test_freeze_uses_latest_pre_tip_observation():
     game = _game()
     statuses = freeze_game_predictions(store, game, game.scheduled_utc)
     assert statuses["espn"] == "frozen"
-    frozen_pred, was_frozen = resolve_frozen_bundle(store, "g1")
+    frozen_pred, was_frozen = resolve_frozen_bundle(
+        store, "g1", game.scheduled_utc
+    )
     assert was_frozen and frozen_pred.observed_utc == a.observed_utc
 
 
@@ -177,7 +178,9 @@ def test_no_pregame_prediction_status():
 
 def test_results_without_pregame_prediction_blank():
     store = InMemoryStore()
-    pred, was_frozen = resolve_frozen_bundle(store, "missing-game")
+    pred, was_frozen = resolve_frozen_bundle(
+        store, "missing-game", "2026-11-07T22:00:00Z"
+    )
     assert pred is None and not was_frozen
 
 
@@ -188,15 +191,19 @@ def test_results_use_pre_tip_not_post_tip_when_unfrozen():
     b = _pred("espn", "2026-11-07T23:30:00Z", expected_total=999.0)
     b.pre_tip = False                    # pipeline stamps this at storage
     _seed(store, [a, b])
-    pred, was_frozen = resolve_frozen_bundle(store, "g1")
+    pred, was_frozen = resolve_frozen_bundle(
+        store, "g1", "2026-11-07T22:00:00Z"
+    )
     assert not was_frozen
     assert pred.expected_total == 230.0
 
 
-def test_latest_pre_tip_boundary_at_tip_inclusive():
+def test_latest_pre_tip_boundary_at_tip_is_excluded():
+    before = _pred("espn", "2026-11-07T21:59:59Z")
     at_tip = _pred("espn", "2026-11-07T22:00:00Z")
     after = _pred("espn", "2026-11-07T22:00:01Z")
-    assert latest_pre_tip([at_tip], "2026-11-07T22:00:00Z") is at_tip
+    assert latest_pre_tip([at_tip, before], "2026-11-07T22:00:00Z") is before
+    assert latest_pre_tip([at_tip], "2026-11-07T22:00:00Z") is None
     assert latest_pre_tip([after], "2026-11-07T22:00:00Z") is None
 
 
@@ -221,6 +228,11 @@ def test_odds_none_without_prediction_or_market():
         observed_utc=NOW, line=232.0, over_price_decimal=1.9,
     )
     assert odds_for_prediction(total_snap, _pred("espn", NOW)) is None
+
+
+def test_tied_probabilities_do_not_create_an_arbitrary_price_selection():
+    tied = _pred("espn", NOW, prob_home=0.5, prob_away=0.5)
+    assert odds_for_prediction(_snap(), tied) is None
 
 
 def test_prediction_flip_recomputes_price_from_same_snapshot():

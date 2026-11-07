@@ -1,7 +1,7 @@
 """ESPN NBA provider: discovery, results, standings and BPI predictions.
 
 Keyless, undocumented public endpoints (no SLA). Sampled responses were
-LIVE_VERIFIED on 2026-11-06 (see PROVIDER_GUIDE.md); ordinary tests run
+LIVE_VERIFIED on 2026-11-06 (see docs/PROVIDERS.md); ordinary tests run
 against small committed fixtures only, and smoke() labels its evidence
 accordingly (LIVE_VERIFIED only when it is handed a real ``http.HttpClient``).
 
@@ -63,7 +63,7 @@ BPI_URL = (
 )
 
 # Payload probabilities arrive as percentages (0-100); they are stored as
-# 0-1 fractions and converted back to percent only at render time.
+# Probabilities remain canonical 0-1 fractions in stored prediction facts.
 PROB_SUM_TOLERANCE_PCT = 0.01  # |gameProjection + teamChanceLoss - 100| <= 0.01
 MARGIN_TOLERANCE = 0.25  # |teamExpectedPts - oppExpectedPts - teamPredPtDiff| <= 0.25
 # Standings sanity guard: a cumulative points-for total is always far above
@@ -222,7 +222,7 @@ def _actual_from_competitors(
 
     Exactly 4 elements map to Q1..Q4; every further element is one overtime
     period. All OT elements are SUMMED into the single combined OT pair
-    (legacy ``OT`` cell semantics; no residual is folded anywhere else) and
+    (cumulative overtime semantics; no residual is folded elsewhere) and
     ``overtime_periods`` records how many there were. Fewer than 4
     elements, mismatched side lengths or unparseable numbers raise
     ``IdentityError`` — quarantine, no guessing. A quarter-sum that does

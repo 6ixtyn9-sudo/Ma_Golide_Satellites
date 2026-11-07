@@ -1,15 +1,8 @@
 """Persistence interface for unattended runs.
 
-GitHub Actions runners are ephemeral, so all acquisition state (games,
-predictions, book snapshots, aliases, provider health) goes through this
-interface.  Implementations:
-
-- ``InMemoryStore``   — tests and isolated smoke runs.
-- ``JsonFileStore``   — local development / CI scratch only.
-- ``duckdb_store.DuckDBStore`` — canonical CSV + DuckDB system of record,
-  persisted in the bounded Actions ``localdata/`` cache.
-- ``sheets_store.SheetsDataStore`` — explicit legacy migration adapter only;
-  never selected by the database-first CLI unless its legacy flag is supplied.
+All acquisition state (games, predictions, book observations, aliases, and
+provider health) goes through this interface. ``DuckDBStore`` is the canonical
+implementation; ``InMemoryStore`` supports isolated smoke runs and unit tests.
 
 Freezing rule: once a prediction/book snapshot is stored with
 ``frozen=True`` (tip passed), later upserts for the same key are rejected
@@ -18,8 +11,6 @@ with ``FrozenWriteError`` unless they are the same value (idempotent).
 
 from __future__ import annotations
 
-import json
-import os
 import threading
 from abc import ABC, abstractmethod
 from typing import Dict, List, Optional
@@ -142,22 +133,38 @@ class InMemoryStore(Store):
             existing = self.games.get(game.game_id)
             if existing and existing.rescheduled_from and not game.rescheduled_from:
                 game.rescheduled_from = existing.rescheduled_from
+            if (
+                existing is not None
+                and existing.status is GameStatus.FINAL
+                and existing.actual is not None
+                and game.actual is None
+                and game.scheduled_utc == existing.scheduled_utc
+                and game.status in {GameStatus.SCHEDULED, GameStatus.LIVE, GameStatus.FINAL}
+            ):
+                # Schedule rediscovery is not an official result correction;
+                # never erase a reconciled final with a metadata-only payload.
+                game.actual = existing.actual
+                game.status = GameStatus.FINAL
             self.games[game.game_id] = game
 
     def get_game(self, game_id: str) -> Optional[Game]:
         return self.games.get(game_id)
 
     def list_games(self, league=None, status=None, on_or_after_utc=None, before_utc=None) -> List[Game]:
+        from .identity import parse_utc
+
         out = list(self.games.values())
         if league is not None:
             out = [g for g in out if g.league == league]
         if status is not None:
             out = [g for g in out if g.status == status]
         if on_or_after_utc:
-            out = [g for g in out if g.scheduled_utc >= on_or_after_utc]
+            boundary = parse_utc(on_or_after_utc)
+            out = [g for g in out if parse_utc(g.scheduled_utc) >= boundary]
         if before_utc:
-            out = [g for g in out if g.scheduled_utc < before_utc]
-        return sorted(out, key=lambda g: (g.scheduled_utc, g.game_id))
+            boundary = parse_utc(before_utc)
+            out = [g for g in out if parse_utc(g.scheduled_utc) < boundary]
+        return sorted(out, key=lambda g: (parse_utc(g.scheduled_utc), g.game_id))
 
     # predictions
     def upsert_prediction(self, prediction: Prediction, frozen: bool = False) -> None:
@@ -233,107 +240,6 @@ class InMemoryStore(Store):
 
     def get_provider_health(self, provider: str, league: League) -> Optional[ProviderHealth]:
         return self.health.get((provider, league))
-
-
-# ---------------------------------------------------------------------------
-# JSON file implementation (local runs; NOT the unattended source of truth)
-# ---------------------------------------------------------------------------
-
-
-class JsonFileStore(InMemoryStore):
-    """In-memory store persisted to one JSON file after each mutation.
-
-    Suitable for local dry runs and CI verification.  The production
-    unattended store is DuckDB (see ``duckdb_store``).
-    """
-
-    def __init__(self, path: str, persist: bool = True) -> None:
-        super().__init__()
-        self.path = path
-        self.persist = persist
-        self._load()
-
-    def _load(self) -> None:
-        if not os.path.exists(self.path):
-            return
-        with open(self.path) as f:
-            data = json.load(f)
-        for gid, g in data.get("games", {}).items():
-            self.games[gid] = _game_from_dict(g)
-        for gid, providers in data.get("predictions", {}).items():
-            for provider, p in providers.items():
-                self.predictions.setdefault(gid, {})[provider] = _prediction_from_dict(p)
-        for gid, providers in data.get("frozen_predictions", {}).items():
-            self.frozen_predictions.setdefault(gid, {}).update(providers)
-        for gid, keys in data.get("books", {}).items():
-            for key, s in keys.items():
-                snap = _book_from_dict(s)
-                # Normalise legacy natural keys to the pre/post slot layout.
-                self.books.setdefault(gid, {})[_book_slot_key(snap)] = snap
-        for gid, keys in data.get("frozen_books", {}).items():
-            for key, value in keys.items():
-                normalized = key
-                if key not in self.books.get(gid, {}):
-                    matches = [
-                        slot for slot, snap in self.books.get(gid, {}).items()
-                        if _book_natural_key(snap) == key and snap.pre_match
-                    ]
-                    if len(matches) == 1:
-                        normalized = matches[0]
-                self.frozen_books.setdefault(gid, {})[normalized] = value
-        self.team_aliases.update(data.get("team_aliases", {}))
-        for key, h in data.get("health", {}).items():
-            provider, league = key.split("|", 1)
-            league_enum = League(league)
-            self.health[(provider, league_enum)] = _health_from_dict(h)
-
-    def _persist(self) -> None:
-        if not self.persist:
-            return
-        os.makedirs(os.path.dirname(self.path) or ".", exist_ok=True)
-        data = {
-            "games": {gid: _game_to_dict(g) for gid, g in self.games.items()},
-            "predictions": {
-                gid: {p: _prediction_to_dict(x) for p, x in prov.items()}
-                for gid, prov in self.predictions.items()
-            },
-            "frozen_predictions": self.frozen_predictions,
-            "books": {
-                gid: {k: _book_to_dict(s) for k, s in keys.items()}
-                for gid, keys in self.books.items()
-            },
-            "frozen_books": self.frozen_books,
-            "team_aliases": self.team_aliases,
-            "health": {
-                f"{p}|{l.value}": _health_to_dict(h)
-                for (p, l), h in self.health.items()
-            },
-        }
-        tmp = self.path + ".tmp"
-        with open(tmp, "w") as f:
-            json.dump(data, f, indent=1, default=str)
-        os.replace(tmp, self.path)
-
-    # wrap mutators with persistence
-    def upsert_game(self, game: Game) -> None:
-        super().upsert_game(game)
-        self._persist()
-
-    def upsert_prediction(self, prediction: Prediction, frozen: bool = False) -> None:
-        super().upsert_prediction(prediction, frozen)
-        self._persist()
-
-    def upsert_book_snapshot(self, snapshot: BookSnapshot, frozen: bool = False) -> None:
-        super().upsert_book_snapshot(snapshot, frozen)
-        self._persist()
-
-    def upsert_team_alias(self, canonical: str, variants: List[str]) -> None:
-        super().upsert_team_alias(canonical, variants)
-        self._persist()
-
-    def upsert_provider_health(self, health: ProviderHealth) -> None:
-        super().upsert_provider_health(health)
-        self._persist()
 
 
 # ---------------------------------------------------------------------------

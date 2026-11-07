@@ -1,14 +1,12 @@
 """Team/game/time identity: aliases, game keys, provider event map, UTC.
 
-Rules (master prompt section 7):
+Rules (see docs/CONTRACT.md):
 - Prefer provider event IDs; maintain a game map linking provider ids.
 - Cross-provider joins require compatible canonical teams AND scheduled time
   within a strict tolerance; never team-only matching across dates.
-- Store UTC ISO 8601 internally; convert to display timezone only at render.
-- Never infer day/month ordering from legacy display strings. ISO dates are
-  canonical. For row matching only, ``11/01/2026`` carries both January 11
-  and November 1 as explicit possibilities; team identity plus uniqueness
-  must resolve the row, otherwise the writer refuses the operation.
+- Store timezone-aware ISO 8601 internally and normalize to UTC for temporal
+  comparisons. Slate/report time zones are applied only after UTC parsing.
+- Never infer dates from locale-dependent display strings.
 """
 
 from __future__ import annotations
@@ -26,10 +24,9 @@ UTC = timezone.utc
 TIME_TOLERANCE = timedelta(minutes=30)
 
 # Default alias table. Extendable via TeamAliases store table.
-# Keys are CANONICAL DISPLAY NAMES (title case) — this is what gets written
-# to sheet Home/Away columns. Matching is case-insensitive via
-# normalize_team_name, so provider casing (e.g. boxscore "REAL MADRID")
-# still resolves.
+# Keys are canonical team names. Matching is case-insensitive via
+# normalize_team_name, so provider casing (for example "REAL MADRID") still
+# resolves.
 DEFAULT_TEAM_ALIASES: Dict[str, List[str]] = {
     # Display name -> known provider variants (matching is case-insensitive).
     "Los Angeles Lakers": ["LA Lakers", "Lakers"],
@@ -49,7 +46,7 @@ DEFAULT_TEAM_ALIASES: Dict[str, List[str]] = {
 
 
 def normalize_team_name(name: str) -> str:
-    """Lowercase, trim, collapse whitespace — mirrors legacy normTeam."""
+    """Lowercase, trim, and collapse whitespace."""
     return re.sub(r"\s+", " ", str(name or "").strip()).lower()
 
 
@@ -67,12 +64,6 @@ def canonical_team_name(name: str, aliases: Optional[Dict[str, List[str]]] = Non
 def canonical_team_key(name: str) -> str:
     """Case-insensitive canonical key using the built-in alias registry."""
     return normalize_team_name(canonical_team_name(name))
-
-
-def make_game_key(date_utc: str, home: str, away: str) -> str:
-    """UTC date + canonical teams game key (legacy-compatible structure)."""
-    day = date_utc[:10].replace("-", "")
-    return f"{day}||{normalize_team_name(home)}||{normalize_team_name(away)}"
 
 
 # ---------------------------------------------------------------------------
@@ -100,49 +91,6 @@ def to_utc_iso(dt: datetime) -> str:
 
 def now_utc_iso() -> str:
     return to_utc_iso(datetime.now(UTC))
-
-
-def parse_legacy_display_date(value: str) -> Optional[datetime]:
-    """Parse only an unambiguous legacy date; never choose a locale.
-
-    ISO ``YYYY-MM-DD`` is canonical. Slash/dot numeric dates are accepted
-    only when just one day/month interpretation is valid (for example
-    ``20/01/2026``). Values such as ``11/01/2026`` return ``None``; the
-    Sheets row matcher handles both readings explicitly and requires a
-    unique team-and-date match instead of pretending to know the locale.
-    """
-    text = str(value or "").strip()
-    iso = re.match(r"^(\d{4})-(\d{2})-(\d{2})(?:$|T)", text)
-    if iso:
-        try:
-            return datetime(int(iso.group(1)), int(iso.group(2)), int(iso.group(3)), tzinfo=UTC)
-        except ValueError:
-            return None
-    m = re.match(r"^(\d{1,2})[/.](\d{1,2})[/.]?(\d{4})$", text)
-    if not m:
-        return None
-    a, b, year = int(m.group(1)), int(m.group(2)), int(m.group(3))
-    candidates = []
-    for month, day in ((a, b), (b, a)):
-        try:
-            candidate = datetime(year, month, day, tzinfo=UTC)
-        except ValueError:
-            continue
-        if candidate not in candidates:
-            candidates.append(candidate)
-    return candidates[0] if len(candidates) == 1 else None
-
-
-def render_local(date_utc: str, tz_name: str) -> Tuple["datetime.date", "datetime.time"]:
-    """Convert a UTC timestamp to the satellite display timezone.
-
-    Returns (date, time) suitable for Google Sheets date/time cells.
-    Uses ``zoneinfo``; callers must pass an explicit IANA timezone.
-    """
-    from zoneinfo import ZoneInfo
-
-    local = parse_utc(date_utc).astimezone(ZoneInfo(tz_name))
-    return local.date(), local.time()
 
 
 def times_within(a: str, b: str, tolerance: timedelta = TIME_TOLERANCE) -> bool:

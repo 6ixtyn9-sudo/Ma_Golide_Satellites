@@ -1,11 +1,12 @@
 #!/usr/bin/env python3
 """One resumable Ma Golide orchestrator for unattended three-hour runs.
 
-Capture -> canonical DuckDB -> immutable pregame/freeze/result ledgers ->
-research-only assay -> CSV exports -> optional operational notification.
+Capture -> canonical DuckDB -> calibrated markets/accas -> immutable ledgers ->
+research assay -> CSV exports -> optional operational notification.
 ``--auto-once`` is intentionally an alias for one invocation so GitHub Actions,
 cron and local operators use the
-same code path.  No Google credentials or worksheets are used.
+same code path. Only DuckDB, CSV.GZ, local files, and optional notifications
+are used.
 """
 
 from __future__ import annotations
@@ -23,6 +24,7 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from forecasting.service import MarketForecastService, write_market_report  # noqa: E402
 from ingestion.books import BookConfig  # noqa: E402
 from ingestion.cli import _offline_fixture_fetch  # noqa: E402
 from ingestion.duckdb_store import DuckDBStore  # noqa: E402
@@ -53,12 +55,14 @@ def _write_run_report(localdata: Path, run_id: str, report: dict) -> str:
 
 
 def _prune_report_files(localdata: Path, cutoff_utc: str) -> int:
-    """Prune only parseable daily telemetry, never immutable ledgers."""
+    """Prune parseable derived telemetry, never canonical immutable ledgers."""
     pruned = 0
-    for path in (localdata / "reports").glob("daily_*.json"):
+    for path in (localdata / "reports").glob("*.json"):
         try:
             report = json.loads(path.read_text())
-            generated = str(report.get("finished_utc") or "")
+            generated = str(
+                report.get("finished_utc") or report.get("generated_utc") or ""
+            )
         except (OSError, ValueError):
             continue
         if generated and generated < cutoff_utc:
@@ -85,6 +89,8 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
         raise RuntimeError("fixture reports cannot trigger external notifications")
     if args.keep_days < 1:
         raise RuntimeError("--keep-days must be positive")
+    if args.freshness_hours <= 0:
+        raise RuntimeError("--freshness-hours must be positive")
     if args.send_notifications and not args.notify:
         raise RuntimeError("--send-notifications requires --notify")
     if args.send_notifications and not args.write:
@@ -119,8 +125,14 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             date_yyyymmdd=args.date.replace("-", ""),
             tz_name=args.tz,
             freshness_hours=args.freshness_hours,
-            quarter_csv=args.quarter_csv,
-            book=BookConfig(provider=args.book_provider, book=args.book),
+            book=BookConfig(
+                provider=(
+                    None
+                    if args.book_provider in (None, "", "none")
+                    else args.book_provider
+                ),
+                book=args.book,
+            ),
             fixture_now_utc=(
                 f"{args.date.replace('-', '')}T00:00:00Z"
                 if args.offline_fixture
@@ -136,6 +148,8 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
         )
 
         commands = ["pregame", "freeze"] + ([] if args.skip_results else ["results"])
+        market_report = None
+        market_report_path = None
         for command in commands:
             report = getattr(pipeline, command)()
             reports[command] = report
@@ -149,12 +163,36 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
                     str(localdata / "ledgers"),
                     config.timezone,
                 )
+            # Current markets use visible pre-tip evidence. The following
+            # freeze stage preserves tip-passed rows for later grading.
+            if command == "pregame" and not getattr(args, "skip_markets", False):
+                market_report = MarketForecastService(
+                    store,
+                    config.league_enum,
+                    book_config=config.book,
+                ).build_report(
+                    as_of_utc=args.started_utc,
+                    date_yyyymmdd=config.date_yyyymmdd,
+                    timezone_name=config.timezone,
+                    acca_legs=getattr(args, "acca_legs", 3),
+                    acca_limit=getattr(args, "acca_limit", 5),
+                )
+                market_report_path = write_market_report(
+                    str(
+                        localdata
+                        / "reports"
+                        / f"markets_{args.league}_{config.date_yyyymmdd}.json"
+                    ),
+                    market_report,
+                )
 
         cutoff_utc = (
             datetime.now(timezone.utc) - timedelta(days=args.keep_days)
         ).strftime("%Y-%m-%dT%H:%M:%SZ")
         pruned_runs = store.prune_pipeline_runs(cutoff_utc) if args.write else 0
-        pruned_reports = _prune_report_files(localdata, cutoff_utc) if args.write else 0
+        # Dry-run schedules also write reports, so retention cannot depend on
+        # canonical writes being enabled.
+        pruned_reports = _prune_report_files(localdata, cutoff_utc)
 
         assay = mine_prediction_assay(store, config.league_enum)
         assay_path = (
@@ -178,6 +216,8 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             "started_utc": args.started_utc,
             "finished_utc": _utc_now(),
             "commands": reports,
+            "markets": market_report,
+            "market_report_path": market_report_path,
             "ledgers": ledgers,
             "assay": assay,
             "assay_path": assay_path,
@@ -245,10 +285,16 @@ def main() -> int:
     )
     parser.add_argument("--offline-fixture", action="store_true")
     parser.add_argument("--skip-results", action="store_true")
+    parser.add_argument("--skip-markets", action="store_true")
+    parser.add_argument("--acca-legs", type=int, default=3)
+    parser.add_argument("--acca-limit", type=int, default=5)
     parser.add_argument("--freshness-hours", type=float, default=12.0)
     parser.add_argument("--book", default=None)
-    parser.add_argument("--book-provider", default="none")
-    parser.add_argument("--quarter-csv", default=None)
+    parser.add_argument(
+        "--book-provider",
+        default="none",
+        choices=["none", "therundown", "sportsgameodds", "theoddsapi"],
+    )
     parser.add_argument(
         "--notify", action="store_true", help="build an operations heartbeat"
     )
@@ -258,7 +304,15 @@ def main() -> int:
         help="send the heartbeat through configured WhatsApp credentials",
     )
     args = parser.parse_args()
-    args.started_utc = _utc_now()
+    try:
+        args.date = datetime.strptime(
+            args.date.replace("-", ""), "%Y%m%d"
+        ).strftime("%Y-%m-%d")
+    except ValueError:
+        parser.error("--date must be YYYY-MM-DD or YYYYMMDD")
+    args.started_utc = (
+        f"{args.date}T18:00:00Z" if args.offline_fixture else _utc_now()
+    )
 
     try:
         summary = run_daily(args)
