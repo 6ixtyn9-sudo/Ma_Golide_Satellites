@@ -223,6 +223,56 @@ def test_probability_only_cba_prediction_produces_moneyline_without_fake_scores(
     assert forecasts[0].prediction_provider == "sportradar"
 
 
+def test_dual_sided_ncaa_bpi_matches_full_game_moneyline_book(
+    load_fixture, fixture_fetch
+):
+    event_id = "401909760"
+    game = Game(
+        game_id=event_id, league=League.NCAA_M, season="2027",
+        home_team_id="38", away_team_id="21", home_name="Colorado Buffaloes",
+        away_name="San Diego State Aztecs", scheduled_utc="2026-11-07T20:30:00Z",
+        provider_ids={"espn": event_id},
+    )
+    prediction = espn.fetch_bpi(
+        event_id,
+        fixture_fetch(
+            {
+                f"competitions/{event_id}/predictor": load_fixture(
+                    "espn/predictor_ncaa_dual_401909760.json"
+                )
+            }
+        ),
+        game=game,
+        now_utc="2026-11-07T20:29:04Z",
+    )
+    book = BookSnapshot(
+        game_id=event_id, provider="espn", provider_event_id=event_id,
+        book="DraftKings", market=Market.MONEYLINE, period=Period.FULL_GAME,
+        observed_utc="2026-11-07T20:28:00Z", home_price_decimal=1.75,
+        away_price_decimal=2.10, home_name=game.home_name, away_name=game.away_name,
+        scheduled_utc=game.scheduled_utc,
+    )
+    store = InMemoryStore()
+    store.upsert_game(game)
+    store.upsert_prediction(prediction)
+    store.upsert_book_snapshot(book)
+    report = MarketForecastService(store, League.NCAA_M).build_report(
+        as_of_utc="2026-11-07T20:29:04Z", date_yyyymmdd="20261107"
+    )
+    assert len(report["forecasts"]) == 1
+    forecast = report["forecasts"][0]
+    assert forecast["market"] == Market.MONEYLINE.value
+    assert forecast["period"] == Period.FULL_GAME.value
+    assert forecast["selection"] == "home"
+    assert forecast["raw_probability"] == pytest.approx(0.5847)
+    assert forecast["book"]["book"] == "DraftKings"
+    assert forecast["book"]["selected_decimal_price"] == 1.75
+    assert not forecast["eligibility"]["acca_eligible"]
+    assert "insufficient_walk_forward_samples" in forecast["eligibility"]["reasons"]
+    assert report["accas"]["results"] == []
+    assert report["accas"]["eligible_games"] == 0
+
+
 def test_cba_pipeline_separates_sportradar_predictions_from_isportsapi_books(monkeypatch):
     game = Game(
         game_id="cba-pipeline", league=League.CBA, season="26-27",

@@ -1,0 +1,28 @@
+{
+  "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/mens-college-basketball/events/401909760/competitions/401909760/predictor?lang=en&region=us",
+  "name": "San Diego State Aztecs at Colorado Buffaloes",
+  "shortName": "SDSU VS COLO",
+  "lastModified": "2026-11-06T09:09Z",
+  "homeTeam": {
+    "team": {
+      "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/mens-college-basketball/seasons/2027/teams/38?lang=en&region=us"
+    },
+    "statistics": [
+      {"name": "matchupquality", "value": 69.9721},
+      {"name": "gameProjection", "value": 58.47},
+      {"name": "teamChanceLoss", "value": 41.53},
+      {"name": "teamChanceTie", "value": 0.0}
+    ]
+  },
+  "awayTeam": {
+    "team": {
+      "$ref": "http://sports.core.api.espn.com/v2/sports/basketball/leagues/mens-college-basketball/seasons/2027/teams/21?lang=en&region=us"
+    },
+    "statistics": [
+      {"name": "matchupquality", "value": 69.9721},
+      {"name": "gameProjection", "value": 41.53},
+      {"name": "teamChanceLoss", "value": 58.47},
+      {"name": "teamChanceTie", "value": 0.0}
+    ]
+  }
+}
