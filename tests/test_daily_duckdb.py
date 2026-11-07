@@ -5,6 +5,10 @@ from pathlib import Path
 
 import pytest
 
+from forecasting.service import MarketForecastService
+from ingestion.models import BookSnapshot, Game, League, Market, Period
+from ingestion.store import InMemoryStore
+from scripts.daily import _market_cutoff
 from scripts.daily import main as daily_main
 from scripts.daily import run_daily
 
@@ -132,6 +136,45 @@ def test_offline_cli_pins_its_forecast_cutoff(tmp_path, monkeypatch, capsys):
     assert summary["started_utc"] == "2026-11-07T18:00:00Z"
     assert summary["markets"]["forecast_count"] == 1
     assert not (tmp_path / "warehouse.duckdb").exists()
+
+
+def test_live_cutoff_includes_books_acquired_after_process_start(tmp_path, monkeypatch):
+    started = "2026-11-07T20:02:25Z"
+    acquired = "2026-11-07T20:02:32Z"
+    after_acquisition = "2026-11-07T20:02:40Z"
+    monkeypatch.setattr("scripts.daily._utc_now", lambda: after_acquisition)
+    cutoff = _market_cutoff(
+        _args(tmp_path, offline_fixture=False, started_utc=started)
+    )
+    assert cutoff == after_acquisition
+
+    store = InMemoryStore()
+    game = Game(
+        game_id="401909938",
+        league=League.NBA,
+        season="2027",
+        home_team_id="11",
+        away_team_id="7",
+        home_name="Indiana Pacers",
+        away_name="Denver Nuggets",
+        scheduled_utc="2026-11-07T22:00:00Z",
+    )
+    store.upsert_game(game)
+    snapshot = BookSnapshot(
+        game_id=game.game_id,
+        provider="espn",
+        book="DraftKings",
+        market=Market.MONEYLINE,
+        period=Period.FULL_GAME,
+        observed_utc=acquired,
+        home_price_decimal=3.61,
+        away_price_decimal=1.30,
+        pre_match=True,
+    )
+    store.upsert_book_snapshot(snapshot)
+    service = MarketForecastService(store, League.NBA)
+    assert service._books(game, as_of_utc=started, historical=False) == []
+    assert service._books(game, as_of_utc=cutoff, historical=False) == [snapshot]
 
 
 def test_daily_write_persists_duckdb_csv_and_idempotent_ledgers(tmp_path, monkeypatch):

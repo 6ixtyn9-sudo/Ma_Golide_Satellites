@@ -40,6 +40,17 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _market_cutoff(args: argparse.Namespace) -> str:
+    """Cut off live markets after acquisition, not before it.
+
+    Live predictions/books are observed after ``args.started_utc``. Using the
+    process start here makes every fresh observation invisible to the forecast
+    service. Fixture replay retains its deliberately pinned historical cutoff.
+    """
+
+    return args.started_utc if args.offline_fixture else _utc_now()
+
+
 def _safe_run_id(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9_.-]", "_", value)
 
@@ -194,7 +205,7 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
                     config.league_enum,
                     book_config=config.book,
                 ).build_report(
-                    as_of_utc=args.started_utc,
+                    as_of_utc=_market_cutoff(args),
                     date_yyyymmdd=config.date_yyyymmdd,
                     timezone_name=config.timezone,
                     acca_legs=getattr(args, "acca_legs", 3),
