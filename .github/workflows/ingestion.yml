@@ -4,6 +4,8 @@
 # - Optional book/prediction keys degrade to reported gaps, never fabricated data.
 # - Scheduled runs ALWAYS acquire available evidence. ALLOW_MAGOLIDE_WRITES
 #   controls persistence only; it does not disable keyless public acquisition.
+# Derived picks/tickets/audits are committed to localdata/<league> on main by
+# one serialized publisher, independently of the canonical-write gate.
 # Install as .github/workflows/ingestion.yml (editing that path requires the
 # GitHub `workflows` permission).
 
@@ -149,6 +151,17 @@ jobs:
           restore-keys: |
             magolide-localdata-v3-${{ matrix.state_key }}-
 
+      - name: Restore Git-durable operator reports after cache recovery
+        if: steps.capability.outputs.available == 'true'
+        run: |
+          set -euo pipefail
+          STATE_DIR="localdata/${{ matrix.state_key }}"
+          # A stale cache may contain older paper state. Git is authoritative
+          # for allowlisted operator files; the cache remains canonical-data recovery.
+          if git cat-file -e "HEAD:${STATE_DIR}" 2>/dev/null; then
+            git restore --source=HEAD --worktree -- "$STATE_DIR"
+          fi
+
       - name: Resolve league acquisition date automatically
         if: steps.capability.outputs.available == 'true'
         id: target
@@ -264,3 +277,64 @@ jobs:
             ${{ env.LOCALDATA }}/csv/*.csv.gz
           if-no-files-found: ignore
           retention-days: 14
+
+  publish-localdata:
+    name: Publish localdata to repository
+    needs: league
+    # Publish partial recovery evidence even if one matrix league fails. This is
+    # derived operator state, independent of canonical ALLOW_MAGOLIDE_WRITES.
+    if: >-
+      always() &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - name: Check out latest repository operator state
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download this run's league artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: MaGolide-*-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/magolide-artifacts
+
+      - name: Merge derived league reports without deleting history
+        run: |
+          set -euo pipefail
+          python scripts/publish_localdata.py \
+            --artifacts "${{ runner.temp }}/magolide-artifacts" \
+            --repo .
+
+      - name: Commit and publish durable localdata
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -d localdata ]; then
+            git add -A -- localdata
+          fi
+          if git diff --cached --quiet; then
+            echo "No derived localdata changes to publish."
+            exit 0
+          fi
+          git commit -m "chore: publish localdata run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
+
+          # Never force-push. A concurrent human/bot update is rebased first;
+          # conflicting immutable receipts fail visibly for operator review.
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              echo "Published localdata on attempt ${attempt}."
+              exit 0
+            fi
+            sleep "$((attempt * 5))"
+          done
+          echo "Could not publish localdata after three synchronized attempts." >&2
+          exit 1
