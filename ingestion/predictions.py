@@ -1,12 +1,12 @@
 """Prediction selection, fallback coherence, and pre-tip freezing.
 
-Rules (master prompt section 8, binding):
+Rules (see docs/CONTRACT.md):
 
-- G:J (``Prob %``, ``Pred``, ``Pred Score``, ``Avg``) is ONE coherent
-  provider bundle: a complete provider wins whole; fields are never mixed
-  across providers to synthesise a forecast.
+- A prediction is ONE coherent provider bundle: a complete provider wins
+  whole; fields are never mixed across providers to synthesise a forecast.
 - NBA default order: fresh complete ESPN BPI, then fresh matching Hardwood.
-  Predixsport joins the order only after authenticated verification.
+  Configured Predixsport bundles participate only after adapter validation;
+  their documentation-only evidence status remains explicit.
 - A partial provider may fill only what it genuinely supports (e.g.
   probabilities), with explicit per-field provenance and no invented values.
 - Hardwood is used only when its ingestion is healthy, fresh, identity-
@@ -16,8 +16,8 @@ Rules (master prompt section 8, binding):
   replaced by a later value.
 - Shadow predictions (non-selected providers) are preserved for independent
   evaluation; providers are never averaged or blended.
-- Rounded display scores may tie or disagree with the probability favorite;
-  that is preserved, never "repaired".
+- Expected scores may disagree with the probability favorite; that provider
+  disagreement is preserved, never "repaired".
 """
 
 from __future__ import annotations
@@ -26,13 +26,13 @@ from dataclasses import dataclass, field
 from typing import Dict, List, Optional, Tuple
 
 from .identity import parse_utc
-from .models import BookSnapshot, CoverageGap, CoverageState, Game, Prediction, pred_from_probabilities
+from .models import BookSnapshot, CoverageGap, CoverageState, Game, Prediction, predicted_side
 
 # Provider priority for complete-bundle selection (NBA). "espn" is the
 # provider label used by providers/espn.py for BPI predictions.
 DEFAULT_PROVIDER_ORDER = ("espn", "hardwood", "predixsport")
 
-# A "complete" bundle needs the whole G:J span.
+# A complete bundle contains probabilities, both scores, and total.
 COMPLETE_FIELDS = ("prob_home", "prob_away", "expected_home_score",
                    "expected_away_score", "expected_total")
 
@@ -81,6 +81,8 @@ def _valid_candidate(
         return False
     if not is_fresh(pred, now_utc, freshness_hours):
         return False
+    if parse_utc(pred.observed_utc) >= parse_utc(game.scheduled_utc):
+        return False
     return True
 
 
@@ -113,7 +115,9 @@ def select_prediction(
     for provider, candidates in grouped.items():
         complete = [candidate for candidate in candidates if is_complete(candidate)]
         pool = complete or candidates
-        by_provider[provider] = max(pool, key=lambda candidate: candidate.observed_utc)
+        by_provider[provider] = max(
+            pool, key=lambda candidate: parse_utc(candidate.observed_utc)
+        )
 
     ordered = [by_provider[p] for p in provider_order if p in by_provider]
     ordered += [c for p, c in by_provider.items() if p not in provider_order]
@@ -160,17 +164,17 @@ def latest_pre_tip(
 ) -> Optional[Prediction]:
     """Latest observation strictly usable as a pre-tip value.
 
-    Accepts observations up to tip time (observed_utc <= tip); a value first
-    seen after tip is NOT a pre-tip observation and never qualifies.
+    Only observations strictly before scheduled tip qualify. A value first
+    seen at or after tip is not treated as pre-tip evidence.
     """
     tip = parse_utc(tip_utc)
     usable = [
         p for p in predictions
-        if p.pre_tip and parse_utc(p.observed_utc) <= tip
+        if p.pre_tip and parse_utc(p.observed_utc) < tip
     ]
     if not usable:
         return None
-    usable.sort(key=lambda p: p.observed_utc)
+    usable.sort(key=lambda p: parse_utc(p.observed_utc))
     return usable[-1]
 
 
@@ -185,15 +189,12 @@ def freeze_game_predictions(store, game: Game, tip_utc: str) -> Dict[str, str]:
     from .store import FrozenWriteError
 
     statuses: Dict[str, str] = {}
-    by_provider: Dict[str, Prediction] = {}
+    by_provider: Dict[str, List[Prediction]] = {}
     for pred in store.get_predictions(game.game_id):
-        if not pred.pre_tip:
-            continue
-        prev = by_provider.get(pred.provider)
-        if prev is None or pred.observed_utc > prev.observed_utc:
-            by_provider[pred.provider] = pred
-    for provider, pred in sorted(by_provider.items()):
-        chosen = latest_pre_tip([pred], tip_utc)
+        if pred.pre_tip:
+            by_provider.setdefault(pred.provider, []).append(pred)
+    for provider, candidates in sorted(by_provider.items()):
+        chosen = latest_pre_tip(candidates, tip_utc)
         if chosen is None:
             statuses[provider] = "no_pregame_prediction"
             continue
@@ -209,9 +210,12 @@ def freeze_game_predictions(store, game: Game, tip_utc: str) -> Dict[str, str]:
 
 
 def resolve_frozen_bundle(
-    store, game_id: str, provider_order: Tuple[str, ...] = DEFAULT_PROVIDER_ORDER
+    store,
+    game_id: str,
+    tip_utc: str,
+    provider_order: Tuple[str, ...] = DEFAULT_PROVIDER_ORDER,
 ) -> Tuple[Optional[Prediction], bool]:
-    """The frozen prediction to render on a result row.
+    """Return the frozen prediction to join to an official result.
 
     Returns ``(prediction, was_frozen)``. Only PRE-TIP observations qualify
     (frozen or not): a value first seen after tip never renders. Prefers
@@ -219,7 +223,12 @@ def resolve_frozen_bundle(
     pre-tip value of any provider when nothing is frozen (unattended runs
     without a freeze step must still render the correct pre-tip snapshot).
     """
-    predictions = [p for p in store.get_predictions(game_id) if p.pre_tip]
+    tip = parse_utc(tip_utc)
+    predictions = [
+        prediction
+        for prediction in store.get_predictions(game_id)
+        if prediction.pre_tip and parse_utc(prediction.observed_utc) < tip
+    ]
     frozen = [p for p in predictions if store.is_prediction_frozen(game_id, p.provider)]
     pool = frozen or predictions
     if not pool:
@@ -232,7 +241,7 @@ def resolve_frozen_bundle(
     for provider in provider_order:
         if provider in by_provider:
             return by_provider[provider], bool(frozen)
-    pool.sort(key=lambda p: p.observed_utc)
+    pool.sort(key=lambda p: parse_utc(p.observed_utc))
     return pool[-1], bool(frozen)
 
 
@@ -248,11 +257,11 @@ def odds_for_prediction(
 
     If the selected prediction changes, the caller re-runs this with the new
     selection: the price always follows the predicted side of the SAME book
-    snapshot (section 6 ``Odds`` semantics).  Never a live/post-game price.
+    snapshot. Never use a live/post-game price for a pregame result.
     """
     if prediction is None or snapshot.market.value != "moneyline":
         return None
-    side = pred_from_probabilities(prediction.prob_home, prediction.prob_away)
+    side = predicted_side(prediction.prob_home, prediction.prob_away)
     if side is None:
         return None
     return snapshot.moneyline_for_side(side)

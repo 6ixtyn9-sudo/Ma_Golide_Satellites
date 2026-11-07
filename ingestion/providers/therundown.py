@@ -27,7 +27,7 @@ here:
   prices``. Prices arrive in American format and are converted with
   ``books.american_to_decimal``. The total ``line`` is the LINE VALUE
   (e.g. 232.0), never a price; a total without a line value yields
-  ``line=None`` and is NOT usable for sheet writes (smoke reports it under
+  ``line=None`` and is NOT usable for total forecasts (smoke reports it under
   ``not_usable``).
 
 QUARTER PROHIBITION (hard rule): the Free plan has no quarter markets, and

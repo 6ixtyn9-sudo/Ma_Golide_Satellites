@@ -40,10 +40,10 @@ Normalisation rules
   ``away = (total - diff) / 2`` — ``diff`` is HOME MINUS AWAY, so a negative
   diff flips the score edge.  Probabilities-only records keep scores
   ``None`` (no fabrication from probabilities).
-- ``Pred`` (winner) comes from win probability ONLY
-  (``models.pred_from_probabilities``).  The winner, spread and total models
-  are independent: a probability favourite that disagrees with the margin
-  sign is PRESERVED, never "repaired" into artificial consistency.
+- The downstream moneyline selection comes from win probability only. The
+  winner, spread and total models are independent: a probability favourite
+  that disagrees with the margin sign is PRESERVED, never "repaired" into
+  artificial consistency.
 - ``produced_by`` is preserved from the payload (early-season fallback
   predictions must stay distinguishable from the mature model).
 
@@ -246,10 +246,10 @@ def fetch_match_detail(
     ``home = (total + diff) / 2`` and ``away = (total - diff) / 2`` with
     ``diff`` = predicted_point_diff = HOME minus AWAY (sign-correct: a
     negative diff flips the score edge).  When only probabilities exist the
-    scores stay ``None``.  Winner/Pred is computed from the probabilities at
-    render time (``models.pred_from_probabilities``) and is deliberately NOT
-    forced to agree with the margin sign — independent-model disagreement is
-    preserved.  Returns ``None`` when disabled; a contradictory payload
+    scores stay ``None``. The downstream moneyline winner is computed from
+    probabilities and is deliberately NOT forced to agree with the margin
+    sign — independent-model disagreement is preserved. Returns ``None``
+    when disabled; a contradictory payload
     raises ``ValueError`` (caller quarantines).
     """
     if not is_enabled():

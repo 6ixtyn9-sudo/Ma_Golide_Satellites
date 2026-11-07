@@ -13,9 +13,9 @@ Sign convention (verified against the live artifact, 2026-11-06)
 Atlanta Hawks) the home side Atlanta is favoured: p_home 0.713845,
 exp_home_score 117.1 vs exp_away_score 109.47, exp_margin 7.636 = 117.1 -
 109.47 (within rounding; all five fixture games agree with the
-home-minus-away reading).  Values are stored AS-IS — the adapter never
-rewrites, re-derives or "repairs" provider numbers (master prompt section 8
-rules 1 and 9).  ``Prediction.validate_orientation()`` is run so a
+home-minus-away reading). Values are stored AS-IS — the adapter never
+rewrites, re-derives or "repairs" provider numbers.
+``Prediction.validate_orientation()`` is run so a
 self-contradictory entry (margin flipped versus its own expected scores)
 quarantines as a gap instead of being silently corrected or written.
 
@@ -94,7 +94,7 @@ class ForecastsArtifact:
 def load_forecasts(fetch: FetchFn) -> ForecastsArtifact:
     """Fetch and structurally validate the raw forecast artifact.
 
-    Required metadata (master prompt section 5 / PROVIDER_GUIDE): a parseable
+    Required artifact metadata (see docs/PROVIDERS.md): a parseable
     ``generated_at``, ``ingestion.status`` present, ``trained_through``
     present, plus ``model_version``/``artifact_sha256`` for provenance and a
     list of ``games``.  Raises ``ValueError`` naming every missing/invalid

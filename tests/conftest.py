@@ -48,11 +48,6 @@ def load_json_fixture(*parts: str) -> Any:
         return json.load(handle)
 
 
-# Module-level alias (importable as ``conftest.load_fixture`` when the tests
-# directory is on sys.path); the pytest fixture below is the primary entry.
-load_fixture = load_json_fixture
-
-
 def make_fixture_fetch(mapping: Dict[str, Union[str, Path, Any]]):
     """Build a ``fetch`` callable that matches URLs to fixtures by substring.
 

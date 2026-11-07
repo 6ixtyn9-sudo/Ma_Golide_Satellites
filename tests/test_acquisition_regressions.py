@@ -1,29 +1,25 @@
-"""Regression tests for production issues found during artifact review."""
+"""Regression tests for canonical acquisition, identity, freezing, and CLI."""
 
 from __future__ import annotations
 
-import datetime as dt
 import json
 from types import SimpleNamespace
 
 import pytest
 
-from ingestion.identity import parse_legacy_display_date
 from ingestion.models import (
+    ActualResult,
     BookSnapshot,
-    CoverageState,
     Game,
     GameStatus,
     League,
     Market,
     Period,
+    PeriodKind,
     Prediction,
-    ProviderHealth,
 )
 from ingestion.pipeline import Pipeline, PipelineConfig
-from ingestion.sheets_store import GAMES_HEADERS, GAMES_TAB, SheetsDataStore
-from ingestion.sheets_writer import FakeWorksheet, GspreadWorksheetAdapter
-from ingestion.store import FrozenWriteError, InMemoryStore, JsonFileStore
+from ingestion.store import FrozenWriteError, InMemoryStore
 
 
 def _game(game_id="espn-1"):
@@ -41,7 +37,7 @@ def _game(game_id="espn-1"):
     )
 
 
-def _snapshot(provider="one", event="event-1", period=Period.FULL_GAME, **kw):
+def _snapshot(provider="one", event="event-1", period=Period.FULL_GAME, **changes):
     values = dict(
         game_id=event,
         provider=provider,
@@ -57,23 +53,20 @@ def _snapshot(provider="one", event="event-1", period=Period.FULL_GAME, **kw):
         away_name="Denver Nuggets",
         scheduled_utc="2026-11-07T22:00:00Z",
     )
-    values.update(kw)
+    values.update(changes)
     return BookSnapshot(**values)
 
 
 def _pipeline(store=None):
     return Pipeline(
-        PipelineConfig(league="NBA", date_yyyymmdd="20261107"),
+        PipelineConfig(
+            league="NBA",
+            date_yyyymmdd="20261107",
+            fixture_now_utc="2026-11-07T19:00:00Z",
+        ),
         store or InMemoryStore(),
         fetch=lambda url: (_ for _ in ()).throw(AssertionError("no network")),
     )
-
-
-def test_ambiguous_legacy_date_is_never_locale_guessed():
-    assert parse_legacy_display_date("11/01/2026") is None
-    assert parse_legacy_display_date("2026-11-01").date() == dt.date(2026, 11, 1)
-    assert parse_legacy_display_date("20/01/2026").date() == dt.date(2026, 1, 20)
-    assert parse_legacy_display_date("11/20/2026").date() == dt.date(2026, 11, 20)
 
 
 def test_book_slate_date_uses_league_timezone_not_utc_only():
@@ -90,24 +83,26 @@ def test_book_lines_from_multiple_provider_ids_are_combined(monkeypatch):
     game = _game()
     store = InMemoryStore()
     pipeline = _pipeline(store)
-    snaps = {
+    snapshots = {
         "one": [_snapshot("one", "event-one")],
         "two": [_snapshot("two", "event-two", Period.Q1)],
     }
     modules = {
         provider: SimpleNamespace(
             is_enabled=lambda: True,
-            fetch_odds=lambda *args, p=provider: snaps[p],
+            fetch_odds=lambda *args, p=provider: snapshots[p],
         )
-        for provider in snaps
+        for provider in snapshots
     }
     monkeypatch.setattr(module, "BOOK_PROVIDERS", tuple(modules))
     monkeypatch.setattr(module, "_book_module", modules.__getitem__)
 
     mapped = pipeline._acquire_book_lines([game])
-
-    assert {s.provider for s in mapped[game.game_id]} == {"one", "two"}
-    assert {s.provider for s in store.get_book_snapshots(game.game_id)} == {"one", "two"}
+    assert {snap.provider for snap in mapped[game.game_id]} == {"one", "two"}
+    assert {snap.provider for snap in store.get_book_snapshots(game.game_id)} == {
+        "one",
+        "two",
+    }
     assert game.provider_ids["one"] == "event-one"
     assert game.provider_ids["two"] == "event-two"
 
@@ -130,16 +125,33 @@ def test_contradictory_known_provider_id_is_quarantined(monkeypatch):
     assert "contradicts" in pipeline.gaps[-1].detail
 
 
-def test_unmapped_provider_id_without_identity_is_not_trusted(monkeypatch):
+def test_new_provider_event_cannot_replace_existing_provider_mapping(monkeypatch):
     import ingestion.pipeline as module
 
-    game = _game("coincident-id")
-    raw = _snapshot(event="coincident-id", home_name=None, away_name=None, scheduled_utc=None)
+    game = _game()
+    game.provider_ids["one"] = "event-old"
+    raw = _snapshot(event="event-new")
     mod = SimpleNamespace(is_enabled=lambda: True, fetch_odds=lambda *args: [raw])
     monkeypatch.setattr(module, "BOOK_PROVIDERS", ("one",))
     monkeypatch.setattr(module, "_book_module", lambda provider: mod)
     store = InMemoryStore()
+    pipeline = _pipeline(store)
+    assert pipeline._acquire_book_lines([game]) == {}
+    assert game.provider_ids["one"] == "event-old"
+    assert "existing mapping" in pipeline.gaps[-1].detail
 
+
+def test_unmapped_provider_id_without_identity_is_not_trusted(monkeypatch):
+    import ingestion.pipeline as module
+
+    game = _game("coincident-id")
+    raw = _snapshot(
+        event="coincident-id", home_name=None, away_name=None, scheduled_utc=None
+    )
+    mod = SimpleNamespace(is_enabled=lambda: True, fetch_odds=lambda *args: [raw])
+    monkeypatch.setattr(module, "BOOK_PROVIDERS", ("one",))
+    monkeypatch.setattr(module, "_book_module", lambda provider: mod)
+    store = InMemoryStore()
     assert _pipeline(store)._acquire_book_lines([game]) == {}
     assert store.get_book_snapshots(game.game_id) == []
 
@@ -150,11 +162,13 @@ def test_pre_and_post_book_slots_survive_and_every_pre_market_freezes():
     pre_total = _snapshot(game_id=game.game_id)
     pre_quarter = _snapshot(game_id=game.game_id, period=Period.Q1)
     post_total = _snapshot(
-        game_id=game.game_id, observed_utc="2026-11-07T23:00:00Z",
-        pre_match=False, line=999.0
+        game_id=game.game_id,
+        observed_utc="2026-11-07T23:00:00Z",
+        pre_match=False,
+        line=999.0,
     )
-    for snap in (pre_total, pre_quarter, post_total):
-        store.upsert_book_snapshot(snap)
+    for snapshot in (pre_total, pre_quarter, post_total):
+        store.upsert_book_snapshot(snapshot)
 
     pipeline = _pipeline(store)
     assert pipeline._freeze_books(game) == 2
@@ -163,37 +177,22 @@ def test_pre_and_post_book_slots_survive_and_every_pre_market_freezes():
     assert not store.is_book_snapshot_frozen(game.game_id, post_total)
     assert len(store.get_book_snapshots(game.game_id)) == 3
 
-    changed_pre = _snapshot(game_id=game.game_id, line=231.0)
     with pytest.raises(FrozenWriteError):
-        store.upsert_book_snapshot(changed_pre)
-    # The post slot remains independently updateable and cannot erase pre-tip.
-    store.upsert_book_snapshot(_snapshot(
-        game_id=game.game_id, observed_utc="2026-11-07T23:05:00Z",
-        pre_match=False, line=888.0
-    ))
-    pre = [s for s in store.get_book_snapshots(game.game_id)
-           if s.period is Period.FULL_GAME and s.pre_match]
+        store.upsert_book_snapshot(_snapshot(game_id=game.game_id, line=231.0))
+    store.upsert_book_snapshot(
+        _snapshot(
+            game_id=game.game_id,
+            observed_utc="2026-11-07T23:05:00Z",
+            pre_match=False,
+            line=888.0,
+        )
+    )
+    pre = [
+        snap
+        for snap in store.get_book_snapshots(game.game_id)
+        if snap.period is Period.FULL_GAME and snap.pre_match
+    ]
     assert len(pre) == 1 and pre[0].line == 230.5
-
-
-def test_json_store_book_slots_and_health_roundtrip(tmp_path):
-    path = tmp_path / "state.json"
-    store = JsonFileStore(str(path))
-    store.upsert_book_snapshot(_snapshot(game_id=_game().game_id))
-    store.upsert_book_snapshot(_snapshot(
-        game_id=_game().game_id, pre_match=False,
-        observed_utc="2026-11-07T23:00:00Z",
-    ))
-    store.upsert_provider_health(ProviderHealth(
-        provider="espn", league=League.NBA, state=CoverageState.OK,
-        coverage={"complete": 1, "total": 1},
-    ))
-
-    fresh = JsonFileStore(str(path))
-    assert len(fresh.get_book_snapshots(_game().game_id)) == 2
-    health = fresh.get_provider_health("espn", League.NBA)
-    assert health is not None
-    assert health.league is League.NBA and health.state is CoverageState.OK
 
 
 def test_bound_http_client_quota_reaches_adapter():
@@ -212,117 +211,49 @@ def test_bound_http_client_quota_reaches_adapter():
     assert theoddsapi.last_quota() == {"x-requests-remaining": 41}
 
 
-def test_sheets_store_dry_run_buffers_without_rewriting():
-    ws = FakeWorksheet(GAMES_HEADERS)
-    store = SheetsDataStore({GAMES_TAB: ws}, persist=False)
-    store.upsert_game(_game())
-    assert store.get_game(_game().game_id) is not None
-    assert ws.rows() == [] and ws.update_calls == []
+def test_offline_cli_dry_run_does_not_create_warehouse(tmp_path, capsys):
+    from ingestion import cli
 
-
-def test_sheets_store_rate_limits_real_rewrites_with_injected_sleep():
-    calls = []
-    store = SheetsDataStore(
-        {GAMES_TAB: FakeWorksheet(GAMES_HEADERS)}, sleep=calls.append
+    warehouse = tmp_path / "dry-run.duckdb"
+    rc = cli.main(
+        [
+            "pregame",
+            "--league",
+            "NBA",
+            "--date",
+            "20261107",
+            "--offline-fixture",
+            "--warehouse",
+            str(warehouse),
+        ]
     )
-    store.upsert_game(_game())
-    assert calls == [1.1]
-
-
-def test_sheets_store_pre_post_slots_survive_reload():
-    ws = FakeWorksheet(["snapshot_key", "game_id", "provider", "frozen", "payload_json"])
-    store = SheetsDataStore({"BookSnapshots": ws})
-    store.upsert_book_snapshot(_snapshot(game_id=_game().game_id))
-    store.upsert_book_snapshot(_snapshot(
-        game_id=_game().game_id, pre_match=False,
-        observed_utc="2026-11-07T23:00:00Z",
-    ))
-    fresh = SheetsDataStore({"BookSnapshots": ws})
-    assert len(fresh.get_book_snapshots(_game().game_id)) == 2
-
-
-def test_gspread_adapter_uses_formula_reads_and_json_safe_values():
-    class Spreadsheet:
-        def __init__(self):
-            self.body = None
-
-        def values_batch_update(self, body):
-            json.dumps(body)  # must not raise on date/time objects
-            self.body = body
-
-    class Worksheet:
-        def __init__(self):
-            self.spreadsheet = Spreadsheet()
-            self.read_options = None
-            self.appended = None
-
-        def get_all_values(self, **kwargs):
-            self.read_options = kwargs
-            return []
-
-        def append_rows(self, rows, value_input_option):
-            json.dumps(rows)
-            self.appended = (rows, value_input_option)
-
-    raw = Worksheet()
-    ws = GspreadWorksheetAdapter(raw)
-    ws.get_all_values()
-    assert raw.read_options["value_render_option"].value == "FORMULA"
-    assert raw.read_options["date_time_render_option"].value == "FORMATTED_STRING"
-
-    values = [[dt.date(2026, 11, 7), dt.time(17, 0)]]
-    ws.batch_update_ranges([("E2:F2", values)])
-    assert raw.spreadsheet.body["data"][0]["values"] == [["2026-11-07", "17:00:00"]]
-    ws.append_rows(values)
-    assert raw.appended == ([["2026-11-07", "17:00:00"]], "USER_ENTERED")
-
-
-def test_cli_uses_only_explicit_legacy_store_for_coverage(monkeypatch, capsys):
-    from ingestion import cli
-
-    calls = []
-
-    def open_store(sheet_id, write=False):
-        calls.append((sheet_id, write))
-        return InMemoryStore()
-
-    # The old environment variable must not silently restore Sheets as the
-    # system of record. Legacy access requires the explicit CLI boundary.
-    monkeypatch.setenv("DATA_STORE_SPREADSHEET_ID", "store-from-env")
-    monkeypatch.setattr(cli, "open_persistent_store", open_store)
-    assert cli.main([
-        "coverage", "--league", "NBA", "--data-store-id", "store-from-flag"
-    ]) == 0
-    assert calls == [("store-from-flag", False)]
-    assert json.loads(capsys.readouterr().out)["fixtures_found"] == 0
-
-
-def test_offline_cli_dry_run_does_not_create_json_store(tmp_path, capsys):
-    from ingestion import cli
-
-    path = tmp_path / "dry-run-state.json"
-    rc = cli.main([
-        "pregame", "--league", "NBA", "--date", "20261107",
-        "--offline-fixture", "--store-json", str(path),
-    ])
-    assert rc == 0 and not path.exists()
+    assert rc == 0 and not warehouse.exists()
     report = json.loads(capsys.readouterr().out)
-    assert report["persistence"]["kind"] == "json_file_local"
+    assert report["persistence"]["kind"] == "duckdb"
     assert report["persistence"]["write_enabled"] is False
-    assert not any(
-        "invalid metadata" in gap["detail"] for gap in report["gaps"]
-    )
+    assert report["persistence"]["system_of_record"] == "duckdb_csv"
 
 
-def test_offline_smoke_labels_hardwood_as_fixture_verified(capsys):
+def test_offline_smoke_labels_hardwood_as_fixture_verified(tmp_path, capsys):
     from ingestion import cli
 
-    assert cli.main([
-        "smoke", "--league", "NBA", "--date", "20261107", "--offline-fixture"
-    ]) == 0
+    warehouse = tmp_path / "smoke.duckdb"
+    assert cli.main(
+        [
+            "smoke",
+            "--league",
+            "NBA",
+            "--date",
+            "20261107",
+            "--offline-fixture",
+            "--warehouse",
+            str(warehouse),
+        ]
+    ) == 0
     report = json.loads(capsys.readouterr().out)
     assert report["verification"] == "FIXTURE_VERIFIED"
     assert report["hardwood"]["verification"] == "FIXTURE_VERIFIED"
+    assert not warehouse.exists()
 
 
 def test_newer_partial_prediction_does_not_displace_fresh_complete_bundle():
@@ -330,13 +261,21 @@ def test_newer_partial_prediction_does_not_displace_fresh_complete_bundle():
 
     game = _game()
     complete = Prediction(
-        game_id=game.game_id, provider="espn", observed_utc="2026-11-07T10:00:00Z",
-        prob_home=0.23, prob_away=0.77, expected_home_score=110.5,
-        expected_away_score=120.0, expected_total=230.5,
+        game_id=game.game_id,
+        provider="espn",
+        observed_utc="2026-11-07T10:00:00Z",
+        prob_home=0.23,
+        prob_away=0.77,
+        expected_home_score=110.5,
+        expected_away_score=120.0,
+        expected_total=230.5,
     )
     newer_partial = Prediction(
-        game_id=game.game_id, provider="espn", observed_utc="2026-11-07T11:00:00Z",
-        prob_home=0.25, prob_away=0.75,
+        game_id=game.game_id,
+        provider="espn",
+        observed_utc="2026-11-07T11:00:00Z",
+        prob_home=0.25,
+        prob_away=0.75,
     )
     result = select_prediction(
         [complete, newer_partial], game, "2026-11-07T12:00:00Z"
@@ -346,59 +285,194 @@ def test_newer_partial_prediction_does_not_displace_fresh_complete_bundle():
 
 
 def test_stored_prediction_survives_transient_provider_outage(monkeypatch):
-    from ingestion.identity import now_utc_iso
     from ingestion.providers import espn, hardwood
 
     store = InMemoryStore()
     game = _game()
     stored = Prediction(
-        game_id=game.game_id, provider="espn", observed_utc=now_utc_iso(),
-        prob_home=0.23, prob_away=0.77, expected_home_score=110.5,
-        expected_away_score=120.0, expected_total=230.5,
+        game_id=game.game_id,
+        provider="espn",
+        observed_utc="2026-11-07T18:30:00Z",
+        prob_home=0.23,
+        prob_away=0.77,
+        expected_home_score=110.5,
+        expected_away_score=120.0,
+        expected_total=230.5,
     )
     store.upsert_prediction(stored)
-    monkeypatch.setattr(espn, "fetch_bpi", lambda *args: (_ for _ in ()).throw(RuntimeError("outage")))
-    monkeypatch.setattr(hardwood, "load_forecasts", lambda *args: (_ for _ in ()).throw(RuntimeError("outage")))
+    monkeypatch.setattr(
+        espn,
+        "fetch_bpi",
+        lambda *args, **kwargs: (_ for _ in ()).throw(RuntimeError("outage")),
+    )
+    monkeypatch.setattr(
+        hardwood,
+        "load_forecasts",
+        lambda *args: (_ for _ in ()).throw(RuntimeError("outage")),
+    )
     selections = _pipeline(store)._acquire_predictions([game])
     assert selections[game.game_id].selected is stored
 
 
-def test_stored_odds_fallback_uses_predicted_side_only():
+def test_odds_fallback_uses_latest_complete_price_for_predicted_side():
     store = InMemoryStore()
     game = _game()
     prediction = Prediction(
-        game_id=game.game_id, provider="espn", observed_utc="2026-11-07T18:00:00Z",
-        prob_home=0.2, prob_away=0.8,
+        game_id=game.game_id,
+        provider="espn",
+        observed_utc="2026-11-07T18:00:00Z",
+        prob_home=0.2,
+        prob_away=0.8,
     )
-    moneyline = BookSnapshot(
-        game_id=game.game_id, provider="one", book="draftkings",
-        market=Market.MONEYLINE, period=Period.FULL_GAME,
-        observed_utc="2026-11-07T18:00:00Z", pre_match=True, main_line=True,
-        home_price_decimal=1.5, away_price_decimal=2.5,
+    older = BookSnapshot(
+        game_id=game.game_id,
+        provider="one",
+        book="draftkings",
+        market=Market.MONEYLINE,
+        period=Period.FULL_GAME,
+        observed_utc="2026-11-07T18:00:00Z",
+        home_price_decimal=1.5,
+        away_price_decimal=2.5,
     )
-    store.upsert_book_snapshot(moneyline)
-    pipeline = _pipeline(store)
-    import ingestion.pipeline as module
-    module.now_utc_iso = lambda: "2026-11-07T19:00:00Z"
-    try:
-        assert pipeline._stored_odds_for(game, prediction) == 2.5
-        store.upsert_book_snapshot(BookSnapshot(
-            game_id=game.game_id, provider="two", book="fanduel",
-            market=Market.MONEYLINE, period=Period.FULL_GAME,
-            observed_utc="2026-11-07T18:30:00Z", pre_match=True, main_line=True,
-            home_price_decimal=1.4, away_price_decimal=None,
-        ))
-        assert pipeline._stored_odds_for(game, prediction) is None
-    finally:
-        module.now_utc_iso = __import__("ingestion.identity", fromlist=["now_utc_iso"]).now_utc_iso
+    newer_partial = BookSnapshot(
+        game_id=game.game_id,
+        provider="two",
+        book="fanduel",
+        market=Market.MONEYLINE,
+        period=Period.FULL_GAME,
+        observed_utc="2026-11-07T18:30:00Z",
+        home_price_decimal=1.4,
+        away_price_decimal=None,
+    )
+    store.upsert_book_snapshot(older)
+    store.upsert_book_snapshot(newer_partial)
+    price, evidence = _pipeline(store)._odds_evidence_for(
+        store.get_book_snapshots(game.game_id), prediction
+    )
+    assert price == 2.5
+    assert evidence["book"] == "draftkings"
 
 
-def test_coverage_sums_quarter_lines_across_games():
+def test_prediction_selection_orders_timestamps_as_instants():
+    from ingestion.predictions import select_prediction
+
+    game = _game()
+    earlier = Prediction(
+        game_id=game.game_id,
+        provider="espn",
+        observed_utc="2026-11-07T10:30:00-02:00",  # 12:30Z
+        prob_home=0.6,
+        prob_away=0.4,
+        expected_home_score=110,
+        expected_away_score=100,
+        expected_total=210,
+    )
+    later = Prediction(
+        game_id=game.game_id,
+        provider="espn",
+        observed_utc="2026-11-07T13:00:00Z",
+        prob_home=0.7,
+        prob_away=0.3,
+        expected_home_score=112,
+        expected_away_score=100,
+        expected_total=212,
+    )
+    selected = select_prediction([later, earlier], game, "2026-11-07T14:00:00Z")
+    assert selected.selected is later
+
+
+def _actual(**changes):
+    values = dict(
+        period_kind=PeriodKind.QUARTERS,
+        home_quarters=[25, 25, 25, 25],
+        away_quarters=[20, 20, 20, 20],
+        home_final=100,
+        away_final=80,
+        source="test",
+    )
+    values.update(changes)
+    return ActualResult(**values)
+
+
+@pytest.mark.parametrize(
+    "actual",
+    [
+        _actual(home_quarters=[25, 25, 25]),
+        _actual(home_overtime=5, away_overtime=None),
+        _actual(home_overtime=5, away_overtime=4, overtime_periods=0),
+        _actual(home_overtime=None, away_overtime=None, overtime_periods=1),
+        _actual(home_final=float("nan")),
+        _actual(away_quarters=[20, 20, 20, -1], away_final=79),
+    ],
+)
+def test_actual_reconciliation_rejects_incomplete_or_impossible_scores(actual):
+    assert actual.reconciles()[0] is False
+
+
+def test_actual_reconciliation_accepts_balanced_overtime():
+    actual = _actual(
+        home_quarters=[25, 25, 25, 20],
+        away_quarters=[20, 20, 20, 20],
+        home_overtime=10,
+        away_overtime=5,
+        home_final=105,
+        away_final=85,
+        overtime_periods=1,
+    )
+    assert actual.reconciles() == (True, "")
+
+
+def test_schedule_rediscovery_does_not_erase_official_final():
     store = InMemoryStore()
-    one, two = _game("one"), _game("two")
-    for game in (one, two):
-        store.upsert_game(game)
-        store.upsert_book_snapshot(_snapshot(event=game.game_id, period=Period.Q1))
-    report = _pipeline(store).coverage()
-    assert report["games_in_store"] == 2
-    assert report["quarter_lines"]["Q1"] == 2
+    final = _game()
+    final.status = GameStatus.FINAL
+    final.actual = _actual()
+    store.upsert_game(final)
+    store.upsert_game(_game())
+    loaded = store.get_game(final.game_id)
+    assert loaded.status is GameStatus.FINAL
+    assert loaded.actual.home_final == 100
+
+
+def test_nonfinite_or_negative_prediction_expectations_are_rejected():
+    for field in ("expected_home_score", "expected_away_score", "expected_total"):
+        for value in (float("nan"), float("inf"), -1.0):
+            with pytest.raises(ValueError):
+                Prediction(
+                    game_id="g1",
+                    provider="espn",
+                    observed_utc="2026-11-07T18:00:00Z",
+                    **{field: value},
+                )
+    with pytest.raises(ValueError):
+        Prediction(
+            game_id="g1",
+            provider="espn",
+            observed_utc="2026-11-07T18:00:00Z",
+            expected_margin=float("nan"),
+        )
+
+
+def test_nonfinite_lines_and_invalid_decimal_prices_are_rejected():
+    for line in (float("nan"), float("inf")):
+        with pytest.raises(ValueError):
+            _snapshot(line=line)
+    for field in (
+        "over_price_decimal",
+        "under_price_decimal",
+        "home_price_decimal",
+        "away_price_decimal",
+        "draw_price_decimal",
+    ):
+        for price in (float("nan"), float("inf"), 0.99):
+            with pytest.raises(ValueError):
+                _snapshot(**{field: price})
+
+
+def test_invalid_timestamp_is_rejected_not_merely_suffix_checked():
+    with pytest.raises(ValueError, match="valid ISO"):
+        Prediction(
+            game_id="g",
+            provider="test",
+            observed_utc="2026-99-99T00:00:00Z",
+        )

@@ -1,10 +1,8 @@
 """DuckDB/CSV-first canonical persistence.
 
-DuckDB is the operational system of record.  Google Sheets is deliberately not
-part of this implementation; the old Sheets store remains only as an explicit
-legacy migration adapter.  Every mutation keeps the same natural keys and
-freeze semantics as ``InMemoryStore`` and is mirrored transactionally to a
-single-file DuckDB database.
+DuckDB is the operational system of record. Every mutation keeps the same
+natural keys and freeze semantics as ``InMemoryStore`` and is mirrored
+transactionally to a single-file DuckDB database.
 
 Tables are intentionally analytics-friendly.  Large variable prediction/result
 payloads use JSON, while fixture, book, timing and freeze fields are typed SQL
@@ -38,7 +36,7 @@ from .store import (
     _prediction_to_dict,
 )
 
-SCHEMA_VERSION = "1"
+SCHEMA_VERSION = "2"
 EXPORT_TABLES = (
     "games",
     "predictions",
@@ -96,6 +94,7 @@ CREATE TABLE IF NOT EXISTS book_snapshots (
     under_price_decimal DOUBLE,
     home_price_decimal DOUBLE,
     away_price_decimal DOUBLE,
+    draw_price_decimal DOUBLE,
     pre_match BOOLEAN NOT NULL,
     main_line BOOLEAN NOT NULL,
     payload_hash VARCHAR,
@@ -171,6 +170,19 @@ class DuckDBStore(InMemoryStore):
         self._con = duckdb.connect(self._connection_path, read_only=read_only)
         if not read_only:
             self._con.execute(_SCHEMA)
+            book_columns = {
+                row[1]
+                for row in self._con.execute("PRAGMA table_info(book_snapshots)").fetchall()
+            }
+            if "draw_price_decimal" not in book_columns:
+                self._con.execute(
+                    "ALTER TABLE book_snapshots ADD COLUMN draw_price_decimal DOUBLE"
+                )
+                self._con.execute(
+                    "UPDATE book_snapshots SET draw_price_decimal = "
+                    "TRY_CAST(json_extract_string(payload_json, "
+                    "'$.draw_price_decimal') AS DOUBLE)"
+                )
             self._con.execute(
                 "INSERT OR REPLACE INTO schema_meta(key, value) "
                 "VALUES ('schema_version', ?)",
@@ -357,6 +369,7 @@ class DuckDBStore(InMemoryStore):
                     "under_price_decimal",
                     "home_price_decimal",
                     "away_price_decimal",
+                    "draw_price_decimal",
                     "pre_match",
                     "main_line",
                     "payload_hash",
@@ -377,6 +390,7 @@ class DuckDBStore(InMemoryStore):
                     snapshot.under_price_decimal,
                     snapshot.home_price_decimal,
                     snapshot.away_price_decimal,
+                    snapshot.draw_price_decimal,
                     snapshot.pre_match,
                     snapshot.main_line,
                     snapshot.payload_hash,

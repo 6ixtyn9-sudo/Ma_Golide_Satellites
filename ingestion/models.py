@@ -1,17 +1,16 @@
 """Canonical, provider-independent data model for the acquisition layer.
 
-These types are the contract between provider adapters, the prediction
-selector, the derivation layer and the Sheets writer.  Adapters translate
-provider payloads into these records; nothing downstream ever sees a raw
-provider payload.
+These types are the contract between provider adapters, canonical storage,
+and research. Adapters translate provider payloads into these records;
+downstream logic never depends on a raw provider payload.
 
-Design rules (see master prompt section 7):
+Design rules (see docs/CONTRACT.md):
 
 - Predictions and bookmaker lines are NEVER conflated: ``Prediction`` and
   ``BookSnapshot`` are separate types and stay separate.
 - All timestamps are timezone-aware UTC ISO 8601 strings internally.
-- Money keeps raw precision in ``expected_*`` fields; rounding happens only
-  at sheet rendering.
+- Numeric fields retain observed precision during acquisition; derived report
+  rounding is explicit and never changes canonical evidence.
 - A ``CoverageGap`` is emitted instead of guessing when a provider lacks a
   field.  No silent imputation.
 """
@@ -20,6 +19,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import math
 import re
 from dataclasses import dataclass, field
 from enum import Enum
@@ -38,17 +38,6 @@ class League(str, Enum):
     NCAA_M = "NCAA_M"
     NCAA_W = "NCAA_W"
 
-    @classmethod
-    def display_value(cls, league: "League") -> str:
-        """Canonical display value used in sheet ``League`` column."""
-        return {
-            League.NBA: "NBA",
-            League.EUROLEAGUE: "EuroLeague",
-            League.WNBA: "WNBA",
-            League.NCAA_M: "NCAA M",
-            League.NCAA_W: "NCAA W",
-        }[league]
-
 
 class GameStatus(str, Enum):
     SCHEDULED = "SCHEDULED"
@@ -61,17 +50,18 @@ class GameStatus(str, Enum):
 
 
 class FinalStatus(str, Enum):
-    """Status column values allowed on a result row (existing convention)."""
+    """Result-status labels used by the research ledger."""
 
     FT = "FT"  # full time / regulation
     AOT = "AOT"  # after overtime
-    ABD = "ABD"  # abandoned (kept from legacy parser; quarantined upstream)
+    ABD = "ABD"  # abandoned; never treated as a completed final
 
 
 class Market(str, Enum):
     MONEYLINE = "moneyline"
     SPREAD = "spread"
     TOTAL = "total"
+    HIGHEST_QUARTER = "highest_quarter"
 
 
 class Period(str, Enum):
@@ -125,64 +115,33 @@ def payload_hash(obj: Any) -> str:
 
 
 def _require_utc(value: str, field_name: str) -> str:
-    if not value.endswith("Z") and not re.search(r"[+-]\d{2}:\d{2}$", value):
+    text = str(value).strip()
+    if not text.endswith("Z") and not re.search(r"[+-]\d{2}:\d{2}$", text):
         raise ValueError(
-            f"{field_name} must be timezone-aware UTC ISO 8601 (got {value!r})"
+            f"{field_name} must be timezone-aware ISO 8601 (got {value!r})"
         )
-    return value
+    try:
+        from datetime import datetime
+
+        datetime.fromisoformat(text.replace("Z", "+00:00"))
+    except ValueError as exc:
+        raise ValueError(f"{field_name} is not a valid ISO 8601 timestamp") from exc
+    return text
 
 
-def round_half_up(value: float, ndigits: int = 0) -> float:
-    """Decimal-compatible half-up rounding (matches sheet display rounding)."""
-    from decimal import Decimal, ROUND_HALF_UP
-
-    q = Decimal(1).scaleb(-ndigits)
-    return float(Decimal(str(value)).quantize(q, rounding=ROUND_HALF_UP))
-
-
-def fmt_prob(prob_home: Optional[float], prob_away: Optional[float]) -> Optional[str]:
-    """Display ``H - A`` percent string, one decimal (e.g. ``23.1 - 76.9``).
-
-    Inputs are 0..1 fractions (canonical storage) and are converted to
-    percentages only here, at render time.
-    """
-    if prob_home is None or prob_away is None:
-        return None
-    return (
-        f"{round_half_up(prob_home * 100.0, 1):.1f} - "
-        f"{round_half_up(prob_away * 100.0, 1):.1f}"
-    )
-
-
-def fmt_score_pair(home: Optional[float], away: Optional[float]) -> Optional[str]:
-    """Display ``home-away`` integer score pair (e.g. ``111-120``)."""
-    if home is None or away is None:
-        return None
-    return f"{round_half_up(home, 0):.0f}-{round_half_up(away, 0):.0f}"
-
-
-def fmt_total(total: Optional[float]) -> Optional[str]:
-    """Display a model expected total at one decimal (e.g. ``230.6``)."""
-    if total is None:
-        return None
-    return f"{round_half_up(total, 1):.1f}"
-
-
-def pred_from_probabilities(
+def predicted_side(
     prob_home: Optional[float], prob_away: Optional[float]
-) -> Optional[int]:
-    """``1`` when the home probability is higher, else ``2``.
-
-    Exact ties resolve to ``2`` (the away side), matching the documented
-    tie behaviour; ``None`` when probabilities are absent/invalid.
-    """
+) -> Optional[str]:
+    """Return ``home``/``away`` for a strict favorite, or ``None`` for a tie."""
     if prob_home is None or prob_away is None:
         return None
-    if prob_away > prob_home:
-        return 2
+    if not math.isfinite(prob_home) or not math.isfinite(prob_away):
+        return None
     if prob_home > prob_away:
-        return 1
-    return 2  # documented exact-tie behaviour
+        return "home"
+    if prob_away > prob_home:
+        return "away"
+    return None
 
 
 # ---------------------------------------------------------------------------
@@ -225,14 +184,46 @@ class ActualResult:
         """Check ``Q1+Q2+Q3+Q4+OT == FT`` independently for both teams."""
         if self.period_kind != PeriodKind.QUARTERS:
             return False, f"period kind {self.period_kind.value} is not quarters"
-        if not self.home_quarters or not self.away_quarters:
-            return False, "missing period values"
+        if len(self.home_quarters) != 4 or len(self.away_quarters) != 4:
+            return False, "expected exactly four quarter values per team"
         if any(v is None for v in self.home_quarters + self.away_quarters):
             return False, "incomplete periods"
         if self.home_final is None or self.away_final is None:
             return False, "missing final"
-        home_sum = sum(v for v in self.home_quarters if v is not None)
-        away_sum = sum(v for v in self.away_quarters if v is not None)
+        numeric_values = [
+            *self.home_quarters,
+            *self.away_quarters,
+            self.home_overtime,
+            self.away_overtime,
+            self.home_final,
+            self.away_final,
+        ]
+        if any(
+            value is not None
+            and (
+                isinstance(value, bool)
+                or not isinstance(value, (int, float))
+                or not math.isfinite(value)
+                or value < 0
+            )
+            for value in numeric_values
+        ):
+            return False, "scores must be finite non-negative numbers"
+        if (
+            isinstance(self.overtime_periods, bool)
+            or not isinstance(self.overtime_periods, int)
+            or self.overtime_periods < 0
+        ):
+            return False, "overtime period count must be a non-negative integer"
+        has_overtime = self.home_overtime is not None or self.away_overtime is not None
+        if (self.home_overtime is None) != (self.away_overtime is None):
+            return False, "overtime values must be present for both teams"
+        if has_overtime and self.overtime_periods < 1:
+            return False, "overtime values present without an overtime period"
+        if not has_overtime and self.overtime_periods:
+            return False, "overtime period count present without overtime values"
+        home_sum = sum(self.home_quarters)
+        away_sum = sum(self.away_quarters)
         if self.home_overtime is not None:
             home_sum += self.home_overtime
         if self.away_overtime is not None:
@@ -257,7 +248,7 @@ class Game:
     away_name: str
     scheduled_utc: str  # ISO 8601 Z
     status: GameStatus = GameStatus.SCHEDULED
-    phase: str = "League"  # Game Type display value
+    phase: str = "League"  # Canonical competition phase
     provider_ids: Dict[str, str] = field(default_factory=dict)  # provider -> event id
     actual: Optional[ActualResult] = None
     rescheduled_from: Optional[str] = None
@@ -272,7 +263,7 @@ class Game:
         return datetime.fromisoformat(self.scheduled_utc.replace("Z", "+00:00")).astimezone(timezone.utc)
 
     def final_status(self) -> Optional[FinalStatus]:
-        """Status cell value for a finished game (``FT``/``AOT`` convention)."""
+        """Canonical final label using the ``FT``/``AOT`` convention."""
         if self.status is not GameStatus.FINAL or self.actual is None:
             return None
         if self.actual.overtime_periods > 0:
@@ -286,8 +277,8 @@ class Game:
 class Prediction:
     """One provider's pre-tip prediction with full provenance.
 
-    ``expected_total`` is the model expected total (the new ``Avg``
-    semantics); it is NEVER a bookmaker line.
+    ``expected_total`` is a provider/model expectation; it is NEVER a
+    bookmaker line.
     """
 
     game_id: str
@@ -310,8 +301,23 @@ class Prediction:
         _require_utc(self.observed_utc, "observed_utc")
         for name in ("prob_home", "prob_away"):
             v = getattr(self, name)
-            if v is not None and not (0.0 <= v <= 1.0):
-                raise ValueError(f"{name} must be a 0..1 probability (got {v})")
+            if v is not None and (
+                not math.isfinite(v) or not 0.0 <= v <= 1.0
+            ):
+                raise ValueError(f"{name} must be a finite 0..1 probability")
+        for name in (
+            "expected_home_score",
+            "expected_away_score",
+            "expected_total",
+            "expected_margin",
+        ):
+            value = getattr(self, name)
+            if value is not None and not math.isfinite(value):
+                raise ValueError(f"{name} must be finite")
+        for name in ("expected_home_score", "expected_away_score", "expected_total"):
+            value = getattr(self, name)
+            if value is not None and value < 0:
+                raise ValueError(f"{name} cannot be negative")
 
     def validate_orientation(self, tolerance: float = 0.25) -> None:
         """Validate probability sum/range and score/margin orientation.
@@ -342,22 +348,13 @@ class Prediction:
                         f"{self.expected_total:.3f} beyond tolerance"
                     )
 
-    def display(self) -> Dict[str, Optional[str]]:
-        """Render the ``G:J`` bundle exactly as the base sheet expects it."""
-        return {
-            "Prob %": fmt_prob(self.prob_home, self.prob_away),
-            "Pred": pred_from_probabilities(self.prob_home, self.prob_away),
-            "Pred Score": fmt_score_pair(self.expected_home_score, self.expected_away_score),
-            "Avg": fmt_total(self.expected_total),
-        }
-
 
 @dataclass
 class BookSnapshot:
     """One book's price/line for one market/period, fully normalised.
 
     Invariants enforced by construction and by ``books.py``:
-    - ``period`` is exact (FULL_GAME / Q1..Q4); no derived periods exist.
+    - ``period`` is exact (FULL_GAME / H1 / Q1..Q4); no derived periods exist.
     - ``line`` for totals markets is the LINE VALUE (e.g. 232.0), never a price.
     - prices are decimal; American odds are converted at ingestion.
     """
@@ -374,12 +371,12 @@ class BookSnapshot:
     under_price_decimal: Optional[float] = None
     home_price_decimal: Optional[float] = None
     away_price_decimal: Optional[float] = None
+    draw_price_decimal: Optional[float] = None
     pre_match: bool = True
     main_line: bool = True
     payload_hash: Optional[str] = None
     # Raw provider identity is retained until the pipeline resolves the
-    # snapshot to a canonical Game.  Names/start are optional for manual
-    # canonical-ID imports, but provider adapters populate them whenever
+    # snapshot to a canonical Game. Names/start are populated whenever
     # available so cross-provider joins never rely on ID coincidence.
     provider_event_id: Optional[str] = None
     home_name: Optional[str] = None
@@ -390,24 +387,35 @@ class BookSnapshot:
         _require_utc(self.observed_utc, "observed_utc")
         if self.scheduled_utc:
             _require_utc(self.scheduled_utc, "scheduled_utc")
+        if self.line is not None and not math.isfinite(self.line):
+            raise ValueError("bookmaker line must be finite")
+        for name in (
+            "over_price_decimal",
+            "under_price_decimal",
+            "home_price_decimal",
+            "away_price_decimal",
+            "draw_price_decimal",
+        ):
+            value = getattr(self, name)
+            if value is not None and (
+                not math.isfinite(value) or value < 1.0
+            ):
+                raise ValueError(f"{name} must be finite decimal odds >= 1.0")
 
-    def moneyline_for_side(self, side: int) -> Optional[float]:
-        """Decimal price for side 1 (home) or 2 (away)."""
-        if side == 1:
+    def moneyline_for_side(self, side: str) -> Optional[float]:
+        """Decimal price for ``home``, ``away``, or ``draw`` when observed."""
+        if side == "home":
             return self.home_price_decimal
-        if side == 2:
+        if side == "away":
             return self.away_price_decimal
+        if side == "draw":
+            return self.draw_price_decimal
         return None
 
 
 @dataclass
 class StandingsRow:
-    """One standings row as the legacy ``loadStandings`` expects it.
-
-    ``points_for``/``points_against`` are **cumulative** season totals (the
-    legacy loader computes ``netRtg = (PF-PA)/GP``); per-game averages must
-    never be written into these fields.
-    """
+    """One standings row with cumulative, not per-game, scoring totals."""
 
     team_name: str
     position: Optional[int] = None
@@ -459,7 +467,7 @@ class CoverageReport:
 
     league: str
     generated_utc: str
-    mode: str  # live | dry_run | fixture
+    mode: str  # write | dry_run | store
     fixtures_found: int = 0
     predictions_selected: Dict[str, int] = field(default_factory=dict)  # provider -> n
     full_game_line_coverage: Dict[str, int] = field(default_factory=dict)

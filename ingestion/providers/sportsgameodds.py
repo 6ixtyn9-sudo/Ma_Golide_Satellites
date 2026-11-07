@@ -20,8 +20,8 @@ Documented contract used here:
 - Prices are American and are converted with ``books.american_to_decimal``.
   The total ``line`` is the LINE VALUE (e.g. 232.5) taken from a
   ``line``/``points`` field when present; when the payload lacks it,
-  ``snapshot.line`` stays ``None`` and the snapshot is NOT usable for sheet
-  writes (line required for totals) — smoke reports it under
+  ``snapshot.line`` stays ``None`` and the snapshot is NOT usable for a
+  total forecast — smoke reports it under
   ``not_usable``.
 - Books come from the market's ``bookOdds`` keys; a market without any
   ``bookOdds`` yields no snapshot (book attribution is never guessed).
@@ -323,7 +323,7 @@ def _total_snapshots_for_group(
 
     ``line`` comes from a ``line``/``points`` field; when the payload lacks
     it the snapshot is emitted with ``line=None`` and is NOT usable for
-    sheet writes (totals need the line value) — smoke counts it under
+    total forecasts (the posted line is required) — smoke counts it under
     ``not_usable``. Books come from ``bookOdds`` keys only; a group without
     any bookOdds is skipped with a gap (book attribution is never guessed).
     """

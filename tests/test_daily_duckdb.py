@@ -5,6 +5,7 @@ from pathlib import Path
 
 import pytest
 
+from scripts.daily import main as daily_main
 from scripts.daily import run_daily
 
 
@@ -24,7 +25,9 @@ def _args(tmp_path, **changes):
         freshness_hours=12.0,
         book=None,
         book_provider="none",
-        quarter_csv=None,
+        skip_markets=False,
+        acca_legs=3,
+        acca_limit=5,
         notify=False,
         send_notifications=False,
         started_utc="2026-11-07T18:00:00Z",
@@ -33,24 +36,37 @@ def _args(tmp_path, **changes):
     return argparse.Namespace(**values)
 
 
-def test_daily_dry_run_uses_no_google_and_creates_no_warehouse(tmp_path, monkeypatch):
-    import ingestion.cli as cli
-
-    monkeypatch.setattr(
-        cli,
-        "open_persistent_store",
-        lambda *a, **k: (_ for _ in ()).throw(
-            AssertionError("legacy Google store must not be selected")
-        ),
-    )
+def test_daily_dry_run_creates_no_warehouse_and_builds_market_report(tmp_path):
     summary = run_daily(_args(tmp_path))
     assert summary["mode"] == "dry_run"
     assert summary["system_of_record"] == "duckdb_csv"
     assert summary["commands"]["pregame"]["fixtures_found"] == 1
+    assert summary["commands"]["pregame"]["generated_utc"] == "2026-11-07T00:00:00Z"
     assert summary["commands"]["pregame"]["persistence"]["kind"] == "duckdb"
     assert not Path(summary["warehouse"]).exists()
     assert summary["ledgers"] == {}
+    assert summary["markets"]["status"] == "decision_support_only"
+    assert summary["markets"]["accas"]["results"] == []
+    assert summary["markets"]["forecasts"][0]["prediction"]["frozen"] is False
+    assert Path(summary["market_report_path"]).exists()
     assert Path(summary["report_path"]).exists()
+
+
+def test_dry_run_prunes_daily_and_market_report_retention(tmp_path):
+    import json
+
+    reports = tmp_path / "localdata" / "reports"
+    reports.mkdir(parents=True)
+    (reports / "daily_old.json").write_text(
+        json.dumps({"finished_utc": "2000-01-01T00:00:00Z"})
+    )
+    (reports / "markets_old.json").write_text(
+        json.dumps({"generated_utc": "2000-01-01T00:00:00Z"})
+    )
+    summary = run_daily(_args(tmp_path))
+    assert summary["retention"]["report_files_pruned"] == 2
+    assert not (reports / "daily_old.json").exists()
+    assert not (reports / "markets_old.json").exists()
 
 
 def test_fixture_persistence_and_notification_have_separate_guards(
@@ -83,6 +99,35 @@ def test_fixture_write_refuses_canonical_state_paths(tmp_path, monkeypatch):
         )
     assert not canonical.exists()
     assert not list(canonical.parent.glob("reports/*.json"))
+
+
+def test_offline_cli_pins_its_forecast_cutoff(tmp_path, monkeypatch, capsys):
+    import json
+    import sys
+
+    monkeypatch.setattr(
+        sys,
+        "argv",
+        [
+            "daily.py",
+            "--auto-once",
+            "--date",
+            "20261107",
+            "--offline-fixture",
+            "--warehouse",
+            str(tmp_path / "warehouse.duckdb"),
+            "--localdata",
+            str(tmp_path),
+            "--run-id",
+            "offline-cli",
+        ],
+    )
+    assert daily_main() == 0
+    summary = json.loads(capsys.readouterr().out)
+    assert summary["target_date"] == "2026-11-07"
+    assert summary["started_utc"] == "2026-11-07T18:00:00Z"
+    assert summary["markets"]["forecast_count"] == 1
+    assert not (tmp_path / "warehouse.duckdb").exists()
 
 
 def test_daily_write_persists_duckdb_csv_and_idempotent_ledgers(tmp_path, monkeypatch):

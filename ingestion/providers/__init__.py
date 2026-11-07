@@ -1,4 +1,4 @@
-"""Provider adapters. See ingestion/PROVIDER_GUIDE.md for the contract."""
+"""Provider adapters. See docs/PROVIDERS.md for coverage and constraints."""
 
 from __future__ import annotations
 

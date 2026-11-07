@@ -11,7 +11,7 @@ Binding semantics proven here:
   '-4q-'→Q4, '-game-'→FULL_GAME); Q2/Q3 absence is never backfilled
   (partial quarters are allowed).
 - The total ``line`` comes from a line/points field; a market without it
-  yields ``line=None`` (NOT usable for sheet writes) and smoke counts it
+  yields ``line=None`` (NOT usable for total forecasts) and smoke counts it
   under "not_usable".
 - American prices converted via books.american_to_decimal; books come from
   ``bookOdds`` keys.
@@ -192,7 +192,7 @@ def test_unmapped_period_oddids_skipped_with_gap():
 
 def test_no_line_means_unusable_total():
     """Market present but no line/points field: the snapshot is emitted with
-    line=None, is NOT usable for sheet writes (totals need the line value),
+    line=None, is NOT usable for total forecasts (the posted line is required),
     and smoke counts it under "not_usable"."""
     factory, _calls = _factory(_default_mapping())
     snapshots = sportsgameodds.fetch_odds("NBA", "20261107", factory)

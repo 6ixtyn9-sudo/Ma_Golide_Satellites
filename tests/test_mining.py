@@ -46,7 +46,7 @@ def test_assay_uses_only_frozen_pretip_bundles_and_never_certifies(tmp_path):
             Prediction(
                 game_id=game.game_id,
                 provider="espn",
-                observed_utc=game.scheduled_utc,
+                observed_utc=game.scheduled_utc.replace("22:00:00Z", "21:00:00Z"),
                 prob_home=0.6,
                 prob_away=0.4,
             ),
@@ -57,7 +57,7 @@ def test_assay_uses_only_frozen_pretip_bundles_and_never_certifies(tmp_path):
             Prediction(
                 game_id=game.game_id,
                 provider="espn",
-                observed_utc=game.scheduled_utc,
+                observed_utc=game.scheduled_utc.replace("22:00:00Z", "23:00:00Z"),
                 prob_home=0.1,
                 prob_away=0.9,
                 pre_tip=False,
@@ -68,7 +68,7 @@ def test_assay_uses_only_frozen_pretip_bundles_and_never_certifies(tmp_path):
         Prediction(
             game_id="g10",
             provider="espn",
-            observed_utc="2026-11-11T22:00:00Z",
+            observed_utc="2026-11-11T21:00:00Z",
             prob_home=0.6,
             prob_away=0.4,
         ),
@@ -87,6 +87,7 @@ def test_assay_uses_only_frozen_pretip_bundles_and_never_certifies(tmp_path):
     assert len(report["edges"]) == 1
     assert report["edges"][0]["certified"] is False
     assert report["edges"][0]["segment"][-1] == "espn"
+    assert report["edges"][0]["wilson_lower_95"] > 0
     assert "expected_total_to_ou_conversion" in report["exclusions"]
 
 

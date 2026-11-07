@@ -10,7 +10,6 @@ their env keys are present, and their output is labelled accordingly.
 
 from __future__ import annotations
 
-import os
 
 import pytest
 
@@ -91,6 +90,5 @@ def test_full_pregame_dry_run_live_nba():
     )
     assert report["mode"] == "dry_run"
     assert report["fixtures_found"] > 0
-    # The plan must propose appends only in the owned columns and write
-    # nothing (upcoming_ws is None here, so there is no sheet target at all).
-    assert "sheet_plan" not in report
+    # Live smoke remains read-only and returns canonical acquisition facts.
+    assert "rows" in report and "gaps" in report

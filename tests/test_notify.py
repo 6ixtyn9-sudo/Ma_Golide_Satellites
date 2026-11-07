@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import json
+from datetime import datetime, timedelta, timezone
 
 import pytest
 
@@ -45,7 +46,36 @@ def test_notification_is_operational_and_deduplicated(tmp_path):
     assert first["status"] == "sent" and first["sent"]
     assert second["status"] == "already_sent" and not second["sent"]
     assert sent_messages == [message]
-    assert len(json.loads(ledger.read_text())["sent_sha256"]) == 1
+    assert len(json.loads(ledger.read_text())["deliveries"]) == 1
+
+
+def test_notification_ledger_is_bounded_and_expires_old_entries(tmp_path):
+    ledger = tmp_path / "notification_ledger.json"
+    now = datetime(2026, 1, 1, tzinfo=timezone.utc)
+    sent = []
+    for index in range(3):
+        notify_summary(
+            _summary() | {"target_date": f"2026-01-0{index + 1}"},
+            send=True,
+            ledger_path=str(ledger),
+            dispatcher=sent.append,
+            max_entries=2,
+            now=now + timedelta(days=index),
+        )
+    payload = json.loads(ledger.read_text())
+    assert len(sent) == 3
+    assert len(payload["deliveries"]) == 2
+    assert payload["max_entries"] == 2
+
+    notify_summary(
+        _summary() | {"target_date": "2026-02-15"},
+        send=True,
+        ledger_path=str(ledger),
+        dispatcher=sent.append,
+        retention_days=30,
+        now=now + timedelta(days=45),
+    )
+    assert len(json.loads(ledger.read_text())["deliveries"]) == 1
 
 
 def test_fixture_report_can_preview_but_never_send(tmp_path):

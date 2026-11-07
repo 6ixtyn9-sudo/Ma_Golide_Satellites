@@ -142,6 +142,43 @@ def test_duckdb_roundtrip_preserves_all_canonical_records(tmp_path):
         loaded.close()
 
 
+def test_first_half_draw_price_roundtrip_and_schema_migration(tmp_path):
+    import duckdb
+
+    path = tmp_path / "warehouse.duckdb"
+    store = DuckDBStore(str(path))
+    snapshot = _snapshot(
+        market=Market.MONEYLINE,
+        period=Period.H1,
+        line=None,
+        over_price_decimal=None,
+        under_price_decimal=None,
+        home_price_decimal=1.85,
+        away_price_decimal=2.1,
+        draw_price_decimal=11.0,
+    )
+    store.upsert_book_snapshot(snapshot, frozen=True)
+    store.close()
+
+    # Simulate a version-1 warehouse: reopening must add and backfill the new
+    # typed draw column without touching the complete JSON source payload.
+    con = duckdb.connect(str(path))
+    con.execute("DROP INDEX idx_books_game_market_period")
+    con.execute("ALTER TABLE book_snapshots DROP COLUMN draw_price_decimal")
+    con.close()
+    migrated = DuckDBStore(str(path))
+    try:
+        loaded = migrated.get_book_snapshots("espn-1")[0]
+        assert loaded.draw_price_decimal == 11.0
+        row = migrated.table_rows("book_snapshots")[0]
+        assert row["draw_price_decimal"] == 11.0
+        assert migrated._con.execute(
+            "select value from schema_meta where key='schema_version'"
+        ).fetchone()[0] == "2"
+    finally:
+        migrated.close()
+
+
 def test_operational_run_retention_does_not_touch_canonical_facts(tmp_path):
     store = DuckDBStore(str(tmp_path / "warehouse.duckdb"))
     store.upsert_game(_game())
