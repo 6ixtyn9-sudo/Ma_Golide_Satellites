@@ -4,6 +4,8 @@
 # - Optional book/prediction keys degrade to reported gaps, never fabricated data.
 # - Scheduled runs ALWAYS acquire available evidence. ALLOW_MAGOLIDE_WRITES
 #   controls persistence only; it does not disable keyless public acquisition.
+# Install as .github/workflows/ingestion.yml (editing that path requires the
+# GitHub `workflows` permission).
 
 name: "Ma Golide — automatic available-league service"
 
@@ -31,16 +33,13 @@ jobs:
         with:
           python-version: "3.11"
           cache: pip
-
       - name: Install project and test dependencies
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
           python -m pip install '.[dev]'
-
       - name: Static checks
         run: ruff check .
-
       - name: Hermetic regression tests
         run: python -m pytest -q
 
@@ -58,32 +57,26 @@ jobs:
             league: NBA
             state_key: nba
             required_secret: ""
-
           - label: EuroLeague
             league: EuroLeague
             state_key: euroleague
             required_secret: ""
-
           - label: Chinese CBA
             league: CBA
             state_key: cba
             required_secret: ISPORTS_API_KEY
-
           - label: NCAA men
             league: NCAA_M
             state_key: ncaa_m
             required_secret: ""
-
           - label: NCAA women
             league: NCAA_W
             state_key: ncaa_w
             required_secret: ""
-
     name: ${{ matrix.label }}
     env:
       LOCALDATA: localdata/${{ matrix.state_key }}
       MAGOLIDE_WAREHOUSE: localdata/${{ matrix.state_key }}/warehouse.duckdb
-
       PREDIXSPORT_API_KEY: ${{ secrets.PREDIXSPORT_API_KEY }}
       THERUNDOWN_API_KEY: ${{ secrets.THERUNDOWN_API_KEY }}
       SPORTSGAMEODDS_API_KEY: ${{ secrets.SPORTSGAMEODDS_API_KEY }}
@@ -91,9 +84,7 @@ jobs:
       ISPORTS_API_KEY: ${{ secrets.ISPORTS_API_KEY }}
       SPORTRADAR_API_KEY: ${{ secrets.SPORTRADAR_API_KEY }}
       SPORTRADAR_ACCESS_LEVEL: ${{ vars.SPORTRADAR_ACCESS_LEVEL || 'trial' }}
-
       ALLOW_MAGOLIDE_WRITES: ${{ vars.ALLOW_MAGOLIDE_WRITES || 'false' }}
-
       WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
       WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
       WHATSAPP_RECIPIENT: ${{ secrets.WHATSAPP_RECIPIENT }}
@@ -107,11 +98,9 @@ jobs:
           REQUIRED_SECRET: ${{ matrix.required_secret }}
         run: |
           set -euo pipefail
-
           if [ -n "$REQUIRED_SECRET" ] && [ -z "${!REQUIRED_SECRET:-}" ]; then
             echo "available=false" >> "$GITHUB_OUTPUT"
             echo "$LEAGUE skipped: required $REQUIRED_SECRET is absent; all other leagues continue."
-
             cat > daily-output.json <<EOF
           {
             "schema_version": "magolide.daily.v1",
@@ -167,20 +156,15 @@ jobs:
           LEAGUE: ${{ matrix.league }}
         run: |
           set -euo pipefail
-
           DATE="$(python - <<'PY'
           from datetime import datetime
           import os
           from zoneinfo import ZoneInfo
           from ingestion.pipeline import ACQUISITION_TZ
-
           league = os.environ["LEAGUE"].upper()
-          print(
-              datetime.now(ZoneInfo(ACQUISITION_TZ[league])).strftime("%Y-%m-%d")
-          )
+          print(datetime.now(ZoneInfo(ACQUISITION_TZ[league])).strftime("%Y-%m-%d"))
           PY
           )"
-
           echo "date=$DATE" >> "$GITHUB_OUTPUT"
 
       - name: Execute every available stage automatically
@@ -190,7 +174,6 @@ jobs:
           TARGET_DATE: ${{ steps.target.outputs.date }}
         run: |
           set -euo pipefail
-
           ARGS=(
             --auto-once
             --league "$LEAGUE"
@@ -204,7 +187,6 @@ jobs:
           # the schedule still runs live acquisition as a canonical dry run.
           if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
             ARGS+=(--write)
-
             if [ "$ALLOW_NOTIFICATION_WRITES" = "true" ]; then
               ARGS+=(--notify --send-notifications)
             fi
@@ -225,7 +207,6 @@ jobs:
           from pathlib import Path
 
           print(f"## {os.environ['LEAGUE']}")
-
           try:
               data = json.loads(Path("daily-output.json").read_text())
           except (OSError, ValueError):
@@ -234,36 +215,21 @@ jobs:
               markets = data.get("markets") or {}
               walk_forward = markets.get("walk_forward") or {}
               accas = markets.get("accas") or {}
-
               summary = {
                   key: data.get(key)
                   for key in (
-                      "status",
-                      "reason",
-                      "capabilities",
-                      "run_id",
-                      "target_date",
-                      "league",
-                      "mode",
-                      "verification",
-                      "system_of_record",
-                      "counts",
-                      "ledgers",
-                      "notification",
-                      "report_path",
-                      "market_report_path",
+                      "status", "reason", "capabilities", "run_id", "target_date",
+                      "league", "mode", "verification", "system_of_record",
+                      "counts", "ledgers", "notification", "report_path",
+                      "market_report_path", "operator",
                   )
                   if key in data
               }
-
               summary["markets"] = {
                   "forecast_count": markets.get("forecast_count"),
-                  "graded_walk_forward_forecasts": walk_forward.get(
-                      "graded_forecasts"
-                  ),
+                  "graded_walk_forward_forecasts": walk_forward.get("graded_forecasts"),
                   "acca_count": len(accas.get("results") or []),
               }
-
               print("```json")
               print(json.dumps(summary, indent=2, default=str))
               print("```")
@@ -290,6 +256,11 @@ jobs:
             ${{ env.LOCALDATA }}/reports/*.json
             ${{ env.LOCALDATA }}/ledgers/
             ${{ env.LOCALDATA }}/assay_*.json
+            ${{ env.LOCALDATA }}/picks_*.json
+            ${{ env.LOCALDATA }}/picks_*.txt
+            ${{ env.LOCALDATA }}/picks_audit_*.md
+            ${{ env.LOCALDATA }}/auto_tickets_*.json
+            ${{ env.LOCALDATA }}/auto_tickets_*.txt
             ${{ env.LOCALDATA }}/csv/*.csv.gz
           if-no-files-found: ignore
           retention-days: 14
