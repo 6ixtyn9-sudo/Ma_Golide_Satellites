@@ -1,211 +1,246 @@
-# Ma Golide autonomous DuckDB/CSV service. Canonical and direct-read state
-# lives in the restored localdata cache. No spreadsheet or external database
-# credentials are required.
+# Ma Golide automatic multi-league acquisition, with no dispatch selections.
+# - NBA, EuroLeague, NCAA_M and NCAA_W use public providers without keys.
+# - CBA runs only when ISPORTS_API_KEY exists; Sportradar remains optional.
+# - Optional book/prediction keys degrade to reported gaps, never fabricated data.
+# - Scheduled runs ALWAYS acquire available evidence. ALLOW_MAGOLIDE_WRITES
+#   controls persistence only; it does not disable keyless public acquisition.
 
-name: "Ma Golide — 3-hour DuckDB service"
+name: "Ma Golide — automatic available-league service"
 
 on:
   schedule:
-    # 11 minutes past every third UTC hour. GitHub may delay scheduled runs.
+    # Every three hours at minute 11 UTC. GitHub may delay scheduled runs.
     - cron: "11 */3 * * *"
-  workflow_dispatch:
-    inputs:
-      mode:
-        description: "Acquisition scope"
-        required: false
-        default: "auto-once"
-        type: choice
-        options:
-          - auto-once
-          - pregame-only
-      league:
-        description: "League"
-        required: false
-        default: "NBA"
-        type: choice
-        options:
-          - NBA
-          - EuroLeague
-      date:
-        description: "Slate date YYYY-MM-DD (blank = today, Africa/Johannesburg)"
-        required: false
-        default: ""
-        type: string
-      offline_fixture:
-        description: "Use committed fixtures; no live provider requests (dry run only)"
-        required: false
-        default: "false"
-        type: choice
-        options:
-          - "false"
-          - "true"
-      allow_writes:
-        description: "Persist canonical state (also requires ALLOW_MAGOLIDE_WRITES=true)"
-        required: false
-        default: "false"
-        type: choice
-        options:
-          - "false"
-          - "true"
-      send_notifications:
-        description: "Send heartbeat (requires canonical writes and ALLOW_NOTIFICATION_WRITES=true)"
-        required: false
-        default: "false"
-        type: choice
-        options:
-          - "false"
-          - "true"
+  # Deliberately no league/date/mode/write inputs: one click runs everything.
+  workflow_dispatch: {}
 
 permissions:
   contents: read
 
 concurrency:
-  # All leagues share one warehouse, so do not overlap canonical writers.
-  group: magolide-duckdb-main
+  group: magolide-automatic-available-leagues
   cancel-in-progress: false
 
 jobs:
-  autonomous:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install project and test dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install '.[dev]'
+
+      - name: Static checks
+        run: ruff check .
+
+      - name: Hermetic regression tests
+        run: python -m pytest -q
+
+  league:
+    needs: preflight
     runs-on: ubuntu-latest
     timeout-minutes: 45
+    strategy:
+      # One unavailable/failed league never cancels the other four.
+      fail-fast: false
+      max-parallel: 5
+      matrix:
+        include:
+          - label: NBA
+            league: NBA
+            state_key: nba
+            required_secret: ""
+
+          - label: EuroLeague
+            league: EuroLeague
+            state_key: euroleague
+            required_secret: ""
+
+          - label: Chinese CBA
+            league: CBA
+            state_key: cba
+            required_secret: ISPORTS_API_KEY
+
+          - label: NCAA men
+            league: NCAA_M
+            state_key: ncaa_m
+            required_secret: ""
+
+          - label: NCAA women
+            league: NCAA_W
+            state_key: ncaa_w
+            required_secret: ""
+
+    name: ${{ matrix.label }}
     env:
-      TZ: Africa/Johannesburg
-      MAGOLIDE_WAREHOUSE: localdata/warehouse.duckdb
+      LOCALDATA: localdata/${{ matrix.state_key }}
+      MAGOLIDE_WAREHOUSE: localdata/${{ matrix.state_key }}/warehouse.duckdb
+
       PREDIXSPORT_API_KEY: ${{ secrets.PREDIXSPORT_API_KEY }}
       THERUNDOWN_API_KEY: ${{ secrets.THERUNDOWN_API_KEY }}
       SPORTSGAMEODDS_API_KEY: ${{ secrets.SPORTSGAMEODDS_API_KEY }}
       THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+      ISPORTS_API_KEY: ${{ secrets.ISPORTS_API_KEY }}
+      SPORTRADAR_API_KEY: ${{ secrets.SPORTRADAR_API_KEY }}
+      SPORTRADAR_ACCESS_LEVEL: ${{ vars.SPORTRADAR_ACCESS_LEVEL || 'trial' }}
+
       ALLOW_MAGOLIDE_WRITES: ${{ vars.ALLOW_MAGOLIDE_WRITES || 'false' }}
+
       WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
       WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
       WHATSAPP_RECIPIENT: ${{ secrets.WHATSAPP_RECIPIENT }}
       ALLOW_NOTIFICATION_WRITES: ${{ vars.ALLOW_NOTIFICATION_WRITES || 'false' }}
 
     steps:
+      - name: Select providers available without user input
+        id: capability
+        env:
+          LEAGUE: ${{ matrix.league }}
+          REQUIRED_SECRET: ${{ matrix.required_secret }}
+        run: |
+          set -euo pipefail
+
+          if [ -n "$REQUIRED_SECRET" ] && [ -z "${!REQUIRED_SECRET:-}" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "$LEAGUE skipped: required $REQUIRED_SECRET is absent; all other leagues continue."
+
+            cat > daily-output.json <<EOF
+          {
+            "schema_version": "magolide.daily.v1",
+            "run_id": "${GITHUB_RUN_ID}_${LEAGUE,,}_${GITHUB_RUN_ATTEMPT}",
+            "league": "$LEAGUE",
+            "status": "skipped",
+            "reason": "Required bootstrap credential $REQUIRED_SECRET is not configured; other leagues continue",
+            "mode": "skipped_unavailable",
+            "verification": "UNAUTHORIZED",
+            "system_of_record": "not_acquired",
+            "capabilities": {
+              "fixture_provider_available": false,
+              "missing_required_secret": "$REQUIRED_SECRET"
+            }
+          }
+          EOF
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "$LEAGUE enabled; optional missing providers will report coverage gaps."
+          fi
+
       - name: Check out repository
+        if: steps.capability.outputs.available == 'true'
         uses: actions/checkout@v4
 
       - name: Set up Python
+        if: steps.capability.outputs.available == 'true'
         uses: actions/setup-python@v5
         with:
           python-version: "3.11"
           cache: pip
 
-      - name: Install project and development dependencies
+      - name: Install project dependencies
+        if: steps.capability.outputs.available == 'true'
         run: |
           set -euo pipefail
           python -m pip install --upgrade pip
-          python -m pip install -e '.[dev]'
+          python -m pip install .
 
-      - name: Restore DuckDB/CSV state
+      - name: Restore league-isolated DuckDB/CSV state
+        if: steps.capability.outputs.available == 'true'
         uses: actions/cache/restore@v4
         with:
-          path: localdata
-          key: magolide-localdata-v2-${{ github.run_id }}
+          path: ${{ env.LOCALDATA }}
+          key: magolide-localdata-v3-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            magolide-localdata-v2-
+            magolide-localdata-v3-${{ matrix.state_key }}-
 
-      - name: Run hermetic regression tests
-        run: python -m pytest tests -q
-
-      - name: Resolve target date
+      - name: Resolve league acquisition date automatically
+        if: steps.capability.outputs.available == 'true'
         id: target
         env:
-          REQUESTED_DATE: ${{ github.event.inputs.date }}
+          LEAGUE: ${{ matrix.league }}
         run: |
           set -euo pipefail
-          DATE="$REQUESTED_DATE"
-          if [ -z "$DATE" ]; then
-            DATE="$(TZ=Africa/Johannesburg date +%F)"
-          fi
-          if [[ ! "$DATE" =~ ^[0-9]{4}-[0-9]{2}-[0-9]{2}$ ]]; then
-            echo "Invalid date '$DATE'; expected YYYY-MM-DD." >&2
-            exit 2
-          fi
+
+          DATE="$(python - <<'PY'
+          from datetime import datetime
+          import os
+          from zoneinfo import ZoneInfo
+          from ingestion.pipeline import ACQUISITION_TZ
+
+          league = os.environ["LEAGUE"].upper()
+          print(
+              datetime.now(ZoneInfo(ACQUISITION_TZ[league])).strftime("%Y-%m-%d")
+          )
+          PY
+          )"
+
           echo "date=$DATE" >> "$GITHUB_OUTPUT"
 
-      - name: Execute one autonomous iteration
-        id: pipeline
+      - name: Execute every available stage automatically
+        if: steps.capability.outputs.available == 'true'
         env:
-          EVENT_NAME: ${{ github.event_name }}
-          MODE_INPUT: ${{ github.event.inputs.mode || 'auto-once' }}
-          LEAGUE_INPUT: ${{ github.event.inputs.league || 'NBA' }}
-          OFFLINE_FIXTURE_INPUT: ${{ github.event.inputs.offline_fixture || 'false' }}
-          ALLOW_WRITES_INPUT: ${{ github.event.inputs.allow_writes || 'false' }}
-          SEND_NOTIFICATIONS_INPUT: ${{ github.event.inputs.send_notifications || 'false' }}
+          LEAGUE: ${{ matrix.league }}
+          TARGET_DATE: ${{ steps.target.outputs.date }}
         run: |
           set -euo pipefail
-          ARGS=(--auto-once --date "${{ steps.target.outputs.date }}")
-          ARGS+=(--tz Africa/Johannesburg --league "$LEAGUE_INPUT")
 
-          if [ "$MODE_INPUT" = "pregame-only" ]; then
-            ARGS+=(--skip-results)
-          fi
+          ARGS=(
+            --auto-once
+            --league "$LEAGUE"
+            --date "$TARGET_DATE"
+            --warehouse "$MAGOLIDE_WAREHOUSE"
+            --localdata "$LOCALDATA"
+            --run-id "${GITHUB_RUN_ID}_${LEAGUE,,}_${GITHUB_RUN_ATTEMPT}"
+          )
 
-          WRITE=0
-          if [ "$EVENT_NAME" = "schedule" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
-            WRITE=1
-          elif [ "$ALLOW_WRITES_INPUT" = "true" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
-            WRITE=1
-          fi
-
-          if [ "$OFFLINE_FIXTURE_INPUT" = "true" ] && [ "$WRITE" = "1" ]; then
-            echo "Offline fixtures cannot be combined with canonical writes." >&2
-            exit 2
-          fi
-
-          if [ "$SEND_NOTIFICATIONS_INPUT" = "true" ] && [ "$WRITE" != "1" ]; then
-            echo "Notification delivery requires canonical writes to be enabled." >&2
-            exit 2
-          fi
-          if [ "$SEND_NOTIFICATIONS_INPUT" = "true" ] && [ "$ALLOW_NOTIFICATION_WRITES" != "true" ]; then
-            echo "Notification delivery requires ALLOW_NOTIFICATION_WRITES=true." >&2
-            exit 2
-          fi
-
-          if [ "$WRITE" = "1" ]; then
+          # Scheduled canonical persistence is explicit. Without this variable,
+          # the schedule still runs live acquisition as a canonical dry run.
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
             ARGS+=(--write)
-            # On scheduled write runs, ALLOW_NOTIFICATION_WRITES=true enables
-            # delivery. Manual runs additionally require send_notifications=true.
+
             if [ "$ALLOW_NOTIFICATION_WRITES" = "true" ]; then
-              if [ "$EVENT_NAME" = "schedule" ] || [ "$SEND_NOTIFICATIONS_INPUT" = "true" ]; then
-                ARGS+=(--notify --send-notifications)
-              fi
+              ARGS+=(--notify --send-notifications)
             fi
           else
-            if [ "$EVENT_NAME" = "schedule" ] || [ "$OFFLINE_FIXTURE_INPUT" = "true" ]; then
-              # A disabled scheduled service, or an explicitly offline manual
-              # run, must not consume provider quota without persisting state.
-              ARGS+=(--offline-fixture)
-            fi
-            echo "Dry run: canonical writes are disabled."
+            echo "Automatic live dry run for $LEAGUE; canonical writes are disabled."
           fi
 
-          echo "write_enabled=$WRITE" >> "$GITHUB_OUTPUT"
-          python scripts/daily.py "${ARGS[@]}" > daily-output.json
+          python scripts/daily.py "${ARGS[@]}" | tee daily-output.json
 
       - name: Publish redacted operational summary
         if: always()
         env:
-          WRITE_ENABLED: ${{ steps.pipeline.outputs.write_enabled }}
+          LEAGUE: ${{ matrix.league }}
         run: |
           python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
           import json
           import os
           from pathlib import Path
 
-          path = Path("daily-output.json")
+          print(f"## {os.environ['LEAGUE']}")
+
           try:
-              data = json.loads(path.read_text())
+              data = json.loads(Path("daily-output.json").read_text())
           except (OSError, ValueError):
-              print("No valid daily report was produced; inspect the job log and artifacts.")
+              print("No valid daily report was produced; inspect the job log.")
           else:
               markets = data.get("markets") or {}
               walk_forward = markets.get("walk_forward") or {}
               accas = markets.get("accas") or {}
+
               summary = {
                   key: data.get(key)
                   for key in (
+                      "status",
+                      "reason",
+                      "capabilities",
                       "run_id",
                       "target_date",
                       "league",
@@ -218,35 +253,43 @@ jobs:
                       "report_path",
                       "market_report_path",
                   )
+                  if key in data
               }
-              summary["write_enabled"] = os.environ.get("WRITE_ENABLED") == "1"
+
               summary["markets"] = {
                   "forecast_count": markets.get("forecast_count"),
-                  "graded_walk_forward_forecasts": walk_forward.get("graded_forecasts"),
+                  "graded_walk_forward_forecasts": walk_forward.get(
+                      "graded_forecasts"
+                  ),
                   "acca_count": len(accas.get("results") or []),
               }
+
               print("```json")
               print(json.dumps(summary, indent=2, default=str))
               print("```")
           PY
 
-      - name: Persist DuckDB/CSV state after a canonical write
-        if: success() && steps.pipeline.outputs.write_enabled == '1'
+      - name: Persist league-isolated DuckDB/CSV state
+        if: >-
+          success() &&
+          steps.capability.outputs.available == 'true' &&
+          github.event_name == 'schedule' &&
+          env.ALLOW_MAGOLIDE_WRITES == 'true'
         uses: actions/cache/save@v4
         with:
-          path: localdata
-          key: magolide-localdata-v2-${{ github.run_id }}
+          path: ${{ env.LOCALDATA }}
+          key: magolide-localdata-v3-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
 
-      - name: Upload reports, immutable ledgers, and recovery exports
+      - name: Upload league reports and recovery evidence
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: MaGolide-DuckDB-Reports-${{ github.run_id }}
+          name: MaGolide-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
           path: |
             daily-output.json
-            localdata/reports/*.json
-            localdata/ledgers/
-            localdata/assay_*.json
-            localdata/csv/*.csv.gz
+            ${{ env.LOCALDATA }}/reports/*.json
+            ${{ env.LOCALDATA }}/ledgers/
+            ${{ env.LOCALDATA }}/assay_*.json
+            ${{ env.LOCALDATA }}/csv/*.csv.gz
           if-no-files-found: ignore
           retention-days: 14
