@@ -47,6 +47,20 @@ def _golden_game() -> Game:
     )
 
 
+def _ncaa_dual_game() -> Game:
+    return Game(
+        game_id="401909760",
+        league=League.NCAA_M,
+        season="2027",
+        home_team_id="38",
+        away_team_id="21",
+        home_name="Colorado Buffaloes",
+        away_name="San Diego State Aztecs",
+        scheduled_utc="2026-11-07T20:30:00Z",
+        provider_ids={"espn": "401909760"},
+    )
+
+
 def _summary_game() -> Game:
     return Game(
         game_id="401909936",
@@ -230,6 +244,82 @@ def test_bpi_missing_expected_scores_keeps_probabilities_and_gaps(
     gap = next(g for g in report["gaps"] if g["required_field"] == "expected_scores")
     assert gap["game_id"] == partial_event
     assert [g["required_field"] for g in report["gaps"]] == ["expected_scores", "total"]
+
+
+def test_dual_sided_ncaa_bpi_maps_both_team_probabilities(load_fixture, fixture_fetch):
+    event_id = "401909760"
+    payload = load_fixture("espn/predictor_ncaa_dual_401909760.json")
+    prediction = fetch_bpi(
+        event_id,
+        fixture_fetch({f"competitions/{event_id}/predictor": payload}),
+        game=_ncaa_dual_game(),
+        now_utc="2026-11-07T20:29:04Z",
+    )
+    assert prediction.prob_home == pytest.approx(0.5847)
+    assert prediction.prob_away == pytest.approx(0.4153)
+    assert prediction.source_modified_utc == "2026-11-06T09:09:00Z"
+    assert prediction.observed_utc == "2026-11-07T20:29:04Z"
+    assert prediction.expected_home_score is None
+    assert prediction.expected_away_score is None
+    assert prediction.expected_total is None
+    assert prediction.expected_margin is None
+
+
+def test_dual_sided_bpi_cross_validates_expected_scores(load_fixture, fixture_fetch):
+    event_id = "401909760"
+    payload = load_fixture("espn/predictor_ncaa_dual_401909760.json")
+    for side, values in (
+        (
+            "homeTeam",
+            {"teamExpectedPts": 80, "oppExpectedPts": 70, "teamPredPtDiff": 10},
+        ),
+        (
+            "awayTeam",
+            {"teamExpectedPts": 70, "oppExpectedPts": 80, "teamPredPtDiff": -10},
+        ),
+    ):
+        payload[side]["statistics"].extend(
+            {"name": name, "value": value} for name, value in values.items()
+        )
+    prediction = fetch_bpi(
+        event_id,
+        fixture_fetch({f"competitions/{event_id}/predictor": payload}),
+        game=_ncaa_dual_game(),
+    )
+    assert prediction.expected_home_score == 80
+    assert prediction.expected_away_score == 70
+    assert prediction.expected_total == 150
+    assert prediction.expected_margin == 10
+
+
+def test_dual_sided_bpi_quarantines_identity_and_probability_contradictions(
+    load_fixture, fixture_fetch
+):
+    event_id = "401909760"
+    wrong_team = load_fixture("espn/predictor_ncaa_dual_401909760.json")
+    wrong_team["homeTeam"]["team"]["$ref"] = wrong_team["homeTeam"]["team"][
+        "$ref"
+    ].replace("/teams/38", "/teams/21")
+    wrong_team["awayTeam"]["team"]["$ref"] = wrong_team["awayTeam"]["team"][
+        "$ref"
+    ].replace("/teams/21", "/teams/38")
+    with pytest.raises(IdentityError, match="contradict scoreboard"):
+        fetch_bpi(
+            event_id,
+            fixture_fetch({f"competitions/{event_id}/predictor": wrong_team}),
+            game=_ncaa_dual_game(),
+        )
+
+    wrong_probability = load_fixture("espn/predictor_ncaa_dual_401909760.json")
+    for stat in wrong_probability["awayTeam"]["statistics"]:
+        if stat["name"] == "gameProjection":
+            stat["value"] = 40.0
+    with pytest.raises(ValueError):
+        fetch_bpi(
+            event_id,
+            fixture_fetch({f"competitions/{event_id}/predictor": wrong_probability}),
+            game=_ncaa_dual_game(),
+        )
 
 
 def test_bpi_probability_sum_violation_raises(load_fixture, fixture_fetch):

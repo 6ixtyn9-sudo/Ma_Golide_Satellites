@@ -863,6 +863,154 @@ def _stats_by_name(statistics: List[Dict[str, Any]]) -> Dict[str, Any]:
     return {s.get("name"): s.get("value") for s in statistics or []}
 
 
+def _dual_sided_bpi_prediction(
+    event_id: str,
+    payload: Dict[str, Any],
+    home_side: Dict[str, Any],
+    away_side: Dict[str, Any],
+    game: Optional[Game],
+    now_utc: Optional[str],
+) -> Prediction:
+    """Validate a predictor carrying independent statistics for both teams."""
+
+    home_ref = _team_ref_id(home_side.get("team") or {})
+    away_ref = _team_ref_id(away_side.get("team") or {})
+    if not home_ref or not away_ref or home_ref == away_ref:
+        raise IdentityError(
+            f"event {event_id}: dual-sided predictor requires two distinct team refs"
+        )
+    if game is not None and (
+        home_ref != str(game.home_team_id) or away_ref != str(game.away_team_id)
+    ):
+        raise IdentityError(
+            f"event {event_id}: predictor refs {home_ref}/{away_ref} contradict "
+            f"scoreboard home/away {game.home_team_id}/{game.away_team_id}"
+        )
+    home_stats = _stats_by_name(home_side["statistics"])
+    away_stats = _stats_by_name(away_side["statistics"])
+
+    def probabilities(
+        stats: Dict[str, Any], label: str
+    ) -> Tuple[float, float]:
+        projection = stats.get("gameProjection")
+        chance_loss = stats.get("teamChanceLoss")
+        if projection is None or chance_loss is None:
+            raise ValueError(
+                f"event {event_id}: {label} predictor missing win probabilities"
+            )
+        for name, value in (
+            ("gameProjection", projection),
+            ("teamChanceLoss", chance_loss),
+        ):
+            if not 0.0 <= float(value) <= 100.0:
+                raise ValueError(
+                    f"event {event_id}: {label} {name} {value} outside 0-100"
+                )
+        if abs(float(projection) + float(chance_loss) - 100.0) > PROB_SUM_TOLERANCE_PCT:
+            raise ValueError(
+                f"event {event_id}: {label} probabilities do not sum to 100"
+            )
+        return float(projection), float(chance_loss)
+
+    home_projection, home_loss = probabilities(home_stats, "homeTeam")
+    away_projection, away_loss = probabilities(away_stats, "awayTeam")
+    if abs(home_projection + away_projection - 100.0) > PROB_SUM_TOLERANCE_PCT:
+        raise ValueError(
+            f"event {event_id}: home/away projections are not complementary"
+        )
+    if (
+        abs(home_loss - away_projection) > PROB_SUM_TOLERANCE_PCT
+        or abs(away_loss - home_projection) > PROB_SUM_TOLERANCE_PCT
+    ):
+        raise ValueError(
+            f"event {event_id}: reciprocal predictor probabilities contradict"
+        )
+
+    def number(stats: Dict[str, Any], key: str) -> Optional[float]:
+        value = stats.get(key)
+        return float(value) if value is not None else None
+
+    for stats, label in ((home_stats, "homeTeam"), (away_stats, "awayTeam")):
+        side = number(stats, "teamExpectedPts")
+        opponent = number(stats, "oppExpectedPts")
+        difference = number(stats, "teamPredPtDiff")
+        if (
+            side is not None
+            and opponent is not None
+            and difference is not None
+            and abs((side - opponent) - difference) > MARGIN_TOLERANCE
+        ):
+            raise ValueError(
+                f"event {event_id}: {label} expected scores contradict its margin"
+            )
+
+    home_scores = [
+        value
+        for value in (
+            number(home_stats, "teamExpectedPts"),
+            number(away_stats, "oppExpectedPts"),
+        )
+        if value is not None
+    ]
+    away_scores = [
+        value
+        for value in (
+            number(away_stats, "teamExpectedPts"),
+            number(home_stats, "oppExpectedPts"),
+        )
+        if value is not None
+    ]
+    if (
+        len(home_scores) == 2
+        and abs(home_scores[0] - home_scores[1]) > MARGIN_TOLERANCE
+    ) or (
+        len(away_scores) == 2
+        and abs(away_scores[0] - away_scores[1]) > MARGIN_TOLERANCE
+    ):
+        raise ValueError(
+            f"event {event_id}: dual-sided expected scores contradict each other"
+        )
+    home_margin = number(home_stats, "teamPredPtDiff")
+    away_margin = number(away_stats, "teamPredPtDiff")
+    margins = [
+        value
+        for value in (
+            home_margin,
+            -away_margin if away_margin is not None else None,
+        )
+        if value is not None
+    ]
+    if len(margins) == 2 and abs(margins[0] - margins[1]) > MARGIN_TOLERANCE:
+        raise ValueError(f"event {event_id}: dual-sided margins contradict")
+
+    expected_home = home_scores[0] if home_scores else None
+    expected_away = away_scores[0] if away_scores else None
+    last_modified = payload.get("lastModified")
+    prediction = Prediction(
+        game_id=str(event_id),
+        provider="espn",
+        model="espn-bpi",
+        produced_by="ESPN BPI",
+        observed_utc=to_utc_iso(parse_utc(now_utc)) if now_utc else now_utc_iso(),
+        source_modified_utc=(
+            to_utc_iso(parse_utc(last_modified)) if last_modified else None
+        ),
+        source_revision=str(last_modified) if last_modified else None,
+        prob_home=home_projection / 100.0,
+        prob_away=away_projection / 100.0,
+        expected_home_score=expected_home,
+        expected_away_score=expected_away,
+        expected_total=(
+            expected_home + expected_away
+            if expected_home is not None and expected_away is not None
+            else None
+        ),
+        expected_margin=margins[0] if margins else None,
+    )
+    prediction.validate_orientation(tolerance=MARGIN_TOLERANCE)
+    return prediction
+
+
 def fetch_bpi(
     event_id: str,
     fetch: FetchFn,
@@ -872,24 +1020,22 @@ def fetch_bpi(
 ) -> Prediction:
     """Fetch the ESPN BPI predictor and normalise it to a canonical Prediction.
 
-    Orientation: exactly one predictor side (``homeTeam``/``awayTeam``)
-    carries ``statistics``; its team id (explicit or extracted from the
-    ``$ref`` URL) is reconciled against the event competitors. When
-    ``game`` is supplied its ``provider_ids["espn"]`` is the event id and
-    its ``home_team_id``/``away_team_id`` (the scoreboard competitor ids)
-    decide which canonical side owns the statistics — the payload's own
-    ``homeTeam``/``awayTeam`` keys are NOT trusted for orientation there.
+    Orientation: single-sided payloads reconcile the populated side's team id
+    against the event competitors. Dual-sided NCAA payloads instead require
+    exact home/away team-ref matches and reciprocal probabilities; they are
+    validated, not rejected merely because both sides carry statistics.
     Without a game the payload keys orient the sides (the ``name`` field,
     "Away at Home", documents the same order but carries no id→name table,
-    so it cannot participate in id validation) and both team refs must
-    resolve and be distinct. A stats-side id matching neither competitor,
-    or identical/missing refs, raise ``IdentityError`` — never a swap.
+    so it cannot participate in id validation) and team refs must be distinct.
+    A stats-side id matching neither competitor, or identical/missing refs,
+    raises ``IdentityError`` — never a swap.
 
     Mapping: ``gameProjection`` = the stats side's win probability
     (payload 0-100 -> stored 0-1), ``teamChanceLoss`` = the opponent's,
     ``teamExpectedPts``/``oppExpectedPts`` = that side's/opponent's
     expected scores, ``teamPredPtDiff`` = side minus opponent (flipped to
-    home-minus-away when the stats side is away).
+    home-minus-away when the stats side is away). Dual-sided payloads map each
+    side's own ``gameProjection`` and expected points directly to that team.
 
     Validation (quarantine via ``ValueError``): each probability in 0-100,
     ``|gameProjection + teamChanceLoss - 100| <= 0.01`` and
@@ -910,9 +1056,9 @@ def fetch_bpi(
     stats_sides = [side for side in (home_side, away_side) if side.get("statistics")]
     if not stats_sides:
         raise ValueError(f"event {event_id}: predictor carries no team statistics")
-    if len(stats_sides) > 1:
-        raise IdentityError(
-            f"event {event_id}: statistics present on both predictor sides; cannot orient"
+    if len(stats_sides) == 2:
+        return _dual_sided_bpi_prediction(
+            event_id, payload, home_side, away_side, game, now_utc
         )
     stats_side = stats_sides[0]
     side_team_id = _competitor_team_id(stats_side)
