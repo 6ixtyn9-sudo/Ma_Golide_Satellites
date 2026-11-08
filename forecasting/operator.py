@@ -33,9 +33,9 @@ from typing import Any, Dict, List, Optional
 from zoneinfo import ZoneInfo
 
 from ingestion.identity import parse_utc
-from ingestion.models import Game, GameStatus, League
+from ingestion.models import Game, GameStatus, League, Period
 
-from .types import BookEvidence, Forecast, grade_forecast
+from .types import BookEvidence, Forecast, _period_scores, grade_forecast
 
 OPERATOR_SCHEMA = "magolide.operator.v1"
 TICKET_SCHEMA = "magolide.paper_ticket_receipt.v1"
@@ -421,8 +421,256 @@ def _refresh_dated_pick_reports(
         )
 
 
+def _audit_period_label(period: str) -> str:
+    return {
+        "full_game": "Full-game",
+        "H1": "First-half",
+        "H2": "Second-half",
+        "Q1": "First-quarter",
+        "Q2": "Second-quarter",
+        "Q3": "Third-quarter",
+        "Q4": "Fourth-quarter",
+    }.get(period, period.replace("_", " "))
+
+
+def _audit_market_selection(row: Dict[str, Any]) -> str:
+    period = _audit_period_label(str(row["period"]))
+    market = str(row["market"])
+    selection = str(row["selection"])
+    selected_team = (
+        row["home"] if selection == "home" else row["away"] if selection == "away" else None
+    )
+    if market == "moneyline":
+        side = f"{selected_team} ({selection})" if selected_team else selection.title()
+        return f"{period} moneyline: {side}"
+    if market == "total":
+        line = row.get("line")
+        line_text = f" {float(line):g}" if line is not None else ""
+        return f"{period} total{line_text}: {selection.title()}"
+    if market == "spread":
+        line = row.get("line")
+        line_text = f" {float(line):+g}" if line is not None else ""
+        side = f"{selected_team} ({selection})" if selected_team else selection.title()
+        return f"{period} spread{line_text}: {side}"
+    if market == "highest_quarter":
+        return f"Highest quarter: {selection.upper()}"
+    return f"{period} {market.replace('_', ' ')}: {selection.title()}"
+
+
+def _audit_actual_result(
+    row: Dict[str, Any], games: Dict[str, Game] | None
+) -> str | None:
+    game = (games or {}).get(str(row["game_id"]))
+    if game is None or game.actual is None:
+        return None
+    try:
+        scores = _period_scores(game, Period(str(row["period"])))
+    except ValueError:
+        return None
+    if scores is None:
+        return None
+    home, away = scores
+    period = str(row["period"])
+    market = str(row["market"])
+    if market == "total":
+        return f"{_audit_period_label(period)} total: **{home + away:g}**"
+    if market == "spread":
+        return f"{_audit_period_label(period)} margin: **{home - away:+g}**"
+    if period == Period.FULL_GAME.value:
+        # The fixture heading already carries the full-game final score.
+        return None
+    return f"{_audit_period_label(period)} score: **{home:g}–{away:g}**"
+
+
+def _render_pick_audit_markdown(
+    report: Dict[str, Any],
+    *,
+    games: Dict[str, Game] | None,
+    timezone_name: str,
+) -> str:
+    """Edge-style readable audit; the machine report remains unchanged."""
+    settled = list(report.get("settled_ledger") or [])
+    wins = int(report["wins"])
+    losses = int(report["losses"])
+    decisions = wins + losses
+    priced_sample = int(report["priced_sample"])
+    lines = [
+        f"# Ma Golide — Recent picks audit ({report['window']['start']} to {report['window']['end']})",
+        "",
+        f"Generated: {_local_time(report['generated_utc'], timezone_name)} · "
+        f"{report['window']['days']}-day rolling window · Paper only",
+        "",
+        "## Overall",
+        "",
+        f"- archived logical picks: {report['archived_pick_rows']}",
+        f"- dated evidence rows: {report['archived_evidence_rows']} "
+        f"({report['superseded_observations']} superseded observations)",
+        f"- settled picks: {report['settled_picks']} "
+        f"({wins} wins / {losses} losses / {report['pushes']} pushes)",
+        (
+            f"- hit rate: {report['hit_rate']:.1%} ({wins}/{decisions} win/loss decisions)"
+            if decisions
+            else "- hit rate: n/a (no win/loss decisions)"
+        ),
+        f"- pending/unmatched picks: {report['pending_picks']} prior-day · "
+        f"{report['pending_picks_total']} total",
+        f"- priced picks: {priced_sample}",
+    ]
+    if priced_sample:
+        lines.extend(
+            [
+                f"- paper P&L: {report['profit_units']:+.3f} units",
+                f"- ROI: {report['roi']:+.1%} (P&L / {priced_sample} priced "
+                f"{'pick' if priced_sample == 1 else 'picks'})"
+                + (
+                    " · **provisional — fewer than 30 priced picks**"
+                    if priced_sample < 30
+                    else ""
+                ),
+            ]
+        )
+    else:
+        lines.append("- ROI: n/a (no settled priced picks)")
+
+    lines.extend(
+        [
+            "",
+            "## Settlement policy",
+            "",
+            "- reconciled official finals settle immediately; pending rows are never losses",
+            f"- local-day pending cutoff: {report['same_day_cutoff']}",
+            f"- same-day pending rows outside prior-day counters: {report['same_day_pending_picks']}",
+            f"- same-day official-final picks included: {report['same_day_settled_picks']}",
+            f"- eligible prior-day picks: {report['eligible_prior_picks']}",
+            "- latest observation per logical pick; superseded dated evidence remains in JSON",
+            "",
+            "## Bucket performance",
+            "",
+        ]
+    )
+    by_bucket = report.get("by_bucket") or {}
+    if by_bucket:
+        lines.extend(
+            [
+                "| Bucket | Settled | W–L–P | Hit rate | Priced | ROI |",
+                "| --- | ---: | ---: | ---: | ---: | ---: |",
+            ]
+        )
+        for bucket, group in sorted(by_bucket.items()):
+            group_settled = int(group["settled"])
+            group_wins = int(group["wins"])
+            group_pushes = int(group["pushes"])
+            group_decisions = group_settled - group_pushes
+            group_losses = group_decisions - group_wins
+            group_priced = sum(
+                (row.get("book") or {}).get("selected_decimal_price") is not None
+                for row in settled
+                if row["bucket"] == bucket
+            )
+            hit_rate = (
+                f"{group_wins / group_decisions:.1%}" if group_decisions else "n/a"
+            )
+            roi = (
+                f"{group['priced_profit_units'] / group_priced:+.1%}"
+                if group_priced
+                else "n/a"
+            )
+            lines.append(
+                f"| `{bucket}` | {group_settled} | {group_wins}–{group_losses}–{group_pushes} | "
+                f"{hit_rate} | {group_priced} | {roi} |"
+            )
+    else:
+        lines.append("No settled picks in this window.")
+
+    lines.extend(
+        [
+            "",
+            "## Settled picks — official-final audit",
+            "",
+            "Grouped by fixture. Every settled logical pick in the window is included; "
+            "unpriced grades do not enter ROI.",
+            "",
+        ]
+    )
+    if not settled:
+        lines.extend(["No settled picks in this window.", ""])
+
+    grouped: Dict[tuple, List[Dict[str, Any]]] = {}
+    for row in settled:
+        key = (row["date"], row["game_id"], row["home"], row["away"])
+        grouped.setdefault(key, []).append(row)
+    for (pick_date, game_id, home, away), rows in grouped.items():
+        game = (games or {}).get(str(game_id))
+        if (
+            game is not None
+            and game.actual is not None
+            and game.actual.home_final is not None
+            and game.actual.away_final is not None
+        ):
+            final = f"Final: **{game.actual.home_final:g}–{game.actual.away_final:g}**"
+        else:
+            final = "Official final reconciled"
+        lines.extend([f"### {pick_date}: {home} vs {away} ({final})", ""])
+        for row in rows:
+            grade = str(row["grade_status"])
+            icon, result = {
+                "win": ("🟢", "WON"),
+                "loss": ("🔴", "LOST"),
+                "push": ("⚪", "PUSH"),
+            }[grade]
+            lines.append(f"- {icon} **{result} — {_audit_market_selection(row)}**")
+            probability = row.get("calibrated_probability")
+            if probability is None:
+                probability = row["raw_probability"]
+            probability_text = f"**{probability:.1%}**"
+            if abs(probability - row["raw_probability"]) >= 0.0005:
+                probability_text += f" calibrated (raw {row['raw_probability']:.1%})"
+            facts = []
+            actual = _audit_actual_result(row, games)
+            if actual:
+                facts.append(f"Actual {actual}")
+            facts.extend(
+                [
+                    f"Expected: {probability_text}",
+                ]
+            )
+            price = (row.get("book") or {}).get("selected_decimal_price")
+            price_text = (
+                f"{float(price):.3f} · {(row.get('book') or {}).get('book') or 'book unknown'}"
+                if price is not None
+                else "No exact bookmaker price"
+            )
+            facts.append(f"Price: **{price_text}**")
+            lines.append("  - " + " · ".join(facts))
+            calibration = row.get("calibration") or {}
+            lines.append(
+                f"  - Calibration: **n={calibration.get('n', 0)}** · "
+                f"{str(calibration.get('status', 'unknown')).replace('_', ' ')} · "
+                f"Bucket: `{row['bucket']}` · "
+                f"Model: `{row.get('model') or 'unknown'}`"
+            )
+        lines.append("")
+
+    lines.extend(
+        [
+            "## Evidence notes",
+            "",
+            "- Grades use reconciled official finals only; missing or conflicting results stay pending.",
+            "- Dated JSON preserves every forecast, price, model, calibration, and eligibility field.",
+            "- Flat one-paper-unit ROI is descriptive history, not proof of future performance.",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
 def _write_pick_audit(
-    localdata: Path, *, target_date: str, generated_utc: str, timezone_name: str
+    localdata: Path,
+    *,
+    target_date: str,
+    generated_utc: str,
+    timezone_name: str,
+    games: Dict[str, Game] | None = None,
 ) -> Dict[str, Any]:
     end = datetime.strptime(target_date, "%Y-%m-%d").date()
     start = end - timedelta(days=29)
@@ -528,66 +776,10 @@ def _write_pick_audit(
         "settled_ledger": settled,
     }
     _write_json(localdata / "picks_audit_rolling.json", report)
-    lines = [
-        f"Ma Golide recent picks audit — {start.isoformat()} to {target_date}",
-        "=" * 72,
-        f"Archived logical picks: {len(logical_window)}",
-        f"Archived evidence rows: {len(window)} "
-        f"({len(window) - len(logical_window)} superseded observations)",
-        f"Local-day pending cutoff: {local_cutoff}",
-        f"Same-day pending rows held outside prior-day counters: {len(same_day_pending)}",
-        f"Same-day official-final picks included in settlement: {same_day_settled}",
-        f"Eligible prior-day picks: {len(prior)}",
-        f"Settled picks: {len(settled)} (pushes: {pushes})",
-        f"Pending/unmatched prior-day result picks: {pending}",
-        f"Total pending logical picks in ledger: {pending_total}",
-        f"Hit rate: {report['hit_rate']:.1%}" if decisions else "Hit rate: n/a",
-        f"ROI: {report['roi']:+.1%}" if priced else "ROI: n/a (no settled priced picks)",
-        "",
-        "Bucket diagnostics",
-        "-" * 72,
-    ]
-    for bucket, group in sorted(by_bucket.items()):
-        lines.append(
-            f"  {bucket}: settled={group['settled']} wins={group['wins']} "
-            f"priced_profit={group['priced_profit_units']:+.3f} units"
-        )
-    lines.extend(
-        [
-            "",
-            "SETTLED PICKS — OFFICIAL FINAL AUDIT",
-            "-" * 72,
-            "Every settled logical pick in the 30-day window is listed. "
-            "Unpriced grades do not enter ROI.",
-        ]
+    _write_text(
+        localdata / f"picks_audit_{target_date}.md",
+        _render_pick_audit_markdown(report, games=games, timezone_name=timezone_name),
     )
-    if not settled:
-        lines.append("  (none)")
-    for row in settled:
-        probability = row.get("calibrated_probability")
-        if probability is None:
-            probability = row["raw_probability"]
-        price = (row.get("book") or {}).get("selected_decimal_price")
-        price_text = f"@{float(price):.3f}" if price is not None else "@n/a"
-        book_name = (row.get("book") or {}).get("book") or "no matched book"
-        calibration = row.get("calibration") or {}
-        lines.append(
-            f"  {row['date']} · {row['grade_status'].upper()} · "
-            f"{row['home']} vs {row['away']} · {_selection_label(row)} · "
-            f"p={probability:.1%} (raw {row['raw_probability']:.1%}) "
-            f"{price_text} {book_name} · bucket={row['bucket']} "
-            f"calibration_n={calibration.get('n', 0)} · "
-            f"model={row.get('model')}/{row.get('model_version')}"
-        )
-    lines.extend(
-        [
-            "",
-            "Grades use reconciled official finals only. Pending rows are not losses.",
-            "Flat one-paper-unit ROI is descriptive history, not proof of future performance.",
-            "",
-        ]
-    )
-    _write_text(localdata / f"picks_audit_{target_date}.md", "\n".join(lines))
     return report
 
 
@@ -1085,6 +1277,7 @@ def publish_operator_reports(
         target_date=target_date,
         generated_utc=generated_utc,
         timezone_name=timezone_name,
+        games=games,
     )
 
     state = _load_state(localdata)

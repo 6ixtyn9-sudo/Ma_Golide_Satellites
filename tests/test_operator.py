@@ -425,9 +425,13 @@ def test_prior_dated_picks_are_graded_without_changing_frozen_evidence(tmp_path)
     assert audit["profit_units"] == pytest.approx(0.8)
     assert len(audit["settled_ledger"]) == 1
     audit_text = Path(first["dated_audit"]).read_text()
-    assert "SETTLED PICKS — OFFICIAL FINAL AUDIT" in audit_text
-    assert "WIN · Home 1 vs Away 1" in audit_text
-    assert "@1.800 Test Book" in audit_text
+    assert "## Settled picks — official-final audit" in audit_text
+    assert "### 2026-11-07: Home 1 vs Away 1 (Final: **105–100**)" in audit_text
+    assert "🟢 **WON — Full-game moneyline: Home 1 (home)**" in audit_text
+    assert "Expected: **62.0%**" in audit_text
+    assert "Price: **1.800 · Test Book**" in audit_text
+    assert "Calibration: **n=40**" in audit_text
+    assert "p=62.0% (raw 60.0%)" not in audit_text
 
 
 def test_audit_uses_local_day_cutoff_for_previous_slate_pending_rows(tmp_path):
@@ -469,6 +473,65 @@ def test_audit_uses_local_day_cutoff_for_previous_slate_pending_rows(tmp_path):
     assert len(next_day["settled_ledger"]) == 1
     assert len(json.loads(Path(first["dated_picks"]).read_text())) == 2
     audit_text = Path(first["dated_audit"]).read_text()
-    assert "WIN · Home 1 vs Away 1" in audit_text
-    settled_section = audit_text.split("SETTLED PICKS — OFFICIAL FINAL AUDIT", 1)[1]
+    assert "🟢 **WON — Full-game moneyline: Home 1 (home)**" in audit_text
+    settled_section = audit_text.split("## Settled picks — official-final audit", 1)[1]
     assert "Home 2 vs Away 2" not in settled_section
+
+
+def test_audit_groups_markets_by_fixture_with_actual_period_scores(tmp_path):
+    moneyline = forecast(1)
+    h1 = forecast(
+        1,
+        selection="away",
+        price=None,
+        eligible=False,
+        reasons=["no_exact_bookmaker_market"],
+    )
+    h1.update(
+        {
+            "forecast_id": "forecast-1-moneyline-away-H1",
+            "period": "H1",
+            "model": "team_history_empirical_v1",
+            "raw_probability": 0.28,
+            "calibrated_probability": 0.31,
+        }
+    )
+    total = forecast(
+        1,
+        market="total",
+        selection="under",
+        price=1.909,
+        eligible=False,
+        reasons=["insufficient_walk_forward_samples"],
+        calibration_n=0,
+    )
+    total.update(
+        {
+            "line": 200.0,
+            "expected_total": 198.0,
+            "raw_probability": 0.53,
+            "calibrated_probability": 0.53,
+        }
+    )
+
+    first = publish(
+        tmp_path,
+        Store([game(1, home_score=105, away_score=100)]),
+        report([moneyline, h1, total]),
+    )
+    audit = json.loads(Path(first["rolling_audit"]).read_text())
+    assert audit["settled_picks"] == 3
+    assert audit["wins"] == 1
+    assert audit["losses"] == 2
+
+    text = Path(first["dated_audit"]).read_text()
+    assert text.count("### 2026-11-07: Home 1 vs Away 1") == 1
+    assert "(Final: **105–100**)" in text
+    assert "🟢 **WON — Full-game moneyline: Home 1 (home)**" in text
+    assert "🔴 **LOST — First-half moneyline: Away 1 (away)**" in text
+    assert "Actual First-half score: **52.5–50**" in text
+    assert "31.0%** calibrated (raw 28.0%)" in text
+    assert "🔴 **LOST — Full-game total 200: Under**" in text
+    assert "Actual Full-game total: **205**" in text
+    assert "Price: **1.909 · Test Book**" in text
+    assert "Price: **No exact bookmaker price**" in text
