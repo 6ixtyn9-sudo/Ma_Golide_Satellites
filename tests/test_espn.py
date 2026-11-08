@@ -15,8 +15,17 @@ from typing import Any, Dict
 
 import pytest
 
+from forecasting.types import _period_scores
 from ingestion.http import HttpClient
-from ingestion.models import FinalStatus, Game, GameStatus, League, Market, PeriodKind
+from ingestion.models import (
+    FinalStatus,
+    Game,
+    GameStatus,
+    League,
+    Market,
+    Period,
+    PeriodKind,
+)
 from ingestion.providers import IdentityError
 from ingestion.providers.espn import (
     discover_games,
@@ -72,6 +81,20 @@ def _summary_game() -> Game:
         away_name="Orlando Magic",
         scheduled_utc="2026-11-06T02:00:00Z",
         provider_ids={"espn": "401909936"},
+    )
+
+
+def _ncaaw_game() -> Game:
+    return Game(
+        game_id="401918841",
+        league=League.NCAA_W,
+        season="2027",
+        home_team_id="251",
+        away_team_id="2458",
+        home_name="Texas Longhorns",
+        away_name="Northern Colorado Bears",
+        scheduled_utc="2026-11-07T01:00:00Z",
+        provider_ids={"espn": "401918841"},
     )
 
 
@@ -460,6 +483,65 @@ def test_summary_context_retains_form_injuries_and_article_without_links(fixture
     assert "Unrelated league-wide" not in serialized
 
 
+def test_summary_context_retains_player_boxscore_and_deep_source_coverage(
+    load_fixture, fixture_fetch
+):
+    payload = load_fixture("espn/summary_401909938_context.json")
+    payload["boxscore"]["players"] = [
+        {
+            "team": {"id": "7", "displayName": "Denver Nuggets"},
+            "statistics": [
+                {
+                    "name": "points",
+                    "labels": ["MIN", "PTS"],
+                    "athletes": [
+                        {
+                            "athlete": {"id": "3112335", "displayName": "Nikola Jokic"},
+                            "stats": ["38:12", "28"],
+                            "didNotPlay": False,
+                        }
+                    ],
+                }
+            ],
+        }
+    ]
+    payload["boxscore"]["leaders"] = [
+        {
+            "team": {"id": "7"},
+            "leaders": [{"name": "points", "displayValue": "28 N. Jokic"}],
+        }
+    ]
+    payload["plays"] = [{"id": "play-1", "text": "Example scoring play"}]
+    payload["winprobability"] = [{"playId": "play-1", "homeWinPercentage": 0.6}]
+    payload["shotChart"] = [{"id": "shot-1", "made": True}]
+    payload["standings"] = {"groups": [{"id": "6"}]}
+    fetch = fixture_fetch({"summary?event=401909938": payload})
+    game = fetch_game_context(
+        GOLDEN_EVENT,
+        fetch,
+        _golden_game(),
+        observed_utc="2026-11-07T18:01:00Z",
+    )
+    summary = game.evidence["espn"]["summary"]
+    assert summary["player_boxscore"][0]["statistics"][0]["athletes"][0][
+        "stats"
+    ] == ["38:12", "28"]
+    assert summary["leaders"][0]["leaders"][0]["displayValue"] == "28 N. Jokic"
+    assert summary["context_coverage"] == {
+        "player_boxscore_teams": 1,
+        "player_boxscore_athletes": 1,
+        "play_by_play_events_in_raw_payload": 1,
+        "win_probability_points_in_raw_payload": 1,
+        "shot_chart_events_in_raw_payload": 1,
+        "standings_groups_in_raw_payload": 1,
+    }
+    # Large in-play arrays are represented by coverage, not mislabeled as
+    # pre-tip features or silently truncated into canonical evidence.
+    assert "plays" not in summary
+    assert "winprobability" not in summary
+    assert "shotChart" not in summary
+
+
 # ---------------------------------------------------------------------------
 # Results
 # ---------------------------------------------------------------------------
@@ -571,6 +653,54 @@ def test_result_double_ot_aggregation(load_fixture, fixture_fetch):
     assert game.actual.away_final == 122.0
     assert game.final_status() is FinalStatus.AOT
     assert game.actual.reconciles()[0] is True
+
+
+def test_ncaaw_four_quarters_are_not_two_halves_plus_fake_overtime(
+    load_fixture, fixture_fetch
+):
+    """Live-shaped Texas/UNCO final: 23+26+23+19 = 91, 6+3+9+11 = 29."""
+    game = fetch_game_result(
+        "401918841",
+        fixture_fetch({"summary": load_fixture("espn/summary_ncaaw_401918841_quarters.json")}),
+        game=_ncaaw_game(),
+    )
+    actual = game.actual
+    assert actual is not None
+    assert actual.period_kind is PeriodKind.QUARTERS
+    assert actual.home_quarters == [23.0, 26.0, 23.0, 19.0]
+    assert actual.away_quarters == [6.0, 3.0, 9.0, 11.0]
+    assert actual.home_overtime is None
+    assert actual.away_overtime is None
+    assert actual.overtime_periods == 0
+    assert actual.reconciles() == (True, "")
+    assert _period_scores(game, Period.H1) == (49.0, 9.0)
+    assert _period_scores(game, Period.H2) == (42.0, 20.0)
+    assert _period_scores(game, Period.Q3) == (23.0, 9.0)
+    assert _period_scores(game, Period.FULL_GAME) == (91.0, 29.0)
+
+
+def test_ncaaw_explicit_legacy_two_period_payload_remains_halves(
+    load_fixture, fixture_fetch
+):
+    payload = load_fixture("espn/summary_ncaaw_401918841_quarters.json")
+    payload["format"] = {"regulation": {"periods": 2}}
+    home, away = payload["header"]["competitions"][0]["competitors"]
+    home["score"] = "75"
+    away["score"] = "55"
+    home["linescores"] = [{"value": 40.0}, {"value": 35.0}]
+    away["linescores"] = [{"value": 30.0}, {"value": 25.0}]
+    game = fetch_game_result(
+        "401918841", fixture_fetch({"summary": payload}), game=_ncaaw_game()
+    )
+    actual = game.actual
+    assert actual is not None
+    assert actual.period_kind is PeriodKind.HALVES
+    assert actual.home_quarters == [40.0, 35.0]
+    assert actual.away_quarters == [30.0, 25.0]
+    assert actual.overtime_periods == 0
+    assert actual.reconciles() == (True, "")
+    assert _period_scores(game, Period.H1) == (40.0, 30.0)
+    assert _period_scores(game, Period.Q1) is None
 
 
 def test_result_live_is_quarantined(load_fixture, fixture_fetch):

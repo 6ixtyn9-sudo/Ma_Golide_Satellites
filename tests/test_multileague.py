@@ -125,7 +125,8 @@ def _bookmaker(markets):
     return {"key": "draftkings", "title": "DraftKings", "markets": markets}
 
 
-def test_ncaa_womens_odds_request_halves_not_quarters(monkeypatch):
+def test_ncaa_womens_odds_request_half_book_markets(monkeypatch):
+    """Market selection is independent of modern four-quarter official results."""
     monkeypatch.setenv("THE_ODDS_API_KEY", "fixture-key")
     event = {
         "id": "w-ncaa-1", "home_team": "Home University", "away_team": "Away College",

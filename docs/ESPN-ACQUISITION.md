@@ -1,6 +1,6 @@
 # ESPN acquisition, history, and coverage limits
 
-Verification date: **2026-11-07**. This document separates live observations,
+Verification date: **2026-11-08**. This document separates live observations,
 hermetic regression coverage, and facts that still require scheduled-run
 verification. Passing fixtures do not prove a provider's current availability.
 
@@ -21,10 +21,13 @@ ledgers; raw caches and receipts are recovery aids, not a second sports store.
 - Scoreboard identity, UTC tip, native status/format, final scores, linescores,
   records, venue, broadcasts, named current/opening books, and book payload
   provenance. Betting links and other navigation clutter are discarded.
-- Event-summary team statistics, leaders, recent form, injuries, venue,
-  predictor context, against-the-spread context, and one event-scoped article.
-  Article `lastModified`/`published` is retained when available; payload fetch
-  time is separately retained as `observed_utc`.
+- Event-summary team and player boxscores, leaders, recent form, injuries,
+  venue, predictor context, against-the-spread context, and one event-scoped
+  article. Compact coverage counts expose raw play-by-play, win-probability,
+  shot-chart, and standings availability without copying thousands of in-play
+  rows into every canonical game. Article `lastModified`/`published` is
+  retained when available; payload fetch time is separately retained as
+  `observed_utc`.
 - ESPN BPI as independent prediction evidence. `homeTeam`/`awayTeam` are
   matched to provider team IDs, and both `gameProjection` and
   `teamChanceLoss` orientations are tested.
@@ -35,6 +38,33 @@ ledgers; raw caches and receipts are recovery aids, not a second sports store.
 Summary enrichment is capped per run and recorded in provider health and the
 acquisition telemetry. A missing summary, book, statistic, or article remains
 a coverage gap rather than a synthesized value.
+
+## Endpoint comparison and deeper live probes
+
+The public [`andr3w321/espn_scraper`](https://github.com/andr3w321/espn_scraper)
+was compared with this adapter on 2026-11-08. Its scoreboard, calendar, team,
+standings, recap/boxscore/play-by-play, and SportsCenter URLs are a useful
+endpoint map. Its older HTML/`_xhr=1` parsing contracts are **not** copied or
+represented as current JSON schemas.
+
+The following live probes distinguish usable evidence from dead ends. Event
+IDs are examples, not permanent coverage guarantees:
+
+| Resource | Live observation | Production decision |
+| --- | --- | --- |
+| Site summary, NBA `401909938` and NCAAW `401918841` | Modern team/player boxscores; NCAAW also supplied plays and win-probability data | Team/player boxscores and leaders are sanitized into existing bounded summary enrichment. Raw in-play arrays are not pre-tip model features. |
+| Site scoreboard `dates={year}&limit=1`, team `teams/{id}/schedule?season={year}` | Season calendars, event linescores, team statistics, and large team schedules are available | Possible future backfill optimisation only. No unbounded season/team crawl was added to the three-hour run. |
+| Core competition `odds`, NBA `401909938` and NCAAW `401918841` | Provider `100` is DraftKings; open/current/close full-game prices are present, but those objects have no observation timestamps | Current timestamped scoreboard books remain canonical. Untimestamped open/close fields cannot backfill pre-tip history or CLV. |
+| Core `odds/100/history/0/movement?limit=100` | `count: 0` for both sampled events | No movement-history ingestion or fabricated historical calibration. |
+| Core team `odds/100/past-performances` | `count: 0` for sampled Denver team `7` | No team ATS-history backfill from this resource. |
+| Core competition `predictor`, NBA `401909938` | Timestamped projection and expected scores; sampled `lastModified` was after the game | Candidate fallback only after team identity and strict source-time/pre-tip validation. It does not replace frozen scoreboard BPI evidence in this change. |
+| Core `odds/100/propBets`, NBA `401909938` | 394 player-prop entries with `lastUpdated`, including points lines and open/current prices | Verified available evidence, but there is no player-prop forecast/settlement contract; these are not team-market or ACCA inputs. |
+| CDN `core/nba/boxscore` and `playbyplay?xhr=1&gameId=401909938` | Large modern `gamepackageJSON` payloads | Redundant raw sources are documented, not added as an extra per-event crawl while site summaries supply the needed data. |
+
+Available context is not automatically a leakage-safe or useful model
+feature. Player statistics, play-by-play, win probability, injuries, and
+standings require observation-time snapshots and walk-forward evaluation
+before they can affect probabilities or calibration.
 
 ## Verified history observations
 
@@ -78,7 +108,10 @@ Each write-enabled league run performs two independent jobs:
    index is cached for seven days. Historical summaries are sanitized into
    canonical evidence rather than retained indefinitely as large raw cache
    files. The durable cursor prevents normal refetching; an already-persisted
-   event with both summary and history evidence is skipped.
+   event with both summary and history evidence is skipped. NCAAW rows must
+   also carry the current result-period parser version: pre-v2 rows are
+   reacquired once so four quarters cannot remain mislabeled as two halves
+   plus overtime, then become ordinary skippable history.
 
 The cursor is the `provider_health` row with provider `espn-history`. Its
 coverage contains `next_season`, `next_event_index`, `last_index_year`, and
@@ -125,11 +158,19 @@ Historical coverage is explicitly classified:
   another non-final state. It is retained as an anomaly, not converted to a
   final.
 
-NBA quarters and NCAA halves follow their native formats. WNBA uses the
-**event's declared format**: early two-half games remain H1/H2; later
-four-quarter games remain Q1–Q4. A modern four-quarter assumption is never
-used to relabel an early WNBA game. `PeriodKind.UNKNOWN` final-score-only rows
-have no invented period results or FT/AOT classification.
+NBA and modern NCAAW use quarters; NCAA men use halves. NCAAW and WNBA honor
+an **event's explicit declared format**: an older two-half payload remains
+H1/H2 rather than being forced into a modern four-quarter assumption. A live
+NCAAW final (`401918841`, Texas 91–29 Northern Colorado) verified the modern
+women's shape: 23/26/23/19 and 6/3/9/11 are Q1–Q4, not H1/H2 plus two overtime
+periods. H1/H2 book grading derives 49–9 and 42–20 from those quarters;
+full-game and overtime settlement remain distinct.
+
+`PeriodKind.UNKNOWN` final-score-only rows have no invented period results or
+FT/AOT classification. The versioned NCAAW history reparse repairs canonical
+actuals without deleting immutable forecasts, book observations, or tickets;
+retained forecasts are graded against the corrected official result, while
+new calibration uses the corrected past-only labels.
 
 Only final, reconciled results enter grading. Final-score-only rows increase
 historical score coverage but do not supply quarter/half training labels,

@@ -83,6 +83,10 @@ LEAGUE_SLUGS = {
     League.NCAA_W: "womens-college-basketball",
 }
 
+# Increment when stored period interpretation changes. NCAAW history written
+# before v2 could label four quarters as two halves plus two overtime periods.
+RESULT_PERIOD_PARSER_VERSION = 2
+
 # Earliest non-empty core event-index years verified live on 2026-11-07.
 # They are acquisition floors, not claims of complete season coverage.
 HISTORY_FLOORS = {
@@ -566,6 +570,16 @@ def _summary_context(
     except (TypeError, ValueError):
         source_modified = None
     boxscore = payload.get("boxscore") or {}
+    player_boxscore = boxscore.get("players") or []
+    player_ids = {
+        str((entry.get("athlete") or {}).get("id"))
+        for team in player_boxscore
+        for category in team.get("statistics") or []
+        for entry in category.get("athletes") or []
+        if (entry.get("athlete") or {}).get("id") is not None
+    }
+    standings = payload.get("standings") or {}
+    standings_groups = standings.get("groups") if isinstance(standings, dict) else []
     return {
         "schema_version": "magolide.espn.summary-context.v1",
         "observed_utc": observed_utc,
@@ -588,6 +602,24 @@ def _summary_context(
             }
         ),
         "team_boxscore": _public_context(boxscore.get("teams") or []),
+        "player_boxscore": _public_context(player_boxscore),
+        "leaders": _public_context(
+            boxscore.get("leaders") or payload.get("leaders") or []
+        ),
+        # Full PBP/win-probability/shot-chart arrays are not copied into
+        # canonical evidence (the enabled raw HTTP cache retains them). Counts
+        # expose availability without truncating or duplicating thousands of
+        # potentially in-play rows in every game record.
+        "context_coverage": {
+            "player_boxscore_teams": len(player_boxscore),
+            "player_boxscore_athletes": len(player_ids),
+            "play_by_play_events_in_raw_payload": len(payload.get("plays") or []),
+            "win_probability_points_in_raw_payload": len(
+                payload.get("winprobability") or []
+            ),
+            "shot_chart_events_in_raw_payload": len(payload.get("shotChart") or []),
+            "standings_groups_in_raw_payload": len(standings_groups or []),
+        },
         "last_five_games": _public_context(payload.get("lastFiveGames") or []),
         "injuries": _public_context(payload.get("injuries") or []),
         "article": _public_context(article),
@@ -695,10 +727,12 @@ def _actual_from_competitors(
 ) -> ActualResult:
     """Build an ActualResult from native competitor linescores.
 
-    NBA uses four quarters; NCAA uses two halves. Every further element is
-    one overtime period, summed into the canonical combined OT pair. Missing
-    native periods, mismatched lengths, and unparseable values quarantine the
-    result rather than relabelling or backfilling it.
+    NBA and modern NCAA women use four quarters; NCAA men use two halves.
+    An explicit two-period regulation declaration preserves older women's
+    payloads. Every further element is one overtime period, summed into the
+    canonical combined OT pair. Missing native periods, mismatched lengths,
+    and unparseable values quarantine the result rather than relabelling or
+    backfilling it.
     """
     home_values = _linescore_values(home)
     away_values = _linescore_values(away)
@@ -1194,7 +1228,13 @@ def fetch_game_result(
             "result quarantined"
         )
     home, away = _home_away_competitors(comp)
-    actual = _actual_from_competitors(home, away, source="espn", league=league)
+    actual = _actual_from_competitors(
+        home,
+        away,
+        source="espn",
+        league=league,
+        regulation_periods=_regulation_periods(comp, payload),
+    )
     if game is not None:
         return replace(
             game,
@@ -1277,6 +1317,7 @@ def fetch_historical_event(
         "summary": _summary_context(payload, game, observed),
         "history": {
             "schema_version": "magolide.espn.history-event.v1",
+            "result_period_parser_version": RESULT_PERIOD_PARSER_VERSION,
             "index_year": index_year,
             "coverage": coverage,
             "period_note": period_note,
@@ -1296,12 +1337,12 @@ def fetch_recent_results(
 ) -> List[Game]:
     """Completed games (state 'post') from a past-date scoreboard.
 
-    Same ActualResult parsing as the summary path: exactly 4 linescore
-    elements are Q1..Q4, further elements aggregate into the single
-    combined OT value with ``overtime_periods`` counting them. Records are
-    returned even when quarter sums contradict the final score — the
-    caller/smoke flags those with a ``reconciliation`` gap instead of
-    folding a residual into OT.
+    Same ActualResult parsing as the summary path: regulation linescores are
+    quarters or explicitly declared halves, and further elements aggregate
+    into the single combined OT value with ``overtime_periods`` counting
+    them. Records are returned even when period sums contradict the final
+    score — the caller/smoke flags those with a ``reconciliation`` gap
+    instead of folding a residual into OT.
     """
     payload = fetch(_scoreboard_url(date_yyyymmdd, league)) or {}
     observed_value = observed_utc() if callable(observed_utc) else observed_utc
@@ -1324,7 +1365,11 @@ def fetch_recent_results(
         game.evidence = {
             "espn": {
                 "scoreboard": _scoreboard_context(event, comp, observed, []),
-                "history": {"coverage": coverage, "period_note": period_note},
+                "history": {
+                    "coverage": coverage,
+                    "period_note": period_note,
+                    "result_period_parser_version": RESULT_PERIOD_PARSER_VERSION,
+                },
             }
         }
         results.append(replace(game, actual=actual))
@@ -1478,7 +1523,13 @@ def smoke(
         game_id = str(event.get("id") or "")
         try:
             home, away = _home_away_competitors(comp)
-            actual = _actual_from_competitors(home, away, source="espn", league=league)
+            actual = _actual_from_competitors(
+                home,
+                away,
+                source="espn",
+                league=league,
+                regulation_periods=_regulation_periods(comp),
+            )
         except IdentityError as exc:
             accumulator.gaps.append(
                 CoverageGap(
