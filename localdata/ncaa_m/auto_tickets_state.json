@@ -1,7 +1,14 @@
 {
   "base_paper_units": 100.0,
-  "frozen_by_date": {},
-  "last_generated_utc": "2026-11-08T10:11:30Z",
+  "frozen_by_date": {
+    "2026-11-08": {
+      "final": true,
+      "frozen_at": "2026-11-08T13:56:27Z",
+      "lock_source": "state",
+      "receipt_path": "auto_tickets_2026-11-08_decision.json"
+    }
+  },
+  "last_generated_utc": "2026-11-08T13:56:27Z",
   "paper_bank_units": 100.0,
   "scans": [
     {
@@ -57,6 +64,25 @@
       "fresh_accas": 0,
       "receipt_present": false,
       "run_id": "42470314236_ncaa_m_1_attempt_1"
+    },
+    {
+      "candidate_funnel": {
+        "calibration_sufficient_rows": 72,
+        "eligibility_blockers": {
+          "insufficient_walk_forward_samples": 53,
+          "no_exact_bookmaker_market": 68
+        },
+        "eligible_games": 20,
+        "eligible_rows": 20,
+        "exact_priced_rows": 57,
+        "priced_and_calibrated_rows": 20,
+        "required_games": 3,
+        "scan_rows": 125
+      },
+      "captured_at": "2026-11-08T13:56:27Z",
+      "fresh_accas": 5,
+      "receipt_present": true,
+      "run_id": "42487292798_ncaa_m_1_attempt_1"
     }
   ],
   "schema_version": "magolide.paper_ticket_state.v1",
