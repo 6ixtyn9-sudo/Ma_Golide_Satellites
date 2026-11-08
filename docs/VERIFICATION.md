@@ -62,6 +62,9 @@ are not included in any live-coverage claim.
 ### Forecasting and accas
 
 - Full-game moneyline and favorite/underdog price roles;
+- independent provider and empirical-history full-game surfaces, including a
+  no-provider-archive regression that earns calibration from prior finals and
+  admits exactly priced current games without relaxing the sample gate;
 - full-game totals and Q1–Q4 totals/spreads against real posted lines;
 - first-half home/draw/away forecasts and selected-draw price requirements;
 - highest-quarter forecasts and tied-quarter research grading;

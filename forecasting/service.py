@@ -148,16 +148,34 @@ class MarketForecastService:
             for snapshot in snapshots
         }
         forecasts: List[Forecast] = []
+        full_game_moneyline_books = select_moneyline_snapshots(
+            snapshots, self.book_config, Period.FULL_GAME
+        )
         if prediction is not None:
             forecasts.extend(
                 self.model.moneyline(
                     game,
                     prediction,
-                    select_moneyline_snapshots(snapshots, self.book_config),
+                    full_game_moneyline_books,
                     frozen_books,
                     prediction_frozen,
                 )
             )
+        # The provider forecast and the empirical-history forecast are separate
+        # model surfaces. The latter can be reconstructed for every prior final
+        # using only information available at that tip, so it earns a real
+        # walk-forward calibration profile even when historical provider
+        # predictions were never captured. Current exact book prices attach to
+        # both surfaces; neither inherits the other's calibration history.
+        forecasts.extend(
+            self.model.period_winner(
+                game,
+                history,
+                full_game_moneyline_books,
+                frozen_books,
+                period=Period.FULL_GAME,
+            )
+        )
         forecasts.extend(
             self.model.period_winner(
                 game,
@@ -333,7 +351,10 @@ class MarketForecastService:
                 "certification": "none",
             },
             "capabilities": {
-                "full_game_moneyline": "favorite_or_underdog_provider_probability",
+                "full_game_moneyline": [
+                    "favorite_or_underdog_provider_probability",
+                    "independent_empirical_history_distribution",
+                ],
                 "quarter_totals": [period.value for period in QUARTERS],
                 "quarter_spreads": [period.value for period in QUARTERS],
                 "first_half_1x2": ["home", "draw", "away"],

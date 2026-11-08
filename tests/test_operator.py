@@ -270,7 +270,27 @@ def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp
     assert "Logical picks shown: 4 · superseded observations: 0" in text
     assert "Total archived pick evidence rows: 4" in text
     assert result["ticket_receipt"] is None
-    assert "NO PAPER BET" in Path(result["ticket_text"]).read_text()
+    ticket_text = Path(result["ticket_text"]).read_text()
+    assert "NO PAPER BET" in ticket_text
+    assert "CANDIDATE FUNNEL" in ticket_text
+    assert "4 scan rows · 3 exact priced · 2 calibration-sufficient" in ticket_text
+    assert "2 priced + calibrated · 1 eligible row · 1 eligible game" in ticket_text
+    assert "Need 3 independent games for one acca" in ticket_text
+    assert "2 insufficient_walk_forward_samples" in ticket_text
+    assert result["candidate_funnel"] == {
+        "scan_rows": 4,
+        "exact_priced_rows": 3,
+        "calibration_sufficient_rows": 2,
+        "priced_and_calibrated_rows": 2,
+        "eligible_rows": 1,
+        "eligible_games": 1,
+        "required_games": 3,
+        "eligibility_blockers": {
+            "below_calibrated_probability_floor": 1,
+            "insufficient_walk_forward_samples": 2,
+            "no_exact_bookmaker_market": 1,
+        },
+    }
     buckets = {row["bucket"] for row in json.loads(Path(result["dated_picks"]).read_text())}
     assert buckets == {"ELIGIBLE_CLEAN", "CAUTION", "WATCHLIST_NO_ODDS", "SKIPPED_INELIGIBLE"}
     audit = json.loads(Path(result["rolling_audit"]).read_text())

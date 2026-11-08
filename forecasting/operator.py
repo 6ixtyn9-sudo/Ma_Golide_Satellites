@@ -861,6 +861,55 @@ def _render_ticket_card(
     return "\n".join(lines)
 
 
+def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, Any]:
+    """Explain ticket supply without weakening or reimplementing eligibility."""
+    report = market_report or {}
+    rows = list(report.get("forecasts") or [])
+    acca_report = report.get("accas") or {}
+
+    def exact_price(row: Dict[str, Any]) -> bool:
+        price = (row.get("book") or {}).get("selected_decimal_price")
+        return (
+            isinstance(price, (int, float))
+            and not isinstance(price, bool)
+            and math.isfinite(price)
+            and price > 1.0
+        )
+
+    priced = [row for row in rows if exact_price(row)]
+    calibrated = [
+        row
+        for row in rows
+        if (row.get("calibration") or {}).get("sufficient_for_accas") is True
+    ]
+    eligible = [
+        row for row in rows if (row.get("eligibility") or {}).get("acca_eligible")
+    ]
+    blockers = Counter(
+        reason
+        for row in rows
+        for reason in ((row.get("eligibility") or {}).get("reasons") or [])
+    )
+    try:
+        required_games = int(acca_report.get("requested_legs") or 3)
+    except (TypeError, ValueError):
+        required_games = 3
+    return {
+        "scan_rows": len(rows),
+        "exact_priced_rows": len(priced),
+        "calibration_sufficient_rows": len(calibrated),
+        "priced_and_calibrated_rows": sum(
+            exact_price(row)
+            and (row.get("calibration") or {}).get("sufficient_for_accas") is True
+            for row in rows
+        ),
+        "eligible_rows": len(eligible),
+        "eligible_games": len({row.get("game_id") for row in eligible}),
+        "required_games": required_games,
+        "eligibility_blockers": dict(sorted(blockers.items())),
+    }
+
+
 def _render_empty_ticket_scan(
     *,
     league: League,
@@ -868,23 +917,47 @@ def _render_empty_ticket_scan(
     generated_utc: str,
     performance: Dict[str, Any],
     timezone_name: str,
+    candidate_funnel: Dict[str, Any],
 ) -> str:
     """A mutable latest-scan view, never a frozen no-bet receipt."""
-    return "\n".join(
+    lines = [
+        f"MA GOLIDE PAPER TICKETS — {league.value} {target_date}",
+        "=" * 72,
+        f"CURRENT PAPER BANK (all dates): {performance['paper_bank_units']:.3f} units "
+        f"· free {performance['paper_free_units']:.3f} / reserved {performance['paper_committed_units']:.3f}",
+        f"Latest scan: {_local_time(generated_utc, timezone_name)}",
+        "",
+        "NO PAPER BET — no qualifying eligible acca in this scan.",
+        "",
+        "CANDIDATE FUNNEL",
+        f"  {candidate_funnel['scan_rows']} scan rows · "
+        f"{candidate_funnel['exact_priced_rows']} exact priced · "
+        f"{candidate_funnel['calibration_sufficient_rows']} calibration-sufficient",
+        f"  {candidate_funnel['priced_and_calibrated_rows']} priced + calibrated · "
+        f"{candidate_funnel['eligible_rows']} eligible "
+        f"{'row' if candidate_funnel['eligible_rows'] == 1 else 'rows'} · "
+        f"{candidate_funnel['eligible_games']} eligible "
+        f"{'game' if candidate_funnel['eligible_games'] == 1 else 'games'}",
+        f"  Need {candidate_funnel['required_games']} independent games for one acca; "
+        "same-game legs are prohibited.",
+    ]
+    blockers = candidate_funnel.get("eligibility_blockers") or {}
+    if blockers:
+        lines.append("  Blockers (a row can have more than one):")
+        for reason, count in sorted(blockers.items(), key=lambda item: (-item[1], item[0])):
+            lines.append(f"    {count:>3} {reason}")
+    elif not candidate_funnel["scan_rows"]:
+        lines.append("  No current forecasts were generated.")
+    lines.extend(
         [
-            f"MA GOLIDE PAPER TICKETS — {league.value} {target_date}",
-            "=" * 72,
-            f"CURRENT PAPER BANK (all dates): {performance['paper_bank_units']:.3f} units "
-            f"· free {performance['paper_free_units']:.3f} / reserved {performance['paper_committed_units']:.3f}",
-            f"Latest scan: {_local_time(generated_utc, timezone_name)}",
             "",
-            "NO PAPER BET — no qualifying eligible acca in this scan.",
             "This scan card is not a frozen receipt; a later qualifying scan may publish tickets.",
             "Empty scans never cancel or resize earlier frozen positions.",
             "Paper only. No real-money stakes or automatic promotion.",
             "",
         ]
     )
+    return "\n".join(lines)
 
 
 def _render_performance(report: Dict[str, Any], timezone_name: str) -> str:
@@ -980,6 +1053,7 @@ def publish_operator_reports(
         _pick_row(row, target_date)
         for row in deepcopy((market_report or {}).get("forecasts") or [])
     ]
+    candidate_funnel = _ticket_candidate_funnel(market_report)
     dated_path = localdata / f"picks_{target_date}.json"
     prior = _read_json(dated_path, [])
     if not isinstance(prior, list):
@@ -1029,6 +1103,7 @@ def publish_operator_reports(
             "captured_at": generated_utc,
             "fresh_accas": len((market_report or {}).get("accas", {}).get("results") or []),
             "receipt_present": receipt is not None,
+            "candidate_funnel": deepcopy(candidate_funnel),
         }
     )
     state["scans"] = state["scans"][-100:]
@@ -1066,6 +1141,7 @@ def publish_operator_reports(
                 generated_utc=generated_utc,
                 performance=performance,
                 timezone_name=timezone_name,
+                candidate_funnel=candidate_funnel,
             ),
         )
     state["last_generated_utc"] = generated_utc
@@ -1087,6 +1163,7 @@ def publish_operator_reports(
         "ticket_state": str(localdata / "auto_tickets_state.json"),
         "performance": str(localdata / "auto_tickets_performance.json"),
         "performance_text": str(localdata / "auto_tickets_performance.txt"),
+        "candidate_funnel": candidate_funnel,
         "counts": {
             "current_picks": len(current),
             "archived_picks": len(archived),
