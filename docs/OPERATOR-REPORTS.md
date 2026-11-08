@@ -74,6 +74,16 @@ and a dedicated `settled_ledger`; the readable audit lists every settled
 logical pick in its 30-day window, including unpriced grades that do not enter
 ROI.
 
+The Markdown audit uses proper `Overall`, `Settlement policy`, `Bucket
+performance`, and `Settled picks` sections. Settled markets are grouped under
+one heading per fixture instead of repeating long single-line rows. Each pick
+shows a readable named selection, result, expected probability, exact price (or
+its absence), calibration sample, bucket, and model. Production reports include
+the reconciled full-game final and relevant period/total/margin context from the
+canonical game record; those scores are presentation inputs and are not written
+back into frozen pick evidence. The rolling JSON schema and metrics are
+unchanged by this rendering.
+
 ## Publication and freeze
 
 The first non-empty acca report for a league/date writes a decision receipt and
