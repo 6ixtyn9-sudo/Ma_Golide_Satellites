@@ -47,14 +47,23 @@ name-only match. Schedule rediscovery cannot erase an already reconciled final.
 
 ### Full-game moneyline and price role
 
-The base probabilities are the selected provider's validated home/away
-probabilities. Providers are selected in configured priority order; their
-probabilities are never averaged. Exact ties produce no selection.
+Two independent model surfaces can emit full-game moneyline forecasts:
 
-If an exact full-game moneyline book has both prices, the forecast also reports
-whether the selected side is the `favorite` or `underdog` by decimal price.
-These are roles on one canonical moneyline forecast, not separate prediction
-models. A missing book leaves a research forecast but no bettable selection.
+- the selected provider's validated home/away probabilities, using configured
+  provider priority without averaging providers;
+- the empirical history model's full-game margin distribution, which requires
+  no provider prediction and can therefore be reconstructed at every historical
+  tip for walk-forward calibration.
+
+Their sources and calibration profiles remain separate. Neither surface inherits
+the other's samples or probabilities, and exact ties within a surface produce no
+selection from that surface. Full-game selections are two-way (`home` or `away`);
+an empirical simulated draw is not mapped to a two-way book selection.
+
+If an exact full-game moneyline book has both prices, the provider forecast also
+reports whether the selected side is the `favorite` or `underdog` by decimal
+price. This is a role on the provider forecast, not a separate prediction model.
+A missing book leaves research forecasts but no bettable selections.
 
 ### Full-game and quarter totals
 
@@ -102,10 +111,13 @@ scenarios, not claims from a fitted sportsbook or a certified probability
 model. Exact probability ties are not broken arbitrarily. Totals and spreads
 report push probability separately.
 
-Full-game moneyline remains a provider-probability forecast. The other market
-families are historical/residual forecasts; full-game totals may combine a
-provider baseline with historical residuals. Every forecast identifies its
-model source and evidence timestamps.
+Full-game moneyline has both the provider-probability surface described above
+and a historical/residual surface. The other market families are
+historical/residual forecasts; full-game totals may combine a provider baseline
+with historical residuals. Every forecast identifies its model source and
+evidence timestamps. Because the empirical full-game surface needs only prior
+finals, lack of a frozen provider-prediction archive does not prevent its
+prequential calibration.
 
 ## 5. Walk-forward reliability harness
 

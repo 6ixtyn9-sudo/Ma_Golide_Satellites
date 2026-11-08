@@ -37,8 +37,8 @@ prove parsing, reconciliation, routing, and forecast behavior only.
 
 | Canonical market | Periods / selections | Evidence rule |
 | --- | --- | --- |
-| Moneyline | Full game: home or away | Valid provider probabilities; an exact priced bookmaker snapshot is required before acca eligibility |
-| Favorite / underdog role | Full-game moneyline | A role on the same moneyline forecast, derived from real home/away prices—not a separate wager model |
+| Moneyline | Full game: home or away | Independent provider-probability and empirical-history forecasts; neither shares the other's calibration, and an exact priced bookmaker snapshot is required before acca eligibility |
+| Favorite / underdog role | Provider full-game moneyline | A role on the provider forecast, derived from real home/away prices—not a separate wager model |
 | Total | Full game: over or under | The posted bookmaker line is mandatory; a provider expected total is only a model baseline |
 | Totals | Exact offered Q1–Q4 or H1/H2 periods | Exact native book period, exact posted line, and over/under prices |
 | Spreads | Exact offered Q1–Q4 or H1/H2 periods | Exact native book period and home-oriented posted line with both side prices |

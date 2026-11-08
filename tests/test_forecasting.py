@@ -190,6 +190,15 @@ def test_all_old_markets_are_forecast_and_accas_use_calibrated_probabilities():
     assert ("H1", "moneyline") in markets
     assert ("full_game", "total") in markets
     assert ("full_game", "highest_quarter") in markets
+    full_game_moneyline_sources = {
+        row["model"]
+        for row in current
+        if row["market"] == "moneyline" and row["period"] == "full_game"
+    }
+    assert full_game_moneyline_sources == {
+        "provider:espn",
+        "team_history_empirical_v1",
+    }
     for period in ("Q1", "Q2", "Q3", "Q4"):
         assert (period, "total") in markets
         assert (period, "spread") in markets
@@ -207,6 +216,67 @@ def test_all_old_markets_are_forecast_and_accas_use_calibrated_probabilities():
         assert all(leg["book"]["selected_decimal_price"] for leg in acca["legs"])
         assert acca["ranking_metric"] == "calibrated_joint_win_probability"
         assert acca["ranking_status"] == "highest_estimated_not_guaranteed"
+
+
+def test_full_game_history_moneyline_earns_calibration_without_provider_history():
+    store = populated_store(finals=12, upcoming=3)
+    # This reproduces the live coverage gap: exact current books exist, but no
+    # frozen provider-prediction archive exists from which to build calibration.
+    store.predictions = {}
+    store.frozen_predictions = {}
+    # Remove every other priced market so a returned acca must use the new
+    # full-game history surface rather than passing through H1/totals/spreads.
+    for game_id, snapshots in list(store.books.items()):
+        kept = {
+            key: snapshot
+            for key, snapshot in snapshots.items()
+            if snapshot.market is Market.MONEYLINE
+            and snapshot.period is Period.FULL_GAME
+        }
+        store.books[game_id] = kept
+        store.frozen_books[game_id] = {
+            key: value
+            for key, value in store.frozen_books.get(game_id, {}).items()
+            if key in kept
+        }
+
+    report = service(store).build_report(
+        as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4
+    )
+    rows = [
+        row
+        for row in report["forecasts"]
+        if row["market"] == "moneyline"
+        and row["period"] == "full_game"
+        and row["model"] == "team_history_empirical_v1"
+    ]
+    assert len(rows) == 3
+    for row in rows:
+        assert row["prediction"] is None
+        assert row["training_games"] >= 3
+        assert row["residual_games"] >= 3
+        assert row["calibration"]["n"] >= 3
+        assert row["calibration"]["sufficient_for_accas"] is True
+        assert row["book"]["selected_decimal_price"] == 1.7
+        assert row["eligibility"]["acca_eligible"] is True
+        assert row["eligibility"]["reasons"] == []
+
+    segment = next(
+        row
+        for row in report["walk_forward"]["segments"]
+        if row["league"] == "NBA"
+        and row["market"] == "moneyline"
+        and row["period"] == "full_game"
+        and row["source"] == "team_history_empirical_v1"
+    )
+    assert segment["n"] >= 3
+    assert report["accas"]["results"]
+    assert report["accas"]["eligible_games"] == 3
+    for acca in report["accas"]["results"]:
+        for leg in acca["legs"]:
+            assert leg["market"] == "moneyline"
+            assert leg["period"] == "full_game"
+            assert leg["model"] == "team_history_empirical_v1"
 
 
 def test_expected_total_never_becomes_a_book_line():

@@ -86,6 +86,13 @@ Each acca uses exactly one flat paper unit. The initial 100-unit figure is only
 an accounting base, not money or a recommended bankroll. Empty scans are logged
 but do not cancel earlier positions or consume ticket identities.
 
+An empty latest-scan card includes a **candidate funnel**: current rows, exact
+priced rows, calibration-sufficient rows, their overlap, eligible rows/games,
+the required independent-game count, and overlapping eligibility blocker counts.
+The same structure is stored under `candidate_funnel` in the bounded scan-state
+entry and operator result. These are diagnostics only; they never override a
+failed guard or synthesize a ticket.
+
 Dated pick ledgers also retain earlier rows when later scans omit them. Fresh
 versions of the same forecast id replace the dated evidence row; distinct
 forecast ids remain distinct in JSON even when they are repeated observations

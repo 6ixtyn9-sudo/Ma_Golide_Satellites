@@ -335,7 +335,15 @@ class HistoryModel:
         if distribution is None:
             return []
         probabilities = self._winner_probabilities(distribution.margins)
-        selection = self._select(probabilities, ("home", "away", "draw"))
+        # Basketball full-game moneyline is two-way because overtime decides
+        # the final. H1 retains its explicit draw selection and exact draw
+        # price requirement; no draw may leak into a two-way full-game book.
+        allowed = (
+            ("home", "away")
+            if period is Period.FULL_GAME
+            else ("home", "away", "draw")
+        )
+        selection = self._select(probabilities, allowed)
         if selection is None:
             return []
         snapshots: Sequence[Optional[BookSnapshot]] = books or (None,)
