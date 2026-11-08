@@ -32,20 +32,25 @@ def _best_leg_per_game(forecasts: Iterable[Forecast]) -> List[Forecast]:
         rows.sort(
             key=lambda row: (
                 -(row.calibrated_probability or 0.0),
-                -(row.decimal_price or 0.0),
                 row.market,
                 row.period,
+                row.source,
                 row.selection,
                 row.book.key if row.book else "",
                 row.forecast_id,
             )
         )
         best.append(rows[0])
+    # Price is payout evidence, never a ranking signal. Stable identities are
+    # the only tie-breakers after calibrated probability.
     best.sort(
         key=lambda row: (
             -(row.calibrated_probability or 0.0),
-            -(row.decimal_price or 0.0),
             row.game_id,
+            row.market,
+            row.period,
+            row.source,
+            row.forecast_id,
         )
     )
     return best

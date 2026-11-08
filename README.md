@@ -140,10 +140,14 @@ An acca is eligible only when every leg has:
 - visible pre-tip book evidence and provider evidence where used, with freeze
   state reported explicitly;
 - enough walk-forward samples and a calibrated probability at least 0.50;
+- for history-based forecasts, at least eight effective prior games per team by
+  default—the same weight as the league prior—so fallback league averages cannot
+  supply ACCA legs;
 - acceptable push risk for totals and spreads.
 
 Accas contain exactly the requested number of legs (two through six) and are
-ranked by the product of calibrated leg probabilities. Same-game legs are
+ranked by the product of calibrated leg probabilities. Bookmaker prices are
+reported as payout evidence but never break probability ties. Same-game legs are
 prohibited. Cross-game conditional independence is an explicit simplifying
 assumption, not a measured guarantee. “Highest” therefore means highest under
 that model among eligible combinations—not a guaranteed winner or an

@@ -162,7 +162,10 @@ def test_ticket_is_frozen_empty_scans_do_not_cancel_and_known_leg_loss_settles(t
     assert performance["paper_bank_units"] == 100.0
     assert performance["paper_committed_units"] == 1.0
     assert performance["pending_accas"] == 1
-    assert "FROZEN AT 20:00 - FINAL" in Path(first["ticket_text"]).read_text()
+    ticket_text = Path(first["ticket_text"]).read_text()
+    assert "FROZEN AT 20:00 - FINAL" in ticket_text
+    assert "TIP-OFF" in ticket_text
+    assert "KICKOFF" not in ticket_text
 
     # A later empty scan and a different candidate set cannot rotate the slip.
     publish(tmp_path, store, report(rows), run_id="empty-scan")
@@ -194,6 +197,41 @@ def test_ticket_is_frozen_empty_scans_do_not_cancel_and_known_leg_loss_settles(t
     receipt_path.unlink()
     with pytest.raises(FileNotFoundError, match="refusing to rotate"):
         publish(tmp_path, store, report(rows), run_id="missing-receipt")
+
+
+def test_withdrawn_ticket_survives_old_cache_without_becoming_a_live_position(tmp_path):
+    rows = [forecast(number) for number in (1, 2, 3)]
+    store = Store([game(number) for number in (1, 2, 3)])
+    first = publish(tmp_path, store, report(rows, [acca(rows)]))
+    receipt_path = Path(first["ticket_receipt"])
+    frozen_bytes = receipt_path.read_bytes()
+    state_path = Path(first["ticket_state"])
+    state = json.loads(state_path.read_text())
+    state["frozen_by_date"][DATE].update(
+        withdrawn=True,
+        decision_id="run-1",
+        withdrawal_reason="model_integrity",
+    )
+    state_path.write_text(json.dumps(state, indent=2) + "\n")
+
+    # Even if an old cache restores the receipt and new candidates arrive, this
+    # date stays closed and the withdrawn card contributes no stake or results.
+    second = publish(
+        tmp_path,
+        store,
+        report(rows, [acca(rows, acca_id="replacement")]),
+        run_id="later-scan",
+    )
+    assert second["ticket_receipt"] is None
+    assert receipt_path.read_bytes() == frozen_bytes
+    performance = json.loads(Path(second["performance"]).read_text())
+    assert performance["history"] == []
+    assert performance["pending_accas"] == 0
+    assert performance["paper_bank_units"] == 100.0
+    text = Path(second["ticket_text"]).read_text()
+    assert "withdrawn for model-integrity failure" in text
+    assert "closed to replacement ticket publication" in text
+    assert json.loads(state_path.read_text())["frozen_by_date"][DATE]["withdrawn"] is True
 
 
 def test_push_leg_is_removed_from_effective_acca_price(tmp_path):
