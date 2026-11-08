@@ -30,7 +30,7 @@ Edge Factory labels or a claim of historical profitability.
 | --- | --- |
 | `picks_today.json` | Current scan only; every current forecast, including excluded rows |
 | `picks_YYYY-MM-DD.json` | Cumulative dated pick evidence, keyed by forecast id, with current grades |
-| `picks_YYYY-MM-DD.txt` | Human-readable categorized card; no forecast rows are silently omitted |
+| `picks_YYYY-MM-DD.txt` | Human-readable latest logical picks, plus started/settled archive sections |
 | `picks_audit_rolling.json` | Thirty-day rolling ledger and flat-stake diagnostics |
 | `picks_audit_YYYY-MM-DD.md` | Readable rolling audit summary |
 | `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper accas |
@@ -60,6 +60,17 @@ selection and line, raw/calibrated probability, selected price and bookmaker,
 price evidence, model/prediction provenance, calibration sample count,
 eligibility reasons, and grade.
 
+Repeated scans can produce distinct forecast IDs because book and prediction
+observation times are part of those IDs. The dated JSON retains every evidence
+row. The text card and rolling audit select the latest observation for the same
+logical game/market/period/selection/line/model/book pick, and report the number
+of superseded observations. Only pending pre-tip logical picks appear in the
+active bucket sections; started games awaiting an official final and settled
+picks appear in separate archive-only sections. Rolling hit rate, ROI, and
+profit therefore count one paper pick per logical selection rather than one
+paper pick per scan. Different selections, lines, models, or books remain
+separate logical picks.
+
 ## Publication and freeze
 
 The first non-empty acca report for a league/date writes a decision receipt and
@@ -74,13 +85,16 @@ but do not cancel earlier positions or consume ticket identities.
 
 Dated pick ledgers also retain earlier rows when later scans omit them. Fresh
 versions of the same forecast id replace the dated evidence row; distinct
-forecast ids remain distinct. `picks_today.json` never replaces dated history.
+forecast ids remain distinct in JSON even when they are repeated observations
+of one logical text/audit pick. `picks_today.json` never replaces dated history.
 
 ## Grading
 
-Grading is separate from publication evidence. Only a final game whose actual
-period scores reconcile to the official final can settle a forecast. Missing,
-incomplete, conflicting, or unreconciled results remain **PENDING**.
+Grading is separate from publication evidence. Every retained dated ledger is
+refreshed on each run, including dates before the current target date. Only a
+final game whose actual period scores reconcile to the official final can settle
+a forecast. Missing, incomplete, conflicting, or unreconciled results remain
+**PENDING**.
 
 For accas:
 
