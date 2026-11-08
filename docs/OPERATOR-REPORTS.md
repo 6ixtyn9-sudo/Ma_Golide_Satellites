@@ -31,8 +31,8 @@ Edge Factory labels or a claim of historical profitability.
 | `picks_today.json` | Current scan only; every current forecast, including excluded rows |
 | `picks_YYYY-MM-DD.json` | Cumulative dated pick evidence, keyed by forecast id, with current grades |
 | `picks_YYYY-MM-DD.txt` | Human-readable latest logical picks, plus started/settled archive sections |
-| `picks_audit_rolling.json` | Thirty-day rolling ledger and flat-stake diagnostics |
-| `picks_audit_YYYY-MM-DD.md` | Readable rolling audit summary |
+| `picks_audit_rolling.json` | Thirty-day logical and settled ledgers plus flat-stake diagnostics |
+| `picks_audit_YYYY-MM-DD.md` | Readable rolling summary and every settled logical pick in the window |
 | `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper accas |
 | `auto_tickets_YYYY-MM-DD.txt` | Frozen receipt with leg grades, or an explicit unfrozen no-bet scan card |
 | `auto_tickets_state.json` | Write-once date locks and bounded scan telemetry |
@@ -69,7 +69,10 @@ active bucket sections; started games awaiting an official final and settled
 picks appear in separate archive-only sections. Rolling hit rate, ROI, and
 profit therefore count one paper pick per logical selection rather than one
 paper pick per scan. Different selections, lines, models, or books remain
-separate logical picks.
+separate logical picks. The rolling JSON retains the complete logical ledger
+and a dedicated `settled_ledger`; the readable audit lists every settled
+logical pick in its 30-day window, including unpriced grades that do not enter
+ROI.
 
 ## Publication and freeze
 
@@ -95,6 +98,20 @@ refreshed on each run, including dates before the current target date. Only a
 final game whose actual period scores reconcile to the official final can settle
 a forecast. Missing, incomplete, conflicting, or unreconciled results remain
 **PENDING**.
+
+Every official-final `WIN`, `LOSS`, or `PUSH` enters the rolling settled ledger,
+hit rate, bucket diagnostics, and priced-profit calculation immediately—even
+when its pick date is the report's current slate date. This is deliberately more
+responsive than Edge Factory's default same-day exclusion because Ma Golide does
+not settle from live source scores. Same-day pending rows remain outside the
+prior-day pending/unmatched counter and are reported separately as
+`same_day_pending_picks`; `pending_picks_total` exposes all pending rows. The
+pending cutoff is the generated time's actual league/operator local date, not
+the acquisition slate date. Thus a run generated on 8 November for the 7
+November slate does not incorrectly exclude all 7 November picks. For schema
+compatibility, `same_day_rows_excluded` now counts only those held same-day
+pending rows, while `same_day_settled_picks` reports official finals included
+immediately.
 
 For accas:
 

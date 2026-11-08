@@ -395,5 +395,60 @@ def test_prior_dated_picks_are_graded_without_changing_frozen_evidence(tmp_path)
     assert graded["calibrated_probability"] == frozen_probability
     assert graded["book"]["selected_decimal_price"] == frozen_price
     audit = json.loads(Path(first["rolling_audit"]).read_text())
-    assert audit["same_day_rows_excluded"] == 1
-    assert audit["settled_picks"] == 0
+    assert audit["same_day_rows_excluded"] == 0
+    assert audit["same_day_pending_picks"] == 0
+    assert audit["same_day_settled_picks"] == 1
+    assert audit["eligible_prior_picks"] == 0
+    assert audit["settled_picks"] == 1
+    assert audit["wins"] == 1
+    assert audit["priced_sample"] == 1
+    assert audit["profit_units"] == pytest.approx(0.8)
+    assert len(audit["settled_ledger"]) == 1
+    audit_text = Path(first["dated_audit"]).read_text()
+    assert "SETTLED PICKS — OFFICIAL FINAL AUDIT" in audit_text
+    assert "WIN · Home 1 vs Away 1" in audit_text
+    assert "@1.800 Test Book" in audit_text
+
+
+def test_audit_uses_local_day_cutoff_for_previous_slate_pending_rows(tmp_path):
+    rows = [forecast(1), forecast(2)]
+    first = publish(
+        tmp_path,
+        Store([game(1, home_score=105, away_score=100), game(2)]),
+        report(rows),
+    )
+    same_day = json.loads(Path(first["rolling_audit"]).read_text())
+    assert same_day["same_day_cutoff"] == DATE
+    assert same_day["include_same_day_settled"] is True
+    assert same_day["eligible_prior_picks"] == 0
+    assert same_day["settled_picks"] == 1
+    assert same_day["same_day_settled_picks"] == 1
+    assert same_day["same_day_pending_picks"] == 1
+    assert same_day["same_day_rows_excluded"] == 1
+    assert same_day["pending_picks"] == 0
+    assert same_day["pending_picks_total"] == 1
+
+    publish_operator_reports(
+        Store([game(1, home_score=105, away_score=100), game(2)]),
+        League.NBA,
+        report([]),
+        tmp_path,
+        target_date=DATE,
+        generated_utc="2026-11-08T03:35:03Z",
+        run_id="next-local-day-previous-slate",
+    )
+    next_day = json.loads(Path(first["rolling_audit"]).read_text())
+    assert next_day["same_day_cutoff"] == "2026-11-08"
+    assert next_day["eligible_prior_picks"] == 2
+    assert next_day["settled_picks"] == 1
+    assert next_day["same_day_settled_picks"] == 0
+    assert next_day["same_day_pending_picks"] == 0
+    assert next_day["same_day_rows_excluded"] == 0
+    assert next_day["pending_picks"] == 1
+    assert next_day["pending_picks_total"] == 1
+    assert len(next_day["settled_ledger"]) == 1
+    assert len(json.loads(Path(first["dated_picks"]).read_text())) == 2
+    audit_text = Path(first["dated_audit"]).read_text()
+    assert "WIN · Home 1 vs Away 1" in audit_text
+    settled_section = audit_text.split("SETTLED PICKS — OFFICIAL FINAL AUDIT", 1)[1]
+    assert "Home 2 vs Away 2" not in settled_section

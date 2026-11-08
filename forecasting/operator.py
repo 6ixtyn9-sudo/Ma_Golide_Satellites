@@ -434,12 +434,41 @@ def _write_pick_audit(
         ledger.extend(payload)
     window = [row for row in ledger if start.isoformat() <= row["date"] <= target_date]
     logical_window = _latest_logical_rows(window)
-    eligible = [row for row in logical_window if row["date"] < target_date]
-    settled = [row for row in eligible if row["grade_status"] in {"win", "loss", "push"}]
+    local_cutoff = (
+        parse_utc(generated_utc)
+        .astimezone(ZoneInfo(timezone_name))
+        .date()
+        .isoformat()
+    )
+    # Match Edge's local-day pending cutoff, not the acquisition/slate date.
+    # Unlike Edge's source-score default, our grades require reconciled official
+    # finals, so a same-day final is already safe to include in settled metrics.
+    prior = [row for row in logical_window if row["date"] < local_cutoff]
+    same_day_pending = [
+        row
+        for row in logical_window
+        if row["date"] >= local_cutoff and row["grade_status"] == "pending"
+    ]
+    settled = sorted(
+        (
+            row
+            for row in logical_window
+            if row["grade_status"] in {"win", "loss", "push"}
+        ),
+        key=lambda row: (
+            row["date"],
+            row["scheduled_utc"],
+            row["game_id"],
+            str(row["pick_id"]),
+        ),
+        reverse=True,
+    )
+    same_day_settled = sum(row["date"] >= local_cutoff for row in settled)
     decisions = [row for row in settled if row["grade_status"] != "push"]
     wins = sum(row["grade_status"] == "win" for row in decisions)
     pushes = sum(row["grade_status"] == "push" for row in settled)
-    pending = sum(row["grade_status"] == "pending" for row in eligible)
+    pending = sum(row["grade_status"] == "pending" for row in prior)
+    pending_total = sum(row["grade_status"] == "pending" for row in logical_window)
     priced = [
         row for row in settled if (row.get("book") or {}).get("selected_decimal_price") is not None
     ]
@@ -472,10 +501,15 @@ def _write_pick_audit(
         "archived_pick_rows": len(logical_window),
         "archived_evidence_rows": len(window),
         "superseded_observations": len(window) - len(logical_window),
-        "same_day_rows_excluded": len(logical_window) - len(eligible),
-        "eligible_prior_picks": len(eligible),
+        "same_day_cutoff": local_cutoff,
+        "include_same_day_settled": True,
+        "same_day_rows_excluded": len(same_day_pending),
+        "same_day_pending_picks": len(same_day_pending),
+        "same_day_settled_picks": same_day_settled,
+        "eligible_prior_picks": len(prior),
         "settled_picks": len(settled),
         "pending_picks": pending,
+        "pending_picks_total": pending_total,
         "wins": wins,
         "losses": len(decisions) - wins,
         "pushes": pushes,
@@ -486,10 +520,12 @@ def _write_pick_audit(
         "stake_policy": "flat_one_paper_unit_per_priced_pick",
         "by_bucket": by_bucket,
         "grading_basis": (
-            "reconciled_official_finals_only; pending_is_not_a_loss; "
+            "reconciled_official_finals_only; official_finals_settle_immediately; "
+            "pending_is_not_a_loss; local_day_pending_cutoff; "
             "latest_observation_per_logical_pick"
         ),
         "ledger": logical_window,
+        "settled_ledger": settled,
     }
     _write_json(localdata / "picks_audit_rolling.json", report)
     lines = [
@@ -498,10 +534,13 @@ def _write_pick_audit(
         f"Archived logical picks: {len(logical_window)}",
         f"Archived evidence rows: {len(window)} "
         f"({len(window) - len(logical_window)} superseded observations)",
-        f"Same-day rows excluded: {len(logical_window) - len(eligible)}",
-        f"Eligible prior picks: {len(eligible)}",
+        f"Local-day pending cutoff: {local_cutoff}",
+        f"Same-day pending rows held outside prior-day counters: {len(same_day_pending)}",
+        f"Same-day official-final picks included in settlement: {same_day_settled}",
+        f"Eligible prior-day picks: {len(prior)}",
         f"Settled picks: {len(settled)} (pushes: {pushes})",
-        f"Pending/unmatched result picks: {pending}",
+        f"Pending/unmatched prior-day result picks: {pending}",
+        f"Total pending logical picks in ledger: {pending_total}",
         f"Hit rate: {report['hit_rate']:.1%}" if decisions else "Hit rate: n/a",
         f"ROI: {report['roi']:+.1%}" if priced else "ROI: n/a (no settled priced picks)",
         "",
@@ -512,6 +551,33 @@ def _write_pick_audit(
         lines.append(
             f"  {bucket}: settled={group['settled']} wins={group['wins']} "
             f"priced_profit={group['priced_profit_units']:+.3f} units"
+        )
+    lines.extend(
+        [
+            "",
+            "SETTLED PICKS — OFFICIAL FINAL AUDIT",
+            "-" * 72,
+            "Every settled logical pick in the 30-day window is listed. "
+            "Unpriced grades do not enter ROI.",
+        ]
+    )
+    if not settled:
+        lines.append("  (none)")
+    for row in settled:
+        probability = row.get("calibrated_probability")
+        if probability is None:
+            probability = row["raw_probability"]
+        price = (row.get("book") or {}).get("selected_decimal_price")
+        price_text = f"@{float(price):.3f}" if price is not None else "@n/a"
+        book_name = (row.get("book") or {}).get("book") or "no matched book"
+        calibration = row.get("calibration") or {}
+        lines.append(
+            f"  {row['date']} · {row['grade_status'].upper()} · "
+            f"{row['home']} vs {row['away']} · {_selection_label(row)} · "
+            f"p={probability:.1%} (raw {row['raw_probability']:.1%}) "
+            f"{price_text} {book_name} · bucket={row['bucket']} "
+            f"calibration_n={calibration.get('n', 0)} · "
+            f"model={row.get('model')}/{row.get('model_version')}"
         )
     lines.extend(
         [
@@ -1024,6 +1090,8 @@ def publish_operator_reports(
         "counts": {
             "current_picks": len(current),
             "archived_picks": len(archived),
+            "graded_picks": audit["settled_picks"],
+            # Backward-compatible alias; this now includes same-day finals.
             "graded_prior_picks": audit["settled_picks"],
             "published_accas": len(receipt["accas"]) if receipt else 0,
             "settled_accas": performance["settled_accas"],
