@@ -1,7 +1,8 @@
 Ma Golide recent picks audit — 2026-10-09 to 2026-11-07
 ========================================================================
-Archived pick rows: 61
-Same-day rows excluded: 61
+Archived logical picks: 53
+Archived evidence rows: 61 (8 superseded observations)
+Same-day rows excluded: 53
 Eligible prior picks: 0
 Settled picks: 0 (pushes: 0)
 Pending/unmatched result picks: 0
