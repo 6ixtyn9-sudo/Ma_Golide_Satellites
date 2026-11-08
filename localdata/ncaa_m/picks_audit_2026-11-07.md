@@ -2,15 +2,177 @@ Ma Golide recent picks audit — 2026-10-09 to 2026-11-07
 ========================================================================
 Archived logical picks: 173
 Archived evidence rows: 189 (16 superseded observations)
-Same-day rows excluded: 173
-Eligible prior picks: 0
-Settled picks: 0 (pushes: 0)
-Pending/unmatched result picks: 0
-Hit rate: n/a
-ROI: n/a (no settled priced picks)
+Local-day pending cutoff: 2026-11-08
+Same-day pending rows held outside prior-day counters: 0
+Same-day official-final picks included in settlement: 0
+Eligible prior-day picks: 173
+Settled picks: 153 (pushes: 0)
+Pending/unmatched prior-day result picks: 20
+Total pending logical picks in ledger: 20
+Hit rate: 69.9%
+ROI: +10.2%
 
 Bucket diagnostics
 ------------------------------------------------------------------------
+  CAUTION: settled=103 wins=70 priced_profit=+10.472 units
+  WATCHLIST_NO_ODDS: settled=50 wins=37 priced_profit=+0.000 units
+
+SETTLED PICKS — OFFICIAL FINAL AUDIT
+------------------------------------------------------------------------
+Every settled logical pick in the 30-day window is listed. Unpriced grades do not enter ROI.
+  2026-11-07 · WIN · Pepperdine Waves vs Bethesda Flames · MONEYLINE H1 -> HOME · p=86.1% (raw 88.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Pepperdine Waves vs Bethesda Flames · MONEYLINE full_game -> HOME · p=99.8% (raw 99.8%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Weber State Wildcats vs Utah Valley Wolverines · MONEYLINE full_game -> AWAY · p=66.9% (raw 66.9%) @1.294 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · Weber State Wildcats vs Utah Valley Wolverines · TOTAL full_game 155.5 -> UNDER · p=56.0% (raw 56.0%) @1.952 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Weber State Wildcats vs Utah Valley Wolverines · MONEYLINE full_game -> AWAY · p=66.9% (raw 66.9%) @1.294 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · Weber State Wildcats vs Utah Valley Wolverines · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Weber State Wildcats vs Utah Valley Wolverines · TOTAL full_game 155.5 -> UNDER · p=56.0% (raw 56.0%) @1.952 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Southern Utah Thunderbirds vs Bethesda Flames · MONEYLINE H1 -> HOME · p=86.1% (raw 88.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Southern Utah Thunderbirds vs Bethesda Flames · MONEYLINE full_game -> HOME · p=99.8% (raw 99.8%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Oral Roberts Golden Eagles vs Northwestern (OK) Rangers · MONEYLINE full_game -> HOME · p=99.6% (raw 99.6%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Oral Roberts Golden Eagles vs Northwestern (OK) Rangers · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Murray State Racers vs Northwestern State Demons · MONEYLINE full_game -> HOME · p=93.0% (raw 93.0%) @1.012 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Murray State Racers vs Northwestern State Demons · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Murray State Racers vs Northwestern State Demons · TOTAL full_game 155.5 -> UNDER · p=56.0% (raw 56.0%) @1.893 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Murray State Racers vs Northwestern State Demons · TOTAL full_game 155.5 -> UNDER · p=56.0% (raw 56.0%) @1.893 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Murray State Racers vs Northwestern State Demons · MONEYLINE full_game -> HOME · p=93.0% (raw 93.0%) @1.012 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · Evansville Purple Aces vs Southern Indiana Screaming Eagles · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Evansville Purple Aces vs Southern Indiana Screaming Eagles · TOTAL full_game 143.5 -> OVER · p=63.0% (raw 63.0%) @1.870 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Evansville Purple Aces vs Southern Indiana Screaming Eagles · MONEYLINE full_game -> HOME · p=54.3% (raw 54.3%) @1.294 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Evansville Purple Aces vs Southern Indiana Screaming Eagles · TOTAL full_game 143.5 -> OVER · p=63.0% (raw 63.0%) @1.870 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Evansville Purple Aces vs Southern Indiana Screaming Eagles · MONEYLINE full_game -> HOME · p=54.3% (raw 54.3%) @1.294 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · Little Rock Trojans vs SE Louisiana Lions · MONEYLINE full_game -> HOME · p=77.3% (raw 77.3%) @1.206 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · Little Rock Trojans vs SE Louisiana Lions · MONEYLINE full_game -> HOME · p=77.3% (raw 77.3%) @1.206 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Little Rock Trojans vs SE Louisiana Lions · TOTAL full_game 145.5 -> OVER · p=56.0% (raw 56.0%) @1.909 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Little Rock Trojans vs SE Louisiana Lions · TOTAL full_game 145.5 -> OVER · p=56.0% (raw 56.0%) @1.870 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Little Rock Trojans vs SE Louisiana Lions · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Bradley Braves vs Pacific Tigers · MONEYLINE full_game -> HOME · p=70.0% (raw 70.0%) @1.870 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · Bradley Braves vs Pacific Tigers · TOTAL full_game 139.5 -> OVER · p=74.0% (raw 74.0%) @1.909 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Bradley Braves vs Pacific Tigers · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Bradley Braves vs Pacific Tigers · MONEYLINE full_game -> HOME · p=70.0% (raw 70.0%) @1.870 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · Bradley Braves vs Pacific Tigers · TOTAL full_game 139.5 -> OVER · p=74.0% (raw 74.0%) @1.909 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Grand Canyon Lopes vs Bethune-Cookman Wildcats · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Grand Canyon Lopes vs Bethune-Cookman Wildcats · TOTAL full_game 155.5 -> UNDER · p=56.0% (raw 56.0%) @1.909 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Grand Canyon Lopes vs Bethune-Cookman Wildcats · TOTAL full_game 155.5 -> UNDER · p=56.0% (raw 56.0%) @1.909 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Grand Canyon Lopes vs Bethune-Cookman Wildcats · MONEYLINE full_game -> HOME · p=96.3% (raw 96.3%) @1.015 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Grand Canyon Lopes vs Bethune-Cookman Wildcats · MONEYLINE full_game -> HOME · p=96.3% (raw 96.3%) @1.015 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · UC Riverside Highlanders vs Denver Pioneers · TOTAL full_game 156.5 -> UNDER · p=58.0% (raw 58.0%) @1.893 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · UC Riverside Highlanders vs Denver Pioneers · MONEYLINE full_game -> HOME · p=63.7% (raw 63.7%) @1.769 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · UC Riverside Highlanders vs Denver Pioneers · MONEYLINE full_game -> HOME · p=63.7% (raw 63.7%) @1.741 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · UC Riverside Highlanders vs Denver Pioneers · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · UC Riverside Highlanders vs Denver Pioneers · TOTAL full_game 156.5 -> UNDER · p=58.0% (raw 58.0%) @1.893 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Duquesne Dukes vs Central State Marauders · MONEYLINE full_game -> HOME · p=99.9% (raw 99.9%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Duquesne Dukes vs Central State Marauders · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Georgetown Hoyas vs Maryland Terrapins · TOTAL full_game 146.5 -> OVER · p=56.0% (raw 56.0%) @1.909 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Georgetown Hoyas vs Maryland Terrapins · MONEYLINE full_game -> AWAY · p=60.1% (raw 60.1%) @1.645 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Georgetown Hoyas vs Maryland Terrapins · TOTAL full_game 146.5 -> OVER · p=56.0% (raw 56.0%) @1.909 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Georgetown Hoyas vs Maryland Terrapins · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Georgetown Hoyas vs Maryland Terrapins · MONEYLINE full_game -> AWAY · p=60.1% (raw 60.1%) @1.617 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Purdue Fort Wayne Mastodons vs Albion Britons · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Purdue Fort Wayne Mastodons vs Albion Britons · MONEYLINE full_game -> HOME · p=99.8% (raw 99.8%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Davidson Wildcats vs Mercer Bears · TOTAL full_game 148.5 -> OVER · p=55.0% (raw 55.0%) @1.952 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Davidson Wildcats vs Mercer Bears · TOTAL full_game 148.5 -> OVER · p=55.0% (raw 55.0%) @1.952 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Davidson Wildcats vs Mercer Bears · MONEYLINE full_game -> HOME · p=88.1% (raw 88.1%) @1.133 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Davidson Wildcats vs Mercer Bears · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Western Illinois Leathernecks vs Houston Christian Huskies · TOTAL full_game 136.5 -> OVER · p=79.0% (raw 79.0%) @1.909 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Western Illinois Leathernecks vs Houston Christian Huskies · MONEYLINE full_game -> AWAY · p=65.4% (raw 65.4%) @1.213 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Western Illinois Leathernecks vs Houston Christian Huskies · TOTAL full_game 136.5 -> OVER · p=79.0% (raw 79.0%) @1.909 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Western Illinois Leathernecks vs Houston Christian Huskies · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Canisius Golden Griffins vs St. Bonaventure Bonnies · MONEYLINE full_game -> AWAY · p=68.5% (raw 68.5%) @1.235 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · Canisius Golden Griffins vs St. Bonaventure Bonnies · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Canisius Golden Griffins vs St. Bonaventure Bonnies · TOTAL full_game 149.5 -> OVER · p=52.0% (raw 52.0%) @1.952 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Canisius Golden Griffins vs St. Bonaventure Bonnies · TOTAL full_game 149.5 -> OVER · p=52.0% (raw 52.0%) @1.952 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Dayton Flyers vs Northern Illinois Huskies · MONEYLINE full_game -> HOME · p=96.4% (raw 96.4%) @1.020 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Dayton Flyers vs Northern Illinois Huskies · TOTAL full_game 147.5 -> OVER · p=55.0% (raw 55.0%) @1.870 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Dayton Flyers vs Northern Illinois Huskies · TOTAL full_game 147.5 -> OVER · p=55.0% (raw 55.0%) @1.870 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Dayton Flyers vs Northern Illinois Huskies · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Nebraska Cornhuskers vs Providence Friars · TOTAL full_game 158.5 -> UNDER · p=59.0% (raw 59.0%) @1.893 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Nebraska Cornhuskers vs Providence Friars · MONEYLINE full_game -> HOME · p=70.0% (raw 70.0%) @1.645 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Nebraska Cornhuskers vs Providence Friars · TOTAL full_game 158.5 -> UNDER · p=59.0% (raw 59.0%) @1.893 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Nebraska Cornhuskers vs Providence Friars · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Niagara Purple Eagles vs Morgan State Bears · TOTAL full_game 148.5 -> OVER · p=54.0% (raw 54.0%) @1.909 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Niagara Purple Eagles vs Morgan State Bears · MONEYLINE full_game -> HOME · p=63.3% (raw 63.3%) @1.602 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · Niagara Purple Eagles vs Morgan State Bears · TOTAL full_game 148.5 -> OVER · p=54.0% (raw 54.0%) @1.909 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Niagara Purple Eagles vs Morgan State Bears · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · George Washington Revolutionaries vs Hampton Pirates · TOTAL full_game 147.5 -> OVER · p=55.0% (raw 55.0%) @1.926 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · George Washington Revolutionaries vs Hampton Pirates · TOTAL full_game 147.5 -> OVER · p=55.0% (raw 55.0%) @1.952 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · George Washington Revolutionaries vs Hampton Pirates · MONEYLINE full_game -> HOME · p=91.9% (raw 91.9%) @1.036 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · George Washington Revolutionaries vs Hampton Pirates · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · New Mexico Lobos vs Northern Arizona Lumberjacks · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · New Mexico Lobos vs Northern Arizona Lumberjacks · TOTAL full_game 157.5 -> UNDER · p=59.0% (raw 59.0%) @1.952 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · New Mexico Lobos vs Northern Arizona Lumberjacks · MONEYLINE full_game -> HOME · p=96.2% (raw 96.2%) @1.005 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · New Mexico Lobos vs Northern Arizona Lumberjacks · TOTAL full_game 157.5 -> UNDER · p=59.0% (raw 59.0%) @1.952 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · UT Rio Grande Valley Vaqueros vs Prairie View A&M Panthers · MONEYLINE full_game -> HOME · p=84.4% (raw 84.4%) @1.235 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · UT Rio Grande Valley Vaqueros vs Prairie View A&M Panthers · TOTAL full_game 149.5 -> OVER · p=52.0% (raw 52.0%) @1.893 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · UT Rio Grande Valley Vaqueros vs Prairie View A&M Panthers · TOTAL full_game 149.5 -> OVER · p=52.0% (raw 52.0%) @1.893 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · UT Rio Grande Valley Vaqueros vs Prairie View A&M Panthers · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · UNC Asheville Bulldogs vs Western Carolina Catamounts · TOTAL full_game 152.5 -> UNDER · p=51.0% (raw 51.0%) @1.893 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · UNC Asheville Bulldogs vs Western Carolina Catamounts · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · UNC Asheville Bulldogs vs Western Carolina Catamounts · MONEYLINE full_game -> AWAY · p=56.2% (raw 56.2%) @1.602 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · UNC Asheville Bulldogs vs Western Carolina Catamounts · TOTAL full_game 152.5 -> UNDER · p=51.0% (raw 51.0%) @1.893 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Gonzaga Bulldogs vs New Mexico State Aggies · TOTAL full_game 151.5 -> OVER · p=51.0% (raw 51.0%) @1.893 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Gonzaga Bulldogs vs New Mexico State Aggies · TOTAL full_game 151.5 -> OVER · p=51.0% (raw 51.0%) @1.893 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Gonzaga Bulldogs vs New Mexico State Aggies · MONEYLINE full_game -> HOME · p=97.8% (raw 97.8%) @1.005 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Gonzaga Bulldogs vs New Mexico State Aggies · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · UTSA Roadrunners vs VMI Keydets · MONEYLINE full_game -> HOME · p=76.1% (raw 76.1%) @1.459 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · UTSA Roadrunners vs VMI Keydets · TOTAL full_game 163.5 -> UNDER · p=72.0% (raw 72.0%) @1.909 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · UTSA Roadrunners vs VMI Keydets · TOTAL full_game 163.5 -> UNDER · p=72.0% (raw 72.0%) @1.909 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · UTSA Roadrunners vs VMI Keydets · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Furman Paladins vs Northern Iowa Panthers · TOTAL full_game 149.5 -> OVER · p=52.0% (raw 52.0%) @1.893 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Furman Paladins vs Northern Iowa Panthers · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Furman Paladins vs Northern Iowa Panthers · TOTAL full_game 149.5 -> OVER · p=52.0% (raw 52.0%) @1.893 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Furman Paladins vs Northern Iowa Panthers · MONEYLINE full_game -> HOME · p=76.3% (raw 76.3%) @1.521 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Bucknell Bison vs Old Dominion Monarchs · MONEYLINE full_game -> AWAY · p=60.9% (raw 60.9%) @1.408 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · Bucknell Bison vs Old Dominion Monarchs · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Bucknell Bison vs Old Dominion Monarchs · TOTAL full_game 140.5 -> OVER · p=69.0% (raw 69.0%) @1.952 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Bucknell Bison vs Old Dominion Monarchs · TOTAL full_game 140.5 -> OVER · p=69.0% (raw 69.0%) @1.952 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · IU Indianapolis Jaguars vs UT Martin Skyhawks · TOTAL full_game 171.5 -> UNDER · p=83.0% (raw 83.0%) @1.870 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · IU Indianapolis Jaguars vs UT Martin Skyhawks · MONEYLINE full_game -> AWAY · p=58.3% (raw 58.3%) @1.769 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · IU Indianapolis Jaguars vs UT Martin Skyhawks · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · IU Indianapolis Jaguars vs UT Martin Skyhawks · TOTAL full_game 168.5 -> UNDER · p=77.0% (raw 77.0%) @1.909 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Lipscomb Bisons vs SIU Edwardsville Cougars · TOTAL full_game 144.5 -> OVER · p=59.0% (raw 59.0%) @1.909 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Lipscomb Bisons vs SIU Edwardsville Cougars · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Lipscomb Bisons vs SIU Edwardsville Cougars · MONEYLINE full_game -> HOME · p=77.6% (raw 77.6%) @1.294 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Lipscomb Bisons vs SIU Edwardsville Cougars · TOTAL full_game 144.5 -> OVER · p=59.0% (raw 59.0%) @1.909 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · High Point Panthers vs Washington State Cougars · TOTAL full_game 156.5 -> UNDER · p=58.0% (raw 58.0%) @1.952 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · High Point Panthers vs Washington State Cougars · MONEYLINE full_game -> HOME · p=91.7% (raw 91.7%) @1.083 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · High Point Panthers vs Washington State Cougars · TOTAL full_game 156.5 -> UNDER · p=58.0% (raw 58.0%) @1.952 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · High Point Panthers vs Washington State Cougars · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Miami (OH) RedHawks vs Bellarmine Knights · MONEYLINE full_game -> HOME · p=92.2% (raw 92.2%) @1.028 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Miami (OH) RedHawks vs Bellarmine Knights · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Miami (OH) RedHawks vs Bellarmine Knights · TOTAL full_game 159.5 -> UNDER · p=60.0% (raw 60.0%) @1.870 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Miami (OH) RedHawks vs Bellarmine Knights · TOTAL full_game 159.5 -> UNDER · p=60.0% (raw 60.0%) @1.870 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Lindenwood Lions vs East West Phantoms · MONEYLINE full_game -> HOME · p=99.6% (raw 99.6%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Lindenwood Lions vs East West Phantoms · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Maryland Eastern Shore Hawks vs Cheyney (PA) Wolves · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Maryland Eastern Shore Hawks vs Cheyney (PA) Wolves · MONEYLINE full_game -> HOME · p=99.3% (raw 99.3%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Utah State Aggies vs Omaha Mavericks · TOTAL full_game 154.5 -> UNDER · p=54.0% (raw 54.0%) @1.870 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Utah State Aggies vs Omaha Mavericks · MONEYLINE full_game -> HOME · p=96.6% (raw 96.6%) @1.005 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Utah State Aggies vs Omaha Mavericks · MONEYLINE H1 -> HOME · p=84.1% (raw 86.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Utah State Aggies vs Omaha Mavericks · TOTAL full_game 154.5 -> UNDER · p=54.0% (raw 54.0%) @1.870 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · UC Santa Barbara Gauchos vs Oakland Golden Grizzlies · TOTAL full_game 149.5 -> OVER · p=52.0% (raw 52.0%) @1.952 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · UC Santa Barbara Gauchos vs Oakland Golden Grizzlies · TOTAL full_game 149.5 -> OVER · p=52.0% (raw 52.0%) @1.952 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · UC Santa Barbara Gauchos vs Oakland Golden Grizzlies · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · UC Santa Barbara Gauchos vs Oakland Golden Grizzlies · MONEYLINE full_game -> HOME · p=75.3% (raw 75.3%) @1.095 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · UNLV Rebels vs Samford Bulldogs · TOTAL full_game 158.5 -> UNDER · p=59.0% (raw 59.0%) @1.870 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · UNLV Rebels vs Samford Bulldogs · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · UNLV Rebels vs Samford Bulldogs · MONEYLINE full_game -> HOME · p=85.9% (raw 85.9%) @1.125 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · LOSS · UNLV Rebels vs Samford Bulldogs · TOTAL full_game 158.5 -> UNDER · p=59.0% (raw 59.0%) @1.870 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Saint Joseph's Hawks vs Lafayette Leopards · TOTAL full_game 147.5 -> OVER · p=55.0% (raw 55.0%) @1.893 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Saint Joseph's Hawks vs Lafayette Leopards · TOTAL full_game 147.5 -> OVER · p=55.0% (raw 55.0%) @1.893 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Saint Joseph's Hawks vs Lafayette Leopards · MONEYLINE full_game -> HOME · p=91.7% (raw 91.7%) @1.056 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Saint Joseph's Hawks vs Lafayette Leopards · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Rhode Island Rams vs Monmouth Hawks · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Rhode Island Rams vs Monmouth Hawks · TOTAL full_game 144.5 -> OVER · p=59.0% (raw 59.0%) @1.893 Draft Kings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Rhode Island Rams vs Monmouth Hawks · MONEYLINE full_game -> HOME · p=66.8% (raw 66.8%) @1.377 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Rhode Island Rams vs Monmouth Hawks · TOTAL full_game 144.5 -> OVER · p=59.0% (raw 59.0%) @1.893 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Mercyhurst Lakers vs Penn State Shenango Nittany Lions · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Mercyhurst Lakers vs Penn State Shenango Nittany Lions · MONEYLINE full_game -> HOME · p=99.4% (raw 99.4%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=provider:espn/team_history_empirical_v1
+  2026-11-07 · WIN · Sam Houston Bearkats vs Howard Payne Yellow Jackets · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · La Salle Explorers vs Long Island University Sharks · TOTAL full_game 150.5 -> OVER · p=52.0% (raw 52.0%) @1.926 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · La Salle Explorers vs Long Island University Sharks · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · LOSS · Colorado Buffaloes vs San Diego State Aztecs · MONEYLINE H1 -> HOME · p=83.1% (raw 85.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=169 · model=team_history_empirical_v1/team_history_empirical_v1
+  2026-11-07 · WIN · Colorado Buffaloes vs San Diego State Aztecs · TOTAL full_game 152.5 -> UNDER · p=51.0% (raw 51.0%) @1.909 DraftKings · bucket=CAUTION calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
 
 Grades use reconciled official finals only. Pending rows are not losses.
 Flat one-paper-unit ROI is descriptive history, not proof of future performance.
