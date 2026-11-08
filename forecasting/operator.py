@@ -6,7 +6,7 @@ winner, alter a probability, or place a bet. Current forecasts come from
 
 Durable contracts (all beneath one league's localdata directory):
 - ``picks_YYYY-MM-DD.json``: cumulative pick evidence keyed by forecast id.
-- ``picks_YYYY-MM-DD.txt``: every archived pick, categorized and human-readable.
+- ``picks_YYYY-MM-DD.txt``: latest logical picks, with started/settled archive sections.
 - ``picks_today.json``: the current scan, not a replacement for dated history.
 - ``picks_audit_rolling.json`` / ``picks_audit_YYYY-MM-DD.md``: rolling grades.
 - ``auto_tickets_YYYY-MM-DD_decision.json``: immutable paper ticket receipt.
@@ -199,6 +199,68 @@ def _selection_label(row: Dict[str, Any]) -> str:
     return f"{market} {period}{line_text} -> {selection}"
 
 
+def _logical_pick_key(row: Dict[str, Any]) -> tuple:
+    """Identify repeated observations of one displayed pick, not its evidence ID."""
+
+    book = row.get("book") or {}
+    line = row.get("line")
+    return (
+        row.get("game_id"),
+        row.get("market"),
+        row.get("period"),
+        row.get("selection"),
+        float(line) if line is not None else None,
+        row.get("model"),
+        row.get("model_version"),
+        book.get("provider"),
+        book.get("book"),
+    )
+
+
+def _evidence_time(row: Dict[str, Any]) -> datetime:
+    timestamps = [
+        (row.get("book") or {}).get("observed_utc"),
+        (row.get("prediction") or {}).get("observed_utc"),
+    ]
+    observed = [parse_utc(value) for value in timestamps if value]
+    return max(observed, default=parse_utc(row["scheduled_utc"]))
+
+
+def _latest_evidence_utc(row: Dict[str, Any]) -> Optional[str]:
+    timestamps = [
+        value
+        for value in (
+            (row.get("book") or {}).get("observed_utc"),
+            (row.get("prediction") or {}).get("observed_utc"),
+        )
+        if value
+    ]
+    return max(timestamps, key=parse_utc) if timestamps else None
+
+
+def _latest_logical_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Select the latest observation per logical pick without deleting evidence."""
+
+    groups: Dict[tuple, List[Dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        groups[_logical_pick_key(row)].append(row)
+    selected = [
+        max(group, key=lambda row: (_evidence_time(row), str(row["pick_id"])))
+        for group in groups.values()
+    ]
+    return sorted(
+        selected,
+        key=lambda row: (
+            row["scheduled_utc"],
+            row["game_id"],
+            row["market"],
+            row["period"],
+            row["selection"],
+            str(row["pick_id"]),
+        ),
+    )
+
+
 def _render_picks(
     rows: List[Dict[str, Any]],
     *,
@@ -207,23 +269,68 @@ def _render_picks(
     generated_utc: str,
     timezone_name: str,
 ) -> str:
+    logical_rows = _latest_logical_rows(rows)
+    revision_counts = Counter(_logical_pick_key(row) for row in rows)
+    generated = parse_utc(generated_utc)
+    settled = [
+        row for row in logical_rows if row["grade_status"] in {"win", "loss", "push"}
+    ]
+    pending = [row for row in logical_rows if row["grade_status"] == "pending"]
+    upcoming = [row for row in pending if parse_utc(row["scheduled_utc"]) > generated]
+    started = [row for row in pending if parse_utc(row["scheduled_utc"]) <= generated]
+
     lines = [
         f"Ma Golide Picks — {league} {target_date}",
         "=" * 72,
         f"Generated at: {_local_time(generated_utc, timezone_name)}",
         "PAPER ONLY · eligibility labels are evidence states, not profit guarantees.",
+        "Active sections show the latest pending pre-tip observation per logical pick.",
+        "Started and settled games are retained separately as archive status.",
         "",
     ]
     grouped: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
-    for row in rows:
+    for row in upcoming:
         grouped[str(row.get("bucket") or "UNKNOWN")].append(row)
     order = [*BUCKET_ORDER, *sorted(set(grouped) - set(BUCKET_ORDER))]
-    for bucket in order:
-        picks = grouped.get(bucket, [])
-        lines.extend(["", BUCKET_LABELS.get(bucket, bucket), "=" * 72])
-        if not picks:
-            lines.append("  (none)")
-            continue
+
+    def append_pick(row: Dict[str, Any]) -> None:
+        bucket = str(row.get("bucket") or "UNKNOWN")
+        probability = row.get("calibrated_probability")
+        if probability is None:
+            probability = row["raw_probability"]
+        price = (row.get("book") or {}).get("selected_decimal_price")
+        price_text = f"@{float(price):.3f}" if price is not None else "@n/a"
+        book_name = (row.get("book") or {}).get("book") or "no matched book"
+        lines.append(
+            f"  [{row.get('model')}/{row.get('model_version')}] "
+            f"{row['home']} vs {row['away']} · "
+            f"KO {_local_time(row['scheduled_utc'], timezone_name)}"
+        )
+        lines.append(
+            f"      {_selection_label(row)} · p={probability:.1%} "
+            f"(raw {row['raw_probability']:.1%}) {price_text} {book_name}"
+        )
+        eligibility = row.get("eligibility") or {}
+        reasons = ",".join(eligibility.get("reasons") or []) or "none"
+        calibration = row.get("calibration") or {}
+        lines.append(
+            f"      bucket={bucket} · price_evidence={row['price_evidence']} "
+            f"· acca_eligible={bool(eligibility.get('acca_eligible'))} "
+            f"· grade={row['grade_status'].upper()}"
+        )
+        lines.append(
+            f"      calibration={calibration.get('status', 'unknown')} "
+            f"n={calibration.get('n', 0)} · reasons={reasons} "
+            f"· prediction={(row.get('prediction') or {}).get('provider', 'history')}"
+        )
+        revisions = revision_counts[_logical_pick_key(row)]
+        if revisions > 1:
+            latest = _latest_evidence_utc(row) or "unknown"
+            lines.append(
+                f"      archived_revisions={revisions} · latest_evidence_utc={latest}"
+            )
+
+    def sort_picks(picks: List[Dict[str, Any]]) -> None:
         picks.sort(
             key=lambda row: (
                 -(row.get("calibrated_probability") or row["raw_probability"]),
@@ -232,44 +339,46 @@ def _render_picks(
                 row["pick_id"],
             )
         )
+
+    for bucket in order:
+        picks = grouped.get(bucket, [])
+        lines.extend(["", BUCKET_LABELS.get(bucket, bucket), "=" * 72])
+        if not picks:
+            lines.append("  (none)")
+            continue
+        sort_picks(picks)
         for row in picks:
-            probability = row.get("calibrated_probability")
-            if probability is None:
-                probability = row["raw_probability"]
-            price = (row.get("book") or {}).get("selected_decimal_price")
-            price_text = f"@{float(price):.3f}" if price is not None else "@n/a"
-            book_name = (row.get("book") or {}).get("book") or "no matched book"
-            lines.append(
-                f"  [{row.get('model')}/{row.get('model_version')}] "
-                f"{row['home']} vs {row['away']} · "
-                f"KO {_local_time(row['scheduled_utc'], timezone_name)}"
-            )
-            lines.append(
-                f"      {_selection_label(row)} · p={probability:.1%} "
-                f"(raw {row['raw_probability']:.1%}) {price_text} {book_name}"
-            )
-            eligibility = row.get("eligibility") or {}
-            reasons = ",".join(eligibility.get("reasons") or []) or "none"
-            calibration = row.get("calibration") or {}
-            lines.append(
-                f"      bucket={bucket} · price_evidence={row['price_evidence']} "
-                f"· acca_eligible={bool(eligibility.get('acca_eligible'))} "
-                f"· grade={row['grade_status'].upper()}"
-            )
-            lines.append(
-                f"      calibration={calibration.get('status', 'unknown')} "
-                f"n={calibration.get('n', 0)} · reasons={reasons} "
-                f"· prediction={(row.get('prediction') or {}).get('provider', 'history')}"
-            )
-    rendered = sum(len(grouped.get(bucket, [])) for bucket in order)
-    if rendered != len(rows):
-        raise RuntimeError(f"daily report dropped picks: ledger={len(rows)} rendered={rendered}")
-    counts = Counter(row["bucket"] for row in rows)
+            append_pick(row)
+
+    for heading, picks in (
+        ("IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY", started),
+        ("SETTLED PICKS — ARCHIVE ONLY", settled),
+    ):
+        lines.extend(["", heading, "=" * 72])
+        if not picks:
+            lines.append("  (none)")
+            continue
+        sort_picks(picks)
+        for row in picks:
+            append_pick(row)
+
+    rendered = len(upcoming) + len(started) + len(settled)
+    if rendered != len(logical_rows):
+        raise RuntimeError(
+            f"daily report dropped logical picks: ledger={len(logical_rows)} "
+            f"rendered={rendered}"
+        )
+    counts = Counter(row["bucket"] for row in upcoming)
     lines.extend(
         [
             "",
-            "Summary: " + " ".join(f"{bucket}={counts.get(bucket, 0)}" for bucket in order),
-            f"Total archived picks in this report: {len(rows)}",
+            "Active summary: "
+            + " ".join(f"{bucket}={counts.get(bucket, 0)}" for bucket in order),
+            f"Archive status: IN_PROGRESS_OR_AWAITING_RESULT={len(started)} "
+            f"SETTLED={len(settled)}",
+            f"Logical picks shown: {len(logical_rows)} · "
+            f"superseded observations: {len(rows) - len(logical_rows)}",
+            f"Total archived pick evidence rows: {len(rows)}",
             "Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.",
             "Bet only what you can afford to lose.",
             "",
@@ -280,6 +389,36 @@ def _render_picks(
 
 def _dated_pick_files(localdata: Path) -> List[Path]:
     return sorted(localdata.glob("picks_????-??-??.json"))
+
+
+def _refresh_dated_pick_reports(
+    localdata: Path,
+    *,
+    games: Dict[str, Game],
+    league: str,
+    generated_utc: str,
+    timezone_name: str,
+) -> None:
+    """Regrade every retained date before rendering or auditing its picks."""
+
+    for path in _dated_pick_files(localdata):
+        rows = _read_json(path, [])
+        if not isinstance(rows, list):
+            raise ValueError(f"dated pick ledger must be a list: {path}")
+        for row in rows:
+            _set_grade(row, games)
+        _write_json(path, rows)
+        target_date = path.stem.removeprefix("picks_")
+        _write_text(
+            path.with_suffix(".txt"),
+            _render_picks(
+                rows,
+                league=league,
+                target_date=target_date,
+                generated_utc=generated_utc,
+                timezone_name=timezone_name,
+            ),
+        )
 
 
 def _write_pick_audit(
@@ -294,7 +433,8 @@ def _write_pick_audit(
             raise ValueError(f"dated pick ledger must be a list: {path}")
         ledger.extend(payload)
     window = [row for row in ledger if start.isoformat() <= row["date"] <= target_date]
-    eligible = [row for row in window if row["date"] < target_date]
+    logical_window = _latest_logical_rows(window)
+    eligible = [row for row in logical_window if row["date"] < target_date]
     settled = [row for row in eligible if row["grade_status"] in {"win", "loss", "push"}]
     decisions = [row for row in settled if row["grade_status"] != "push"]
     wins = sum(row["grade_status"] == "win" for row in decisions)
@@ -329,8 +469,10 @@ def _write_pick_audit(
         "schema_version": OPERATOR_SCHEMA,
         "generated_utc": generated_utc,
         "window": {"start": start.isoformat(), "end": target_date, "days": 30},
-        "archived_pick_rows": len(window),
-        "same_day_rows_excluded": len(window) - len(eligible),
+        "archived_pick_rows": len(logical_window),
+        "archived_evidence_rows": len(window),
+        "superseded_observations": len(window) - len(logical_window),
+        "same_day_rows_excluded": len(logical_window) - len(eligible),
         "eligible_prior_picks": len(eligible),
         "settled_picks": len(settled),
         "pending_picks": pending,
@@ -343,15 +485,20 @@ def _write_pick_audit(
         "profit_units": profit,
         "stake_policy": "flat_one_paper_unit_per_priced_pick",
         "by_bucket": by_bucket,
-        "grading_basis": "reconciled_official_finals_only; pending_is_not_a_loss",
-        "ledger": window,
+        "grading_basis": (
+            "reconciled_official_finals_only; pending_is_not_a_loss; "
+            "latest_observation_per_logical_pick"
+        ),
+        "ledger": logical_window,
     }
     _write_json(localdata / "picks_audit_rolling.json", report)
     lines = [
         f"Ma Golide recent picks audit — {start.isoformat()} to {target_date}",
         "=" * 72,
-        f"Archived pick rows: {len(window)}",
-        f"Same-day rows excluded: {len(window) - len(eligible)}",
+        f"Archived logical picks: {len(logical_window)}",
+        f"Archived evidence rows: {len(window)} "
+        f"({len(window) - len(logical_window)} superseded observations)",
+        f"Same-day rows excluded: {len(logical_window) - len(eligible)}",
         f"Eligible prior picks: {len(eligible)}",
         f"Settled picks: {len(settled)} (pushes: {pushes})",
         f"Pending/unmatched result picks: {pending}",
@@ -786,14 +933,13 @@ def publish_operator_reports(
             row.update(merged[row["pick_id"]])
     _write_json(localdata / "picks_today.json", current)
     _write_json(dated_path, archived)
-    picks_txt = _render_picks(
-        archived,
+    _refresh_dated_pick_reports(
+        localdata,
+        games=games,
         league=league.value,
-        target_date=target_date,
         generated_utc=generated_utc,
         timezone_name=timezone_name,
     )
-    _write_text(localdata / f"picks_{target_date}.txt", picks_txt)
     audit = _write_pick_audit(
         localdata,
         target_date=target_date,

@@ -247,7 +247,7 @@ def test_all_push_acca_returns_stake_without_a_win_loss_decision(tmp_path):
     assert "no win/loss decisions yet" in Path(result["performance_text"]).read_text()
 
 
-def test_pick_buckets_render_every_row_and_rolling_audit_excludes_same_day(tmp_path):
+def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp_path):
     rows = [
         forecast(1),
         forecast(2, eligible=False, reasons=["insufficient_walk_forward_samples"], calibration_n=4),
@@ -266,7 +266,9 @@ def test_pick_buckets_render_every_row_and_rolling_audit_excludes_same_day(tmp_p
     assert "CAUTION PICKS" in text
     assert "WATCHLIST — NO MATCHED ODDS" in text
     assert "SKIPPED — INELIGIBLE" in text
-    assert "Total archived picks in this report: 4" in text
+    assert "Active summary: ELIGIBLE_CLEAN=1" in text
+    assert "Logical picks shown: 4 · superseded observations: 0" in text
+    assert "Total archived pick evidence rows: 4" in text
     assert result["ticket_receipt"] is None
     assert "NO PAPER BET" in Path(result["ticket_text"]).read_text()
     buckets = {row["bucket"] for row in json.loads(Path(result["dated_picks"]).read_text())}
@@ -275,6 +277,102 @@ def test_pick_buckets_render_every_row_and_rolling_audit_excludes_same_day(tmp_p
     assert audit["archived_pick_rows"] == 4
     assert audit["same_day_rows_excluded"] == 4
     assert audit["settled_picks"] == 0
+
+
+def test_repeated_observations_render_and_grade_as_one_logical_pick(tmp_path):
+    original = forecast(
+        1,
+        market="total",
+        selection="under",
+        price=1.8,
+        eligible=False,
+        reasons=["insufficient_walk_forward_samples"],
+        calibration_n=0,
+    )
+    original["prediction"]["observed_utc"] = "2026-11-07T17:00:00Z"
+    first = publish(tmp_path, Store([game(1)]), report([original]), run_id="first")
+    dated_path = Path(first["dated_picks"])
+
+    later = json.loads(json.dumps(original))
+    later["forecast_id"] = "forecast-1-total-under-later"
+    later["book"]["observed_utc"] = "2026-11-07T17:30:00Z"
+    later["book"]["selected_decimal_price"] = 1.95
+    later["prediction"]["observed_utc"] = "2026-11-07T17:30:00Z"
+    publish(tmp_path, Store([game(1)]), report([later]), run_id="second")
+
+    archived = json.loads(dated_path.read_text())
+    assert len(archived) == 2
+    assert {row["forecast_id"] for row in archived} == {
+        "forecast-1-total-under",
+        "forecast-1-total-under-later",
+    }
+    text = Path(first["picks_text"]).read_text()
+    assert text.count("TOTAL full_game 200 -> UNDER") == 1
+    assert "@1.950 Test Book" in text
+    assert "@1.800 Test Book" not in text
+    assert "archived_revisions=2" in text
+    assert "latest_evidence_utc=2026-11-07T17:30:00Z" in text
+    assert "Logical picks shown: 1 · superseded observations: 1" in text
+
+    # Once settled, repeated scans must not become extra paper wagers in the
+    # rolling audit. The latest pre-tip price is used once; dated JSON keeps both.
+    publish_operator_reports(
+        Store([game(1, total=180)]),
+        League.NBA,
+        report([]),
+        tmp_path,
+        target_date="2026-11-08",
+        generated_utc="2026-11-08T01:00:00Z",
+        run_id="results-next-day",
+    )
+    audit = json.loads(Path(first["rolling_audit"]).read_text())
+    assert audit["archived_pick_rows"] == 1
+    assert audit["archived_evidence_rows"] == 2
+    assert audit["superseded_observations"] == 1
+    assert audit["eligible_prior_picks"] == 1
+    assert audit["settled_picks"] == 1
+    assert audit["wins"] == 1
+    assert audit["priced_sample"] == 1
+    assert audit["profit_units"] == pytest.approx(0.95)
+    assert len(audit["ledger"]) == 1
+    assert audit["ledger"][0]["forecast_id"] == "forecast-1-total-under-later"
+    assert len(json.loads(dated_path.read_text())) == 2
+
+
+def test_started_and_settled_games_leave_the_active_pick_sections(tmp_path):
+    first = publish(tmp_path, Store([game(1)]), report([forecast(1)]))
+    text_path = Path(first["picks_text"])
+
+    publish_operator_reports(
+        Store([game(1)]),
+        League.NBA,
+        report([]),
+        tmp_path,
+        target_date=DATE,
+        generated_utc="2026-11-07T21:00:00Z",
+        run_id="started-no-final",
+    )
+    text = text_path.read_text()
+    started_heading = "IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY"
+    assert "Home 1 vs Away 1" not in text.split(started_heading)[0]
+    assert "Home 1 vs Away 1" in text.split(started_heading)[1]
+    assert "SETTLED=0" in text
+
+    publish_operator_reports(
+        Store([game(1, home_score=105, away_score=100)]),
+        League.NBA,
+        report([]),
+        tmp_path,
+        target_date=DATE,
+        generated_utc="2026-11-07T22:00:00Z",
+        run_id="official-final",
+    )
+    text = text_path.read_text()
+    settled_heading = "SETTLED PICKS — ARCHIVE ONLY"
+    assert "Home 1 vs Away 1" not in text.split(settled_heading)[0]
+    assert "Home 1 vs Away 1" in text.split(settled_heading)[1]
+    assert "grade=WIN" in text.split(settled_heading)[1]
+    assert "IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=1" in text
 
 
 def test_prior_dated_picks_are_graded_without_changing_frozen_evidence(tmp_path):
