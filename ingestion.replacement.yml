@@ -1,0 +1,376 @@
+# Ma Golide automatic multi-league acquisition, with no dispatch selections.
+# - NBA, WNBA, EuroLeague, NCAA_M and NCAA_W use public providers without keys.
+# - CBA runs only when ISPORTS_API_KEY exists; Sportradar remains optional.
+# - Optional book/prediction keys degrade to reported gaps, never fabricated data.
+# - Scheduled runs ALWAYS acquire available evidence. ALLOW_MAGOLIDE_WRITES
+#   controls persistence only; it does not disable keyless public acquisition.
+# Derived picks/tickets/audits are committed to localdata/<league> on main by
+# one serialized publisher, independently of the canonical-write gate.
+# Install as .github/workflows/ingestion.yml (editing that path requires the
+# GitHub `workflows` permission).
+
+name: "Ma Golide"
+
+on:
+  schedule:
+    # Every three hours at minute 11 UTC. GitHub may delay scheduled runs.
+    - cron: "11 */3 * * *"
+  # Deliberately no league/date/mode/write inputs: one click runs everything.
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+concurrency:
+  group: magolide-automatic-available-leagues
+  cancel-in-progress: false
+
+jobs:
+  preflight:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install project and test dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install '.[dev]'
+      - name: Static checks
+        run: ruff check .
+      - name: Hermetic regression tests
+        run: python -m pytest -q
+
+  league:
+    needs: preflight
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      # One unavailable/failed league never cancels the other five.
+      fail-fast: false
+      max-parallel: 6
+      matrix:
+        include:
+          - label: NBA
+            league: NBA
+            state_key: nba
+            required_secret: ""
+          - label: WNBA
+            league: WNBA
+            state_key: wnba
+            required_secret: ""
+          - label: EuroLeague
+            league: EuroLeague
+            state_key: euroleague
+            required_secret: ""
+          - label: Chinese CBA
+            league: CBA
+            state_key: cba
+            required_secret: ISPORTS_API_KEY
+          - label: NCAA men
+            league: NCAA_M
+            state_key: ncaa_m
+            required_secret: ""
+          - label: NCAA women
+            league: NCAA_W
+            state_key: ncaa_w
+            required_secret: ""
+    name: ${{ matrix.label }}
+    env:
+      LOCALDATA: localdata/${{ matrix.state_key }}
+      MAGOLIDE_WAREHOUSE: localdata/${{ matrix.state_key }}/warehouse.duckdb
+      PREDIXSPORT_API_KEY: ${{ secrets.PREDIXSPORT_API_KEY }}
+      THERUNDOWN_API_KEY: ${{ secrets.THERUNDOWN_API_KEY }}
+      SPORTSGAMEODDS_API_KEY: ${{ secrets.SPORTSGAMEODDS_API_KEY }}
+      THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+      ISPORTS_API_KEY: ${{ secrets.ISPORTS_API_KEY }}
+      SPORTRADAR_API_KEY: ${{ secrets.SPORTRADAR_API_KEY }}
+      SPORTRADAR_ACCESS_LEVEL: ${{ vars.SPORTRADAR_ACCESS_LEVEL || 'trial' }}
+      ALLOW_MAGOLIDE_WRITES: ${{ vars.ALLOW_MAGOLIDE_WRITES || 'false' }}
+      WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
+      WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
+      WHATSAPP_RECIPIENT: ${{ secrets.WHATSAPP_RECIPIENT }}
+      ALLOW_NOTIFICATION_WRITES: ${{ vars.ALLOW_NOTIFICATION_WRITES || 'false' }}
+
+    steps:
+      - name: Select providers available without user input
+        id: capability
+        env:
+          LEAGUE: ${{ matrix.league }}
+          REQUIRED_SECRET: ${{ matrix.required_secret }}
+        run: |
+          set -euo pipefail
+          if [ -n "$REQUIRED_SECRET" ] && [ -z "${!REQUIRED_SECRET:-}" ]; then
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            echo "$LEAGUE skipped: required $REQUIRED_SECRET is absent; all other leagues continue."
+            cat > daily-output.json <<EOF
+          {
+            "schema_version": "magolide.daily.v1",
+            "run_id": "${GITHUB_RUN_ID}_${LEAGUE,,}_${GITHUB_RUN_ATTEMPT}",
+            "league": "$LEAGUE",
+            "status": "skipped",
+            "reason": "Required bootstrap credential $REQUIRED_SECRET is not configured; other leagues continue",
+            "mode": "skipped_unavailable",
+            "verification": "UNAUTHORIZED",
+            "system_of_record": "not_acquired",
+            "capabilities": {
+              "fixture_provider_available": false,
+              "missing_required_secret": "$REQUIRED_SECRET"
+            }
+          }
+          EOF
+          else
+            echo "available=true" >> "$GITHUB_OUTPUT"
+            echo "$LEAGUE enabled; optional missing providers will report coverage gaps."
+          fi
+
+      - name: Check out repository
+        if: steps.capability.outputs.available == 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        if: steps.capability.outputs.available == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install project dependencies
+        if: steps.capability.outputs.available == 'true'
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install .
+
+      - name: Restore league-isolated DuckDB/CSV state
+        if: steps.capability.outputs.available == 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.LOCALDATA }}
+          key: magolide-localdata-v3-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            magolide-localdata-v3-${{ matrix.state_key }}-
+
+      - name: Restore Git-durable operator reports after cache recovery
+        if: steps.capability.outputs.available == 'true'
+        run: |
+          set -euo pipefail
+          STATE_DIR="localdata/${{ matrix.state_key }}"
+          # Delete only root-level derived operator files recovered from the
+          # cache. Canonical DuckDB/CSV data, ledgers, nested evidence, and
+          # unapproved files are not touched. Git then restores the current
+          # authoritative operator files; receipts deleted in Git stay deleted.
+          python - "$STATE_DIR" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          state_dir = Path(sys.argv[1])
+          date = r"\d{4}-\d{2}-\d{2}"
+          allowed = tuple(
+              re.compile(pattern)
+              for pattern in (
+                  r"picks_today\.json",
+                  rf"picks_{date}\.json",
+                  rf"picks_{date}\.txt",
+                  r"picks_audit_rolling\.json",
+                  rf"picks_audit_{date}\.md",
+                  r"auto_tickets_state\.json",
+                  r"auto_tickets_performance\.json",
+                  r"auto_tickets_performance\.txt",
+                  rf"auto_tickets_{date}\.txt",
+                  rf"auto_tickets_{date}_decision\.json",
+              )
+          )
+          if state_dir.is_dir():
+              for path in state_dir.iterdir():
+                  if (
+                      path.is_file()
+                      and not path.is_symlink()
+                      and any(pattern.fullmatch(path.name) for pattern in allowed)
+                  ):
+                      path.unlink()
+          PY
+          if git cat-file -e "HEAD:${STATE_DIR}" 2>/dev/null; then
+            git restore --source=HEAD --worktree -- "$STATE_DIR"
+          fi
+
+      - name: Resolve league acquisition date automatically
+        if: steps.capability.outputs.available == 'true'
+        id: target
+        env:
+          LEAGUE: ${{ matrix.league }}
+        run: |
+          set -euo pipefail
+          DATE="$(python - <<'PY'
+          from datetime import datetime
+          import os
+          from zoneinfo import ZoneInfo
+          from ingestion.pipeline import ACQUISITION_TZ
+          league = os.environ["LEAGUE"].upper()
+          print(datetime.now(ZoneInfo(ACQUISITION_TZ[league])).strftime("%Y-%m-%d"))
+          PY
+          )"
+          echo "date=$DATE" >> "$GITHUB_OUTPUT"
+
+      - name: Execute every available stage automatically
+        if: steps.capability.outputs.available == 'true'
+        env:
+          LEAGUE: ${{ matrix.league }}
+          TARGET_DATE: ${{ steps.target.outputs.date }}
+        run: |
+          set -euo pipefail
+          ARGS=(
+            --auto-once
+            --league "$LEAGUE"
+            --date "$TARGET_DATE"
+            --warehouse "$MAGOLIDE_WAREHOUSE"
+            --localdata "$LOCALDATA"
+            --run-id "${GITHUB_RUN_ID}_${LEAGUE,,}_${GITHUB_RUN_ATTEMPT}"
+          )
+
+          # Scheduled canonical persistence is explicit. Without this variable,
+          # the schedule still runs live acquisition as a canonical dry run.
+          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
+            ARGS+=(--write)
+            if [ "$ALLOW_NOTIFICATION_WRITES" = "true" ]; then
+              ARGS+=(--notify --send-notifications)
+            fi
+          else
+            echo "Automatic live dry run for $LEAGUE; canonical writes are disabled."
+          fi
+
+          python scripts/daily.py "${ARGS[@]}" | tee daily-output.json
+
+      - name: Publish redacted operational summary
+        if: always()
+        env:
+          LEAGUE: ${{ matrix.league }}
+        run: |
+          python - <<'PY' >> "$GITHUB_STEP_SUMMARY"
+          import json
+          import os
+          from pathlib import Path
+
+          print(f"## {os.environ['LEAGUE']}")
+          try:
+              data = json.loads(Path("daily-output.json").read_text())
+          except (OSError, ValueError):
+              print("No valid daily report was produced; inspect the job log.")
+          else:
+              markets = data.get("markets") or {}
+              walk_forward = markets.get("walk_forward") or {}
+              accas = markets.get("accas") or {}
+              summary = {
+                  key: data.get(key)
+                  for key in (
+                      "status", "reason", "capabilities", "run_id", "target_date",
+                      "league", "mode", "verification", "system_of_record",
+                      "counts", "ledgers", "notification", "report_path",
+                      "market_report_path", "operator",
+                  )
+                  if key in data
+              }
+              summary["markets"] = {
+                  "forecast_count": markets.get("forecast_count"),
+                  "graded_walk_forward_forecasts": walk_forward.get("graded_forecasts"),
+                  "acca_count": len(accas.get("results") or []),
+              }
+              print("```json")
+              print(json.dumps(summary, indent=2, default=str))
+              print("```")
+          PY
+
+      - name: Persist league-isolated acquisition and canonical state
+        if: >-
+          success() &&
+          steps.capability.outputs.available == 'true' &&
+          github.event_name == 'schedule'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.LOCALDATA }}
+          key: magolide-localdata-v3-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Upload league reports and recovery evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MaGolide-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            daily-output.json
+            ${{ env.LOCALDATA }}/reports/*.json
+            ${{ env.LOCALDATA }}/ledgers/
+            ${{ env.LOCALDATA }}/assay_*.json
+            ${{ env.LOCALDATA }}/picks_*.json
+            ${{ env.LOCALDATA }}/picks_*.txt
+            ${{ env.LOCALDATA }}/picks_audit_*.md
+            ${{ env.LOCALDATA }}/auto_tickets_*.json
+            ${{ env.LOCALDATA }}/auto_tickets_*.txt
+            ${{ env.LOCALDATA }}/csv/*.csv.gz
+          if-no-files-found: ignore
+          retention-days: 14
+
+  publish-localdata:
+    name: Publish localdata to repository
+    needs: league
+    # Publish partial recovery evidence even if one matrix league fails. This is
+    # derived operator state, independent of canonical ALLOW_MAGOLIDE_WRITES.
+    if: >-
+      always() &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - name: Check out latest repository operator state
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download this run's league artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: MaGolide-*-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/magolide-artifacts
+
+      - name: Merge derived league reports without deleting history
+        run: |
+          set -euo pipefail
+          python scripts/publish_localdata.py \
+            --artifacts "${{ runner.temp }}/magolide-artifacts" \
+            --repo .
+
+      - name: Commit and publish durable localdata
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -d localdata ]; then
+            git add -A -- localdata
+          fi
+          if git diff --cached --quiet; then
+            echo "No derived localdata changes to publish."
+            exit 0
+          fi
+          git commit -m "chore: publish localdata run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
+
+          # Never force-push. A concurrent human/bot update is rebased first;
+          # conflicting immutable receipts fail visibly for operator review.
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              echo "Published localdata on attempt ${attempt}."
+              exit 0
+            fi
+            sleep "$((attempt * 5))"
+          done
+          echo "Could not publish localdata after three synchronized attempts." >&2
+          exit 1
