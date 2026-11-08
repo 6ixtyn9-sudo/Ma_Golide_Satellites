@@ -19,13 +19,17 @@ receipts, and audit state; DuckDB remains the canonical sports system of record.
 | EuroLeague | Q1–Q4 | EuroLeague | Predixsport | No supported EuroLeague book adapter |
 | CBA | Q1–Q4 | iSportsAPI | Sportradar Global Basketball | iSportsAPI |
 | NCAA_M | H1/H2 | ESPN men's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI |
-| NCAA_W | H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI |
+| NCAA_W | Q1–Q4; event-declared legacy H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI |
 
-NCAA halves are never relabelled as quarters, and quarter/highest-quarter
-products are not generated for NCAA. Early WNBA two-half games likewise remain
-halves; current event-declared four-quarter games remain quarters. CBA predictions and books deliberately
-come from independent providers; book-implied probabilities are not stored as
-model predictions. CBA and NCAA live provider coverage remains
+NCAA men's halves are never relabelled as quarters. Modern NCAA women's
+results are four quarters, while an explicitly declared older two-half event
+remains halves. Supported NCAAW H1/H2 **book markets** remain half markets:
+grading derives H1/H2 from Q1+Q2/Q3+Q4, and does not reuse a full-game line.
+Quarter/highest-quarter products remain disabled for both NCAA leagues. Early
+WNBA two-half games likewise remain halves; current event-declared four-quarter
+games remain quarters. CBA predictions and books deliberately come from
+independent providers; book-implied probabilities are not stored as model
+predictions. CBA and NCAA live provider coverage remains
 `DOCUMENTATION_ONLY` until authenticated smoke tests verify it. Offline tests
 prove parsing, reconciliation, routing, and forecast behavior only.
 
@@ -36,10 +40,10 @@ prove parsing, reconciliation, routing, and forecast behavior only.
 | Moneyline | Full game: home or away | Valid provider probabilities; an exact priced bookmaker snapshot is required before acca eligibility |
 | Favorite / underdog role | Full-game moneyline | A role on the same moneyline forecast, derived from real home/away prices—not a separate wager model |
 | Total | Full game: over or under | The posted bookmaker line is mandatory; a provider expected total is only a model baseline |
-| Totals | Q1–Q4 for quarter leagues; H1/H2 for NCAA | Exact native period, exact posted line, and over/under prices |
-| Spreads | Q1–Q4 for quarter leagues; H1/H2 for NCAA | Exact native period and home-oriented posted line with both side prices |
+| Totals | Exact offered Q1–Q4 or H1/H2 periods | Exact native book period, exact posted line, and over/under prices |
+| Spreads | Exact offered Q1–Q4 or H1/H2 periods | Exact native book period and home-oriented posted line with both side prices |
 | 1X2 | First half: home, draw, or away | Exact first-half book, including a draw price when the draw is selected |
-| Highest quarter | Q1, Q2, Q3, or Q4 for quarter leagues only | History-only research forecast; an exact priced highest-quarter book and dead-heat rules are required for acca use |
+| Highest quarter | Q1, Q2, Q3, or Q4 for non-NCAA quarter leagues only | History-only research forecast; an exact priced highest-quarter book and dead-heat rules are required for acca use |
 
 The forecasting model covers every market family in the former betting
 contract without restoring its worksheet-era names or wrappers. Current book
@@ -87,8 +91,10 @@ python scripts/daily.py --auto-once --date 2026-11-07 --league NCAA_W
 Write-enabled runs also ingest a bounded deep-history batch from ESPN's
 season/event indexes. Durable per-league cursors currently begin at verified
 nonempty index years (NBA 1947, WNBA 1997, NCAA 2001), while preserving old
-final-only scores and native WNBA halves without claiming exhaustive coverage.
-See [ESPN acquisition and history](docs/ESPN-ACQUISITION.md).
+final-only scores and event-declared halves without claiming exhaustive
+coverage. A versioned one-time NCAAW reparse repairs rows previously stored as
+two halves plus fake overtime. See
+[ESPN acquisition and history](docs/ESPN-ACQUISITION.md).
 
 Live CBA acquisition requires `ISPORTS_API_KEY` for fixtures/results/books and
 `SPORTRADAR_API_KEY` for independent probabilities. Set

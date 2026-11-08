@@ -11,16 +11,18 @@ No live-provider claim should be inferred from a passing offline suite.
 | --- | --- | --- | --- | --- |
 | ESPN | NBA | Scoreboard discovery/books, BPI predictions, summaries, recent and indexed deep history | Public endpoints | Live read-only probes plus committed fixtures and offline regressions |
 | ESPN | WNBA | Scoreboard discovery/books, BPI predictions, summaries, event-native halves/quarters, indexed deep history | Public endpoints | Live read-only probes plus hermetic end-to-end league regressions |
-| ESPN | NCAA_M / NCAA_W | Separate Division-I men's/women's scoreboards/books, BPI predictions, summaries, recent and indexed deep history | Public endpoints | Historical probes and hermetic endpoint/two-half/OT regressions; scheduled smoke still required |
+| ESPN | NCAA_M | Division-I men's scoreboard/books, BPI predictions, summaries, two-half/OT results, recent and indexed deep history | Public endpoints | Historical probes and hermetic endpoint/two-half/OT regressions; scheduled smoke still required |
+| ESPN | NCAA_W | Division-I women's scoreboard/books, BPI predictions, summaries, modern quarters and declared legacy halves, recent and indexed deep history | Public endpoints | Live four-quarter final probe plus hermetic quarter/legacy-half and one-time reparse regressions |
 | EuroLeague | EuroLeague | Schedule discovery, game results, quarter/OT reconciliation, standings | Public endpoints | Fixture-based parser regressions; live availability must be checked at run time |
 | iSportsAPI | CBA | Exact Chinese league discovery, UTC schedule/results, four-quarter/OT reconciliation | `ISPORTS_API_KEY` | `DOCUMENTATION_ONLY`; fixture-tested adapter, paid access and live league ID not verified |
 
 Only final, reconciled results enter grading. In-progress scores, inconsistent
 native-period sums, invalid overtime totals, and irreconcilable team identities
-are quarantined. Missing periods remain missing. NBA, EuroLeague, and CBA use
-Q1–Q4; NCAA men and women retain native H1/H2 and are never relabelled as
-quarters. Early WNBA events declaring two halves retain H1/H2; later declared
-four-quarter events retain Q1–Q4. Historical finals without usable linescores
+are quarantined. Missing periods remain missing. NBA, EuroLeague, CBA, and
+modern NCAA women use Q1–Q4; NCAA men retain H1/H2. NCAAW and WNBA events that
+explicitly declare two regulation periods retain H1/H2. NCAAW half **markets**
+are graded from Q1+Q2/Q3+Q4 without relabelling the official quarters.
+Historical finals without usable linescores
 are stored as final-score-only evidence, not period-reconciled results. See
 [ESPN acquisition and history](ESPN-ACQUISITION.md) for the bounded cursor and
 verified index floors. CBA schedule acquisition uses the provider's documented
@@ -80,8 +82,10 @@ Important restrictions:
 - SportsGameOdds does not infer quarter coverage from an oddID pattern alone;
   only literal documented total IDs in a response are parsed.
 - TheOddsAPI quarter/half markets come from the per-event endpoint. H1 is not
-  Q1+Q2 inference and Q1 is never relabelled as H1. NCAA requests use the
-  native half markets and do not request quarter markets.
+  a Q1 book and Q1 is never relabelled as H1. NCAA requests use the configured
+  H1/H2 book markets and do not request quarter markets. For NCAAW, official
+  quarter results derive the corresponding H1/H2 scores for settlement; a
+  full-game line is never substituted for either half.
 - iSportsAPI prices are Hong Kong odds and are converted to decimal by adding
   one. Spread, total, and European-moneyline bookmaker IDs remain in their
   separate documented namespaces. In-play fields never become pre-match facts.

@@ -5,7 +5,14 @@ from __future__ import annotations
 import json
 
 from ingestion.duckdb_store import DuckDBStore
-from ingestion.models import FinalStatus, GameStatus, League, PeriodKind
+from ingestion.models import (
+    ActualResult,
+    FinalStatus,
+    Game,
+    GameStatus,
+    League,
+    PeriodKind,
+)
 from ingestion.pipeline import Pipeline, PipelineConfig
 from ingestion.providers.espn import fetch_historical_event
 from ingestion.store import InMemoryStore
@@ -60,6 +67,7 @@ def test_deep_backfill_persists_1947_final_only_and_advances_cursor(tmp_path):
     assert game.final_status() is None
     assert game.evidence["espn"]["history"] == {
         "schema_version": "magolide.espn.history-event.v1",
+        "result_period_parser_version": 2,
         "index_year": 1947,
         "coverage": "final_score_only",
         "period_note": "final score present without native linescores",
@@ -102,6 +110,89 @@ def test_early_wnba_uses_event_native_halves_not_modern_quarters():
     assert game.evidence["espn"]["history"]["coverage"] == "reconciled_periods"
     assert game.evidence["espn"]["history"]["regulation_periods"] == 2
     assert game.evidence["espn"]["summary"]["format"]["regulation"]["periods"] == 2
+
+
+def test_deep_backfill_reparses_legacy_ncaaw_period_rows_once(tmp_path):
+    summary_calls = []
+
+    def fetch(url):
+        if "events?dates=2026" in url:
+            return {
+                "count": 1,
+                "pageCount": 1,
+                "items": [
+                    {
+                        "$ref": "https://sports.core.api.espn.com/v2/sports/basketball/"
+                        "leagues/womens-college-basketball/events/401918841"
+                    }
+                ],
+            }
+        if "summary?event=401918841" in url:
+            summary_calls.append(url)
+            with open(
+                "tests/fixtures/espn/summary_ncaaw_401918841_quarters.json"
+            ) as handle:
+                return json.load(handle)
+        raise AssertionError(url)  # pragma: no cover - defensive route assertion
+
+    store = DuckDBStore(str(tmp_path / "ncaa_w" / "warehouse.duckdb"), persist=True)
+    store.upsert_game(
+        Game(
+            game_id="401918841",
+            league=League.NCAA_W,
+            season="2027",
+            home_team_id="251",
+            away_team_id="2458",
+            home_name="Texas Longhorns",
+            away_name="Northern Colorado Bears",
+            scheduled_utc="2026-11-07T01:00:00Z",
+            status=GameStatus.FINAL,
+            actual=ActualResult(
+                period_kind=PeriodKind.HALVES,
+                home_quarters=[23.0, 26.0],
+                away_quarters=[6.0, 3.0],
+                home_overtime=42.0,
+                away_overtime=20.0,
+                home_final=91.0,
+                away_final=29.0,
+                overtime_periods=2,
+                source="espn",
+            ),
+            evidence={
+                "espn": {
+                    "summary": {"schema_version": "legacy"},
+                    "history": {"coverage": "reconciled_periods"},
+                }
+            },
+        )
+    )
+    config = PipelineConfig(
+        league="NCAA_W",
+        date_yyyymmdd="20261107",
+        history_days=0,
+        deep_history_event_budget=1,
+        deep_history_start_season=2026,
+        fixture_now_utc="2026-11-08T03:00:00Z",
+    )
+    try:
+        first = Pipeline(config, store, fetch=fetch, allow_writes=True).backfill()
+        assert first["backfill"]["deep_history"]["events_acquired"] == 1, first[
+            "backfill"
+        ]["deep_history"]
+        repaired = store.get_game("401918841")
+        assert repaired.actual.period_kind is PeriodKind.QUARTERS
+        assert repaired.actual.home_quarters == [23.0, 26.0, 23.0, 19.0]
+        assert repaired.actual.overtime_periods == 0
+        assert repaired.evidence["espn"]["history"][
+            "result_period_parser_version"
+        ] == 2
+
+        second = Pipeline(config, store, fetch=fetch, allow_writes=True).backfill()
+        assert second["backfill"]["deep_history"]["events_acquired"] == 0
+        assert second["backfill"]["deep_history"]["already_persisted"] == 1
+        assert len(summary_calls) == 1
+    finally:
+        store.close()
 
 
 def test_deep_cursor_cannot_advance_in_a_dry_run():

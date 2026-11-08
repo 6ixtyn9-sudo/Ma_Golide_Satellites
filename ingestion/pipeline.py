@@ -962,7 +962,18 @@ class Pipeline:
             event_id = event_ids[event_index]
             existing = self.store.get_game(event_id)
             existing_espn = (existing.evidence.get("espn") or {}) if existing else {}
-            if existing and existing_espn.get("history") and existing_espn.get("summary"):
+            existing_history = existing_espn.get("history") or {}
+            period_parser_current = (
+                self.config.league_enum is not League.NCAA_W
+                or existing_history.get("result_period_parser_version")
+                == espn.RESULT_PERIOD_PARSER_VERSION
+            )
+            if (
+                existing
+                and existing_history
+                and existing_espn.get("summary")
+                and period_parser_current
+            ):
                 already += 1
                 event_index += 1
                 processed += 1

@@ -94,8 +94,9 @@ class CoverageState(str, Enum):
 class PeriodKind(str, Enum):
     """What a provider's period data actually represents.
 
-    Guards the "never relabel" rules: NCAA halves are HALVES, EuroLeague
-    cumulative EndOfQuarter rows are CUMULATIVE.
+    Guards the "never relabel" rules: NCAA men and explicitly declared legacy
+    two-period events are HALVES, modern NCAA women are QUARTERS, and
+    EuroLeague cumulative EndOfQuarter rows are CUMULATIVE.
     """
 
     QUARTERS = "quarters"

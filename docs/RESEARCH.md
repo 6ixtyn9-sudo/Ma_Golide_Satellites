@@ -55,6 +55,23 @@ not. One-sided Wilson lower bounds describe uncertainty but are not edge
 certificates. Pushes are reported separately and excluded from win/loss
 calibration.
 
+## Rich ESPN context and leakage boundary
+
+Summary acquisition can retain team/player boxscores, leaders, injuries,
+recent form, predictor context, and coverage counts for play-by-play,
+win-probability, shot-chart, and standings resources. These are evidence
+coverage, not automatically model inputs. A post-game summary can contain the
+game's own player statistics and in-play win probability; using either as a
+pre-tip feature would leak the result.
+
+A future context feature therefore needs an identity-checked observation that
+was available before the simulated tip, an immutable/frozen acquisition time,
+and a walk-forward comparison against the existing baseline. Current rich
+context does not relax the exact-book/period rules, the 30-sample calibration
+floor, same-game ACCA exclusion, or paper-only operation. Untimestamped core
+odds open/close objects and post-game predictor updates do not create pre-tip
+history.
+
 ## Probability adjustment
 
 Each segment compares observed win frequency with its mean raw forecast

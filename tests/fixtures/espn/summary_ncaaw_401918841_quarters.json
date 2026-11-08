@@ -1,0 +1,93 @@
+{
+  "header": {
+    "id": "401918841",
+    "season": {
+      "year": 2027,
+      "type": 2
+    },
+    "competitions": [
+      {
+        "id": "401918841",
+        "date": "2026-11-07T01:00Z",
+        "status": {
+          "type": {
+            "id": "3",
+            "name": "STATUS_FINAL",
+            "state": "post",
+            "completed": true,
+            "description": "Final",
+            "detail": "Final"
+          }
+        },
+        "competitors": [
+          {
+            "id": "251",
+            "homeAway": "home",
+            "winner": true,
+            "team": {
+              "id": "251",
+              "displayName": "Texas Longhorns",
+              "abbreviation": "TEX"
+            },
+            "score": "91",
+            "linescores": [
+              {
+                "value": 23.0,
+                "displayValue": "23",
+                "period": 1
+              },
+              {
+                "value": 26.0,
+                "displayValue": "26",
+                "period": 2
+              },
+              {
+                "value": 23.0,
+                "displayValue": "23",
+                "period": 3
+              },
+              {
+                "value": 19.0,
+                "displayValue": "19",
+                "period": 4
+              }
+            ]
+          },
+          {
+            "id": "2458",
+            "homeAway": "away",
+            "winner": false,
+            "team": {
+              "id": "2458",
+              "displayName": "Northern Colorado Bears",
+              "abbreviation": "UNCO"
+            },
+            "score": "29",
+            "linescores": [
+              {
+                "value": 6.0,
+                "displayValue": "6",
+                "period": 1
+              },
+              {
+                "value": 3.0,
+                "displayValue": "3",
+                "period": 2
+              },
+              {
+                "value": 9.0,
+                "displayValue": "9",
+                "period": 3
+              },
+              {
+                "value": 11.0,
+                "displayValue": "11",
+                "period": 4
+              }
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}
