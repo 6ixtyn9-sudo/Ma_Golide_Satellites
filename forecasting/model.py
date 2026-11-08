@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import timedelta
-from typing import Dict, Iterable, List, Optional, Sequence, Tuple
+from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from ingestion.identity import canonical_team_key, parse_utc
 from ingestion.models import BookSnapshot, Game, Market, Period, Prediction
@@ -47,6 +47,8 @@ class Baseline:
     home: float
     away: float
     games: int
+    home_team_effective_games: float = 0.0
+    away_team_effective_games: float = 0.0
 
     @property
     def margin(self) -> float:
@@ -175,7 +177,34 @@ class HistoryModel:
             shrunk(away_rates, "points_for")
             + shrunk(home_rates, "points_against")
         ) / 2 - home_advantage / 2
-        return Baseline(expected_home, expected_away, len(history))
+        return Baseline(
+            expected_home,
+            expected_away,
+            len(history),
+            home_team_effective_games=(
+                home_rates.effective_games if home_rates is not None else 0.0
+            ),
+            away_team_effective_games=(
+                away_rates.effective_games if away_rates is not None else 0.0
+            ),
+        )
+
+    def _team_history(self, baselines: Sequence[Baseline]) -> Dict[str, Any]:
+        """Describe whether team evidence outweighs the league-only fallback.
+
+        The prior already represents eight effective games by default. Requiring
+        at least that much evidence for each team prevents a mostly league-wide
+        early-season average from becoming an ACCA-quality team prediction.
+        """
+        required = self.config.team_prior_games
+        home = min(row.home_team_effective_games for row in baselines)
+        away = min(row.away_team_effective_games for row in baselines)
+        return {
+            "home_effective_games": round(home, 6),
+            "away_effective_games": round(away, 6),
+            "required_effective_games_per_team": required,
+            "sufficient_for_accas": home >= required and away >= required,
+        }
 
     def _residuals(
         self, history: Sequence[Game], period: Period
@@ -233,7 +262,13 @@ class HistoryModel:
                     else baseline.total
                 )
                 home, away = (total + margin) / 2, (total - margin) / 2
-            baseline = Baseline(home, away, baseline.games)
+            baseline = Baseline(
+                home,
+                away,
+                baseline.games,
+                home_team_effective_games=baseline.home_team_effective_games,
+                away_team_effective_games=baseline.away_team_effective_games,
+            )
         margin_residuals, total_residuals = self._residuals(history, period)
         if len(margin_residuals) < self.config.min_residual_games:
             return None
@@ -364,6 +399,7 @@ class HistoryModel:
                 expected_total=distribution.baseline.total,
                 training_games=distribution.baseline.games,
                 residual_games=distribution.residuals,
+                team_history=self._team_history([distribution.baseline]),
                 book=(
                     BookEvidence.from_snapshot(
                         snapshot, frozen=frozen_books.get(_book_key(snapshot), False)
@@ -453,6 +489,7 @@ class HistoryModel:
                     expected_total=distribution.baseline.total,
                     training_games=distribution.baseline.games,
                     residual_games=distribution.residuals,
+                    team_history=self._team_history([distribution.baseline]),
                     source=source,
                     book=BookEvidence.from_snapshot(
                         snapshot, frozen=frozen_books.get(_book_key(snapshot), False)
@@ -531,6 +568,9 @@ class HistoryModel:
                 source=MODEL_VERSION,
                 training_games=len(history),
                 residual_games=len(vectors),
+                team_history=self._team_history(
+                    [baseline for baseline in baselines.values() if baseline is not None]
+                ),
                 expected_total=sum(
                     baselines[period].total for period in QUARTERS
                 ),

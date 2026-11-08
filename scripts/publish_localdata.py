@@ -8,7 +8,8 @@ DuckDB/CSV state, acquisition ledgers, caches, and credentials are never copied.
 
 Existing repository files not present in the latest artifact are retained. A
 conflicting immutable decision receipt aborts publication instead of rotating
-or rewriting a previously frozen ticket.
+or rewriting a previously frozen ticket. Git-state withdrawal IDs are rejected
+when stale caches attempt to return a deliberately withdrawn receipt.
 """
 
 from __future__ import annotations
@@ -54,6 +55,27 @@ def _atomic_write(path: Path, raw: bytes) -> None:
     os.replace(temporary, path)
 
 
+def _withdrawn_decision_ids(localdata: Path) -> frozenset[str]:
+    """Load Git-authoritative withdrawals before accepting cached receipts."""
+    path = localdata / "auto_tickets_state.json"
+    if not path.is_file():
+        return frozenset()
+    try:
+        state = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"invalid paper-ticket state: {path}") from exc
+    locks = state.get("frozen_by_date", {})
+    if not isinstance(locks, dict):
+        raise ValueError(f"invalid paper-ticket locks: {path}")
+    return frozenset(
+        str(lock["decision_id"])
+        for lock in locks.values()
+        if isinstance(lock, dict)
+        and lock.get("withdrawn") is True
+        and lock.get("decision_id")
+    )
+
+
 def _artifact_league_dirs(artifacts: Path) -> Iterable[tuple[str, Path]]:
     """Yield each recovered ``artifact/localdata/<state>`` directory once."""
     if not artifacts.exists():
@@ -76,9 +98,11 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
     copied = []
     unchanged = []
     immutable_verified = []
+    withdrawn_skipped = []
     total_bytes = 0
     seen_destinations = set()
     for state, source_dir in _artifact_league_dirs(artifacts):
+        withdrawn_decision_ids = _withdrawn_decision_ids(repo / "localdata" / state)
         for source in sorted(source_dir.iterdir()):
             if not allowed_operator_file(source.name):
                 continue
@@ -96,6 +120,17 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                 raise ValueError(f"duplicate recovered operator destination: {relative}")
             seen_destinations.add(relative)
             raw = source.read_bytes()
+            if (
+                IMMUTABLE_NAMES.fullmatch(source.name)
+                and withdrawn_decision_ids
+            ):
+                try:
+                    candidate = json.loads(raw)
+                except json.JSONDecodeError as exc:
+                    raise ValueError(f"invalid ticket receipt JSON: {source}") from exc
+                if str(candidate.get("decision_id")) in withdrawn_decision_ids:
+                    withdrawn_skipped.append(relative)
+                    continue
             if destination.exists():
                 previous = destination.read_bytes()
                 if IMMUTABLE_NAMES.fullmatch(source.name) and previous != raw:
@@ -114,6 +149,7 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
         "copied": copied,
         "unchanged": unchanged,
         "immutable_receipts_verified": immutable_verified,
+        "withdrawn_receipts_skipped": withdrawn_skipped,
         "copied_count": len(copied),
         "unchanged_count": len(unchanged),
         "source_bytes_checked": total_bytes,

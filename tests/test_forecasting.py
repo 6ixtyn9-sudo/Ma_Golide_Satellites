@@ -171,6 +171,7 @@ def service(store: InMemoryStore) -> MarketForecastService:
         forecast_config=ForecastConfig(
             min_history_games=3,
             min_residual_games=3,
+            team_prior_games=1.0,
             training_window=50,
             residual_window=30,
         ),
@@ -255,6 +256,7 @@ def test_full_game_history_moneyline_earns_calibration_without_provider_history(
         assert row["prediction"] is None
         assert row["training_games"] >= 3
         assert row["residual_games"] >= 3
+        assert row["team_history"]["sufficient_for_accas"] is True
         assert row["calibration"]["n"] >= 3
         assert row["calibration"]["sufficient_for_accas"] is True
         assert row["book"]["selected_decimal_price"] == 1.7
@@ -277,6 +279,55 @@ def test_full_game_history_moneyline_earns_calibration_without_provider_history(
             assert leg["market"] == "moneyline"
             assert leg["period"] == "full_game"
             assert leg["model"] == "team_history_empirical_v1"
+
+
+def test_league_prior_dominated_history_moneyline_cannot_supply_accas():
+    store = populated_store(finals=12, upcoming=3)
+    store.predictions = {}
+    store.frozen_predictions = {}
+    for game_id, snapshots in list(store.books.items()):
+        kept = {
+            key: snapshot
+            for key, snapshot in snapshots.items()
+            if snapshot.market is Market.MONEYLINE
+            and snapshot.period is Period.FULL_GAME
+        }
+        store.books[game_id] = kept
+        store.frozen_books[game_id] = {
+            key: value
+            for key, value in store.frozen_books.get(game_id, {}).items()
+            if key in kept
+        }
+
+    report = MarketForecastService(
+        store,
+        League.NBA,
+        forecast_config=ForecastConfig(
+            min_history_games=3,
+            min_residual_games=3,
+            training_window=50,
+            residual_window=30,
+        ),
+        calibration_config=CalibrationConfig(min_samples=3, prior_strength=2),
+    ).build_report(as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4)
+    rows = [
+        row
+        for row in report["forecasts"]
+        if row["market"] == "moneyline"
+        and row["period"] == "full_game"
+        and row["model"] == "team_history_empirical_v1"
+    ]
+    assert len(rows) == 3
+    for row in rows:
+        evidence = row["team_history"]
+        assert evidence["required_effective_games_per_team"] == 8.0
+        assert evidence["sufficient_for_accas"] is False
+        assert row["eligibility"]["acca_eligible"] is False
+        assert "insufficient_team_specific_history" in row["eligibility"]["reasons"]
+    assert report["accas"]["results"] == []
+    assert report["accas"]["eligible_games"] == 0
+    # Fallback rows cannot manufacture the 30-sample calibration history either.
+    assert report["walk_forward"]["segments"] == []
 
 
 def test_expected_total_never_becomes_a_book_line():
@@ -394,6 +445,22 @@ def test_acca_search_matches_brute_force_optimum():
         assert result["estimated_joint_win_probability"] == pytest.approx(
             probability, abs=1e-7
         )
+
+
+def test_bookmaker_price_never_breaks_acca_probability_ties():
+    forecasts = []
+    for game_id, price in (("g0", 2.0), ("g1", 3.0), ("g2", 15.0)):
+        row = _forecast(game_id, 0.78)
+        row.calibrated_probability = 0.78
+        row.eligibility = {"acca_eligible": True}
+        assert row.book is not None
+        row.book.prices["home"] = price
+        forecasts.append(row)
+
+    result = build_accas(forecasts, legs=2, limit=1)
+    assert len(result) == 1
+    assert [leg["game_id"] for leg in result[0]["legs"]] == ["g0", "g1"]
+    assert result[0]["combined_decimal_odds"] == 6.0
 
 
 def test_invalid_calibrated_probabilities_never_reach_acca_logarithms():

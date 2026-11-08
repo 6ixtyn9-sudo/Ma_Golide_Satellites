@@ -72,6 +72,7 @@ class Forecast:
     expected_total: Optional[float] = None
     training_games: int = 0
     residual_games: int = 0
+    team_history: Optional[Dict[str, Any]] = None
     book: Optional[BookEvidence] = None
     prediction_provider: Optional[str] = None
     prediction_observed_utc: Optional[str] = None
@@ -164,6 +165,9 @@ class Forecast:
             "model_version": MODEL_VERSION,
             "training_games": self.training_games,
             "residual_games": self.residual_games,
+            "team_history": (
+                dict(self.team_history) if self.team_history is not None else None
+            ),
             "prediction": (
                 {
                     "provider": self.prediction_provider,

@@ -165,6 +165,9 @@ def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
         expected_total=row.get("expected_total"),
         training_games=int(row.get("training_games") or 0),
         residual_games=int(row.get("residual_games") or 0),
+        team_history=(
+            dict(row["team_history"]) if row.get("team_history") is not None else None
+        ),
         book=book,
         prediction_provider=prediction.get("provider"),
         prediction_observed_utc=prediction.get("observed_utc"),
@@ -850,6 +853,13 @@ def _ticket_receipt(
 ) -> Optional[Dict[str, Any]]:
     path = localdata / f"auto_tickets_{target_date}_decision.json"
     lock = state["frozen_by_date"].get(target_date)
+    if isinstance(lock, dict) and lock.get("withdrawn") is True:
+        # Keep immutable receipt bytes for evidence, but never adopt, rotate,
+        # settle, or replace a withdrawn publication. This also makes the
+        # withdrawal survive restoration of an older Actions cache.
+        if not lock.get("decision_id"):
+            raise ValueError(f"withdrawn ticket lock lacks decision_id: {target_date}")
+        return None
     if lock is not None:
         locked_path = localdata / str(lock.get("receipt_path") or path.name)
         if not locked_path.exists():
@@ -1036,7 +1046,7 @@ def _render_ticket_card(
             lines.extend(
                 [
                     f"   {leg['home']} vs {leg['away']} · "
-                    f"KICKOFF {_local_time(leg['scheduled_utc'], timezone_name)}",
+                    f"TIP-OFF {_local_time(leg['scheduled_utc'], timezone_name)}",
                     f"      {_selection_label(leg)} @{float(price):.3f} "
                     f"· ML {probability:.1%} · {leg['bucket']} · {leg['grade_status'].upper()}",
                 ]
@@ -1110,6 +1120,7 @@ def _render_empty_ticket_scan(
     performance: Dict[str, Any],
     timezone_name: str,
     candidate_funnel: Dict[str, Any],
+    withdrawal: Optional[Dict[str, Any]] = None,
 ) -> str:
     """A mutable latest-scan view, never a frozen no-bet receipt."""
     lines = [
@@ -1119,7 +1130,11 @@ def _render_empty_ticket_scan(
         f"· free {performance['paper_free_units']:.3f} / reserved {performance['paper_committed_units']:.3f}",
         f"Latest scan: {_local_time(generated_utc, timezone_name)}",
         "",
-        "NO PAPER BET — no qualifying eligible acca in this scan.",
+        (
+            "NO PAPER BET — the earlier ticket publication was withdrawn for model-integrity failure."
+            if withdrawal
+            else "NO PAPER BET — no qualifying eligible acca in this scan."
+        ),
         "",
         "CANDIDATE FUNNEL",
         f"  {candidate_funnel['scan_rows']} scan rows · "
@@ -1143,8 +1158,16 @@ def _render_empty_ticket_scan(
     lines.extend(
         [
             "",
-            "This scan card is not a frozen receipt; a later qualifying scan may publish tickets.",
-            "Empty scans never cancel or resize earlier frozen positions.",
+            (
+                "This date is closed to replacement ticket publication after the withdrawal."
+                if withdrawal
+                else "This scan card is not a frozen receipt; a later qualifying scan may publish tickets."
+            ),
+            (
+                "The withdrawn receipt is excluded from performance and retained unchanged as evidence."
+                if withdrawal
+                else "Empty scans never cancel or resize earlier frozen positions."
+            ),
             "Paper only. No real-money stakes or automatic promotion.",
             "",
         ]
@@ -1300,11 +1323,23 @@ def publish_operator_reports(
         }
     )
     state["scans"] = state["scans"][-100:]
+    withdrawal = state["frozen_by_date"].get(target_date)
+    if not (isinstance(withdrawal, dict) and withdrawal.get("withdrawn") is True):
+        withdrawal = None
+    withdrawn_decision_ids = {
+        str(lock.get("decision_id"))
+        for lock in state["frozen_by_date"].values()
+        if isinstance(lock, dict)
+        and lock.get("withdrawn") is True
+        and lock.get("decision_id")
+    }
     receipts = []
     for path in sorted(localdata.glob("auto_tickets_????-??-??_decision.json")):
         candidate = _read_json(path, {})
         if candidate.get("schema_version") != TICKET_SCHEMA:
             raise ValueError(f"invalid paper ticket receipt: {path}")
+        if str(candidate.get("decision_id")) in withdrawn_decision_ids:
+            continue
         receipts.append(candidate)
     performance = _performance(receipts, games)
     performance["generated_utc"] = generated_utc
@@ -1335,6 +1370,7 @@ def publish_operator_reports(
                 performance=performance,
                 timezone_name=timezone_name,
                 candidate_funnel=candidate_funnel,
+                withdrawal=withdrawal,
             ),
         )
     state["last_generated_utc"] = generated_utc

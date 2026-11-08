@@ -85,6 +85,37 @@ def test_identical_receipt_is_verified_and_not_rewritten(tmp_path):
     ]
 
 
+def test_withdrawn_cached_receipt_is_not_republished(tmp_path):
+    artifact_file(
+        tmp_path,
+        "ncaa-m-artifact",
+        "ncaa_m",
+        "auto_tickets_2026-11-08_decision.json",
+        json.dumps({"decision_id": "defective-run"}).encode(),
+    )
+    localdata = tmp_path / "repo" / "localdata" / "ncaa_m"
+    localdata.mkdir(parents=True)
+    (localdata / "auto_tickets_state.json").write_text(
+        json.dumps(
+            {
+                "frozen_by_date": {
+                    "2026-11-08": {
+                        "withdrawn": True,
+                        "decision_id": "defective-run",
+                    }
+                }
+            }
+        )
+    )
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", tmp_path / "repo")
+    assert report["status"] == "no_changes"
+    assert report["withdrawn_receipts_skipped"] == [
+        "localdata/ncaa_m/auto_tickets_2026-11-08_decision.json"
+    ]
+    assert not (localdata / "auto_tickets_2026-11-08_decision.json").exists()
+
+
 def test_allowlist_is_narrow_and_missing_artifact_directory_is_a_noop(tmp_path):
     expected = {
         "picks_today.json",

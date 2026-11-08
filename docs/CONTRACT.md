@@ -133,8 +133,10 @@ tip:
 
 Books are deduplicated to one observation per game/model/market/source in the
 training rows, preventing a game with many books from dominating a segment.
-Unreconciled finals and ungradeable rows are excluded. Pushes do not count as
-wins or losses in the reliability adjustment.
+History-based rows that fail the team-specific evidence guard are also excluded
+from their segment's reliability fit, so fallback rows cannot manufacture an
+ACCA-eligible sample count. Unreconciled finals and ungradeable rows are
+excluded. Pushes do not count as wins or losses in the reliability adjustment.
 
 Profiles are segmented by `(league, market, period, source)`. For a segment
 with `n` non-push outcomes:
@@ -159,11 +161,16 @@ A current forecast can supply an acca leg only if:
 - its exact visible pre-tip bookmaker market and selected decimal price exist;
 - any provider prediction used by the forecast is visible and strictly pre-tip;
 - its segment has at least the configured walk-forward sample minimum;
+- every history-based forecast has at least as much effective prior evidence for
+  each team as the configured league-prior strength (eight effective games by
+  default), so a league-average fallback cannot masquerade as team evidence;
 - calibrated probability is at least 0.50 by default;
 - estimated push probability is at most 0.005 by default.
 
 The highest-calibrated-probability eligible forecast is selected per game.
-Same-game legs are prohibited rather than silently multiplied as independent.
+Bookmaker price never breaks a probability tie; deterministic fixture, market,
+source, and forecast identifiers are used instead. Same-game legs are prohibited
+rather than silently multiplied as independent.
 For the requested leg count, a best-first search ranks combinations by:
 
 ```text

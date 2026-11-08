@@ -92,6 +92,11 @@ def build_profiles(
     cfg = config or CalibrationConfig()
     grouped: Dict[SegmentKey, List[Forecast]] = {}
     for record in records:
+        # Calibrate the population that may actually supply accas. League-prior
+        # fallback rows remain visible in diagnostics, but cannot lend their
+        # sample count or reliability adjustment to team-specific selections.
+        if (record.team_history or {}).get("sufficient_for_accas") is False:
+            continue
         if record.outcome in {"win", "loss", "push"}:
             grouped.setdefault(record.segment_key, []).append(record)
     profiles: Dict[SegmentKey, CalibrationProfile] = {}
@@ -163,6 +168,8 @@ def apply_profiles(
             reasons.append("missing_selected_decimal_price")
         if profile is None or not profile.sufficient:
             reasons.append("insufficient_walk_forward_samples")
+        if (forecast.team_history or {}).get("sufficient_for_accas") is False:
+            reasons.append("insufficient_team_specific_history")
         if forecast.push_probability > cfg.max_push_probability:
             reasons.append("push_risk_requires_leg_void_rules")
         if probability < cfg.min_probability:

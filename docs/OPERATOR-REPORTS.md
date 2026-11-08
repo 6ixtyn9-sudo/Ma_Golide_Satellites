@@ -55,7 +55,7 @@ The daily summary's `operator` object lists the generated paths and counts.
 - **SKIPPED — INELIGIBLE**: another eligibility guard failed. The exact
   `eligibility.reasons` are printed on the card.
 
-Every row includes fixture, kickoff in Africa/Johannesburg time, native period,
+Every row includes fixture, tip-off in Africa/Johannesburg time, native period,
 selection and line, raw/calibrated probability, selected price and bookmaker,
 price evidence, model/prediction provenance, calibration sample count,
 eligibility reasons, and grade.
@@ -91,6 +91,12 @@ a write-once state lock. Subsequent scans reprint that receipt even if the new
 candidate set differs. A missing locked receipt is an error; the engine never
 silently rebuilds or rotates a published card. A receipt recovered without its
 state lock adopts a lock from the immutable receipt itself.
+
+A withdrawal is a deliberate exception recorded in `auto_tickets_state.json`:
+its decision ID is excluded from performance, its date cannot receive a
+replacement ticket, and the Git publisher rejects that ID if an old cache
+returns it. The original receipt is never rewritten; withdrawals preserve it as
+evidence.
 
 Each acca uses exactly one flat paper unit. The initial 100-unit figure is only
 an accounting base, not money or a recommended bankroll. Empty scans are logged
