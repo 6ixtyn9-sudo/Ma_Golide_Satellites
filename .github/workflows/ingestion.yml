@@ -160,8 +160,41 @@ jobs:
         run: |
           set -euo pipefail
           STATE_DIR="localdata/${{ matrix.state_key }}"
-          # A stale cache may contain older paper state. Git is authoritative
-          # for allowlisted operator files; the cache remains canonical-data recovery.
+          # Delete only root-level derived operator files recovered from the
+          # cache. Canonical DuckDB/CSV data, ledgers, nested evidence, and
+          # unapproved files are not touched. Git then restores the current
+          # authoritative operator files; receipts deleted in Git stay deleted.
+          python - "$STATE_DIR" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          state_dir = Path(sys.argv[1])
+          date = r"\d{4}-\d{2}-\d{2}"
+          allowed = tuple(
+              re.compile(pattern)
+              for pattern in (
+                  r"picks_today\.json",
+                  rf"picks_{date}\.json",
+                  rf"picks_{date}\.txt",
+                  r"picks_audit_rolling\.json",
+                  rf"picks_audit_{date}\.md",
+                  r"auto_tickets_state\.json",
+                  r"auto_tickets_performance\.json",
+                  r"auto_tickets_performance\.txt",
+                  rf"auto_tickets_{date}\.txt",
+                  rf"auto_tickets_{date}_decision\.json",
+              )
+          )
+          if state_dir.is_dir():
+              for path in state_dir.iterdir():
+                  if (
+                      path.is_file()
+                      and not path.is_symlink()
+                      and any(pattern.fullmatch(path.name) for pattern in allowed)
+                  ):
+                      path.unlink()
+          PY
           if git cat-file -e "HEAD:${STATE_DIR}" 2>/dev/null; then
             git restore --source=HEAD --worktree -- "$STATE_DIR"
           fi
