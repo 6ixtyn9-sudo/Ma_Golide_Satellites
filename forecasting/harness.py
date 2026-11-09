@@ -60,7 +60,9 @@ class CalibrationProfile:
         return min(config.probability_ceiling, max(config.probability_floor, adjusted))
 
     def to_dict(self) -> Dict[str, Any]:
-        return {
+        # Support 5-tuple diagnostic keys where 5th dimension is team_history pool
+        is_diag = len(self.key) == 5
+        result = {
             "league": self.key[0],
             "market": self.key[1],
             "period": self.key[2],
@@ -76,8 +78,13 @@ class CalibrationProfile:
             "brier_score": round(self.brier_score, 6),
             "log_loss": round(self.log_loss, 6),
             "minimum_samples": self.min_samples,
-            "sufficient_for_accas": self.sufficient,
+            "sufficient_for_accas": False if is_diag else self.sufficient,
+            "pool": "league_prior_in_diagnostics_only" if is_diag else "eligible",
         }
+        if is_diag:
+            result["team_history_sufficient"] = False
+            result["segment_key_5d"] = list(self.key)
+        return result
 
 
 def _log_loss(probability: float, won: bool) -> float:
@@ -91,14 +98,17 @@ def build_profiles(
     """Fit additive reliability adjustments from graded past forecasts only."""
     cfg = config or CalibrationConfig()
     grouped: Dict[SegmentKey, List[Forecast]] = {}
+    grouped_insufficient: Dict[SegmentKey, List[Forecast]] = {}
     for record in records:
+        if record.outcome not in {"win", "loss", "push"}:
+            continue
         # Calibrate the population that may actually supply accas. League-prior
         # fallback rows remain visible in diagnostics, but cannot lend their
         # sample count or reliability adjustment to team-specific selections.
         if (record.team_history or {}).get("sufficient_for_accas") is False:
+            grouped_insufficient.setdefault(record.segment_key, []).append(record)
             continue
-        if record.outcome in {"win", "loss", "push"}:
-            grouped.setdefault(record.segment_key, []).append(record)
+        grouped.setdefault(record.segment_key, []).append(record)
     profiles: Dict[SegmentKey, CalibrationProfile] = {}
     for key, rows in grouped.items():
         graded = [row for row in rows if row.outcome in {"win", "loss"}]
@@ -115,6 +125,42 @@ def build_profiles(
         adjustment = weight * (observed - raw_mean)
         profiles[key] = CalibrationProfile(
             key=key,
+            wins=wins,
+            losses=n - wins,
+            pushes=pushes,
+            mean_raw_probability=raw_mean,
+            observed_win_rate=observed,
+            adjustment=adjustment,
+            wilson_lower_95=wilson_lower_bound(wins, n),
+            brier_score=sum(
+                (row.raw_probability - float(row.outcome == "win")) ** 2
+                for row in graded
+            )
+            / n,
+            log_loss=sum(
+                _log_loss(row.raw_probability, row.outcome == "win")
+                for row in graded
+            )
+            / n,
+            min_samples=cfg.min_samples,
+        )
+    # Diagnostics-only parallel pool for rows that did not clear team-history.
+    # These profiles are visible in walk_forward.segments with a 5th key dimension
+    # and are structurally never applied (apply_profiles matches 4-tuple keys only).
+    for key, rows in grouped_insufficient.items():
+        graded = [row for row in rows if row.outcome in {"win", "loss"}]
+        pushes = sum(row.outcome == "push" for row in rows)
+        n = len(graded)
+        if not n:
+            continue
+        wins = sum(row.outcome == "win" for row in graded)
+        raw_mean = sum(row.raw_probability for row in graded) / n
+        observed = wins / n
+        weight = n / (n + cfg.prior_strength)
+        adjustment = weight * (observed - raw_mean)
+        diag_key = (*key, "team_history_insufficient")
+        profiles[diag_key] = CalibrationProfile(
+            key=diag_key,
             wins=wins,
             losses=n - wins,
             pushes=pushes,
