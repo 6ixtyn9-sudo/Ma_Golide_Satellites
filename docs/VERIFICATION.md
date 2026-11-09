@@ -1,6 +1,6 @@
 # Verification and known limitations
 
-Verification date: **2026-11-07**. All results below come from local offline
+Verification date: **2026-11-09**. All results below come from local offline
 commands in the cleaned checkout. No authenticated provider validation,
 production migration, notification delivery, or betting write was performed.
 

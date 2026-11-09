@@ -1,6 +1,6 @@
 # ESPN acquisition, history, and coverage limits
 
-Verification date: **2026-11-08**. This document separates live observations,
+Verification date: **2026-11-09**. This document separates live observations,
 hermetic regression coverage, and facts that still require scheduled-run
 verification. Passing fixtures do not prove a provider's current availability.
 
@@ -32,8 +32,7 @@ ledgers; raw caches and receipts are recovery aids, not a second sports store.
   matched to provider team IDs, and both `gameProjection` and
   `teamChanceLoss` orientations are tested.
 - Every accepted current book as a timestamped `BookSnapshot`, independent of
-  whether a prediction exists. Opening numbers can lack an opening observation
-  timestamp and therefore remain context, never closing-line-value evidence.
+  whether a prediction exists. Opening numbers are used as a free-tier fallback when `close` is not yet posted (timestamped at discovery, still `observed < tip` and never CLV); untimestamped open fields remain context only.
 
 Summary enrichment is capped per run and recorded in provider health and the
 acquisition telemetry. A missing summary, book, statistic, or article remains
@@ -60,6 +59,7 @@ IDs are examples, not permanent coverage guarantees:
 | Core competition `predictor`, NBA `401909938` | Timestamped projection and expected scores; sampled `lastModified` was after the game | Candidate fallback only after team identity and strict source-time/pre-tip validation. It does not replace frozen scoreboard BPI evidence in this change. |
 | Core `odds/100/propBets`, NBA `401909938` | 394 player-prop entries with `lastUpdated`, including points lines and open/current prices | Verified available evidence, but there is no player-prop forecast/settlement contract; these are not team-market or ACCA inputs. |
 | CDN `core/nba/boxscore` and `playbyplay?xhr=1&gameId=401909938` | Large modern `gamepackageJSON` payloads | Redundant raw sources are documented, not added as an extra per-event crawl while site summaries supply the needed data. |
+| Site `common/v3` athlete gamelog, NBA + NCAA_M `.../athletes/{id}/gamelog` | 200 for both leagues; per-event `MIN/FG/FG%/3PT/3P%/FT/FT%/REB/AST/BLK/STL/PF/TO/PTS` (NBA 141 KB/15 events, NCAA 1 event early-season) via `names/labels` + `seasonTypes[].categories[].events[]` + `events` map; past games only, hence pre-tip safe | Retained as documented free endpoint (roster → athlete ids → bounded gamelog); not yet a model feature — requires per-athlete bounding to `context_request_budget` and walk-forward validation before use. |
 
 Available context is not automatically a leakage-safe or useful model
 feature. Player statistics, play-by-play, win probability, injuries, and
@@ -101,10 +101,10 @@ validated probe; they are not represented as absolute historical minima.
 
 Each write-enabled league run performs two independent jobs:
 
-1. **Recent results:** at most seven individual past scoreboard dates. Public
+1. **Recent results:** at most 21 individual past scoreboard dates. Public
    payloads use the durable cache for 24 hours while retaining their original
    observation timestamps.
-2. **Deep history:** at most 25 indexed event summaries by default. The season
+2. **Deep history:** at most 50 indexed event summaries by default. The season
    index is cached for seven days. Historical summaries are sanitized into
    canonical evidence rather than retained indefinitely as large raw cache
    files. The durable cursor prevents normal refetching; an already-persisted
