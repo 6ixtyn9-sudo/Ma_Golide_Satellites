@@ -11,7 +11,7 @@
       "withdrawn": true
     }
   },
-  "last_generated_utc": "2026-11-09T10:57:05Z",
+  "last_generated_utc": "2026-11-09T12:37:40Z",
   "paper_bank_units": 100.0,
   "scans": [
     {
@@ -207,6 +207,26 @@
       "fresh_accas": 0,
       "receipt_present": false,
       "run_id": "42604969477_ncaa_w_1_attempt_1"
+    },
+    {
+      "candidate_funnel": {
+        "calibration_sufficient_rows": 0,
+        "eligibility_blockers": {
+          "insufficient_team_specific_history": 80,
+          "insufficient_walk_forward_samples": 120,
+          "no_exact_bookmaker_market": 120
+        },
+        "eligible_games": 0,
+        "eligible_rows": 0,
+        "exact_priced_rows": 0,
+        "priced_and_calibrated_rows": 0,
+        "required_games": 3,
+        "scan_rows": 120
+      },
+      "captured_at": "2026-11-09T12:37:40Z",
+      "fresh_accas": 0,
+      "receipt_present": false,
+      "run_id": "42618504921_ncaa_w_1_attempt_1"
     }
   ],
   "schema_version": "magolide.paper_ticket_state.v1",
