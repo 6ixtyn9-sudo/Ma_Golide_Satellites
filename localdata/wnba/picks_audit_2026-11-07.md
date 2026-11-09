@@ -1,24 +1,38 @@
-Ma Golide recent picks audit — 2026-10-09 to 2026-11-07
-========================================================================
-Archived logical picks: 0
-Archived evidence rows: 0 (0 superseded observations)
-Local-day pending cutoff: 2026-11-08
-Same-day pending rows held outside prior-day counters: 0
-Same-day official-final picks included in settlement: 0
-Eligible prior-day picks: 0
-Settled picks: 0 (pushes: 0)
-Pending/unmatched prior-day result picks: 0
-Total pending logical picks in ledger: 0
-Hit rate: n/a
-ROI: n/a (no settled priced picks)
+# Ma Golide — Recent picks audit (2026-10-09 to 2026-11-07)
 
-Bucket diagnostics
-------------------------------------------------------------------------
+Generated: 2026-11-08 06:09 SAST · 30-day rolling window · Paper only
 
-SETTLED PICKS — OFFICIAL FINAL AUDIT
-------------------------------------------------------------------------
-Every settled logical pick in the 30-day window is listed. Unpriced grades do not enter ROI.
-  (none)
+## Overall
 
-Grades use reconciled official finals only. Pending rows are not losses.
-Flat one-paper-unit ROI is descriptive history, not proof of future performance.
+- archived logical picks: 0
+- dated evidence rows: 0 (0 superseded observations)
+- settled picks: 0 (0 wins / 0 losses / 0 pushes)
+- hit rate: n/a (no win/loss decisions)
+- pending/unmatched picks: 0 prior-day · 0 total
+- priced picks: 0
+- ROI: n/a (no settled priced picks)
+
+## Settlement policy
+
+- reconciled official finals settle immediately; pending rows are never losses
+- local-day pending cutoff: 2026-11-08
+- same-day pending rows outside prior-day counters: 0
+- same-day official-final picks included: 0
+- eligible prior-day picks: 0
+- latest observation per logical pick; superseded dated evidence remains in JSON
+
+## Bucket performance
+
+No settled picks in this window.
+
+## Settled picks — official-final audit
+
+Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+No settled picks in this window.
+
+## Evidence notes
+
+- Grades use reconciled official finals only; missing or conflicting results stay pending.
+- Dated JSON preserves every forecast, price, model, calibration, and eligibility field.
+- Flat one-paper-unit ROI is descriptive history, not proof of future performance.

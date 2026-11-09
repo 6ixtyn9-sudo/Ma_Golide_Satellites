@@ -1,55 +1,181 @@
-Ma Golide recent picks audit — 2026-10-09 to 2026-11-07
-========================================================================
-Archived logical picks: 53
-Archived evidence rows: 61 (8 superseded observations)
-Local-day pending cutoff: 2026-11-08
-Same-day pending rows held outside prior-day counters: 0
-Same-day official-final picks included in settlement: 0
-Eligible prior-day picks: 53
-Settled picks: 30 (pushes: 0)
-Pending/unmatched prior-day result picks: 23
-Total pending logical picks in ledger: 23
-Hit rate: 66.7%
-ROI: +12.4%
+# Ma Golide — Recent picks audit (2026-10-09 to 2026-11-07)
 
-Bucket diagnostics
-------------------------------------------------------------------------
-  CAUTION: settled=18 wins=13 priced_profit=+2.230 units
-  WATCHLIST_NO_ODDS: settled=12 wins=7 priced_profit=+0.000 units
+Generated: 2026-11-08 06:09 SAST · 30-day rolling window · Paper only
 
-SETTLED PICKS — OFFICIAL FINAL AUDIT
-------------------------------------------------------------------------
-Every settled logical pick in the 30-day window is listed. Unpriced grades do not enter ROI.
-  2026-11-07 · WIN · Oklahoma City Thunder vs Washington Wizards · MONEYLINE full_game -> HOME · p=84.1% (raw 84.1%) @1.167 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
-  2026-11-07 · WIN · Oklahoma City Thunder vs Washington Wizards · TOTAL full_game 222.5 -> UNDER · p=56.0% (raw 56.0%) @1.909 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn+team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · WIN · Oklahoma City Thunder vs Washington Wizards · TOTAL full_game 222.5 -> UNDER · p=56.0% (raw 56.0%) @1.909 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn+team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · WIN · Oklahoma City Thunder vs Washington Wizards · MONEYLINE full_game -> HOME · p=80.7% (raw 80.7%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=provider:hardwood/team_history_empirical_v1
-  2026-11-07 · LOSS · Oklahoma City Thunder vs Washington Wizards · HIGHEST QUARTER full_game -> Q1 · p=40.0% (raw 40.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · LOSS · Oklahoma City Thunder vs Washington Wizards · MONEYLINE H1 -> AWAY · p=52.0% (raw 52.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · WIN · Oklahoma City Thunder vs Washington Wizards · MONEYLINE full_game -> HOME · p=84.1% (raw 84.1%) @1.161 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
-  2026-11-07 · WIN · Oklahoma City Thunder vs Washington Wizards · TOTAL full_game 223.5 -> UNDER · p=64.0% (raw 64.0%) @1.943 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn+team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · LOSS · Cleveland Cavaliers vs New York Knicks · TOTAL full_game 222.5 -> OVER · p=64.0% (raw 64.0%) @1.870 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn+team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · LOSS · Cleveland Cavaliers vs New York Knicks · HIGHEST QUARTER full_game -> Q1 · p=36.0% (raw 36.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · LOSS · Cleveland Cavaliers vs New York Knicks · TOTAL full_game 224.5 -> OVER · p=56.0% (raw 56.0%) @1.952 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn+team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · WIN · Cleveland Cavaliers vs New York Knicks · MONEYLINE full_game -> AWAY · p=54.4% (raw 54.4%) @1.508 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
-  2026-11-07 · WIN · Cleveland Cavaliers vs New York Knicks · MONEYLINE H1 -> AWAY · p=60.0% (raw 60.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · WIN · Cleveland Cavaliers vs New York Knicks · MONEYLINE full_game -> AWAY · p=56.0% (raw 56.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=provider:hardwood/team_history_empirical_v1
-  2026-11-07 · WIN · Cleveland Cavaliers vs New York Knicks · MONEYLINE full_game -> AWAY · p=54.4% (raw 54.4%) @1.490 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
-  2026-11-07 · LOSS · Cleveland Cavaliers vs New York Knicks · TOTAL full_game 223.5 -> OVER · p=60.0% (raw 60.0%) @1.870 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn+team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · WIN · Atlanta Hawks vs Brooklyn Nets · MONEYLINE H1 -> AWAY · p=60.0% (raw 60.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · WIN · Atlanta Hawks vs Brooklyn Nets · MONEYLINE full_game -> HOME · p=75.3% (raw 75.3%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=provider:hardwood/team_history_empirical_v1
-  2026-11-07 · WIN · Atlanta Hawks vs Brooklyn Nets · MONEYLINE full_game -> HOME · p=76.3% (raw 76.3%) @1.353 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
-  2026-11-07 · WIN · Atlanta Hawks vs Brooklyn Nets · MONEYLINE full_game -> HOME · p=78.4% (raw 78.4%) @1.377 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
-  2026-11-07 · WIN · Atlanta Hawks vs Brooklyn Nets · TOTAL full_game 226.5 -> OVER · p=56.0% (raw 56.0%) @1.909 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn+team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · WIN · Atlanta Hawks vs Brooklyn Nets · TOTAL full_game 226.5 -> OVER · p=60.0% (raw 60.0%) @1.885 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn+team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · LOSS · Atlanta Hawks vs Brooklyn Nets · HIGHEST QUARTER full_game -> Q1 · p=36.0% (raw 36.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · WIN · Indiana Pacers vs Denver Nuggets · MONEYLINE full_game -> AWAY · p=78.8% (raw 78.8%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=provider:hardwood/team_history_empirical_v1
-  2026-11-07 · WIN · Indiana Pacers vs Denver Nuggets · MONEYLINE full_game -> AWAY · p=77.1% (raw 77.1%) @1.309 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
-  2026-11-07 · WIN · Indiana Pacers vs Denver Nuggets · MONEYLINE H1 -> AWAY · p=60.0% (raw 60.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · LOSS · Indiana Pacers vs Denver Nuggets · TOTAL full_game 229.5 -> OVER · p=56.0% (raw 56.0%) @1.935 DraftKings · bucket=CAUTION calibration_n=0 · model=provider:espn+team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · LOSS · Indiana Pacers vs Denver Nuggets · TOTAL full_game 229.5 -> OVER · p=56.0% (raw 56.0%) @1.935 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn+team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · LOSS · Indiana Pacers vs Denver Nuggets · HIGHEST QUARTER full_game -> Q1 · p=40.0% (raw 40.0%) @n/a no matched book · bucket=WATCHLIST_NO_ODDS calibration_n=0 · model=team_history_empirical_v1/team_history_empirical_v1
-  2026-11-07 · WIN · Indiana Pacers vs Denver Nuggets · MONEYLINE full_game -> AWAY · p=77.1% (raw 77.1%) @1.309 Draft Kings · bucket=CAUTION calibration_n=0 · model=provider:espn/team_history_empirical_v1
+## Overall
 
-Grades use reconciled official finals only. Pending rows are not losses.
-Flat one-paper-unit ROI is descriptive history, not proof of future performance.
+- archived logical picks: 40
+- dated evidence rows: 61 (21 superseded observations)
+- settled picks: 40 (23 wins / 17 losses / 0 pushes)
+- hit rate: 57.5% (23/40 win/loss decisions)
+- pending/unmatched picks: 0 prior-day · 0 total
+- priced picks: 19
+- paper P&L: +0.614 units
+- ROI: +3.2% (P&L / 19 priced picks) · **provisional — fewer than 30 priced picks**
+
+## Settlement policy
+
+- reconciled official finals settle immediately; pending rows are never losses
+- local-day pending cutoff: 2026-11-08
+- same-day pending rows outside prior-day counters: 0
+- same-day official-final picks included: 0
+- eligible prior-day picks: 40
+- latest observation per logical pick; superseded dated evidence remains in JSON
+
+## Bucket performance
+
+| Bucket | Settled | W–L–P | Hit rate | Priced | ROI |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `CAUTION` | 19 | 12–7–0 | 63.2% | 19 | +3.2% |
+| `WATCHLIST_NO_ODDS` | 21 | 11–10–0 | 52.4% | 0 | n/a |
+
+## Settled picks — official-final audit
+
+Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+### 2026-11-07: Portland Trail Blazers vs San Antonio Spurs (Official final reconciled)
+
+- 🟢 **WON — First-half moneyline: San Antonio Spurs (away)**
+  - Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: San Antonio Spurs (away)**
+  - Expected: **56.6%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:hardwood`
+- 🟢 **WON — Full-game moneyline: San Antonio Spurs (away)**
+  - Expected: **60.5%** · Price: **1.461 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 229.5: Under**
+  - Expected: **64.0%** · Price: **1.901 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Highest quarter: Q1**
+  - Expected: **36.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-07: Phoenix Suns vs Houston Rockets (Official final reconciled)
+
+- 🔴 **LOST — Full-game total 223.5: Over**
+  - Expected: **56.0%** · Price: **1.885 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 224.5: Over**
+  - Expected: **52.0%** · Price: **1.952 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Houston Rockets (away)**
+  - Expected: **64.5%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:hardwood`
+- 🔴 **LOST — First-half moneyline: Houston Rockets (away)**
+  - Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Houston Rockets (away)**
+  - Expected: **69.0%** · Price: **1.379 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
+- 🟢 **WON — Highest quarter: Q1**
+  - Expected: **40.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-07: Golden State Warriors vs Orlando Magic (Official final reconciled)
+
+- 🟢 **WON — Full-game moneyline: Golden State Warriors (home)**
+  - Expected: **62.8%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:hardwood`
+- 🟢 **WON — Full-game total 220.5: Over**
+  - Expected: **60.0%** · Price: **1.943 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — First-half moneyline: Orlando Magic (away)**
+  - Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Golden State Warriors (home)**
+  - Expected: **65.6%** · Price: **1.324 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
+- 🔴 **LOST — Highest quarter: Q1**
+  - Expected: **36.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 219.5: Over**
+  - Expected: **64.0%** · Price: **1.893 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+
+### 2026-11-07: Oklahoma City Thunder vs Washington Wizards (Official final reconciled)
+
+- 🟢 **WON — Full-game total 222.5: Under**
+  - Expected: **56.0%** · Price: **1.909 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Oklahoma City Thunder (home)**
+  - Expected: **80.7%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:hardwood`
+- 🔴 **LOST — Highest quarter: Q1**
+  - Expected: **40.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — First-half moneyline: Washington Wizards (away)**
+  - Expected: **52.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Oklahoma City Thunder (home)**
+  - Expected: **84.1%** · Price: **1.161 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 223.5: Under**
+  - Expected: **64.0%** · Price: **1.943 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+
+### 2026-11-07: Cleveland Cavaliers vs New York Knicks (Official final reconciled)
+
+- 🔴 **LOST — Full-game total 222.5: Over**
+  - Expected: **64.0%** · Price: **1.870 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Highest quarter: Q1**
+  - Expected: **36.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 224.5: Over**
+  - Expected: **56.0%** · Price: **1.952 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: New York Knicks (away)**
+  - Expected: **54.4%** · Price: **1.508 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
+- 🟢 **WON — First-half moneyline: New York Knicks (away)**
+  - Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: New York Knicks (away)**
+  - Expected: **56.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:hardwood`
+- 🔴 **LOST — Full-game total 223.5: Over**
+  - Expected: **60.0%** · Price: **1.870 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+
+### 2026-11-07: Atlanta Hawks vs Brooklyn Nets (Official final reconciled)
+
+- 🟢 **WON — First-half moneyline: Brooklyn Nets (away)**
+  - Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Atlanta Hawks (home)**
+  - Expected: **75.3%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:hardwood`
+- 🟢 **WON — Full-game moneyline: Atlanta Hawks (home)**
+  - Expected: **78.4%** · Price: **1.377 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 226.5: Over**
+  - Expected: **60.0%** · Price: **1.885 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Highest quarter: Q1**
+  - Expected: **36.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-07: Indiana Pacers vs Denver Nuggets (Official final reconciled)
+
+- 🟢 **WON — Full-game moneyline: Denver Nuggets (away)**
+  - Expected: **78.8%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:hardwood`
+- 🟢 **WON — Full-game moneyline: Denver Nuggets (away)**
+  - Expected: **77.1%** · Price: **1.309 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
+- 🟢 **WON — First-half moneyline: Denver Nuggets (away)**
+  - Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 229.5: Over**
+  - Expected: **56.0%** · Price: **1.935 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Highest quarter: Q1**
+  - Expected: **40.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+## Evidence notes
+
+- Grades use reconciled official finals only; missing or conflicting results stay pending.
+- Dated JSON preserves every forecast, price, model, calibration, and eligibility field.
+- Flat one-paper-unit ROI is descriptive history, not proof of future performance.
