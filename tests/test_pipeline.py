@@ -128,7 +128,7 @@ def test_pregame_uses_only_fresh_exact_book_evidence():
             book="draftkings",
             market=Market.TOTAL,
             period=Period.Q2,
-            observed_utc="2026-11-05T17:00:00Z",  # stale at the 24-hour boundary
+            observed_utc="2026-11-04T17:00:00Z",  # stale beyond 72h boundary
             line=999.0,
         )
     )
