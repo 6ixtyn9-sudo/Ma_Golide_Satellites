@@ -1,23 +1,23 @@
 # Ma Golide — Recent picks audit (2026-10-11 to 2026-11-09)
 
-Generated: 2026-11-09 07:18 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-09 08:09 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
-- archived logical picks: 591
-- dated evidence rows: 756 (165 superseded observations)
-- settled picks: 391 (248 wins / 143 losses / 0 pushes)
-- hit rate: 63.4% (248/391 win/loss decisions)
-- pending/unmatched picks: 17 prior-day · 200 total
-- priced picks: 267
-- paper P&L: +19.801 units
-- ROI: +7.4% (P&L / 267 priced picks)
+- archived logical picks: 594
+- dated evidence rows: 868 (274 superseded observations)
+- settled picks: 400 (252 wins / 148 losses / 0 pushes)
+- hit rate: 63.0% (252/400 win/loss decisions)
+- pending/unmatched picks: 8 prior-day · 194 total
+- priced picks: 275
+- paper P&L: +16.697 units
+- ROI: +6.1% (P&L / 275 priced picks)
 
 ## Settlement policy
 
 - reconciled official finals settle immediately; pending rows are never losses
 - local-day pending cutoff: 2026-11-09
-- same-day pending rows outside prior-day counters: 183
+- same-day pending rows outside prior-day counters: 186
 - same-day official-final picks included: 0
 - eligible prior-day picks: 408
 - latest observation per logical pick; superseded dated evidence remains in JSON
@@ -26,14 +26,44 @@ Generated: 2026-11-09 07:18 SAST · 30-day rolling window · Paper only
 
 | Bucket | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `CAUTION` | 186 | 116–70–0 | 62.4% | 186 | -0.6% |
-| `ELIGIBLE_CLEAN` | 18 | 12–6–0 | 66.7% | 18 | +84.2% |
-| `SKIPPED_INELIGIBLE` | 63 | 32–31–0 | 50.8% | 63 | +9.3% |
-| `WATCHLIST_NO_ODDS` | 124 | 88–36–0 | 71.0% | 0 | n/a |
+| `CAUTION` | 190 | 118–72–0 | 62.1% | 190 | -1.4% |
+| `ELIGIBLE_CLEAN` | 19 | 13–6–0 | 68.4% | 19 | +80.9% |
+| `SKIPPED_INELIGIBLE` | 66 | 33–33–0 | 50.0% | 66 | +6.2% |
+| `WATCHLIST_NO_ODDS` | 125 | 88–37–0 | 70.4% | 0 | n/a |
 
 ## Settled picks — official-final audit
 
 Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+### 2026-11-08: Hawai'i Rainbow Warriors vs UT Arlington Mavericks (Final: **71–62**)
+
+- 🔴 **LOST — First-half moneyline: Hawai'i Rainbow Warriors (home)**
+  - Actual First-half score: **27–27** · Expected: **75.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Hawai'i Rainbow Warriors (home)**
+  - Expected: **84.0%** · Price: **1.213 · Draft Kings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Hawai'i Rainbow Warriors (home)**
+  - Expected: **84.0%** · Price: **1.235 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
+- 🔴 **LOST — Full-game total 148.5: Over**
+  - Actual Full-game total: **133** · Expected: **63.0%** · Price: **1.952 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 150.5: Over**
+  - Actual Full-game total: **133** · Expected: **61.0%** · Price: **1.926 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 150.5: Over**
+  - Actual Full-game total: **133** · Expected: **61.0%** · Price: **1.926 · Draft Kings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Hawai'i Rainbow Warriors (home)**
+  - Expected: **72.9%** calibrated (raw 78.0%) · Price: **1.213 · Draft Kings**
+  - Calibration: **n=230** · calibrated · Bucket: `ELIGIBLE_CLEAN` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 146.5: Over**
+  - Actual Full-game total: **133** · Expected: **64.0%** · Price: **1.893 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Hawai'i Rainbow Warriors (home)**
+  - Expected: **78.0%** · Price: **1.235 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 
 ### 2026-11-08: California Golden Bears vs Houston Cougars (Final: **86–68**)
 
