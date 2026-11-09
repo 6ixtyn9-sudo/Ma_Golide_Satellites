@@ -102,6 +102,10 @@ authenticated smoke run verifies them. Secrets travel through the configured
 HTTP authentication mechanism and are redacted from surfaced errors. Do not
 print request URLs containing credentials.
 
+## Free player gamelog (documented, not yet featurized)
+
+`site.web.api.espn.com/apis/common/v3/sports/basketball/{nba|mens-college-basketball}/athletes/{id}/gamelog` is verified 200 for both leagues (2026-11-09 probes: NBA + NCAA_M). It returns per-event `MIN/FG/3PT/FT/REB/AST/BLK/STL/PF/TO/PTS` via `names/labels` aligned to `seasonTypes[].categories[].events[]` stat vectors and an `events` map for date/opponent. Past games only → pre-tip safe by construction. Team `roster` endpoint supplies athlete ids. Bounded use (priced/watchlist games, top rotation) is required to stay within `context_request_budget` / `http_request_budget`; walk-forward validation is required before it can affect probabilities.
+
 ## Identity and chronological selection
 
 Book joins use a known provider event ID first. A guarded fallback requires

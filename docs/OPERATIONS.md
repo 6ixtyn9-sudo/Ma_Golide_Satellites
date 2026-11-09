@@ -65,8 +65,8 @@ Useful options:
 - `--acca-legs 3` requests exact three-leg combinations (allowed: 2–6).
 - `--acca-limit 5` bounds returned combinations.
 - `--freshness-hours 24` controls prediction freshness.
-- `--history-days 7` and `--history-requests 7` bound recent daily backfill.
-- `--deep-history-events 25` bounds indexed historical summaries per
+- `--history-days 21` and `--history-requests 21` bound recent daily backfill.
+- `--deep-history-events 50` bounds indexed historical summaries per
   write-enabled league run; dry runs never advance that cursor.
 - `--book draftkings` and `--book-provider theoddsapi` restrict book evidence.
 - `--localdata PATH` redirects reports/ledgers/exports.
@@ -115,7 +115,7 @@ Safety behavior is deliberate:
   WhatsApp secrets; they are sent only on write-enabled scheduled runs.
 
 Every ESPN league run also attempts seven recent result dates and, when
-canonical writes are enabled, 25 deep indexed events. Deep cursors, historical
+canonical writes are enabled, 50 deep indexed events. Deep cursors, historical
 coverage classes, verified index floors, and cache policy are documented in
 [ESPN acquisition and history](ESPN-ACQUISITION.md). Historical rows alone do
 not satisfy pre-tip prediction/book requirements or establish calibration.
