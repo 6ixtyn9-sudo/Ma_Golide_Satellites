@@ -124,19 +124,19 @@ class HistoryModel:
         self, team_name: str, history: Sequence[Game], period: Period
     ) -> Optional[_TeamRates]:
         team = self._team_key(team_name)
-        weighted_for = weighted_against = weight_sum = 0.0
-        # Newest game has age zero. Recency weights never include future games.
-        for age, game in enumerate(reversed(history)):
+        # Collect this team's games newest-first so age counts team games, not league games.
+        # Bugfix: league-index age made 8.0 unreachable (spacing ~15 → ceiling 2.47); team-index restores documented intent "prior = 8 team games".
+        team_games: list[tuple[float, float]] = []
+        for game in reversed(history):
             scores = _period_scores(game, period)
             if scores is None:
                 continue
-            home, away = scores
             if self._team_key(game.home_name) == team:
-                points_for, points_against = home, away
+                team_games.append((scores[0], scores[1]))
             elif self._team_key(game.away_name) == team:
-                points_for, points_against = away, home
-            else:
-                continue
+                team_games.append((scores[1], scores[0]))
+        weighted_for = weighted_against = weight_sum = 0.0
+        for age, (points_for, points_against) in enumerate(team_games):
             weight = 0.5 ** (age / self.config.recent_half_life_games)
             weighted_for += weight * points_for
             weighted_against += weight * points_against
@@ -272,6 +272,21 @@ class HistoryModel:
         margin_residuals, total_residuals = self._residuals(history, period)
         if len(margin_residuals) < self.config.min_residual_games:
             return None
+        # Hybrid path: baseline mean replaced by BPI, but raw residuals carry -2.34 mean → drag ~0.10 prob. Center them.
+        if period is Period.FULL_GAME and prediction is not None:
+            # Center only margins/totals when BPI replaced the mean; pure-empirical is self-correcting.
+            m_mean = sum(margin_residuals) / len(margin_residuals) if margin_residuals else 0.0
+            t_mean = sum(total_residuals) / len(total_residuals) if total_residuals else 0.0
+            # Only center if prediction actually replaced baseline (check source: caller sets baseline already)
+            # Heuristic: if prediction has any total/margin/score, it's hybrid.
+            is_hybrid = (
+                prediction.expected_total is not None
+                or prediction.expected_margin is not None
+                or prediction.expected_home_score is not None
+            )
+            if is_hybrid:
+                margin_residuals = [v - m_mean for v in margin_residuals]
+                total_residuals = [v - t_mean for v in total_residuals]
         return Distribution(
             baseline=baseline,
             margins=tuple(baseline.margin + value for value in margin_residuals),
