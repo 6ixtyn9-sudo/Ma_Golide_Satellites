@@ -35,6 +35,7 @@ from .models import (
     CoverageGap,
     CoverageReport,
     CoverageState,
+    Market,
     Game,
     GameStatus,
     League,
@@ -80,7 +81,7 @@ ESPN_LEAGUES = {League.NBA, League.WNBA, League.NCAA_M, League.NCAA_W}
 def _book_providers(league: str) -> Sequence[str]:
     # NBA/EuroLeague retain the existing overrideable provider tuple.
     return BOOK_PROVIDERS_BY_LEAGUE.get(league.upper(), BOOK_PROVIDERS)
-BOOK_STALENESS_HOURS = 24.0
+BOOK_STALENESS_HOURS = 72.0
 
 
 @dataclass
@@ -448,11 +449,13 @@ class Pipeline:
         return games
 
     def _espn_odds_catchup(self, games: List[Game]) -> None:
-        """Re-fetch scoreboard once if any near-tip game lacks a book snapshot.
+        """Re-fetch scoreboard once if any near-tip game lacks book coverage.
 
-        DraftKings lines post near tip (verified 1/6 next-day NBA games had odds
-        at 11:49Z while 8/8 same-day had odds). A single extra fetch per league
-        per run is bounded and keeps every snapshot timestamped.
+        Catches per-market gaps (e.g. moneyline present but total missing) and
+        benefits from open→close promotion. DraftKings lines post near tip
+        (verified 1/6 next-day NBA games had odds at 11:49Z while 8/8 same-day
+        had odds). One extra fetch per league per run is bounded and keeps
+        every snapshot timestamped.
         """
         if self.config.league_enum not in ESPN_LEAGUES:
             return
@@ -464,7 +467,12 @@ class Pipeline:
             tip = parse_utc(game.scheduled_utc)
             if tip <= now or tip - now > timedelta(hours=36):
                 continue
-            if not self.store.get_book_snapshots(game.game_id):
+            snaps = self.store.get_book_snapshots(game.game_id)
+            # Free-tier fix: re-fetch if any core market is missing, not only when zero snapshots.
+            has_moneyline = any(s.market is Market.MONEYLINE for s in snaps)
+            has_total = any(s.market is Market.TOTAL and s.line is not None for s in snaps)
+            has_spread = any(s.market is Market.SPREAD and s.line is not None for s in snaps)
+            if not (has_moneyline and has_total and has_spread):
                 need.append(game.game_id)
         if not need:
             return

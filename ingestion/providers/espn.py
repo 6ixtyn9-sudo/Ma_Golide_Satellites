@@ -426,6 +426,15 @@ def _book_snapshots_for_offer(
         home_price = _decimal_price(_nested(offer, "homeTeamOdds", "moneyLine"))
     if away_price is None:
         away_price = _decimal_price(_nested(offer, "awayTeamOdds", "moneyLine"))
+    # Free-tier fallback: if close is not yet published, use open (still pre-match, still timestamped at discovery).
+    if home_price is None:
+        home_price = _decimal_price(_nested(offer, "moneyline", "home", "open", "odds"))
+        if home_price is None:
+            home_price = _decimal_price(_nested(offer, "homeTeamOdds", "moneyLine"))
+    if away_price is None:
+        away_price = _decimal_price(_nested(offer, "moneyline", "away", "open", "odds"))
+        if away_price is None:
+            away_price = _decimal_price(_nested(offer, "homeTeamOdds", "moneyLine"))
     if home_price is not None or away_price is not None:
         snapshots.append(
             BookSnapshot(
@@ -441,6 +450,10 @@ def _book_snapshots_for_offer(
     spread_away = offer.get("pointSpread", {}).get("away", {})
     home_line = _line_number(_nested(spread_home, "close", "line"))
     away_line = _line_number(_nested(spread_away, "close", "line"))
+    if home_line is None:
+        home_line = _line_number(_nested(spread_home, "open", "line"))
+    if away_line is None:
+        away_line = _line_number(_nested(spread_away, "open", "line"))
     if home_line is None and away_line is not None:
         home_line = -away_line
     if home_line is not None and away_line is not None:
@@ -448,17 +461,20 @@ def _book_snapshots_for_offer(
             notes.append(f"{book}: contradictory home/away spread lines ignored")
             home_line = None
     if home_line is not None:
+        # Prefer close prices, fall back to open when close not yet posted.
+        spread_home_price = _decimal_price(_nested(spread_home, "close", "odds"))
+        spread_away_price = _decimal_price(_nested(spread_away, "close", "odds"))
+        if spread_home_price is None:
+            spread_home_price = _decimal_price(_nested(spread_home, "open", "odds"))
+        if spread_away_price is None:
+            spread_away_price = _decimal_price(_nested(spread_away, "open", "odds"))
         snapshots.append(
             BookSnapshot(
                 **common,
                 market=Market.SPREAD,
                 line=home_line,
-                home_price_decimal=_decimal_price(
-                    _nested(spread_home, "close", "odds")
-                ),
-                away_price_decimal=_decimal_price(
-                    _nested(spread_away, "close", "odds")
-                ),
+                home_price_decimal=spread_home_price,
+                away_price_decimal=spread_away_price,
                 payload_hash=context_hash,
             )
         )
@@ -469,19 +485,29 @@ def _book_snapshots_for_offer(
     under_line = _line_number(_nested(under, "close", "line"))
     total_line = over_line if over_line is not None else under_line
     if total_line is None:
+        over_line = _line_number(_nested(over, "open", "line"))
+        under_line = _line_number(_nested(under, "open", "line"))
+        total_line = over_line if over_line is not None else under_line
+    if total_line is None:
         total_line = _line_number(offer.get("overUnder"))
     if over_line is not None and under_line is not None:
         if abs(over_line - under_line) > 0.001:
             notes.append(f"{book}: contradictory over/under total lines ignored")
             total_line = None
     if total_line is not None:
+        over_price = _decimal_price(_nested(over, "close", "odds"))
+        under_price = _decimal_price(_nested(under, "close", "odds"))
+        if over_price is None:
+            over_price = _decimal_price(_nested(over, "open", "odds"))
+        if under_price is None:
+            under_price = _decimal_price(_nested(under, "open", "odds"))
         snapshots.append(
             BookSnapshot(
                 **common,
                 market=Market.TOTAL,
                 line=total_line,
-                over_price_decimal=_decimal_price(_nested(over, "close", "odds")),
-                under_price_decimal=_decimal_price(_nested(under, "close", "odds")),
+                over_price_decimal=over_price,
+                under_price_decimal=under_price,
                 payload_hash=context_hash,
             )
         )
