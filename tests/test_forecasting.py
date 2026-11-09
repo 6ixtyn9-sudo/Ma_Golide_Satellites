@@ -326,8 +326,10 @@ def test_league_prior_dominated_history_moneyline_cannot_supply_accas():
         assert "insufficient_team_specific_history" in row["eligibility"]["reasons"]
     assert report["accas"]["results"] == []
     assert report["accas"]["eligible_games"] == 0
-    # Fallback rows cannot manufacture the 30-sample calibration history either.
-    assert report["walk_forward"]["segments"] == []
+    # Fallback rows cannot manufacture eligible calibration, but diagnostics pool is visible.
+    assert report["walk_forward"]["segments"]
+    assert all(s["pool"] == "league_prior_in_diagnostics_only" for s in report["walk_forward"]["segments"])
+    assert all(not s["sufficient_for_accas"] for s in report["walk_forward"]["segments"])
 
 
 def test_expected_total_never_becomes_a_book_line():

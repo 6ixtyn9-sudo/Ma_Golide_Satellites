@@ -93,8 +93,8 @@ class PipelineConfig:
     provider_order: Sequence[str] = DEFAULT_PROVIDER_ORDER
     # Bounded acquisition plan; these are code/config defaults, never workflow
     # dispatch inputs. Backfill acquires official results, not invented training.
-    history_days: int = 10
-    history_request_budget: int = 10
+    history_days: int = 21
+    history_request_budget: int = 21
     deep_history_event_budget: int = 50
     deep_history_start_season: Optional[int] = None
     context_request_budget: int = 40
@@ -438,7 +438,59 @@ class Pipeline:
                             observed_utc=self._now_iso(),
                         )
                     )
+        # Bounded pre-tip odds catch-up: if any upcoming game within 36h has no book snapshot,
+        # re-fetch the scoreboard once per league letting book_snapshots_from_event do normal parsing.
+        # Cost is one extra HTTP request per league at most, within http_request_budget.
+        try:
+            self._espn_odds_catchup(games)
+        except Exception as exc:
+            logger.warning("ESPN odds catch-up failed: %s", exc)
         return games
+
+    def _espn_odds_catchup(self, games: List[Game]) -> None:
+        """Re-fetch scoreboard once if any near-tip game lacks a book snapshot.
+
+        DraftKings lines post near tip (verified 1/6 next-day NBA games had odds
+        at 11:49Z while 8/8 same-day had odds). A single extra fetch per league
+        per run is bounded and keeps every snapshot timestamped.
+        """
+        if self.config.league_enum not in ESPN_LEAGUES:
+            return
+        now = parse_utc(self._now_iso())
+        need = []
+        for game in games:
+            if game.status is not GameStatus.SCHEDULED:
+                continue
+            tip = parse_utc(game.scheduled_utc)
+            if tip <= now or tip - now > timedelta(hours=36):
+                continue
+            if not self.store.get_book_snapshots(game.game_id):
+                need.append(game.game_id)
+        if not need:
+            return
+        # One extra scoreboard fetch per league per run (bounded, uses AcquisitionClient budget/cooldowns)
+        try:
+            _, catchup_books = espn.discover_games_with_evidence(
+                self.config.date_yyyymmdd,
+                self.espn_fetch,
+                self.config.league_enum,
+                observed_utc=self._now_iso(),
+            )
+        except Exception:
+            return
+        hits = 0
+        for gid in need:
+            snaps = catchup_books.get(gid) or []
+            for snap in snaps:
+                try:
+                    self.store.upsert_book_snapshot(snap)
+                    hits += 1
+                except Exception:
+                    pass
+        # Telemetry for monitoring: visible in candidate_funnel via gaps? Use context_report
+        self.context_report["odds_catchup_attempts"] = 1
+        self.context_report["odds_catchup_hits"] = hits
+        self.context_report["odds_catchup_games_without_books"] = len(need)
 
     def _acquire_context(self, games: List[Game]) -> List[Game]:
         """Enrich upcoming ESPN games with bounded summary/form/injury evidence."""
