@@ -93,9 +93,9 @@ class PipelineConfig:
     provider_order: Sequence[str] = DEFAULT_PROVIDER_ORDER
     # Bounded acquisition plan; these are code/config defaults, never workflow
     # dispatch inputs. Backfill acquires official results, not invented training.
-    history_days: int = 7
-    history_request_budget: int = 7
-    deep_history_event_budget: int = 25
+    history_days: int = 10
+    history_request_budget: int = 10
+    deep_history_event_budget: int = 50
     deep_history_start_season: Optional[int] = None
     context_request_budget: int = 40
     http_request_budget: int = 1200

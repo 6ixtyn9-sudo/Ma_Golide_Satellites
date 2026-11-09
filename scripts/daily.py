@@ -339,19 +339,19 @@ def main() -> int:
     parser.add_argument(
         "--history-days",
         type=int,
-        default=7,
+        default=10,
         help="rolling ESPN result lookback (offline fixtures disable backfill)",
     )
     parser.add_argument(
         "--history-requests",
         type=int,
-        default=7,
+        default=10,
         help="maximum historical scoreboard requests per league run",
     )
     parser.add_argument(
         "--deep-history-events",
         type=int,
-        default=25,
+        default=50,
         help="maximum indexed historical events per write-enabled league run",
     )
     parser.add_argument("--skip-results", action="store_true")
