@@ -1,14 +1,14 @@
 # Ma Golide — Recent picks audit (2026-10-11 to 2026-11-09)
 
-Generated: 2026-11-09 08:09 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-09 12:23 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
-- archived logical picks: 87
-- dated evidence rows: 159 (72 superseded observations)
+- archived logical picks: 90
+- dated evidence rows: 183 (93 superseded observations)
 - settled picks: 47 (28 wins / 19 losses / 0 pushes)
 - hit rate: 59.6% (28/47 win/loss decisions)
-- pending/unmatched picks: 0 prior-day · 40 total
+- pending/unmatched picks: 0 prior-day · 43 total
 - priced picks: 26
 - paper P&L: -0.307 units
 - ROI: -1.2% (P&L / 26 priced picks) · **provisional — fewer than 30 priced picks**
@@ -17,7 +17,7 @@ Generated: 2026-11-09 08:09 SAST · 30-day rolling window · Paper only
 
 - reconciled official finals settle immediately; pending rows are never losses
 - local-day pending cutoff: 2026-11-09
-- same-day pending rows outside prior-day counters: 40
+- same-day pending rows outside prior-day counters: 43
 - same-day official-final picks included: 0
 - eligible prior-day picks: 47
 - latest observation per logical pick; superseded dated evidence remains in JSON
@@ -78,7 +78,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 ### 2026-11-07: Portland Trail Blazers vs San Antonio Spurs (Final: **103–125**)
 
 - 🟢 **WON — First-half moneyline: San Antonio Spurs (away)**
-  - Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Actual First-half score: **49–64** · Expected: **60.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game moneyline: San Antonio Spurs (away)**
   - Expected: **56.6%** · Price: **No exact bookmaker price**
@@ -87,7 +87,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
   - Expected: **60.5%** · Price: **1.461 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
 - 🟢 **WON — Full-game total 229.5: Under**
-  - Expected: **64.0%** · Price: **1.901 · DraftKings**
+  - Actual Full-game total: **228** · Expected: **64.0%** · Price: **1.901 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
 - 🔴 **LOST — Highest quarter: Q1**
   - Expected: **36.0%** · Price: **No exact bookmaker price**
@@ -96,16 +96,16 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 ### 2026-11-07: Phoenix Suns vs Houston Rockets (Final: **102–99**)
 
 - 🔴 **LOST — Full-game total 223.5: Over**
-  - Expected: **56.0%** · Price: **1.885 · DraftKings**
+  - Actual Full-game total: **201** · Expected: **56.0%** · Price: **1.885 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
 - 🔴 **LOST — Full-game total 224.5: Over**
-  - Expected: **52.0%** · Price: **1.952 · DraftKings**
+  - Actual Full-game total: **201** · Expected: **52.0%** · Price: **1.952 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
 - 🔴 **LOST — Full-game moneyline: Houston Rockets (away)**
   - Expected: **64.5%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:hardwood`
 - 🔴 **LOST — First-half moneyline: Houston Rockets (away)**
-  - Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Actual First-half score: **47–47** · Expected: **60.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 - 🔴 **LOST — Full-game moneyline: Houston Rockets (away)**
   - Expected: **69.0%** · Price: **1.379 · DraftKings**
@@ -120,10 +120,10 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
   - Expected: **62.8%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:hardwood`
 - 🟢 **WON — Full-game total 220.5: Over**
-  - Expected: **60.0%** · Price: **1.943 · DraftKings**
+  - Actual Full-game total: **245** · Expected: **60.0%** · Price: **1.943 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
 - 🔴 **LOST — First-half moneyline: Orlando Magic (away)**
-  - Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Actual First-half score: **57–41** · Expected: **60.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game moneyline: Golden State Warriors (home)**
   - Expected: **65.6%** · Price: **1.324 · DraftKings**
@@ -132,13 +132,13 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
   - Expected: **36.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game total 219.5: Over**
-  - Expected: **64.0%** · Price: **1.893 · DraftKings**
+  - Actual Full-game total: **245** · Expected: **64.0%** · Price: **1.893 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
 
 ### 2026-11-07: Oklahoma City Thunder vs Washington Wizards (Final: **114–75**)
 
 - 🟢 **WON — Full-game total 222.5: Under**
-  - Expected: **56.0%** · Price: **1.909 · DraftKings**
+  - Actual Full-game total: **189** · Expected: **56.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
 - 🟢 **WON — Full-game moneyline: Oklahoma City Thunder (home)**
   - Expected: **80.7%** · Price: **No exact bookmaker price**
@@ -147,43 +147,43 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
   - Expected: **40.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 - 🔴 **LOST — First-half moneyline: Washington Wizards (away)**
-  - Expected: **52.0%** · Price: **No exact bookmaker price**
+  - Actual First-half score: **57–36** · Expected: **52.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game moneyline: Oklahoma City Thunder (home)**
   - Expected: **84.1%** · Price: **1.161 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
 - 🟢 **WON — Full-game total 223.5: Under**
-  - Expected: **64.0%** · Price: **1.943 · DraftKings**
+  - Actual Full-game total: **189** · Expected: **64.0%** · Price: **1.943 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
 
 ### 2026-11-07: Cleveland Cavaliers vs New York Knicks (Final: **97–109**)
 
 - 🔴 **LOST — Full-game total 222.5: Over**
-  - Expected: **64.0%** · Price: **1.870 · DraftKings**
+  - Actual Full-game total: **206** · Expected: **64.0%** · Price: **1.870 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
 - 🔴 **LOST — Highest quarter: Q1**
   - Expected: **36.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 - 🔴 **LOST — Full-game total 224.5: Over**
-  - Expected: **56.0%** · Price: **1.952 · DraftKings**
+  - Actual Full-game total: **206** · Expected: **56.0%** · Price: **1.952 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
 - 🟢 **WON — Full-game moneyline: New York Knicks (away)**
   - Expected: **54.4%** · Price: **1.508 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
 - 🟢 **WON — First-half moneyline: New York Knicks (away)**
-  - Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Actual First-half score: **53–63** · Expected: **60.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game moneyline: New York Knicks (away)**
   - Expected: **56.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:hardwood`
 - 🔴 **LOST — Full-game total 223.5: Over**
-  - Expected: **60.0%** · Price: **1.870 · DraftKings**
+  - Actual Full-game total: **206** · Expected: **60.0%** · Price: **1.870 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
 
 ### 2026-11-07: Atlanta Hawks vs Brooklyn Nets (Final: **124–121**)
 
 - 🟢 **WON — First-half moneyline: Brooklyn Nets (away)**
-  - Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Actual First-half score: **66–70** · Expected: **60.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game moneyline: Atlanta Hawks (home)**
   - Expected: **75.3%** · Price: **No exact bookmaker price**
@@ -192,7 +192,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
   - Expected: **78.4%** · Price: **1.377 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
 - 🟢 **WON — Full-game total 226.5: Over**
-  - Expected: **60.0%** · Price: **1.885 · DraftKings**
+  - Actual Full-game total: **245** · Expected: **60.0%** · Price: **1.885 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
 - 🔴 **LOST — Highest quarter: Q1**
   - Expected: **36.0%** · Price: **No exact bookmaker price**
@@ -207,10 +207,10 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
   - Expected: **77.1%** · Price: **1.309 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
 - 🟢 **WON — First-half moneyline: Denver Nuggets (away)**
-  - Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Actual First-half score: **41–64** · Expected: **60.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 - 🔴 **LOST — Full-game total 229.5: Over**
-  - Expected: **56.0%** · Price: **1.935 · DraftKings**
+  - Actual Full-game total: **216** · Expected: **56.0%** · Price: **1.935 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
 - 🔴 **LOST — Highest quarter: Q1**
   - Expected: **40.0%** · Price: **No exact bookmaker price**
