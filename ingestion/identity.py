@@ -61,6 +61,44 @@ def canonical_team_name(name: str, aliases: Optional[Dict[str, List[str]]] = Non
     return re.sub(r"\s+", " ", str(name or "").strip())
 
 
+BOOK_CANONICALS: Dict[str, str] = {
+    "draftkings": "DraftKings",
+    "fanduel": "FanDuel",
+    "betmgm": "BetMGM",
+    "caesarssportsbook": "Caesars",
+    "caesars": "Caesars",
+    "pointsbet": "PointsBet",
+    "betrivers": "BetRivers",
+    "wynnbet": "WynnBET",
+    "unibet": "Unibet",
+    "barstool": "Barstool",
+    "espnbet": "ESPN BET",
+    "bet365": "bet365",
+    "williamhill": "William Hill",
+    "superbook": "SuperBook",
+}
+
+
+def canonical_book_name(name: str | None) -> str:
+    """Normalize bookmaker display names to a canonical title.
+
+    ESPN historically emitted both ``Draft Kings`` and ``DraftKings`` for the
+    same market; both must map to one logical pick. Normalization is
+    case/space/punctuation insensitive and falls back to the trimmed original
+    when no known alias matches.
+    """
+    if not name:
+        return ""
+    raw = str(name).strip()
+    if not raw:
+        return ""
+    key = re.sub(r"[^a-z0-9]", "", raw.lower())
+    if key in BOOK_CANONICALS:
+        return BOOK_CANONICALS[key]
+    # Fallback: collapse whitespace but preserve original casing for unknown books.
+    return re.sub(r"\s+", " ", raw)
+
+
 def canonical_team_key(name: str) -> str:
     """Case-insensitive canonical key using the built-in alias registry."""
     return normalize_team_name(canonical_team_name(name))

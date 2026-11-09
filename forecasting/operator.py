@@ -202,6 +202,27 @@ def _selection_label(row: Dict[str, Any]) -> str:
     return f"{market} {period}{line_text} -> {selection}"
 
 
+def _canonical_book_for_key(book_name: str | None) -> str | None:
+    """Canonicalize book names stored in historical pick rows.
+
+    Older rows used ``Draft Kings`` (space) while newer rows use
+    ``DraftKings``. Without normalization the same market would be counted
+    as two logical picks, inflating archived/settled totals and ROI.
+    This is a presentation-layer fix; canonical snapshots are already
+    normalized at ingestion time.
+    """
+    if not book_name:
+        return book_name
+    # Local import to avoid circular dependency at module import time.
+    try:
+        from ingestion.identity import canonical_book_name
+
+        canonical = canonical_book_name(book_name)
+        return canonical or book_name
+    except Exception:
+        return book_name
+
+
 def _logical_pick_key(row: Dict[str, Any]) -> tuple:
     """Identify repeated observations of one displayed pick, not its evidence ID."""
 
@@ -216,7 +237,7 @@ def _logical_pick_key(row: Dict[str, Any]) -> tuple:
         row.get("model"),
         row.get("model_version"),
         book.get("provider"),
-        book.get("book"),
+        _canonical_book_for_key(book.get("book")),
     )
 
 
@@ -303,7 +324,10 @@ def _render_picks(
             probability = row["raw_probability"]
         price = (row.get("book") or {}).get("selected_decimal_price")
         price_text = f"@{float(price):.3f}" if price is not None else "@n/a"
-        book_name = (row.get("book") or {}).get("book") or "no matched book"
+        book_name = (
+            _canonical_book_for_key((row.get("book") or {}).get("book"))
+            or "no matched book"
+        )
         lines.append(
             f"  [{row.get('model')}/{row.get('model_version')}] "
             f"{row['home']} vs {row['away']} · "
@@ -638,8 +662,11 @@ def _render_pick_audit_markdown(
                 ]
             )
             price = (row.get("book") or {}).get("selected_decimal_price")
+            book_display = _canonical_book_for_key(
+                (row.get("book") or {}).get("book")
+            )
             price_text = (
-                f"{float(price):.3f} · {(row.get('book') or {}).get('book') or 'book unknown'}"
+                f"{float(price):.3f} · {book_display or 'book unknown'}"
                 if price is not None
                 else "No exact bookmaker price"
             )

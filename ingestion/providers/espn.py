@@ -392,11 +392,16 @@ def _book_snapshots_for_offer(
     pre_match: bool,
 ) -> Tuple[List[BookSnapshot], List[str]]:
     provider = offer.get("provider") or {}
-    book = str(
+    raw_book = str(
         provider.get("displayName") or provider.get("name") or provider.get("id") or ""
     ).strip()
-    if not book:
+    if not raw_book:
         return [], ["odds offer without a provider/book identity was ignored"]
+    # Normalize historical ESPN variant ``Draft Kings`` -> ``DraftKings``
+    # so logical picks do not duplicate across book spellings.
+    from ..identity import canonical_book_name
+
+    book = canonical_book_name(raw_book)
     common = {
         "game_id": game.game_id,
         "provider": "espn",
