@@ -14,12 +14,14 @@ receipts, and audit state; DuckDB remains the canonical sports system of record.
 
 | League | Native regulation periods | Schedule / results | Independent predictions | Books |
 | --- | --- | --- | --- | --- |
-| NBA | Q1–Q4 | ESPN | ESPN BPI, Hardwood, Predixsport | ESPN scoreboard, TheRundown, SportsGameOdds, TheOddsAPI |
-| WNBA | Event-declared H1/H2 or Q1–Q4 | ESPN | ESPN BPI | ESPN scoreboard |
+| NBA | Q1–Q4 | ESPN | ESPN BPI, Hardwood, Predixsport | ESPN scoreboard, TheRundown, SportsGameOdds, TheOddsAPI* |
+| WNBA | Event-declared H1/H2 or Q1–Q4 | ESPN | ESPN BPI | ESPN scoreboard* |
 | EuroLeague | Q1–Q4 | EuroLeague | Predixsport | No supported EuroLeague book adapter |
 | CBA | Q1–Q4 | iSportsAPI | Sportradar Global Basketball | iSportsAPI |
-| NCAA_M | H1/H2 | ESPN men's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI |
-| NCAA_W | Q1–Q4; event-declared legacy H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI |
+| NCAA_M | H1/H2 | ESPN men's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI* |
+| NCAA_W | Q1–Q4; event-declared legacy H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI* |
+
+* TheOddsAPI requires `THE_ODDS_API_KEY`; without it WNBA/NCAA books are ESPN-scoreboard only (ESPN carries no NCAA_W moneyline — live 153/153 ML rows unpriced on free tier).
 
 NCAA men's halves are never relabelled as quarters. Modern NCAA women's
 results are four quarters, while an explicitly declared older two-half event
