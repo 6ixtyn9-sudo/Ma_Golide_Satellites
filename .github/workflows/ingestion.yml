@@ -48,7 +48,7 @@ jobs:
   league:
     needs: preflight
     runs-on: ubuntu-latest
-    timeout-minutes: 45
+    timeout-minutes: 360
     strategy:
       # One unavailable/failed league never cancels the other five.
       fail-fast: false
