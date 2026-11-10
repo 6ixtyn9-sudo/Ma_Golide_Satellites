@@ -645,6 +645,42 @@ def _render_pick_audit_markdown(
     else:
         lines.append("No settled picks in this window.")
 
+    # Over/under + side bias — selection within market, every league
+    by_selection = report.get("by_selection") or {}
+    lines.extend(["", "## By selection — over/under & side bias", ""])
+    if by_selection:
+        lines.extend(
+            [
+                "| Market:Selection | Settled | W–L–P | Hit rate | Priced | ROI |",
+                "| --- | ---: | ---: | ---: | ---: | ---: |",
+            ]
+        )
+        for key, group in sorted(by_selection.items()):
+            group_settled = int(group["settled"])
+            group_wins = int(group["wins"])
+            group_pushes = int(group["pushes"])
+            group_decisions = group_settled - group_pushes
+            group_losses = group_decisions - group_wins
+            group_priced = sum(
+                (row.get("book") or {}).get("selected_decimal_price") is not None
+                for row in settled
+                if f"{str(row.get('market'))}:{str(row.get('selection'))}" == key
+            )
+            hit_rate = (
+                f"{group_wins / group_decisions:.1%}" if group_decisions else "n/a"
+            )
+            roi = (
+                f"{group['priced_profit_units'] / group_priced:+.1%}"
+                if group_priced
+                else "n/a"
+            )
+            lines.append(
+                f"| `{key}` | {group_settled} | {group_wins}–{group_losses}–{group_pushes} | "
+                f"{hit_rate} | {group_priced} | {roi} |"
+            )
+    else:
+        lines.append("No settled picks in this window.")
+
     lines.extend(
         [
             "",
@@ -795,6 +831,7 @@ def _write_pick_audit(
             profit -= 1.0
     by_bucket: Dict[str, Dict[str, Any]] = {}
     by_market: Dict[str, Dict[str, Any]] = {}
+    by_selection: Dict[str, Dict[str, Any]] = {}
     for row in settled:
         group = by_bucket.setdefault(
             row["bucket"],
@@ -823,6 +860,21 @@ def _write_pick_audit(
                 mgroup["priced_profit_units"] += price - 1.0
             elif row["grade_status"] == "loss":
                 mgroup["priced_profit_units"] -= 1.0
+        # Over/under + side bias audit — selection within market (over/under, home/away) — same regime, no guards lowered
+        sel = str(row.get("selection") or "unknown")
+        key = f"{m}:{sel}"
+        sgroup = by_selection.setdefault(
+            key, {"settled": 0, "wins": 0, "pushes": 0, "priced_profit_units": 0.0, "market": m, "selection": sel}
+        )
+        sgroup["settled"] += 1
+        sgroup["wins"] += int(row["grade_status"] == "win")
+        sgroup["pushes"] += int(row["grade_status"] == "push")
+        if (row.get("book") or {}).get("selected_decimal_price") is not None:
+            price = float(row["book"]["selected_decimal_price"])
+            if row["grade_status"] == "win":
+                sgroup["priced_profit_units"] += price - 1.0
+            elif row["grade_status"] == "loss":
+                sgroup["priced_profit_units"] -= 1.0
     report = {
         "schema_version": OPERATOR_SCHEMA,
         "generated_utc": generated_utc,
@@ -849,6 +901,7 @@ def _write_pick_audit(
         "stake_policy": "flat_one_paper_unit_per_priced_pick",
         "by_bucket": by_bucket,
         "by_market": by_market,
+        "by_selection": by_selection,
         "grading_basis": (
             "reconciled_official_finals_only; official_finals_settle_immediately; "
             "pending_is_not_a_loss; local_day_pending_cutoff; "

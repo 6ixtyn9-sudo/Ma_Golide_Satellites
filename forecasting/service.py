@@ -192,7 +192,6 @@ class MarketForecastService:
             line_snapshots.extend(
                 select_total_snapshots(snapshots, self.book_config, period)
             )
-        for period in periods:
             line_snapshots.extend(
                 select_spread_snapshots(snapshots, self.book_config, period)
             )
