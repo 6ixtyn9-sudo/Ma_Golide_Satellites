@@ -151,9 +151,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.LOCALDATA }}
-          key: magolide-localdata-v3-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: magolide-localdata-v4-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            magolide-localdata-v3-${{ matrix.state_key }}-
+            magolide-localdata-v4-${{ matrix.state_key }}-
 
       - name: Restore Git-durable operator reports after cache recovery
         if: steps.capability.outputs.available == 'true'
@@ -294,7 +294,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ env.LOCALDATA }}
-          key: magolide-localdata-v3-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: magolide-localdata-v4-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Upload league reports and recovery evidence
         if: always()
