@@ -182,7 +182,7 @@ def service(store: InMemoryStore) -> MarketForecastService:
             training_window=50,
             residual_window=30,
         ),
-        calibration_config=CalibrationConfig(min_samples=3, prior_strength=2),
+        calibration_config=CalibrationConfig(min_samples=3, prior_strength=2, calibration_epoch_utc="2026-01-01T00:00:00Z"),
     )
 
 
@@ -306,7 +306,7 @@ def test_league_prior_dominated_history_moneyline_cannot_supply_accas():
             training_window=50,
             residual_window=30,
         ),
-        calibration_config=CalibrationConfig(min_samples=3, prior_strength=2),
+        calibration_config=CalibrationConfig(min_samples=3, prior_strength=2, calibration_epoch_utc="2026-01-01T00:00:00Z"),
     ).build_report(as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4)
     rows = [
         row
@@ -417,7 +417,7 @@ def _forecast(game_id: str, probability: float, *, outcome=None) -> Forecast:
 
 def test_market_accuracy_adjusts_confidence_and_eligibility():
     records = [_forecast(f"g{index}", 0.8, outcome="loss") for index in range(10)]
-    config = CalibrationConfig(min_samples=5, prior_strength=2)
+    config = CalibrationConfig(min_samples=5, prior_strength=2, calibration_epoch_utc="2026-01-01T00:00:00Z")
     profiles = build_profiles(records, config)
     profile = next(iter(profiles.values()))
     assert profile.observed_win_rate == 0
