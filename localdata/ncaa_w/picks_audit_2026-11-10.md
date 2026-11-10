@@ -1,14 +1,14 @@
 # Ma Golide — Recent picks audit (2026-10-12 to 2026-11-10)
 
-Generated: 2026-11-10 15:36 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-10 17:44 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
-- archived logical picks: 520
-- dated evidence rows: 1178 (658 superseded observations)
+- archived logical picks: 524
+- dated evidence rows: 1233 (709 superseded observations)
 - settled picks: 367 (288 wins / 79 losses / 0 pushes)
 - hit rate: 78.5% (288/367 win/loss decisions)
-- pending/unmatched picks: 0 prior-day · 153 total
+- pending/unmatched picks: 0 prior-day · 157 total
 - priced picks: 18
 - paper P&L: -2.677 units
 - ROI: -14.9% (P&L / 18 priced picks) · **provisional — fewer than 30 priced picks**
@@ -17,7 +17,7 @@ Generated: 2026-11-10 15:36 SAST · 30-day rolling window · Paper only
 
 - reconciled official finals settle immediately; pending rows are never losses
 - local-day pending cutoff: 2026-11-10
-- same-day pending rows outside prior-day counters: 153
+- same-day pending rows outside prior-day counters: 157
 - same-day official-final picks included: 0
 - eligible prior-day picks: 367
 - latest observation per logical pick; superseded dated evidence remains in JSON
@@ -36,6 +36,14 @@ Generated: 2026-11-10 15:36 SAST · 30-day rolling window · Paper only
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `moneyline` | 359 | 285–74–0 | 79.4% | 10 | -4.2% |
 | `total` | 8 | 3–5–0 | 37.5% | 8 | -28.2% |
+
+## By selection — over/under & side bias
+
+| Market:Selection | Settled | W–L–P | Hit rate | Priced | ROI |
+| --- | ---: | ---: | ---: | ---: | ---: |
+| `moneyline:away` | 34 | 30–4–0 | 88.2% | 2 | -46.3% |
+| `moneyline:home` | 325 | 255–70–0 | 78.5% | 8 | +6.3% |
+| `total:under` | 8 | 3–5–0 | 37.5% | 8 | -28.2% |
 
 ## Settled picks — official-final audit
 
