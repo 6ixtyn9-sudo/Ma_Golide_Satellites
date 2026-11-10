@@ -1,38 +1,128 @@
 # Ma Golide — Recent picks audit (2026-10-11 to 2026-11-09)
 
-Generated: 2026-11-09 18:07 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-10 03:28 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
-- archived logical picks: 543
-- dated evidence rows: 1655 (1112 superseded observations)
-- settled picks: 305 (194 wins / 111 losses / 0 pushes)
-- hit rate: 63.6% (194/305 win/loss decisions)
-- pending/unmatched picks: 5 prior-day · 238 total
-- priced picks: 180
-- paper P&L: +2.112 units
-- ROI: +1.2% (P&L / 180 priced picks)
+- archived logical picks: 546
+- dated evidence rows: 1678 (1132 superseded observations)
+- settled picks: 329 (217 wins / 112 losses / 0 pushes)
+- hit rate: 66.0% (217/329 win/loss decisions)
+- pending/unmatched picks: 217 prior-day · 217 total
+- priced picks: 190
+- paper P&L: +8.332 units
+- ROI: +4.4% (P&L / 190 priced picks)
 
 ## Settlement policy
 
 - reconciled official finals settle immediately; pending rows are never losses
-- local-day pending cutoff: 2026-11-09
-- same-day pending rows outside prior-day counters: 233
+- local-day pending cutoff: 2026-11-10
+- same-day pending rows outside prior-day counters: 0
 - same-day official-final picks included: 0
-- eligible prior-day picks: 310
+- eligible prior-day picks: 546
 - latest observation per logical pick; superseded dated evidence remains in JSON
 
 ## Bucket performance
 
 | Bucket | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `CAUTION` | 114 | 73–41–0 | 64.0% | 114 | -1.7% |
-| `SKIPPED_INELIGIBLE` | 66 | 33–33–0 | 50.0% | 66 | +6.2% |
-| `WATCHLIST_NO_ODDS` | 125 | 88–37–0 | 70.4% | 0 | n/a |
+| `CAUTION` | 116 | 75–41–0 | 64.7% | 116 | -1.3% |
+| `SKIPPED_INELIGIBLE` | 74 | 41–33–0 | 55.4% | 74 | +13.4% |
+| `WATCHLIST_NO_ODDS` | 139 | 101–38–0 | 72.7% | 0 | n/a |
 
 ## Settled picks — official-final audit
 
 Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+### 2026-11-09: Pennsylvania Quakers vs Howard Bison (Final: **78–65**)
+
+- 🟢 **WON — Full-game total 160.5: Under**
+  - Actual Full-game total: **143** · Expected: **68.0%** · Price: **1.926 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 156.5: Under**
+  - Actual Full-game total: **143** · Expected: **52.0%** · Price: **1.952 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 158.5: Under**
+  - Actual Full-game total: **143** · Expected: **62.0%** · Price: **1.870 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Pennsylvania Quakers (home)**
+  - Expected: **71.0%** · Price: **1.388 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 159.5: Under**
+  - Actual Full-game total: **143** · Expected: **63.0%** · Price: **1.893 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — First-half moneyline: Pennsylvania Quakers (home)**
+  - Actual First-half score: **25–31** · Expected: **58.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Pennsylvania Quakers (home)**
+  - Expected: **55.0%** · Price: **1.388 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 157.5: Under**
+  - Actual Full-game total: **143** · Expected: **58.0%** · Price: **1.870 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-09: Buffalo Bulls vs Penn State Schuylkill Nittany Lions (Final: **107–65**)
+
+- 🟢 **WON — Full-game moneyline: Buffalo Bulls (home)**
+  - Expected: **99.7%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Buffalo Bulls (home)**
+  - Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Buffalo Bulls (home)**
+  - Actual First-half score: **58–31** · Expected: **64.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-09: UMBC Retrievers vs McDaniel Green Terror (Final: **91–61**)
+
+- 🟢 **WON — First-half moneyline: UMBC Retrievers (home)**
+  - Actual First-half score: **51–25** · Expected: **64.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: UMBC Retrievers (home)**
+  - Expected: **99.7%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: UMBC Retrievers (home)**
+  - Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-09: Canisius Golden Griffins vs Hiram Terriers (Final: **117–60**)
+
+- 🟢 **WON — Full-game moneyline: Canisius Golden Griffins (home)**
+  - Expected: **56.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Canisius Golden Griffins (home)**
+  - Expected: **98.6%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — First-half moneyline: Canisius Golden Griffins (home)**
+  - Actual First-half score: **57–19** · Expected: **57.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-09: Ohio State Buckeyes vs Marshall Thundering Herd (Final: **84–74**)
+
+- 🟢 **WON — Full-game moneyline: Ohio State Buckeyes (home)**
+  - Expected: **95.5%** · Price: **1.012 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 162.5: Under**
+  - Actual Full-game total: **158** · Expected: **71.0%** · Price: **1.909 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Ohio State Buckeyes (home)**
+  - Expected: **66.0%** · Price: **1.012 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Ohio State Buckeyes (home)**
+  - Actual First-half score: **45–27** · Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-09: Coppin State Eagles vs Cheyney (PA) Wolves (Final: **90–53**)
+
+- 🟢 **WON — Full-game moneyline: Coppin State Eagles (home)**
+  - Expected: **98.7%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — First-half moneyline: Coppin State Eagles (home)**
+  - Actual First-half score: **47–23** · Expected: **59.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Coppin State Eagles (home)**
+  - Expected: **60.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 
 ### 2026-11-08: Hawai'i Rainbow Warriors vs UT Arlington Mavericks (Final: **71–62**)
 

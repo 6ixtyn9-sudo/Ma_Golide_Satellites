@@ -1,14 +1,14 @@
 # Ma Golide — Recent picks audit (2026-10-11 to 2026-11-09)
 
-Generated: 2026-11-09 18:07 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-10 03:28 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
 - archived logical picks: 367
-- dated evidence rows: 914 (547 superseded observations)
-- settled picks: 242 (185 wins / 57 losses / 0 pushes)
-- hit rate: 76.4% (185/242 win/loss decisions)
-- pending/unmatched picks: 0 prior-day · 125 total
+- dated evidence rows: 923 (556 superseded observations)
+- settled picks: 299 (237 wins / 62 losses / 0 pushes)
+- hit rate: 79.3% (237/299 win/loss decisions)
+- pending/unmatched picks: 68 prior-day · 68 total
 - priced picks: 14
 - paper P&L: -2.877 units
 - ROI: -20.6% (P&L / 14 priced picks) · **provisional — fewer than 30 priced picks**
@@ -16,10 +16,10 @@ Generated: 2026-11-09 18:07 SAST · 30-day rolling window · Paper only
 ## Settlement policy
 
 - reconciled official finals settle immediately; pending rows are never losses
-- local-day pending cutoff: 2026-11-09
-- same-day pending rows outside prior-day counters: 125
+- local-day pending cutoff: 2026-11-10
+- same-day pending rows outside prior-day counters: 0
 - same-day official-final picks included: 0
-- eligible prior-day picks: 242
+- eligible prior-day picks: 367
 - latest observation per logical pick; superseded dated evidence remains in JSON
 
 ## Bucket performance
@@ -28,11 +28,239 @@ Generated: 2026-11-09 18:07 SAST · 30-day rolling window · Paper only
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `CAUTION` | 5 | 4–1–0 | 80.0% | 5 | +2.7% |
 | `SKIPPED_INELIGIBLE` | 9 | 4–5–0 | 44.4% | 9 | -33.5% |
-| `WATCHLIST_NO_ODDS` | 228 | 177–51–0 | 77.6% | 0 | n/a |
+| `WATCHLIST_NO_ODDS` | 285 | 229–56–0 | 80.4% | 0 | n/a |
 
 ## Settled picks — official-final audit
 
 Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+### 2026-11-09: Memphis Tigers vs Little Rock Trojans (Final: **62–48**)
+
+- 🟢 **WON — Full-game moneyline: Memphis Tigers (home)**
+  - Expected: **71.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Memphis Tigers (home)**
+  - Expected: **70.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Memphis Tigers (home)**
+  - Actual First-half score: **25–15** · Expected: **70.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-09: Southern Miss Lady Eagles vs Mississippi Valley State Devilettes (Final: **75–55**)
+
+- 🟢 **WON — Full-game moneyline: Southern Miss Lady Eagles (home)**
+  - Expected: **70.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Southern Miss Lady Eagles (home)**
+  - Expected: **98.5%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — First-half moneyline: Southern Miss Lady Eagles (home)**
+  - Actual First-half score: **44–29** · Expected: **70.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-09: Central Connecticut Blue Devils vs Coppin State Eagles (Final: **60–78**)
+
+- 🔴 **LOST — First-half moneyline: Central Connecticut Blue Devils (home)**
+  - Actual First-half score: **26–33** · Expected: **67.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Central Connecticut Blue Devils (home)**
+  - Expected: **68.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Coppin State Eagles (away)**
+  - Expected: **74.4%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+
+### 2026-11-09: Indiana Hoosiers vs Bradley Braves (Final: **84–56**)
+
+- 🟢 **WON — Full-game moneyline: Indiana Hoosiers (home)**
+  - Expected: **70.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Indiana Hoosiers (home)**
+  - Actual First-half score: **42–26** · Expected: **70.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Indiana Hoosiers (home)**
+  - Expected: **98.7%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+
+### 2026-11-09: UCF Knights vs South Alabama Jaguars (Final: **85–59**)
+
+- 🟢 **WON — Full-game moneyline: UCF Knights (home)**
+  - Expected: **70.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: UCF Knights (home)**
+  - Expected: **86.6%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — First-half moneyline: UCF Knights (home)**
+  - Actual First-half score: **37–25** · Expected: **67.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-09: Xavier Musketeers vs Akron Zips (Final: **70–54**)
+
+- 🟢 **WON — First-half moneyline: Xavier Musketeers (home)**
+  - Actual First-half score: **34–21** · Expected: **67.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Xavier Musketeers (home)**
+  - Expected: **69.8%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Xavier Musketeers (home)**
+  - Expected: **70.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-09: North Carolina Central Eagles vs Fayetteville State Broncos (Final: **60–56**)
+
+- 🟢 **WON — Full-game moneyline: North Carolina Central Eagles (home)**
+  - Expected: **68.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: North Carolina Central Eagles (home)**
+  - Actual First-half score: **29–23** · Expected: **63.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: North Carolina Central Eagles (home)**
+  - Expected: **98.4%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+
+### 2026-11-09: Georgia Southern Eagles vs Savannah State Tigers (Final: **107–61**)
+
+- 🟢 **WON — Full-game moneyline: Georgia Southern Eagles (home)**
+  - Expected: **68.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Georgia Southern Eagles (home)**
+  - Actual First-half score: **58–26** · Expected: **67.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Georgia Southern Eagles (home)**
+  - Expected: **99.9%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+
+### 2026-11-09: Holy Cross Crusaders vs Harvard Crimson (Final: **42–63**)
+
+- 🔴 **LOST — First-half moneyline: Holy Cross Crusaders (home)**
+  - Actual First-half score: **19–31** · Expected: **67.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Harvard Crimson (away)**
+  - Expected: **90.1%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🔴 **LOST — Full-game moneyline: Holy Cross Crusaders (home)**
+  - Expected: **68.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-09: Towson Tigers vs Delaware Blue Hens (Final: **57–55**)
+
+- 🟢 **WON — Full-game moneyline: Towson Tigers (home)**
+  - Expected: **68.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Towson Tigers (home)**
+  - Expected: **69.7%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — First-half moneyline: Towson Tigers (home)**
+  - Actual First-half score: **32–23** · Expected: **67.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-09: Washington State Cougars vs Idaho Vandals (Final: **76–53**)
+
+- 🟢 **WON — First-half moneyline: Washington State Cougars (home)**
+  - Actual First-half score: **44–15** · Expected: **64.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Washington State Cougars (home)**
+  - Expected: **68.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Washington State Cougars (home)**
+  - Expected: **62.3%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+
+### 2026-11-09: Arkansas-Pine Bluff Golden Lions vs Arkansas Baptist Buffaloes (Final: **84–50**)
+
+- 🟢 **WON — Full-game moneyline: Arkansas-Pine Bluff Golden Lions (home)**
+  - Expected: **68.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Arkansas-Pine Bluff Golden Lions (home)**
+  - Actual First-half score: **43–24** · Expected: **67.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Arkansas-Pine Bluff Golden Lions (home)**
+  - Expected: **99.5%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+
+### 2026-11-09: Missouri Tigers vs Tennessee Tech Golden Eagles (Final: **106–59**)
+
+- 🟢 **WON — First-half moneyline: Missouri Tigers (home)**
+  - Actual First-half score: **46–31** · Expected: **64.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Missouri Tigers (home)**
+  - Expected: **68.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Missouri Tigers (home)**
+  - Expected: **94.4%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+
+### 2026-11-09: Alabama A&M Bulldogs vs Miles Golden Bears (Final: **81–61**)
+
+- 🟢 **WON — First-half moneyline: Alabama A&M Bulldogs (home)**
+  - Actual First-half score: **37–36** · Expected: **64.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Alabama A&M Bulldogs (home)**
+  - Expected: **99.5%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Alabama A&M Bulldogs (home)**
+  - Expected: **67.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-09: Samford Bulldogs vs UNC Asheville Bulldogs (Final: **50–40**)
+
+- 🔴 **LOST — First-half moneyline: Samford Bulldogs (home)**
+  - Actual First-half score: **19–23** · Expected: **64.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Samford Bulldogs (home)**
+  - Expected: **89.7%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Samford Bulldogs (home)**
+  - Expected: **68.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-09: Oral Roberts Golden Eagles vs Rogers State Hillcats (Final: **61–50**)
+
+- 🟢 **WON — First-half moneyline: Oral Roberts Golden Eagles (home)**
+  - Actual First-half score: **30–18** · Expected: **72.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Oral Roberts Golden Eagles (home)**
+  - Expected: **71.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Oral Roberts Golden Eagles (home)**
+  - Expected: **99.9%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+
+### 2026-11-09: Oklahoma State Cowgirls vs Northwestern State Lady Demons (Final: **94–56**)
+
+- 🟢 **WON — First-half moneyline: Oklahoma State Cowgirls (home)**
+  - Actual First-half score: **44–23** · Expected: **72.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Oklahoma State Cowgirls (home)**
+  - Expected: **99.8%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Oklahoma State Cowgirls (home)**
+  - Expected: **72.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-09: West Florida Argonauts vs Pensacola Christian Eagles (Final: **85–58**)
+
+- 🟢 **WON — First-half moneyline: West Florida Argonauts (home)**
+  - Actual First-half score: **34–26** · Expected: **67.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: West Florida Argonauts (home)**
+  - Expected: **97.7%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: West Florida Argonauts (home)**
+  - Expected: **68.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-09: Ohio Bobcats vs Otterbein Cardinals (Final: **68–44**)
+
+- 🟢 **WON — First-half moneyline: Ohio Bobcats (home)**
+  - Actual First-half score: **24–18** · Expected: **67.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Ohio Bobcats (home)**
+  - Expected: **99.9%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Ohio Bobcats (home)**
+  - Expected: **68.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 
 ### 2026-11-08: USC Trojans vs Utah State Aggies (Final: **118–40**)
 
