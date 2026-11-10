@@ -40,6 +40,7 @@ ALLOWED_NAMES = tuple(
     )
 )
 IMMUTABLE_NAMES = re.compile(rf"auto_tickets_{DATE}_decision\.json")
+CALIBRATION_EPOCH = "2026-11-10"
 MAX_FILE_BYTES = 25 * 1024 * 1024
 MAX_TOTAL_BYTES = 100 * 1024 * 1024
 
@@ -125,6 +126,11 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                 raise ValueError("operator artifact batch exceeds the 100 MiB publication limit")
             destination = repo / "localdata" / state / source.name
             relative = destination.relative_to(repo).as_posix()
+            # Hard-reset: never re-publish pre-epoch dated files (even from warm v3 cache).
+            m = re.search(r"(\d{4}-\d{2}-\d{2})", source.name)
+            if m and m.group(1) < CALIBRATION_EPOCH:
+                withdrawn_skipped.append(relative)
+                continue
             if relative in seen_destinations:
                 raise ValueError(f"duplicate recovered operator destination: {relative}")
             seen_destinations.add(relative)
