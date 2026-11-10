@@ -1,6 +1,6 @@
 # Ma Golide — Recent picks audit (2026-10-12 to 2026-11-10)
 
-Generated: 2026-11-10 13:02 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-10 15:37 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
@@ -22,6 +22,10 @@ Generated: 2026-11-10 13:02 SAST · 30-day rolling window · Paper only
 - latest observation per logical pick; superseded dated evidence remains in JSON
 
 ## Bucket performance
+
+No settled picks in this window.
+
+## By market
 
 No settled picks in this window.
 
