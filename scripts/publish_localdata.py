@@ -36,6 +36,7 @@ ALLOWED_NAMES = tuple(
         r"auto_tickets_performance\.txt",
         rf"auto_tickets_{DATE}\.txt",
         rf"auto_tickets_{DATE}_decision\.json",
+        rf"auto_tickets_{DATE}_withdrawn\.json",
     )
 )
 IMMUTABLE_NAMES = re.compile(rf"auto_tickets_{DATE}_decision\.json")
@@ -57,23 +58,33 @@ def _atomic_write(path: Path, raw: bytes) -> None:
 
 def _withdrawn_decision_ids(localdata: Path) -> frozenset[str]:
     """Load Git-authoritative withdrawals before accepting cached receipts."""
+    ids: set[str] = set()
     path = localdata / "auto_tickets_state.json"
-    if not path.is_file():
-        return frozenset()
-    try:
-        state = json.loads(path.read_text())
-    except (OSError, json.JSONDecodeError) as exc:
-        raise ValueError(f"invalid paper-ticket state: {path}") from exc
-    locks = state.get("frozen_by_date", {})
-    if not isinstance(locks, dict):
-        raise ValueError(f"invalid paper-ticket locks: {path}")
-    return frozenset(
-        str(lock["decision_id"])
-        for lock in locks.values()
-        if isinstance(lock, dict)
-        and lock.get("withdrawn") is True
-        and lock.get("decision_id")
-    )
+    if path.is_file():
+        try:
+            state = json.loads(path.read_text())
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ValueError(f"invalid paper-ticket state: {path}") from exc
+        locks = state.get("frozen_by_date", {})
+        if not isinstance(locks, dict):
+            raise ValueError(f"invalid paper-ticket locks: {path}")
+        ids.update(
+            str(lock["decision_id"])
+            for lock in locks.values()
+            if isinstance(lock, dict)
+            and lock.get("withdrawn") is True
+            and lock.get("decision_id")
+        )
+    # Sidecars survive state rollbacks.
+    for sidecar in localdata.glob("auto_tickets_*_withdrawn.json"):
+        try:
+            data = json.loads(sidecar.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        did = data.get("decision_id")
+        if did:
+            ids.add(str(did))
+    return frozenset(ids)
 
 
 def _artifact_league_dirs(artifacts: Path) -> Iterable[tuple[str, Path]]:

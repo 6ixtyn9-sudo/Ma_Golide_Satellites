@@ -214,7 +214,7 @@ def apply_profiles(
             reasons.append("missing_selected_decimal_price")
         if profile is None or not profile.sufficient:
             reasons.append("insufficient_walk_forward_samples")
-        if (forecast.team_history or {}).get("sufficient_for_accas") is False:
+        if (forecast.team_history or {}).get("sufficient_for_accas") is not True:
             reasons.append("insufficient_team_specific_history")
         if forecast.push_probability > cfg.max_push_probability:
             reasons.append("push_risk_requires_leg_void_rules")

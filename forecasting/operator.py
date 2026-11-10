@@ -78,6 +78,23 @@ def _write_text(path: Path, text: str) -> str:
     return _atomic_bytes(path, text.encode())
 
 
+def _withdrawn_sidecar_path(localdata: Path, target_date: str) -> Path:
+    return localdata / f"auto_tickets_{target_date}_withdrawn.json"
+
+
+def _withdrawn_ids_from_sidecars(localdata: Path) -> set[str]:
+    ids: set[str] = set()
+    for path in localdata.glob("auto_tickets_*_withdrawn.json"):
+        try:
+            data = json.loads(path.read_text())
+        except (OSError, json.JSONDecodeError):
+            continue
+        did = data.get("decision_id")
+        if did:
+            ids.add(str(did))
+    return ids
+
+
 def _read_json(path: Path, default: Any) -> Any:
     if not path.exists():
         return deepcopy(default)
@@ -235,7 +252,6 @@ def _logical_pick_key(row: Dict[str, Any]) -> tuple:
         row.get("selection"),
         float(line) if line is not None else None,
         row.get("model"),
-        row.get("model_version"),
         book.get("provider"),
         _canonical_book_for_key(book.get("book")),
     )
@@ -984,6 +1000,9 @@ def _ticket_receipt(
     accas: List[Dict[str, Any]],
 ) -> Optional[Dict[str, Any]]:
     path = localdata / f"auto_tickets_{target_date}_decision.json"
+    # Sidecar is authoritative even if state cache rolls back.
+    if _withdrawn_sidecar_path(localdata, target_date).exists():
+        return None
     lock = state["frozen_by_date"].get(target_date)
     if isinstance(lock, dict) and lock.get("withdrawn") is True:
         # Keep immutable receipt bytes for evidence, but never adopt, rotate,
@@ -991,6 +1010,10 @@ def _ticket_receipt(
         # withdrawal survive restoration of an older Actions cache.
         if not lock.get("decision_id"):
             raise ValueError(f"withdrawn ticket lock lacks decision_id: {target_date}")
+        # Persist sidecar so future state rollbacks still see the withdrawal.
+        sidecar = _withdrawn_sidecar_path(localdata, target_date)
+        if not sidecar.exists():
+            _write_json(sidecar, {"decision_id": lock.get("decision_id"), "withdrawn": True, "target_date": target_date})
         return None
     if lock is not None:
         locked_path = localdata / str(lock.get("receipt_path") or path.name)
@@ -1003,6 +1026,15 @@ def _ticket_receipt(
             raise ValueError(f"invalid frozen ticket receipt: {locked_path}")
         return receipt
     if path.exists():
+        # Do not adopt a withdrawn receipt even via immutable-receipt path.
+        sidecar_ids = _withdrawn_ids_from_sidecars(localdata)
+        if sidecar_ids:
+            try:
+                cand = json.loads(path.read_text())
+                if str(cand.get("decision_id")) in sidecar_ids:
+                    return None
+            except (OSError, json.JSONDecodeError):
+                pass
         # A receipt is itself immutable evidence. Adopt its lock rather than
         # rebuilding a potentially different card after a state-cache loss.
         receipt = _read_json(path, {})
@@ -1457,14 +1489,22 @@ def publish_operator_reports(
     state["scans"] = state["scans"][-100:]
     withdrawal = state["frozen_by_date"].get(target_date)
     if not (isinstance(withdrawal, dict) and withdrawal.get("withdrawn") is True):
-        withdrawal = None
+        # Sidecar withdrawal also counts for display (survives state rollback)
+        if _withdrawn_sidecar_path(localdata, target_date).exists():
+            try:
+                sc = json.loads(_withdrawn_sidecar_path(localdata, target_date).read_text())
+                withdrawal = {"withdrawn": True, "decision_id": sc.get("decision_id"), "sidecar": True}
+            except (OSError, json.JSONDecodeError):
+                withdrawal = {"withdrawn": True, "sidecar": True}
+        else:
+            withdrawal = None
     withdrawn_decision_ids = {
         str(lock.get("decision_id"))
         for lock in state["frozen_by_date"].values()
         if isinstance(lock, dict)
         and lock.get("withdrawn") is True
         and lock.get("decision_id")
-    }
+    } | _withdrawn_ids_from_sidecars(localdata)
     receipts = []
     for path in sorted(localdata.glob("auto_tickets_????-??-??_decision.json")):
         candidate = _read_json(path, {})

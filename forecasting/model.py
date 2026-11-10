@@ -479,7 +479,6 @@ class HistoryModel:
             if (
                 snapshot.period is Period.FULL_GAME
                 and prediction is not None
-                and snapshot.market is Market.TOTAL
                 and (
                     prediction.expected_total is not None
                     or prediction.expected_home_score is not None

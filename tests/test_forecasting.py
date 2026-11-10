@@ -135,6 +135,15 @@ def populated_store(*, finals: int = 12, upcoming: int = 3) -> InMemoryStore:
                 over_price_decimal=1.91,
                 under_price_decimal=1.91,
             ),
+            _snapshot(
+                game_id,
+                Market.SPREAD,
+                Period.FULL_GAME,
+                book_observed,
+                line=-1.5,
+                home_price_decimal=1.91,
+                away_price_decimal=1.91,
+            ),
         ]
         for period in (Period.Q1, Period.Q2, Period.Q3, Period.Q4):
             snapshots.extend(
@@ -190,6 +199,7 @@ def test_all_old_markets_are_forecast_and_accas_use_calibrated_probabilities():
     assert ("full_game", "moneyline") in markets
     assert ("H1", "moneyline") in markets
     assert ("full_game", "total") in markets
+    assert ("full_game", "spread") in markets
     assert ("full_game", "highest_quarter") in markets
     full_game_moneyline_sources = {
         row["model"]
