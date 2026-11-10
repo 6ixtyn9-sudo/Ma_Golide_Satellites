@@ -1,13 +1,44 @@
 {
-  "archived_evidence_rows": 361,
-  "archived_pick_rows": 160,
-  "by_bucket": {},
-  "by_market": {},
-  "by_selection": {},
+  "archived_evidence_rows": 404,
+  "archived_pick_rows": 162,
+  "by_bucket": {
+    "WATCHLIST_NO_ODDS": {
+      "priced_profit_units": 0.0,
+      "pushes": 0,
+      "settled": 36,
+      "wins": 34
+    }
+  },
+  "by_market": {
+    "moneyline": {
+      "priced_profit_units": 0.0,
+      "pushes": 0,
+      "settled": 36,
+      "wins": 34
+    }
+  },
+  "by_selection": {
+    "moneyline:away": {
+      "market": "moneyline",
+      "priced_profit_units": 0.0,
+      "pushes": 0,
+      "selection": "away",
+      "settled": 1,
+      "wins": 1
+    },
+    "moneyline:home": {
+      "market": "moneyline",
+      "priced_profit_units": 0.0,
+      "pushes": 0,
+      "selection": "home",
+      "settled": 35,
+      "wins": 33
+    }
+  },
   "eligible_prior_picks": 0,
-  "generated_utc": "2026-11-10T16:29:19Z",
+  "generated_utc": "2026-11-10T19:40:12Z",
   "grading_basis": "reconciled_official_finals_only; official_finals_settle_immediately; pending_is_not_a_loss; local_day_pending_cutoff; latest_observation_per_logical_pick",
-  "hit_rate": null,
+  "hit_rate": 0.9444444444444444,
   "include_same_day_settled": true,
   "ledger": [
     {
@@ -40,14 +71,14 @@
       "expected_total": 65.34583333333333,
       "forecast_id": "f40dae7acee9f2eac4be",
       "game_id": "401926094",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Bowling Green Falcons",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "H1",
       "pick_id": "f40dae7acee9f2eac4be",
@@ -96,14 +127,14 @@
       "expected_total": null,
       "forecast_id": "05d9b68fe28d4f0445c4",
       "game_id": "401926094",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Bowling Green Falcons",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "provider:espn",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "05d9b68fe28d4f0445c4",
@@ -152,14 +183,14 @@
       "expected_total": 134.3077777777778,
       "forecast_id": "6d559e3e94e642b7c680",
       "game_id": "401926094",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Bowling Green Falcons",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "6d559e3e94e642b7c680",
@@ -209,14 +240,14 @@
       "expected_total": 65.95694444444445,
       "forecast_id": "e40bc76049c4271c947b",
       "game_id": "401927046",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "North Florida Ospreys",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "H1",
       "pick_id": "e40bc76049c4271c947b",
@@ -265,14 +296,14 @@
       "expected_total": null,
       "forecast_id": "e23a137b110c9e866418",
       "game_id": "401927046",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "North Florida Ospreys",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "provider:espn",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "e23a137b110c9e866418",
@@ -321,14 +352,14 @@
       "expected_total": 136.53,
       "forecast_id": "e470a993a3944005a1ef",
       "game_id": "401927046",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "North Florida Ospreys",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "e470a993a3944005a1ef",
@@ -378,14 +409,14 @@
       "expected_total": 65.43333333333334,
       "forecast_id": "2e49051143b1598ca2c4",
       "game_id": "401929137",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Toledo Rockets",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "H1",
       "pick_id": "2e49051143b1598ca2c4",
@@ -435,14 +466,14 @@
       "expected_total": 135.44,
       "forecast_id": "593b55c257f1b872b34e",
       "game_id": "401929137",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Toledo Rockets",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "593b55c257f1b872b34e",
@@ -491,14 +522,14 @@
       "expected_total": null,
       "forecast_id": "c005014482a196078331",
       "game_id": "401929137",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Toledo Rockets",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "provider:espn",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "c005014482a196078331",
@@ -547,14 +578,14 @@
       "expected_total": 65.34583333333333,
       "forecast_id": "c5315bd85a53e3a850cd",
       "game_id": "401929161",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Wofford Terriers",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "H1",
       "pick_id": "c5315bd85a53e3a850cd",
@@ -604,14 +635,14 @@
       "expected_total": 134.03000000000003,
       "forecast_id": "219fe7f95f5f414d7361",
       "game_id": "401929161",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Wofford Terriers",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "219fe7f95f5f414d7361",
@@ -660,14 +691,14 @@
       "expected_total": null,
       "forecast_id": "b3599c0d972fa4af79e4",
       "game_id": "401929161",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Wofford Terriers",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "provider:espn",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "b3599c0d972fa4af79e4",
@@ -716,14 +747,14 @@
       "expected_total": 65.26666666666667,
       "forecast_id": "49db753f6e69fa1438ff",
       "game_id": "401906982",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Kansas State Wildcats",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "H1",
       "pick_id": "49db753f6e69fa1438ff",
@@ -772,14 +803,14 @@
       "expected_total": null,
       "forecast_id": "23175a8bdfe33a4434df",
       "game_id": "401906982",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Kansas State Wildcats",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "provider:espn",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "23175a8bdfe33a4434df",
@@ -828,14 +859,14 @@
       "expected_total": 133.94,
       "forecast_id": "b589f879258d3eae7202",
       "game_id": "401906982",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Kansas State Wildcats",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "b589f879258d3eae7202",
@@ -885,14 +916,14 @@
       "expected_total": 65.93333333333334,
       "forecast_id": "15f57e93f55459dfe4a1",
       "game_id": "401913874",
-      "grade_status": "pending",
+      "grade_status": "loss",
       "home": "Wichita State Shockers",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "loss",
       "paper_only": true,
       "period": "H1",
       "pick_id": "15f57e93f55459dfe4a1",
@@ -941,14 +972,14 @@
       "expected_total": null,
       "forecast_id": "d8725eb9979a6cefebf4",
       "game_id": "401913874",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Wichita State Shockers",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "provider:espn",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "d8725eb9979a6cefebf4",
@@ -997,14 +1028,14 @@
       "expected_total": 134.66222222222223,
       "forecast_id": "e069a89c7f80511015bb",
       "game_id": "401913874",
-      "grade_status": "pending",
+      "grade_status": "loss",
       "home": "Wichita State Shockers",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "loss",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "e069a89c7f80511015bb",
@@ -1054,14 +1085,14 @@
       "expected_total": 65.90138888888889,
       "forecast_id": "587f779352474b165403",
       "game_id": "401919075",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Marquette Golden Eagles",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "H1",
       "pick_id": "587f779352474b165403",
@@ -1110,14 +1141,14 @@
       "expected_total": null,
       "forecast_id": "b90869a27aba51d4d70a",
       "game_id": "401919075",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Marquette Golden Eagles",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "provider:espn",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "b90869a27aba51d4d70a",
@@ -1166,14 +1197,14 @@
       "expected_total": 136.36333333333334,
       "forecast_id": "dcdf61744480a72ddb3c",
       "game_id": "401919075",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Marquette Golden Eagles",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "dcdf61744480a72ddb3c",
@@ -1223,14 +1254,14 @@
       "expected_total": 65.45694444444445,
       "forecast_id": "70dc77c3791a206774b8",
       "game_id": "401919675",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Drake Bulldogs",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "H1",
       "pick_id": "70dc77c3791a206774b8",
@@ -1280,14 +1311,14 @@
       "expected_total": 133.97444444444446,
       "forecast_id": "71d1ca616d8efe862d69",
       "game_id": "401919675",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Drake Bulldogs",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "71d1ca616d8efe862d69",
@@ -1336,14 +1367,14 @@
       "expected_total": null,
       "forecast_id": "dba03cbceba850bfd6ad",
       "game_id": "401919675",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Drake Bulldogs",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "provider:espn",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "dba03cbceba850bfd6ad",
@@ -1392,14 +1423,14 @@
       "expected_total": 66.29027777777777,
       "forecast_id": "0662b7d9cb61b115e192",
       "game_id": "401919876",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Chicago State Cougars",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "H1",
       "pick_id": "0662b7d9cb61b115e192",
@@ -1448,14 +1479,14 @@
       "expected_total": null,
       "forecast_id": "28e8020f8f4a858dc487",
       "game_id": "401919876",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Chicago State Cougars",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "provider:espn",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "28e8020f8f4a858dc487",
@@ -1504,14 +1535,14 @@
       "expected_total": 135.86333333333334,
       "forecast_id": "931308a1d5905d9df102",
       "game_id": "401919876",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Chicago State Cougars",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "931308a1d5905d9df102",
@@ -1561,14 +1592,14 @@
       "expected_total": 65.06805555555555,
       "forecast_id": "26b14dffbe516034bd35",
       "game_id": "401920015",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Valparaiso Beacons",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "H1",
       "pick_id": "26b14dffbe516034bd35",
@@ -1618,14 +1649,14 @@
       "expected_total": 134.36333333333334,
       "forecast_id": "a47ac0fa1cc91b99d8b7",
       "game_id": "401920015",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Valparaiso Beacons",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "a47ac0fa1cc91b99d8b7",
@@ -1674,14 +1705,14 @@
       "expected_total": null,
       "forecast_id": "b8078521138722d81bb2",
       "game_id": "401920015",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Valparaiso Beacons",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "provider:espn",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "b8078521138722d81bb2",
@@ -1730,14 +1761,14 @@
       "expected_total": 65.06805555555556,
       "forecast_id": "8a48693896e39e67bdad",
       "game_id": "401922658",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Nicholls Colonels",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "H1",
       "pick_id": "8a48693896e39e67bdad",
@@ -1786,14 +1817,14 @@
       "expected_total": null,
       "forecast_id": "510b5e9edadf333a3037",
       "game_id": "401922658",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Nicholls Colonels",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "provider:espn",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "510b5e9edadf333a3037",
@@ -1842,14 +1873,14 @@
       "expected_total": 133.9188888888889,
       "forecast_id": "ca1236a79f47f244494e",
       "game_id": "401922658",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Nicholls Colonels",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "ca1236a79f47f244494e",
@@ -1899,14 +1930,14 @@
       "expected_total": 65.17916666666666,
       "forecast_id": "9ce108484a95efee85e2",
       "game_id": "401928218",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Auburn Tigers",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "H1",
       "pick_id": "9ce108484a95efee85e2",
@@ -1955,14 +1986,14 @@
       "expected_total": null,
       "forecast_id": "0fac6b8afbf01c82b61e",
       "game_id": "401928218",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Auburn Tigers",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "provider:espn",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "0fac6b8afbf01c82b61e",
@@ -2011,14 +2042,14 @@
       "expected_total": 133.53,
       "forecast_id": "ca70f1fa226cc15e1984",
       "game_id": "401928218",
-      "grade_status": "pending",
+      "grade_status": "win",
       "home": "Auburn Tigers",
       "league": "NCAA_W",
       "line": null,
       "market": "moneyline",
       "model": "team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
-      "outcome": null,
+      "outcome": "win",
       "paper_only": true,
       "period": "full_game",
       "pick_id": "ca70f1fa226cc15e1984",
@@ -2097,61 +2128,6 @@
     },
     {
       "alternative_probabilities": {
-        "away": 0.0002,
-        "home": 0.9998
-      },
-      "away": "La Sierra Golden Eagles",
-      "book": null,
-      "bucket": "WATCHLIST_NO_ODDS",
-      "calibrated_probability": 0.9998,
-      "calibration": {
-        "adjustment": 0.0,
-        "n": 0,
-        "status": "no_history",
-        "sufficient_for_accas": false
-      },
-      "date": "2026-11-10",
-      "eligibility": {
-        "acca_eligible": false,
-        "evidence_state": "current_pre_tip_unfrozen",
-        "reasons": [
-          "no_exact_bookmaker_market",
-          "insufficient_walk_forward_samples",
-          "insufficient_team_specific_history"
-        ]
-      },
-      "expected_margin": null,
-      "expected_total": null,
-      "forecast_id": "19c4f65e654252a96d5d",
-      "game_id": "401917696",
-      "grade_status": "pending",
-      "home": "Loyola Marymount Lions",
-      "league": "NCAA_W",
-      "line": null,
-      "market": "moneyline",
-      "model": "provider:espn",
-      "model_version": "team_history_empirical_v1",
-      "outcome": null,
-      "paper_only": true,
-      "period": "full_game",
-      "pick_id": "19c4f65e654252a96d5d",
-      "prediction": {
-        "frozen": false,
-        "observed_utc": "2026-11-10T16:29:29Z",
-        "provider": "espn"
-      },
-      "price_evidence": "UNMATCHED",
-      "push_probability": 0.0,
-      "raw_probability": 0.9998,
-      "residual_games": 0,
-      "role": null,
-      "scheduled_utc": "2026-11-10T20:00:00Z",
-      "selection": "home",
-      "team_history": null,
-      "training_games": 0
-    },
-    {
-      "alternative_probabilities": {
         "away": 0.26,
         "draw": 0.0,
         "home": 0.74
@@ -2206,6 +2182,61 @@
         "sufficient_for_accas": false
       },
       "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.0002,
+        "home": 0.9998
+      },
+      "away": "La Sierra Golden Eagles",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9998,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "af62cd1ae95c43aadf87",
+      "game_id": "401917696",
+      "grade_status": "pending",
+      "home": "Loyola Marymount Lions",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "af62cd1ae95c43aadf87",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T19:40:18Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9998,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-10T20:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
     },
     {
       "alternative_probabilities": {
@@ -2291,7 +2322,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "ee281d3c2da7c5865f96",
+      "forecast_id": "61f32c74e40aee7190e8",
       "game_id": "401915666",
       "grade_status": "pending",
       "home": "TCU Horned Frogs",
@@ -2303,10 +2334,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "ee281d3c2da7c5865f96",
+      "pick_id": "61f32c74e40aee7190e8",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:29Z",
+        "observed_utc": "2026-11-10T19:40:18Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -2428,6 +2459,70 @@
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
       "push_probability": 0.0,
       "raw_probability": 0.78,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T22:00:00Z",
+      "selection": "away",
+      "team_history": {
+        "away_effective_games": 1.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.8,
+        "home": 0.2
+      },
+      "away": "Iona Gaels",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "main_line": true,
+        "observed_utc": "2026-11-10T19:40:13Z",
+        "pre_match": true,
+        "provider": "espn",
+        "selected_decimal_price": 1.9090909090909092,
+        "source_modified_utc": null
+      },
+      "bucket": "SKIPPED_INELIGIBLE",
+      "calibrated_probability": 0.8,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 21.52333333333332,
+      "expected_total": 134.44,
+      "forecast_id": "dd6be9b68ed57770f5f8",
+      "game_id": "401915666",
+      "grade_status": "pending",
+      "home": "TCU Horned Frogs",
+      "league": "NCAA_W",
+      "line": -46.5,
+      "market": "spread",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "dd6be9b68ed57770f5f8",
+      "prediction": null,
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.8,
       "residual_games": 100,
       "role": null,
       "scheduled_utc": "2026-11-10T22:00:00Z",
@@ -2578,7 +2673,7 @@
         "book": "DraftKings",
         "frozen": false,
         "main_line": true,
-        "observed_utc": "2026-11-10T16:29:22Z",
+        "observed_utc": "2026-11-10T19:40:13Z",
         "pre_match": true,
         "provider": "espn",
         "selected_decimal_price": 1.847457627118644,
@@ -2603,7 +2698,7 @@
       },
       "expected_margin": 21.52333333333332,
       "expected_total": 134.44,
-      "forecast_id": "a54119c2dc148da4c3e8",
+      "forecast_id": "f5cf25ac5fa75c24d4b6",
       "game_id": "401915666",
       "grade_status": "pending",
       "home": "TCU Horned Frogs",
@@ -2615,7 +2710,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "a54119c2dc148da4c3e8",
+      "pick_id": "f5cf25ac5fa75c24d4b6",
       "prediction": null,
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
       "push_probability": 0.0,
@@ -2773,7 +2868,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "faff2275a0191e2ff5ed",
+      "forecast_id": "499460e932906535e8b5",
       "game_id": "401909671",
       "grade_status": "pending",
       "home": "Winthrop Eagles",
@@ -2785,10 +2880,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "faff2275a0191e2ff5ed",
+      "pick_id": "499460e932906535e8b5",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -2885,7 +2980,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "2c73bb3354ff3a8f9d24",
+      "forecast_id": "168e9b9a48122b8fcee3",
       "game_id": "401918448",
       "grade_status": "pending",
       "home": "Eastern Kentucky Colonels",
@@ -2897,10 +2992,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "2c73bb3354ff3a8f9d24",
+      "pick_id": "168e9b9a48122b8fcee3",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -3111,7 +3206,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "ff7664e5cd1e198513dd",
+      "forecast_id": "910be3ac3cb18f5f95fd",
       "game_id": "401918609",
       "grade_status": "pending",
       "home": "Alabama State Lady Hornets",
@@ -3123,10 +3218,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "ff7664e5cd1e198513dd",
+      "pick_id": "910be3ac3cb18f5f95fd",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -3280,7 +3375,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "90b1b7fb817c8730f253",
+      "forecast_id": "3a947f1420ffc217166c",
       "game_id": "401918657",
       "grade_status": "pending",
       "home": "Marshall Thundering Herd",
@@ -3292,10 +3387,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "90b1b7fb817c8730f253",
+      "pick_id": "3a947f1420ffc217166c",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:29Z",
+        "observed_utc": "2026-11-10T19:40:18Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -3392,7 +3487,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "399730a9257ec43862d7",
+      "forecast_id": "775bf36cece3382b5c86",
       "game_id": "401919516",
       "grade_status": "pending",
       "home": "Boston University Terriers",
@@ -3404,10 +3499,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "399730a9257ec43862d7",
+      "pick_id": "775bf36cece3382b5c86",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:29Z",
+        "observed_utc": "2026-11-10T19:40:18Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -3618,7 +3713,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "de10f8cf3b914008e7b5",
+      "forecast_id": "ad493eed4410b5bbd87a",
       "game_id": "401919916",
       "grade_status": "pending",
       "home": "Le Moyne Dolphins",
@@ -3630,10 +3725,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "de10f8cf3b914008e7b5",
+      "pick_id": "ad493eed4410b5bbd87a",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:29Z",
+        "observed_utc": "2026-11-10T19:40:18Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -3787,7 +3882,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "bd3037ec3fc780d03fd6",
+      "forecast_id": "dd4b6267a319188260f2",
       "game_id": "401912954",
       "grade_status": "pending",
       "home": "Tennessee Lady Volunteers",
@@ -3799,10 +3894,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "bd3037ec3fc780d03fd6",
+      "pick_id": "dd4b6267a319188260f2",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -3874,6 +3969,61 @@
     },
     {
       "alternative_probabilities": {
+        "away": 0.0008,
+        "home": 0.9992
+      },
+      "away": "Lindenwood Lions",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9992,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "62a3abfe51e92329b6f0",
+      "game_id": "401906077",
+      "grade_status": "pending",
+      "home": "Louisville Cardinals",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "62a3abfe51e92329b6f0",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T19:40:19Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9992,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-11T00:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
         "away": 0.26,
         "draw": 0.0,
         "home": 0.74
@@ -3928,61 +4078,6 @@
         "sufficient_for_accas": false
       },
       "training_games": 200
-    },
-    {
-      "alternative_probabilities": {
-        "away": 0.0008,
-        "home": 0.9992
-      },
-      "away": "Lindenwood Lions",
-      "book": null,
-      "bucket": "WATCHLIST_NO_ODDS",
-      "calibrated_probability": 0.9992,
-      "calibration": {
-        "adjustment": 0.0,
-        "n": 0,
-        "status": "no_history",
-        "sufficient_for_accas": false
-      },
-      "date": "2026-11-10",
-      "eligibility": {
-        "acca_eligible": false,
-        "evidence_state": "current_pre_tip_unfrozen",
-        "reasons": [
-          "no_exact_bookmaker_market",
-          "insufficient_walk_forward_samples",
-          "insufficient_team_specific_history"
-        ]
-      },
-      "expected_margin": null,
-      "expected_total": null,
-      "forecast_id": "f783f32212d9d94aa8c4",
-      "game_id": "401906077",
-      "grade_status": "pending",
-      "home": "Louisville Cardinals",
-      "league": "NCAA_W",
-      "line": null,
-      "market": "moneyline",
-      "model": "provider:espn",
-      "model_version": "team_history_empirical_v1",
-      "outcome": null,
-      "paper_only": true,
-      "period": "full_game",
-      "pick_id": "f783f32212d9d94aa8c4",
-      "prediction": {
-        "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
-        "provider": "espn"
-      },
-      "price_evidence": "UNMATCHED",
-      "push_probability": 0.0,
-      "raw_probability": 0.9992,
-      "residual_games": 0,
-      "role": null,
-      "scheduled_utc": "2026-11-11T00:00:00Z",
-      "selection": "home",
-      "team_history": null,
-      "training_games": 0
     },
     {
       "alternative_probabilities": {
@@ -4068,7 +4163,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "3b9a2506d29abd6fbbf3",
+      "forecast_id": "417d639d3897813f4423",
       "game_id": "401913746",
       "grade_status": "pending",
       "home": "Pittsburgh Panthers",
@@ -4080,10 +4175,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "3b9a2506d29abd6fbbf3",
+      "pick_id": "417d639d3897813f4423",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -4237,7 +4332,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "64cb35382faa522f465e",
+      "forecast_id": "3659b2c7fceecdc6497d",
       "game_id": "401915324",
       "grade_status": "pending",
       "home": "Princeton Tigers",
@@ -4249,10 +4344,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "64cb35382faa522f465e",
+      "pick_id": "3659b2c7fceecdc6497d",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -4406,7 +4501,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "4a816ef598c65d7cbea7",
+      "forecast_id": "bb6fd0b9f7b1d7152984",
       "game_id": "401917185",
       "grade_status": "pending",
       "home": "Loyola Maryland Greyhounds",
@@ -4418,10 +4513,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "4a816ef598c65d7cbea7",
+      "pick_id": "bb6fd0b9f7b1d7152984",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -4550,6 +4645,61 @@
     },
     {
       "alternative_probabilities": {
+        "away": 0.0028,
+        "home": 0.9972
+      },
+      "away": "Fort Valley State Wildcats",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9972,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "0ea44d8b8b18c9fa115e",
+      "game_id": "401918424",
+      "grade_status": "pending",
+      "home": "West Georgia Wolves",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "0ea44d8b8b18c9fa115e",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T19:40:19Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9972,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-11T00:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
         "away": 0.26,
         "draw": 0.0,
         "home": 0.74
@@ -4604,61 +4754,6 @@
         "sufficient_for_accas": false
       },
       "training_games": 200
-    },
-    {
-      "alternative_probabilities": {
-        "away": 0.0028,
-        "home": 0.9972
-      },
-      "away": "Fort Valley State Wildcats",
-      "book": null,
-      "bucket": "WATCHLIST_NO_ODDS",
-      "calibrated_probability": 0.9972,
-      "calibration": {
-        "adjustment": 0.0,
-        "n": 0,
-        "status": "no_history",
-        "sufficient_for_accas": false
-      },
-      "date": "2026-11-10",
-      "eligibility": {
-        "acca_eligible": false,
-        "evidence_state": "current_pre_tip_unfrozen",
-        "reasons": [
-          "no_exact_bookmaker_market",
-          "insufficient_walk_forward_samples",
-          "insufficient_team_specific_history"
-        ]
-      },
-      "expected_margin": null,
-      "expected_total": null,
-      "forecast_id": "bf738f16f38cd43c5b48",
-      "game_id": "401918424",
-      "grade_status": "pending",
-      "home": "West Georgia Wolves",
-      "league": "NCAA_W",
-      "line": null,
-      "market": "moneyline",
-      "model": "provider:espn",
-      "model_version": "team_history_empirical_v1",
-      "outcome": null,
-      "paper_only": true,
-      "period": "full_game",
-      "pick_id": "bf738f16f38cd43c5b48",
-      "prediction": {
-        "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
-        "provider": "espn"
-      },
-      "price_evidence": "UNMATCHED",
-      "push_probability": 0.0,
-      "raw_probability": 0.9972,
-      "residual_games": 0,
-      "role": null,
-      "scheduled_utc": "2026-11-11T00:00:00Z",
-      "selection": "home",
-      "team_history": null,
-      "training_games": 0
     },
     {
       "alternative_probabilities": {
@@ -4744,7 +4839,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "3801e01c907acd63cd99",
+      "forecast_id": "3e7a8d26df48780bfeb9",
       "game_id": "401919699",
       "grade_status": "pending",
       "home": "Indiana State Sycamores",
@@ -4756,10 +4851,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "3801e01c907acd63cd99",
+      "pick_id": "3e7a8d26df48780bfeb9",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -4888,6 +4983,61 @@
     },
     {
       "alternative_probabilities": {
+        "away": 0.0192,
+        "home": 0.9808
+      },
+      "away": "Southeast Missouri State Redhawks",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9808,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "573235e546b2f26532e2",
+      "game_id": "401921453",
+      "grade_status": "pending",
+      "home": "Purdue Boilermakers",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "573235e546b2f26532e2",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T19:40:19Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9808,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-11T00:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
         "away": 0.26,
         "draw": 0.0,
         "home": 0.74
@@ -4942,61 +5092,6 @@
         "sufficient_for_accas": false
       },
       "training_games": 200
-    },
-    {
-      "alternative_probabilities": {
-        "away": 0.0192,
-        "home": 0.9808
-      },
-      "away": "Southeast Missouri State Redhawks",
-      "book": null,
-      "bucket": "WATCHLIST_NO_ODDS",
-      "calibrated_probability": 0.9808,
-      "calibration": {
-        "adjustment": 0.0,
-        "n": 0,
-        "status": "no_history",
-        "sufficient_for_accas": false
-      },
-      "date": "2026-11-10",
-      "eligibility": {
-        "acca_eligible": false,
-        "evidence_state": "current_pre_tip_unfrozen",
-        "reasons": [
-          "no_exact_bookmaker_market",
-          "insufficient_walk_forward_samples",
-          "insufficient_team_specific_history"
-        ]
-      },
-      "expected_margin": null,
-      "expected_total": null,
-      "forecast_id": "7b88751ecef64d4e1db2",
-      "game_id": "401921453",
-      "grade_status": "pending",
-      "home": "Purdue Boilermakers",
-      "league": "NCAA_W",
-      "line": null,
-      "market": "moneyline",
-      "model": "provider:espn",
-      "model_version": "team_history_empirical_v1",
-      "outcome": null,
-      "paper_only": true,
-      "period": "full_game",
-      "pick_id": "7b88751ecef64d4e1db2",
-      "prediction": {
-        "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
-        "provider": "espn"
-      },
-      "price_evidence": "UNMATCHED",
-      "push_probability": 0.0,
-      "raw_probability": 0.9808,
-      "residual_games": 0,
-      "role": null,
-      "scheduled_utc": "2026-11-11T00:00:00Z",
-      "selection": "home",
-      "team_history": null,
-      "training_games": 0
     },
     {
       "alternative_probabilities": {
@@ -5057,6 +5152,61 @@
     },
     {
       "alternative_probabilities": {
+        "away": 0.0015,
+        "home": 0.9985
+      },
+      "away": "Detroit Mercy Titans",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9985,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "101ad602890764ce8f47",
+      "game_id": "401923182",
+      "grade_status": "pending",
+      "home": "Notre Dame Fighting Irish",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "101ad602890764ce8f47",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T19:40:19Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9985,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-11T00:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
         "away": 0.23,
         "draw": 0.0,
         "home": 0.77
@@ -5111,61 +5261,6 @@
         "sufficient_for_accas": false
       },
       "training_games": 200
-    },
-    {
-      "alternative_probabilities": {
-        "away": 0.0015,
-        "home": 0.9985
-      },
-      "away": "Detroit Mercy Titans",
-      "book": null,
-      "bucket": "WATCHLIST_NO_ODDS",
-      "calibrated_probability": 0.9985,
-      "calibration": {
-        "adjustment": 0.0,
-        "n": 0,
-        "status": "no_history",
-        "sufficient_for_accas": false
-      },
-      "date": "2026-11-10",
-      "eligibility": {
-        "acca_eligible": false,
-        "evidence_state": "current_pre_tip_unfrozen",
-        "reasons": [
-          "no_exact_bookmaker_market",
-          "insufficient_walk_forward_samples",
-          "insufficient_team_specific_history"
-        ]
-      },
-      "expected_margin": null,
-      "expected_total": null,
-      "forecast_id": "e35439c16c265546c69d",
-      "game_id": "401923182",
-      "grade_status": "pending",
-      "home": "Notre Dame Fighting Irish",
-      "league": "NCAA_W",
-      "line": null,
-      "market": "moneyline",
-      "model": "provider:espn",
-      "model_version": "team_history_empirical_v1",
-      "outcome": null,
-      "paper_only": true,
-      "period": "full_game",
-      "pick_id": "e35439c16c265546c69d",
-      "prediction": {
-        "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
-        "provider": "espn"
-      },
-      "price_evidence": "UNMATCHED",
-      "push_probability": 0.0,
-      "raw_probability": 0.9985,
-      "residual_games": 0,
-      "role": null,
-      "scheduled_utc": "2026-11-11T00:00:00Z",
-      "selection": "home",
-      "team_history": null,
-      "training_games": 0
     },
     {
       "alternative_probabilities": {
@@ -5251,7 +5346,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "6dad1a9ee47be57db9e1",
+      "forecast_id": "f2206486c0cb9eb0c7bb",
       "game_id": "401925980",
       "grade_status": "pending",
       "home": "South Carolina State Lady Bulldogs",
@@ -5263,10 +5358,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "6dad1a9ee47be57db9e1",
+      "pick_id": "f2206486c0cb9eb0c7bb",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -5420,7 +5515,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "2d4bd7a494893bdf46c8",
+      "forecast_id": "6ff2857d3eb56abdad87",
       "game_id": "401927087",
       "grade_status": "pending",
       "home": "Florida International Panthers",
@@ -5432,10 +5527,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "2d4bd7a494893bdf46c8",
+      "pick_id": "6ff2857d3eb56abdad87",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -5564,61 +5659,6 @@
     },
     {
       "alternative_probabilities": {
-        "away": 0.0012,
-        "home": 0.9988
-      },
-      "away": "San Jos\u00e9 State Spartans",
-      "book": null,
-      "bucket": "WATCHLIST_NO_ODDS",
-      "calibrated_probability": 0.9988,
-      "calibration": {
-        "adjustment": 0.0,
-        "n": 0,
-        "status": "no_history",
-        "sufficient_for_accas": false
-      },
-      "date": "2026-11-10",
-      "eligibility": {
-        "acca_eligible": false,
-        "evidence_state": "current_pre_tip_unfrozen",
-        "reasons": [
-          "no_exact_bookmaker_market",
-          "insufficient_walk_forward_samples",
-          "insufficient_team_specific_history"
-        ]
-      },
-      "expected_margin": null,
-      "expected_total": null,
-      "forecast_id": "49fd7480a54de5b62a18",
-      "game_id": "401929062",
-      "grade_status": "pending",
-      "home": "Oklahoma Sooners",
-      "league": "NCAA_W",
-      "line": null,
-      "market": "moneyline",
-      "model": "provider:espn",
-      "model_version": "team_history_empirical_v1",
-      "outcome": null,
-      "paper_only": true,
-      "period": "full_game",
-      "pick_id": "49fd7480a54de5b62a18",
-      "prediction": {
-        "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
-        "provider": "espn"
-      },
-      "price_evidence": "UNMATCHED",
-      "push_probability": 0.0,
-      "raw_probability": 0.9988,
-      "residual_games": 0,
-      "role": null,
-      "scheduled_utc": "2026-11-11T00:00:00Z",
-      "selection": "home",
-      "team_history": null,
-      "training_games": 0
-    },
-    {
-      "alternative_probabilities": {
         "away": 0.26,
         "draw": 0.0,
         "home": 0.74
@@ -5673,6 +5713,61 @@
         "sufficient_for_accas": false
       },
       "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.0012,
+        "home": 0.9988
+      },
+      "away": "San Jos\u00e9 State Spartans",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9988,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "f0f4ff8ca1c169eeaf7b",
+      "game_id": "401929062",
+      "grade_status": "pending",
+      "home": "Oklahoma Sooners",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "f0f4ff8ca1c169eeaf7b",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T19:40:19Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9988,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-11T00:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
     },
     {
       "alternative_probabilities": {
@@ -5815,7 +5910,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "80d75e1ad518dfaaeb18",
+      "forecast_id": "e938191ac23a5432300b",
       "game_id": "401929100",
       "grade_status": "pending",
       "home": "Western Michigan Broncos",
@@ -5827,10 +5922,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "80d75e1ad518dfaaeb18",
+      "pick_id": "e938191ac23a5432300b",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -5984,7 +6079,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "80c9cd69c6f9b3fa6467",
+      "forecast_id": "e59b08a0ce0d2bf6c2c3",
       "game_id": "401906964",
       "grade_status": "pending",
       "home": "Kansas Jayhawks",
@@ -5996,10 +6091,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "80c9cd69c6f9b3fa6467",
+      "pick_id": "e59b08a0ce0d2bf6c2c3",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -6071,6 +6166,61 @@
     },
     {
       "alternative_probabilities": {
+        "away": 0.0018,
+        "home": 0.9982
+      },
+      "away": "Jarvis Christian Bulldogs",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9982,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "9f7bede08c16ce26f890",
+      "game_id": "401928026",
+      "grade_status": "pending",
+      "home": "Sam Houston Bearkats",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "9f7bede08c16ce26f890",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T19:40:19Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9982,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-11T00:30:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
         "away": 0.26,
         "draw": 0.0,
         "home": 0.74
@@ -6125,61 +6275,6 @@
         "sufficient_for_accas": false
       },
       "training_games": 200
-    },
-    {
-      "alternative_probabilities": {
-        "away": 0.0018,
-        "home": 0.9982
-      },
-      "away": "Jarvis Christian Bulldogs",
-      "book": null,
-      "bucket": "WATCHLIST_NO_ODDS",
-      "calibrated_probability": 0.9982,
-      "calibration": {
-        "adjustment": 0.0,
-        "n": 0,
-        "status": "no_history",
-        "sufficient_for_accas": false
-      },
-      "date": "2026-11-10",
-      "eligibility": {
-        "acca_eligible": false,
-        "evidence_state": "current_pre_tip_unfrozen",
-        "reasons": [
-          "no_exact_bookmaker_market",
-          "insufficient_walk_forward_samples",
-          "insufficient_team_specific_history"
-        ]
-      },
-      "expected_margin": null,
-      "expected_total": null,
-      "forecast_id": "e2bef99841f79f0bd7f3",
-      "game_id": "401928026",
-      "grade_status": "pending",
-      "home": "Sam Houston Bearkats",
-      "league": "NCAA_W",
-      "line": null,
-      "market": "moneyline",
-      "model": "provider:espn",
-      "model_version": "team_history_empirical_v1",
-      "outcome": null,
-      "paper_only": true,
-      "period": "full_game",
-      "pick_id": "e2bef99841f79f0bd7f3",
-      "prediction": {
-        "frozen": false,
-        "observed_utc": "2026-11-10T16:29:30Z",
-        "provider": "espn"
-      },
-      "price_evidence": "UNMATCHED",
-      "push_probability": 0.0,
-      "raw_probability": 0.9982,
-      "residual_games": 0,
-      "role": null,
-      "scheduled_utc": "2026-11-11T00:30:00Z",
-      "selection": "home",
-      "team_history": null,
-      "training_games": 0
     },
     {
       "alternative_probabilities": {
@@ -6240,61 +6335,6 @@
     },
     {
       "alternative_probabilities": {
-        "away": 0.0002,
-        "home": 0.9998
-      },
-      "away": "McNeese Cowgirls",
-      "book": null,
-      "bucket": "WATCHLIST_NO_ODDS",
-      "calibrated_probability": 0.9998,
-      "calibration": {
-        "adjustment": 0.0,
-        "n": 0,
-        "status": "no_history",
-        "sufficient_for_accas": false
-      },
-      "date": "2026-11-10",
-      "eligibility": {
-        "acca_eligible": false,
-        "evidence_state": "current_pre_tip_unfrozen",
-        "reasons": [
-          "no_exact_bookmaker_market",
-          "insufficient_walk_forward_samples",
-          "insufficient_team_specific_history"
-        ]
-      },
-      "expected_margin": null,
-      "expected_total": null,
-      "forecast_id": "705e41bb15d232cde898",
-      "game_id": "401912966",
-      "grade_status": "pending",
-      "home": "LSU Tigers",
-      "league": "NCAA_W",
-      "line": null,
-      "market": "moneyline",
-      "model": "provider:espn",
-      "model_version": "team_history_empirical_v1",
-      "outcome": null,
-      "paper_only": true,
-      "period": "full_game",
-      "pick_id": "705e41bb15d232cde898",
-      "prediction": {
-        "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
-        "provider": "espn"
-      },
-      "price_evidence": "UNMATCHED",
-      "push_probability": 0.0,
-      "raw_probability": 0.9998,
-      "residual_games": 0,
-      "role": null,
-      "scheduled_utc": "2026-11-11T01:00:00Z",
-      "selection": "home",
-      "team_history": null,
-      "training_games": 0
-    },
-    {
-      "alternative_probabilities": {
         "away": 0.26,
         "draw": 0.0,
         "home": 0.74
@@ -6349,6 +6389,61 @@
         "sufficient_for_accas": false
       },
       "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.0002,
+        "home": 0.9998
+      },
+      "away": "McNeese Cowgirls",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9998,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "da8260fd296394159d50",
+      "game_id": "401912966",
+      "grade_status": "pending",
+      "home": "LSU Tigers",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "da8260fd296394159d50",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T19:40:19Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9998,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-11T01:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
     },
     {
       "alternative_probabilities": {
@@ -6434,7 +6529,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "01eb64e5ee0bd9371b6e",
+      "forecast_id": "6d5d3e6fb59fc930fa6b",
       "game_id": "401918724",
       "grade_status": "pending",
       "home": "St. Thomas Tommies",
@@ -6446,10 +6541,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "01eb64e5ee0bd9371b6e",
+      "pick_id": "6d5d3e6fb59fc930fa6b",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -6578,6 +6673,61 @@
     },
     {
       "alternative_probabilities": {
+        "away": 0.0028,
+        "home": 0.9972
+      },
+      "away": "Southern Jaguars",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9972,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "90bded29c6e1cef5223a",
+      "game_id": "401918910",
+      "grade_status": "pending",
+      "home": "Minnesota Golden Gophers",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "90bded29c6e1cef5223a",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T19:40:19Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9972,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-11T01:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
         "away": 0.23,
         "draw": 0.0,
         "home": 0.77
@@ -6632,61 +6782,6 @@
         "sufficient_for_accas": false
       },
       "training_games": 200
-    },
-    {
-      "alternative_probabilities": {
-        "away": 0.0028,
-        "home": 0.9972
-      },
-      "away": "Southern Jaguars",
-      "book": null,
-      "bucket": "WATCHLIST_NO_ODDS",
-      "calibrated_probability": 0.9972,
-      "calibration": {
-        "adjustment": 0.0,
-        "n": 0,
-        "status": "no_history",
-        "sufficient_for_accas": false
-      },
-      "date": "2026-11-10",
-      "eligibility": {
-        "acca_eligible": false,
-        "evidence_state": "current_pre_tip_unfrozen",
-        "reasons": [
-          "no_exact_bookmaker_market",
-          "insufficient_walk_forward_samples",
-          "insufficient_team_specific_history"
-        ]
-      },
-      "expected_margin": null,
-      "expected_total": null,
-      "forecast_id": "ab7be59d0d99bdde3cf8",
-      "game_id": "401918910",
-      "grade_status": "pending",
-      "home": "Minnesota Golden Gophers",
-      "league": "NCAA_W",
-      "line": null,
-      "market": "moneyline",
-      "model": "provider:espn",
-      "model_version": "team_history_empirical_v1",
-      "outcome": null,
-      "paper_only": true,
-      "period": "full_game",
-      "pick_id": "ab7be59d0d99bdde3cf8",
-      "prediction": {
-        "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
-        "provider": "espn"
-      },
-      "price_evidence": "UNMATCHED",
-      "push_probability": 0.0,
-      "raw_probability": 0.9972,
-      "residual_games": 0,
-      "role": null,
-      "scheduled_utc": "2026-11-11T01:00:00Z",
-      "selection": "home",
-      "team_history": null,
-      "training_games": 0
     },
     {
       "alternative_probabilities": {
@@ -6829,7 +6924,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "df55e9697f2f57a4654a",
+      "forecast_id": "c4a602d4a1fc7407722f",
       "game_id": "401921436",
       "grade_status": "pending",
       "home": "Nebraska Cornhuskers",
@@ -6841,10 +6936,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "df55e9697f2f57a4654a",
+      "pick_id": "c4a602d4a1fc7407722f",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -6941,7 +7036,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "a2a5497941944c97436a",
+      "forecast_id": "0ac285ef2c9ac1689947",
       "game_id": "401921614",
       "grade_status": "pending",
       "home": "Northern Arizona Lumberjacks",
@@ -6953,10 +7048,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "a2a5497941944c97436a",
+      "pick_id": "0ac285ef2c9ac1689947",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -7110,7 +7205,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "479eb68c5cb8c3976071",
+      "forecast_id": "e1adff272ec41d853de9",
       "game_id": "401923327",
       "grade_status": "pending",
       "home": "Denver Pioneers",
@@ -7122,10 +7217,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "479eb68c5cb8c3976071",
+      "pick_id": "e1adff272ec41d853de9",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -7279,7 +7374,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "6cbe43187574cf0c40d6",
+      "forecast_id": "dd6b617314b6c80133db",
       "game_id": "401923480",
       "grade_status": "pending",
       "home": "Houston Cougars",
@@ -7291,10 +7386,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "6cbe43187574cf0c40d6",
+      "pick_id": "dd6b617314b6c80133db",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -7448,7 +7543,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "056a7425d3c60e5b7fc0",
+      "forecast_id": "af8a49e81af895f1868b",
       "game_id": "401920497",
       "grade_status": "pending",
       "home": "Wyoming Cowgirls",
@@ -7460,10 +7555,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "056a7425d3c60e5b7fc0",
+      "pick_id": "af8a49e81af895f1868b",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -7617,7 +7712,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "61a0cc291b28158e4f23",
+      "forecast_id": "76aa90c881f6903d9fda",
       "game_id": "401921547",
       "grade_status": "pending",
       "home": "Boise State Broncos",
@@ -7629,10 +7724,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "61a0cc291b28158e4f23",
+      "pick_id": "76aa90c881f6903d9fda",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -7786,7 +7881,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "722e50a334944377cbc5",
+      "forecast_id": "7afac7be7ba31fa31130",
       "game_id": "401917695",
       "grade_status": "pending",
       "home": "San Diego Toreros",
@@ -7798,10 +7893,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "722e50a334944377cbc5",
+      "pick_id": "7afac7be7ba31fa31130",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -7955,7 +8050,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "a0b74429b9e75ac36c7a",
+      "forecast_id": "190007b965d2594059df",
       "game_id": "401920266",
       "grade_status": "pending",
       "home": "Nevada Wolf Pack",
@@ -7967,10 +8062,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "a0b74429b9e75ac36c7a",
+      "pick_id": "190007b965d2594059df",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -8099,61 +8194,6 @@
     },
     {
       "alternative_probabilities": {
-        "away": 0.0006,
-        "home": 0.9994
-      },
-      "away": "Cal State Dominguez Hills Toros",
-      "book": null,
-      "bucket": "WATCHLIST_NO_ODDS",
-      "calibrated_probability": 0.9994,
-      "calibration": {
-        "adjustment": 0.0,
-        "n": 0,
-        "status": "no_history",
-        "sufficient_for_accas": false
-      },
-      "date": "2026-11-10",
-      "eligibility": {
-        "acca_eligible": false,
-        "evidence_state": "current_pre_tip_unfrozen",
-        "reasons": [
-          "no_exact_bookmaker_market",
-          "insufficient_walk_forward_samples",
-          "insufficient_team_specific_history"
-        ]
-      },
-      "expected_margin": null,
-      "expected_total": null,
-      "forecast_id": "3dd012c3612223365638",
-      "game_id": "401923189",
-      "grade_status": "pending",
-      "home": "Pepperdine Waves",
-      "league": "NCAA_W",
-      "line": null,
-      "market": "moneyline",
-      "model": "provider:espn",
-      "model_version": "team_history_empirical_v1",
-      "outcome": null,
-      "paper_only": true,
-      "period": "full_game",
-      "pick_id": "3dd012c3612223365638",
-      "prediction": {
-        "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
-        "provider": "espn"
-      },
-      "price_evidence": "UNMATCHED",
-      "push_probability": 0.0,
-      "raw_probability": 0.9994,
-      "residual_games": 0,
-      "role": null,
-      "scheduled_utc": "2026-11-11T02:00:00Z",
-      "selection": "home",
-      "team_history": null,
-      "training_games": 0
-    },
-    {
-      "alternative_probabilities": {
         "away": 0.26,
         "draw": 0.0,
         "home": 0.74
@@ -8208,6 +8248,61 @@
         "sufficient_for_accas": false
       },
       "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.0006,
+        "home": 0.9994
+      },
+      "away": "Cal State Dominguez Hills Toros",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9994,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "fbdb1a49e8cd0f4bff79",
+      "game_id": "401923189",
+      "grade_status": "pending",
+      "home": "Pepperdine Waves",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "fbdb1a49e8cd0f4bff79",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T19:40:19Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9994,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-11T02:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
     },
     {
       "alternative_probabilities": {
@@ -8293,7 +8388,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "772d3b0949efed161d03",
+      "forecast_id": "8a70eaedcaffc370702d",
       "game_id": "401928022",
       "grade_status": "pending",
       "home": "UTEP Miners",
@@ -8305,10 +8400,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "772d3b0949efed161d03",
+      "pick_id": "8a70eaedcaffc370702d",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -8462,7 +8557,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "73b6c08c670181fca66f",
+      "forecast_id": "6c68a07c80b70bd6476a",
       "game_id": "401916082",
       "grade_status": "pending",
       "home": "UNLV Lady Rebels",
@@ -8474,10 +8569,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "73b6c08c670181fca66f",
+      "pick_id": "6c68a07c80b70bd6476a",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -8631,7 +8726,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "342d9721e388e90f00b2",
+      "forecast_id": "308b3dce202d1518d440",
       "game_id": "401917694",
       "grade_status": "pending",
       "home": "Saint Mary's Gaels",
@@ -8643,10 +8738,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "342d9721e388e90f00b2",
+      "pick_id": "308b3dce202d1518d440",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -8800,7 +8895,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "0e6ecd15bc699cc6db86",
+      "forecast_id": "7fc3a595046f87ad10a2",
       "game_id": "401927107",
       "grade_status": "pending",
       "home": "USC Trojans",
@@ -8812,10 +8907,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "0e6ecd15bc699cc6db86",
+      "pick_id": "7fc3a595046f87ad10a2",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-10T16:29:31Z",
+        "observed_utc": "2026-11-10T19:40:19Z",
         "provider": "espn"
       },
       "price_evidence": "UNMATCHED",
@@ -8951,6 +9046,70 @@
     },
     {
       "alternative_probabilities": {
+        "away": 0.86,
+        "home": 0.14
+      },
+      "away": "Charleston Cougars",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "main_line": true,
+        "observed_utc": "2026-11-10T19:40:13Z",
+        "pre_match": true,
+        "provider": "espn",
+        "selected_decimal_price": 1.9090909090909092,
+        "source_modified_utc": null
+      },
+      "bucket": "SKIPPED_INELIGIBLE",
+      "calibrated_probability": 0.86,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 21.578888888888905,
+      "expected_total": 135.38444444444445,
+      "forecast_id": "22df051bd3c5ddf23e5a",
+      "game_id": "401927107",
+      "grade_status": "pending",
+      "home": "USC Trojans",
+      "league": "NCAA_W",
+      "line": -50.5,
+      "market": "spread",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "22df051bd3c5ddf23e5a",
+      "prediction": null,
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.86,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-11T03:30:00Z",
+      "selection": "away",
+      "team_history": {
+        "away_effective_games": 1.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
         "away": 0.76,
         "home": 0.24
       },
@@ -9023,7 +9182,7 @@
         "book": "DraftKings",
         "frozen": false,
         "main_line": true,
-        "observed_utc": "2026-11-10T16:29:22Z",
+        "observed_utc": "2026-11-10T19:40:13Z",
         "pre_match": true,
         "provider": "espn",
         "selected_decimal_price": 1.9090909090909092,
@@ -9048,7 +9207,7 @@
       },
       "expected_margin": 21.578888888888905,
       "expected_total": 135.38444444444445,
-      "forecast_id": "a81b27ae61ef085ca90c",
+      "forecast_id": "3166fec51c4739bf8e13",
       "game_id": "401927107",
       "grade_status": "pending",
       "home": "USC Trojans",
@@ -9060,7 +9219,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "a81b27ae61ef085ca90c",
+      "pick_id": "3166fec51c4739bf8e13",
       "prediction": null,
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
       "push_probability": 0.0,
@@ -9078,26 +9237,2055 @@
       "training_games": 200
     }
   ],
-  "losses": 0,
+  "losses": 2,
   "pending_picks": 0,
-  "pending_picks_total": 160,
+  "pending_picks_total": 126,
   "priced_sample": 0,
   "profit_units": 0.0,
   "pushes": 0,
   "roi": null,
   "same_day_cutoff": "2026-11-10",
-  "same_day_pending_picks": 160,
-  "same_day_rows_excluded": 160,
-  "same_day_settled_picks": 0,
+  "same_day_pending_picks": 126,
+  "same_day_rows_excluded": 126,
+  "same_day_settled_picks": 36,
   "schema_version": "magolide.operator.v1",
-  "settled_ledger": [],
-  "settled_picks": 0,
+  "settled_ledger": [
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "Furman Paladins",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 16.02333333333334,
+      "expected_total": 133.53,
+      "forecast_id": "ca70f1fa226cc15e1984",
+      "game_id": "401928218",
+      "grade_status": "win",
+      "home": "Auburn Tigers",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "ca70f1fa226cc15e1984",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 1.0,
+        "home_effective_games": 0.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.28,
+        "draw": 0.0,
+        "home": 0.72
+      },
+      "away": "Furman Paladins",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.72,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 8.568333333333328,
+      "expected_total": 65.17916666666666,
+      "forecast_id": "9ce108484a95efee85e2",
+      "game_id": "401928218",
+      "grade_status": "win",
+      "home": "Auburn Tigers",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "H1",
+      "pick_id": "9ce108484a95efee85e2",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.72,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 1.0,
+        "home_effective_games": 0.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.0569,
+        "home": 0.9431
+      },
+      "away": "Furman Paladins",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9431,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "0fac6b8afbf01c82b61e",
+      "game_id": "401928218",
+      "grade_status": "win",
+      "home": "Auburn Tigers",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "0fac6b8afbf01c82b61e",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T16:29:29Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9431,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "LSU Alexandria Generals",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 16.74555555555554,
+      "expected_total": 133.9188888888889,
+      "forecast_id": "ca1236a79f47f244494e",
+      "game_id": "401922658",
+      "grade_status": "win",
+      "home": "Nicholls Colonels",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "ca1236a79f47f244494e",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 0.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "LSU Alexandria Generals",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 9.346111111111107,
+      "expected_total": 65.06805555555556,
+      "forecast_id": "8a48693896e39e67bdad",
+      "game_id": "401922658",
+      "grade_status": "win",
+      "home": "Nicholls Colonels",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "H1",
+      "pick_id": "8a48693896e39e67bdad",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 0.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.0036,
+        "home": 0.9964
+      },
+      "away": "LSU Alexandria Generals",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9964,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "510b5e9edadf333a3037",
+      "game_id": "401922658",
+      "grade_status": "win",
+      "home": "Nicholls Colonels",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "510b5e9edadf333a3037",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T16:29:29Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9964,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.0099,
+        "home": 0.9901
+      },
+      "away": "Culver Stockton Wildcats",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9901,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "b8078521138722d81bb2",
+      "game_id": "401920015",
+      "grade_status": "win",
+      "home": "Valparaiso Beacons",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "b8078521138722d81bb2",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T16:29:29Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9901,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "Culver Stockton Wildcats",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 17.96777777777777,
+      "expected_total": 134.36333333333334,
+      "forecast_id": "a47ac0fa1cc91b99d8b7",
+      "game_id": "401920015",
+      "grade_status": "win",
+      "home": "Valparaiso Beacons",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "a47ac0fa1cc91b99d8b7",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 0.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "Culver Stockton Wildcats",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 9.790555555555557,
+      "expected_total": 65.06805555555555,
+      "forecast_id": "26b14dffbe516034bd35",
+      "game_id": "401920015",
+      "grade_status": "win",
+      "home": "Valparaiso Beacons",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "H1",
+      "pick_id": "26b14dffbe516034bd35",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 0.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.27,
+        "draw": 0.0,
+        "home": 0.73
+      },
+      "away": "Huston Tillotson Rams",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.73,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 15.134444444444455,
+      "expected_total": 135.86333333333334,
+      "forecast_id": "931308a1d5905d9df102",
+      "game_id": "401919876",
+      "grade_status": "win",
+      "home": "Chicago State Cougars",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "931308a1d5905d9df102",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.73,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 0.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.0163,
+        "home": 0.9837
+      },
+      "away": "Huston Tillotson Rams",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9837,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "28e8020f8f4a858dc487",
+      "game_id": "401919876",
+      "grade_status": "win",
+      "home": "Chicago State Cougars",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "28e8020f8f4a858dc487",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T16:29:29Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9837,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.29,
+        "draw": 0.0,
+        "home": 0.71
+      },
+      "away": "Huston Tillotson Rams",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.71,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 8.235,
+      "expected_total": 66.29027777777777,
+      "forecast_id": "0662b7d9cb61b115e192",
+      "game_id": "401919876",
+      "grade_status": "win",
+      "home": "Chicago State Cougars",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "H1",
+      "pick_id": "0662b7d9cb61b115e192",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.71,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 0.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.2656,
+        "home": 0.7344
+      },
+      "away": "Cleveland State Vikings",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.7344,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "dba03cbceba850bfd6ad",
+      "game_id": "401919675",
+      "grade_status": "win",
+      "home": "Drake Bulldogs",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "dba03cbceba850bfd6ad",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T16:29:29Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.7344,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "Cleveland State Vikings",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 16.801111111111112,
+      "expected_total": 133.97444444444446,
+      "forecast_id": "71d1ca616d8efe862d69",
+      "game_id": "401919675",
+      "grade_status": "win",
+      "home": "Drake Bulldogs",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "71d1ca616d8efe862d69",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 0.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.28,
+        "draw": 0.0,
+        "home": 0.72
+      },
+      "away": "Cleveland State Vikings",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.72,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 8.735,
+      "expected_total": 65.45694444444445,
+      "forecast_id": "70dc77c3791a206774b8",
+      "game_id": "401919675",
+      "grade_status": "win",
+      "home": "Drake Bulldogs",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "H1",
+      "pick_id": "70dc77c3791a206774b8",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.72,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 0.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "Presbyterian Blue Hose",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 17.74555555555554,
+      "expected_total": 136.36333333333334,
+      "forecast_id": "dcdf61744480a72ddb3c",
+      "game_id": "401919075",
+      "grade_status": "win",
+      "home": "Marquette Golden Eagles",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "dcdf61744480a72ddb3c",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 0.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.0056,
+        "home": 0.9944
+      },
+      "away": "Presbyterian Blue Hose",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9944,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "b90869a27aba51d4d70a",
+      "game_id": "401919075",
+      "grade_status": "win",
+      "home": "Marquette Golden Eagles",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "b90869a27aba51d4d70a",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T16:29:29Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9944,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "Presbyterian Blue Hose",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 9.290555555555557,
+      "expected_total": 65.90138888888889,
+      "forecast_id": "587f779352474b165403",
+      "game_id": "401919075",
+      "grade_status": "win",
+      "home": "Marquette Golden Eagles",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "H1",
+      "pick_id": "587f779352474b165403",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 0.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "Missouri State Lady Bears",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 15.96777777777777,
+      "expected_total": 134.66222222222223,
+      "forecast_id": "e069a89c7f80511015bb",
+      "game_id": "401913874",
+      "grade_status": "loss",
+      "home": "Wichita State Shockers",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "loss",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "e069a89c7f80511015bb",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 1.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.9408,
+        "home": 0.0592
+      },
+      "away": "Missouri State Lady Bears",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9408,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "d8725eb9979a6cefebf4",
+      "game_id": "401913874",
+      "grade_status": "win",
+      "home": "Wichita State Shockers",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "d8725eb9979a6cefebf4",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T16:29:29Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9408,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "away",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.28,
+        "draw": 0.0,
+        "home": 0.72
+      },
+      "away": "Missouri State Lady Bears",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.72,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 8.401666666666664,
+      "expected_total": 65.93333333333334,
+      "forecast_id": "15f57e93f55459dfe4a1",
+      "game_id": "401913874",
+      "grade_status": "loss",
+      "home": "Wichita State Shockers",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "loss",
+      "paper_only": true,
+      "period": "H1",
+      "pick_id": "15f57e93f55459dfe4a1",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.72,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 1.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.23,
+        "draw": 0.0,
+        "home": 0.77
+      },
+      "away": "Montana Lady Griz",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.77,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 22.24555555555554,
+      "expected_total": 133.94,
+      "forecast_id": "b589f879258d3eae7202",
+      "game_id": "401906982",
+      "grade_status": "win",
+      "home": "Kansas State Wildcats",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "b589f879258d3eae7202",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.77,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 1.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.25,
+        "draw": 0.0,
+        "home": 0.75
+      },
+      "away": "Montana Lady Griz",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.75,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 11.512777777777785,
+      "expected_total": 65.26666666666667,
+      "forecast_id": "49db753f6e69fa1438ff",
+      "game_id": "401906982",
+      "grade_status": "win",
+      "home": "Kansas State Wildcats",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "H1",
+      "pick_id": "49db753f6e69fa1438ff",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.75,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 1.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.0379,
+        "home": 0.9621
+      },
+      "away": "Montana Lady Griz",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9621,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "23175a8bdfe33a4434df",
+      "game_id": "401906982",
+      "grade_status": "win",
+      "home": "Kansas State Wildcats",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "23175a8bdfe33a4434df",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T16:29:29Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9621,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-10T17:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.25,
+        "draw": 0.0,
+        "home": 0.75
+      },
+      "away": "North Greenville Trailblazers",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.75,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 10.290555555555557,
+      "expected_total": 65.34583333333333,
+      "forecast_id": "c5315bd85a53e3a850cd",
+      "game_id": "401929161",
+      "grade_status": "win",
+      "home": "Wofford Terriers",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "H1",
+      "pick_id": "c5315bd85a53e3a850cd",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.75,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T16:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 0.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.0012,
+        "home": 0.9988
+      },
+      "away": "North Greenville Trailblazers",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9988,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "b3599c0d972fa4af79e4",
+      "game_id": "401929161",
+      "grade_status": "win",
+      "home": "Wofford Terriers",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "b3599c0d972fa4af79e4",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T15:44:17Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9988,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-10T16:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "North Greenville Trailblazers",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 18.412222222222212,
+      "expected_total": 134.03000000000003,
+      "forecast_id": "219fe7f95f5f414d7361",
+      "game_id": "401929161",
+      "grade_status": "win",
+      "home": "Wofford Terriers",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "219fe7f95f5f414d7361",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T16:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 0.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.2618,
+        "home": 0.7382
+      },
+      "away": "Youngstown State Penguins",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.7382,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "c005014482a196078331",
+      "game_id": "401929137",
+      "grade_status": "win",
+      "home": "Toledo Rockets",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "c005014482a196078331",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T15:44:17Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.7382,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-10T16:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "Youngstown State Penguins",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 16.412222222222226,
+      "expected_total": 135.44,
+      "forecast_id": "593b55c257f1b872b34e",
+      "game_id": "401929137",
+      "grade_status": "win",
+      "home": "Toledo Rockets",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "593b55c257f1b872b34e",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T16:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 1.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "Youngstown State Penguins",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 9.235,
+      "expected_total": 65.43333333333334,
+      "forecast_id": "2e49051143b1598ca2c4",
+      "game_id": "401929137",
+      "grade_status": "win",
+      "home": "Toledo Rockets",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "H1",
+      "pick_id": "2e49051143b1598ca2c4",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T16:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 1.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "Edward Waters Tigers",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 19.134444444444426,
+      "expected_total": 136.53,
+      "forecast_id": "e470a993a3944005a1ef",
+      "game_id": "401927046",
+      "grade_status": "win",
+      "home": "North Florida Ospreys",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "e470a993a3944005a1ef",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T16:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 0.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "Edward Waters Tigers",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 9.67944444444445,
+      "expected_total": 65.95694444444445,
+      "forecast_id": "e40bc76049c4271c947b",
+      "game_id": "401927046",
+      "grade_status": "win",
+      "home": "North Florida Ospreys",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "H1",
+      "pick_id": "e40bc76049c4271c947b",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T16:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 0.0,
+        "home_effective_games": 1.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.0013,
+        "home": 0.9987
+      },
+      "away": "Edward Waters Tigers",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9987,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "e23a137b110c9e866418",
+      "game_id": "401927046",
+      "grade_status": "win",
+      "home": "North Florida Ospreys",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "e23a137b110c9e866418",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T15:44:17Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9987,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-10T16:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.25,
+        "draw": 0.0,
+        "home": 0.75
+      },
+      "away": "Bellarmine Knights",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.75,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 11.735,
+      "expected_total": 65.34583333333333,
+      "forecast_id": "f40dae7acee9f2eac4be",
+      "game_id": "401926094",
+      "grade_status": "win",
+      "home": "Bowling Green Falcons",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "H1",
+      "pick_id": "f40dae7acee9f2eac4be",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.75,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T16:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 1.0,
+        "home_effective_games": 0.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "Bellarmine Knights",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 21.245555555555555,
+      "expected_total": 134.3077777777778,
+      "forecast_id": "6d559e3e94e642b7c680",
+      "game_id": "401926094",
+      "grade_status": "win",
+      "home": "Bowling Green Falcons",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "6d559e3e94e642b7c680",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-10T16:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 1.0,
+        "home_effective_games": 0.0,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 200
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.0296,
+        "home": 0.9704
+      },
+      "away": "Bellarmine Knights",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9704,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-10",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "forecast_id": "05d9b68fe28d4f0445c4",
+      "game_id": "401926094",
+      "grade_status": "win",
+      "home": "Bowling Green Falcons",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": "win",
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "05d9b68fe28d4f0445c4",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-10T15:44:17Z",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9704,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-10T16:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    }
+  ],
+  "settled_picks": 36,
   "stake_policy": "flat_one_paper_unit_per_priced_pick",
-  "superseded_observations": 201,
+  "superseded_observations": 242,
   "window": {
     "days": 30,
     "end": "2026-11-10",
     "start": "2026-10-12"
   },
-  "wins": 0
+  "wins": 34
 }
