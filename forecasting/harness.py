@@ -6,9 +6,16 @@ from dataclasses import dataclass
 import math
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
+from ingestion.identity import parse_utc
+
 from assayer.assayer_engine import wilson_lower_bound
 
 from .types import Forecast
+
+# Hard-reset: calibration must not borrow from pre-feature-freeze history.
+# Any downward threshold change would be a CRITICAL regime violation; this
+# epoch is the honest alternative — count n only from the freeze date.
+CALIBRATION_EPOCH_UTC = "2026-11-10T00:00:00Z"
 
 SegmentKey = Tuple[str, str, str, str]
 
@@ -21,6 +28,7 @@ class CalibrationConfig:
     max_push_probability: float = 0.005
     probability_floor: float = 0.01
     probability_ceiling: float = 0.99
+    calibration_epoch_utc: Optional[str] = CALIBRATION_EPOCH_UTC
 
     def __post_init__(self) -> None:
         if self.prior_strength <= 0 or self.min_samples < 1:
@@ -97,11 +105,23 @@ def build_profiles(
 ) -> Dict[SegmentKey, CalibrationProfile]:
     """Fit additive reliability adjustments from graded past forecasts only."""
     cfg = config or CalibrationConfig()
+    epoch_raw = getattr(cfg, "calibration_epoch_utc", CALIBRATION_EPOCH_UTC)
+    try:
+        epoch = parse_utc(epoch_raw) if epoch_raw else None
+    except Exception:
+        epoch = None
     grouped: Dict[SegmentKey, List[Forecast]] = {}
     grouped_insufficient: Dict[SegmentKey, List[Forecast]] = {}
     for record in records:
         if record.outcome not in {"win", "loss", "push"}:
             continue
+        # Hard-reset: ignore any graded record before the feature-freeze epoch.
+        if epoch is not None:
+            try:
+                if parse_utc(record.scheduled_utc) < epoch:
+                    continue
+            except Exception:
+                continue
         # Calibrate the population that may actually supply accas. League-prior
         # fallback rows remain visible in diagnostics, but cannot lend their
         # sample count or reliability adjustment to team-specific selections.
