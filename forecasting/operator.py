@@ -609,6 +609,42 @@ def _render_pick_audit_markdown(
     else:
         lines.append("No settled picks in this window.")
 
+    # Market breakdown - all leagues, requested for NCAA M/W watchlist analysis
+    by_market = report.get("by_market") or {}
+    lines.extend(["", "## By market", ""])
+    if by_market:
+        lines.extend(
+            [
+                "| Market | Settled | W–L–P | Hit rate | Priced | ROI |",
+                "| --- | ---: | ---: | ---: | ---: | ---: |",
+            ]
+        )
+        for market, group in sorted(by_market.items()):
+            group_settled = int(group["settled"])
+            group_wins = int(group["wins"])
+            group_pushes = int(group["pushes"])
+            group_decisions = group_settled - group_pushes
+            group_losses = group_decisions - group_wins
+            group_priced = sum(
+                (row.get("book") or {}).get("selected_decimal_price") is not None
+                for row in settled
+                if str(row.get("market")) == market
+            )
+            hit_rate = (
+                f"{group_wins / group_decisions:.1%}" if group_decisions else "n/a"
+            )
+            roi = (
+                f"{group['priced_profit_units'] / group_priced:+.1%}"
+                if group_priced
+                else "n/a"
+            )
+            lines.append(
+                f"| `{market}` | {group_settled} | {group_wins}–{group_losses}–{group_pushes} | "
+                f"{hit_rate} | {group_priced} | {roi} |"
+            )
+    else:
+        lines.append("No settled picks in this window.")
+
     lines.extend(
         [
             "",
@@ -758,6 +794,7 @@ def _write_pick_audit(
         elif row["grade_status"] == "loss":
             profit -= 1.0
     by_bucket: Dict[str, Dict[str, Any]] = {}
+    by_market: Dict[str, Dict[str, Any]] = {}
     for row in settled:
         group = by_bucket.setdefault(
             row["bucket"],
@@ -772,6 +809,20 @@ def _write_pick_audit(
                 group["priced_profit_units"] += price - 1.0
             elif row["grade_status"] == "loss":
                 group["priced_profit_units"] -= 1.0
+        # Market breakdown (all leagues) - requested for NCAA M/W watchlist analysis
+        m = str(row.get("market") or "unknown")
+        mgroup = by_market.setdefault(
+            m, {"settled": 0, "wins": 0, "pushes": 0, "priced_profit_units": 0.0}
+        )
+        mgroup["settled"] += 1
+        mgroup["wins"] += int(row["grade_status"] == "win")
+        mgroup["pushes"] += int(row["grade_status"] == "push")
+        if (row.get("book") or {}).get("selected_decimal_price") is not None:
+            price = float(row["book"]["selected_decimal_price"])
+            if row["grade_status"] == "win":
+                mgroup["priced_profit_units"] += price - 1.0
+            elif row["grade_status"] == "loss":
+                mgroup["priced_profit_units"] -= 1.0
     report = {
         "schema_version": OPERATOR_SCHEMA,
         "generated_utc": generated_utc,
@@ -797,6 +848,7 @@ def _write_pick_audit(
         "profit_units": profit,
         "stake_policy": "flat_one_paper_unit_per_priced_pick",
         "by_bucket": by_bucket,
+        "by_market": by_market,
         "grading_basis": (
             "reconciled_official_finals_only; official_finals_settle_immediately; "
             "pending_is_not_a_loss; local_day_pending_cutoff; "
