@@ -1,7 +1,7 @@
 {
   "base_paper_units": 100.0,
   "frozen_by_date": {},
-  "last_generated_utc": "2026-11-10T01:28:44Z",
+  "last_generated_utc": "2026-11-10T08:46:45Z",
   "paper_bank_units": 100.0,
   "scans": [
     {
@@ -339,6 +339,27 @@
       "fresh_accas": 0,
       "receipt_present": false,
       "run_id": "42735981644_nba_1_attempt_1"
+    },
+    {
+      "candidate_funnel": {
+        "calibration_sufficient_rows": 0,
+        "eligibility_blockers": {
+          "below_calibrated_probability_floor": 8,
+          "insufficient_team_specific_history": 16,
+          "insufficient_walk_forward_samples": 30,
+          "no_exact_bookmaker_market": 12
+        },
+        "eligible_games": 0,
+        "eligible_rows": 0,
+        "exact_priced_rows": 18,
+        "priced_and_calibrated_rows": 0,
+        "required_games": 3,
+        "scan_rows": 30
+      },
+      "captured_at": "2026-11-10T08:46:45Z",
+      "fresh_accas": 0,
+      "receipt_present": false,
+      "run_id": "42785196988_nba_1_attempt_1"
     }
   ],
   "schema_version": "magolide.paper_ticket_state.v1",
