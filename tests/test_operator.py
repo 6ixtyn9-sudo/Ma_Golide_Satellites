@@ -271,7 +271,9 @@ def test_withdrawn_sidecar_drives_performance_exclusion_and_publish_skip(tmp_pat
     if DATE in state["frozen_by_date"]:
         state["frozen_by_date"][DATE].pop("withdrawn", None)
     state_path.write_text(json.dumps(state, indent=2) + "\n")
-    second = publish(tmp_path, store, report(rows, []), run_id="sidecar-only")
+    second = publish(tmp_path, store, report(rows, [acca(rows, acca_id="blocked-candidate")]), run_id="sidecar-only")
+    assert second["ticket_receipt"] is None
+    assert "withdrawn for model-integrity failure" in Path(second["ticket_text"]).read_text()
     performance = json.loads(Path(second["performance"]).read_text())
     assert performance["history"] == []
 
