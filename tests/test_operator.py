@@ -234,6 +234,48 @@ def test_withdrawn_ticket_survives_old_cache_without_becoming_a_live_position(tm
     assert json.loads(state_path.read_text())["frozen_by_date"][DATE]["withdrawn"] is True
 
 
+def test_withdrawn_sidecar_written_and_blocks_adoption_without_state_lock(tmp_path):
+    rows = [forecast(number) for number in (1, 2, 3)]
+    store = Store([game(number) for number in (1, 2, 3)])
+    first = publish(tmp_path, store, report(rows, [acca(rows)]))
+    receipt_path = Path(first["ticket_receipt"])
+    state_path = Path(first["ticket_state"])
+    # Simulate manual withdrawal via state.json (as in previous test) — next run must materialize sidecar.
+    state = json.loads(state_path.read_text())
+    state["frozen_by_date"][DATE].update(withdrawn=True, decision_id="run-1")
+    state_path.write_text(json.dumps(state, indent=2) + "\n")
+    publish(tmp_path, store, report(rows, [acca(rows, acca_id="replacement")]), run_id="later-scan")
+    sidecar = tmp_path / f"auto_tickets_{DATE}_withdrawn.json"
+    assert sidecar.exists()
+    assert json.loads(sidecar.read_text())["decision_id"] == "run-1"
+    # State rollback + receipt still present — sidecar alone must keep date suppressed.
+    state = json.loads(state_path.read_text())
+    del state["frozen_by_date"][DATE]["withdrawn"]
+    state_path.write_text(json.dumps(state, indent=2) + "\n")
+    assert sidecar.exists()
+    blocked = publish(tmp_path, store, report(rows, [acca(rows, acca_id="another")]), run_id="third-scan")
+    assert blocked["ticket_receipt"] is None
+    assert "withdrawn for model-integrity failure" in Path(blocked["ticket_text"]).read_text()
+
+
+def test_withdrawn_sidecar_drives_performance_exclusion_and_publish_skip(tmp_path):
+    # Direct sidecar without state withdrawn flag — performance must still exclude.
+    rows = [forecast(number) for number in (1, 2, 3)]
+    store = Store([game(number) for number in (1, 2, 3)])
+    first = publish(tmp_path, store, report(rows, [acca(rows)]))
+    state_path = Path(first["ticket_state"])
+    sidecar = tmp_path / f"auto_tickets_{DATE}_withdrawn.json"
+    sidecar.write_text(json.dumps({"decision_id": "run-1", "withdrawn": True, "target_date": DATE}) + "\n")
+    # Remove withdrawn flag from state to prove sidecar drives exclusion.
+    state = json.loads(state_path.read_text())
+    if DATE in state["frozen_by_date"]:
+        state["frozen_by_date"][DATE].pop("withdrawn", None)
+    state_path.write_text(json.dumps(state, indent=2) + "\n")
+    second = publish(tmp_path, store, report(rows, []), run_id="sidecar-only")
+    performance = json.loads(Path(second["performance"]).read_text())
+    assert performance["history"] == []
+
+
 def test_push_leg_is_removed_from_effective_acca_price(tmp_path):
     rows = [
         forecast(1, price=2.0),

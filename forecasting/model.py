@@ -481,6 +481,7 @@ class HistoryModel:
                 and prediction is not None
                 and (
                     prediction.expected_total is not None
+                    or prediction.expected_margin is not None
                     or prediction.expected_home_score is not None
                 )
             ):
