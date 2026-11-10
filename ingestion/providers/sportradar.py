@@ -78,15 +78,11 @@ def _cba_competition(fetch: FetchFn) -> Dict[str, Any]:
         ):
             matches.append(row)
     if len(matches) != 1:
-        raise IdentityError(
-            f"Sportradar CBA identity must be unique (found {len(matches)})"
-        )
+        raise IdentityError(f"Sportradar CBA identity must be unique (found {len(matches)})")
     return matches[0]
 
 
-def _season_for_date(
-    fetch: FetchFn, competition_id: str, target_date: str
-) -> Dict[str, Any]:
+def _season_for_date(fetch: FetchFn, competition_id: str, target_date: str) -> Dict[str, Any]:
     if len(target_date) == 8 and target_date.isdigit():
         target_date = f"{target_date[:4]}-{target_date[4:6]}-{target_date[6:]}"
     try:
@@ -112,8 +108,7 @@ def _season_for_date(
             matches.append(row)
     if len(matches) != 1:
         raise IdentityError(
-            f"Sportradar CBA season for {target_date} must be unique "
-            f"(found {len(matches)})"
+            f"Sportradar CBA season for {target_date} must be unique (found {len(matches)})"
         )
     return matches[0]
 
@@ -129,8 +124,7 @@ def _probability_rows(
         rows = payload.get("sport_event_probabilities")
         if not isinstance(rows, list):
             raise ValueError(
-                "Sportradar season probabilities payload has no "
-                "sport_event_probabilities list"
+                "Sportradar season probabilities payload has no sport_event_probabilities list"
             )
         for row in rows:
             if isinstance(row, dict):
@@ -250,9 +244,7 @@ def fetch_cba_probabilities(
     season = _season_for_date(fetcher, str(competition["id"]), target_date)
 
     # Market last_updated is preferred; the page generated_at is the fallback.
-    by_key: Dict[
-        Tuple[str, str, str], List[Tuple[Dict[str, Any], Optional[str]]]
-    ] = {}
+    by_key: Dict[Tuple[str, str, str], List[Tuple[Dict[str, Any], Optional[str]]]] = {}
     for row, generated_at in _probability_rows(fetcher, str(season["id"])):
         joined = _event_join(row)
         if joined is not None:
@@ -263,10 +255,7 @@ def fetch_cba_probabilities(
     event_games: Dict[str, List[str]] = {}
     for game in games:
         rows = by_key.get(_game_key(game), [])
-        event_ids = {
-            str((row.get("sport_event") or {}).get("id", ""))
-            for row, _ in rows
-        }
+        event_ids = {str((row.get("sport_event") or {}).get("id", "")) for row, _ in rows}
         if len(rows) != 1 or len(event_ids) != 1:
             continue
         row, generated_at = rows[0]
@@ -304,6 +293,11 @@ def smoke(target_date: str, fetch: Optional[FetchFn] = None) -> Dict[str, Any]:
 
 
 __all__ = [
-    "ACCESS_ENV", "DOCUMENTATION_ONLY", "ENV_KEY", "PROVIDER",
-    "fetch_cba_probabilities", "is_enabled", "smoke",
+    "ACCESS_ENV",
+    "DOCUMENTATION_ONLY",
+    "ENV_KEY",
+    "PROVIDER",
+    "fetch_cba_probabilities",
+    "is_enabled",
+    "smoke",
 ]

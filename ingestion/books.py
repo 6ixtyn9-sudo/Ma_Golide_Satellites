@@ -94,8 +94,7 @@ def select_total_snapshots(
         and snapshot.line is not None
         and _matches_common(snapshot, config)
         and not (
-            period is not Period.FULL_GAME
-            and snapshot.provider in PROVIDERS_BLOCKED_FROM_QUARTERS
+            period is not Period.FULL_GAME and snapshot.provider in PROVIDERS_BLOCKED_FROM_QUARTERS
         )
     ]
 
@@ -114,8 +113,7 @@ def select_spread_snapshots(
         and snapshot.line is not None
         and _matches_common(snapshot, config)
         and not (
-            period is not Period.FULL_GAME
-            and snapshot.provider in PROVIDERS_BLOCKED_FROM_QUARTERS
+            period is not Period.FULL_GAME and snapshot.provider in PROVIDERS_BLOCKED_FROM_QUARTERS
         )
     ]
 
@@ -133,18 +131,13 @@ def period_coverage(
 ) -> Dict[str, int]:
     """Count distinct games with a real total line in each native period."""
     return {
-        period.value: len({
-            snapshot.game_id
-            for snapshot in select_total_snapshots(snapshots, config, period)
-        })
+        period.value: len(
+            {snapshot.game_id for snapshot in select_total_snapshots(snapshots, config, period)}
+        )
         for period in periods
     }
 
 
-def quarter_coverage(
-    snapshots: List[BookSnapshot], config: BookConfig
-) -> Dict[str, int]:
+def quarter_coverage(snapshots: List[BookSnapshot], config: BookConfig) -> Dict[str, int]:
     """Backward-compatible quarter coverage for quarter-format leagues."""
-    return period_coverage(
-        snapshots, config, (Period.Q1, Period.Q2, Period.Q3, Period.Q4)
-    )
+    return period_coverage(snapshots, config, (Period.Q1, Period.Q2, Period.Q3, Period.Q4))

@@ -182,9 +182,7 @@ def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
         expected_total=row.get("expected_total"),
         training_games=int(row.get("training_games") or 0),
         residual_games=int(row.get("residual_games") or 0),
-        team_history=(
-            dict(row["team_history"]) if row.get("team_history") is not None else None
-        ),
+        team_history=(dict(row["team_history"]) if row.get("team_history") is not None else None),
         book=book,
         prediction_provider=prediction.get("provider"),
         prediction_observed_utc=prediction.get("observed_utc"),
@@ -312,9 +310,7 @@ def _render_picks(
     logical_rows = _latest_logical_rows(rows)
     revision_counts = Counter(_logical_pick_key(row) for row in rows)
     generated = parse_utc(generated_utc)
-    settled = [
-        row for row in logical_rows if row["grade_status"] in {"win", "loss", "push"}
-    ]
+    settled = [row for row in logical_rows if row["grade_status"] in {"win", "loss", "push"}]
     pending = [row for row in logical_rows if row["grade_status"] == "pending"]
     upcoming = [row for row in pending if parse_utc(row["scheduled_utc"]) > generated]
     started = [row for row in pending if parse_utc(row["scheduled_utc"]) <= generated]
@@ -341,8 +337,7 @@ def _render_picks(
         price = (row.get("book") or {}).get("selected_decimal_price")
         price_text = f"@{float(price):.3f}" if price is not None else "@n/a"
         book_name = (
-            _canonical_book_for_key((row.get("book") or {}).get("book"))
-            or "no matched book"
+            _canonical_book_for_key((row.get("book") or {}).get("book")) or "no matched book"
         )
         lines.append(
             f"  [{row.get('model')}/{row.get('model_version')}] "
@@ -369,9 +364,7 @@ def _render_picks(
         revisions = revision_counts[_logical_pick_key(row)]
         if revisions > 1:
             latest = _latest_evidence_utc(row) or "unknown"
-            lines.append(
-                f"      archived_revisions={revisions} · latest_evidence_utc={latest}"
-            )
+            lines.append(f"      archived_revisions={revisions} · latest_evidence_utc={latest}")
 
     def sort_picks(picks: List[Dict[str, Any]]) -> None:
         picks.sort(
@@ -408,17 +401,14 @@ def _render_picks(
     rendered = len(upcoming) + len(started) + len(settled)
     if rendered != len(logical_rows):
         raise RuntimeError(
-            f"daily report dropped logical picks: ledger={len(logical_rows)} "
-            f"rendered={rendered}"
+            f"daily report dropped logical picks: ledger={len(logical_rows)} rendered={rendered}"
         )
     counts = Counter(row["bucket"] for row in upcoming)
     lines.extend(
         [
             "",
-            "Active summary: "
-            + " ".join(f"{bucket}={counts.get(bucket, 0)}" for bucket in order),
-            f"Archive status: IN_PROGRESS_OR_AWAITING_RESULT={len(started)} "
-            f"SETTLED={len(settled)}",
+            "Active summary: " + " ".join(f"{bucket}={counts.get(bucket, 0)}" for bucket in order),
+            f"Archive status: IN_PROGRESS_OR_AWAITING_RESULT={len(started)} SETTLED={len(settled)}",
             f"Logical picks shown: {len(logical_rows)} · "
             f"superseded observations: {len(rows) - len(logical_rows)}",
             f"Total archived pick evidence rows: {len(rows)}",
@@ -500,9 +490,7 @@ def _audit_market_selection(row: Dict[str, Any]) -> str:
     return f"{period} {market.replace('_', ' ')}: {selection.title()}"
 
 
-def _audit_actual_result(
-    row: Dict[str, Any], games: Dict[str, Game] | None
-) -> str | None:
+def _audit_actual_result(row: Dict[str, Any], games: Dict[str, Game] | None) -> str | None:
     game = (games or {}).get(str(row["game_id"]))
     if game is None or game.actual is None:
         return None
@@ -565,11 +553,7 @@ def _render_pick_audit_markdown(
                 f"- paper P&L: {report['profit_units']:+.3f} units",
                 f"- ROI: {report['roi']:+.1%} (P&L / {priced_sample} priced "
                 f"{'pick' if priced_sample == 1 else 'picks'})"
-                + (
-                    " · **provisional — fewer than 30 priced picks**"
-                    if priced_sample < 30
-                    else ""
-                ),
+                + (" · **provisional — fewer than 30 priced picks**" if priced_sample < 30 else ""),
             ]
         )
     else:
@@ -610,14 +594,8 @@ def _render_pick_audit_markdown(
                 for row in settled
                 if row["bucket"] == bucket
             )
-            hit_rate = (
-                f"{group_wins / group_decisions:.1%}" if group_decisions else "n/a"
-            )
-            roi = (
-                f"{group['priced_profit_units'] / group_priced:+.1%}"
-                if group_priced
-                else "n/a"
-            )
+            hit_rate = f"{group_wins / group_decisions:.1%}" if group_decisions else "n/a"
+            roi = f"{group['priced_profit_units'] / group_priced:+.1%}" if group_priced else "n/a"
             lines.append(
                 f"| `{bucket}` | {group_settled} | {group_wins}–{group_losses}–{group_pushes} | "
                 f"{hit_rate} | {group_priced} | {roi} |"
@@ -646,14 +624,8 @@ def _render_pick_audit_markdown(
                 for row in settled
                 if str(row.get("market")) == market
             )
-            hit_rate = (
-                f"{group_wins / group_decisions:.1%}" if group_decisions else "n/a"
-            )
-            roi = (
-                f"{group['priced_profit_units'] / group_priced:+.1%}"
-                if group_priced
-                else "n/a"
-            )
+            hit_rate = f"{group_wins / group_decisions:.1%}" if group_decisions else "n/a"
+            roi = f"{group['priced_profit_units'] / group_priced:+.1%}" if group_priced else "n/a"
             lines.append(
                 f"| `{market}` | {group_settled} | {group_wins}–{group_losses}–{group_pushes} | "
                 f"{hit_rate} | {group_priced} | {roi} |"
@@ -682,14 +654,8 @@ def _render_pick_audit_markdown(
                 for row in settled
                 if f"{str(row.get('market'))}:{str(row.get('selection'))}" == key
             )
-            hit_rate = (
-                f"{group_wins / group_decisions:.1%}" if group_decisions else "n/a"
-            )
-            roi = (
-                f"{group['priced_profit_units'] / group_priced:+.1%}"
-                if group_priced
-                else "n/a"
-            )
+            hit_rate = f"{group_wins / group_decisions:.1%}" if group_decisions else "n/a"
+            roi = f"{group['priced_profit_units'] / group_priced:+.1%}" if group_priced else "n/a"
             lines.append(
                 f"| `{key}` | {group_settled} | {group_wins}–{group_losses}–{group_pushes} | "
                 f"{hit_rate} | {group_priced} | {roi} |"
@@ -750,9 +716,7 @@ def _render_pick_audit_markdown(
                 ]
             )
             price = (row.get("book") or {}).get("selected_decimal_price")
-            book_display = _canonical_book_for_key(
-                (row.get("book") or {}).get("book")
-            )
+            book_display = _canonical_book_for_key((row.get("book") or {}).get("book"))
             price_text = (
                 f"{float(price):.3f} · {book_display or 'book unknown'}"
                 if price is not None
@@ -800,12 +764,7 @@ def _write_pick_audit(
         ledger.extend(payload)
     window = [row for row in ledger if start.isoformat() <= row["date"] <= target_date]
     logical_window = _latest_logical_rows(window)
-    local_cutoff = (
-        parse_utc(generated_utc)
-        .astimezone(ZoneInfo(timezone_name))
-        .date()
-        .isoformat()
-    )
+    local_cutoff = parse_utc(generated_utc).astimezone(ZoneInfo(timezone_name)).date().isoformat()
     # Match Edge's local-day pending cutoff, not the acquisition/slate date.
     # Unlike Edge's source-score default, our grades require reconciled official
     # finals, so a same-day final is already safe to include in settled metrics.
@@ -816,11 +775,7 @@ def _write_pick_audit(
         if row["date"] >= local_cutoff and row["grade_status"] == "pending"
     ]
     settled = sorted(
-        (
-            row
-            for row in logical_window
-            if row["grade_status"] in {"win", "loss", "push"}
-        ),
+        (row for row in logical_window if row["grade_status"] in {"win", "loss", "push"}),
         key=lambda row: (
             row["date"],
             row["scheduled_utc"],
@@ -880,7 +835,15 @@ def _write_pick_audit(
         sel = str(row.get("selection") or "unknown")
         key = f"{m}:{sel}"
         sgroup = by_selection.setdefault(
-            key, {"settled": 0, "wins": 0, "pushes": 0, "priced_profit_units": 0.0, "market": m, "selection": sel}
+            key,
+            {
+                "settled": 0,
+                "wins": 0,
+                "pushes": 0,
+                "priced_profit_units": 0.0,
+                "market": m,
+                "selection": sel,
+            },
         )
         sgroup["settled"] += 1
         sgroup["wins"] += int(row["grade_status"] == "win")
@@ -1013,7 +976,14 @@ def _ticket_receipt(
         # Persist sidecar so future state rollbacks still see the withdrawal.
         sidecar = _withdrawn_sidecar_path(localdata, target_date)
         if not sidecar.exists():
-            _write_json(sidecar, {"decision_id": lock.get("decision_id"), "withdrawn": True, "target_date": target_date})
+            _write_json(
+                sidecar,
+                {
+                    "decision_id": lock.get("decision_id"),
+                    "withdrawn": True,
+                    "target_date": target_date,
+                },
+            )
         return None
     if lock is not None:
         locked_path = localdata / str(lock.get("receipt_path") or path.name)
@@ -1244,17 +1214,11 @@ def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, 
 
     priced = [row for row in rows if exact_price(row)]
     calibrated = [
-        row
-        for row in rows
-        if (row.get("calibration") or {}).get("sufficient_for_accas") is True
+        row for row in rows if (row.get("calibration") or {}).get("sufficient_for_accas") is True
     ]
-    eligible = [
-        row for row in rows if (row.get("eligibility") or {}).get("acca_eligible")
-    ]
+    eligible = [row for row in rows if (row.get("eligibility") or {}).get("acca_eligible")]
     blockers = Counter(
-        reason
-        for row in rows
-        for reason in ((row.get("eligibility") or {}).get("reasons") or [])
+        reason for row in rows for reason in ((row.get("eligibility") or {}).get("reasons") or [])
     )
     try:
         required_games = int(acca_report.get("requested_legs") or 3)
@@ -1265,8 +1229,7 @@ def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, 
         "exact_priced_rows": len(priced),
         "calibration_sufficient_rows": len(calibrated),
         "priced_and_calibrated_rows": sum(
-            exact_price(row)
-            and (row.get("calibration") or {}).get("sufficient_for_accas") is True
+            exact_price(row) and (row.get("calibration") or {}).get("sufficient_for_accas") is True
             for row in rows
         ),
         "eligible_rows": len(eligible),
@@ -1493,7 +1456,11 @@ def publish_operator_reports(
         if _withdrawn_sidecar_path(localdata, target_date).exists():
             try:
                 sc = json.loads(_withdrawn_sidecar_path(localdata, target_date).read_text())
-                withdrawal = {"withdrawn": True, "decision_id": sc.get("decision_id"), "sidecar": True}
+                withdrawal = {
+                    "withdrawn": True,
+                    "decision_id": sc.get("decision_id"),
+                    "sidecar": True,
+                }
             except (OSError, json.JSONDecodeError):
                 withdrawal = {"withdrawn": True, "sidecar": True}
         else:
@@ -1501,9 +1468,7 @@ def publish_operator_reports(
     withdrawn_decision_ids = {
         str(lock.get("decision_id"))
         for lock in state["frozen_by_date"].values()
-        if isinstance(lock, dict)
-        and lock.get("withdrawn") is True
-        and lock.get("decision_id")
+        if isinstance(lock, dict) and lock.get("withdrawn") is True and lock.get("decision_id")
     } | _withdrawn_ids_from_sidecars(localdata)
     receipts = []
     for path in sorted(localdata.glob("auto_tickets_????-??-??_decision.json")):

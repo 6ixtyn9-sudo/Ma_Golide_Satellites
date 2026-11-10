@@ -39,10 +39,7 @@ def _pred_slot_key(prediction: Prediction) -> str:
 
 def _book_natural_key(snapshot: BookSnapshot) -> str:
     """Book/market identity without its pre/post-match observation slot."""
-    return (
-        f"{snapshot.provider}|{snapshot.book}|{snapshot.market.value}|"
-        f"{snapshot.period.value}"
-    )
+    return f"{snapshot.provider}|{snapshot.book}|{snapshot.market.value}|{snapshot.period.value}"
 
 
 def _book_slot_key(snapshot: BookSnapshot) -> str:
@@ -163,7 +160,9 @@ class InMemoryStore(Store):
     def get_game(self, game_id: str) -> Optional[Game]:
         return self.games.get(game_id)
 
-    def list_games(self, league=None, status=None, on_or_after_utc=None, before_utc=None) -> List[Game]:
+    def list_games(
+        self, league=None, status=None, on_or_after_utc=None, before_utc=None
+    ) -> List[Game]:
         from .identity import parse_utc
 
         out = list(self.games.values())
@@ -196,9 +195,7 @@ class InMemoryStore(Store):
                 existing = per_game.get(slot)
                 if existing is not None and _same(existing, prediction):
                     return  # idempotent re-run
-                raise FrozenWriteError(
-                    f"prediction for {prediction.game_id}/{provider} is frozen"
-                )
+                raise FrozenWriteError(f"prediction for {prediction.game_id}/{provider} is frozen")
             per_game[slot] = prediction
             if frozen and prediction.pre_tip:
                 frozen_map[provider] = True
@@ -234,9 +231,7 @@ class InMemoryStore(Store):
         )
 
     def is_book_snapshot_frozen(self, game_id: str, snapshot: BookSnapshot) -> bool:
-        return bool(
-            self.frozen_books.get(game_id, {}).get(_book_slot_key(snapshot))
-        )
+        return bool(self.frozen_books.get(game_id, {}).get(_book_slot_key(snapshot)))
 
     # aliases
     def get_team_aliases(self) -> Dict[str, List[str]]:

@@ -1,6 +1,5 @@
 """Tests: prediction selection, coherence, freezing, and odds binding."""
 
-
 import pytest
 
 from ingestion.models import BookSnapshot, Game, League, Market, Period, Prediction
@@ -18,22 +17,31 @@ NOW = "2026-11-07T20:00:00Z"
 
 def _game():
     return Game(
-        game_id="g1", league=League.NBA, season="2026",
-        home_team_id="11", away_team_id="7",
-        home_name="Indiana Pacers", away_name="Denver Nuggets",
+        game_id="g1",
+        league=League.NBA,
+        season="2026",
+        home_team_id="11",
+        away_team_id="7",
+        home_name="Indiana Pacers",
+        away_name="Denver Nuggets",
         scheduled_utc="2026-11-07T22:00:00Z",
     )
 
 
 def _pred(provider, observed, complete=True, tip="2026-11-07T22:00:00Z", **kw):
     base = dict(
-        game_id="g1", provider=provider, observed_utc=observed,
-        prob_home=0.55, prob_away=0.45,
+        game_id="g1",
+        provider=provider,
+        observed_utc=observed,
+        prob_home=0.55,
+        prob_away=0.45,
     )
     if complete:
         base.update(
-            expected_home_score=118.0, expected_away_score=112.0,
-            expected_total=230.0, expected_margin=6.0,
+            expected_home_score=118.0,
+            expected_away_score=112.0,
+            expected_total=230.0,
+            expected_margin=6.0,
         )
     base.update(kw)
     return Prediction(**base)
@@ -41,9 +49,14 @@ def _pred(provider, observed, complete=True, tip="2026-11-07T22:00:00Z", **kw):
 
 def _snap(provider="therundown", observed="2026-11-07T19:00:00Z", book="fanduel"):
     return BookSnapshot(
-        game_id="g1", provider=provider, book=book,
-        market=Market.MONEYLINE, period=Period.FULL_GAME,
-        observed_utc=observed, home_price_decimal=1.67, away_price_decimal=2.30,
+        game_id="g1",
+        provider=provider,
+        book=book,
+        market=Market.MONEYLINE,
+        period=Period.FULL_GAME,
+        observed_utc=observed,
+        home_price_decimal=1.67,
+        away_price_decimal=2.30,
     )
 
 
@@ -54,9 +67,14 @@ def _snap(provider="therundown", observed="2026-11-07T19:00:00Z", book="fanduel"
 
 def test_complete_bundle_selected_never_mixed():
     espn_p = _pred("espn", "2026-11-07T18:00:00Z")
-    hw = _pred("hardwood", "2026-11-07T17:50:00Z",
-               expected_home_score=117.0, expected_away_score=110.0,
-               expected_total=227.0, expected_margin=7.0)
+    hw = _pred(
+        "hardwood",
+        "2026-11-07T17:50:00Z",
+        expected_home_score=117.0,
+        expected_away_score=110.0,
+        expected_total=227.0,
+        expected_margin=7.0,
+    )
     result = select_prediction([espn_p, hw], _game(), NOW)
     assert result.provider == "espn" and result.reason == "complete_bundle"
     # No synthetic blend: the selection IS one provider's record.
@@ -76,7 +94,9 @@ def test_partial_bundle_only_probabilities():
     assert result.selected.expected_total is None
     assert result.reason == "partial_bundle_probabilities_only"
     assert set(result.partial_fields) == {
-        "expected_home_score", "expected_away_score", "expected_total"
+        "expected_home_score",
+        "expected_away_score",
+        "expected_total",
     }
     assert any(g.required_field == "prediction_scores" for g in result.gaps)
 
@@ -104,9 +124,16 @@ def test_shadows_preserved_not_discarded():
 
 def test_rounded_scores_may_disagree_with_favorite_and_survive():
     """Rounded display can tie/disagree with the favorite; never repaired."""
-    p = _pred("espn", NOW, prob_home=0.55, prob_away=0.45,
-              expected_home_score=110.4, expected_away_score=110.6,
-              expected_total=221.0, expected_margin=-0.2)
+    p = _pred(
+        "espn",
+        NOW,
+        prob_home=0.55,
+        prob_away=0.45,
+        expected_home_score=110.4,
+        expected_away_score=110.6,
+        expected_total=221.0,
+        expected_margin=-0.2,
+    )
     result = select_prediction([p], _game(), NOW)
     assert result.selected.prob_home > result.selected.prob_away
     assert result.selected.expected_home_score == 110.4
@@ -132,16 +159,14 @@ def _seed(store, preds):
 
 def test_freeze_uses_latest_pre_tip_observation():
     store = InMemoryStore()
-    a = _pred("espn", "2026-11-07T10:00:00Z")   # pre-tip
-    b = _pred("espn", "2026-11-07T23:00:00Z")   # post-tip arrival
-    b.pre_tip = False                           # pipeline stamps this at storage
+    a = _pred("espn", "2026-11-07T10:00:00Z")  # pre-tip
+    b = _pred("espn", "2026-11-07T23:00:00Z")  # post-tip arrival
+    b.pre_tip = False  # pipeline stamps this at storage
     _seed(store, [a, b])
     game = _game()
     statuses = freeze_game_predictions(store, game, game.scheduled_utc)
     assert statuses["espn"] == "frozen"
-    frozen_pred, was_frozen = resolve_frozen_bundle(
-        store, "g1", game.scheduled_utc
-    )
+    frozen_pred, was_frozen = resolve_frozen_bundle(store, "g1", game.scheduled_utc)
     assert was_frozen and frozen_pred.observed_utc == a.observed_utc
 
 
@@ -151,7 +176,7 @@ def test_frozen_prediction_never_replaced():
     _seed(store, [a])
     game = _game()
     freeze_game_predictions(store, game, game.scheduled_utc)
-    b = _pred("espn", "2026-11-07T23:00:00Z")   # post-tip update attempt
+    b = _pred("espn", "2026-11-07T23:00:00Z")  # post-tip update attempt
     with pytest.raises(FrozenWriteError):
         store.upsert_prediction(b, frozen=False)
 
@@ -178,9 +203,7 @@ def test_no_pregame_prediction_status():
 
 def test_results_without_pregame_prediction_blank():
     store = InMemoryStore()
-    pred, was_frozen = resolve_frozen_bundle(
-        store, "missing-game", "2026-11-07T22:00:00Z"
-    )
+    pred, was_frozen = resolve_frozen_bundle(store, "missing-game", "2026-11-07T22:00:00Z")
     assert pred is None and not was_frozen
 
 
@@ -189,11 +212,9 @@ def test_results_use_pre_tip_not_post_tip_when_unfrozen():
     store = InMemoryStore()
     a = _pred("espn", "2026-11-07T10:00:00Z", expected_total=230.0)
     b = _pred("espn", "2026-11-07T23:30:00Z", expected_total=999.0)
-    b.pre_tip = False                    # pipeline stamps this at storage
+    b.pre_tip = False  # pipeline stamps this at storage
     _seed(store, [a, b])
-    pred, was_frozen = resolve_frozen_bundle(
-        store, "g1", "2026-11-07T22:00:00Z"
-    )
+    pred, was_frozen = resolve_frozen_bundle(store, "g1", "2026-11-07T22:00:00Z")
     assert not was_frozen
     assert pred.expected_total == 230.0
 
@@ -223,9 +244,14 @@ def test_odds_follow_selected_side_same_snapshot():
 def test_odds_none_without_prediction_or_market():
     assert odds_for_prediction(_snap(), None) is None
     total_snap = BookSnapshot(
-        game_id="g1", provider="therundown", book="fanduel",
-        market=Market.TOTAL, period=Period.FULL_GAME,
-        observed_utc=NOW, line=232.0, over_price_decimal=1.9,
+        game_id="g1",
+        provider="therundown",
+        book="fanduel",
+        market=Market.TOTAL,
+        period=Period.FULL_GAME,
+        observed_utc=NOW,
+        line=232.0,
+        over_price_decimal=1.9,
     )
     assert odds_for_prediction(total_snap, _pred("espn", NOW)) is None
 

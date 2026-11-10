@@ -78,9 +78,10 @@ def test_spread_filter_uses_real_home_line_and_exact_period():
     spread = _snap(market=Market.SPREAD, period=Period.Q1, line=-2.5)
     assert select_spread_snapshots([spread], _config(), Period.Q1) == [spread]
     assert select_spread_snapshots([spread], _config(), Period.Q2) == []
-    assert select_spread_snapshots(
-        [_snap(market=Market.SPREAD, line=None)], _config(), Period.Q1
-    ) == []
+    assert (
+        select_spread_snapshots([_snap(market=Market.SPREAD, line=None)], _config(), Period.Q1)
+        == []
+    )
 
 
 def test_moneyline_filter_separates_full_game_and_first_half():

@@ -81,6 +81,8 @@ ESPN_LEAGUES = {League.NBA, League.WNBA, League.NCAA_M, League.NCAA_W}
 def _book_providers(league: str) -> Sequence[str]:
     # NBA/EuroLeague retain the existing overrideable provider tuple.
     return BOOK_PROVIDERS_BY_LEAGUE.get(league.upper(), BOOK_PROVIDERS)
+
+
 BOOK_STALENESS_HOURS = 72.0
 
 
@@ -167,9 +169,7 @@ class Pipeline:
         self._reset_stage()
         league = self.config.league.upper()
         if league in {"NBA", "WNBA", "NCAA_M", "NCAA_W"}:
-            report = espn.smoke(
-                self.config.date_yyyymmdd, self.espn_fetch, self.config.league_enum
-            )
+            report = espn.smoke(self.config.date_yyyymmdd, self.espn_fetch, self.config.league_enum)
             if league == "NBA":
                 report["hardwood"] = self._hardwood_smoke()
             report["bookmakers"] = self._bookmakers_smoke()
@@ -179,13 +179,9 @@ class Pipeline:
                 self.config.date_yyyymmdd, self.fetch, self.config.league_enum
             )
             try:
-                report["sportradar"] = sportradar.smoke(
-                    self.config.date_yyyymmdd, self.fetch
-                )
+                report["sportradar"] = sportradar.smoke(self.config.date_yyyymmdd, self.fetch)
             except Exception as exc:
-                report["sportradar"] = {
-                    "status": "PROVIDER_ERROR", "detail": str(exc)[:200]
-                }
+                report["sportradar"] = {"status": "PROVIDER_ERROR", "detail": str(exc)[:200]}
             report["bookmakers"] = self._bookmakers_smoke()
             return report
         if league == "EUROLEAGUE":
@@ -209,8 +205,8 @@ class Pipeline:
             selection = selections[game.game_id]
             pred = selection.selected
             snapshots = self._visible_pregame_books(game)
-            quarter_lines, full_game_line, book_evidence, book_gaps = (
-                self._book_fields(game, snapshots)
+            quarter_lines, full_game_line, book_evidence, book_gaps = self._book_fields(
+                game, snapshots
             )
             self.gaps.extend(book_gaps)
             odds, odds_evidence = self._odds_evidence_for(snapshots, pred)
@@ -223,23 +219,16 @@ class Pipeline:
                     "prediction_reason": selection.reason,
                     "prediction": _prediction_facts(pred),
                     "prediction_frozen": bool(
-                        pred
-                        and self.store.is_prediction_frozen(
-                            game.game_id, pred.provider
-                        )
+                        pred and self.store.is_prediction_frozen(game.game_id, pred.provider)
                     ),
                     "odds": odds,
                     "odds_evidence": odds_evidence,
                     "full_game_line": full_game_line,
                     "quarters": (
-                        quarter_lines
-                        if game.league not in {League.NCAA_M, League.NCAA_W}
-                        else {}
+                        quarter_lines if game.league not in {League.NCAA_M, League.NCAA_W} else {}
                     ),
                     "halves": (
-                        quarter_lines
-                        if game.league in {League.NCAA_M, League.NCAA_W}
-                        else {}
+                        quarter_lines if game.league in {League.NCAA_M, League.NCAA_W} else {}
                     ),
                     "native_periods": quarter_lines,
                     "book_evidence": book_evidence,
@@ -266,9 +255,7 @@ class Pipeline:
         frozen: Dict[str, Dict[str, str]] = {}
         books_frozen = 0
         for game in tip_games:
-            frozen[game.game_id] = freeze_game_predictions(
-                self.store, game, game.scheduled_utc
-            )
+            frozen[game.game_id] = freeze_game_predictions(self.store, game, game.scheduled_utc)
             books_frozen += self._freeze_books(game)
         return self._report(
             mode="write" if self.allow_writes else "dry_run",
@@ -289,9 +276,7 @@ class Pipeline:
         quarantined = []
         for game in finals:
             if game.actual is None:
-                quarantined.append(
-                    {"game_id": game.game_id, "reason": "no_official_result"}
-                )
+                quarantined.append({"game_id": game.game_id, "reason": "no_official_result"})
                 continue
             ok, why = game.actual.reconciles()
             if not ok:
@@ -363,9 +348,7 @@ class Pipeline:
             snapshots = self.store.get_book_snapshots(game.game_id)
             if select_total_snapshots(snapshots, any_book):
                 with_fg_line += 1
-            counts = period_coverage(
-                snapshots, any_book, native_periods(self.config.league_enum)
-            )
+            counts = period_coverage(snapshots, any_book, native_periods(self.config.league_enum))
             for label in per_period:
                 per_period[label] += counts.get(label, 0)
             if (
@@ -385,9 +368,7 @@ class Pipeline:
                     "with_line": with_fg_line,
                     "total_games": len(games),
                 },
-                "quarter_lines": (
-                    per_period if native_labels == ["Q1", "Q2", "Q3", "Q4"] else {}
-                ),
+                "quarter_lines": (per_period if native_labels == ["Q1", "Q2", "Q3", "Q4"] else {}),
                 "quarter_line_coverage": (
                     per_period if native_labels == ["Q1", "Q2", "Q3", "Q4"] else {}
                 ),
@@ -412,13 +393,9 @@ class Pipeline:
                 observed_utc=self._now_iso(),
             )
         elif league is League.CBA:
-            games = isportsapi.discover_games(
-                self.config.date_yyyymmdd, self.fetch, league
-            )
+            games = isportsapi.discover_games(self.config.date_yyyymmdd, self.fetch, league)
         elif league is League.EUROLEAGUE:
-            games = euroleague.discover_games(
-                _iso(self.config.date_yyyymmdd), self.fetch
-            )
+            games = euroleague.discover_games(_iso(self.config.date_yyyymmdd), self.fetch)
         else:
             raise ValueError(f"unsupported league for discovery: {league.value}")
         for game in games:
@@ -509,8 +486,7 @@ class Pipeline:
         eligible = [
             index
             for index, game in enumerate(games)
-            if game.status is GameStatus.SCHEDULED
-            and parse_utc(game.scheduled_utc) > now
+            if game.status is GameStatus.SCHEDULED and parse_utc(game.scheduled_utc) > now
         ]
         eligible.sort(key=lambda index: parse_utc(games[index].scheduled_utc))
         attempted = 0
@@ -621,9 +597,7 @@ class Pipeline:
             # Stored pre-tip observations compete with fresh observations. A
             # transient provider failure must not blank a still-fresh bundle.
             candidates: List[Prediction] = [
-                pred
-                for pred in self.store.get_predictions(game.game_id)
-                if pred.pre_tip
+                pred for pred in self.store.get_predictions(game.game_id) if pred.pre_tip
             ]
             league = self.config.league_enum
             if league in ESPN_LEAGUES:
@@ -648,9 +622,7 @@ class Pipeline:
                         )
                     )
                 if league is League.NBA and artifact is not None:
-                    candidates.extend(
-                        _hardwood_candidates(game, artifact, self.fetch, self.gaps)
-                    )
+                    candidates.extend(_hardwood_candidates(game, artifact, self.fetch, self.gaps))
             elif league is League.CBA:
                 prediction = cba_probabilities.get(game.game_id)
                 if prediction is not None:
@@ -690,11 +662,7 @@ class Pipeline:
             if module is None or not module.is_enabled():
                 continue
             try:
-                options = (
-                    {"tz_name": self.config.timezone}
-                    if provider == "theoddsapi"
-                    else {}
-                )
+                options = {"tz_name": self.config.timezone} if provider == "theoddsapi" else {}
                 raw_snapshots.extend(
                     module.fetch_odds(
                         self.config.league.upper(),
@@ -703,9 +671,7 @@ class Pipeline:
                         **options,
                     )
                 )
-                self.quota[provider] = (
-                    module.last_quota() if hasattr(module, "last_quota") else {}
-                )
+                self.quota[provider] = module.last_quota() if hasattr(module, "last_quota") else {}
             except Exception as exc:
                 logger.warning("%s fetch failed: %s", provider, exc)
                 self.gaps.append(
@@ -754,9 +720,7 @@ class Pipeline:
             if not known_event_id:
                 game.provider_ids[raw.provider] = provider_event_id
                 self.store.upsert_game(game)
-            snapshot = replace(
-                raw, game_id=game.game_id, provider_event_id=provider_event_id
-            )
+            snapshot = replace(raw, game_id=game.game_id, provider_event_id=provider_event_id)
             per_game = mapped.setdefault(game.game_id, [])
             if snapshot not in per_game:
                 per_game.append(snapshot)
@@ -792,9 +756,7 @@ class Pipeline:
         )
         full_game_line = None
         for label, period in periods:
-            chosen = newest_snapshot(
-                select_total_snapshots(snapshots, self.config.book, period)
-            )
+            chosen = newest_snapshot(select_total_snapshots(snapshots, self.config.book, period))
             value = float(chosen.line) if chosen is not None else None
             evidence[label] = _book_evidence(chosen)
             if period is Period.FULL_GAME:
@@ -806,11 +768,7 @@ class Pipeline:
                     CoverageGap(
                         game_id=game.game_id,
                         required_field=f"book_{period.value.lower()}_line",
-                        reason=(
-                            CoverageState.MISSING
-                            if snapshots
-                            else CoverageState.UNSUPPORTED
-                        ),
+                        reason=(CoverageState.MISSING if snapshots else CoverageState.UNSUPPORTED),
                         provider=self.config.book.provider,
                         detail=(
                             f"no fresh pre-match {period.value} total line "
@@ -831,9 +789,7 @@ class Pipeline:
                 candidates.append((snapshot, price))
         if not candidates:
             return None, None
-        snapshot, price = max(
-            candidates, key=lambda item: parse_utc(item[0].observed_utc)
-        )
+        snapshot, price = max(candidates, key=lambda item: parse_utc(item[0].observed_utc))
         return price, _book_evidence(snapshot)
 
     def _frozen_odds_evidence(
@@ -861,10 +817,8 @@ class Pipeline:
         frozen = 0
         by_key: Dict[tuple, BookSnapshot] = {}
         for snapshot in self.store.get_book_snapshots(game.game_id):
-            if (
-                not snapshot.pre_match
-                or parse_utc(snapshot.observed_utc)
-                >= parse_utc(game.scheduled_utc)
+            if not snapshot.pre_match or parse_utc(snapshot.observed_utc) >= parse_utc(
+                game.scheduled_utc
             ):
                 continue
             key = (
@@ -947,9 +901,7 @@ class Pipeline:
                 "detail": "dry runs cannot advance a cursor past unpersisted history",
             }
 
-        health = self.store.get_provider_health(
-            "espn-history", self.config.league_enum
-        )
+        health = self.store.get_provider_health("espn-history", self.config.league_enum)
         previous = health.coverage if health else {}
         default_start = self._default_history_start_season()
         if self.config.deep_history_start_season is not None:
@@ -970,14 +922,10 @@ class Pipeline:
             }
 
         def index_fetch(url: str):
-            return self.acquisition.get_json(
-                url, use_cache=True, ttl_seconds=7 * 86400
-            )
+            return self.acquisition.get_json(url, use_cache=True, ttl_seconds=7 * 86400)
 
         try:
-            manifest = espn.season_event_index(
-                season, index_fetch, self.config.league_enum
-            )
+            manifest = espn.season_event_index(season, index_fetch, self.config.league_enum)
         except Exception as exc:
             self.gaps.append(
                 CoverageGap(
@@ -1037,9 +985,7 @@ class Pipeline:
                 already += 1
                 event_index += 1
                 processed += 1
-                self._store_history_cursor(
-                    season, event_index, season, len(event_ids)
-                )
+                self._store_history_cursor(season, event_index, season, len(event_ids))
                 continue
             try:
                 game = espn.fetch_historical_event(
@@ -1155,9 +1101,7 @@ class Pipeline:
                 date = day.strftime("%Y%m%d")
 
                 def cached_fetch(url: str):
-                    return self.acquisition.get_json(
-                        url, use_cache=True, ttl_seconds=86400
-                    )
+                    return self.acquisition.get_json(url, use_cache=True, ttl_seconds=86400)
 
                 found = 0
                 written = 0
@@ -1167,9 +1111,7 @@ class Pipeline:
                         date,
                         cached_fetch,
                         self.config.league_enum,
-                        observed_utc=lambda: (
-                            self.acquisition.last_observed_utc or self._now_iso()
-                        ),
+                        observed_utc=lambda: self.acquisition.last_observed_utc or self._now_iso(),
                     )
                 except Exception as exc:
                     logger.warning("ESPN historical backfill failed for %s: %s", date, exc)
@@ -1269,9 +1211,7 @@ class Pipeline:
                 observed_utc=self._now_iso(),
             )
         if league is League.CBA:
-            return isportsapi.fetch_recent_results(
-                self.config.date_yyyymmdd, self.fetch, league
-            )
+            return isportsapi.fetch_recent_results(self.config.date_yyyymmdd, self.fetch, league)
         if league is League.EUROLEAGUE:
             return self._euroleague_finals(self._discover_games())
         raise ValueError(f"unsupported league for results: {league.value}")
@@ -1283,9 +1223,7 @@ class Pipeline:
                 try:
                     finals.append(euroleague.fetch_game_result(game, self.fetch))
                 except Exception as exc:
-                    logger.warning(
-                        "euroleague result failed for %s: %s", game.game_id, exc
-                    )
+                    logger.warning("euroleague result failed for %s: %s", game.game_id, exc)
                     self.gaps.append(
                         CoverageGap(
                             game_id=game.game_id,
@@ -1307,9 +1245,7 @@ class Pipeline:
             fetch_target = getattr(self.fetch, "__self__", self.fetch)
             return {
                 "verification": (
-                    "LIVE_VERIFIED"
-                    if isinstance(fetch_target, HttpClient)
-                    else "FIXTURE_VERIFIED"
+                    "LIVE_VERIFIED" if isinstance(fetch_target, HttpClient) else "FIXTURE_VERIFIED"
                 ),
                 "generated_at": artifact.generated_at,
                 "ingestion_status": artifact.ingestion_status,
@@ -1329,9 +1265,7 @@ class Pipeline:
                 "note": "PREDIXSPORT_API_KEY missing; provider disabled",
             }
         try:
-            return predixsport.smoke(
-                self.config.league.lower(), self.fetch_factory
-            )
+            return predixsport.smoke(self.config.league.lower(), self.fetch_factory)
         except Exception as exc:
             return {"verification": "PROVIDER_ERROR", "detail": str(exc)[:200]}
 
@@ -1349,11 +1283,7 @@ class Pipeline:
                 }
                 continue
             try:
-                options = (
-                    {"tz_name": self.config.timezone}
-                    if provider == "theoddsapi"
-                    else {}
-                )
+                options = {"tz_name": self.config.timezone} if provider == "theoddsapi" else {}
                 output[provider] = module.smoke(
                     self.config.league.upper(), self.fetch_factory, **options
                 )
@@ -1367,9 +1297,7 @@ class Pipeline:
 
     # -- report --------------------------------------------------------------
 
-    def _report(
-        self, mode: str, fixtures_found: int, extra: Dict[str, Any]
-    ) -> Dict[str, Any]:
+    def _report(self, mode: str, fixtures_found: int, extra: Dict[str, Any]) -> Dict[str, Any]:
         report = CoverageReport(
             league=self.config.league.upper(),
             generated_utc=self._now_iso(),
@@ -1391,9 +1319,7 @@ class Pipeline:
             "kind": store_kind,
             "write_enabled": bool(getattr(self.store, "persist", False)),
             "unattended_state_configured": store_kind == "duckdb",
-            "system_of_record": (
-                "duckdb_csv" if store_kind == "duckdb" else "ephemeral"
-            ),
+            "system_of_record": ("duckdb_csv" if store_kind == "duckdb" else "ephemeral"),
         }
         report_dict.update(extra)
         return report_dict
@@ -1438,13 +1364,13 @@ def _book_evidence(snapshot: Optional[BookSnapshot]) -> Optional[Dict[str, Any]]
 
 
 def _book_identity_mismatch(snapshot: BookSnapshot, game: Game) -> str:
-    if snapshot.home_name and canonical_team_key(
-        snapshot.home_name
-    ) != canonical_team_key(game.home_name):
+    if snapshot.home_name and canonical_team_key(snapshot.home_name) != canonical_team_key(
+        game.home_name
+    ):
         return "home-team metadata contradicts the mapped game"
-    if snapshot.away_name and canonical_team_key(
-        snapshot.away_name
-    ) != canonical_team_key(game.away_name):
+    if snapshot.away_name and canonical_team_key(snapshot.away_name) != canonical_team_key(
+        game.away_name
+    ):
         return "away-team metadata contradicts the mapped game"
     if snapshot.scheduled_utc:
         try:
@@ -1455,42 +1381,30 @@ def _book_identity_mismatch(snapshot: BookSnapshot, game: Game) -> str:
     return ""
 
 
-def _resolve_book_game(
-    snapshot: BookSnapshot, games: Sequence[Game]
-) -> tuple[Optional[Game], str]:
+def _resolve_book_game(snapshot: BookSnapshot, games: Sequence[Game]) -> tuple[Optional[Game], str]:
     """Resolve a snapshot to one game without trusting an ID coincidence."""
 
     raw_id = str(snapshot.provider_event_id or snapshot.game_id)
     known = [
-        game
-        for game in games
-        if str(game.provider_ids.get(snapshot.provider) or "") == raw_id
+        game for game in games if str(game.provider_ids.get(snapshot.provider) or "") == raw_id
     ]
     if snapshot.provider_event_id is None:
-        known.extend(
-            game for game in games if game.game_id == raw_id and game not in known
-        )
+        known.extend(game for game in games if game.game_id == raw_id and game not in known)
     if len(known) > 1:
         return None, "provider/canonical ID maps to multiple games"
     if known:
         mismatch = _book_identity_mismatch(snapshot, known[0])
         return (None, mismatch) if mismatch else (known[0], "")
 
-    if not (
-        snapshot.home_name and snapshot.away_name and snapshot.scheduled_utc
-    ):
+    if not (snapshot.home_name and snapshot.away_name and snapshot.scheduled_utc):
         return None, "unmapped provider event lacks home/away/start identity metadata"
     candidates = []
     for game in games:
         if _book_identity_mismatch(snapshot, game):
             continue
-        if canonical_team_key(snapshot.home_name) != canonical_team_key(
-            game.home_name
-        ):
+        if canonical_team_key(snapshot.home_name) != canonical_team_key(game.home_name):
             continue
-        if canonical_team_key(snapshot.away_name) != canonical_team_key(
-            game.away_name
-        ):
+        if canonical_team_key(snapshot.away_name) != canonical_team_key(game.away_name):
             continue
         candidates.append(game)
     if len(candidates) == 1:
@@ -1541,9 +1455,7 @@ def _book_module(provider: str):
     }[provider]
 
 
-def _hardwood_candidates(
-    game: Game, artifact, fetch, gaps: List[CoverageGap]
-) -> List[Prediction]:
+def _hardwood_candidates(game: Game, artifact, fetch, gaps: List[CoverageGap]) -> List[Prediction]:
     output: List[Prediction] = []
     local_gaps: List[CoverageGap] = []
     prediction = hardwood.fetch_prediction(game, fetch, gaps=local_gaps)
@@ -1575,9 +1487,7 @@ def _predixsport_candidates(game: Game, fetch_factory) -> List[Prediction]:
 
 
 def _iso(date_yyyymmdd: str) -> str:
-    return (
-        f"{date_yyyymmdd[:4]}-{date_yyyymmdd[4:6]}-{date_yyyymmdd[6:8]}"
-    )
+    return f"{date_yyyymmdd[:4]}-{date_yyyymmdd[4:6]}-{date_yyyymmdd[6:8]}"
 
 
 def _count_by(values: Sequence[str]) -> Dict[str, int]:

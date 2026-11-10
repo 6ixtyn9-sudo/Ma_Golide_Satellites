@@ -132,9 +132,7 @@ def test_pregame_uses_only_fresh_exact_book_evidence():
             line=999.0,
         )
     )
-    config = _config(
-        book=BookConfig(provider="sportsgameodds", book="draftkings")
-    )
+    config = _config(book=BookConfig(provider="sportsgameodds", book="draftkings"))
     report = Pipeline(config, store, fetch=_nba_fetch()).pregame()
     row = report["rows"][0]
     assert row["quarters"]["Q1"] == 58.5
@@ -153,9 +151,7 @@ def test_bounded_backfill_acquires_reconciled_history_without_learning_claim():
         with open(os.path.join(FIXTURES, "espn/scoreboard_20261105.json")) as handle:
             return json.load(handle)
 
-    pipeline = Pipeline(
-        _config(history_days=1, history_request_budget=1), store, fetch=fetch
-    )
+    pipeline = Pipeline(_config(history_days=1, history_request_budget=1), store, fetch=fetch)
     report = pipeline.backfill()
     assert report["backfill"]["requested_days"] == 1
     assert report["backfill"]["learning_or_calibration_claimed"] is False
@@ -188,10 +184,7 @@ def test_backfill_budget_is_explicitly_bounded():
     ).backfill()
     assert len(calls) == 2
     assert len(report["backfill"]["dates"]) == 2
-    assert any(
-        gap["required_field"] == "historical_backfill_budget"
-        for gap in report["gaps"]
-    )
+    assert any(gap["required_field"] == "historical_backfill_budget" for gap in report["gaps"])
 
 
 def test_pipeline_stage_gaps_do_not_accumulate_between_commands():

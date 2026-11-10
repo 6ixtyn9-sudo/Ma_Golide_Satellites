@@ -10,10 +10,12 @@ from pathlib import Path
 # byte-identical in both files, otherwise a withdrawn sidecar survives
 # incorrectly (fail-closed) or is deleted prematurely.
 
+
 def _extract_allowlist_blocks(text: str) -> list[str]:
     blocks = [m.group(0) for m in re.finditer(r"allowed = tuple\(.*?\)\s*\)", text, re.DOTALL)]
     assert blocks, "allowlist block not found in workflow"
     return blocks
+
 
 def test_workflow_allowlist_sync():
     repo = Path(__file__).resolve().parents[1]

@@ -25,9 +25,7 @@ FIXTURES = Path(__file__).parent / "fixtures" / "hardwood"
 NOW_FRESH = "2026-11-06T18:00:00Z"  # ~10 min after generated_at -> OK
 NOW_STALE = "2026-11-07T18:00:00Z"  # ~24.2h after generated_at -> STALE
 
-ARTIFACT_SHA256 = (
-    "9f61ad305c6cf38cb9acf494a6510530ee8f66e9c72f393be89f565804283ef0"
-)
+ARTIFACT_SHA256 = "9f61ad305c6cf38cb9acf494a6510530ee8f66e9c72f393be89f565804283ef0"
 
 
 def hw_load_artifact() -> dict:
@@ -205,13 +203,11 @@ def test_failed_ingestion_status_is_provider_error_not_stale():
     broken = hw_load_artifact()
     broken["ingestion"]["status"] = "failed"
     artifact = hw.load_forecasts(hw_fetch(broken))
-    assert hw.freshness_state(artifact, now_utc=NOW_FRESH) is (
-        CoverageState.PROVIDER_ERROR
-    )
+    assert hw.freshness_state(artifact, now_utc=NOW_FRESH) is (CoverageState.PROVIDER_ERROR)
     gaps: list = []
-    assert hw.fetch_prediction(
-        hw_make_game(), hw_fetch(broken), now_utc=NOW_FRESH, gaps=gaps
-    ) is None
+    assert (
+        hw.fetch_prediction(hw_make_game(), hw_fetch(broken), now_utc=NOW_FRESH, gaps=gaps) is None
+    )
     assert gaps[0].reason is CoverageState.PROVIDER_ERROR
 
 
@@ -219,9 +215,7 @@ def test_structurally_broken_artifact_returns_none_not_raise():
     broken = hw_load_artifact()
     broken.pop("trained_through")
     gaps: list = []
-    prediction = hw.fetch_prediction(
-        hw_make_game(), hw_fetch(broken), now_utc=NOW_FRESH, gaps=gaps
-    )
+    prediction = hw.fetch_prediction(hw_make_game(), hw_fetch(broken), now_utc=NOW_FRESH, gaps=gaps)
     assert prediction is None
     assert gaps[0].reason is CoverageState.PROVIDER_ERROR
 
@@ -252,9 +246,7 @@ def test_self_contradictory_margin_quarantines_as_provider_error():
     broken = hw_load_artifact()
     broken["games"][0]["exp_margin"] = -7.636  # contradicts 117.1 - 109.47
     gaps: list = []
-    prediction = hw.fetch_prediction(
-        hw_make_game(), hw_fetch(broken), now_utc=NOW_FRESH, gaps=gaps
-    )
+    prediction = hw.fetch_prediction(hw_make_game(), hw_fetch(broken), now_utc=NOW_FRESH, gaps=gaps)
     assert prediction is None
     assert gaps[0].reason is CoverageState.PROVIDER_ERROR
 

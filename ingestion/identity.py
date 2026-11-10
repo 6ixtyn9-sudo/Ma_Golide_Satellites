@@ -55,7 +55,9 @@ def canonical_team_name(name: str, aliases: Optional[Dict[str, List[str]]] = Non
     table = aliases if aliases is not None else DEFAULT_TEAM_ALIASES
     norm = normalize_team_name(name)
     for canonical, variants in table.items():
-        if norm == normalize_team_name(canonical) or norm in {normalize_team_name(v) for v in variants}:
+        if norm == normalize_team_name(canonical) or norm in {
+            normalize_team_name(v) for v in variants
+        }:
             return canonical
     # No alias hit: return title-cased collapsed original.
     return re.sub(r"\s+", " ", str(name or "").strip())

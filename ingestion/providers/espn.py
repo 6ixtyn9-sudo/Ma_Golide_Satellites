@@ -67,8 +67,7 @@ SCOREBOARD_URL = (
     "scoreboard?dates={yyyymmdd}&limit=100"
 )
 SUMMARY_URL = (
-    "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/"
-    "summary?event={event_id}"
+    "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event={event_id}"
 )
 STANDINGS_URL = "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings"
 BPI_URL = (
@@ -127,8 +126,7 @@ def _summary_url(event_id: str, league: League) -> str:
     if league is League.NBA:
         return SUMMARY_URL.format(event_id=event_id)
     return (
-        f"https://site.api.espn.com/apis/site/v2/sports/basketball/{slug}/"
-        f"summary?event={event_id}"
+        f"https://site.api.espn.com/apis/site/v2/sports/basketball/{slug}/summary?event={event_id}"
     )
 
 
@@ -234,8 +232,7 @@ def _home_away_competitors(comp: Dict[str, Any]) -> Tuple[Dict[str, Any], Dict[s
     away = next((c for c in competitors if c.get("homeAway") == "away"), None)
     if home is None or away is None:
         raise IdentityError(
-            "competitors missing homeAway markers; refusing to infer sides "
-            "from array order"
+            "competitors missing homeAway markers; refusing to infer sides from array order"
         )
     return home, away
 
@@ -370,9 +367,7 @@ def _odds_context(offer: Dict[str, Any]) -> Dict[str, Any]:
             for phase in ("open", "close"):
                 values = market.get(side, {}).get(phase) or {}
                 phases[phase] = {
-                    key: values.get(key)
-                    for key in ("line", "odds")
-                    if values.get(key) is not None
+                    key: values.get(key) for key in ("line", "odds") if values.get(key) is not None
                 }
             if any(phases.values()):
                 cleaned_market[side] = phases
@@ -527,9 +522,7 @@ def book_snapshots_from_event(
 
     observed = to_utc_iso(parse_utc(observed_utc or now_utc_iso()))
     comp = _competition(event)
-    pre_match = _state(comp) == "pre" and parse_utc(observed) < parse_utc(
-        game.scheduled_utc
-    )
+    pre_match = _state(comp) == "pre" and parse_utc(observed) < parse_utc(game.scheduled_utc)
     snapshots: List[BookSnapshot] = []
     for offer in comp.get("odds") or []:
         if isinstance(offer, dict):
@@ -571,17 +564,13 @@ def _scoreboard_context(
         "broadcasts": _public_context(comp.get("broadcasts") or []),
         "teams": teams,
         "odds": [
-            _odds_context(offer)
-            for offer in comp.get("odds") or []
-            if isinstance(offer, dict)
+            _odds_context(offer) for offer in comp.get("odds") or [] if isinstance(offer, dict)
         ],
         "book_parse_notes": book_parse_notes,
     }
 
 
-def _summary_context(
-    payload: Dict[str, Any], game: Game, observed_utc: str
-) -> Dict[str, Any]:
+def _summary_context(payload: Dict[str, Any], game: Game, observed_utc: str) -> Dict[str, Any]:
     """Retain validated high-value summary evidence, not league-wide news noise."""
 
     header = payload.get("header") or {}
@@ -634,9 +623,7 @@ def _summary_context(
         ),
         "team_boxscore": _public_context(boxscore.get("teams") or []),
         "player_boxscore": _public_context(player_boxscore),
-        "leaders": _public_context(
-            boxscore.get("leaders") or payload.get("leaders") or []
-        ),
+        "leaders": _public_context(boxscore.get("leaders") or payload.get("leaders") or []),
         # Full PBP/win-probability/shot-chart arrays are not copied into
         # canonical evidence (the enabled raw HTTP cache retains them). Counts
         # expose availability without truncating or duplicating thousands of
@@ -645,9 +632,7 @@ def _summary_context(
             "player_boxscore_teams": len(player_boxscore),
             "player_boxscore_athletes": len(player_ids),
             "play_by_play_events_in_raw_payload": len(payload.get("plays") or []),
-            "win_probability_points_in_raw_payload": len(
-                payload.get("winprobability") or []
-            ),
+            "win_probability_points_in_raw_payload": len(payload.get("winprobability") or []),
             "shot_chart_events_in_raw_payload": len(payload.get("shotChart") or []),
             "standings_groups_in_raw_payload": len(standings_groups or []),
         },
@@ -659,9 +644,7 @@ def _summary_context(
     }
 
 
-def season_event_index(
-    season: int, fetch: FetchFn, league: League
-) -> Dict[str, Any]:
+def season_event_index(season: int, fetch: FetchFn, league: League) -> Dict[str, Any]:
     """Enumerate one core event-index year with bounded pagination.
 
     The index is an acquisition manifest, not a completeness guarantee. Older
@@ -716,9 +699,7 @@ def fetch_game_context(
     observed = to_utc_iso(parse_utc(observed_utc or now_utc_iso()))
     espn_evidence = dict(game.evidence.get("espn") or {})
     espn_evidence["summary"] = _summary_context(payload, game, observed)
-    return replace(
-        game, evidence={**game.evidence, "espn": espn_evidence}
-    )
+    return replace(game, evidence={**game.evidence, "espn": espn_evidence})
 
 
 def _linescore_values(competitor: Dict[str, Any]) -> List[float]:
@@ -768,18 +749,12 @@ def _actual_from_competitors(
     home_values = _linescore_values(home)
     away_values = _linescore_values(away)
     if regulation_periods not in {None, 2, 4}:
-        raise IdentityError(
-            f"unsupported regulation period count: {regulation_periods!r}"
-        )
-    native_count = regulation_periods or (
-        2 if period_kind(league) is PeriodKind.HALVES else 4
-    )
+        raise IdentityError(f"unsupported regulation period count: {regulation_periods!r}")
+    native_count = regulation_periods or (2 if period_kind(league) is PeriodKind.HALVES else 4)
     native_kind = PeriodKind.HALVES if native_count == 2 else PeriodKind.QUARTERS
     period_label = "H1/H2" if native_count == 2 else "Q1..Q4"
     if len(home_values) < native_count or len(away_values) < native_count:
-        raise IdentityError(
-            f"linescores missing or incomplete (need at least {period_label})"
-        )
+        raise IdentityError(f"linescores missing or incomplete (need at least {period_label})")
     if len(home_values) != len(away_values):
         raise IdentityError(
             f"mismatched linescore lengths: home {len(home_values)} vs away {len(away_values)}"
@@ -863,9 +838,7 @@ def _actual_for_history(
 # ---------------------------------------------------------------------------
 
 
-def discover_games(
-    date_yyyymmdd: str, fetch: FetchFn, league: League = League.NBA
-) -> List[Game]:
+def discover_games(date_yyyymmdd: str, fetch: FetchFn, league: League = League.NBA) -> List[Game]:
     """Discover one slate via the site scoreboard (core ``events?dates=``
     returned 0 events in the 2026-11-06 live sweep — see module docstring).
 
@@ -877,8 +850,7 @@ def discover_games(
     """
     payload = fetch(_scoreboard_url(date_yyyymmdd, league)) or {}
     return [
-        _game_from_event(event, _competition(event), league)
-        for event in payload.get("events", [])
+        _game_from_event(event, _competition(event), league) for event in payload.get("events", [])
     ]
 
 
@@ -915,9 +887,7 @@ def discover_games_with_evidence(
             game_books.extend(parsed)
             notes.extend(parse_notes)
         espn_evidence = dict(game.evidence.get("espn") or {})
-        espn_evidence["scoreboard"] = _scoreboard_context(
-            event, comp, observed, notes
-        )
+        espn_evidence["scoreboard"] = _scoreboard_context(event, comp, observed, notes)
         game.evidence = {**game.evidence, "espn": espn_evidence}
         games.append(game)
         books[game.game_id] = game_books
@@ -954,42 +924,30 @@ def _dual_sided_bpi_prediction(
     home_stats = _stats_by_name(home_side["statistics"])
     away_stats = _stats_by_name(away_side["statistics"])
 
-    def probabilities(
-        stats: Dict[str, Any], label: str
-    ) -> Tuple[float, float]:
+    def probabilities(stats: Dict[str, Any], label: str) -> Tuple[float, float]:
         projection = stats.get("gameProjection")
         chance_loss = stats.get("teamChanceLoss")
         if projection is None or chance_loss is None:
-            raise ValueError(
-                f"event {event_id}: {label} predictor missing win probabilities"
-            )
+            raise ValueError(f"event {event_id}: {label} predictor missing win probabilities")
         for name, value in (
             ("gameProjection", projection),
             ("teamChanceLoss", chance_loss),
         ):
             if not 0.0 <= float(value) <= 100.0:
-                raise ValueError(
-                    f"event {event_id}: {label} {name} {value} outside 0-100"
-                )
+                raise ValueError(f"event {event_id}: {label} {name} {value} outside 0-100")
         if abs(float(projection) + float(chance_loss) - 100.0) > PROB_SUM_TOLERANCE_PCT:
-            raise ValueError(
-                f"event {event_id}: {label} probabilities do not sum to 100"
-            )
+            raise ValueError(f"event {event_id}: {label} probabilities do not sum to 100")
         return float(projection), float(chance_loss)
 
     home_projection, home_loss = probabilities(home_stats, "homeTeam")
     away_projection, away_loss = probabilities(away_stats, "awayTeam")
     if abs(home_projection + away_projection - 100.0) > PROB_SUM_TOLERANCE_PCT:
-        raise ValueError(
-            f"event {event_id}: home/away projections are not complementary"
-        )
+        raise ValueError(f"event {event_id}: home/away projections are not complementary")
     if (
         abs(home_loss - away_projection) > PROB_SUM_TOLERANCE_PCT
         or abs(away_loss - home_projection) > PROB_SUM_TOLERANCE_PCT
     ):
-        raise ValueError(
-            f"event {event_id}: reciprocal predictor probabilities contradict"
-        )
+        raise ValueError(f"event {event_id}: reciprocal predictor probabilities contradict")
 
     def number(stats: Dict[str, Any], key: str) -> Optional[float]:
         value = stats.get(key)
@@ -1005,9 +963,7 @@ def _dual_sided_bpi_prediction(
             and difference is not None
             and abs((side - opponent) - difference) > MARGIN_TOLERANCE
         ):
-            raise ValueError(
-                f"event {event_id}: {label} expected scores contradict its margin"
-            )
+            raise ValueError(f"event {event_id}: {label} expected scores contradict its margin")
 
     home_scores = [
         value
@@ -1025,16 +981,10 @@ def _dual_sided_bpi_prediction(
         )
         if value is not None
     ]
-    if (
-        len(home_scores) == 2
-        and abs(home_scores[0] - home_scores[1]) > MARGIN_TOLERANCE
-    ) or (
-        len(away_scores) == 2
-        and abs(away_scores[0] - away_scores[1]) > MARGIN_TOLERANCE
+    if (len(home_scores) == 2 and abs(home_scores[0] - home_scores[1]) > MARGIN_TOLERANCE) or (
+        len(away_scores) == 2 and abs(away_scores[0] - away_scores[1]) > MARGIN_TOLERANCE
     ):
-        raise ValueError(
-            f"event {event_id}: dual-sided expected scores contradict each other"
-        )
+        raise ValueError(f"event {event_id}: dual-sided expected scores contradict each other")
     home_margin = number(home_stats, "teamPredPtDiff")
     away_margin = number(away_stats, "teamPredPtDiff")
     margins = [
@@ -1057,9 +1007,7 @@ def _dual_sided_bpi_prediction(
         model="espn-bpi",
         produced_by="ESPN BPI",
         observed_utc=to_utc_iso(parse_utc(now_utc)) if now_utc else now_utc_iso(),
-        source_modified_utc=(
-            to_utc_iso(parse_utc(last_modified)) if last_modified else None
-        ),
+        source_modified_utc=(to_utc_iso(parse_utc(last_modified)) if last_modified else None),
         source_revision=str(last_modified) if last_modified else None,
         prob_home=home_projection / 100.0,
         prob_away=away_projection / 100.0,
@@ -1122,9 +1070,7 @@ def fetch_bpi(
     if not stats_sides:
         raise ValueError(f"event {event_id}: predictor carries no team statistics")
     if len(stats_sides) == 2:
-        return _dual_sided_bpi_prediction(
-            event_id, payload, home_side, away_side, game, now_utc
-        )
+        return _dual_sided_bpi_prediction(event_id, payload, home_side, away_side, game, now_utc)
     stats_side = stats_sides[0]
     side_team_id = _competitor_team_id(stats_side)
 
@@ -1136,11 +1082,7 @@ def fetch_bpi(
             f"team {home_ref}; sides cannot be reconciled"
         )
 
-    if (
-        game is not None
-        and str(game.home_team_id)
-        and str(game.away_team_id)
-    ):
+    if game is not None and str(game.home_team_id) and str(game.away_team_id):
         home_id, away_id = str(game.home_team_id), str(game.away_team_id)
         if side_team_id == home_id:
             stats_is_home = True
@@ -1163,9 +1105,7 @@ def fetch_bpi(
         raise ValueError(f"event {event_id}: predictor missing win probabilities")
     for name, value in (("gameProjection", projection), ("teamChanceLoss", chance_loss)):
         if not 0.0 <= float(value) <= 100.0:
-            raise ValueError(
-                f"event {event_id}: {name} {value} outside the 0-100 percent range"
-            )
+            raise ValueError(f"event {event_id}: {name} {value} outside the 0-100 percent range")
     if abs(float(projection) + float(chance_loss) - 100.0) > PROB_SUM_TOLERANCE_PCT:
         raise ValueError(
             f"event {event_id}: probabilities sum to "
@@ -1211,12 +1151,8 @@ def fetch_bpi(
         provider="espn",
         model="espn-bpi",
         produced_by="ESPN BPI",
-        observed_utc=(
-            to_utc_iso(parse_utc(now_utc)) if now_utc else now_utc_iso()
-        ),
-        source_modified_utc=(
-            to_utc_iso(parse_utc(last_modified)) if last_modified else None
-        ),
+        observed_utc=(to_utc_iso(parse_utc(now_utc)) if now_utc else now_utc_iso()),
+        source_modified_utc=(to_utc_iso(parse_utc(last_modified)) if last_modified else None),
         source_revision=str(last_modified) if last_modified else None,
         prob_home=prob_home,
         prob_away=prob_away,
@@ -1255,8 +1191,7 @@ def fetch_game_result(
     state = _state(comp)
     if state != "post":
         raise IdentityError(
-            f"event {event_id}: summary status is not final (state={state!r}); "
-            "result quarantined"
+            f"event {event_id}: summary status is not final (state={state!r}); result quarantined"
         )
     home, away = _home_away_competitors(comp)
     actual = _actual_from_competitors(
@@ -1330,9 +1265,7 @@ def fetch_historical_event(
     actual = None
     period_note = ""
     if state == "post":
-        actual, period_note = _actual_for_history(
-            home, away, comp, league, payload
-        )
+        actual, period_note = _actual_for_history(home, away, comp, league, payload)
         game.status = GameStatus.FINAL
         game.actual = actual
         if actual.period_kind is PeriodKind.UNKNOWN:
@@ -1436,19 +1369,13 @@ def fetch_standings(fetch: FetchFn) -> List[StandingsRow]:
             stats = {s.get("name"): s.get("value") for s in entry.get("stats") or []}
             team = entry.get("team") or {}
             if stats.get("wins") is None or stats.get("losses") is None:
-                raise IdentityError(
-                    f"team {team.get('id')}: standings entry missing wins/losses"
-                )
+                raise IdentityError(f"team {team.get('id')}: standings entry missing wins/losses")
             wins = int(stats["wins"])
             losses = int(stats["losses"])
             games_played = (
-                int(stats["gamesPlayed"])
-                if stats.get("gamesPlayed") is not None
-                else wins + losses
+                int(stats["gamesPlayed"]) if stats.get("gamesPlayed") is not None else wins + losses
             )
-            points_for = (
-                float(stats["pointsFor"]) if stats.get("pointsFor") is not None else None
-            )
+            points_for = float(stats["pointsFor"]) if stats.get("pointsFor") is not None else None
             if (
                 points_for is not None
                 and games_played > 0
@@ -1476,9 +1403,7 @@ def fetch_standings(fetch: FetchFn) -> List[StandingsRow]:
                         else None
                     ),
                     win_pct=(
-                        float(stats["winPercent"])
-                        if stats.get("winPercent") is not None
-                        else None
+                        float(stats["winPercent"]) if stats.get("winPercent") is not None else None
                     ),
                     streak=int(streak) if streak is not None else None,
                     section=str(child.get("name")) if child.get("name") else None,
@@ -1488,9 +1413,7 @@ def fetch_standings(fetch: FetchFn) -> List[StandingsRow]:
     return rows
 
 
-def smoke(
-    date_yyyymmdd: str, fetch: FetchFn, league: League = League.NBA
-) -> Dict[str, Any]:
+def smoke(date_yyyymmdd: str, fetch: FetchFn, league: League = League.NBA) -> Dict[str, Any]:
     """Coverage smoke over one slate date; reports ACTUAL coverage.
 
     Evidence label: ``LIVE_VERIFIED`` when ``fetch`` is a real
@@ -1606,9 +1529,7 @@ def smoke(
     if isinstance(fetch_target, AcquisitionClient):
         wrapped = fetch_target.fetch
         fetch_target = getattr(wrapped, "__self__", wrapped)
-    verification = (
-        "LIVE_VERIFIED" if isinstance(fetch_target, HttpClient) else "FIXTURE_VERIFIED"
-    )
+    verification = "LIVE_VERIFIED" if isinstance(fetch_target, HttpClient) else "FIXTURE_VERIFIED"
     return {
         "fixtures_found": len(games),
         "bpi_complete": {"complete": bpi_complete, "total": len(games)},

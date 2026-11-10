@@ -13,9 +13,7 @@ from ingestion.pipeline import Pipeline, PipelineConfig
 from ingestion.providers import theoddsapi
 
 
-def test_wnba_pipeline_persists_native_periods_context_and_espn_books(
-    tmp_path, monkeypatch
-):
+def test_wnba_pipeline_persists_native_periods_context_and_espn_books(tmp_path, monkeypatch):
     monkeypatch.setattr(theoddsapi, "is_enabled", lambda: False)
     calls = []
 
@@ -75,9 +73,7 @@ def test_wnba_pipeline_persists_native_periods_context_and_espn_books(
     assert game.league is League.WNBA
     assert game.home_name == "Las Vegas Aces"
     assert game.away_name == "New York Liberty"
-    assert game.evidence["espn"]["scoreboard"]["teams"]["home"]["records"][0][
-        "summary"
-    ] == "20-10"
+    assert game.evidence["espn"]["scoreboard"]["teams"]["home"]["records"][0]["summary"] == "20-10"
     assert game.evidence["espn"]["summary"]["article"]["headline"] == "Liberty at Aces"
     books = store.get_book_snapshots(game.game_id)
     assert {snapshot.market for snapshot in books} == {

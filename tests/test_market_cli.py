@@ -14,9 +14,7 @@ def _digest(path: Path) -> str:
     return hashlib.sha256(path.read_bytes()).hexdigest()
 
 
-def test_standalone_market_cli_reads_duckdb_without_modifying_it(
-    tmp_path, monkeypatch, capsys
-):
+def test_standalone_market_cli_reads_duckdb_without_modifying_it(tmp_path, monkeypatch, capsys):
     warehouse = tmp_path / "warehouse.duckdb"
     output = tmp_path / "markets.json"
     store = DuckDBStore(str(warehouse))

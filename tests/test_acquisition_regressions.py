@@ -145,9 +145,7 @@ def test_unmapped_provider_id_without_identity_is_not_trusted(monkeypatch):
     import ingestion.pipeline as module
 
     game = _game("coincident-id")
-    raw = _snapshot(
-        event="coincident-id", home_name=None, away_name=None, scheduled_utc=None
-    )
+    raw = _snapshot(event="coincident-id", home_name=None, away_name=None, scheduled_utc=None)
     mod = SimpleNamespace(is_enabled=lambda: True, fetch_odds=lambda *args: [raw])
     monkeypatch.setattr(module, "BOOK_PROVIDERS", ("one",))
     monkeypatch.setattr(module, "_book_module", lambda provider: mod)
@@ -238,18 +236,21 @@ def test_offline_smoke_labels_hardwood_as_fixture_verified(tmp_path, capsys):
     from ingestion import cli
 
     warehouse = tmp_path / "smoke.duckdb"
-    assert cli.main(
-        [
-            "smoke",
-            "--league",
-            "NBA",
-            "--date",
-            "20261107",
-            "--offline-fixture",
-            "--warehouse",
-            str(warehouse),
-        ]
-    ) == 0
+    assert (
+        cli.main(
+            [
+                "smoke",
+                "--league",
+                "NBA",
+                "--date",
+                "20261107",
+                "--offline-fixture",
+                "--warehouse",
+                str(warehouse),
+            ]
+        )
+        == 0
+    )
     report = json.loads(capsys.readouterr().out)
     assert report["verification"] == "FIXTURE_VERIFIED"
     assert report["hardwood"]["verification"] == "FIXTURE_VERIFIED"
@@ -277,9 +278,7 @@ def test_newer_partial_prediction_does_not_displace_fresh_complete_bundle():
         prob_home=0.25,
         prob_away=0.75,
     )
-    result = select_prediction(
-        [complete, newer_partial], game, "2026-11-07T12:00:00Z"
-    )
+    result = select_prediction([complete, newer_partial], game, "2026-11-07T12:00:00Z")
     assert result.selected is complete
     assert result.reason == "complete_bundle"
 

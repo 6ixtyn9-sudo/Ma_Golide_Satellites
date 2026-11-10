@@ -17,7 +17,7 @@ from ingestion.books import (
     select_total_snapshots,
 )
 from ingestion.identity import parse_utc
-from ingestion.leagues import line_periods, native_periods, supports_highest_quarter
+from ingestion.leagues import line_periods, supports_highest_quarter
 from ingestion.models import (
     BookSnapshot,
     Game,
@@ -75,9 +75,7 @@ class MarketForecastService:
             observed = parse_utc(prediction.observed_utc)
             if observed >= tip or observed > as_of:
                 continue
-            frozen = self.store.is_prediction_frozen(
-                game.game_id, prediction.provider
-            )
+            frozen = self.store.is_prediction_frozen(game.game_id, prediction.provider)
             if historical and not frozen:
                 continue
             try:
@@ -95,9 +93,7 @@ class MarketForecastService:
                 )
         return None, False
 
-    def _books(
-        self, game: Game, *, as_of_utc: str, historical: bool
-    ) -> List[BookSnapshot]:
+    def _books(self, game: Game, *, as_of_utc: str, historical: bool) -> List[BookSnapshot]:
         tip = parse_utc(game.scheduled_utc)
         as_of = parse_utc(as_of_utc)
         visible = []
@@ -109,9 +105,7 @@ class MarketForecastService:
             observed = parse_utc(snapshot.observed_utc)
             if observed >= tip or observed > as_of:
                 continue
-            if historical and not self.store.is_book_snapshot_frozen(
-                game.game_id, snapshot
-            ):
+            if historical and not self.store.is_book_snapshot_frozen(game.game_id, snapshot):
                 continue
             visible.append(snapshot)
         return sorted(
@@ -180,21 +174,14 @@ class MarketForecastService:
             self.model.period_winner(
                 game,
                 history,
-                select_moneyline_snapshots(
-                    snapshots, self.book_config, Period.H1
-                ),
+                select_moneyline_snapshots(snapshots, self.book_config, Period.H1),
                 frozen_books,
             )
         )
-        periods = native_periods(game.league)
         line_snapshots: List[BookSnapshot] = []
         for period in line_periods(game.league):
-            line_snapshots.extend(
-                select_total_snapshots(snapshots, self.book_config, period)
-            )
-            line_snapshots.extend(
-                select_spread_snapshots(snapshots, self.book_config, period)
-            )
+            line_snapshots.extend(select_total_snapshots(snapshots, self.book_config, period))
+            line_snapshots.extend(select_spread_snapshots(snapshots, self.book_config, period))
         forecasts.extend(
             self.model.lines(
                 game,
@@ -224,9 +211,9 @@ class MarketForecastService:
         for forecast in forecasts:
             key = (*forecast.market_key, forecast.source)
             current = selected.get(key)
-            if current is None or (
-                forecast.book.key if forecast.book else ""
-            ) < (current.book.key if current.book else ""):
+            if current is None or (forecast.book.key if forecast.book else "") < (
+                current.book.key if current.book else ""
+            ):
                 selected[key] = forecast
         return sorted(
             selected.values(),
@@ -238,17 +225,11 @@ class MarketForecastService:
             ),
         )
 
-    def _available_records(
-        self, records: Iterable[Forecast], as_of_utc: str
-    ) -> List[Forecast]:
+    def _available_records(self, records: Iterable[Forecast], as_of_utc: str) -> List[Forecast]:
         cutoff = parse_utc(as_of_utc) - timedelta(
             hours=self.forecast_config.result_available_after_hours
         )
-        return [
-            record
-            for record in records
-            if parse_utc(record.scheduled_utc) <= cutoff
-        ]
+        return [record for record in records if parse_utc(record.scheduled_utc) <= cutoff]
 
     def build_report(
         self,
@@ -305,9 +286,11 @@ class MarketForecastService:
             if parse_utc(game.scheduled_utc) <= as_of:
                 continue
             if date_yyyymmdd:
-                local_date = parse_utc(game.scheduled_utc).astimezone(
-                    ZoneInfo(timezone_name)
-                ).strftime("%Y%m%d")
+                local_date = (
+                    parse_utc(game.scheduled_utc)
+                    .astimezone(ZoneInfo(timezone_name))
+                    .strftime("%Y%m%d")
+                )
                 if local_date != date_yyyymmdd.replace("-", ""):
                     continue
             upcoming.append(game)
@@ -316,9 +299,7 @@ class MarketForecastService:
         current: List[Forecast] = []
         uncovered: List[Dict[str, str]] = []
         for game in upcoming:
-            generated = self._generate(
-                game, finals, as_of_utc=as_of_utc, historical=False
-            )
+            generated = self._generate(game, finals, as_of_utc=as_of_utc, historical=False)
             if not generated:
                 uncovered.append(
                     {
@@ -329,13 +310,9 @@ class MarketForecastService:
             current.extend(generated)
         current = apply_profiles(current, current_profiles, self.calibration_config)
         accas = build_accas(current, legs=acca_legs, limit=acca_limit)
-        market_counts = Counter(
-            f"{forecast.period}:{forecast.market}" for forecast in current
-        )
+        market_counts = Counter(f"{forecast.period}:{forecast.market}" for forecast in current)
         eligible_games = {
-            forecast.game_id
-            for forecast in current
-            if forecast.eligibility.get("acca_eligible")
+            forecast.game_id for forecast in current if forecast.eligibility.get("acca_eligible")
         }
         return {
             "schema_version": "magolide.market_forecasts.v1",
@@ -365,18 +342,12 @@ class MarketForecastService:
             },
             "walk_forward": {
                 "method": "prequential_by_scheduled_tip",
-                "result_available_after_hours": (
-                    self.forecast_config.result_available_after_hours
-                ),
+                "result_available_after_hours": (self.forecast_config.result_available_after_hours),
                 "historical_finals": len(finals),
                 "graded_forecasts": len(records),
                 "raw_metrics": probability_metrics(prequential),
-                "prequential_calibrated_metrics": probability_metrics(
-                    prequential, calibrated=True
-                ),
-                "segments": [
-                    current_profiles[key].to_dict() for key in sorted(current_profiles)
-                ],
+                "prequential_calibrated_metrics": probability_metrics(prequential, calibrated=True),
+                "segments": [current_profiles[key].to_dict() for key in sorted(current_profiles)],
                 "guards": [
                     "future_finals_excluded_per_forecast",
                     "historical_predictions_and_books_must_be_frozen_pre_tip",

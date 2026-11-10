@@ -302,8 +302,7 @@ def fetch_prediction(
     except (TypeError, ValueError, AttributeError, KeyError) as exc:
         _gap(
             CoverageState.PROVIDER_ERROR,
-            f"hardwood forecast for {espn_id!r} failed validation: "
-            f"{type(exc).__name__}: {exc}",
+            f"hardwood forecast for {espn_id!r} failed validation: {type(exc).__name__}: {exc}",
         )
         return None
 

@@ -182,7 +182,11 @@ def _unwrap_fetch(response: Any) -> Tuple[Any, Dict[str, str]]:
     ...}`` unwraps to (payload, headers). Anything else is returned as
     (payload, {}).
     """
-    if isinstance(response, dict) and "json" in response and isinstance(response.get("headers"), dict):
+    if (
+        isinstance(response, dict)
+        and "json" in response
+        and isinstance(response.get("headers"), dict)
+    ):
         return response["json"], response["headers"]
     return response, {}
 
@@ -418,7 +422,11 @@ def _extract_teams(event: Dict[str, Any]) -> Optional[Tuple[str, str]]:
     caller skips the event rather than guessing orientation.
     """
     sides = {"home": None, "away": None}
-    roster = event.get("participants") if isinstance(event.get("participants"), list) else event.get("teams")
+    roster = (
+        event.get("participants")
+        if isinstance(event.get("participants"), list)
+        else event.get("teams")
+    )
     if not isinstance(roster, list) or len(roster) != 2:
         return None
     for team in roster:
@@ -502,12 +510,22 @@ def _moneyline_from_market(
     modified: Optional[str] = None
     for participant in _participants(market):
         if not isinstance(participant, dict):
-            _record_gap(game_id, "participant", "non-dict moneyline participant skipped", CoverageState.PROVIDER_ERROR)
+            _record_gap(
+                game_id,
+                "participant",
+                "non-dict moneyline participant skipped",
+                CoverageState.PROVIDER_ERROR,
+            )
             continue
         side = _participant_side(participant)
         for line in _lines_of(participant):
             if not isinstance(line, dict):
-                _record_gap(game_id, "lines", "non-dict moneyline line skipped", CoverageState.PROVIDER_ERROR)
+                _record_gap(
+                    game_id,
+                    "lines",
+                    "non-dict moneyline line skipped",
+                    CoverageState.PROVIDER_ERROR,
+                )
                 continue
             if not _line_period_is_full_game(line):
                 _record_gap(
@@ -523,7 +541,9 @@ def _moneyline_from_market(
             if typed is not None:
                 prices.setdefault(side, typed)
                 book = book or _book_name(affiliate, requested_affiliate)
-                modified = modified or (str(line.get("last_modified")) if line.get("last_modified") else None)
+                modified = modified or (
+                    str(line.get("last_modified")) if line.get("last_modified") else None
+                )
                 continue
             if side in ("home", "away") and side not in prices:
                 for raw in _line_prices(line):
@@ -531,10 +551,16 @@ def _moneyline_from_market(
                     if value is not None:
                         prices[side] = value
                         book = book or _book_name(affiliate, requested_affiliate)
-                        modified = modified or (str(line.get("last_modified")) if line.get("last_modified") else None)
+                        modified = modified or (
+                            str(line.get("last_modified")) if line.get("last_modified") else None
+                        )
                         break
             elif side is not None and side not in ("home", "away"):
-                _record_gap(game_id, "participant", f"moneyline participant side {side!r} unexpected; skipped")
+                _record_gap(
+                    game_id,
+                    "participant",
+                    f"moneyline participant side {side!r} unexpected; skipped",
+                )
     if not prices:
         return None
     home = prices.get("home")
@@ -572,12 +598,19 @@ def _total_from_market(
     modified: Optional[str] = None
     for participant in _participants(market):
         if not isinstance(participant, dict):
-            _record_gap(game_id, "participant", "non-dict total participant skipped", CoverageState.PROVIDER_ERROR)
+            _record_gap(
+                game_id,
+                "participant",
+                "non-dict total participant skipped",
+                CoverageState.PROVIDER_ERROR,
+            )
             continue
         side = _participant_side(participant)
         for line in _lines_of(participant):
             if not isinstance(line, dict):
-                _record_gap(game_id, "lines", "non-dict total line skipped", CoverageState.PROVIDER_ERROR)
+                _record_gap(
+                    game_id, "lines", "non-dict total line skipped", CoverageState.PROVIDER_ERROR
+                )
                 continue
             if not _line_period_is_full_game(line):
                 _record_gap(
@@ -600,11 +633,15 @@ def _total_from_market(
             if typed_over is not None and over is None:
                 over = typed_over
                 book = book or _book_name(affiliate, requested_affiliate)
-                modified = modified or (str(line.get("last_modified")) if line.get("last_modified") else None)
+                modified = modified or (
+                    str(line.get("last_modified")) if line.get("last_modified") else None
+                )
             if typed_under is not None and under is None:
                 under = typed_under
                 book = book or _book_name(affiliate, requested_affiliate)
-                modified = modified or (str(line.get("last_modified")) if line.get("last_modified") else None)
+                modified = modified or (
+                    str(line.get("last_modified")) if line.get("last_modified") else None
+                )
             if side in ("over", "under"):
                 own = _typed_price(line, side)
                 if own is None:
@@ -617,13 +654,19 @@ def _total_from_market(
                     if side == "over" and over is None:
                         over = own
                         book = book or _book_name(affiliate, requested_affiliate)
-                        modified = modified or (str(line.get("last_modified")) if line.get("last_modified") else None)
+                        modified = modified or (
+                            str(line.get("last_modified")) if line.get("last_modified") else None
+                        )
                     if side == "under" and under is None:
                         under = own
                         book = book or _book_name(affiliate, requested_affiliate)
-                        modified = modified or (str(line.get("last_modified")) if line.get("last_modified") else None)
+                        modified = modified or (
+                            str(line.get("last_modified")) if line.get("last_modified") else None
+                        )
             elif side is not None and side not in ("over", "under", "home", "away"):
-                _record_gap(game_id, "participant", f"total participant side {side!r} unexpected; skipped")
+                _record_gap(
+                    game_id, "participant", f"total participant side {side!r} unexpected; skipped"
+                )
     if line_value is None and over is None and under is None:
         _record_gap(game_id, "total", "no full-game total fields under market '3'")
         return None
@@ -664,12 +707,19 @@ def _parse_event(
     """
     event_id = event.get("event_id", event.get("id"))
     if event_id is None or str(event_id).strip() == "":
-        _record_gap(None, "event_id", "event without event_id skipped", CoverageState.PROVIDER_ERROR)
+        _record_gap(
+            None, "event_id", "event without event_id skipped", CoverageState.PROVIDER_ERROR
+        )
         return []
     game_id = str(event_id)
     teams = _extract_teams(event)
     if teams is None:
-        _record_gap(game_id, "teams", "event without resolvable home/away teams skipped", CoverageState.PROVIDER_ERROR)
+        _record_gap(
+            game_id,
+            "teams",
+            "event without resolvable home/away teams skipped",
+            CoverageState.PROVIDER_ERROR,
+        )
         return []
     pre_match = _phase_is_pregame(event)
     markets = event.get("markets")
@@ -821,7 +871,11 @@ def smoke(
             "verification": DOCUMENTATION_ONLY,
         }
     league_name = _require_supported_league(league)
-    date_iso = normalize_date(date_yyyymmdd) if date_yyyymmdd else datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    date_iso = (
+        normalize_date(date_yyyymmdd)
+        if date_yyyymmdd
+        else datetime.now(timezone.utc).strftime("%Y-%m-%d")
+    )
     fetch = fetch_factory(PROVIDER)
     sport_id = _resolve_nba_sport_id(fetch)
     affiliate_id = _affiliate_id()
@@ -834,9 +888,7 @@ def smoke(
     events_checked = len(events)
     pre_match_count = sum(1 for e in events if isinstance(e, dict) and _phase_is_pregame(e))
     presence = _period_presence(snapshots)
-    not_usable = sum(
-        1 for s in snapshots if s.market is Market.TOTAL and s.line is None
-    )
+    not_usable = sum(1 for s in snapshots if s.market is Market.TOTAL and s.line is None)
     prices = _count_prices(snapshots)
     return {
         "enabled": True,

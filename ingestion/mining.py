@@ -30,9 +30,7 @@ def prediction_outcome_rows(store: DuckDBStore, league: League) -> List[Dict[str
             continue
         if game.actual.home_final == game.actual.away_final:
             continue
-        actual_side = (
-            "home" if game.actual.home_final > game.actual.away_final else "away"
-        )
+        actual_side = "home" if game.actual.home_final > game.actual.away_final else "away"
         for prediction in store.get_predictions(game.game_id):
             if not prediction.pre_tip or not store.is_prediction_frozen(
                 game.game_id, prediction.provider
@@ -46,9 +44,7 @@ def prediction_outcome_rows(store: DuckDBStore, league: League) -> List[Dict[str
                 continue
             if prediction.prob_home == prediction.prob_away:
                 continue
-            selected_side = (
-                "home" if prediction.prob_home > prediction.prob_away else "away"
-            )
+            selected_side = "home" if prediction.prob_home > prediction.prob_away else "away"
             rows.append(
                 {
                     "game_id": game.game_id,
@@ -63,9 +59,7 @@ def prediction_outcome_rows(store: DuckDBStore, league: League) -> List[Dict[str
                     "result_source": game.actual.source,
                 }
             )
-    return sorted(
-        rows, key=lambda row: (row["game_id"], row["provider"], row["observed_utc"])
-    )
+    return sorted(rows, key=lambda row: (row["game_id"], row["provider"], row["observed_utc"]))
 
 
 def mine_prediction_assay(store: DuckDBStore, league: League) -> Dict[str, Any]:

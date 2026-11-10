@@ -68,8 +68,13 @@ def test_hardwood_live_smoke_reports_freshness():
 def test_euroleague_live_smoke_reports_actual_coverage():
     report = euroleague.smoke(_fetch())
     assert report["games_found"] > 0
-    print("\nEuroLeague smoke", report["games_found"], "games;",
-          report["results_reconciled"], "reconciled")
+    print(
+        "\nEuroLeague smoke",
+        report["games_found"],
+        "games;",
+        report["results_reconciled"],
+        "reconciled",
+    )
 
 
 def test_full_pregame_dry_run_live_nba():

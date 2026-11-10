@@ -171,21 +171,17 @@ class DuckDBStore(InMemoryStore):
         if not read_only:
             self._con.execute(_SCHEMA)
             book_columns = {
-                row[1]
-                for row in self._con.execute("PRAGMA table_info(book_snapshots)").fetchall()
+                row[1] for row in self._con.execute("PRAGMA table_info(book_snapshots)").fetchall()
             }
             if "draw_price_decimal" not in book_columns:
-                self._con.execute(
-                    "ALTER TABLE book_snapshots ADD COLUMN draw_price_decimal DOUBLE"
-                )
+                self._con.execute("ALTER TABLE book_snapshots ADD COLUMN draw_price_decimal DOUBLE")
                 self._con.execute(
                     "UPDATE book_snapshots SET draw_price_decimal = "
                     "TRY_CAST(json_extract_string(payload_json, "
                     "'$.draw_price_decimal') AS DOUBLE)"
                 )
             self._con.execute(
-                "INSERT OR REPLACE INTO schema_meta(key, value) "
-                "VALUES ('schema_version', ?)",
+                "INSERT OR REPLACE INTO schema_meta(key, value) VALUES ('schema_version', ?)",
                 [SCHEMA_VERSION],
             )
         self._load()
@@ -202,9 +198,7 @@ class DuckDBStore(InMemoryStore):
     # -- loading ------------------------------------------------------------
 
     def _load(self) -> None:
-        for row in self._con.execute(
-            "SELECT game_id, payload_json FROM games"
-        ).fetchall():
+        for row in self._con.execute("SELECT game_id, payload_json FROM games").fetchall():
             self.games[row[0]] = _game_from_dict(json.loads(row[1]))
 
         for game_id, slot, frozen, payload in self._con.execute(
@@ -233,9 +227,7 @@ class DuckDBStore(InMemoryStore):
             "SELECT provider, league, payload_json FROM provider_health"
         ).fetchall():
             league_enum = League(league)
-            self.health[(provider, league_enum)] = _health_from_dict(
-                json.loads(payload)
-            )
+            self.health[(provider, league_enum)] = _health_from_dict(json.loads(payload))
 
     # -- small SQL helpers ---------------------------------------------------
 
@@ -344,9 +336,7 @@ class DuckDBStore(InMemoryStore):
                 ],
             )
 
-    def upsert_book_snapshot(
-        self, snapshot: BookSnapshot, frozen: bool = False
-    ) -> None:
+    def upsert_book_snapshot(self, snapshot: BookSnapshot, frozen: bool = False) -> None:
         with self._lock:
             super().upsert_book_snapshot(snapshot, frozen)
             slot = _book_slot_key(snapshot)
@@ -444,9 +434,7 @@ class DuckDBStore(InMemoryStore):
 
     # -- operations / research ----------------------------------------------
 
-    def record_run(
-        self, run_id: str, command: str, target_date: str, report: dict
-    ) -> None:
+    def record_run(self, run_id: str, command: str, target_date: str, report: dict) -> None:
         """Persist a redacted run report; no provider credentials are accepted."""
         if not self.persist:
             return
@@ -475,8 +463,7 @@ class DuckDBStore(InMemoryStore):
             self._con.execute("BEGIN TRANSACTION")
             try:
                 self._con.execute(
-                    "DELETE FROM pipeline_runs "
-                    "WHERE generated_utc <> '' AND generated_utc < ?",
+                    "DELETE FROM pipeline_runs WHERE generated_utc <> '' AND generated_utc < ?",
                     [older_than_utc],
                 )
                 self._con.execute("COMMIT")
@@ -534,9 +521,7 @@ class DuckDBStore(InMemoryStore):
         for row in rows("team_aliases"):
             self.upsert_team_alias(row["canonical"], json.loads(row["variants_json"]))
         for row in rows("provider_health"):
-            self.upsert_provider_health(
-                _health_from_dict(json.loads(row["payload_json"]))
-            )
+            self.upsert_provider_health(_health_from_dict(json.loads(row["payload_json"])))
         for row in rows("pipeline_runs"):
             self._replace(
                 "pipeline_runs",

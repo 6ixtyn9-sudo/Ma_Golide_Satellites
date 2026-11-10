@@ -55,14 +55,32 @@ _STATUS = {
 }
 _PHASE = {1: "League", 2: "Playoffs", 3: "Preseason", -1: "League"}
 _SPREAD_BOOKS = {
-    "1": "Macauslot", "2": "Easybets", "3": "Crown", "8": "Bet365",
-    "9": "Vcbet", "10": "William Hill", "19": "Interwetten", "20": "Ladbrokes",
-    "31": "Sbobet", "24": "12bet", "30": "China Sports Lottery", "49": "BWin",
+    "1": "Macauslot",
+    "2": "Easybets",
+    "3": "Crown",
+    "8": "Bet365",
+    "9": "Vcbet",
+    "10": "William Hill",
+    "19": "Interwetten",
+    "20": "Ladbrokes",
+    "31": "Sbobet",
+    "24": "12bet",
+    "30": "China Sports Lottery",
+    "49": "BWin",
 }
 _TOTAL_BOOKS = {
-    "4": "Macauslot", "5": "Easybets", "6": "Crown", "11": "Bet365",
-    "12": "Vcbet", "13": "William Hill", "22": "Interwetten", "23": "Ladbrokes",
-    "34": "Sbobet", "27": "12bet", "33": "China Sports Lottery", "52": "BWin",
+    "4": "Macauslot",
+    "5": "Easybets",
+    "6": "Crown",
+    "11": "Bet365",
+    "12": "Vcbet",
+    "13": "William Hill",
+    "22": "Interwetten",
+    "23": "Ladbrokes",
+    "34": "Sbobet",
+    "27": "12bet",
+    "33": "China Sports Lottery",
+    "52": "BWin",
 }
 _LAST_GAPS: List[CoverageGap] = []
 
@@ -84,13 +102,15 @@ def _reset_gaps() -> None:
 
 
 def _gap(game_id: Optional[str], field: str, detail: str) -> None:
-    _LAST_GAPS.append(CoverageGap(
-        game_id=game_id,
-        required_field=field,
-        reason=CoverageState.MISSING,
-        provider=PROVIDER,
-        detail=detail,
-    ))
+    _LAST_GAPS.append(
+        CoverageGap(
+            game_id=game_id,
+            required_field=field,
+            reason=CoverageState.MISSING,
+            provider=PROVIDER,
+            detail=detail,
+        )
+    )
 
 
 def _require_cba(league: League | str) -> League:
@@ -133,10 +153,16 @@ def resolve_cba_league_id(fetch: FetchFn) -> str:
     rows = _payload(fetch, "league/basic").get("data") or []
     if not isinstance(rows, list):
         raise IdentityError("league/basic data is not a list")
-    full = [row for row in rows if isinstance(row, dict)
-            and _normalized(row.get("leagueName")) == _CBA_FULL_NAME]
-    candidates = full or [row for row in rows if isinstance(row, dict)
-                          and _normalized(row.get("leagueShortName")) == _CBA_SHORT_NAME]
+    full = [
+        row
+        for row in rows
+        if isinstance(row, dict) and _normalized(row.get("leagueName")) == _CBA_FULL_NAME
+    ]
+    candidates = full or [
+        row
+        for row in rows
+        if isinstance(row, dict) and _normalized(row.get("leagueShortName")) == _CBA_SHORT_NAME
+    ]
     identities = {str(row.get("leagueId") or "").strip() for row in candidates}
     identities.discard("")
     if len(identities) != 1:
@@ -186,8 +212,12 @@ def _actual(row: Dict[str, Any]) -> ActualResult:
     if int(row.get("quarterCount") or 0) != 4:
         raise IdentityError("CBA result does not declare a four-quarter format")
     names = ("First", "Second", "Third", "Fourth")
-    home = [_number(row.get(f"home{name}QuarterScore"), f"home{name}QuarterScore") for name in names]
-    away = [_number(row.get(f"away{name}QuarterScore"), f"away{name}QuarterScore") for name in names]
+    home = [
+        _number(row.get(f"home{name}QuarterScore"), f"home{name}QuarterScore") for name in names
+    ]
+    away = [
+        _number(row.get(f"away{name}QuarterScore"), f"away{name}QuarterScore") for name in names
+    ]
     try:
         overtime_periods = int(row.get("overTimeCount") or 0)
     except (TypeError, ValueError):
@@ -197,10 +227,14 @@ def _actual(row: Dict[str, Any]) -> ActualResult:
     overtime_names = ("First", "Second", "Third")
     home_ot = away_ot = None
     if overtime_periods:
-        home_ot = sum(_number(row.get(f"home{overtime_names[index]}OverTimeScore"), "home overtime") or 0.0
-                      for index in range(overtime_periods))
-        away_ot = sum(_number(row.get(f"away{overtime_names[index]}OverTimeScore"), "away overtime") or 0.0
-                      for index in range(overtime_periods))
+        home_ot = sum(
+            _number(row.get(f"home{overtime_names[index]}OverTimeScore"), "home overtime") or 0.0
+            for index in range(overtime_periods)
+        )
+        away_ot = sum(
+            _number(row.get(f"away{overtime_names[index]}OverTimeScore"), "away overtime") or 0.0
+            for index in range(overtime_periods)
+        )
     return ActualResult(
         period_kind=PeriodKind.QUARTERS,
         home_quarters=home,
@@ -270,8 +304,11 @@ def discover_games(
 def fetch_recent_results(
     date_yyyymmdd: str, fetch: FetchFn, league: League | str = League.CBA
 ) -> List[Game]:
-    return [game for game in discover_games(date_yyyymmdd, fetch, league)
-            if game.status is GameStatus.FINAL and game.actual is not None]
+    return [
+        game
+        for game in discover_games(date_yyyymmdd, fetch, league)
+        if game.status is GameStatus.FINAL and game.actual is not None
+    ]
 
 
 def fetch_game_result(
@@ -282,15 +319,20 @@ def fetch_game_result(
 ) -> Game:
     _require_cba(league)
     rows = _payload(fetch, "schedule", matchId=str(match_id)).get("data") or []
-    matches = [row for row in rows if isinstance(row, dict)
-               and str(row.get("matchId") or "") == str(match_id)]
+    matches = [
+        row
+        for row in rows
+        if isinstance(row, dict) and str(row.get("matchId") or "") == str(match_id)
+    ]
     if len(matches) != 1:
         raise IdentityError(f"CBA match {match_id}: expected one schedule row, got {len(matches)}")
     result = _game(matches[0])
     if result.status is not GameStatus.FINAL or result.actual is None:
         raise IdentityError(f"CBA match {match_id} is not a complete final")
     if game is not None:
-        if game.league is not League.CBA or str(game.provider_ids.get(PROVIDER, game.game_id)) != str(match_id):
+        if game.league is not League.CBA or str(
+            game.provider_ids.get(PROVIDER, game.game_id)
+        ) != str(match_id):
             raise IdentityError("CBA result identity contradicts the supplied game")
         if (result.home_team_id, result.away_team_id) != (game.home_team_id, game.away_team_id):
             raise IdentityError("CBA result home/away identity contradicts the scheduled game")
@@ -378,7 +420,9 @@ def _snapshot(
 
 
 def _parse_fulltime(
-    payload: Dict[str, Any], games: Dict[str, Game], observed_utc: str,
+    payload: Dict[str, Any],
+    games: Dict[str, Game],
+    observed_utc: str,
     moneyline_books: Dict[str, str],
 ) -> List[BookSnapshot]:
     output: List[BookSnapshot] = []
@@ -387,9 +431,17 @@ def _parse_fulltime(
             continue
         book = _book(moneyline_books, raw[1])
         if book:
-            snapshot = _snapshot(games[raw[0]], book=book, market=Market.MONEYLINE,
-                period=Period.FULL_GAME, observed_utc=observed_utc, line=None,
-                first_price=_hk_decimal(raw[4]), second_price=_hk_decimal(raw[5]), raw=raw)
+            snapshot = _snapshot(
+                games[raw[0]],
+                book=book,
+                market=Market.MONEYLINE,
+                period=Period.FULL_GAME,
+                observed_utc=observed_utc,
+                line=None,
+                first_price=_hk_decimal(raw[4]),
+                second_price=_hk_decimal(raw[5]),
+                raw=raw,
+            )
             if snapshot:
                 output.append(snapshot)
     for key, market, mapping in (
@@ -401,37 +453,59 @@ def _parse_fulltime(
                 continue
             book = _book(mapping, raw[1])
             if book:
-                snapshot = _snapshot(games[raw[0]], book=book, market=market,
-                    period=Period.FULL_GAME, observed_utc=observed_utc, line=_line(raw[5]),
-                    first_price=_hk_decimal(raw[6]), second_price=_hk_decimal(raw[7]), raw=raw)
+                snapshot = _snapshot(
+                    games[raw[0]],
+                    book=book,
+                    market=market,
+                    period=Period.FULL_GAME,
+                    observed_utc=observed_utc,
+                    line=_line(raw[5]),
+                    first_price=_hk_decimal(raw[6]),
+                    second_price=_hk_decimal(raw[7]),
+                    raw=raw,
+                )
                 if snapshot:
                     output.append(snapshot)
     return output
 
 
-def _parse_half(payload: Dict[str, Any], games: Dict[str, Game], observed_utc: str) -> List[BookSnapshot]:
+def _parse_half(
+    payload: Dict[str, Any], games: Dict[str, Game], observed_utc: str
+) -> List[BookSnapshot]:
     output: List[BookSnapshot] = []
     for key, market, mapping in (
-        ("spread", Market.SPREAD, _SPREAD_BOOKS), ("total", Market.TOTAL, _TOTAL_BOOKS)
+        ("spread", Market.SPREAD, _SPREAD_BOOKS),
+        ("total", Market.TOTAL, _TOTAL_BOOKS),
     ):
         for raw in _rows(payload, key):
             if len(raw) != 8 or raw[0] not in games:
                 continue
             book = _book(mapping, raw[1])
             if book:
-                snapshot = _snapshot(games[raw[0]], book=book, market=market,
-                    period=Period.H1, observed_utc=observed_utc, line=_line(raw[5]),
-                    first_price=_hk_decimal(raw[6]), second_price=_hk_decimal(raw[7]), raw=raw)
+                snapshot = _snapshot(
+                    games[raw[0]],
+                    book=book,
+                    market=market,
+                    period=Period.H1,
+                    observed_utc=observed_utc,
+                    line=_line(raw[5]),
+                    first_price=_hk_decimal(raw[6]),
+                    second_price=_hk_decimal(raw[7]),
+                    raw=raw,
+                )
                 if snapshot:
                     output.append(snapshot)
     return output
 
 
-def _parse_quarters(payload: Dict[str, Any], games: Dict[str, Game], observed_utc: str) -> List[BookSnapshot]:
+def _parse_quarters(
+    payload: Dict[str, Any], games: Dict[str, Game], observed_utc: str
+) -> List[BookSnapshot]:
     output: List[BookSnapshot] = []
     periods = (Period.Q1, Period.Q2, Period.Q3, Period.Q4)
     for key, market, mapping in (
-        ("spread", Market.SPREAD, _SPREAD_BOOKS), ("total", Market.TOTAL, _TOTAL_BOOKS)
+        ("spread", Market.SPREAD, _SPREAD_BOOKS),
+        ("total", Market.TOTAL, _TOTAL_BOOKS),
     ):
         for raw in _rows(payload, key):
             if len(raw) != 26 or raw[0] not in games:
@@ -444,10 +518,18 @@ def _parse_quarters(payload: Dict[str, Any], games: Dict[str, Game], observed_ut
             for index, period in enumerate(periods):
                 current = 2 + index * 3
                 opening = 14 + index * 3
-                group = current if any(raw[current:current + 3]) else opening
-                snapshot = _snapshot(games[raw[0]], book=book, market=market,
-                    period=period, observed_utc=observed_utc, line=_line(raw[group]),
-                    first_price=_hk_decimal(raw[group + 1]), second_price=_hk_decimal(raw[group + 2]), raw=raw)
+                group = current if any(raw[current : current + 3]) else opening
+                snapshot = _snapshot(
+                    games[raw[0]],
+                    book=book,
+                    market=market,
+                    period=period,
+                    observed_utc=observed_utc,
+                    line=_line(raw[group]),
+                    first_price=_hk_decimal(raw[group + 1]),
+                    second_price=_hk_decimal(raw[group + 2]),
+                    raw=raw,
+                )
                 if snapshot:
                     output.append(snapshot)
     return output
@@ -495,9 +577,7 @@ def fetch_odds(
     except Exception as exc:
         moneyline_books = {}
         _gap(None, "moneyline_bookmakers", str(exc))
-    snapshots = _parse_fulltime(
-        _payload(fetch, "odds/fulltime"), games, observed, moneyline_books
-    )
+    snapshots = _parse_fulltime(_payload(fetch, "odds/fulltime"), games, observed, moneyline_books)
     snapshots.extend(_parse_half(_payload(fetch, "odds/half"), games, observed))
     snapshots.extend(_parse_quarters(_payload(fetch, "odds/quarter"), games, observed))
     return snapshots
@@ -525,7 +605,9 @@ def schedule_smoke(
         "verification": DOCUMENTATION_ONLY,
         "fixtures_found": len(games),
         "results_reconciled": {
-            "finals": len(finals), "reconciled": len(reconciled), "flagged": len(finals) - len(reconciled),
+            "finals": len(finals),
+            "reconciled": len(reconciled),
+            "flagged": len(finals) - len(reconciled),
         },
         "gaps": [
             {"game_id": gap.game_id, "required_field": gap.required_field, "detail": gap.detail}
@@ -544,16 +626,18 @@ def smoke(
     _require_cba(league)
     if not is_enabled():
         return {
-            "enabled": False, "provider": PROVIDER, "league": "CBA",
+            "enabled": False,
+            "provider": PROVIDER,
+            "league": "CBA",
             "verification": "UNAUTHORIZED",
         }
     date = date_yyyymmdd or datetime.now(timezone.utc).strftime("%Y%m%d")
-    snapshots = fetch_odds(
-        league, date, fetch_factory, now_utc=now_utc, tz_name=tz_name
-    )
+    snapshots = fetch_odds(league, date, fetch_factory, now_utc=now_utc, tz_name=tz_name)
     by_period: Dict[str, set] = {}
     for snapshot in snapshots:
-        if snapshot.pre_match and (snapshot.market is not Market.TOTAL or snapshot.line is not None):
+        if snapshot.pre_match and (
+            snapshot.market is not Market.TOTAL or snapshot.line is not None
+        ):
             by_period.setdefault(snapshot.period.value, set()).add(snapshot.game_id)
     return {
         "enabled": True,
@@ -571,7 +655,17 @@ def smoke(
 
 
 __all__ = [
-    "DOCUMENTATION_ONLY", "ENV_KEY", "PROVIDER", "discover_games", "fetch_game_result",
-    "fetch_odds", "fetch_recent_results", "is_enabled", "last_gaps",
-    "last_quota", "resolve_cba_league_id", "schedule_smoke", "smoke",
+    "DOCUMENTATION_ONLY",
+    "ENV_KEY",
+    "PROVIDER",
+    "discover_games",
+    "fetch_game_result",
+    "fetch_odds",
+    "fetch_recent_results",
+    "is_enabled",
+    "last_gaps",
+    "last_quota",
+    "resolve_cba_league_id",
+    "schedule_smoke",
+    "smoke",
 ]

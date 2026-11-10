@@ -43,32 +43,64 @@ def _row(match_id="100", *, status=-1):
 
 def _payloads():
     return {
-        "league/basic": {"code": 0, "data": [
-            {"leagueId": "111", "leagueName": "National Basketball Association", "leagueShortName": "NBA"},
-            {"leagueId": "321", "leagueName": "Chinese Basketball Association", "leagueShortName": "CBA"},
-            {"leagueId": "999", "leagueName": "CBA Club Cup", "leagueShortName": "CBACUP"},
-        ]},
+        "league/basic": {
+            "code": 0,
+            "data": [
+                {
+                    "leagueId": "111",
+                    "leagueName": "National Basketball Association",
+                    "leagueShortName": "NBA",
+                },
+                {
+                    "leagueId": "321",
+                    "leagueName": "Chinese Basketball Association",
+                    "leagueShortName": "CBA",
+                },
+                {"leagueId": "999", "leagueName": "CBA Club Cup", "leagueShortName": "CBACUP"},
+            ],
+        },
         "schedule": {"code": 0, "data": [_row("100"), _row("101", status=0)]},
-        "bookmaker": {"code": 0, "data": [
-            {"companyIdEu": 3, "companyName": "Interwetten", "companyIdMainSpread": 0, "companyIdMainTotal": 0},
-        ]},
-        "odds/fulltime": {"code": 0, "data": {
-            "moneyLine": ["101,3,3.00,1.34,3.20,1.23"],
-            "spread": ["101,8,-7,0.90,0.90,-6,0.90,0.90,-99,9.00,9.00"],
-            "total": ["101,11,158.5,0.90,0.90,156,0.90,0.90,999,9.00,9.00"],
-        }},
-        "odds/half": {"code": 0, "data": {
-            "spread": ["101,8,-4,0.90,0.90,-3.5,0.86,0.86"],
-            "total": ["101,11,78.5,0.90,0.90,77,0.83,0.90"],
-        }},
-        "odds/quarter": {"code": 0, "data": {
-            "spread": [",".join(
-                ["101", "8", "-1.5", "0.80", "0.90"]
-                + [""] * 9
-                + [""] * 3 + ["-2", "0.85", "0.85"] + [""] * 6
-            )],
-            "total": [],
-        }},
+        "bookmaker": {
+            "code": 0,
+            "data": [
+                {
+                    "companyIdEu": 3,
+                    "companyName": "Interwetten",
+                    "companyIdMainSpread": 0,
+                    "companyIdMainTotal": 0,
+                },
+            ],
+        },
+        "odds/fulltime": {
+            "code": 0,
+            "data": {
+                "moneyLine": ["101,3,3.00,1.34,3.20,1.23"],
+                "spread": ["101,8,-7,0.90,0.90,-6,0.90,0.90,-99,9.00,9.00"],
+                "total": ["101,11,158.5,0.90,0.90,156,0.90,0.90,999,9.00,9.00"],
+            },
+        },
+        "odds/half": {
+            "code": 0,
+            "data": {
+                "spread": ["101,8,-4,0.90,0.90,-3.5,0.86,0.86"],
+                "total": ["101,11,78.5,0.90,0.90,77,0.83,0.90"],
+            },
+        },
+        "odds/quarter": {
+            "code": 0,
+            "data": {
+                "spread": [
+                    ",".join(
+                        ["101", "8", "-1.5", "0.80", "0.90"]
+                        + [""] * 9
+                        + [""] * 3
+                        + ["-2", "0.85", "0.85"]
+                        + [""] * 6
+                    )
+                ],
+                "total": [],
+            },
+        },
     }
 
 
@@ -78,6 +110,7 @@ def _fetch(payloads):
             if f"/{path}" in url or (path == "schedule" and "/schedule?" in url):
                 return deepcopy(payload)
         raise AssertionError(f"unexpected URL {url}")
+
     return fetch
 
 
@@ -100,11 +133,17 @@ def test_discovers_exact_cba_and_reconciles_quarters():
 def test_overtime_is_summed_without_touching_regulation_quarters():
     payloads = _payloads()
     row = payloads["schedule"]["data"][0]
-    row.update({
-        "homeScore": 130, "awayScore": 125, "overTimeCount": 2,
-        "homeFirstOverTimeScore": 9, "awayFirstOverTimeScore": 8,
-        "homeSecondOverTimeScore": 11, "awaySecondOverTimeScore": 12,
-    })
+    row.update(
+        {
+            "homeScore": 130,
+            "awayScore": 125,
+            "overTimeCount": 2,
+            "homeFirstOverTimeScore": 9,
+            "awayFirstOverTimeScore": 8,
+            "homeSecondOverTimeScore": 11,
+            "awaySecondOverTimeScore": 12,
+        }
+    )
     game = isportsapi.fetch_recent_results("20261107", _fetch(payloads))[0]
     assert game.actual.home_overtime == 20
     assert game.actual.away_overtime == 20
@@ -128,7 +167,11 @@ def _games_with_payloads(payloads):
 def test_ambiguous_cba_identity_fails_closed():
     payloads = _payloads()
     payloads["league/basic"]["data"].append(
-        {"leagueId": "322", "leagueName": "Chinese Basketball Association", "leagueShortName": "CBA"}
+        {
+            "leagueId": "322",
+            "leagueName": "Chinese Basketball Association",
+            "leagueShortName": "CBA",
+        }
     )
     with pytest.raises(IdentityError, match="refusing to guess"):
         _games_with_payloads(payloads)

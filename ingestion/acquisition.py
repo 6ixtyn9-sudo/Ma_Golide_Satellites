@@ -115,9 +115,7 @@ class AcquisitionClient:
             try:
                 payload = self.fetch(url)
             except Exception as exc:
-                self._attempt(
-                    url, "fixture_error", observed, type(exc).__name__
-                )
+                self._attempt(url, "fixture_error", observed, type(exc).__name__)
                 raise
             self._attempt(url, "fixture_success", observed)
             return payload
@@ -143,9 +141,7 @@ class AcquisitionClient:
                     {
                         "kind": "error",
                         "observed_utc": observed,
-                        "expires_utc": _utc(
-                            now + timedelta(seconds=self.failure_cooldown_seconds)
-                        ),
+                        "expires_utc": _utc(now + timedelta(seconds=self.failure_cooldown_seconds)),
                         "error_type": detail,
                     },
                 )
@@ -181,9 +177,7 @@ class AcquisitionClient:
             "recent_attempts": self.attempts[-100:],
         }
 
-    def _attempt(
-        self, url: str, outcome: str, observed_utc: str, detail: str = ""
-    ) -> None:
+    def _attempt(self, url: str, outcome: str, observed_utc: str, detail: str = "") -> None:
         self.attempts.append(
             {
                 "endpoint": _endpoint(redact(url)),

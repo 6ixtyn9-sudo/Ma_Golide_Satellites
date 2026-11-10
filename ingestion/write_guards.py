@@ -23,9 +23,7 @@ def assert_fixture_write_isolation(
     """
 
     target = Path(warehouse).expanduser().resolve()
-    canonical = Path(
-        os.environ.get("MAGOLIDE_WAREHOUSE", DEFAULT_WAREHOUSE)
-    ).expanduser().resolve()
+    canonical = Path(os.environ.get("MAGOLIDE_WAREHOUSE", DEFAULT_WAREHOUSE)).expanduser().resolve()
     repository_state = REPOSITORY_STATE.resolve()
     runtime = Path(localdata).expanduser().resolve() if localdata else None
 
@@ -36,6 +34,5 @@ def assert_fixture_write_isolation(
         or (runtime is not None and canonical.is_relative_to(runtime))
     ):
         raise RuntimeError(
-            "fixture persistence requires warehouse/localdata paths isolated "
-            "from canonical state"
+            "fixture persistence requires warehouse/localdata paths isolated from canonical state"
         )

@@ -54,16 +54,11 @@ from ..identity import canonical_team_name, normalize_team_name, parse_utc, to_u
 from ..models import ActualResult, Game, GameStatus, League, PeriodKind
 from . import FetchFn, IdentityError
 
-SCHEDULE_URL = (
-    "https://api-live.euroleague.net/v2/competitions/E/seasons/{seasoncode}/games"
-)
+SCHEDULE_URL = "https://api-live.euroleague.net/v2/competitions/E/seasons/{seasoncode}/games"
 BOXSCORE_URL = (
-    "https://live.euroleague.net/api/Boxscore"
-    "?gamecode={gamecode}&seasoncode={seasoncode}"
+    "https://live.euroleague.net/api/Boxscore?gamecode={gamecode}&seasoncode={seasoncode}"
 )
-STANDINGS_URL = (
-    "https://api-live.euroleague.net/v2/competitions/E/seasons/{seasoncode}/standings"
-)
+STANDINGS_URL = "https://api-live.euroleague.net/v2/competitions/E/seasons/{seasoncode}/standings"
 
 # Evidence labels used by smoke reports.
 VERIFICATION_LIVE = "LIVE_VERIFIED (live captures 2026-11-06)"
@@ -103,8 +98,7 @@ def discover_games(
     rows = payload.get("data") if isinstance(payload, dict) else payload
     if not isinstance(rows, list):
         raise ValueError(
-            f"euroleague schedule for {seasoncode} has no data list "
-            f"(got {type(payload).__name__})"
+            f"euroleague schedule for {seasoncode} has no data list (got {type(payload).__name__})"
         )
     games: List[Game] = []
     for row in rows:
@@ -141,15 +135,12 @@ def _game_from_schedule_row(row: Dict[str, Any], seasoncode: str) -> Game:
     gamecode = str(gamecode)
     utc_date = row.get("utcDate")
     if not utc_date:
-        raise ValueError(
-            f"euroleague schedule row {gamecode} has no utcDate; refusing to guess"
-        )
+        raise ValueError(f"euroleague schedule row {gamecode} has no utcDate; refusing to guess")
     try:
         scheduled_utc = to_utc_iso(parse_utc(str(utc_date)))
     except (TypeError, ValueError) as exc:
         raise ValueError(
-            f"euroleague schedule row {gamecode} has unparseable utcDate "
-            f"{utc_date!r}: {exc}"
+            f"euroleague schedule row {gamecode} has unparseable utcDate {utc_date!r}: {exc}"
         ) from exc
 
     local = row.get("local") or {}
@@ -288,9 +279,7 @@ def fetch_game_result(game: Game, fetch: FetchFn) -> Game:
     )
     ok, reason = actual.reconciles()
     if not ok:
-        raise ValueError(
-            f"boxscore for {game.game_id} failed reconciliation: {reason}"
-        )
+        raise ValueError(f"boxscore for {game.game_id} failed reconciliation: {reason}")
     game.actual = actual
     game.status = GameStatus.FINAL
     return game
@@ -317,9 +306,7 @@ def _team_matches(row_team: str, game_name: str) -> bool:
     return canonical_team_name(row_team) == canonical_team_name(game_name)
 
 
-def _match_team_rows(
-    game: Game, rows: List[Any]
-) -> Tuple[Dict[str, Any], Dict[str, Any]]:
+def _match_team_rows(game: Game, rows: List[Any]) -> Tuple[Dict[str, Any], Dict[str, Any]]:
     """Match the two ByQuarter rows to the schedule game's home/away names.
 
     Never assumes array order: rows are matched by team name; ambiguity or a
@@ -338,15 +325,13 @@ def _match_team_rows(
         if _team_matches(team, game.home_name):
             if home_row is not None:
                 raise IdentityError(
-                    f"boxscore for {game.game_id}: both rows match home team "
-                    f"{game.home_name!r}"
+                    f"boxscore for {game.game_id}: both rows match home team {game.home_name!r}"
                 )
             home_row = row
         elif _team_matches(team, game.away_name):
             if away_row is not None:
                 raise IdentityError(
-                    f"boxscore for {game.game_id}: both rows match away team "
-                    f"{game.away_name!r}"
+                    f"boxscore for {game.game_id}: both rows match away team {game.away_name!r}"
                 )
             away_row = row
         else:
@@ -397,9 +382,7 @@ def _extra_periods(
     return _sum_ot(home_row), _sum_ot(away_row), len(indices)
 
 
-def _endofquarter_final(
-    game: Game, payload: Dict[str, Any], team_name: str
-) -> Optional[float]:
+def _endofquarter_final(game: Game, payload: Dict[str, Any], team_name: str) -> Optional[float]:
     """Official final for one team from the CUMULATIVE EndOfQuarter rows.
 
     The last value in ``Quarter1..Quarter4, Extra1..ExtraN`` order is the
@@ -411,13 +394,9 @@ def _endofquarter_final(
     if not isinstance(rows, list):
         return None
     for row in rows:
-        if not isinstance(row, dict) or not _team_matches(
-            str(row.get("Team") or ""), team_name
-        ):
+        if not isinstance(row, dict) or not _team_matches(str(row.get("Team") or ""), team_name):
             continue
-        ordered_keys = list(_QUARTER_KEYS) + [
-            f"Extra{i}" for i in sorted(_extra_indices(row))
-        ]
+        ordered_keys = list(_QUARTER_KEYS) + [f"Extra{i}" for i in sorted(_extra_indices(row))]
         present = [_period_value(row, k) for k in ordered_keys]
         numeric = [v for v in present if v is not None]
         return numeric[-1] if numeric else None
@@ -575,17 +554,14 @@ def smoke(fetch: FetchFn, seasoncode: str = "E2026") -> Dict[str, Any]:
         try:
             fetch_game_result(game, fetch)
         except Exception as exc:
-            failures.append(
-                {"game_id": game.game_id, "error": f"{type(exc).__name__}: {exc}"}
-            )
+            failures.append({"game_id": game.game_id, "error": f"{type(exc).__name__}: {exc}"})
             continue
         if game.actual is not None and game.actual.reconciles()[0]:
             complete += 1
 
     fetch_target = getattr(fetch, "__self__", fetch)
     verification = (
-        VERIFICATION_LIVE if isinstance(fetch_target, HttpClient)
-        else VERIFICATION_FIXTURE
+        VERIFICATION_LIVE if isinstance(fetch_target, HttpClient) else VERIFICATION_FIXTURE
     )
     return {
         "games_found": len(games),

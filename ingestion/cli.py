@@ -54,8 +54,7 @@ def _guard_write(args) -> None:
     if args.offline_fixture:
         if os.environ.get("ALLOW_FIXTURE_WRITES", "").strip().lower() != "true":
             raise SystemExit(
-                "fixture persistence requires ALLOW_FIXTURE_WRITES=true and "
-                "an isolated warehouse"
+                "fixture persistence requires ALLOW_FIXTURE_WRITES=true and an isolated warehouse"
             )
         try:
             assert_fixture_write_isolation(_warehouse(args))
@@ -77,12 +76,8 @@ def main(argv: Optional[List[str]] = None) -> int:
             default="NBA",
             choices=["NBA", "EuroLeague", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
         )
-        command_parser.add_argument(
-            "--date", default=None, help="league-local slate date YYYYMMDD"
-        )
-        command_parser.add_argument(
-            "--tz", default=None, help="league-local timezone (IANA)"
-        )
+        command_parser.add_argument("--date", default=None, help="league-local slate date YYYYMMDD")
+        command_parser.add_argument("--tz", default=None, help="league-local timezone (IANA)")
         command_parser.add_argument(
             "--warehouse",
             default=None,
@@ -148,9 +143,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         freshness_hours=args.freshness_hours,
         book=_book_config(args),
         fixture_now_utc=(
-            f"{args.date.replace('-', '')}T00:00:00Z"
-            if args.offline_fixture
-            else None
+            f"{args.date.replace('-', '')}T00:00:00Z" if args.offline_fixture else None
         ),
     )
     store = (
@@ -159,9 +152,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         else DuckDBStore(_warehouse(args), persist=bool(args.write))
     )
     try:
-        fetch, fetch_factory = (
-            _offline_fixture_fetch() if args.offline_fixture else (None, None)
-        )
+        fetch, fetch_factory = _offline_fixture_fetch() if args.offline_fixture else (None, None)
         pipeline = Pipeline(
             config,
             store,

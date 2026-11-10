@@ -49,20 +49,13 @@ def main() -> int:
     warehouse = Path(args.warehouse)
     if not warehouse.exists():
         parser.error(f"warehouse does not exist: {warehouse}")
-    output = Path(
-        args.output
-        or f"localdata/markets_{args.league}_{args.date or 'upcoming'}.json"
-    )
+    output = Path(args.output or f"localdata/markets_{args.league}_{args.date or 'upcoming'}.json")
     if output.suffix.lower() != ".json":
         parser.error("--output must be a .json report")
     if output.resolve() == warehouse.resolve():
         parser.error("--output cannot overwrite the warehouse")
 
-    provider = (
-        None
-        if args.book_provider in (None, "", "none")
-        else args.book_provider
-    )
+    provider = None if args.book_provider in (None, "", "none") else args.book_provider
     forecast_config = ForecastConfig(
         min_history_games=args.min_history_games,
         min_residual_games=args.min_residual_games,
@@ -95,9 +88,7 @@ def main() -> int:
                 "output": str(output),
                 "status": report["status"],
                 "forecast_count": report["forecast_count"],
-                "graded_walk_forward_forecasts": report["walk_forward"][
-                    "graded_forecasts"
-                ],
+                "graded_walk_forward_forecasts": report["walk_forward"]["graded_forecasts"],
                 "calibration_segments": len(report["walk_forward"]["segments"]),
                 "eligible_acca_games": report["accas"]["eligible_games"],
                 "accas": len(report["accas"]["results"]),

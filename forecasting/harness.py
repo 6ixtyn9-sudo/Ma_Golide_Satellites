@@ -133,14 +133,10 @@ def build_profiles(
             adjustment=adjustment,
             wilson_lower_95=wilson_lower_bound(wins, n),
             brier_score=sum(
-                (row.raw_probability - float(row.outcome == "win")) ** 2
-                for row in graded
+                (row.raw_probability - float(row.outcome == "win")) ** 2 for row in graded
             )
             / n,
-            log_loss=sum(
-                _log_loss(row.raw_probability, row.outcome == "win")
-                for row in graded
-            )
+            log_loss=sum(_log_loss(row.raw_probability, row.outcome == "win") for row in graded)
             / n,
             min_samples=cfg.min_samples,
         )
@@ -169,14 +165,10 @@ def build_profiles(
             adjustment=adjustment,
             wilson_lower_95=wilson_lower_bound(wins, n),
             brier_score=sum(
-                (row.raw_probability - float(row.outcome == "win")) ** 2
-                for row in graded
+                (row.raw_probability - float(row.outcome == "win")) ** 2 for row in graded
             )
             / n,
-            log_loss=sum(
-                _log_loss(row.raw_probability, row.outcome == "win")
-                for row in graded
-            )
+            log_loss=sum(_log_loss(row.raw_probability, row.outcome == "win") for row in graded)
             / n,
             min_samples=cfg.min_samples,
         )
@@ -203,9 +195,7 @@ def apply_profiles(
         else:
             probability = profile.calibrate(forecast.raw_probability, cfg)
             forecast.calibration = profile.to_dict()
-            forecast.calibration["status"] = (
-                "calibrated" if profile.sufficient else "provisional"
-            )
+            forecast.calibration["status"] = "calibrated" if profile.sufficient else "provisional"
         forecast.calibrated_probability = probability
         reasons: List[str] = []
         if forecast.book is None:

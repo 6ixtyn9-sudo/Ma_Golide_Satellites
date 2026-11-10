@@ -33,8 +33,13 @@ from .models import BookSnapshot, CoverageGap, CoverageState, Game, Prediction, 
 DEFAULT_PROVIDER_ORDER = ("espn", "hardwood", "predixsport", "sportradar")
 
 # A complete bundle contains probabilities, both scores, and total.
-COMPLETE_FIELDS = ("prob_home", "prob_away", "expected_home_score",
-                   "expected_away_score", "expected_total")
+COMPLETE_FIELDS = (
+    "prob_home",
+    "prob_away",
+    "expected_home_score",
+    "expected_away_score",
+    "expected_total",
+)
 
 
 def is_complete(pred: Prediction) -> bool:
@@ -73,9 +78,7 @@ class SelectionResult:
         return self.selected is not None and bool(self.partial_fields)
 
 
-def _valid_candidate(
-    pred: Prediction, game: Game, now_utc: str, freshness_hours: float
-) -> bool:
+def _valid_candidate(pred: Prediction, game: Game, now_utc: str, freshness_hours: float) -> bool:
     """Identity + freshness + pre-tip guards for one candidate."""
     if pred.game_id != game.game_id:
         return False
@@ -115,9 +118,7 @@ def select_prediction(
     for provider, candidates in grouped.items():
         complete = [candidate for candidate in candidates if is_complete(candidate)]
         pool = complete or candidates
-        by_provider[provider] = max(
-            pool, key=lambda candidate: parse_utc(candidate.observed_utc)
-        )
+        by_provider[provider] = max(pool, key=lambda candidate: parse_utc(candidate.observed_utc))
 
     ordered = [by_provider[p] for p in provider_order if p in by_provider]
     ordered += [c for p, c in by_provider.items() if p not in provider_order]
@@ -127,30 +128,43 @@ def select_prediction(
         if is_complete(pred):
             shadows.extend(c for c in ordered if c is not pred)
             return SelectionResult(
-                selected=pred, provider=pred.provider,
-                reason="complete_bundle", shadows=shadows,
+                selected=pred,
+                provider=pred.provider,
+                reason="complete_bundle",
+                shadows=shadows,
             )
 
     gaps: List[CoverageGap] = []
     if not ordered:
-        gaps.append(CoverageGap(
-            game_id=game.game_id, required_field="pregame_prediction",
-            reason=CoverageState.MISSING, detail="no fresh provider prediction",
-        ))
+        gaps.append(
+            CoverageGap(
+                game_id=game.game_id,
+                required_field="pregame_prediction",
+                reason=CoverageState.MISSING,
+                detail="no fresh provider prediction",
+            )
+        )
         return SelectionResult(None, None, "no_fresh_candidate", gaps=gaps)
 
     partial = ordered[0]
     missing = tuple(f for f in COMPLETE_FIELDS if getattr(partial, f) is None)
-    gaps.append(CoverageGap(
-        game_id=game.game_id, required_field="prediction_scores",
-        reason=CoverageState.MISSING, provider=partial.provider,
-        detail=f"partial bundle missing: {', '.join(missing) or 'none'}",
-    ))
+    gaps.append(
+        CoverageGap(
+            game_id=game.game_id,
+            required_field="prediction_scores",
+            reason=CoverageState.MISSING,
+            provider=partial.provider,
+            detail=f"partial bundle missing: {', '.join(missing) or 'none'}",
+        )
+    )
     shadows.extend(c for c in ordered if c is not partial)
     return SelectionResult(
-        selected=partial, provider=partial.provider,
+        selected=partial,
+        provider=partial.provider,
         reason="partial_bundle_probabilities_only",
-        gaps=gaps, shadows=shadows, partial_fields=missing,
+        gaps=gaps,
+        shadows=shadows,
+        partial_fields=missing,
     )
 
 
@@ -159,19 +173,14 @@ def select_prediction(
 # ---------------------------------------------------------------------------
 
 
-def latest_pre_tip(
-    predictions: List[Prediction], tip_utc: str
-) -> Optional[Prediction]:
+def latest_pre_tip(predictions: List[Prediction], tip_utc: str) -> Optional[Prediction]:
     """Latest observation strictly usable as a pre-tip value.
 
     Only observations strictly before scheduled tip qualify. A value first
     seen at or after tip is not treated as pre-tip evidence.
     """
     tip = parse_utc(tip_utc)
-    usable = [
-        p for p in predictions
-        if p.pre_tip and parse_utc(p.observed_utc) < tip
-    ]
+    usable = [p for p in predictions if p.pre_tip and parse_utc(p.observed_utc) < tip]
     if not usable:
         return None
     usable.sort(key=lambda p: parse_utc(p.observed_utc))
