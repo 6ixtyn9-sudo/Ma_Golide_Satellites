@@ -46,9 +46,7 @@ def _load(name: str) -> Any:
     return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
 
 
-def _factory(
-    mapping: Dict[str, Any]
-) -> Tuple[Callable[[str], Callable[[str], Any]], List[str]]:
+def _factory(mapping: Dict[str, Any]) -> Tuple[Callable[[str], Callable[[str], Any]], List[str]]:
     """fetch_factory(provider) -> FetchFn serving fixtures by URL substring.
 
     A ``(payload, headers)`` mapping value is served through the documented
@@ -130,9 +128,7 @@ def test_h2h_and_totals_mapping():
     assert moneyline.home_price_decimal == 1.85
     assert moneyline.away_price_decimal == 2.05
 
-    total = next(
-        s for s in snapshots if s.market is Market.TOTAL and s.period is Period.FULL_GAME
-    )
+    total = next(s for s in snapshots if s.market is Market.TOTAL and s.period is Period.FULL_GAME)
     assert total.book == "draftkings"
     assert total.line == pytest.approx(232.5)  # the point, never a price
     assert total.line != total.over_price_decimal != total.under_price_decimal
@@ -155,9 +151,7 @@ def test_decimal_prices_stored_as_is():
     assert moneyline.away_price_decimal == 2.05
     # 1.85 interpreted as American would corrupt to 1.0185 — never happens.
     assert moneyline.home_price_decimal != pytest.approx(1.0185, abs=1e-9)
-    total = next(
-        s for s in snapshots if s.market is Market.TOTAL and s.period is Period.FULL_GAME
-    )
+    total = next(s for s in snapshots if s.market is Market.TOTAL and s.period is Period.FULL_GAME)
     assert total.over_price_decimal == 1.9
     assert total.under_price_decimal == 1.92
 
@@ -185,9 +179,7 @@ def test_home_away_name_mismatch_raises_or_skips():
     assert moneyline.home_price_decimal == 1.85  # "Atlanta Hawks" matched
     assert moneyline.away_price_decimal is None  # "Mystery Team" NOT guessed
     gaps = theoddsapi.last_gaps()
-    assert any(
-        g.required_field == "h2h_outcome" and "Mystery Team" in g.detail for g in gaps
-    )
+    assert any(g.required_field == "h2h_outcome" and "Mystery Team" in g.detail for g in gaps)
 
 
 # ---------------------------------------------------------------------------
@@ -222,14 +214,10 @@ def test_quarter_markets_from_per_event_odds():
     # Partial payload: only totals_q1 present → only a Q1 snapshot appears.
     partial = json.loads(json.dumps(_load("odds_event_quarters.json")))
     partial["bookmakers"][0]["markets"] = [
-        market
-        for market in partial["bookmakers"][0]["markets"]
-        if market["key"] == "totals_q1"
+        market for market in partial["bookmakers"][0]["markets"] if market["key"] == "totals_q1"
     ]
     snapshots = theoddsapi.parse_event(partial, OBSERVED, now_utc=OBSERVED)
-    quarter_periods = {
-        s.period for s in snapshots if s.market is Market.TOTAL
-    }
+    quarter_periods = {s.period for s in snapshots if s.market is Market.TOTAL}
     assert quarter_periods == {Period.Q1}
 
 
@@ -241,18 +229,17 @@ def test_quarter_markets_from_per_event_odds():
 def test_quota_headers_captured():
     """parse_quota normalises x-requests-remaining/used (case-insensitive,
     ints) and smoke reports them via the fetch envelope convention."""
-    quota = theoddsapi.parse_quota(
-        {"x-requests-remaining": "43", "x-requests-used": "57"}
-    )
+    quota = theoddsapi.parse_quota({"x-requests-remaining": "43", "x-requests-used": "57"})
     assert quota == {"x-requests-remaining": 43, "x-requests-used": 57}
     assert theoddsapi.parse_quota({}) == {}
-    assert theoddsapi.parse_quota({"X-Requests-Remaining": "9"}) == {
-        "x-requests-remaining": 9
-    }
+    assert theoddsapi.parse_quota({"X-Requests-Remaining": "9"}) == {"x-requests-remaining": 9}
 
     headers = {"x-requests-remaining": "43", "x-requests-used": "57"}
     factory, _calls = _factory(
-        {LIST_KEY: (_load("odds_list_full_game.json"), headers), PER_EVENT_KEY: _load("odds_event_quarters.json")}
+        {
+            LIST_KEY: (_load("odds_list_full_game.json"), headers),
+            PER_EVENT_KEY: _load("odds_event_quarters.json"),
+        }
     )
     result = theoddsapi.smoke("NBA", factory, date_yyyymmdd=FUTURE_DATE)
     assert result["quota"]["x-requests-remaining"] == 43
@@ -282,9 +269,7 @@ def test_request_urls_use_documented_params():
     _fetch(factory)
 
     list_url = next(u for u in calls if LIST_KEY in u)
-    assert list_url.startswith(
-        "https://api.the-odds-api.com/v4/sports/basketball_nba/odds/?"
-    )
+    assert list_url.startswith("https://api.the-odds-api.com/v4/sports/basketball_nba/odds/?")
     assert f"apiKey={API_KEY}" in list_url  # documented query-param auth
     assert "regions=us" in list_url
     assert "markets=h2h%2Ctotals" in list_url
@@ -389,9 +374,7 @@ def test_quarter_spread_and_first_half_1x2_are_exact_facts():
     assert spread.home_price_decimal == 1.9
     assert spread.away_price_decimal == 1.92
     first_half = next(
-        row
-        for row in snapshots
-        if row.market is Market.MONEYLINE and row.period is Period.H1
+        row for row in snapshots if row.market is Market.MONEYLINE and row.period is Period.H1
     )
     assert first_half.home_price_decimal == 1.85
     assert first_half.away_price_decimal == 2.1
@@ -421,6 +404,4 @@ def test_contradictory_spread_points_fail_closed():
     }
     theoddsapi._reset_gaps()
     assert theoddsapi.parse_event(payload, OBSERVED, now_utc=OBSERVED) == []
-    assert any(
-        gap.required_field == "spread_line_q1" for gap in theoddsapi.last_gaps()
-    )
+    assert any(gap.required_field == "spread_line_q1" for gap in theoddsapi.last_gaps())

@@ -92,11 +92,7 @@ def canonical_snapshot(
         key=lambda row: (row["game_id"], row["slot"]),
     )
     book_rows = sorted(
-        (
-            row
-            for row in store.table_rows("book_snapshots")
-            if row["game_id"] in game_ids
-        ),
+        (row for row in store.table_rows("book_snapshots") if row["game_id"] in game_ids),
         key=lambda row: (row["game_id"], row["slot"]),
     )
     return {

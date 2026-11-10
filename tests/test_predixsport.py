@@ -105,6 +105,7 @@ PX_URLS = {
 def test_disabled_without_key(monkeypatch):
     monkeypatch.delenv(px.ENV_KEY, raising=False)
     assert px.is_enabled() is False
+
     # The factory must never even be built when disabled.
     def _unused_factory(provider):
         raise AssertionError("fetch_factory must not be called while disabled")

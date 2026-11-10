@@ -95,9 +95,7 @@ def test_duckdb_roundtrip_preserves_all_canonical_records(tmp_path):
     store = DuckDBStore(str(path))
     store.upsert_game(_game())
     store.upsert_prediction(_prediction(), frozen=True)
-    store.upsert_prediction(
-        _prediction(pre_tip=False, observed_utc="2026-11-07T23:00:00Z")
-    )
+    store.upsert_prediction(_prediction(pre_tip=False, observed_utc="2026-11-07T23:00:00Z"))
     store.upsert_book_snapshot(_snapshot(), frozen=True)
     store.upsert_book_snapshot(
         _snapshot(pre_match=False, observed_utc="2026-11-07T23:00:00Z", line=221.5)
@@ -113,12 +111,8 @@ def test_duckdb_roundtrip_preserves_all_canonical_records(tmp_path):
             state=CoverageState.OK,
         )
     )
-    store.record_run(
-        "run-1", "pregame", "2026-11-07", {"generated_utc": "2026-11-07T18:00:00Z"}
-    )
-    store.record_run(
-        "run-1", "freeze", "2026-11-07", {"generated_utc": "2026-11-07T18:01:00Z"}
-    )
+    store.record_run("run-1", "pregame", "2026-11-07", {"generated_utc": "2026-11-07T18:00:00Z"})
+    store.record_run("run-1", "freeze", "2026-11-07", {"generated_utc": "2026-11-07T18:01:00Z"})
     store.close()
 
     loaded = DuckDBStore(str(path), persist=False)
@@ -172,9 +166,12 @@ def test_first_half_draw_price_roundtrip_and_schema_migration(tmp_path):
         assert loaded.draw_price_decimal == 11.0
         row = migrated.table_rows("book_snapshots")[0]
         assert row["draw_price_decimal"] == 11.0
-        assert migrated._con.execute(
-            "select value from schema_meta where key='schema_version'"
-        ).fetchone()[0] == "2"
+        assert (
+            migrated._con.execute(
+                "select value from schema_meta where key='schema_version'"
+            ).fetchone()[0]
+            == "2"
+        )
     finally:
         migrated.close()
 
@@ -182,12 +179,8 @@ def test_first_half_draw_price_roundtrip_and_schema_migration(tmp_path):
 def test_operational_run_retention_does_not_touch_canonical_facts(tmp_path):
     store = DuckDBStore(str(tmp_path / "warehouse.duckdb"))
     store.upsert_game(_game())
-    store.record_run(
-        "old", "pregame", "2020-01-01", {"generated_utc": "2020-01-01T00:00:00Z"}
-    )
-    store.record_run(
-        "new", "pregame", "2026-11-07", {"generated_utc": "2026-11-07T00:00:00Z"}
-    )
+    store.record_run("old", "pregame", "2020-01-01", {"generated_utc": "2020-01-01T00:00:00Z"})
+    store.record_run("new", "pregame", "2026-11-07", {"generated_utc": "2026-11-07T00:00:00Z"})
     assert store.prune_pipeline_runs("2021-01-01T00:00:00Z") == 1
     assert store.counts()["pipeline_runs"] == 1
     assert store.get_game("espn-1") is not None
@@ -237,9 +230,7 @@ def test_csv_export_and_sql_views_expose_observed_typed_facts(tmp_path):
             "select prob_home, expected_total, frozen from prediction_facts"
         ).fetchone()
         book = con.execute("select line, period, frozen from book_facts").fetchone()
-        result = con.execute(
-            "select home_final, result_source from game_results"
-        ).fetchone()
+        result = con.execute("select home_final, result_source from game_results").fetchone()
         assert prediction == (0.6, 215.0, True)
         assert book == (220.5, Period.FULL_GAME.value, True)
         assert result == ("100", "espn")
@@ -263,12 +254,8 @@ def test_ledger_snapshot_is_scoped_to_league_local_slate(tmp_path):
     store = DuckDBStore(str(tmp_path / "warehouse.duckdb"))
     store.upsert_game(_game())
     # 00:30 UTC on November 8 is still November 7 in New York.
-    store.upsert_game(
-        replace(_game(), game_id="espn-2", scheduled_utc="2026-11-08T00:30:00Z")
-    )
-    store.upsert_game(
-        replace(_game(), game_id="espn-3", scheduled_utc="2026-11-08T22:00:00Z")
-    )
+    store.upsert_game(replace(_game(), game_id="espn-2", scheduled_utc="2026-11-08T00:30:00Z"))
+    store.upsert_game(replace(_game(), game_id="espn-3", scheduled_utc="2026-11-08T22:00:00Z"))
     snapshot = canonical_snapshot(store, League.NBA, "2026-11-07")
     assert {game["game_id"] for game in snapshot["games"]} == {"espn-1", "espn-2"}
     next_slate = canonical_snapshot(store, League.NBA, "20261108")

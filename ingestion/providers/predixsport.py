@@ -131,9 +131,7 @@ def default_fetch_factory(provider: str) -> FetchFn:
 def _league(league: str) -> str:
     league_l = str(league or "").strip().lower()
     if league_l not in VALID_LEAGUES:
-        raise ValueError(
-            f"predixsport league must be one of {VALID_LEAGUES}, got {league!r}"
-        )
+        raise ValueError(f"predixsport league must be one of {VALID_LEAGUES}, got {league!r}")
     return league_l
 
 
@@ -231,8 +229,7 @@ def fetch_upcoming(
                         required_field="prediction",
                         reason=CoverageState.MISSING,
                         provider=PROVIDER,
-                        detail=f"malformed upcoming entry skipped: "
-                        f"{type(exc).__name__}: {exc}",
+                        detail=f"malformed upcoming entry skipped: {type(exc).__name__}: {exc}",
                     )
                 )
     return out

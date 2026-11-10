@@ -74,9 +74,17 @@ def redact(text: str) -> str:
         if value:
             out = out.replace(value, f"[REDACTED:{key}]")
     # Private keys, bearer tokens, and generic API keys.
-    out = re.sub(r"-----BEGIN[ A-Z]*PRIVATE KEY-----[\s\S]*?-----END[ A-Z]*PRIVATE KEY-----", "[REDACTED:PRIVATE_KEY]", out)
+    out = re.sub(
+        r"-----BEGIN[ A-Z]*PRIVATE KEY-----[\s\S]*?-----END[ A-Z]*PRIVATE KEY-----",
+        "[REDACTED:PRIVATE_KEY]",
+        out,
+    )
     out = re.sub(r"(?i)bearer\s+[A-Za-z0-9._\-]+", "bearer [REDACTED]", out)
-    out = re.sub(r"(?i)(api[_-]?key|apikey|token|secret)\s*[=:]\s*['\"]?[A-Za-z0-9._\-]{8,}", r"\1=[REDACTED]", out)
+    out = re.sub(
+        r"(?i)(api[_-]?key|apikey|token|secret)\s*[=:]\s*['\"]?[A-Za-z0-9._\-]{8,}",
+        r"\1=[REDACTED]",
+        out,
+    )
     return out
 
 

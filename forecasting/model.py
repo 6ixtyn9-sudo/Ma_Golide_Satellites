@@ -115,9 +115,9 @@ class HistoryModel:
         if not home_scores:
             return None
         per_team = (sum(home_scores) + sum(away_scores)) / (2 * len(home_scores))
-        home_advantage = sum(
-            home - away for home, away in zip(home_scores, away_scores)
-        ) / len(home_scores)
+        home_advantage = sum(home - away for home, away in zip(home_scores, away_scores)) / len(
+            home_scores
+        )
         return per_team, home_advantage
 
     def _team_rates(
@@ -149,9 +149,7 @@ class HistoryModel:
             weight_sum,
         )
 
-    def baseline(
-        self, game: Game, history: Sequence[Game], period: Period
-    ) -> Optional[Baseline]:
+    def baseline(self, game: Game, history: Sequence[Game], period: Period) -> Optional[Baseline]:
         if len(history) < self.config.min_history_games:
             return None
         league = self._league_rates(history, period)
@@ -170,12 +168,10 @@ class HistoryModel:
         home_rates = self._team_rates(game.home_name, history, period)
         away_rates = self._team_rates(game.away_name, history, period)
         expected_home = (
-            shrunk(home_rates, "points_for")
-            + shrunk(away_rates, "points_against")
+            shrunk(home_rates, "points_for") + shrunk(away_rates, "points_against")
         ) / 2 + home_advantage / 2
         expected_away = (
-            shrunk(away_rates, "points_for")
-            + shrunk(home_rates, "points_against")
+            shrunk(away_rates, "points_for") + shrunk(home_rates, "points_against")
         ) / 2 - home_advantage / 2
         return Baseline(
             expected_home,
@@ -215,11 +211,7 @@ class HistoryModel:
             cutoff = parse_utc(target.scheduled_utc) - timedelta(
                 hours=self.config.result_available_after_hours
             )
-            priors = [
-                game
-                for game in history[:index]
-                if parse_utc(game.scheduled_utc) <= cutoff
-            ]
+            priors = [game for game in history[:index] if parse_utc(game.scheduled_utc) <= cutoff]
             baseline = self.baseline(target, priors, period)
             actual = _period_scores(target, period)
             if baseline is None or actual is None:
@@ -303,9 +295,7 @@ class HistoryModel:
         }
 
     @staticmethod
-    def _select(
-        probabilities: Dict[str, float], allowed: Iterable[str]
-    ) -> Optional[str]:
+    def _select(probabilities: Dict[str, float], allowed: Iterable[str]) -> Optional[str]:
         choices = list(allowed)
         highest = max(probabilities[key] for key in choices)
         winners = [key for key in choices if probabilities[key] == highest]
@@ -348,9 +338,7 @@ class HistoryModel:
                     selected_price = evidence.price_for(selection)
                     other_price = away_price if selection == "home" else home_price
                     if selected_price and abs(selected_price - other_price) > 1e-9:
-                        role = (
-                            "underdog" if selected_price > other_price else "favorite"
-                        )
+                        role = "underdog" if selected_price > other_price else "favorite"
             forecasts.append(
                 Forecast(
                     game_id=game.game_id,
@@ -388,11 +376,7 @@ class HistoryModel:
         # Basketball full-game moneyline is two-way because overtime decides
         # the final. H1 retains its explicit draw selection and exact draw
         # price requirement; no draw may leak into a two-way full-game book.
-        allowed = (
-            ("home", "away")
-            if period is Period.FULL_GAME
-            else ("home", "away", "draw")
-        )
+        allowed = ("home", "away") if period is Period.FULL_GAME else ("home", "away", "draw")
         selection = self._select(probabilities, allowed)
         if selection is None:
             return []
@@ -462,14 +446,10 @@ class HistoryModel:
                     distribution.residuals
                 )
             else:
-                adjusted = [
-                    value + snapshot.line for value in distribution.margins
-                ]
+                adjusted = [value + snapshot.line for value in distribution.margins]
                 probabilities = {
-                    "home": sum(value > 0 for value in adjusted)
-                    / distribution.residuals,
-                    "away": sum(value < 0 for value in adjusted)
-                    / distribution.residuals,
+                    "home": sum(value > 0 for value in adjusted) / distribution.residuals,
+                    "away": sum(value < 0 for value in adjusted) / distribution.residuals,
                 }
                 push = sum(value == 0 for value in adjusted) / distribution.residuals
             selection = self._select(probabilities, probabilities.keys())
@@ -522,14 +502,10 @@ class HistoryModel:
             )
         return forecasts
 
-    def highest_quarter(
-        self, game: Game, history: Sequence[Game]
-    ) -> List[Forecast]:
+    def highest_quarter(self, game: Game, history: Sequence[Game]) -> List[Forecast]:
         if len(history) < self.config.min_history_games:
             return []
-        baselines = {
-            period: self.baseline(game, history, period) for period in QUARTERS
-        }
+        baselines = {period: self.baseline(game, history, period) for period in QUARTERS}
         if any(baseline is None for baseline in baselines.values()):
             return []
         vectors: List[tuple[float, float, float, float]] = []
@@ -538,9 +514,7 @@ class HistoryModel:
                 hours=self.config.result_available_after_hours
             )
             priors = [
-                prior
-                for prior in history[:index]
-                if parse_utc(prior.scheduled_utc) <= cutoff
+                prior for prior in history[:index] if parse_utc(prior.scheduled_utc) <= cutoff
             ]
             vector: List[float] = []
             for period in QUARTERS:
@@ -557,8 +531,7 @@ class HistoryModel:
         wins = {period.value: 0 for period in QUARTERS}
         for vector in vectors:
             simulated = [
-                baselines[period].total + vector[index]
-                for index, period in enumerate(QUARTERS)
+                baselines[period].total + vector[index] for index, period in enumerate(QUARTERS)
             ]
             highest = max(simulated)
             for index, period in enumerate(QUARTERS):
@@ -586,9 +559,7 @@ class HistoryModel:
                 team_history=self._team_history(
                     [baseline for baseline in baselines.values() if baseline is not None]
                 ),
-                expected_total=sum(
-                    baselines[period].total for period in QUARTERS
-                ),
+                expected_total=sum(baselines[period].total for period in QUARTERS),
             )
         ]
 

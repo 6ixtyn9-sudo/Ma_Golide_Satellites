@@ -39,16 +39,18 @@ def _probability_row(event_id="sr:sport_event:1"):
                 {"qualifier": "away", "name": "Shanghai Sharks"},
             ],
         },
-        "markets": [{
-            "name": "2way",
-            "live": False,
-            "removed": False,
-            "last_updated": "2026-11-07T07:55:00+00:00",
-            "outcomes": [
-                {"name": "home_team_winner", "probability": 61.5},
-                {"name": "away_team_winner", "probability": 38.5},
-            ],
-        }],
+        "markets": [
+            {
+                "name": "2way",
+                "live": False,
+                "removed": False,
+                "last_updated": "2026-11-07T07:55:00+00:00",
+                "outcomes": [
+                    {"name": "home_team_winner", "probability": 61.5},
+                    {"name": "away_team_winner", "probability": 38.5},
+                ],
+            }
+        ],
     }
 
 
@@ -57,21 +59,31 @@ def _payloads():
         "competitions": {
             "generated_at": "2026-11-07T07:00:00Z",
             "competitions": [
-                {"id": "sr:competition:999", "name": "CBA", "gender": "men",
-                 "category": {"country_code": "AUS", "name": "Australia"}},
-                {"id": "sr:competition:321", "name": "CBA", "gender": "men",
-                 "category": {"country_code": "CHN", "name": "China"}},
+                {
+                    "id": "sr:competition:999",
+                    "name": "CBA",
+                    "gender": "men",
+                    "category": {"country_code": "AUS", "name": "Australia"},
+                },
+                {
+                    "id": "sr:competition:321",
+                    "name": "CBA",
+                    "gender": "men",
+                    "category": {"country_code": "CHN", "name": "China"},
+                },
             ],
         },
         "seasons": {
-            "seasons": [{
-                "id": "sr:season:26",
-                "competition_id": "sr:competition:321",
-                "name": "CBA 26/27",
-                "start_date": "2026-10-01",
-                "end_date": "2027-05-01",
-                "disabled": False,
-            }],
+            "seasons": [
+                {
+                    "id": "sr:season:26",
+                    "competition_id": "sr:competition:321",
+                    "name": "CBA 26/27",
+                    "start_date": "2026-10-01",
+                    "end_date": "2027-05-01",
+                    "disabled": False,
+                }
+            ],
         },
         "probabilities": {
             "generated_at": "2026-11-07T07:56:00Z",
@@ -91,6 +103,7 @@ def _fetch(payloads, calls=None):
         if "/seasons/sr:season:26/probabilities.json" in url:
             return deepcopy(payloads["probabilities"])
         raise AssertionError(f"unexpected URL {url}")
+
     return fetch
 
 
@@ -118,8 +131,12 @@ def test_wrong_country_or_ambiguous_competition_fails_closed(monkeypatch):
     monkeypatch.setenv("SPORTRADAR_API_KEY", "key")
     payloads = _payloads()
     payloads["competitions"]["competitions"].append(
-        {"id": "sr:competition:322", "name": "CBA", "gender": "men",
-         "category": {"country_code": "CHN", "name": "China"}}
+        {
+            "id": "sr:competition:322",
+            "name": "CBA",
+            "gender": "men",
+            "category": {"country_code": "CHN", "name": "China"},
+        }
     )
     with pytest.raises(IdentityError, match="must be unique"):
         sportradar.fetch_cba_probabilities(
@@ -136,9 +153,12 @@ def test_cross_provider_join_requires_confirmed_exact_fixture(monkeypatch):
     ):
         payloads = _payloads()
         mutation(payloads["probabilities"]["sport_event_probabilities"][0])
-        assert sportradar.fetch_cba_probabilities(
-            "2026-11-07", [_game()], _fetch(payloads), now_utc=OBSERVED
-        ) == {}
+        assert (
+            sportradar.fetch_cba_probabilities(
+                "2026-11-07", [_game()], _fetch(payloads), now_utc=OBSERVED
+            )
+            == {}
+        )
 
 
 def test_duplicate_and_live_probabilities_remain_gaps(monkeypatch):
@@ -146,15 +166,21 @@ def test_duplicate_and_live_probabilities_remain_gaps(monkeypatch):
     payloads = _payloads()
     row = payloads["probabilities"]["sport_event_probabilities"][0]
     payloads["probabilities"]["sport_event_probabilities"].append(deepcopy(row))
-    assert sportradar.fetch_cba_probabilities(
-        "2026-11-07", [_game()], _fetch(payloads), now_utc=OBSERVED
-    ) == {}
+    assert (
+        sportradar.fetch_cba_probabilities(
+            "2026-11-07", [_game()], _fetch(payloads), now_utc=OBSERVED
+        )
+        == {}
+    )
 
     payloads = _payloads()
     payloads["probabilities"]["sport_event_probabilities"][0]["markets"][0]["live"] = True
-    assert sportradar.fetch_cba_probabilities(
-        "2026-11-07", [_game()], _fetch(payloads), now_utc=OBSERVED
-    ) == {}
+    assert (
+        sportradar.fetch_cba_probabilities(
+            "2026-11-07", [_game()], _fetch(payloads), now_utc=OBSERVED
+        )
+        == {}
+    )
 
 
 def test_generated_at_is_fallback_provenance_and_percentages_are_validated(monkeypatch):
@@ -168,9 +194,12 @@ def test_generated_at_is_fallback_provenance_and_percentages_are_validated(monke
     assert prediction.source_modified_utc == "2026-11-07T07:56:00Z"
 
     market["outcomes"][0]["probability"] = 101
-    assert sportradar.fetch_cba_probabilities(
-        "2026-11-07", [_game()], _fetch(payloads), now_utc=OBSERVED
-    ) == {}
+    assert (
+        sportradar.fetch_cba_probabilities(
+            "2026-11-07", [_game()], _fetch(payloads), now_utc=OBSERVED
+        )
+        == {}
+    )
 
 
 def test_season_probability_pagination_is_bounded_and_complete(monkeypatch):
@@ -185,7 +214,7 @@ def test_season_probability_pagination_is_bounded_and_complete(monkeypatch):
         rows = [_probability_row(f"sr:sport_event:{index}") for index in range(5)]
         return {
             "generated_at": "2026-11-07T07:56:00Z",
-            "sport_event_probabilities": rows[start:start + 2],
+            "sport_event_probabilities": rows[start : start + 2],
         }
 
     rows = list(sportradar._probability_rows(fetch, "sr:season:26"))

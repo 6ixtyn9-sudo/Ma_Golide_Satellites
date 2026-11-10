@@ -72,10 +72,16 @@ def _moneyline_market(affiliate: int = 23) -> Dict[str, Any]:
         "id": 1,
         "name": "moneyline",
         "participants": [
-            {"side": "home", "is_home": True,
-             "lines": [dict(base, prices=[{"type": "home", "price": -150}])]},
-            {"side": "away", "is_home": False,
-             "lines": [dict(base, prices=[{"type": "away", "price": 130}])]},
+            {
+                "side": "home",
+                "is_home": True,
+                "lines": [dict(base, prices=[{"type": "home", "price": -150}])],
+            },
+            {
+                "side": "away",
+                "is_home": False,
+                "lines": [dict(base, prices=[{"type": "away", "price": 130}])],
+            },
         ],
     }
 
@@ -103,7 +109,9 @@ def _v2_event(
             {"full_name": HOME, "is_home": True},
             {"full_name": AWAY, "is_home": False},
         ],
-        "markets": markets if markets is not None else [_moneyline_market(affiliate), _total_market(affiliate)],
+        "markets": markets
+        if markets is not None
+        else [_moneyline_market(affiliate), _total_market(affiliate)],
     }
 
 
@@ -134,7 +142,9 @@ def _factory(mapping: Dict[str, Any]) -> Tuple[Callable[[str], Callable[[str], A
     return factory, calls
 
 
-def _nba_mapping(events_payload: Any, headers: Dict[str, str] = None, sports: Any = None) -> Dict[str, Any]:
+def _nba_mapping(
+    events_payload: Any, headers: Dict[str, str] = None, sports: Any = None
+) -> Dict[str, Any]:
     events_value = (events_payload, headers) if headers else events_payload
     return {"/sports": sports if sports is not None else _V2_SPORTS, "/events/": events_value}
 
@@ -209,7 +219,11 @@ def test_nba_sport_id_resolved_from_sports_endpoint():
 def test_nba_unresolvable_raises_without_guessing():
     """A /sports payload without NBA raises ValueError and NO events call is
     made — the adapter refuses to guess or hardcode a sport id."""
-    factory, calls = _factory(_nba_mapping({"events": [_v2_event()]}, sports={"sports": [{"id": 1, "abbreviation": "NFL"}]}))
+    factory, calls = _factory(
+        _nba_mapping(
+            {"events": [_v2_event()]}, sports={"sports": [{"id": 1, "abbreviation": "NFL"}]}
+        )
+    )
     with pytest.raises(ValueError, match="refusing to hardcode or guess"):
         therundown.fetch_odds("NBA", "20261107", factory)
     assert calls == [SPORTS_URL]
@@ -309,17 +323,31 @@ def test_never_emits_quarter_periods():
         "id": 26,
         "name": "1st quarter total",
         "participants": [
-            {"side": "over",
-             "lines": [{"affiliate_id": 23, "period_id": 4, "total": 58.5,
-                        "prices": [{"type": "over", "price": -105}]}]},
+            {
+                "side": "over",
+                "lines": [
+                    {
+                        "affiliate_id": 23,
+                        "period_id": 4,
+                        "total": 58.5,
+                        "prices": [{"type": "over", "price": -105}],
+                    }
+                ],
+            },
         ],
     }
     poisoned_total = _total_market()
     poisoned_total["participants"][0]["lines"].append(
-        {"affiliate_id": 23, "period_id": 4, "total": 58.5,
-         "prices": [{"type": "over", "price": -105}]}
+        {
+            "affiliate_id": 23,
+            "period_id": 4,
+            "total": 58.5,
+            "prices": [{"type": "over", "price": -105}],
+        }
     )
-    factory, _calls = _factory(_nba_mapping({"events": [_v2_event([_moneyline_market(), quarter_market, poisoned_total])]}))
+    factory, _calls = _factory(
+        _nba_mapping({"events": [_v2_event([_moneyline_market(), quarter_market, poisoned_total])]})
+    )
     snapshots = therundown.fetch_odds("NBA", "20261107", factory)
     quarter_periods = {Period.Q1, Period.Q2, Period.Q3, Period.Q4}
     assert snapshots
@@ -388,12 +416,22 @@ def test_spread_requested_but_unmapped_with_gap():
         "id": 2,
         "name": "spread",
         "participants": [
-            {"side": "home",
-             "lines": [{"affiliate_id": 23, "period_id": 1, "spread": -4.5,
-                        "prices": [{"type": "home", "price": -110}]}]},
+            {
+                "side": "home",
+                "lines": [
+                    {
+                        "affiliate_id": 23,
+                        "period_id": 1,
+                        "spread": -4.5,
+                        "prices": [{"type": "home", "price": -110}],
+                    }
+                ],
+            },
         ],
     }
-    factory, _calls = _factory(_nba_mapping({"events": [_v2_event([_moneyline_market(), spread_market, _total_market()])]}))
+    factory, _calls = _factory(
+        _nba_mapping({"events": [_v2_event([_moneyline_market(), spread_market, _total_market()])]})
+    )
     snapshots = therundown.fetch_odds("NBA", "20261107", factory)
     assert {s.market for s in snapshots} == {Market.MONEYLINE, Market.TOTAL}
     assert any(g.required_field == "markets" and "'2'" in g.detail for g in therundown.last_gaps())

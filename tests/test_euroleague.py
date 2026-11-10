@@ -232,8 +232,20 @@ def test_reversed_row_order_still_maps_by_team_name():
     payload = {
         "Live": False,
         "ByQuarter": [
-            {"Team": "ZALGIRIS KAUNAS", "Quarter1": 20, "Quarter2": 25, "Quarter3": 17, "Quarter4": 21},
-            {"Team": "BESIKTAS ISTANBUL", "Quarter1": 17, "Quarter2": 14, "Quarter3": 13, "Quarter4": 23},
+            {
+                "Team": "ZALGIRIS KAUNAS",
+                "Quarter1": 20,
+                "Quarter2": 25,
+                "Quarter3": 17,
+                "Quarter4": 21,
+            },
+            {
+                "Team": "BESIKTAS ISTANBUL",
+                "Quarter1": 17,
+                "Quarter2": 14,
+                "Quarter3": 13,
+                "Quarter4": 23,
+            },
         ],
     }
     game = el_make_game(gamecode=97, home="Besiktas Istanbul", away="Zalgiris Kaunas")
@@ -251,8 +263,20 @@ def test_boxscore_without_byquarter_is_rejected_not_improvised():
         "Live": False,
         "ByQuarter": [],
         "EndOfQuarter": [
-            {"Team": "REAL MADRID", "Quarter1": 18, "Quarter2": 48, "Quarter3": 73, "Quarter4": 101},
-            {"Team": "PANATHINAIKOS AKTOR ATHENS", "Quarter1": 24, "Quarter2": 51, "Quarter3": 74, "Quarter4": 101},
+            {
+                "Team": "REAL MADRID",
+                "Quarter1": 18,
+                "Quarter2": 48,
+                "Quarter3": 73,
+                "Quarter4": 101,
+            },
+            {
+                "Team": "PANATHINAIKOS AKTOR ATHENS",
+                "Quarter1": 24,
+                "Quarter2": 51,
+                "Quarter3": 74,
+                "Quarter4": 101,
+            },
         ],
     }
     with pytest.raises(ValueError):
@@ -263,9 +287,7 @@ def test_boxscore_seasoncode_from_provider_ids_or_season():
     """Boxscore URL seasoncode: explicit euroleague_season id first, else
     derived from the canonical season field."""
     assert el._seasoncode_of(el_make_game()) == "E2026"  # season "E2026"
-    discovered = next(
-        g for g in el.discover_games(None, el_fetch()) if g.game_id == "E2026-91"
-    )
+    discovered = next(g for g in el.discover_games(None, el_fetch()) if g.game_id == "E2026-91")
     assert el._seasoncode_of(discovered) == "E2026"  # from provider_ids
 
 

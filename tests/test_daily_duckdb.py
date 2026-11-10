@@ -65,21 +65,15 @@ def test_dry_run_prunes_daily_and_market_report_retention(tmp_path):
 
     reports = tmp_path / "localdata" / "reports"
     reports.mkdir(parents=True)
-    (reports / "daily_old.json").write_text(
-        json.dumps({"finished_utc": "2000-01-01T00:00:00Z"})
-    )
-    (reports / "markets_old.json").write_text(
-        json.dumps({"generated_utc": "2000-01-01T00:00:00Z"})
-    )
+    (reports / "daily_old.json").write_text(json.dumps({"finished_utc": "2000-01-01T00:00:00Z"}))
+    (reports / "markets_old.json").write_text(json.dumps({"generated_utc": "2000-01-01T00:00:00Z"}))
     summary = run_daily(_args(tmp_path))
     assert summary["retention"]["report_files_pruned"] == 2
     assert not (reports / "daily_old.json").exists()
     assert not (reports / "markets_old.json").exists()
 
 
-def test_fixture_persistence_and_notification_have_separate_guards(
-    tmp_path, monkeypatch
-):
+def test_fixture_persistence_and_notification_have_separate_guards(tmp_path, monkeypatch):
     monkeypatch.setenv("ALLOW_MAGOLIDE_WRITES", "true")
     monkeypatch.delenv("ALLOW_FIXTURE_WRITES", raising=False)
     with pytest.raises(RuntimeError, match="ALLOW_FIXTURE_WRITES"):
@@ -143,9 +137,7 @@ def test_live_cutoff_includes_books_acquired_after_process_start(tmp_path, monke
     acquired = "2026-11-07T20:02:32Z"
     after_acquisition = "2026-11-07T20:02:40Z"
     monkeypatch.setattr("scripts.daily._utc_now", lambda: after_acquisition)
-    cutoff = _market_cutoff(
-        _args(tmp_path, offline_fixture=False, started_utc=started)
-    )
+    cutoff = _market_cutoff(_args(tmp_path, offline_fixture=False, started_utc=started))
     assert cutoff == after_acquisition
 
     store = InMemoryStore()

@@ -122,8 +122,7 @@ def dispatch_whatsapp(message: str) -> None:
     recipient = os.environ.get("WHATSAPP_RECIPIENT", "").strip()
     if not all((token, phone_id, recipient)):
         raise RuntimeError(
-            "WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID and "
-            "WHATSAPP_RECIPIENT are required"
+            "WHATSAPP_TOKEN, WHATSAPP_PHONE_NUMBER_ID and WHATSAPP_RECIPIENT are required"
         )
     response = requests.post(
         f"https://graph.facebook.com/v22.0/{phone_id}/messages",

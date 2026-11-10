@@ -165,9 +165,7 @@ class Forecast:
             "model_version": MODEL_VERSION,
             "training_games": self.training_games,
             "residual_games": self.residual_games,
-            "team_history": (
-                dict(self.team_history) if self.team_history is not None else None
-            ),
+            "team_history": (dict(self.team_history) if self.team_history is not None else None),
             "prediction": (
                 {
                     "provider": self.prediction_provider,

@@ -83,9 +83,9 @@ def test_deep_backfill_persists_1947_final_only_and_advances_cursor(tmp_path):
     reopened = DuckDBStore(str(tmp_path / "nba" / "warehouse.duckdb"), persist=False)
     try:
         assert reopened.get_game(game.game_id).evidence == game.evidence
-        assert reopened.get_provider_health(
-            "espn-history", League.NBA
-        ).coverage["next_season"] == 1946
+        assert (
+            reopened.get_provider_health("espn-history", League.NBA).coverage["next_season"] == 1946
+        )
     finally:
         reopened.close()
 
@@ -129,9 +129,7 @@ def test_deep_backfill_reparses_legacy_ncaaw_period_rows_once(tmp_path):
             }
         if "summary?event=401918841" in url:
             summary_calls.append(url)
-            with open(
-                "tests/fixtures/espn/summary_ncaaw_401918841_quarters.json"
-            ) as handle:
+            with open("tests/fixtures/espn/summary_ncaaw_401918841_quarters.json") as handle:
                 return json.load(handle)
         raise AssertionError(url)  # pragma: no cover - defensive route assertion
 
@@ -176,16 +174,14 @@ def test_deep_backfill_reparses_legacy_ncaaw_period_rows_once(tmp_path):
     )
     try:
         first = Pipeline(config, store, fetch=fetch, allow_writes=True).backfill()
-        assert first["backfill"]["deep_history"]["events_acquired"] == 1, first[
-            "backfill"
-        ]["deep_history"]
+        assert first["backfill"]["deep_history"]["events_acquired"] == 1, first["backfill"][
+            "deep_history"
+        ]
         repaired = store.get_game("401918841")
         assert repaired.actual.period_kind is PeriodKind.QUARTERS
         assert repaired.actual.home_quarters == [23.0, 26.0, 23.0, 19.0]
         assert repaired.actual.overtime_periods == 0
-        assert repaired.evidence["espn"]["history"][
-            "result_period_parser_version"
-        ] == 2
+        assert repaired.evidence["espn"]["history"]["result_period_parser_version"] == 2
 
         second = Pipeline(config, store, fetch=fetch, allow_writes=True).backfill()
         assert second["backfill"]["deep_history"]["events_acquired"] == 0

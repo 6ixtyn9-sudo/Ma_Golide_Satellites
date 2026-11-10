@@ -43,9 +43,7 @@ def _load(name: str) -> Any:
     return json.loads((FIXTURES / name).read_text(encoding="utf-8"))
 
 
-def _factory(
-    mapping: Dict[str, Any]
-) -> Tuple[Callable[[str], Callable[[str], Any]], List[str]]:
+def _factory(mapping: Dict[str, Any]) -> Tuple[Callable[[str], Callable[[str], Any]], List[str]]:
     """fetch_factory(provider) -> FetchFn serving fixtures by URL substring."""
     calls: List[str] = []
 
@@ -81,9 +79,7 @@ def _default_mapping() -> Dict[str, Any]:
 
 def _totals(snapshots, period: Period, book: str = "draftkings"):
     return [
-        s
-        for s in snapshots
-        if s.market is Market.TOTAL and s.period is period and s.book == book
+        s for s in snapshots if s.market is Market.TOTAL and s.period is period and s.book == book
     ]
 
 
@@ -166,9 +162,7 @@ def test_unmapped_period_oddids_skipped_with_gap():
                         "line": 116.5,
                         "bookOdds": {"draftkings": {"price": -110}},
                     },
-                    "points-home-game-ml-home": {
-                        "bookOdds": {"draftkings": {"price": -108}}
-                    },
+                    "points-home-game-ml-home": {"bookOdds": {"draftkings": {"price": -108}}},
                 },
             }
         ]
@@ -177,8 +171,7 @@ def test_unmapped_period_oddids_skipped_with_gap():
     snapshots = sportsgameodds.fetch_odds("NBA", "20261107", factory)
     assert snapshots == []
     assert not any(
-        s.period in (Period.Q1, Period.Q2, Period.Q3, Period.Q4, Period.H1)
-        for s in snapshots
+        s.period in (Period.Q1, Period.Q2, Period.Q3, Period.Q4, Period.H1) for s in snapshots
     )
     gaps = sportsgameodds.last_gaps()
     assert any(g.required_field == "oddid" and "1h" in g.detail for g in gaps)

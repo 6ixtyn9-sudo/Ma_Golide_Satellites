@@ -129,7 +129,11 @@ def _record_gap(
 def _unwrap_fetch(response: Any) -> Tuple[Any, Dict[str, str]]:
     """Fetch envelope convention: ``{"json": ..., "headers": ...}`` unwraps;
     plain parsed JSON returns as (payload, {})."""
-    if isinstance(response, dict) and "json" in response and isinstance(response.get("headers"), dict):
+    if (
+        isinstance(response, dict)
+        and "json" in response
+        and isinstance(response.get("headers"), dict)
+    ):
         return response["json"], response["headers"]
     return response, {}
 
@@ -141,7 +145,11 @@ def parse_quota(headers: Dict[str, str]) -> Dict[str, Any]:
     out: Dict[str, Any] = {}
     for key, value in (headers or {}).items():
         name = str(key).strip().lower()
-        if not (name.startswith("x-ratelimit") or name.startswith("x-quota") or name.startswith("ratelimit")):
+        if not (
+            name.startswith("x-ratelimit")
+            or name.startswith("x-quota")
+            or name.startswith("ratelimit")
+        ):
             continue
         text = str(value).strip()
         try:
@@ -289,7 +297,12 @@ def _book_prices(entry: Dict[str, Any]) -> Dict[str, Dict[str, Any]]:
 
 
 def _source_modified(entry: Dict[str, Any], event: Dict[str, Any]) -> Optional[str]:
-    for source in (entry.get("timestampUpdated"), entry.get("lastModified"), event.get("lastModified"), event.get("updatedAt")):
+    for source in (
+        entry.get("timestampUpdated"),
+        entry.get("lastModified"),
+        event.get("lastModified"),
+        event.get("updatedAt"),
+    ):
         if source:
             return str(source)
     return None
@@ -363,13 +376,19 @@ def _total_snapshots_for_group(
                 market=Market.TOTAL,
                 period=period,
                 observed_utc=observed_utc,
-                source_modified_utc=_source_modified(over_entry or under_entry or over or under, event),
+                source_modified_utc=_source_modified(
+                    over_entry or under_entry or over or under, event
+                ),
                 pre_match=pre_match,
                 main_line=main_line,
                 payload_hash=payload_hash(event),
                 line=line,
-                over_price_decimal=american_to_decimal(over_price) if over_price is not None else None,
-                under_price_decimal=american_to_decimal(under_price) if under_price is not None else None,
+                over_price_decimal=american_to_decimal(over_price)
+                if over_price is not None
+                else None,
+                under_price_decimal=american_to_decimal(under_price)
+                if under_price is not None
+                else None,
             )
         )
     return snapshots
@@ -412,7 +431,12 @@ def _parse_event(event: Dict[str, Any], observed_utc: str) -> List[BookSnapshot]
     periods: Dict[str, Period] = {}
     for odd_id, entry in markets.items():
         if not isinstance(entry, dict):
-            _record_gap(game_id, "market", f"non-dict market {odd_id!r} skipped", CoverageState.PROVIDER_ERROR)
+            _record_gap(
+                game_id,
+                "market",
+                f"non-dict market {odd_id!r} skipped",
+                CoverageState.PROVIDER_ERROR,
+            )
             continue
         mapped = parse_total_odd_id(str(odd_id))
         if mapped is None:
@@ -533,7 +557,12 @@ def smoke(
         quota["usage"] = usage_payload
         quota.update(parse_quota(usage_headers))
     except Exception as e:  # usage is observability; never fatal to smoke
-        _record_gap(None, "usage", f"/account/usage fetch failed: {type(e).__name__}", CoverageState.PROVIDER_ERROR)
+        _record_gap(
+            None,
+            "usage",
+            f"/account/usage fetch failed: {type(e).__name__}",
+            CoverageState.PROVIDER_ERROR,
+        )
         quota["usage_error"] = type(e).__name__
 
     events = _events_from_payload(payload)

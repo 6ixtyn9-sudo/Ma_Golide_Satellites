@@ -105,9 +105,7 @@ def populated_store(*, finals: int = 12, upcoming: int = 3) -> InMemoryStore:
             ),
             frozen=final,
         )
-        book_observed = (
-            tip - timedelta(hours=1) if final else AS_OF - timedelta(hours=1)
-        )
+        book_observed = tip - timedelta(hours=1) if final else AS_OF - timedelta(hours=1)
         snapshots = [
             _snapshot(
                 game_id,
@@ -192,9 +190,7 @@ def test_all_old_markets_are_forecast_and_accas_use_calibrated_probabilities():
     report = service(populated_store()).build_report(
         as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4
     )
-    current = [
-        row for row in report["forecasts"] if row["game_id"] == "g12"
-    ]
+    current = [row for row in report["forecasts"] if row["game_id"] == "g12"]
     markets = {(row["period"], row["market"]) for row in current}
     assert ("full_game", "moneyline") in markets
     assert ("H1", "moneyline") in markets
@@ -241,19 +237,14 @@ def test_full_game_history_moneyline_earns_calibration_without_provider_history(
         kept = {
             key: snapshot
             for key, snapshot in snapshots.items()
-            if snapshot.market is Market.MONEYLINE
-            and snapshot.period is Period.FULL_GAME
+            if snapshot.market is Market.MONEYLINE and snapshot.period is Period.FULL_GAME
         }
         store.books[game_id] = kept
         store.frozen_books[game_id] = {
-            key: value
-            for key, value in store.frozen_books.get(game_id, {}).items()
-            if key in kept
+            key: value for key, value in store.frozen_books.get(game_id, {}).items() if key in kept
         }
 
-    report = service(store).build_report(
-        as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4
-    )
+    report = service(store).build_report(as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4)
     rows = [
         row
         for row in report["forecasts"]
@@ -299,14 +290,11 @@ def test_league_prior_dominated_history_moneyline_cannot_supply_accas():
         kept = {
             key: snapshot
             for key, snapshot in snapshots.items()
-            if snapshot.market is Market.MONEYLINE
-            and snapshot.period is Period.FULL_GAME
+            if snapshot.market is Market.MONEYLINE and snapshot.period is Period.FULL_GAME
         }
         store.books[game_id] = kept
         store.frozen_books[game_id] = {
-            key: value
-            for key, value in store.frozen_books.get(game_id, {}).items()
-            if key in kept
+            key: value for key, value in store.frozen_books.get(game_id, {}).items() if key in kept
         }
 
     report = MarketForecastService(
@@ -338,7 +326,9 @@ def test_league_prior_dominated_history_moneyline_cannot_supply_accas():
     assert report["accas"]["eligible_games"] == 0
     # Fallback rows cannot manufacture eligible calibration, but diagnostics pool is visible.
     assert report["walk_forward"]["segments"]
-    assert all(s["pool"] == "league_prior_in_diagnostics_only" for s in report["walk_forward"]["segments"])
+    assert all(
+        s["pool"] == "league_prior_in_diagnostics_only" for s in report["walk_forward"]["segments"]
+    )
     assert all(not s["sufficient_for_accas"] for s in report["walk_forward"]["segments"])
 
 
@@ -349,7 +339,9 @@ def test_expected_total_never_becomes_a_book_line():
     report = service(store).build_report(as_of_utc=iso(AS_OF))
     current = [row for row in report["forecasts"] if row["game_id"] == "g12"]
     assert not any(row["market"] == "total" for row in current)
-    moneyline = next(row for row in current if row["market"] == "moneyline" and row["period"] == "full_game")
+    moneyline = next(
+        row for row in current if row["market"] == "moneyline" and row["period"] == "full_game"
+    )
     assert moneyline["book"] is None
     assert "no_exact_bookmaker_market" in moneyline["eligibility"]["reasons"]
 
@@ -389,10 +381,10 @@ def test_history_cutoff_excludes_future_and_not_yet_available_finals():
     )
     assert history
     for game in history:
-        assert (
-            datetime.fromisoformat(game.scheduled_utc.replace("Z", "+00:00"))
-            <= datetime.fromisoformat(target.scheduled_utc.replace("Z", "+00:00"))
-            - timedelta(hours=4)
+        assert datetime.fromisoformat(
+            game.scheduled_utc.replace("Z", "+00:00")
+        ) <= datetime.fromisoformat(target.scheduled_utc.replace("Z", "+00:00")) - timedelta(
+            hours=4
         )
 
 
@@ -424,17 +416,13 @@ def _forecast(game_id: str, probability: float, *, outcome=None) -> Forecast:
 
 
 def test_market_accuracy_adjusts_confidence_and_eligibility():
-    records = [
-        _forecast(f"g{index}", 0.8, outcome="loss") for index in range(10)
-    ]
+    records = [_forecast(f"g{index}", 0.8, outcome="loss") for index in range(10)]
     config = CalibrationConfig(min_samples=5, prior_strength=2)
     profiles = build_profiles(records, config)
     profile = next(iter(profiles.values()))
     assert profile.observed_win_rate == 0
     assert profile.adjustment < 0
-    calibrated = apply_profiles(
-        [_forecast("new", 0.8)], profiles, config
-    )[0]
+    calibrated = apply_profiles([_forecast("new", 0.8)], profiles, config)[0]
     assert calibrated.calibrated_probability < 0.8
     assert not calibrated.eligibility["acca_eligible"]
 
@@ -454,9 +442,7 @@ def test_acca_search_matches_brute_force_optimum():
     expected.sort(key=lambda item: item[0], reverse=True)
     assert len(actual) == 5
     for result, (probability, _) in zip(actual, expected[:5]):
-        assert result["estimated_joint_win_probability"] == pytest.approx(
-            probability, abs=1e-7
-        )
+        assert result["estimated_joint_win_probability"] == pytest.approx(probability, abs=1e-7)
 
 
 def test_bookmaker_price_never_breaks_acca_probability_ties():

@@ -67,9 +67,7 @@ def _neighbors(state: Tuple[int, ...], population: int) -> Iterable[Tuple[int, .
         yield tuple(candidate)
 
 
-def build_accas(
-    forecasts: Iterable[Forecast], *, legs: int = 3, limit: int = 5
-) -> List[dict]:
+def build_accas(forecasts: Iterable[Forecast], *, legs: int = 3, limit: int = 5) -> List[dict]:
     """Return exact top independent-probability combinations for the leg count.
 
     The best leg from each game dominates every other leg from that game. A
@@ -87,9 +85,7 @@ def build_accas(
     probabilities = [float(row.calibrated_probability) for row in candidates]
     costs = [-math.log(probability) for probability in probabilities]
     initial = tuple(range(legs))
-    heap: List[tuple[float, Tuple[int, ...]]] = [
-        (sum(costs[index] for index in initial), initial)
-    ]
+    heap: List[tuple[float, Tuple[int, ...]]] = [(sum(costs[index] for index in initial), initial)]
     visited = {initial}
     output: List[dict] = []
     while heap and len(output) < limit:

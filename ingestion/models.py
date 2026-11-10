@@ -119,9 +119,7 @@ def payload_hash(obj: Any) -> str:
 def _require_utc(value: str, field_name: str) -> str:
     text = str(value).strip()
     if not text.endswith("Z") and not re.search(r"[+-]\d{2}:\d{2}$", text):
-        raise ValueError(
-            f"{field_name} must be timezone-aware ISO 8601 (got {value!r})"
-        )
+        raise ValueError(f"{field_name} must be timezone-aware ISO 8601 (got {value!r})")
     try:
         from datetime import datetime
 
@@ -131,9 +129,7 @@ def _require_utc(value: str, field_name: str) -> str:
     return text
 
 
-def predicted_side(
-    prob_home: Optional[float], prob_away: Optional[float]
-) -> Optional[str]:
+def predicted_side(prob_home: Optional[float], prob_away: Optional[float]) -> Optional[str]:
     """Return ``home``/``away`` for a strict favorite, or ``None`` for a tie."""
     if prob_home is None or prob_away is None:
         return None
@@ -248,7 +244,10 @@ class ActualResult:
         dh = abs(home_sum - self.home_final)
         da = abs(away_sum - self.away_final)
         if dh > tolerance or da > tolerance:
-            return False, f"sum {home_sum:g}-{away_sum:g} != final {self.home_final:g}-{self.away_final:g}"
+            return (
+                False,
+                f"sum {home_sum:g}-{away_sum:g} != final {self.home_final:g}-{self.away_final:g}",
+            )
         return True, ""
 
 
@@ -281,7 +280,9 @@ class Game:
     def utc_datetime(self):
         from datetime import datetime, timezone
 
-        return datetime.fromisoformat(self.scheduled_utc.replace("Z", "+00:00")).astimezone(timezone.utc)
+        return datetime.fromisoformat(self.scheduled_utc.replace("Z", "+00:00")).astimezone(
+            timezone.utc
+        )
 
     def final_status(self) -> Optional[FinalStatus]:
         """Canonical final label using the ``FT``/``AOT`` convention."""
@@ -324,9 +325,7 @@ class Prediction:
         _require_utc(self.observed_utc, "observed_utc")
         for name in ("prob_home", "prob_away"):
             v = getattr(self, name)
-            if v is not None and (
-                not math.isfinite(v) or not 0.0 <= v <= 1.0
-            ):
+            if v is not None and (not math.isfinite(v) or not 0.0 <= v <= 1.0):
                 raise ValueError(f"{name} must be a finite 0..1 probability")
         for name in (
             "expected_home_score",
@@ -350,13 +349,8 @@ class Prediction:
         """
         if self.prob_home is not None and self.prob_away is not None:
             if abs((self.prob_home + self.prob_away) - 1.0) > 0.01:
-                raise ValueError(
-                    f"probabilities sum to {self.prob_home + self.prob_away}, not 1"
-                )
-        if (
-            self.expected_home_score is not None
-            and self.expected_away_score is not None
-        ):
+                raise ValueError(f"probabilities sum to {self.prob_home + self.prob_away}, not 1")
+        if self.expected_home_score is not None and self.expected_away_score is not None:
             margin = self.expected_home_score - self.expected_away_score
             if self.expected_margin is not None and abs(margin - self.expected_margin) > tolerance:
                 raise ValueError(
@@ -420,9 +414,7 @@ class BookSnapshot:
             "draw_price_decimal",
         ):
             value = getattr(self, name)
-            if value is not None and (
-                not math.isfinite(value) or value < 1.0
-            ):
+            if value is not None and (not math.isfinite(value) or value < 1.0):
                 raise ValueError(f"{name} must be finite decimal odds >= 1.0")
 
     def moneyline_for_side(self, side: str) -> Optional[float]:

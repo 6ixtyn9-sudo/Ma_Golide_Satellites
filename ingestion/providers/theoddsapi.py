@@ -94,12 +94,9 @@ SPREAD_MARKET_KEYS: Dict[str, Period] = {
 }
 FULL_GAME_MARKETS_PARAM = "h2h,totals,spreads"
 QUARTER_MARKETS_PARAM = (
-    "totals_q1,totals_q2,totals_q3,totals_q4,"
-    "spreads_q1,spreads_q2,spreads_q3,spreads_q4,h2h_h1"
+    "totals_q1,totals_q2,totals_q3,totals_q4,spreads_q1,spreads_q2,spreads_q3,spreads_q4,h2h_h1"
 )
-HALF_MARKETS_PARAM = (
-    "totals_h1,totals_h2,spreads_h1,spreads_h2,h2h_h1,h2h_h2"
-)
+HALF_MARKETS_PARAM = "totals_h1,totals_h2,spreads_h1,spreads_h2,h2h_h1,h2h_h2"
 DEFAULT_REGIONS = "us"
 DEFAULT_BOOKMAKERS = "draftkings"
 
@@ -171,7 +168,11 @@ def parse_quota(headers: Dict[str, str]) -> Dict[str, Any]:
 def _unwrap_fetch(response: Any) -> Tuple[Any, Dict[str, str]]:
     """Fetch envelope convention: ``{"json": ..., "headers": ...}`` unwraps;
     plain parsed JSON returns as (payload, {})."""
-    if isinstance(response, dict) and "json" in response and isinstance(response.get("headers"), dict):
+    if (
+        isinstance(response, dict)
+        and "json" in response
+        and isinstance(response.get("headers"), dict)
+    ):
         return response["json"], response["headers"]
     return response, {}
 
@@ -280,7 +281,9 @@ def _event_pre_match(event: Dict[str, Any], now_utc: str) -> bool:
     """
     commence = str(event.get("commence_time") or "").strip()
     if not commence:
-        _record_gap(str(event.get("id", "")), "commence_time", "missing commence_time; pre_match=False")
+        _record_gap(
+            str(event.get("id", "")), "commence_time", "missing commence_time; pre_match=False"
+        )
         return False
     try:
         return identity.parse_utc(commence) > identity.parse_utc(now_utc)
@@ -310,7 +313,9 @@ def _moneyline_snapshot(
     draw_price: Optional[float] = None
     for outcome in market.get("outcomes") or []:
         if not isinstance(outcome, dict):
-            _record_gap(game_id, "h2h_outcome", "non-dict outcome skipped", CoverageState.PROVIDER_ERROR)
+            _record_gap(
+                game_id, "h2h_outcome", "non-dict outcome skipped", CoverageState.PROVIDER_ERROR
+            )
             continue
         name = str(outcome.get("name") or "")
         if name.strip().lower() in {"draw", "x"}:
@@ -364,7 +369,12 @@ def _total_snapshot(
     under: Optional[Dict[str, Any]] = None
     for outcome in market.get("outcomes") or []:
         if not isinstance(outcome, dict):
-            _record_gap(game_id, f"totals_{period.value.lower()}", "non-dict outcome skipped", CoverageState.PROVIDER_ERROR)
+            _record_gap(
+                game_id,
+                f"totals_{period.value.lower()}",
+                "non-dict outcome skipped",
+                CoverageState.PROVIDER_ERROR,
+            )
             continue
         name = str(outcome.get("name") or "").strip().lower()
         if name == "over" and over is None:
@@ -426,7 +436,9 @@ def _spread_snapshot(
     for outcome in market.get("outcomes") or []:
         if not isinstance(outcome, dict):
             _record_gap(
-                game_id, "spread_outcome", "non-dict outcome skipped",
+                game_id,
+                "spread_outcome",
+                "non-dict outcome skipped",
                 CoverageState.PROVIDER_ERROR,
             )
             continue
@@ -465,9 +477,7 @@ def _spread_snapshot(
         market=Market.SPREAD,
         period=period,
         observed_utc=observed_utc,
-        source_modified_utc=(
-            str(market.get("last_update")) if market.get("last_update") else None
-        ),
+        source_modified_utc=(str(market.get("last_update")) if market.get("last_update") else None),
         pre_match=pre_match,
         main_line=True,
         payload_hash=payload_hash(event),
@@ -509,7 +519,9 @@ def parse_event(
     snapshots: List[BookSnapshot] = []
     for bookmaker in bookmakers:
         if not isinstance(bookmaker, dict):
-            _record_gap(game_id, "bookmaker", "non-dict bookmaker skipped", CoverageState.PROVIDER_ERROR)
+            _record_gap(
+                game_id, "bookmaker", "non-dict bookmaker skipped", CoverageState.PROVIDER_ERROR
+            )
             continue
         book = str(bookmaker.get("key") or bookmaker.get("title") or "unknown")
         markets = bookmaker.get("markets")
@@ -518,23 +530,47 @@ def parse_event(
             continue
         for market in markets:
             if not isinstance(market, dict) or not market.get("key"):
-                _record_gap(game_id, "market", "non-dict/keyless market skipped", CoverageState.PROVIDER_ERROR)
+                _record_gap(
+                    game_id,
+                    "market",
+                    "non-dict/keyless market skipped",
+                    CoverageState.PROVIDER_ERROR,
+                )
                 continue
             key = str(market["key"])
             if key in MONEYLINE_MARKET_KEYS:
                 snapshot = _moneyline_snapshot(
-                    market, MONEYLINE_MARKET_KEYS[key], game_id, book,
-                    observed_utc, pre_match, home_team, away_team, event,
+                    market,
+                    MONEYLINE_MARKET_KEYS[key],
+                    game_id,
+                    book,
+                    observed_utc,
+                    pre_match,
+                    home_team,
+                    away_team,
+                    event,
                 )
             elif key in TOTALS_MARKET_KEYS:
                 snapshot = _total_snapshot(
-                    market, TOTALS_MARKET_KEYS[key], game_id, book,
-                    observed_utc, pre_match, event,
+                    market,
+                    TOTALS_MARKET_KEYS[key],
+                    game_id,
+                    book,
+                    observed_utc,
+                    pre_match,
+                    event,
                 )
             elif key in SPREAD_MARKET_KEYS:
                 snapshot = _spread_snapshot(
-                    market, SPREAD_MARKET_KEYS[key], game_id, book,
-                    observed_utc, pre_match, home_team, away_team, event,
+                    market,
+                    SPREAD_MARKET_KEYS[key],
+                    game_id,
+                    book,
+                    observed_utc,
+                    pre_match,
+                    home_team,
+                    away_team,
+                    event,
                 )
             else:
                 continue  # not requested; nothing to normalise
@@ -554,7 +590,9 @@ def parse_event(
     return snapshots
 
 
-def parse_events(payload: Any, observed_utc: str, now_utc: Optional[str] = None) -> List[BookSnapshot]:
+def parse_events(
+    payload: Any, observed_utc: str, now_utc: Optional[str] = None
+) -> List[BookSnapshot]:
     """Normalise a documented v4 list payload (array of events) into snapshots."""
     events: List[Any] = []
     if isinstance(payload, list):
@@ -568,9 +606,7 @@ def parse_events(payload: Any, observed_utc: str, now_utc: Optional[str] = None)
     return snapshots
 
 
-def _on_utc_date(
-    commence_time: str, date_yyyymmdd: str, tz_name: Optional[str] = None
-) -> bool:
+def _on_utc_date(commence_time: str, date_yyyymmdd: str, tz_name: Optional[str] = None) -> bool:
     """Match commence time to the slate's local (default UTC) calendar date."""
     from zoneinfo import ZoneInfo
 
@@ -610,7 +646,9 @@ def fetch_odds(
     now = now_utc or identity.now_utc_iso()
     observed_utc = now
     list_payload, _headers = _call(fetch, _full_game_odds_url(league))
-    events = [e for e in (list_payload if isinstance(list_payload, list) else []) if isinstance(e, dict)]
+    events = [
+        e for e in (list_payload if isinstance(list_payload, list) else []) if isinstance(e, dict)
+    ]
 
     snapshots: List[BookSnapshot] = []
     seen: set = set()  # (game_id, book, market, period) — list endpoint wins
@@ -630,12 +668,20 @@ def fetch_odds(
         game_id = str(event["id"])
         commence = str(event.get("commence_time") or "")
         if not _on_utc_date(commence, date_yyyymmdd, tz_name):
-            _record_gap(game_id, "date_window", f"commence_time {commence} outside {date_yyyymmdd} in {tz_name or 'UTC'}; skipped")
+            _record_gap(
+                game_id,
+                "date_window",
+                f"commence_time {commence} outside {date_yyyymmdd} in {tz_name or 'UTC'}; skipped",
+            )
             continue
         _extend(parse_event(event, observed_utc, now))
         # Quarter markets exist only on the per-event endpoint.
         quarter_payload, _q_headers = _call(fetch, _event_odds_url(game_id, league))
-        _extend(parse_event(quarter_payload if isinstance(quarter_payload, dict) else {}, observed_utc, now))
+        _extend(
+            parse_event(
+                quarter_payload if isinstance(quarter_payload, dict) else {}, observed_utc, now
+            )
+        )
     return snapshots
 
 
@@ -687,7 +733,9 @@ def smoke(
         return payload
 
     list_payload = _fetch_and_track(_full_game_odds_url(league_name))
-    events = [e for e in (list_payload if isinstance(list_payload, list) else []) if isinstance(e, dict)]
+    events = [
+        e for e in (list_payload if isinstance(list_payload, list) else []) if isinstance(e, dict)
+    ]
     snapshots: List[BookSnapshot] = []
     seen: set = set()  # (game_id, book, market, period) — list endpoint wins
 
@@ -708,14 +756,22 @@ def smoke(
         game_id = str(event["id"])
         commence = str(event.get("commence_time") or "")
         if not _on_utc_date(commence, date_yyyymmdd, tz_name):
-            _record_gap(game_id, "date_window", f"commence_time {commence} outside {date_yyyymmdd} in {tz_name or 'UTC'}; skipped")
+            _record_gap(
+                game_id,
+                "date_window",
+                f"commence_time {commence} outside {date_yyyymmdd} in {tz_name or 'UTC'}; skipped",
+            )
             continue
         events_checked += 1
         if _event_pre_match(event, now):
             pre_match_count += 1
         _extend(parse_event(event, observed_utc, now))
         quarter_payload = _fetch_and_track(_event_odds_url(game_id, league_name))
-        _extend(parse_event(quarter_payload if isinstance(quarter_payload, dict) else {}, observed_utc, now))
+        _extend(
+            parse_event(
+                quarter_payload if isinstance(quarter_payload, dict) else {}, observed_utc, now
+            )
+        )
 
     presence = _period_presence(snapshots)
     not_usable = sum(1 for s in snapshots if s.market is Market.TOTAL and s.line is None)
@@ -734,14 +790,18 @@ def smoke(
                 ("H1", "H2") if league_name.startswith("NCAA_") else ("Q1", "Q2", "Q3", "Q4")
             )
         },
-        **({
-            "halves" if league_name.startswith("NCAA_") else "quarters": {
-                period: {"present": len(presence.get(period, set())), "total": events_checked}
-                for period in (
-                    ("H1", "H2") if league_name.startswith("NCAA_") else ("Q1", "Q2", "Q3", "Q4")
-                )
+        **(
+            {
+                "halves" if league_name.startswith("NCAA_") else "quarters": {
+                    period: {"present": len(presence.get(period, set())), "total": events_checked}
+                    for period in (
+                        ("H1", "H2")
+                        if league_name.startswith("NCAA_")
+                        else ("Q1", "Q2", "Q3", "Q4")
+                    )
+                }
             }
-        }),
+        ),
         "pre_match_vs_live": {
             "pre_match": pre_match_count,
             "not_pre_match": events_checked - pre_match_count,

@@ -71,9 +71,7 @@ def _withdrawn_decision_ids(localdata: Path) -> frozenset[str]:
         ids.update(
             str(lock["decision_id"])
             for lock in locks.values()
-            if isinstance(lock, dict)
-            and lock.get("withdrawn") is True
-            and lock.get("decision_id")
+            if isinstance(lock, dict) and lock.get("withdrawn") is True and lock.get("decision_id")
         )
     # Sidecars survive state rollbacks.
     for sidecar in localdata.glob("auto_tickets_*_withdrawn.json"):
@@ -131,10 +129,7 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                 raise ValueError(f"duplicate recovered operator destination: {relative}")
             seen_destinations.add(relative)
             raw = source.read_bytes()
-            if (
-                IMMUTABLE_NAMES.fullmatch(source.name)
-                and withdrawn_decision_ids
-            ):
+            if IMMUTABLE_NAMES.fullmatch(source.name) and withdrawn_decision_ids:
                 try:
                     candidate = json.loads(raw)
                 except json.JSONDecodeError as exc:

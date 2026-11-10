@@ -238,7 +238,6 @@ def test_withdrawn_sidecar_written_and_blocks_adoption_without_state_lock(tmp_pa
     rows = [forecast(number) for number in (1, 2, 3)]
     store = Store([game(number) for number in (1, 2, 3)])
     first = publish(tmp_path, store, report(rows, [acca(rows)]))
-    receipt_path = Path(first["ticket_receipt"])
     state_path = Path(first["ticket_state"])
     # Simulate manual withdrawal via state.json (as in previous test) — next run must materialize sidecar.
     state = json.loads(state_path.read_text())
@@ -253,7 +252,9 @@ def test_withdrawn_sidecar_written_and_blocks_adoption_without_state_lock(tmp_pa
     del state["frozen_by_date"][DATE]["withdrawn"]
     state_path.write_text(json.dumps(state, indent=2) + "\n")
     assert sidecar.exists()
-    blocked = publish(tmp_path, store, report(rows, [acca(rows, acca_id="another")]), run_id="third-scan")
+    blocked = publish(
+        tmp_path, store, report(rows, [acca(rows, acca_id="another")]), run_id="third-scan"
+    )
     assert blocked["ticket_receipt"] is None
     assert "withdrawn for model-integrity failure" in Path(blocked["ticket_text"]).read_text()
 
@@ -265,13 +266,20 @@ def test_withdrawn_sidecar_drives_performance_exclusion_and_publish_skip(tmp_pat
     first = publish(tmp_path, store, report(rows, [acca(rows)]))
     state_path = Path(first["ticket_state"])
     sidecar = tmp_path / f"auto_tickets_{DATE}_withdrawn.json"
-    sidecar.write_text(json.dumps({"decision_id": "run-1", "withdrawn": True, "target_date": DATE}) + "\n")
+    sidecar.write_text(
+        json.dumps({"decision_id": "run-1", "withdrawn": True, "target_date": DATE}) + "\n"
+    )
     # Remove withdrawn flag from state to prove sidecar drives exclusion.
     state = json.loads(state_path.read_text())
     if DATE in state["frozen_by_date"]:
         state["frozen_by_date"][DATE].pop("withdrawn", None)
     state_path.write_text(json.dumps(state, indent=2) + "\n")
-    second = publish(tmp_path, store, report(rows, [acca(rows, acca_id="blocked-candidate")]), run_id="sidecar-only")
+    second = publish(
+        tmp_path,
+        store,
+        report(rows, [acca(rows, acca_id="blocked-candidate")]),
+        run_id="sidecar-only",
+    )
     assert second["ticket_receipt"] is None
     assert "withdrawn for model-integrity failure" in Path(second["ticket_text"]).read_text()
     performance = json.loads(Path(second["performance"]).read_text())

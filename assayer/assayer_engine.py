@@ -34,9 +34,7 @@ def wilson_lower_bound(wins: int, n: int, z: float = WILSON_Z) -> float:
     return max(0.0, (center - spread) / denominator)
 
 
-def shrink_rate(
-    wins: int, n: int, prior_alpha: float = 2, prior_beta: float = 2
-) -> float:
+def shrink_rate(wins: int, n: int, prior_alpha: float = 2, prior_beta: float = 2) -> float:
     """Return a Beta-binomial posterior mean with an explicit symmetric prior."""
     if n < 0 or wins < 0 or wins > n:
         raise ValueError("require 0 <= wins <= n")
@@ -73,9 +71,7 @@ def assay_prediction_outcomes(
     below ``MIN_SEGMENT_N`` remain in the top-level sample but are not emitted
     as separate segments.
     """
-    segments: Dict[tuple, Dict[str, int]] = defaultdict(
-        lambda: {"wins": 0, "losses": 0}
-    )
+    segments: Dict[tuple, Dict[str, int]] = defaultdict(lambda: {"wins": 0, "losses": 0})
     for row in rows:
         outcome = str(row.get("outcome", "")).strip().lower()
         if outcome not in {"win", "loss"}:
