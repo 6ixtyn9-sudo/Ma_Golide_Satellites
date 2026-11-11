@@ -1,24 +1,24 @@
 # Ma Golide — Recent picks audit (2026-10-13 to 2026-11-11)
 
-Generated: 2026-11-11 18:55 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-11 21:32 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
-- archived logical picks: 761
-- dated evidence rows: 1855 (1094 superseded observations)
-- settled picks: 413 (260 wins / 153 losses / 0 pushes)
-- hit rate: 63.0% (260/413 win/loss decisions)
-- pending/unmatched picks: 0 prior-day · 348 total
-- priced picks: 308
-- paper P&L: -27.329 units
-- ROI: -8.9% (P&L / 308 priced picks)
+- archived logical picks: 787
+- dated evidence rows: 2044 (1257 superseded observations)
+- settled picks: 425 (265 wins / 160 losses / 0 pushes)
+- hit rate: 62.4% (265/425 win/loss decisions)
+- pending/unmatched picks: 0 prior-day · 362 total
+- priced picks: 318
+- paper P&L: -30.351 units
+- ROI: -9.5% (P&L / 318 priced picks)
 
 ## Settlement policy
 
 - reconciled official finals settle immediately; pending rows are never losses
 - local-day pending cutoff: 2026-11-11
-- same-day pending rows outside prior-day counters: 348
-- same-day official-final picks included: 0
+- same-day pending rows outside prior-day counters: 362
+- same-day official-final picks included: 12
 - eligible prior-day picks: 413
 - latest observation per logical pick; superseded dated evidence remains in JSON
 
@@ -26,31 +26,73 @@ Generated: 2026-11-11 18:55 SAST · 30-day rolling window · Paper only
 
 | Bucket | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `SKIPPED_INELIGIBLE` | 308 | 176–132–0 | 57.1% | 308 | -8.9% |
-| `WATCHLIST_NO_ODDS` | 105 | 84–21–0 | 80.0% | 0 | n/a |
+| `SKIPPED_INELIGIBLE` | 318 | 180–138–0 | 56.6% | 318 | -9.5% |
+| `WATCHLIST_NO_ODDS` | 107 | 85–22–0 | 79.4% | 0 | n/a |
 
 ## By market
 
 | Market | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `moneyline` | 207 | 164–43–0 | 79.2% | 102 | -4.0% |
-| `spread` | 80 | 34–46–0 | 42.5% | 80 | -19.6% |
-| `total` | 126 | 62–64–0 | 49.2% | 126 | -6.0% |
+| `moneyline` | 213 | 166–47–0 | 77.9% | 106 | -6.4% |
+| `spread` | 83 | 34–49–0 | 41.0% | 83 | -22.5% |
+| `total` | 129 | 65–64–0 | 50.4% | 129 | -3.7% |
 
 ## By selection — over/under & side bias
 
 | Market:Selection | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `moneyline:away` | 8 | 3–5–0 | 37.5% | 8 | -48.8% |
-| `moneyline:home` | 199 | 161–38–0 | 80.9% | 94 | -0.2% |
+| `moneyline:away` | 9 | 4–5–0 | 44.4% | 9 | -40.2% |
+| `moneyline:home` | 204 | 162–42–0 | 79.4% | 97 | -3.3% |
 | `spread:away` | 39 | 17–22–0 | 43.6% | 39 | -17.6% |
-| `spread:home` | 41 | 17–24–0 | 41.5% | 41 | -21.5% |
-| `total:over` | 67 | 31–36–0 | 46.3% | 67 | -11.5% |
+| `spread:home` | 44 | 17–27–0 | 38.6% | 44 | -26.9% |
+| `total:over` | 70 | 34–36–0 | 48.6% | 70 | -7.1% |
 | `total:under` | 59 | 31–28–0 | 52.5% | 59 | +0.3% |
 
 ## Settled picks — official-final audit
 
 Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+### 2026-11-11: Florida A&M Rattlers vs Kansas City Roos (Final: **65–87**)
+
+- 🔴 **LOST — Full-game spread +8.5: Florida A&M Rattlers (home)**
+  - Actual Full-game margin: **-22** · Expected: **94.0%** · Price: **1.870 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — First-half moneyline: Florida A&M Rattlers (home)**
+  - Actual First-half score: **21–51** · Expected: **78.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 144.5: Over**
+  - Actual Full-game total: **152** · Expected: **63.0%** · Price: **1.926 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +6.5: Florida A&M Rattlers (home)**
+  - Actual Full-game margin: **-22** · Expected: **92.0%** · Price: **1.870 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Kansas City Roos (away)**
+  - Expected: **84.5%** · Price: **1.290 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 143.5: Over**
+  - Actual Full-game total: **152** · Expected: **66.0%** · Price: **1.893 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Florida A&M Rattlers (home)**
+  - Expected: **86.0%** · Price: **3.750 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-11: East Texas A&M Lions vs Fairleigh Dickinson Knights (Final: **76–80**)
+
+- 🔴 **LOST — Full-game moneyline: East Texas A&M Lions (home)**
+  - Expected: **87.0%** · Price: **1.192 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -10.5: East Texas A&M Lions (home)**
+  - Actual Full-game margin: **-4** · Expected: **70.0%** · Price: **1.909 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: East Texas A&M Lions (home)**
+  - Expected: **87.5%** · Price: **1.192 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — First-half moneyline: East Texas A&M Lions (home)**
+  - Actual First-half score: **37–31** · Expected: **79.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 137.5: Over**
+  - Actual Full-game total: **156** · Expected: **81.0%** · Price: **1.870 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 
 ### 2026-11-10: San Francisco Dons vs Montana Grizzlies (Final: **63–58**)
 

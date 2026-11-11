@@ -1,7 +1,7 @@
 {
   "base_paper_units": 100.0,
   "frozen_by_date": {},
-  "last_generated_utc": "2026-11-11T16:55:03Z",
+  "last_generated_utc": "2026-11-11T19:32:16Z",
   "paper_bank_units": 100.0,
   "scans": [
     {
@@ -119,6 +119,26 @@
       "fresh_accas": 0,
       "receipt_present": false,
       "run_id": "43062870941_ncaa_m_1_attempt_1"
+    },
+    {
+      "candidate_funnel": {
+        "calibration_sufficient_rows": 0,
+        "eligibility_blockers": {
+          "insufficient_team_specific_history": 275,
+          "insufficient_walk_forward_samples": 275,
+          "no_exact_bookmaker_market": 109
+        },
+        "eligible_games": 0,
+        "eligible_rows": 0,
+        "exact_priced_rows": 166,
+        "priced_and_calibrated_rows": 0,
+        "required_games": 3,
+        "scan_rows": 275
+      },
+      "captured_at": "2026-11-11T19:32:16Z",
+      "fresh_accas": 0,
+      "receipt_present": false,
+      "run_id": "43088019471_ncaa_m_1_attempt_1"
     }
   ],
   "schema_version": "magolide.paper_ticket_state.v1",

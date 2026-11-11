@@ -1,24 +1,24 @@
 # Ma Golide — Recent picks audit (2026-10-13 to 2026-11-11)
 
-Generated: 2026-11-11 18:55 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-11 21:32 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
-- archived logical picks: 400
-- dated evidence rows: 716 (316 superseded observations)
-- settled picks: 166 (135 wins / 31 losses / 0 pushes)
-- hit rate: 81.3% (135/166 win/loss decisions)
-- pending/unmatched picks: 0 prior-day · 234 total
-- priced picks: 10
-- paper P&L: -4.273 units
-- ROI: -42.7% (P&L / 10 priced picks) · **provisional — fewer than 30 priced picks**
+- archived logical picks: 403
+- dated evidence rows: 793 (390 superseded observations)
+- settled picks: 181 (148 wins / 33 losses / 0 pushes)
+- hit rate: 81.8% (148/181 win/loss decisions)
+- pending/unmatched picks: 0 prior-day · 222 total
+- priced picks: 16
+- paper P&L: -2.458 units
+- ROI: -15.4% (P&L / 16 priced picks) · **provisional — fewer than 30 priced picks**
 
 ## Settlement policy
 
 - reconciled official finals settle immediately; pending rows are never losses
 - local-day pending cutoff: 2026-11-11
-- same-day pending rows outside prior-day counters: 234
-- same-day official-final picks included: 3
+- same-day pending rows outside prior-day counters: 222
+- same-day official-final picks included: 18
 - eligible prior-day picks: 163
 - latest observation per logical pick; superseded dated evidence remains in JSON
 
@@ -26,30 +26,85 @@ Generated: 2026-11-11 18:55 SAST · 30-day rolling window · Paper only
 
 | Bucket | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `SKIPPED_INELIGIBLE` | 10 | 3–7–0 | 30.0% | 10 | -42.7% |
-| `WATCHLIST_NO_ODDS` | 156 | 132–24–0 | 84.6% | 0 | n/a |
+| `SKIPPED_INELIGIBLE` | 16 | 8–8–0 | 50.0% | 16 | -15.4% |
+| `WATCHLIST_NO_ODDS` | 165 | 140–25–0 | 84.8% | 0 | n/a |
 
 ## By market
 
 | Market | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `moneyline` | 156 | 132–24–0 | 84.6% | 0 | n/a |
-| `spread` | 7 | 3–4–0 | 42.9% | 7 | -18.2% |
-| `total` | 3 | 0–3–0 | 0.0% | 3 | -100.0% |
+| `moneyline` | 167 | 142–25–0 | 85.0% | 2 | +8.3% |
+| `spread` | 9 | 5–4–0 | 55.6% | 9 | +5.6% |
+| `total` | 5 | 1–4–0 | 20.0% | 5 | -62.6% |
 
 ## By selection — over/under & side bias
 
 | Market:Selection | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `moneyline:away` | 10 | 6–4–0 | 60.0% | 0 | n/a |
-| `moneyline:home` | 146 | 126–20–0 | 86.3% | 0 | n/a |
-| `spread:away` | 7 | 3–4–0 | 42.9% | 7 | -18.2% |
-| `total:over` | 2 | 0–2–0 | 0.0% | 2 | -100.0% |
+| `moneyline:home` | 157 | 136–21–0 | 86.6% | 2 | +8.3% |
+| `spread:away` | 8 | 4–4–0 | 50.0% | 8 | -4.5% |
+| `spread:home` | 1 | 1–0–0 | 100.0% | 1 | +87.0% |
+| `total:over` | 4 | 1–3–0 | 25.0% | 4 | -53.3% |
 | `total:under` | 1 | 0–1–0 | 0.0% | 1 | -100.0% |
 
 ## Settled picks — official-final audit
 
 Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+### 2026-11-11: BYU Cougars vs Bethune-Cookman Wildcats (Final: **82–56**)
+
+- 🟢 **WON — Full-game total 129.5: Over**
+  - Actual Full-game total: **138** · Expected: **60.0%** · Price: **1.870 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: BYU Cougars (home)**
+  - Expected: **99.1%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game spread -39.5: Bethune-Cookman Wildcats (away)**
+  - Actual Full-game margin: **+26** · Expected: **68.0%** · Price: **1.909 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: BYU Cougars (home)**
+  - Actual First-half score: **43–30** · Expected: **81.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: BYU Cougars (home)**
+  - Expected: **89.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-11: North Texas Mean Green vs Houston Christian Huskies (Final: **66–57**)
+
+- 🟢 **WON — Full-game moneyline: North Texas Mean Green (home)**
+  - Expected: **84.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: North Texas Mean Green (home)**
+  - Expected: **96.1%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🔴 **LOST — First-half moneyline: North Texas Mean Green (home)**
+  - Actual First-half score: **30–34** · Expected: **81.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-11: UTSA Roadrunners vs Incarnate Word Cardinals (Final: **73–51**)
+
+- 🟢 **WON — Full-game moneyline: UTSA Roadrunners (home)**
+  - Expected: **84.0%** · Price: **1.083 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: UTSA Roadrunners (home)**
+  - Expected: **90.2%** · Price: **1.083 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🔴 **LOST — Full-game total 125.5: Over**
+  - Actual Full-game total: **124** · Expected: **68.0%** · Price: **1.909 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread -14.5: UTSA Roadrunners (home)**
+  - Actual Full-game margin: **+22** · Expected: **67.0%** · Price: **1.870 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: UTSA Roadrunners (home)**
+  - Expected: **90.2%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: UTSA Roadrunners (home)**
+  - Expected: **84.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: UTSA Roadrunners (home)**
+  - Actual First-half score: **35–29** · Expected: **81.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 
 ### 2026-11-11: Miami (OH) RedHawks vs Mount Vernon Nazarene MT VERNON (OH) (Final: **106–45**)
 
