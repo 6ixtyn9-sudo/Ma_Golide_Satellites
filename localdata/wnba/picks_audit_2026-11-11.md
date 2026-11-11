@@ -1,6 +1,6 @@
 # Ma Golide — Recent picks audit (2026-10-13 to 2026-11-11)
 
-Generated: 2026-11-11 12:46 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-11 18:55 SAST · 30-day rolling window · Paper only
 
 ## Overall
 

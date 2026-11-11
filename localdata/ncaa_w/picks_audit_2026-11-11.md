@@ -1,14 +1,14 @@
 # Ma Golide — Recent picks audit (2026-10-13 to 2026-11-11)
 
-Generated: 2026-11-11 12:46 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-11 18:55 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
-- archived logical picks: 376
-- dated evidence rows: 626 (250 superseded observations)
-- settled picks: 163 (132 wins / 31 losses / 0 pushes)
-- hit rate: 81.0% (132/163 win/loss decisions)
-- pending/unmatched picks: 0 prior-day · 213 total
+- archived logical picks: 400
+- dated evidence rows: 716 (316 superseded observations)
+- settled picks: 166 (135 wins / 31 losses / 0 pushes)
+- hit rate: 81.3% (135/166 win/loss decisions)
+- pending/unmatched picks: 0 prior-day · 234 total
 - priced picks: 10
 - paper P&L: -4.273 units
 - ROI: -42.7% (P&L / 10 priced picks) · **provisional — fewer than 30 priced picks**
@@ -17,8 +17,8 @@ Generated: 2026-11-11 12:46 SAST · 30-day rolling window · Paper only
 
 - reconciled official finals settle immediately; pending rows are never losses
 - local-day pending cutoff: 2026-11-11
-- same-day pending rows outside prior-day counters: 213
-- same-day official-final picks included: 0
+- same-day pending rows outside prior-day counters: 234
+- same-day official-final picks included: 3
 - eligible prior-day picks: 163
 - latest observation per logical pick; superseded dated evidence remains in JSON
 
@@ -27,13 +27,13 @@ Generated: 2026-11-11 12:46 SAST · 30-day rolling window · Paper only
 | Bucket | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `SKIPPED_INELIGIBLE` | 10 | 3–7–0 | 30.0% | 10 | -42.7% |
-| `WATCHLIST_NO_ODDS` | 153 | 129–24–0 | 84.3% | 0 | n/a |
+| `WATCHLIST_NO_ODDS` | 156 | 132–24–0 | 84.6% | 0 | n/a |
 
 ## By market
 
 | Market | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `moneyline` | 153 | 129–24–0 | 84.3% | 0 | n/a |
+| `moneyline` | 156 | 132–24–0 | 84.6% | 0 | n/a |
 | `spread` | 7 | 3–4–0 | 42.9% | 7 | -18.2% |
 | `total` | 3 | 0–3–0 | 0.0% | 3 | -100.0% |
 
@@ -42,7 +42,7 @@ Generated: 2026-11-11 12:46 SAST · 30-day rolling window · Paper only
 | Market:Selection | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `moneyline:away` | 10 | 6–4–0 | 60.0% | 0 | n/a |
-| `moneyline:home` | 143 | 123–20–0 | 86.0% | 0 | n/a |
+| `moneyline:home` | 146 | 126–20–0 | 86.3% | 0 | n/a |
 | `spread:away` | 7 | 3–4–0 | 42.9% | 7 | -18.2% |
 | `total:over` | 2 | 0–2–0 | 0.0% | 2 | -100.0% |
 | `total:under` | 1 | 0–1–0 | 0.0% | 1 | -100.0% |
@@ -50,6 +50,18 @@ Generated: 2026-11-11 12:46 SAST · 30-day rolling window · Paper only
 ## Settled picks — official-final audit
 
 Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+### 2026-11-11: Miami (OH) RedHawks vs Mount Vernon Nazarene MT VERNON (OH) (Final: **106–45**)
+
+- 🟢 **WON — Full-game moneyline: Miami (OH) RedHawks (home)**
+  - Expected: **100.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Miami (OH) RedHawks (home)**
+  - Expected: **89.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Miami (OH) RedHawks (home)**
+  - Actual First-half score: **55–25** · Expected: **81.0%** · Price: **No exact bookmaker price**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 
 ### 2026-11-10: USC Trojans vs Charleston Cougars (Final: **105–44**)
 
