@@ -429,7 +429,7 @@ def _book_snapshots_for_offer(
     if away_price is None:
         away_price = _decimal_price(_nested(offer, "moneyline", "away", "open", "odds"))
         if away_price is None:
-            away_price = _decimal_price(_nested(offer, "homeTeamOdds", "moneyLine"))
+            away_price = _decimal_price(_nested(offer, "awayTeamOdds", "moneyLine"))
     if home_price is not None or away_price is not None:
         snapshots.append(
             BookSnapshot(
