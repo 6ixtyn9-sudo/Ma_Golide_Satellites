@@ -20,9 +20,10 @@ scheduled executions; it is independent of the canonical `ALLOW_MAGOLIDE_WRITES`
 gate.
 
 This is a presentation and paper-settlement layer. It does not change forecast
-selection, alter calibrated probabilities, place bets, or write to a bookmaker.
-Its labels describe Ma Golide's actual eligibility and evidence; they are not
-Edge Factory labels or a claim of historical profitability.
+selection, alter calibrated probabilities, place bets, write to a bookmaker, or
+add a fade strategy. Its labels describe Ma Golide's actual eligibility and
+evidence; they are not Edge Factory labels or a claim of historical
+profitability.
 
 ## Files
 
@@ -81,8 +82,9 @@ shows a readable named selection, result, expected probability, exact price (or
 its absence), calibration sample, bucket, and model. Production reports include
 the reconciled full-game final and relevant period/total/margin context from the
 canonical game record; those scores are presentation inputs and are not written
-back into frozen pick evidence. The rolling JSON schema and metrics are
-unchanged by this rendering.
+back into frozen pick evidence. The root operator schema remains unchanged; the
+rolling JSON has a separately versioned nested `fade_audit` object for the
+prospective paper-only counterfactual described below.
 
 ## Publication and freeze
 
@@ -135,6 +137,45 @@ November slate does not incorrectly exclude all 7 November picks. For schema
 compatibility, `same_day_rows_excluded` now counts only those held same-day
 pending rows, while `same_day_settled_picks` reports official finals included
 immediately.
+
+## Prospective paper-only fade audit
+
+The rolling JSON includes a nested `fade_audit` with schema
+`magolide.paper_fade_audit.v1`. It is a counterfactual audit, not a new market,
+pick, ticket, or strategy. A settled model win is recorded as a fade loss, a
+model loss as a fade win, and a push remains a push. Each hypothetical fade has
+a one-unit stake; a win earns the exact opposite decimal quote minus one, a loss
+loses one unit, and a push returns the stake. ROI is P&L divided by all priced
+one-unit fades, including pushes.
+
+Only an explicit opposite-side price preserved with that pick's own book
+snapshot is eligible. The audit verifies the same game, bookmaker, market,
+period, line, and pre-tip observation, and requires a finite decimal price
+above 1.0. A selected-side price is not required: an available exact opposite
+quote can be audited even when the selected price is missing. The serializer
+preserves all five side-price fields and the originating snapshot scope; row
+rehydration carries them forward without synthesis.
+
+A unique complement exists for home/away spreads and over/under totals at the
+same line. Full-game basketball moneylines are complementary home/away outcomes
+unless the snapshot includes a draw price. Every non-`FULL_GAME` moneyline is
+excluded because a draw is possible, even if a partial payload omitted its draw
+quote. Highest-quarter and other markets without one unique opposite outcome
+are also excluded. Missing, invalid, mismatched, or old-schema quote evidence
+stays unpriced; no opposite price is inferred from the selected price or from a
+different snapshot. Historical rows lacking preserved quote scope or
+`side_prices` are not backfilled, and their reason counts appear under
+`fade_audit.unpriced_reasons`.
+
+`fade_audit.by_confidence_band` uses numeric selected-outcome probability:
+`calibrated_probability` when present, otherwise `raw_probability`. It does not
+use the calibration status label. The corresponding market/period/model/band
+breakdown is available in
+`fade_audit.by_market_period_model_confidence_band`. The aggregate
+`break_even_hit_rate` is the mean inverse opposite price over non-push quotes;
+it is book-implied and includes market margin, not a de-vigged probability.
+These descriptive, prospective metrics do not change the selected-side ROI,
+picks, grading, calibration epoch or gates, or paper acca performance.
 
 For accas:
 

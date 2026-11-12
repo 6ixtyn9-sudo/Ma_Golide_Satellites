@@ -35,9 +35,10 @@ from zoneinfo import ZoneInfo
 from ingestion.identity import parse_utc
 from ingestion.models import Game, GameStatus, League, Period
 
-from .types import BookEvidence, Forecast, _period_scores, grade_forecast
+from .types import BookEvidence, Forecast, _period_scores, grade_forecast, opposite_selection
 
 OPERATOR_SCHEMA = "magolide.operator.v1"
+FADE_AUDIT_SCHEMA = "magolide.paper_fade_audit.v1"
 TICKET_SCHEMA = "magolide.paper_ticket_receipt.v1"
 STATE_SCHEMA = "magolide.paper_ticket_state.v1"
 BASE_PAPER_UNITS = 100.0
@@ -137,6 +138,215 @@ def _price_evidence(forecast: Dict[str, Any]) -> str:
     return "UNMATCHED"
 
 
+def _opposite_selection_for_row(row: Dict[str, Any]) -> Optional[str]:
+    book = row.get("book")
+    side_prices = book.get("side_prices") if isinstance(book, dict) else None
+    has_draw = isinstance(side_prices, dict) and side_prices.get("draw") is not None
+    return opposite_selection(
+        str(row.get("market") or ""),
+        str(row.get("period") or ""),
+        str(row.get("selection") or ""),
+        has_draw=has_draw,
+    )
+
+
+def _same_line(left: Any, right: Any) -> bool:
+    if left is None or right is None:
+        return left is right
+    if isinstance(left, bool) or isinstance(right, bool):
+        return False
+    try:
+        left_value, right_value = float(left), float(right)
+    except (OverflowError, TypeError, ValueError):
+        return False
+    return (
+        math.isfinite(left_value)
+        and math.isfinite(right_value)
+        and math.isclose(left_value, right_value, rel_tol=0.0, abs_tol=1e-9)
+    )
+
+
+def opposite_quote(row: Dict[str, Any]) -> tuple[Optional[float], Optional[str]]:
+    """Return the exact opposite-side quote or a reason it is unavailable.
+
+    The quote must be present in this row's preserved BookSnapshot evidence,
+    whose game, market, period, line, bookmaker, and observation are checked.
+    No odds or missing market sides are inferred.
+    """
+    selection = _opposite_selection_for_row(row)
+    if selection is None:
+        return None, "market_has_no_single_opposite_side"
+
+    book = row.get("book")
+    if not isinstance(book, dict):
+        return None, "no_book_evidence"
+    side_prices = book.get("side_prices")
+    if not isinstance(side_prices, dict):
+        return None, "opposite_quote_not_preserved"
+    if selection not in side_prices or side_prices[selection] is None:
+        return None, "opposite_quote_missing_in_payload"
+
+    selected_price = book.get("selected_decimal_price")
+    selected_side = str(row.get("selection") or "")
+    if selected_price is not None:
+        preserved_selected = side_prices.get(selected_side)
+        if (
+            isinstance(selected_price, bool)
+            or not isinstance(selected_price, (int, float))
+            or isinstance(preserved_selected, bool)
+            or not isinstance(preserved_selected, (int, float))
+        ):
+            return None, "selected_quote_inconsistent"
+        try:
+            selected_value = float(selected_price)
+            preserved_value = float(preserved_selected)
+        except OverflowError:
+            return None, "selected_quote_inconsistent"
+        if (
+            not math.isfinite(selected_value)
+            or not math.isfinite(preserved_value)
+            or not math.isclose(selected_value, preserved_value, rel_tol=0.0, abs_tol=1e-9)
+        ):
+            return None, "selected_quote_inconsistent"
+
+    if str(row.get("market") or "") in {"spread", "total"}:
+        if row.get("line") is None:
+            return None, "market_line_missing"
+        if not _same_line(row.get("line"), row.get("line")):
+            return None, "invalid_market_line"
+
+    if (
+        not row.get("game_id")
+        or book.get("game_id") != row.get("game_id")
+        or book.get("market") != row.get("market")
+        or book.get("period") != row.get("period")
+        or not _same_line(book.get("line"), row.get("line"))
+    ):
+        return None, "opposite_quote_scope_mismatch"
+    if book.get("pre_match") is not True:
+        return None, "not_pre_match"
+    if not str(book.get("provider") or "").strip() or not str(book.get("book") or "").strip():
+        return None, "unnamed_book_quote"
+    try:
+        observed = parse_utc(str(book["observed_utc"]))
+        scheduled = parse_utc(str(row["scheduled_utc"]))
+    except (KeyError, TypeError, ValueError):
+        return None, "missing_quote_timestamp"
+    if observed >= scheduled:
+        return None, "not_pre_tip"
+
+    raw_price = side_prices[selection]
+    if isinstance(raw_price, bool) or not isinstance(raw_price, (int, float)):
+        return None, "invalid_opposite_quote"
+    try:
+        price = float(raw_price)
+    except OverflowError:
+        return None, "invalid_opposite_quote"
+    if not math.isfinite(price) or price <= 1.0:
+        return None, "invalid_opposite_quote"
+    return price, None
+
+
+def _confidence_probability(row: Dict[str, Any]) -> tuple[Optional[float], str]:
+    value = row.get("calibrated_probability")
+    basis = "calibrated_probability"
+    if value is None:
+        value = row.get("raw_probability")
+        basis = "raw_probability"
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None, basis
+    try:
+        probability = float(value)
+    except OverflowError:
+        return None, basis
+    if not math.isfinite(probability) or not 0.0 <= probability <= 1.0:
+        return None, basis
+    return probability, basis
+
+
+def _confidence_band(row: Dict[str, Any]) -> str:
+    probability, _ = _confidence_probability(row)
+    if probability is None:
+        return "unknown"
+    if probability < 0.5:
+        return "<0.50"
+    if probability < 0.6:
+        return "0.50-<0.60"
+    if probability < 0.7:
+        return "0.60-<0.70"
+    if probability < 0.8:
+        return "0.70-<0.80"
+    if probability < 0.9:
+        return "0.80-<0.90"
+    return "0.90-1.00"
+
+
+def _fade_metrics(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Describe counterfactual fade results using exact opposite-side quotes."""
+    missing_reasons: Counter[str] = Counter()
+    wins = losses = pushes = priced_sample = 0
+    profit = 0.0
+    implied_break_even_sum = 0.0
+    decision_quotes = 0
+    quoted_prices: List[float] = []
+
+    for row in rows:
+        price, reason = opposite_quote(row)
+        if price is None:
+            missing_reasons[reason or "opposite_quote_unavailable"] += 1
+            continue
+
+        fade_grade = {"win": "loss", "loss": "win", "push": "push"}.get(
+            str(row.get("grade_status"))
+        )
+        if fade_grade is None:
+            missing_reasons["pick_not_settled"] += 1
+            continue
+
+        priced_sample += 1
+        quoted_prices.append(price)
+        if fade_grade == "win":
+            wins += 1
+            profit += price - 1.0
+        elif fade_grade == "loss":
+            losses += 1
+            profit -= 1.0
+        else:
+            pushes += 1
+        if fade_grade != "push":
+            decision_quotes += 1
+            implied_break_even_sum += 1.0 / price
+
+    decisions = wins + losses
+    return {
+        "candidate_sample": len(rows),
+        "priced_sample": priced_sample,
+        "unpriced_sample": len(rows) - priced_sample,
+        "unpriced_reasons": dict(sorted(missing_reasons.items())),
+        "wins": wins,
+        "losses": losses,
+        "pushes": pushes,
+        "decisions": decisions,
+        "hit_rate": wins / decisions if decisions else None,
+        "profit_units": profit,
+        "roi": profit / priced_sample if priced_sample else None,
+        "mean_opposite_decimal_price": (
+            sum(quoted_prices) / len(quoted_prices) if quoted_prices else None
+        ),
+        "break_even_hit_rate": (
+            implied_break_even_sum / decision_quotes if decision_quotes else None
+        ),
+        "break_even_sample": decision_quotes,
+    }
+
+
+def _fade_breakdown(rows: List[Dict[str, Any]], key_for_row) -> Dict[str, Any]:
+    grouped: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        grouped[str(key_for_row(row))].append(row)
+    return {key: _fade_metrics(grouped[key]) for key in sorted(grouped)}
+
+
 def _pick_row(forecast: Dict[str, Any], target_date: str) -> Dict[str, Any]:
     row = deepcopy(forecast)
     row["pick_id"] = row["forecast_id"]
@@ -153,6 +363,15 @@ def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
     book_row = row.get("book")
     book = None
     if book_row:
+        stored_prices = book_row.get("side_prices")
+        if isinstance(stored_prices, dict):
+            prices = {str(key): value for key, value in stored_prices.items()}
+            prices.setdefault(
+                str(row["selection"]), book_row.get("selected_decimal_price")
+            )
+        else:
+            # Legacy rows retain only the selected quote; never backfill sides.
+            prices = {str(row["selection"]): book_row.get("selected_decimal_price")}
         book = BookEvidence(
             provider=str(book_row.get("provider") or "unknown"),
             book=str(book_row.get("book") or "unknown"),
@@ -161,7 +380,11 @@ def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
             pre_match=bool(book_row.get("pre_match", True)),
             main_line=bool(book_row.get("main_line", True)),
             frozen=bool(book_row.get("frozen", False)),
-            prices={str(row["selection"]): book_row.get("selected_decimal_price")},
+            prices=prices,
+            game_id=book_row.get("game_id"),
+            market=book_row.get("market"),
+            period=book_row.get("period"),
+            line=book_row.get("line"),
         )
     prediction = row.get("prediction") or {}
     return Forecast(
@@ -519,7 +742,7 @@ def _render_pick_audit_markdown(
     games: Dict[str, Game] | None,
     timezone_name: str,
 ) -> str:
-    """Edge-style readable audit; the machine report remains unchanged."""
+    """Render the rolling machine audit as a readable report."""
     settled = list(report.get("settled_ledger") or [])
     wins = int(report["wins"])
     losses = int(report["losses"])
@@ -663,6 +886,88 @@ def _render_pick_audit_markdown(
     else:
         lines.append("No settled picks in this window.")
 
+    fade = report.get("fade_audit") or {}
+    fade_priced = int(fade.get("priced_sample") or 0)
+    fade_candidates = int(fade.get("candidate_sample") or 0)
+    fade_decisions = int(fade.get("decisions") or 0)
+    fade_hit_rate = fade.get("hit_rate")
+    fade_roi = fade.get("roi")
+    break_even_hit_rate = fade.get("break_even_hit_rate")
+    lines.extend(
+        [
+            "",
+            "## Paper-only opposite-side fade audit",
+            "",
+            "Counterfactual reporting only — this is not a strategy, pick, or ticket. "
+            "A settled result is reversed (win↔loss; push stays push) and priced only "
+            "when the exact opposite quote is preserved in the same pre-tip book "
+            "snapshot, market, period, line, and observation. No quote is inferred "
+            "or historically backfilled; selected-side price is not required.",
+            "",
+            f"- settled rows with exact opposite quotes: {fade_priced}/{fade_candidates}",
+            (
+                f"- fade record: {fade.get('wins', 0)}–{fade.get('losses', 0)}–"
+                f"{fade.get('pushes', 0)}"
+            ),
+            (
+                f"- fade hit rate: {fade_hit_rate:.1%} "
+                f"({fade.get('wins', 0)}/{fade_decisions} decisions)"
+                if fade_hit_rate is not None
+                else "- fade hit rate: n/a (no priced win/loss decisions)"
+            ),
+            (
+                f"- paper P&L: {fade.get('profit_units', 0.0):+.3f} units · "
+                f"ROI: {fade_roi:+.1%} (one unit per priced fade, pushes included)"
+                if fade_roi is not None
+                else "- fade ROI: n/a (no settled exact opposite-side quotes)"
+            ),
+            (
+                f"- mean market-implied break-even hit rate: {break_even_hit_rate:.1%} "
+                f"(n={fade.get('break_even_sample', 0)} non-push quotes; includes vig)"
+                if break_even_hit_rate is not None
+                else "- mean market-implied break-even hit rate: n/a"
+            ),
+        ]
+    )
+    fade_reasons = fade.get("unpriced_reasons") or {}
+    if fade_reasons:
+        lines.append(
+            "- unpriced settled rows: "
+            + ", ".join(f"`{reason}`={count}" for reason, count in sorted(fade_reasons.items()))
+        )
+    fade_by_market = fade.get("by_market") or {}
+    if fade_by_market:
+        lines.extend(
+            [
+                "",
+                "| Market | Settled candidates | Exact quotes | Fade W–L–P | ROI |",
+                "| --- | ---: | ---: | ---: | ---: |",
+            ]
+        )
+        for market, group in sorted(fade_by_market.items()):
+            roi = f"{group['roi']:+.1%}" if group.get("roi") is not None else "n/a"
+            lines.append(
+                f"| `{market}` | {group['candidate_sample']} | {group['priced_sample']} | "
+                f"{group['wins']}–{group['losses']}–{group['pushes']} | {roi} |"
+            )
+    fade_by_band = fade.get("by_confidence_band") or {}
+    if fade_by_band:
+        lines.extend(
+            [
+                "",
+                "Numeric selected-probability bands (calibrated probability, otherwise raw):",
+                "",
+                "| Probability band | Settled candidates | Exact quotes | Fade W–L–P | ROI |",
+                "| --- | ---: | ---: | ---: | ---: |",
+            ]
+        )
+        for band, group in sorted(fade_by_band.items()):
+            roi = f"{group['roi']:+.1%}" if group.get("roi") is not None else "n/a"
+            lines.append(
+                f"| `{band}` | {group['candidate_sample']} | {group['priced_sample']} | "
+                f"{group['wins']}–{group['losses']}–{group['pushes']} | {roi} |"
+            )
+
     lines.extend(
         [
             "",
@@ -723,6 +1028,21 @@ def _render_pick_audit_markdown(
                 else "No exact bookmaker price"
             )
             facts.append(f"Price: **{price_text}**")
+            opposite_price, opposite_reason = opposite_quote(row)
+            opposite_side = _opposite_selection_for_row(row)
+            if opposite_price is None:
+                fade_text = f"not priced ({opposite_reason})"
+            else:
+                fade_result = {
+                    "win": "LOST",
+                    "loss": "WON",
+                    "push": "PUSH",
+                }[grade]
+                fade_text = (
+                    f"{fade_result} @ {opposite_price:.3f} {opposite_side} · "
+                    f"{book_display or 'book unknown'}"
+                )
+            facts.append(f"Counterfactual fade: **{fade_text}**")
             lines.append("  - " + " · ".join(facts))
             calibration = row.get("calibration") or {}
             lines.append(
@@ -854,6 +1174,49 @@ def _write_pick_audit(
                 sgroup["priced_profit_units"] += price - 1.0
             elif row["grade_status"] == "loss":
                 sgroup["priced_profit_units"] -= 1.0
+
+    fade_audit = {
+        "schema_version": FADE_AUDIT_SCHEMA,
+        "paper_only": True,
+        "evidence_policy": (
+            "use only explicit opposite-side prices preserved in the pick's "
+            "same BookSnapshot; never infer or historically backfill quotes"
+        ),
+        "selected_price_required": False,
+        "unit_stake": 1.0,
+        "profit_basis": (
+            "fade win earns opposite decimal price minus one; fade loss loses one; "
+            "push returns stake; ROI divides by one unit per priced fade, including pushes"
+        ),
+        "break_even_basis": (
+            "mean inverse opposite decimal price among non-push fade quotes; "
+            "book-implied and includes market margin"
+        ),
+        "confidence_probability_basis": (
+            "numeric calibrated_probability, falling back to raw_probability; "
+            "calibration status is not used"
+        ),
+        **_fade_metrics(settled),
+        "by_market": _fade_breakdown(
+            settled, lambda row: row.get("market") or "unknown"
+        ),
+        "by_selection": _fade_breakdown(
+            settled,
+            lambda row: f"{row.get('market') or 'unknown'}:{row.get('selection') or 'unknown'}",
+        ),
+        "by_confidence_band": _fade_breakdown(settled, _confidence_band),
+        "by_market_period_model_confidence_band": _fade_breakdown(
+            settled,
+            lambda row: "|".join(
+                (
+                    str(row.get("market") or "unknown"),
+                    str(row.get("period") or "unknown"),
+                    str(row.get("model") or "unknown"),
+                    _confidence_band(row),
+                )
+            ),
+        ),
+    }
     report = {
         "schema_version": OPERATOR_SCHEMA,
         "generated_utc": generated_utc,
@@ -878,6 +1241,7 @@ def _write_pick_audit(
         "roi": profit / len(priced) if priced else None,
         "profit_units": profit,
         "stake_policy": "flat_one_paper_unit_per_priced_pick",
+        "fade_audit": fade_audit,
         "by_bucket": by_bucket,
         "by_market": by_market,
         "by_selection": by_selection,
