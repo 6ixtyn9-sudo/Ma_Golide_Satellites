@@ -143,22 +143,33 @@
   },
   {
     "alternative_probabilities": {
-      "away": 0.28001,
-      "home": 0.71999
+      "away": 0.26939,
+      "home": 0.73061
     },
     "away": "Toronto Raptors",
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909976",
+      "line": null,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "moneyline",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
-      "selected_decimal_price": 1.2906976744186047,
+      "selected_decimal_price": 1.3717472118959106,
+      "side_prices": {
+        "away": 3.21,
+        "draw": null,
+        "home": 1.3717472118959106,
+        "over": null,
+        "under": null
+      },
       "source_modified_utc": null
     },
     "bucket": "SKIPPED_INELIGIBLE",
-    "calibrated_probability": 0.71999,
+    "calibrated_probability": 0.73061,
     "calibration": {
       "adjustment": 0.0,
       "n": 0,
@@ -176,7 +187,7 @@
     },
     "expected_margin": null,
     "expected_total": null,
-    "forecast_id": "59674aa210a88565b419",
+    "forecast_id": "ff72f5309d67656fa0f9",
     "game_id": "401909976",
     "grade_status": "pending",
     "home": "Philadelphia 76ers",
@@ -188,15 +199,15 @@
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "59674aa210a88565b419",
+    "pick_id": "ff72f5309d67656fa0f9",
     "prediction": {
       "frozen": false,
-      "observed_utc": "2026-11-12T15:21:34Z",
+      "observed_utc": "2026-11-12T19:51:10Z",
       "provider": "espn"
     },
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
     "push_probability": 0.0,
-    "raw_probability": 0.71999,
+    "raw_probability": 0.73061,
     "residual_games": 0,
     "role": "favorite",
     "scheduled_utc": "2026-11-13T00:00:00Z",
@@ -214,11 +225,22 @@
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909976",
+      "line": null,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "moneyline",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
-      "selected_decimal_price": 1.2906976744186047,
+      "selected_decimal_price": 1.3717472118959106,
+      "side_prices": {
+        "away": 3.21,
+        "draw": null,
+        "home": 1.3717472118959106,
+        "over": null,
+        "under": null
+      },
       "source_modified_utc": null
     },
     "bucket": "CAUTION",
@@ -253,7 +275,7 @@
     },
     "expected_margin": 1.1101440750983471,
     "expected_total": 224.8449478881309,
-    "forecast_id": "d968f04ae39de05af97f",
+    "forecast_id": "dce6db6ffcfcaf1df2c4",
     "game_id": "401909976",
     "grade_status": "pending",
     "home": "Philadelphia 76ers",
@@ -265,7 +287,7 @@
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "d968f04ae39de05af97f",
+    "pick_id": "dce6db6ffcfcaf1df2c4",
     "prediction": null,
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
     "push_probability": 0.0,
@@ -284,22 +306,33 @@
   },
   {
     "alternative_probabilities": {
-      "away": 0.55,
-      "home": 0.45
+      "away": 0.53,
+      "home": 0.47
     },
     "away": "Toronto Raptors",
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909976",
+      "line": -7.5,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "spread",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
-      "selected_decimal_price": 1.9090909090909092,
+      "selected_decimal_price": 1.8620689655172413,
+      "side_prices": {
+        "away": 1.8620689655172413,
+        "draw": null,
+        "home": 1.9615384615384617,
+        "over": null,
+        "under": null
+      },
       "source_modified_utc": null
     },
     "bucket": "CAUTION",
-    "calibrated_probability": 0.55,
+    "calibrated_probability": 0.53,
     "calibration": {
       "adjustment": 0.0,
       "n": 0,
@@ -314,29 +347,29 @@
         "insufficient_walk_forward_samples"
       ]
     },
-    "expected_margin": 7.361999999999995,
-    "expected_total": 221.376,
-    "forecast_id": "e92f0cf874d3383faf4c",
+    "expected_margin": 7.764999999999986,
+    "expected_total": 221.131,
+    "forecast_id": "14e0bfb50a7e536ab475",
     "game_id": "401909976",
     "grade_status": "pending",
     "home": "Philadelphia 76ers",
     "league": "NBA",
-    "line": -8.5,
+    "line": -7.5,
     "market": "spread",
     "model": "provider:espn+team_history_empirical_v1",
     "model_version": "team_history_empirical_v1",
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "e92f0cf874d3383faf4c",
+    "pick_id": "14e0bfb50a7e536ab475",
     "prediction": {
       "frozen": false,
-      "observed_utc": "2026-11-12T15:21:34Z",
+      "observed_utc": "2026-11-12T19:51:10Z",
       "provider": "espn"
     },
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
     "push_probability": 0.0,
-    "raw_probability": 0.55,
+    "raw_probability": 0.53,
     "residual_games": 100,
     "role": null,
     "scheduled_utc": "2026-11-13T00:00:00Z",
@@ -351,22 +384,33 @@
   },
   {
     "alternative_probabilities": {
-      "over": 0.44,
-      "under": 0.56
+      "over": 0.41,
+      "under": 0.59
     },
     "away": "Toronto Raptors",
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909976",
+      "line": 223.5,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "total",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
-      "selected_decimal_price": 1.9090909090909092,
+      "selected_decimal_price": 1.9523809523809523,
+      "side_prices": {
+        "away": null,
+        "draw": null,
+        "home": null,
+        "over": 1.8695652173913042,
+        "under": 1.9523809523809523
+      },
       "source_modified_utc": null
     },
     "bucket": "CAUTION",
-    "calibrated_probability": 0.56,
+    "calibrated_probability": 0.59,
     "calibration": {
       "adjustment": 0.0,
       "n": 0,
@@ -381,29 +425,29 @@
         "insufficient_walk_forward_samples"
       ]
     },
-    "expected_margin": 7.361999999999995,
-    "expected_total": 221.376,
-    "forecast_id": "e5e700f845e71ee136a1",
+    "expected_margin": 7.764999999999986,
+    "expected_total": 221.131,
+    "forecast_id": "ae7e03120790871177b8",
     "game_id": "401909976",
     "grade_status": "pending",
     "home": "Philadelphia 76ers",
     "league": "NBA",
-    "line": 222.5,
+    "line": 223.5,
     "market": "total",
     "model": "provider:espn+team_history_empirical_v1",
     "model_version": "team_history_empirical_v1",
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "e5e700f845e71ee136a1",
+    "pick_id": "ae7e03120790871177b8",
     "prediction": {
       "frozen": false,
-      "observed_utc": "2026-11-12T15:21:34Z",
+      "observed_utc": "2026-11-12T19:51:10Z",
       "provider": "espn"
     },
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
     "push_probability": 0.0,
-    "raw_probability": 0.56,
+    "raw_probability": 0.59,
     "residual_games": 100,
     "role": null,
     "scheduled_utc": "2026-11-13T00:00:00Z",
@@ -562,22 +606,33 @@
   },
   {
     "alternative_probabilities": {
-      "away": 0.71959,
-      "home": 0.28041
+      "away": 0.72174,
+      "home": 0.27826
     },
     "away": "Detroit Pistons",
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909977",
+      "line": null,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "moneyline",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
-      "selected_decimal_price": 1.214132762312634,
+      "selected_decimal_price": 1.228310502283105,
+      "side_prices": {
+        "away": 1.228310502283105,
+        "draw": null,
+        "home": 4.41,
+        "over": null,
+        "under": null
+      },
       "source_modified_utc": null
     },
     "bucket": "SKIPPED_INELIGIBLE",
-    "calibrated_probability": 0.71959,
+    "calibrated_probability": 0.72174,
     "calibration": {
       "adjustment": 0.0,
       "n": 0,
@@ -595,7 +650,7 @@
     },
     "expected_margin": null,
     "expected_total": null,
-    "forecast_id": "eb2bb2cc8a162948ad6a",
+    "forecast_id": "0806e279669caa77ea1e",
     "game_id": "401909977",
     "grade_status": "pending",
     "home": "Washington Wizards",
@@ -607,15 +662,15 @@
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "eb2bb2cc8a162948ad6a",
+    "pick_id": "0806e279669caa77ea1e",
     "prediction": {
       "frozen": false,
-      "observed_utc": "2026-11-12T15:21:34Z",
+      "observed_utc": "2026-11-12T19:51:10Z",
       "provider": "espn"
     },
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
     "push_probability": 0.0,
-    "raw_probability": 0.71959,
+    "raw_probability": 0.72174,
     "residual_games": 0,
     "role": "favorite",
     "scheduled_utc": "2026-11-13T00:00:00Z",
@@ -633,11 +688,22 @@
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909977",
+      "line": null,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "moneyline",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
-      "selected_decimal_price": 1.214132762312634,
+      "selected_decimal_price": 1.228310502283105,
+      "side_prices": {
+        "away": 1.228310502283105,
+        "draw": null,
+        "home": 4.41,
+        "over": null,
+        "under": null
+      },
       "source_modified_utc": null
     },
     "bucket": "SKIPPED_INELIGIBLE",
@@ -673,7 +739,7 @@
     },
     "expected_margin": -3.5204512615361807,
     "expected_total": 221.83200315116693,
-    "forecast_id": "06f59da63b070c8e1064",
+    "forecast_id": "bf51ade1e744cb982696",
     "game_id": "401909977",
     "grade_status": "pending",
     "home": "Washington Wizards",
@@ -685,7 +751,7 @@
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "06f59da63b070c8e1064",
+    "pick_id": "bf51ade1e744cb982696",
     "prediction": null,
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
     "push_probability": 0.0,
@@ -704,22 +770,33 @@
   },
   {
     "alternative_probabilities": {
-      "away": 0.47,
-      "home": 0.53
+      "away": 0.48,
+      "home": 0.52
     },
     "away": "Detroit Pistons",
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909977",
+      "line": 9.5,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "spread",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
-      "selected_decimal_price": 1.925925925925926,
+      "selected_decimal_price": 1.9615384615384617,
+      "side_prices": {
+        "away": 1.8620689655172413,
+        "draw": null,
+        "home": 1.9615384615384617,
+        "over": null,
+        "under": null
+      },
       "source_modified_utc": null
     },
     "bucket": "SKIPPED_INELIGIBLE",
-    "calibrated_probability": 0.53,
+    "calibrated_probability": 0.52,
     "calibration": {
       "adjustment": 0.0,
       "n": 0,
@@ -735,29 +812,29 @@
         "insufficient_team_specific_history"
       ]
     },
-    "expected_margin": -7.346000000000004,
-    "expected_total": 221.264,
-    "forecast_id": "f7a97b4c7ebe9951a940",
+    "expected_margin": -7.418000000000006,
+    "expected_total": 221.464,
+    "forecast_id": "38928d958d3b1bd5cf12",
     "game_id": "401909977",
     "grade_status": "pending",
     "home": "Washington Wizards",
     "league": "NBA",
-    "line": 10.5,
+    "line": 9.5,
     "market": "spread",
     "model": "provider:espn+team_history_empirical_v1",
     "model_version": "team_history_empirical_v1",
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "f7a97b4c7ebe9951a940",
+    "pick_id": "38928d958d3b1bd5cf12",
     "prediction": {
       "frozen": false,
-      "observed_utc": "2026-11-12T15:21:34Z",
+      "observed_utc": "2026-11-12T19:51:10Z",
       "provider": "espn"
     },
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
     "push_probability": 0.0,
-    "raw_probability": 0.53,
+    "raw_probability": 0.52,
     "residual_games": 100,
     "role": null,
     "scheduled_utc": "2026-11-13T00:00:00Z",
@@ -772,22 +849,33 @@
   },
   {
     "alternative_probabilities": {
-      "over": 0.53,
-      "under": 0.47
+      "over": 0.51,
+      "under": 0.49
     },
     "away": "Detroit Pistons",
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909977",
+      "line": 221.5,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "total",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
-      "selected_decimal_price": 1.8928571428571428,
+      "selected_decimal_price": 1.9345794392523366,
+      "side_prices": {
+        "away": null,
+        "draw": null,
+        "home": null,
+        "over": 1.9345794392523366,
+        "under": 1.8849557522123894
+      },
       "source_modified_utc": null
     },
     "bucket": "SKIPPED_INELIGIBLE",
-    "calibrated_probability": 0.53,
+    "calibrated_probability": 0.51,
     "calibration": {
       "adjustment": 0.0,
       "n": 0,
@@ -803,29 +891,29 @@
         "insufficient_team_specific_history"
       ]
     },
-    "expected_margin": -7.346000000000004,
-    "expected_total": 221.264,
-    "forecast_id": "983433169e2206d6cdca",
+    "expected_margin": -7.418000000000006,
+    "expected_total": 221.464,
+    "forecast_id": "2555a7e84c68c38ee508",
     "game_id": "401909977",
     "grade_status": "pending",
     "home": "Washington Wizards",
     "league": "NBA",
-    "line": 220.5,
+    "line": 221.5,
     "market": "total",
     "model": "provider:espn+team_history_empirical_v1",
     "model_version": "team_history_empirical_v1",
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "983433169e2206d6cdca",
+    "pick_id": "2555a7e84c68c38ee508",
     "prediction": {
       "frozen": false,
-      "observed_utc": "2026-11-12T15:21:34Z",
+      "observed_utc": "2026-11-12T19:51:10Z",
       "provider": "espn"
     },
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
     "push_probability": 0.0,
-    "raw_probability": 0.53,
+    "raw_probability": 0.51,
     "residual_games": 100,
     "role": null,
     "scheduled_utc": "2026-11-13T00:00:00Z",
@@ -982,22 +1070,33 @@
   },
   {
     "alternative_probabilities": {
-      "away": 0.28653,
-      "home": 0.71347
+      "away": 0.28476,
+      "home": 0.71524
     },
     "away": "Dallas Mavericks",
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909978",
+      "line": null,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "moneyline",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
       "selected_decimal_price": 1.4484304932735426,
+      "side_prices": {
+        "away": 2.85,
+        "draw": null,
+        "home": 1.4484304932735426,
+        "over": null,
+        "under": null
+      },
       "source_modified_utc": null
     },
     "bucket": "SKIPPED_INELIGIBLE",
-    "calibrated_probability": 0.71347,
+    "calibrated_probability": 0.71524,
     "calibration": {
       "adjustment": 0.0,
       "n": 0,
@@ -1015,7 +1114,7 @@
     },
     "expected_margin": null,
     "expected_total": null,
-    "forecast_id": "541e22c32249d99ccae8",
+    "forecast_id": "94b78fd870f05cdac23c",
     "game_id": "401909978",
     "grade_status": "pending",
     "home": "Minnesota Timberwolves",
@@ -1027,15 +1126,15 @@
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "541e22c32249d99ccae8",
+    "pick_id": "94b78fd870f05cdac23c",
     "prediction": {
       "frozen": false,
-      "observed_utc": "2026-11-12T15:21:34Z",
+      "observed_utc": "2026-11-12T19:51:10Z",
       "provider": "espn"
     },
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
     "push_probability": 0.0,
-    "raw_probability": 0.71347,
+    "raw_probability": 0.71524,
     "residual_games": 0,
     "role": "favorite",
     "scheduled_utc": "2026-11-13T01:00:00Z",
@@ -1053,11 +1152,22 @@
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909978",
+      "line": null,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "moneyline",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
       "selected_decimal_price": 1.4484304932735426,
+      "side_prices": {
+        "away": 2.85,
+        "draw": null,
+        "home": 1.4484304932735426,
+        "over": null,
+        "under": null
+      },
       "source_modified_utc": null
     },
     "bucket": "CAUTION",
@@ -1092,7 +1202,7 @@
     },
     "expected_margin": 1.2443742241020033,
     "expected_total": 225.1585070740985,
-    "forecast_id": "573a97dbd6418bdae48e",
+    "forecast_id": "86fc1e1645c81003f9a5",
     "game_id": "401909978",
     "grade_status": "pending",
     "home": "Minnesota Timberwolves",
@@ -1104,7 +1214,7 @@
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "573a97dbd6418bdae48e",
+    "pick_id": "86fc1e1645c81003f9a5",
     "prediction": null,
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
     "push_probability": 0.0,
@@ -1130,11 +1240,22 @@
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909978",
+      "line": -5.5,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "spread",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
       "selected_decimal_price": 1.8771929824561404,
+      "side_prices": {
+        "away": 1.9433962264150944,
+        "draw": null,
+        "home": 1.8771929824561404,
+        "over": null,
+        "under": null
+      },
       "source_modified_utc": null
     },
     "bucket": "CAUTION",
@@ -1153,9 +1274,9 @@
         "insufficient_walk_forward_samples"
       ]
     },
-    "expected_margin": 7.111999999999995,
-    "expected_total": 226.552,
-    "forecast_id": "21751fca08be751971a6",
+    "expected_margin": 7.167999999999992,
+    "expected_total": 226.46800000000002,
+    "forecast_id": "268f0a4ebdca5e5dd184",
     "game_id": "401909978",
     "grade_status": "pending",
     "home": "Minnesota Timberwolves",
@@ -1167,10 +1288,10 @@
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "21751fca08be751971a6",
+    "pick_id": "268f0a4ebdca5e5dd184",
     "prediction": {
       "frozen": false,
-      "observed_utc": "2026-11-12T15:21:34Z",
+      "observed_utc": "2026-11-12T19:51:10Z",
       "provider": "espn"
     },
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -1197,11 +1318,22 @@
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909978",
+      "line": 225.5,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "total",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
       "selected_decimal_price": 1.8928571428571428,
+      "side_prices": {
+        "away": null,
+        "draw": null,
+        "home": null,
+        "over": 1.8928571428571428,
+        "under": 1.925925925925926
+      },
       "source_modified_utc": null
     },
     "bucket": "CAUTION",
@@ -1220,9 +1352,9 @@
         "insufficient_walk_forward_samples"
       ]
     },
-    "expected_margin": 7.111999999999995,
-    "expected_total": 226.552,
-    "forecast_id": "16d312602dff0c8b4c43",
+    "expected_margin": 7.167999999999992,
+    "expected_total": 226.46800000000002,
+    "forecast_id": "382265d237db64857d4a",
     "game_id": "401909978",
     "grade_status": "pending",
     "home": "Minnesota Timberwolves",
@@ -1234,10 +1366,10 @@
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "16d312602dff0c8b4c43",
+    "pick_id": "382265d237db64857d4a",
     "prediction": {
       "frozen": false,
-      "observed_utc": "2026-11-12T15:21:34Z",
+      "observed_utc": "2026-11-12T19:51:10Z",
       "provider": "espn"
     },
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -1401,22 +1533,33 @@
   },
   {
     "alternative_probabilities": {
-      "away": 0.27054,
-      "home": 0.72946
+      "away": 0.26928,
+      "home": 0.73072
     },
     "away": "Charlotte Hornets",
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909979",
+      "line": null,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "moneyline",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
-      "selected_decimal_price": 1.4098360655737705,
+      "selected_decimal_price": 1.4366812227074237,
+      "side_prices": {
+        "away": 2.9,
+        "draw": null,
+        "home": 1.4366812227074237,
+        "over": null,
+        "under": null
+      },
       "source_modified_utc": null
     },
     "bucket": "SKIPPED_INELIGIBLE",
-    "calibrated_probability": 0.72946,
+    "calibrated_probability": 0.73072,
     "calibration": {
       "adjustment": 0.0,
       "n": 0,
@@ -1434,7 +1577,7 @@
     },
     "expected_margin": null,
     "expected_total": null,
-    "forecast_id": "9eca4cbaed466af9dff4",
+    "forecast_id": "7b1f27e9a54eb60e9198",
     "game_id": "401909979",
     "grade_status": "pending",
     "home": "Phoenix Suns",
@@ -1446,15 +1589,15 @@
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "9eca4cbaed466af9dff4",
+    "pick_id": "7b1f27e9a54eb60e9198",
     "prediction": {
       "frozen": false,
-      "observed_utc": "2026-11-12T15:21:34Z",
+      "observed_utc": "2026-11-12T19:51:10Z",
       "provider": "espn"
     },
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
     "push_probability": 0.0,
-    "raw_probability": 0.72946,
+    "raw_probability": 0.73072,
     "residual_games": 0,
     "role": "favorite",
     "scheduled_utc": "2026-11-13T02:00:00Z",
@@ -1472,11 +1615,22 @@
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909979",
+      "line": null,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "moneyline",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
-      "selected_decimal_price": 1.4098360655737705,
+      "selected_decimal_price": 1.4366812227074237,
+      "side_prices": {
+        "away": 2.9,
+        "draw": null,
+        "home": 1.4366812227074237,
+        "over": null,
+        "under": null
+      },
       "source_modified_utc": null
     },
     "bucket": "SKIPPED_INELIGIBLE",
@@ -1512,7 +1666,7 @@
     },
     "expected_margin": 3.8115697293228123,
     "expected_total": 223.55586773882413,
-    "forecast_id": "e15ff92d1cb11df05c99",
+    "forecast_id": "c3f2f1740f7f3a119621",
     "game_id": "401909979",
     "grade_status": "pending",
     "home": "Phoenix Suns",
@@ -1524,7 +1678,7 @@
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "e15ff92d1cb11df05c99",
+    "pick_id": "c3f2f1740f7f3a119621",
     "prediction": null,
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
     "push_probability": 0.0,
@@ -1550,11 +1704,22 @@
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909979",
+      "line": -6.5,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "spread",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
       "selected_decimal_price": 1.925925925925926,
+      "side_prices": {
+        "away": 1.8928571428571428,
+        "draw": null,
+        "home": 1.925925925925926,
+        "over": null,
+        "under": null
+      },
       "source_modified_utc": null
     },
     "bucket": "SKIPPED_INELIGIBLE",
@@ -1574,9 +1739,9 @@
         "insufficient_team_specific_history"
       ]
     },
-    "expected_margin": 7.731999999999999,
-    "expected_total": 216.288,
-    "forecast_id": "e504c7b728b26962f7d1",
+    "expected_margin": 7.768999999999991,
+    "expected_total": 216.43099999999998,
+    "forecast_id": "80ac71914b4c1caedbab",
     "game_id": "401909979",
     "grade_status": "pending",
     "home": "Phoenix Suns",
@@ -1588,10 +1753,10 @@
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "e504c7b728b26962f7d1",
+    "pick_id": "80ac71914b4c1caedbab",
     "prediction": {
       "frozen": false,
-      "observed_utc": "2026-11-12T15:21:34Z",
+      "observed_utc": "2026-11-12T19:51:10Z",
       "provider": "espn"
     },
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -1618,11 +1783,22 @@
     "book": {
       "book": "DraftKings",
       "frozen": false,
+      "game_id": "401909979",
+      "line": 214.5,
       "main_line": true,
-      "observed_utc": "2026-11-12T15:21:33Z",
+      "market": "total",
+      "observed_utc": "2026-11-12T19:51:10Z",
+      "period": "full_game",
       "pre_match": true,
       "provider": "espn",
       "selected_decimal_price": 1.925925925925926,
+      "side_prices": {
+        "away": null,
+        "draw": null,
+        "home": null,
+        "over": 1.925925925925926,
+        "under": 1.8928571428571428
+      },
       "source_modified_utc": null
     },
     "bucket": "SKIPPED_INELIGIBLE",
@@ -1642,9 +1818,9 @@
         "insufficient_team_specific_history"
       ]
     },
-    "expected_margin": 7.731999999999999,
-    "expected_total": 216.288,
-    "forecast_id": "dab6aedb694c4aa29b75",
+    "expected_margin": 7.768999999999991,
+    "expected_total": 216.43099999999998,
+    "forecast_id": "149b7475d20e2a00fde1",
     "game_id": "401909979",
     "grade_status": "pending",
     "home": "Phoenix Suns",
@@ -1656,10 +1832,10 @@
     "outcome": null,
     "paper_only": true,
     "period": "full_game",
-    "pick_id": "dab6aedb694c4aa29b75",
+    "pick_id": "149b7475d20e2a00fde1",
     "prediction": {
       "frozen": false,
-      "observed_utc": "2026-11-12T15:21:34Z",
+      "observed_utc": "2026-11-12T19:51:10Z",
       "provider": "espn"
     },
     "price_evidence": "NAMED_BOOKMAKER_PRICE",
