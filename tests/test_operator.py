@@ -5,8 +5,18 @@ from pathlib import Path
 
 import pytest
 
-from forecasting.operator import publish_operator_reports
-from ingestion.models import ActualResult, Game, GameStatus, League, PeriodKind
+from forecasting.operator import _forecast_from_row, opposite_quote, publish_operator_reports
+from forecasting.types import BookEvidence, Forecast
+from ingestion.models import (
+    ActualResult,
+    BookSnapshot,
+    Game,
+    GameStatus,
+    League,
+    Market,
+    Period,
+    PeriodKind,
+)
 
 DATE = "2026-11-07"
 AS_OF = "2026-11-07T18:00:00Z"
@@ -120,6 +130,27 @@ def forecast(
     }
 
 
+def with_quote_evidence(row, side_prices, **book_overrides):
+    selected_price = (row.get("book") or {}).get("selected_decimal_price")
+    book = {
+        "provider": "espn",
+        "book": "Test Book",
+        "observed_utc": "2026-11-07T17:00:00Z",
+        "source_modified_utc": None,
+        "pre_match": True,
+        "main_line": True,
+        "frozen": False,
+        "game_id": row["game_id"],
+        "market": row["market"],
+        "period": row["period"],
+        "line": row["line"],
+        "selected_decimal_price": selected_price,
+        "side_prices": side_prices,
+    }
+    book.update(book_overrides)
+    return {**row, "book": book}
+
+
 def acca(rows, *, acca_id="acca-original"):
     joint = 0.62 ** len(rows)
     odds = 1.8 ** len(rows)
@@ -149,6 +180,121 @@ def publish(tmp_path, store, market_report, run_id="run-1"):
         generated_utc=AS_OF,
         run_id=run_id,
     )
+
+
+def test_book_side_prices_survive_forecast_serialization_and_row_rehydration():
+    snapshot = BookSnapshot(
+        game_id="game-1",
+        provider="espn",
+        book="Test Book",
+        market=Market.SPREAD,
+        period=Period.FULL_GAME,
+        observed_utc="2026-11-07T17:00:00Z",
+        line=4.5,
+        home_price_decimal=None,
+        away_price_decimal=2.25,
+    )
+    forecast_row = Forecast(
+        game_id="game-1",
+        league="NBA",
+        scheduled_utc="2026-11-07T20:00:00Z",
+        home_name="Home 1",
+        away_name="Away 1",
+        market=Market.SPREAD.value,
+        period=Period.FULL_GAME.value,
+        selection="home",
+        raw_probability=0.6,
+        alternative_probabilities={"home": 0.6, "away": 0.4},
+        source="test-model",
+        line=4.5,
+        book=BookEvidence.from_snapshot(snapshot, frozen=False),
+    ).to_dict()
+
+    serialized_book = forecast_row["book"]
+    assert serialized_book["selected_decimal_price"] is None
+    assert serialized_book["side_prices"] == {
+        "home": None,
+        "away": 2.25,
+        "draw": None,
+        "over": None,
+        "under": None,
+    }
+    assert serialized_book["game_id"] == "game-1"
+    assert serialized_book["market"] == "spread"
+    assert serialized_book["period"] == "full_game"
+    assert serialized_book["line"] == 4.5
+
+    rehydrated = _forecast_from_row(forecast_row)
+    assert rehydrated.book is not None
+    assert rehydrated.book.prices == serialized_book["side_prices"]
+    assert rehydrated.decimal_price is None
+    assert rehydrated.opposite_decimal_price == 2.25
+    assert opposite_quote(forecast_row) == (2.25, None)
+
+
+@pytest.mark.parametrize(
+    ("scope_key", "scope_value"),
+    [
+        ("game_id", "another-game"),
+        ("market", "total"),
+        ("period", "H1"),
+        ("line", 5.5),
+    ],
+)
+def test_opposite_quote_rejects_mismatched_quote_scope(scope_key, scope_value):
+    row = forecast(1, market="spread", price=None)
+    row["line"] = 4.5
+    quote = with_quote_evidence(
+        row,
+        {"home": None, "away": 2.2, "draw": None, "over": None, "under": None},
+        **{scope_key: scope_value},
+    )
+    assert opposite_quote(quote) == (None, "opposite_quote_scope_mismatch")
+
+
+def test_opposite_quote_does_not_reuse_selected_price_or_accept_invalid_context():
+    inconsistent = with_quote_evidence(
+        forecast(1, price=1.8),
+        {"home": 1.75, "away": 2.2, "draw": None, "over": None, "under": None},
+    )
+    assert opposite_quote(inconsistent) == (None, "selected_quote_inconsistent")
+
+    one_sided = with_quote_evidence(
+        forecast(1, price=1.8),
+        {"home": 1.8, "away": None, "draw": None, "over": None, "under": None},
+    )
+    assert opposite_quote(one_sided) == (None, "opposite_quote_missing_in_payload")
+
+    no_total_line = forecast(1, market="total", selection="over", price=None)
+    no_total_line["line"] = None
+    no_total_line = with_quote_evidence(
+        no_total_line,
+        {"home": None, "away": None, "draw": None, "over": 1.8, "under": 2.2},
+    )
+    assert opposite_quote(no_total_line) == (None, "market_line_missing")
+
+    post_tip = with_quote_evidence(
+        forecast(1, price=None),
+        {"home": None, "away": 2.2, "draw": None, "over": None, "under": None},
+        observed_utc="2026-11-07T20:00:00Z",
+    )
+    assert opposite_quote(post_tip) == (None, "not_pre_tip")
+
+
+def test_opposite_quote_excludes_non_full_game_or_three_way_moneylines():
+    first_half = forecast(1, price=None)
+    first_half["period"] = "H1"
+    first_half = with_quote_evidence(
+        first_half,
+        {"home": 1.8, "away": 2.2, "draw": None, "over": None, "under": None},
+    )
+    assert opposite_quote(first_half) == (None, "market_has_no_single_opposite_side")
+
+    three_way = with_quote_evidence(
+        forecast(1, price=None),
+        {"home": 1.8, "away": 2.2, "draw": 25.0, "over": None, "under": None},
+    )
+    assert opposite_quote(three_way) == (None, "market_has_no_single_opposite_side")
 
 
 def test_ticket_is_frozen_empty_scans_do_not_cancel_and_known_leg_loss_settles(tmp_path):
@@ -447,6 +593,75 @@ def test_repeated_observations_render_and_grade_as_one_logical_pick(tmp_path):
     assert len(audit["ledger"]) == 1
     assert audit["ledger"][0]["forecast_id"] == "forecast-1-total-under-later"
     assert len(json.loads(dated_path.read_text())) == 2
+
+
+def test_paper_fade_audit_uses_exact_opposite_quotes_only(tmp_path):
+    fade_loss = with_quote_evidence(
+        forecast(1, price=1.8),
+        {"home": 1.8, "away": 2.1, "draw": None, "over": None, "under": None},
+    )
+    fade_win = with_quote_evidence(
+        forecast(2, price=None),
+        {"home": None, "away": 2.2, "draw": None, "over": None, "under": None},
+    )
+    fade_push = with_quote_evidence(
+        forecast(3, market="total", selection="over", price=None),
+        {"home": None, "away": None, "draw": None, "over": 1.8, "under": 1.95},
+    )
+    legacy_one_sided = forecast(4, price=1.8)
+
+    result = publish(
+        tmp_path,
+        Store(
+            [
+                game(1, home_score=105, away_score=100),
+                game(2, home_score=100, away_score=105),
+                game(3, total=200),
+                game(4, home_score=100, away_score=105),
+            ]
+        ),
+        report([fade_loss, fade_win, fade_push, legacy_one_sided]),
+    )
+    audit = json.loads(Path(result["rolling_audit"]).read_text())
+    fade = audit["fade_audit"]
+
+    assert fade["schema_version"] == "magolide.paper_fade_audit.v1"
+    assert fade["paper_only"] is True
+    assert fade["selected_price_required"] is False
+    assert fade["candidate_sample"] == 4
+    assert fade["priced_sample"] == 3
+    assert fade["unpriced_sample"] == 1
+    assert fade["unpriced_reasons"] == {"opposite_quote_not_preserved": 1}
+    assert (fade["wins"], fade["losses"], fade["pushes"]) == (1, 1, 1)
+    assert fade["profit_units"] == pytest.approx(0.2)
+    assert fade["roi"] == pytest.approx(0.2 / 3)
+    assert fade["hit_rate"] == pytest.approx(0.5)
+    assert fade["break_even_hit_rate"] == pytest.approx((1 / 2.1 + 1 / 2.2) / 2)
+    assert fade["by_market"]["moneyline"]["candidate_sample"] == 3
+    assert fade["by_market"]["moneyline"]["priced_sample"] == 2
+    assert fade["by_market"]["total"]["pushes"] == 1
+    assert fade["by_confidence_band"]["0.60-<0.70"]["priced_sample"] == 3
+
+    # The selected-side ROI remains its existing calculation; the fade sample
+    # can include quotes even when the selected-side price is missing.
+    assert audit["priced_sample"] == 2
+    assert audit["profit_units"] == pytest.approx(-0.2)
+    assert audit["roi"] == pytest.approx(-0.1)
+    dated_rows = json.loads(Path(result["dated_picks"]).read_text())
+    legacy_saved = next(
+        row for row in dated_rows if row["forecast_id"] == legacy_one_sided["forecast_id"]
+    )
+    assert "side_prices" not in legacy_saved["book"]
+    legacy_rehydrated = _forecast_from_row(legacy_saved)
+    assert legacy_rehydrated.book is not None
+    assert legacy_rehydrated.book.prices == {"home": 1.8}
+
+    markdown = Path(result["dated_audit"]).read_text()
+    assert "## Paper-only opposite-side fade audit" in markdown
+    assert "settled rows with exact opposite quotes: 3/4" in markdown
+    assert "Counterfactual fade: **LOST @ 2.100 away · Test Book**" in markdown
+    assert "Counterfactual fade: **not priced (opposite_quote_not_preserved)**" in markdown
+    assert "No quote is inferred or historically backfilled" in markdown
 
 
 def test_started_and_settled_games_leave_the_active_pick_sections(tmp_path):

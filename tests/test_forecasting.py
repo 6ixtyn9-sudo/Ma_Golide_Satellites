@@ -10,7 +10,7 @@ from forecasting.accas import build_accas
 from forecasting.harness import CalibrationConfig, apply_profiles, build_profiles
 from forecasting.model import ForecastConfig, HistoryModel
 from forecasting.service import MarketForecastService
-from forecasting.types import BookEvidence, Forecast, grade_forecast
+from forecasting.types import BookEvidence, Forecast, grade_forecast, opposite_selection
 from ingestion.models import (
     ActualResult,
     BookSnapshot,
@@ -75,6 +75,58 @@ def _snapshot(
         observed_utc=iso(observed),
         **values,
     )
+
+
+def test_opposite_selection_only_returns_unique_outcomes():
+    assert opposite_selection("moneyline", "full_game", "home") == "away"
+    assert opposite_selection("moneyline", "H1", "home") is None
+    assert opposite_selection("moneyline", "full_game", "home", has_draw=True) is None
+    assert opposite_selection("spread", "Q1", "home") == "away"
+    assert opposite_selection("total", "full_game", "over") == "under"
+    assert opposite_selection("highest_quarter", "full_game", "Q1") is None
+
+
+def test_forecast_serialization_keeps_two_sided_snapshot_and_scope():
+    snapshot = _snapshot(
+        "quote-round-trip",
+        Market.TOTAL,
+        Period.FULL_GAME,
+        AS_OF - timedelta(hours=1),
+        line=220.5,
+        over_price_decimal=1.91,
+        under_price_decimal=2.02,
+    )
+    evidence = BookEvidence.from_snapshot(snapshot, frozen=True)
+    forecast = Forecast(
+        game_id="quote-round-trip",
+        league="NBA",
+        scheduled_utc=iso(AS_OF + timedelta(hours=2)),
+        home_name="Home",
+        away_name="Away",
+        market=Market.TOTAL.value,
+        period=Period.FULL_GAME.value,
+        selection="over",
+        raw_probability=0.6,
+        alternative_probabilities={"over": 0.6, "under": 0.4},
+        source="test-model",
+        line=220.5,
+        book=evidence,
+    )
+    row = forecast.to_dict()
+
+    assert forecast.opposite_decimal_price == 2.02
+    assert row["book"]["side_prices"] == {
+        "home": None,
+        "away": None,
+        "draw": None,
+        "over": 1.91,
+        "under": 2.02,
+    }
+    assert row["book"]["game_id"] == "quote-round-trip"
+    assert row["book"]["market"] == "total"
+    assert row["book"]["period"] == "full_game"
+    assert row["book"]["line"] == 220.5
+    assert evidence.price_for("home") is None
 
 
 def populated_store(*, finals: int = 12, upcoming: int = 3) -> InMemoryStore:

@@ -22,6 +22,10 @@ class BookEvidence:
     main_line: bool
     frozen: bool
     prices: Dict[str, Optional[float]]
+    game_id: Optional[str] = None
+    market: Optional[str] = None
+    period: Optional[str] = None
+    line: Optional[float] = None
 
     @classmethod
     def from_snapshot(cls, snapshot: BookSnapshot, *, frozen: bool) -> "BookEvidence":
@@ -40,6 +44,10 @@ class BookEvidence:
                 "over": snapshot.over_price_decimal,
                 "under": snapshot.under_price_decimal,
             },
+            game_id=snapshot.game_id,
+            market=snapshot.market.value,
+            period=snapshot.period.value,
+            line=snapshot.line,
         )
 
     @property
@@ -51,6 +59,34 @@ class BookEvidence:
         if price is None or not math.isfinite(price) or price <= 1.0:
             return None
         return float(price)
+
+
+def opposite_selection(
+    market: str | Market,
+    period: str | Period,
+    selection: str,
+    *,
+    has_draw: bool = False,
+) -> Optional[str]:
+    """Return a unique opposing selection, without deriving any price.
+
+    First-half moneylines are three-way in this basketball model, even when a
+    partial book snapshot has no draw quote. Full-game moneylines are two-way
+    unless a draw quote explicitly identifies a three-way market.
+    """
+    market_value = market.value if isinstance(market, Market) else str(market)
+    period_value = period.value if isinstance(period, Period) else str(period)
+    if period_value not in {item.value for item in Period}:
+        return None
+    if market_value == Market.MONEYLINE.value:
+        if period_value != Period.FULL_GAME.value or has_draw:
+            return None
+        return {"home": "away", "away": "home"}.get(selection)
+    if market_value == Market.SPREAD.value:
+        return {"home": "away", "away": "home"}.get(selection)
+    if market_value == Market.TOTAL.value:
+        return {"over": "under", "under": "over"}.get(selection)
+    return None
 
 
 @dataclass
@@ -123,6 +159,29 @@ class Forecast:
     def decimal_price(self) -> Optional[float]:
         return self.book.price_for(self.selection) if self.book else None
 
+    @property
+    def opposite_selection(self) -> Optional[str]:
+        return opposite_selection(
+            self.market,
+            self.period,
+            self.selection,
+            has_draw=bool(self.book and self.book.prices.get("draw") is not None),
+        )
+
+    @property
+    def opposite_decimal_price(self) -> Optional[float]:
+        side = self.opposite_selection
+        if (
+            self.book is None
+            or side is None
+            or self.book.game_id != self.game_id
+            or self.book.market != self.market
+            or self.book.period != self.period
+            or self.book.line != self.line
+        ):
+            return None
+        return self.book.price_for(side)
+
     def to_dict(self) -> Dict[str, Any]:
         book = None
         if self.book is not None:
@@ -134,7 +193,12 @@ class Forecast:
                 "pre_match": self.book.pre_match,
                 "main_line": self.book.main_line,
                 "frozen": self.book.frozen,
+                "game_id": self.book.game_id,
+                "market": self.book.market,
+                "period": self.book.period,
+                "line": self.book.line,
                 "selected_decimal_price": self.decimal_price,
+                "side_prices": dict(self.book.prices),
             }
         return {
             "forecast_id": self.forecast_id,
@@ -271,4 +335,5 @@ __all__ = [
     "Forecast",
     "MODEL_VERSION",
     "grade_forecast",
+    "opposite_selection",
 ]
