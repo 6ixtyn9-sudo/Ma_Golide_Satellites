@@ -1,59 +1,83 @@
 # Ma Golide — Recent picks audit (2026-10-13 to 2026-11-11)
 
-Generated: 2026-11-11 21:32 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-12 04:14 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
-- archived logical picks: 119
-- dated evidence rows: 283 (164 superseded observations)
-- settled picks: 49 (28 wins / 21 losses / 0 pushes)
-- hit rate: 57.1% (28/49 win/loss decisions)
-- pending/unmatched picks: 0 prior-day · 70 total
-- priced picks: 37
-- paper P&L: -0.871 units
-- ROI: -2.4% (P&L / 37 priced picks)
+- archived logical picks: 123
+- dated evidence rows: 290 (167 superseded observations)
+- settled picks: 56 (30 wins / 26 losses / 0 pushes)
+- hit rate: 53.6% (30/56 win/loss decisions)
+- pending/unmatched picks: 67 prior-day · 67 total
+- priced picks: 43
+- paper P&L: -3.472 units
+- ROI: -8.1% (P&L / 43 priced picks)
 
 ## Settlement policy
 
 - reconciled official finals settle immediately; pending rows are never losses
-- local-day pending cutoff: 2026-11-11
-- same-day pending rows outside prior-day counters: 70
+- local-day pending cutoff: 2026-11-12
+- same-day pending rows outside prior-day counters: 0
 - same-day official-final picks included: 0
-- eligible prior-day picks: 49
+- eligible prior-day picks: 123
 - latest observation per logical pick; superseded dated evidence remains in JSON
 
 ## Bucket performance
 
 | Bucket | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `CAUTION` | 10 | 7–3–0 | 70.0% | 10 | +27.6% |
-| `SKIPPED_INELIGIBLE` | 27 | 14–13–0 | 51.9% | 27 | -13.5% |
-| `WATCHLIST_NO_ODDS` | 12 | 7–5–0 | 58.3% | 0 | n/a |
+| `CAUTION` | 15 | 8–7–0 | 53.3% | 15 | -3.6% |
+| `SKIPPED_INELIGIBLE` | 28 | 15–13–0 | 53.6% | 28 | -10.5% |
+| `WATCHLIST_NO_ODDS` | 13 | 7–6–0 | 53.8% | 0 | n/a |
 
 ## By market
 
 | Market | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `highest_quarter` | 6 | 3–3–0 | 50.0% | 0 | n/a |
-| `moneyline` | 18 | 12–6–0 | 66.7% | 12 | -7.5% |
-| `spread` | 9 | 5–4–0 | 55.6% | 9 | +7.0% |
-| `total` | 16 | 8–8–0 | 50.0% | 16 | -3.8% |
+| `highest_quarter` | 7 | 3–4–0 | 42.9% | 0 | n/a |
+| `moneyline` | 20 | 14–6–0 | 70.0% | 14 | +3.6% |
+| `spread` | 11 | 5–6–0 | 45.5% | 11 | -12.5% |
+| `total` | 18 | 8–10–0 | 44.4% | 18 | -14.5% |
 
 ## By selection — over/under & side bias
 
 | Market:Selection | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `highest_quarter:Q2` | 6 | 3–3–0 | 50.0% | 0 | n/a |
+| `highest_quarter:Q2` | 7 | 3–4–0 | 42.9% | 0 | n/a |
 | `moneyline:away` | 13 | 8–5–0 | 61.5% | 8 | -8.3% |
-| `moneyline:home` | 5 | 4–1–0 | 80.0% | 4 | -5.7% |
-| `spread:away` | 5 | 2–3–0 | 40.0% | 5 | -22.9% |
+| `moneyline:home` | 7 | 6–1–0 | 85.7% | 6 | +19.5% |
+| `spread:away` | 7 | 2–5–0 | 28.6% | 7 | -44.9% |
 | `spread:home` | 4 | 3–1–0 | 75.0% | 4 | +44.4% |
-| `total:over` | 12 | 6–6–0 | 50.0% | 12 | -3.9% |
+| `total:over` | 14 | 6–8–0 | 42.9% | 14 | -17.6% |
 | `total:under` | 4 | 2–2–0 | 50.0% | 4 | -3.5% |
 
 ## Settled picks — official-final audit
 
 Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+### 2026-11-11: Indiana Pacers vs Washington Wizards (Final: **114–101**)
+
+- 🔴 **LOST — Full-game spread -2.5: Washington Wizards (away)**
+  - Actual Full-game margin: **+13** · Expected: **56.0%** · Price: **1.952 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -3.5: Washington Wizards (away)**
+  - Actual Full-game margin: **+13** · Expected: **56.0%** · Price: **1.893 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 225.5: Over**
+  - Actual Full-game total: **215** · Expected: **57.0%** · Price: **1.909 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 227.5: Over**
+  - Actual Full-game total: **215** · Expected: **53.0%** · Price: **1.870 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Highest quarter: Q2**
+  - Expected: **44.3%** calibrated (raw 35.0%) · Price: **No exact bookmaker price**
+  - Calibration: **n=5** · provisional · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Indiana Pacers (home)**
+  - Expected: **52.2%** · Price: **1.699 · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Indiana Pacers (home)**
+  - Expected: **55.7%** calibrated (raw 52.0%) · Price: **1.699 · DraftKings**
+  - Calibration: **n=5** · provisional · Bucket: `CAUTION` · Model: `team_history_empirical_v1`
 
 ### 2026-11-10: Portland Trail Blazers vs Oklahoma City Thunder (Final: **123–103**)
 
