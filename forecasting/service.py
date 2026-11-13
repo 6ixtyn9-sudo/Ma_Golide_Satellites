@@ -28,7 +28,7 @@ from ingestion.models import (
 )
 from ingestion.predictions import DEFAULT_PROVIDER_ORDER
 
-from .accas import build_accas
+from .accas import build_accas, is_provisional_sample_only
 from .harness import (
     CalibrationConfig,
     apply_profiles,
@@ -286,6 +286,9 @@ class MarketForecastService:
                 records.append(forecast)
 
         shadow_profiles = None
+        previous_prequential_shadow = [
+            dict(forecast.shadow_calibration) for forecast in prequential
+        ]
         try:
             shadow_summary = prequential_shadow_evaluation(
                 prequential,
@@ -300,7 +303,10 @@ class MarketForecastService:
             )
         except Exception as exc:
             # Shadow diagnostics are optional and must not make champion
-            # forecasts or the usual report unavailable.
+            # forecasts or the usual report unavailable. The evaluator annotates
+            # historical rows in place, so roll back partial annotations too.
+            for forecast, previous in zip(prequential, previous_prequential_shadow):
+                forecast.shadow_calibration = previous
             shadow_summary = {
                 "status": "unavailable",
                 "error_type": type(exc).__name__,
@@ -349,11 +355,19 @@ class MarketForecastService:
                     "status": "unavailable",
                     "error_type": type(exc).__name__,
                 }
-        accas = build_accas(current, legs=acca_legs, limit=acca_limit)
+        strict_accas = build_accas(current, legs=acca_legs, limit=acca_limit)
+        paper_accas = build_accas(
+            current, legs=acca_legs, limit=acca_limit, allow_provisional=True
+        )
         market_counts = Counter(f"{forecast.period}:{forecast.market}" for forecast in current)
         eligible_games = {
             forecast.game_id for forecast in current if forecast.eligibility.get("acca_eligible")
         }
+        provisional_rows = [
+            forecast for forecast in current if is_provisional_sample_only(forecast)
+        ]
+        provisional_games = {forecast.game_id for forecast in provisional_rows}
+        paper_candidate_games = eligible_games | provisional_games
         return {
             "schema_version": "magolide.market_forecasts.v1",
             "status": "decision_support_only",
@@ -403,11 +417,27 @@ class MarketForecastService:
             "uncovered_games": uncovered,
             "forecasts": [forecast.to_dict() for forecast in current],
             "accas": {
+                "mode": "paper_only",
+                "paper_policy": (
+                    "admits a provisional segment only with at least one graded non-push "
+                    "sample when insufficient samples are the sole blocker; exact price, "
+                    "team-history, push-risk, and probability-floor gates remain enforced"
+                ),
+                "results_policy": "strict",
+                "paper_results_policy": "strict_plus_sample_only_provisional",
                 "requested_legs": acca_legs,
                 "requested_limit": acca_limit,
                 "eligible_games": len(eligible_games),
+                "strict_eligible_games": len(eligible_games),
+                "provisional_sample_only_rows": len(provisional_rows),
+                "provisional_sample_only_games": len(provisional_games),
+                "paper_candidate_games": len(paper_candidate_games),
                 "ranking": "highest_estimated_joint_win_probability",
-                "results": accas,
+                "paper_result_count": len(paper_accas),
+                "strict_result_count": len(strict_accas),
+                "results": strict_accas,
+                "strict_results": strict_accas,
+                "paper_results": paper_accas,
             },
         }
 

@@ -225,7 +225,11 @@ def test_book_side_prices_survive_forecast_serialization_and_row_rehydration():
             "n": 12,
             "weighted_n": 8.5,
             "ess": 10.0,
+            "adjustment": 0.01,
             "champion_probability": 0.61,
+            "champion_status": "provisional",
+            "champion_n": 5,
+            "champion_adjustment": -0.03,
             "probability": 0.62,
         },
         book=BookEvidence.from_snapshot(snapshot, frozen=False),
@@ -254,6 +258,19 @@ def test_book_side_prices_survive_forecast_serialization_and_row_rehydration():
     assert rehydrated.shadow_calibration["challenger_version"] == "recency_v1-test"
     assert rehydrated.shadow_calibration["ess"] == 10.0
     assert rehydrated.shadow_calibration["champion_probability"] == 0.61
+    assert rehydrated.shadow_calibration == {
+        "challenger_version": "recency_v1-test",
+        "status": "provisional",
+        "n": 12,
+        "weighted_n": 8.5,
+        "ess": 10.0,
+        "adjustment": 0.01,
+        "probability": 0.62,
+        "champion_probability": 0.61,
+        "champion_status": "provisional",
+        "champion_n": 5,
+        "champion_adjustment": -0.03,
+    }
     assert rehydrated.book is not None
     assert rehydrated.book.prices == serialized_book["side_prices"]
     assert rehydrated.decimal_price is None
@@ -540,6 +557,7 @@ def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp
     assert "CANDIDATE FUNNEL" in ticket_text
     assert "4 scan rows · 3 exact priced · 2 calibration-sufficient" in ticket_text
     assert "2 priced + calibrated · 1 eligible row · 1 eligible game" in ticket_text
+    assert "1 provisional sample-only row · 1 game · 0 paper accas (0 strict)" in ticket_text
     assert "Need 3 independent games for one acca" in ticket_text
     assert "2 insufficient_walk_forward_samples" in ticket_text
     assert result["candidate_funnel"] == {
@@ -549,6 +567,12 @@ def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp
         "priced_and_calibrated_rows": 2,
         "eligible_rows": 1,
         "eligible_games": 1,
+        "provisional_sample_only_rows": 1,
+        "provisional_sample_only_games": 1,
+        "paper_candidate_rows": 2,
+        "paper_candidate_games": 2,
+        "paper_accas": 0,
+        "strict_accas": 0,
         "required_games": 3,
         "eligibility_blockers": {
             "below_calibrated_probability_floor": 1,
@@ -562,6 +586,51 @@ def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp
     assert audit["archived_pick_rows"] == 4
     assert audit["same_day_rows_excluded"] == 4
     assert audit["settled_picks"] == 0
+
+
+def test_provisional_sample_only_acca_is_frozen_as_labeled_paper_evidence(tmp_path):
+    provisional = forecast(
+        1,
+        eligible=False,
+        reasons=["insufficient_walk_forward_samples"],
+        calibration_n=4,
+    )
+    strict = forecast(2)
+    ticket = acca([provisional, strict])
+    ticket.update(
+        provisional_sample_gate_bypassed=True,
+        provisional_leg_count=1,
+        ranking_status="paper_only_provisional_sample_gate_bypassed",
+    )
+    market_report = report([provisional, strict], [ticket])
+    market_report["accas"].update(
+        requested_legs=2,
+        results=[],
+        strict_results=[],
+        paper_results=[ticket],
+    )
+
+    result = publish(
+        tmp_path,
+        Store([game(1), game(2)]),
+        market_report,
+    )
+    receipt = json.loads(Path(result["ticket_receipt"]).read_text())
+    frozen_acca = receipt["accas"][0]
+    assert frozen_acca["paper_only"] is True
+    assert frozen_acca["provisional_sample_gate_bypassed"] is True
+    assert frozen_acca["provisional_leg_count"] == 1
+    assert frozen_acca["ranking_status"] == "paper_only_provisional_sample_gate_bypassed"
+    assert frozen_acca["legs"][0]["calibration"]["n"] == 4
+    assert result["candidate_funnel"]["provisional_sample_only_rows"] == 1
+    assert result["candidate_funnel"]["paper_candidate_games"] == 2
+    assert result["candidate_funnel"]["paper_accas"] == 1
+    assert result["candidate_funnel"]["strict_accas"] == 0
+
+    ticket_text = Path(result["ticket_text"]).read_text()
+    assert "PROVISIONAL SAMPLE GATE" in ticket_text
+    assert "PROVISIONAL PAPER ONLY — sample-size gate bypassed" in ticket_text
+    assert "game-1 n=4/?" in ticket_text
 
 
 def test_repeated_observations_render_and_grade_as_one_logical_pick(tmp_path):

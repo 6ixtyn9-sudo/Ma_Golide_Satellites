@@ -48,7 +48,10 @@ The daily summary's `operator` object lists the generated paths and counts.
   means the existing exact-book, calibration, probability, and push-risk guards
   passed; it does not certify profit.
 - **CAUTION PICKS**: a real selected price exists, but the segment lacks enough
-  walk-forward samples.
+  walk-forward samples. These rows remain strictly ineligible. A row whose only
+  blocker is this sample minimum and whose segment has at least one graded
+  non-push observation may appear in a provisional paper acca; the frozen ticket
+  marks that exception explicitly.
 - **WATCHLIST — NO MATCHED ODDS**: no exact selected bookmaker price exists.
   These rows remain visible and are not acca candidates.
 - **WATCHLIST — INSUFFICIENT CONTEXT**: priced rows whose remaining exclusion
@@ -88,11 +91,16 @@ prospective paper-only counterfactual described below.
 
 ## Publication and freeze
 
-The first non-empty acca report for a league/date writes a decision receipt and
-a write-once state lock. Subsequent scans reprint that receipt even if the new
-candidate set differs. A missing locked receipt is an error; the engine never
-silently rebuilds or rotates a published card. A receipt recovered without its
-state lock adopts a lock from the immutable receipt itself.
+When `accas.paper_results` is present, the operator uses that paper-only
+candidate surface; `accas.results` remains the strict surface. Older reports
+without `paper_results` retain their prior behavior. The first non-empty paper
+acca report for a league/date writes a decision receipt and a write-once state
+lock. This includes a provisional paper acca when the sample-size gate alone
+is bypassed; the receipt stores and prints that status and the segment sample
+counts. Subsequent scans reprint the receipt even if the new candidate set
+differs. A missing locked receipt is an error; the
+engine never silently rebuilds or rotates a published card. A receipt recovered
+without its state lock adopts a lock from the immutable receipt itself.
 
 A withdrawal is a deliberate exception recorded in `auto_tickets_state.json`:
 its decision ID is excluded from performance, its date cannot receive a
@@ -105,11 +113,13 @@ an accounting base, not money or a recommended bankroll. Empty scans are logged
 but do not cancel earlier positions or consume ticket identities.
 
 An empty latest-scan card includes a **candidate funnel**: current rows, exact
-priced rows, calibration-sufficient rows, their overlap, eligible rows/games,
-the required independent-game count, and overlapping eligibility blocker counts.
-The same structure is stored under `candidate_funnel` in the bounded scan-state
-entry and operator result. These are diagnostics only; they never override a
-failed guard or synthesize a ticket.
+priced rows, calibration-sufficient rows and their overlap, strict eligible
+rows/games, provisional sample-only rows/games, paper-candidate coverage,
+paper/strict acca counts, the required independent-game count, and overlapping
+eligibility blocker counts. The same structure is stored under
+`candidate_funnel` in the bounded scan-state entry and operator result. These
+are diagnostics only; they never override a non-sample eligibility guard or
+synthesize a ticket.
 
 Dated pick ledgers also retain earlier rows when later scans omit them. Fresh
 versions of the same forecast id replace the dated evidence row; distinct

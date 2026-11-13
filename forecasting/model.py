@@ -87,26 +87,54 @@ class HistoryModel:
         components = {"model_version": MODEL_VERSION, **asdict(self.config)}
         self.calibration_version = f"{MODEL_VERSION}-{config_fingerprint(components)}"
 
+    @staticmethod
+    def _stable_prediction_model_phase(prediction: Prediction) -> Optional[str]:
+        """Return a closed, normalized Predixsport model-phase label if known.
+
+        Free-text ``produced_by`` remains provenance, not identity. The only
+        provider-specific exception is Predixsport's documented earlyseason /
+        mature distinction, recognized as an exact suffix of its model name;
+        arbitrary labels are ignored rather than fragmenting calibration.
+        """
+        provider = (prediction.provider or "").strip().casefold()
+        model = (prediction.model or "").strip().casefold()
+        producer = (prediction.produced_by or "").strip().casefold()
+        if provider != "predixsport" or not model.startswith("predixsport-"):
+            return None
+        prefix = f"{model}-"
+        if not producer.startswith(prefix):
+            return None
+        phase = producer[len(prefix) :].replace("_", "-")
+        if phase == "earlyseason":
+            return "earlyseason"
+        if phase in {"mature", "mature-model"}:
+            return "mature"
+        return None
+
     def _prediction_calibration_version(
         self, prediction: Prediction, *, hybrid: bool = False
     ) -> str:
-        """Fingerprint stable prediction provenance, never per-event revisions.
+        """Fingerprint stable model provenance, never per-event revisions.
 
-        Provider artifacts may update their ``source_revision`` every game, so
-        only provider/model identity and the declared model version identify a
-        calibration segment. Hybrid history-plus-provider lines also include
-        this model's full configuration fingerprint.
+        Provider artifacts may update their ``source_revision`` every game and
+        payload-derived ``produced_by`` labels may vary by row. Calibration
+        identity therefore uses provider/model/version metadata, plus only a
+        closed Predixsport model-phase tag when it is recognized. Hybrid
+        history-plus-provider lines also include this model's full
+        configuration fingerprint.
         """
         components = {
             "provider": prediction.provider,
             "model": prediction.model,
             "model_version": prediction.model_version,
-            "produced_by": prediction.produced_by,
         }
-        prefix = "provider_prediction_v1"
+        model_phase = self._stable_prediction_model_phase(prediction)
+        if model_phase is not None:
+            components["model_phase"] = model_phase
+        prefix = "provider_prediction_v2"
         if hybrid:
             components["history_model_calibration_version"] = self.calibration_version
-            prefix = "history_provider_hybrid_v1"
+            prefix = "history_provider_hybrid_v2"
         return f"{prefix}-{config_fingerprint(components)}"
 
     def available_history(

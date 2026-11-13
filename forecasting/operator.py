@@ -389,19 +389,12 @@ def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
     prediction = row.get("prediction") or {}
     explanation = row.get("explanation") or {}
     shadow_explanation = explanation.get("shadow_calibration") or {}
-    shadow_calibration = (
-        {
-            "challenger_version": shadow_explanation.get("challenger_version"),
-            "status": shadow_explanation.get("status"),
-            "n": shadow_explanation.get("n", 0),
-            "weighted_n": shadow_explanation.get("weighted_n", 0.0),
-            "ess": explanation.get("effective_sample_size"),
-            "champion_probability": shadow_explanation.get("champion_probability"),
-            "probability": shadow_explanation.get("candidate_probability"),
-        }
-        if shadow_explanation
-        else {}
-    )
+    shadow_calibration = dict(shadow_explanation) if isinstance(shadow_explanation, dict) else {}
+    if shadow_calibration:
+        candidate_probability = shadow_calibration.pop("candidate_probability", None)
+        shadow_calibration.setdefault("probability", candidate_probability)
+        if "ess" not in shadow_calibration and "effective_sample_size" in explanation:
+            shadow_calibration["ess"] = explanation["effective_sample_size"]
     return Forecast(
         game_id=str(row["game_id"]),
         league=str(row["league"]),
@@ -1363,6 +1356,12 @@ def _new_receipt(
                 "combined_decimal_odds": acca["combined_decimal_odds"],
                 "stake_units": STAKE_UNITS_PER_ACCA,
                 "estimated_joint_win_probability": acca["estimated_joint_win_probability"],
+                "paper_only": True,
+                "provisional_sample_gate_bypassed": bool(
+                    acca.get("provisional_sample_gate_bypassed", False)
+                ),
+                "provisional_leg_count": int(acca.get("provisional_leg_count") or 0),
+                "ranking_status": acca.get("ranking_status"),
                 "bookmakers": books,
                 "legs": legs,
             }
@@ -1589,11 +1588,13 @@ def _render_ticket_card(
         "",
     ]
     if not receipt["accas"]:
-        lines.extend(["NO PAPER BET — no qualifying eligible acca at publication.", ""])
+        lines.extend(["NO PAPER BET — no strict or provisional paper acca at publication.", ""])
     for index, acca in enumerate(receipt["accas"], 1):
         books = ", ".join(acca.get("bookmakers") or []) or "multiple/no book"
+        provisional = bool(acca.get("provisional_sample_gate_bypassed"))
+        provisional_label = " · PROVISIONAL SAMPLE GATE" if provisional else ""
         lines.append(
-            f"[PAPER ACCA #{index}] @{acca['combined_decimal_odds']:.3f} "
+            f"[PAPER ACCA #{index}]{provisional_label} @{acca['combined_decimal_odds']:.3f} "
             f"— {acca['stake_units']:.6f} paper units — {books} "
             f"· {acca['grade_status'].upper()}"
         )
@@ -1601,6 +1602,20 @@ def _render_ticket_card(
             f"   Published {_local_time(receipt['frozen_at'], timezone_name)} "
             f"· reference P1/{index} · joint p={acca['estimated_joint_win_probability']:.1%}"
         )
+        if provisional:
+            provisional_legs = [
+                leg for leg in acca["legs"] if _is_provisional_sample_only_row(leg)
+            ]
+            samples = ", ".join(
+                f"{leg.get('game_id', '?')} n={(leg.get('calibration') or {}).get('n', '?')}"
+                f"/{(leg.get('calibration') or {}).get('minimum_samples', '?')}"
+                for leg in provisional_legs
+            )
+            detail = f" · {samples}" if samples else ""
+            lines.append(
+                "   PROVISIONAL PAPER ONLY — sample-size gate bypassed; all other "
+                f"eligibility gates remain enforced{detail}"
+            )
         for leg in acca["legs"]:
             price = (leg.get("book") or {}).get("selected_decimal_price")
             probability = leg.get("calibrated_probability")
@@ -1626,8 +1641,37 @@ def _render_ticket_card(
     return "\n".join(lines)
 
 
+def _is_provisional_sample_only_row(row: Dict[str, Any]) -> bool:
+    eligibility = row.get("eligibility") or {}
+    if eligibility.get("acca_eligible") is not False:
+        return False
+    reasons = eligibility.get("reasons")
+    if not isinstance(reasons, (list, tuple, set)):
+        return False
+    if set(reasons) != {"insufficient_walk_forward_samples"}:
+        return False
+    calibration = row.get("calibration") or {}
+    if (
+        calibration.get("status") != "provisional"
+        or calibration.get("sufficient_for_accas") is not False
+    ):
+        return False
+    n = calibration.get("n")
+    if isinstance(n, bool) or not isinstance(n, int) or n < 1:
+        return False
+    minimum = calibration.get("minimum_samples")
+    if minimum is not None and (
+        isinstance(minimum, bool)
+        or not isinstance(minimum, int)
+        or minimum < 1
+        or n >= minimum
+    ):
+        return False
+    return True
+
+
 def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, Any]:
-    """Explain ticket supply without weakening or reimplementing eligibility."""
+    """Explain strict and paper-exploratory supply without changing the report."""
     report = market_report or {}
     rows = list(report.get("forecasts") or [])
     acca_report = report.get("accas") or {}
@@ -1646,6 +1690,20 @@ def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, 
         row for row in rows if (row.get("calibration") or {}).get("sufficient_for_accas") is True
     ]
     eligible = [row for row in rows if (row.get("eligibility") or {}).get("acca_eligible")]
+    provisional = [
+        row for row in rows if exact_price(row) and _is_provisional_sample_only_row(row)
+    ]
+    eligible_games = {row.get("game_id") for row in eligible}
+    provisional_games = {row.get("game_id") for row in provisional}
+    paper_results = acca_report.get("paper_results")
+    if paper_results is None:  # legacy reports expose only the strict result surface
+        paper_results = acca_report.get("results")
+    paper_accas = list(paper_results or [])
+    strict_accas = acca_report.get("strict_results")
+    if strict_accas is None:  # pre-exploration report compatibility
+        strict_accas = list(acca_report.get("results") or [])
+    else:
+        strict_accas = list(strict_accas or [])
     blockers = Counter(
         reason for row in rows for reason in ((row.get("eligibility") or {}).get("reasons") or [])
     )
@@ -1662,7 +1720,13 @@ def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, 
             for row in rows
         ),
         "eligible_rows": len(eligible),
-        "eligible_games": len({row.get("game_id") for row in eligible}),
+        "eligible_games": len(eligible_games),
+        "provisional_sample_only_rows": len(provisional),
+        "provisional_sample_only_games": len(provisional_games),
+        "paper_candidate_rows": len(eligible) + len(provisional),
+        "paper_candidate_games": len(eligible_games | provisional_games),
+        "paper_accas": len(paper_accas),
+        "strict_accas": len(strict_accas),
         "required_games": required_games,
         "eligibility_blockers": dict(sorted(blockers.items())),
     }
@@ -1689,7 +1753,7 @@ def _render_empty_ticket_scan(
         (
             "NO PAPER BET — the earlier ticket publication was withdrawn for model-integrity failure."
             if withdrawal
-            else "NO PAPER BET — no qualifying eligible acca in this scan."
+            else "NO PAPER BET — no strict or provisional paper acca in this scan."
         ),
         "",
         "CANDIDATE FUNNEL",
@@ -1701,6 +1765,12 @@ def _render_empty_ticket_scan(
         f"{'row' if candidate_funnel['eligible_rows'] == 1 else 'rows'} · "
         f"{candidate_funnel['eligible_games']} eligible "
         f"{'game' if candidate_funnel['eligible_games'] == 1 else 'games'}",
+        f"  {candidate_funnel['provisional_sample_only_rows']} provisional sample-only "
+        f"{'row' if candidate_funnel['provisional_sample_only_rows'] == 1 else 'rows'} · "
+        f"{candidate_funnel['provisional_sample_only_games']} "
+        f"{'game' if candidate_funnel['provisional_sample_only_games'] == 1 else 'games'} · "
+        f"{candidate_funnel['paper_accas']} paper accas "
+        f"({candidate_funnel['strict_accas']} strict)",
         f"  Need {candidate_funnel['required_games']} independent games for one acca; "
         "same-game legs are prohibited.",
     ]
@@ -1860,6 +1930,11 @@ def publish_operator_reports(
     )
 
     state = _load_state(localdata)
+    acca_report = (market_report or {}).get("accas") or {}
+    paper_results = acca_report.get("paper_results")
+    if paper_results is None:  # legacy reports expose only the strict result surface
+        paper_results = acca_report.get("results") or []
+    ticket_accas = deepcopy(paper_results or [])
     receipt = _ticket_receipt(
         localdata,
         state=state,
@@ -1867,13 +1942,13 @@ def publish_operator_reports(
         target_date=target_date,
         captured_utc=generated_utc,
         run_id=run_id,
-        accas=deepcopy((market_report or {}).get("accas", {}).get("results") or []),
+        accas=ticket_accas,
     )
     state["scans"].append(
         {
             "run_id": run_id,
             "captured_at": generated_utc,
-            "fresh_accas": len((market_report or {}).get("accas", {}).get("results") or []),
+            "fresh_accas": len(ticket_accas),
             "receipt_present": receipt is not None,
             "candidate_funnel": deepcopy(candidate_funnel),
         }

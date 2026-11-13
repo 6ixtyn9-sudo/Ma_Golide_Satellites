@@ -158,8 +158,10 @@ prediction and correctly reported zero reconciled finals.
 - EuroLeague book coverage remains unenabled; full-game spread observations
   can be stored but are not a current full-game spread forecast family.
 - Derived markets require 20 baseline history games plus 20 eligible residual
-  simulations by default; acca segments separately require 30 graded samples.
-  Early warehouses will correctly produce few or no eligible accas.
+  simulations by default; strict acca eligibility separately requires 30 graded
+  non-push samples. The paper-only exploratory path may bypass only that sample
+  gate after one graded non-push sample; early warehouses may still produce no
+  accas when any other guard or the independent-game count is unmet.
 - Empirical residual probabilities and shrunk reliability adjustments are not
   proof of profitability or optimal calibration. Prospective performance is
   unknown.

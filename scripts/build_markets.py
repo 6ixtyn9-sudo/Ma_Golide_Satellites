@@ -92,6 +92,7 @@ def main() -> int:
                 "calibration_segments": len(report["walk_forward"]["segments"]),
                 "eligible_acca_games": report["accas"]["eligible_games"],
                 "accas": len(report["accas"]["results"]),
+                "paper_accas": len(report["accas"].get("paper_results") or []),
                 "external_writes": False,
             },
             indent=2,

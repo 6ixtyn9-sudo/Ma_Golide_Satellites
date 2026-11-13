@@ -130,24 +130,55 @@ def test_provider_versions_use_model_metadata_not_per_event_revisions():
     changed_model = model._prediction_calibration_version(
         replace(prediction, model_version="bpi-2026.2")
     )
-    changed_producer = model._prediction_calibration_version(
+    changed_producer_label = model._prediction_calibration_version(
         replace(prediction, produced_by="ESPN BPI revised model")
     )
     adapter_versioned = model._prediction_calibration_version(
         replace(prediction, model_version="adapter:espn-bpi-v1")
     )
     assert original == changed_event
-    assert original.startswith("provider_prediction_v1-")
+    assert original.startswith("provider_prediction_v2-")
     assert changed_model != original
-    assert changed_producer != original
+    # Payload producer labels remain provenance, not segmentation keys: a
+    # per-row editor/name change must not fragment a model's calibration n.
+    assert changed_producer_label == original
     assert adapter_versioned != original  # old unversioned evidence stays isolated
 
     hybrid = model._prediction_calibration_version(prediction, hybrid=True)
     changed_history_config = HistoryModel(
         ForecastConfig(recent_half_life_games=21.0)
     )._prediction_calibration_version(prediction, hybrid=True)
-    assert hybrid.startswith("history_provider_hybrid_v1-")
+    assert hybrid.startswith("history_provider_hybrid_v2-")
     assert changed_history_config != hybrid
+
+
+def test_predixsport_producer_labels_use_only_closed_model_phase_tags():
+    model = HistoryModel(ForecastConfig())
+    prediction = Prediction(
+        game_id="g1",
+        provider="predixsport",
+        observed_utc="2026-11-12T10:00:00Z",
+        model="predixsport-nba",
+        model_version="adapter:predixsport-v1",
+        produced_by="predixsport-nba-earlyseason",
+        prob_home=0.7,
+        prob_away=0.3,
+    )
+    earlyseason = model._prediction_calibration_version(prediction)
+    same_phase = model._prediction_calibration_version(
+        replace(prediction, produced_by="PREDIXSPORT-NBA-EARLYSEASON ")
+    )
+    mature = model._prediction_calibration_version(
+        replace(prediction, produced_by="predixsport-nba-mature-model")
+    )
+    no_phase = model._prediction_calibration_version(replace(prediction, produced_by=None))
+    arbitrary_label = model._prediction_calibration_version(
+        replace(prediction, produced_by="editor-managed payload label")
+    )
+
+    assert earlyseason == same_phase
+    assert mature != earlyseason
+    assert no_phase == arbitrary_label
 
 
 def test_stamped_forecast_ids_change_but_legacy_ids_remain_stable():

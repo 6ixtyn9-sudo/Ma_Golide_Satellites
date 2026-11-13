@@ -132,16 +132,16 @@ The default result-availability delay is four hours.
 The walk-forward harness fits separate reliability profiles by league, market,
 period, and model source. Each profile uses only earlier graded outcomes. Its
 shrunken observed-minus-claimed adjustment changes later calibrated
-probabilities; at least 30 graded samples are required before a segment can
-supply acca legs.
+probabilities; strict ACCA eligibility requires at least 30 graded non-push
+samples in the exact segment by default.
 
-An acca is eligible only when every leg has:
+Strict ACCA eligibility requires every leg to have:
 
 - an exact real bookmaker market, period, line where applicable, and selected
   decimal price;
 - visible pre-tip book evidence and provider evidence where used, with freeze
   state reported explicitly;
-- enough walk-forward samples and a calibrated probability at least 0.50;
+- a calibrated probability at least 0.50;
 - for history-based forecasts, at least eight effective prior games per team by
   default—the same weight as the league prior—so fallback league averages cannot
   supply ACCA legs;
@@ -154,6 +154,18 @@ prohibited. Cross-game conditional independence is an explicit simplifying
 assumption, not a measured guarantee. “Highest” therefore means highest under
 that model among eligible combinations—not a guaranteed winner or an
 empirically certified global maximum.
+
+The strict `Forecast.eligibility` gate is unchanged. For compatibility,
+`accas.results` (also exposed as `accas.strict_results`) remains the strict
+candidate list. A separate `accas.paper_results` surface is used only by the
+auto-ticket publisher and may include a provisional segment when at least one
+graded non-push sample exists and insufficient sample size is the segment's
+only blocker. Exact priced-market, team-history, push-risk, and probability-floor
+checks still apply. Such legs remain marked ineligible in the forecast
+and the frozen paper receipt labels the sample-size exception. Paper-ticket
+grades are tracked separately and do not themselves bootstrap or inflate
+calibration sample counts, which continue to come from prequential forecast
+evidence.
 
 Reports have schema `magolide.market_forecasts.v1` and status
 `decision_support_only`. They cannot place bets or trigger external betting
