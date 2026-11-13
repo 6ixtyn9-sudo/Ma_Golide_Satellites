@@ -8,6 +8,7 @@ import pytest
 from forecasting.operator import (
     _audit_market_selection,
     _forecast_from_row,
+    load_settled_pick_history,
     _selection_label,
     opposite_quote,
     publish_operator_reports,
@@ -602,12 +603,48 @@ def test_provisional_sample_only_acca_is_frozen_as_labeled_paper_evidence(tmp_pa
         provisional_leg_count=1,
         ranking_status="paper_only_provisional_sample_gate_bypassed",
     )
+    band_details = {
+        "league": "NBA",
+        "market": "moneyline",
+        "period": "full_game",
+        "model": "provider-history",
+        "probability_band": "0.60-<0.70",
+        "individual_odds_band": "1.50-<2.00",
+        "candidate_pick_count": 2,
+        "historical_pick_count": 30,
+        "wins": 18,
+        "losses": 12,
+        "pushes": 0,
+        "observed_roi": 0.12,
+        "recency_weighted_roi": 0.10,
+        "parent_roi": 0.03,
+        "adjusted_roi": 0.09,
+        "qualifies": True,
+    }
+    pick_filter = {
+        "policy": "adaptive_recency_weighted_positive_individual_pick_roi_bands",
+        "history_source": "settled_pick_audit",
+        "performance_basis": "settled_individual_picks_only_not_acca_outcomes",
+        "candidate_pick_count": 2,
+        "candidate_band_count": 1,
+        "qualifying_pick_count": 2,
+        "qualifying_band_count": 1,
+        "historical_unique_pick_count": 30,
+        "candidate_band_details": {
+            "forecast-1-moneyline-home": band_details,
+            "forecast-2-moneyline-home": band_details,
+        },
+        "bands": [band_details],
+        "status": "applied",
+    }
+    ticket["individual_pick_filter"] = pick_filter
     market_report = report([provisional, strict], [ticket])
     market_report["accas"].update(
         requested_legs=2,
         results=[],
         strict_results=[],
         paper_results=[ticket],
+        paper_pick_filter=pick_filter,
     )
 
     result = publish(
@@ -621,7 +658,9 @@ def test_provisional_sample_only_acca_is_frozen_as_labeled_paper_evidence(tmp_pa
     assert frozen_acca["provisional_sample_gate_bypassed"] is True
     assert frozen_acca["provisional_leg_count"] == 1
     assert frozen_acca["ranking_status"] == "paper_only_provisional_sample_gate_bypassed"
+    assert frozen_acca["individual_pick_filter"] == pick_filter
     assert frozen_acca["legs"][0]["calibration"]["n"] == 4
+    assert result["candidate_funnel"]["paper_pick_filter"] == pick_filter
     assert result["candidate_funnel"]["provisional_sample_only_rows"] == 1
     assert result["candidate_funnel"]["paper_candidate_games"] == 2
     assert result["candidate_funnel"]["paper_accas"] == 1
@@ -629,8 +668,40 @@ def test_provisional_sample_only_acca_is_frozen_as_labeled_paper_evidence(tmp_pa
 
     ticket_text = Path(result["ticket_text"]).read_text()
     assert "PROVISIONAL SAMPLE GATE" in ticket_text
+    assert (
+        "Individual-pick ROI policy: 2/2 eligible candidates qualify across 1 positive "
+        "bands; 30 unique settled picks · status=applied."
+    ) in ticket_text
+    assert (
+        "ROI band: moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · "
+        "n=30 W-L-P=18-12-0 · ROI +12.0% observed / +9.0% adjusted."
+    ) in ticket_text
     assert "PROVISIONAL PAPER ONLY — sample-size gate bypassed" not in ticket_text
     assert "game-1 n=4/?" not in ticket_text
+
+
+def test_roi_band_history_loads_settled_single_picks_not_acca_performance(tmp_path):
+    settled = forecast(1)
+    settled["calibrated_probability"] = 0.67
+    settled["outcome"] = "win"
+    settled["grade_status"] = "win"
+    pending = json.loads(json.dumps(forecast(2)))
+    pending["calibrated_probability"] = 0.85
+    pending["outcome"] = None
+    pending["grade_status"] = "pending"
+    (tmp_path / "picks_audit_rolling.json").write_text(
+        json.dumps({"settled_ledger": [settled, pending]})
+    )
+    (tmp_path / "auto_tickets_performance.json").write_text(
+        json.dumps({"settled_accas": 999, "history": [{"status": "won"}]})
+    )
+
+    history = load_settled_pick_history(tmp_path)
+    assert history is not None
+    assert len(history) == 1
+    assert history[0].outcome == "win"
+    assert history[0].calibrated_probability == 0.67
+    assert history[0].decimal_price == 1.8
 
 
 def test_repeated_observations_render_and_grade_as_one_logical_pick(tmp_path):

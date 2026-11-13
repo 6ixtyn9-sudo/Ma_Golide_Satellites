@@ -211,15 +211,44 @@ these rows. `MarketForecastService` keeps `accas.results` (and its explicit
 `accas.paper_results` for the paper-ticket publisher only. The default
 `build_accas()` behavior remains strict.
 
-The paper-ticket surface greedily accepts combinations in descending joint
-probability order and does not reuse an exact wager selection (league, game,
-market, period, selection, and line) across tickets. A different selection from
-the same game may be used on another ticket, while same-game legs remain
-prohibited within any one acca. This is a no-repeated-leg rule, not mathematical
-outcome exclusivity: separate tickets may still win simultaneously. The strict
-`results`/`strict_results` analytical ranking remains unchanged and can contain
-overlapping combinations. Fewer paper tickets are returned when the requested
-limit exceeds the available non-repeated leg sets.
+Before paper-ticket assembly, the current paper-eligible candidate pool is
+coalesced to one forecast row per exact wager selection (league, game, market,
+period, selection, and line), keeping the highest-calibrated-probability row for
+duplicate model forecasts. Each pick is then checked against settled
+individual-pick ROI for its league, market, period, model source, calibrated-
+probability band, and individual-decimal-odds band. Probability bands are
+`<0.50`, `0.50-<0.60`, `0.60-<0.70`, `0.70-<0.80`, `0.80-<0.90`, and
+`0.90-1.00`; odds bands are `1.00-<1.20`, `1.20-<1.50`, `1.50-<2.00`, and
+`2.00+`.
+
+The historical source is the rolling audit's `settled_ledger` when available,
+otherwise past-only prequential settled individual forecasts. Pending rows,
+future results, missing calibrated probabilities, and rows without an exact
+pre-tip price do not count. Flat one-unit profit is `price - 1` for a win, `-1`
+for a loss, and `0` for a push; pushes remain in the one-unit ROI denominator.
+History is weighted with a 14-day half-life and the band estimate is shrunk
+toward model, market, then league-level ROI using three effective prior picks.
+There is no long sample-size qualification delay: one settled pick can seed a
+band, but the candidate's own band must have positive recency-weighted ROI and
+positive adjusted ROI. A band with no settled history cannot inherit eligibility
+from a profitable parent. This decision is recomputed on each scan as outcomes
+settle; acca-ledger outcomes are never used as individual-pick evidence. A
+positive band is an exploratory paper-only signal, not statistical validation
+or proof of future profit.
+
+If too few independent qualifying picks remain, no paper acca is emitted. This
+performance gate does not relax or add a calibration-sample gate: the existing
+sample-only provisional path and all other strict eligibility safeguards remain
+in force.
+
+The paper-ticket surface then greedily accepts combinations in descending joint
+probability order and does not reuse an exact wager selection across tickets.
+A different selection from the same game may be used on another ticket, while
+same-game legs remain prohibited within any one acca. This is a no-repeated-leg
+rule, not mathematical outcome exclusivity: separate tickets may still win
+simultaneously. The strict `results`/`strict_results` analytical ranking is
+unchanged and can contain overlapping combinations. Fewer paper tickets are
+returned when the requested limit exceeds the available non-repeated leg sets.
 
 Frozen paper receipts label every combination that uses a provisional leg.
 Paper ticket outcomes are collected in the separate paper-performance ledger;
@@ -227,10 +256,11 @@ they do not directly count as calibration samples or feed the profile fit.
 Calibration continues to use prequential, past-only forecast evidence.
 
 The ranking stage selects the highest-calibrated-probability candidate per
-game from the chosen strict or paper-only surface. Bookmaker price never breaks
-a probability tie; deterministic fixture, market,
-source, and forecast identifiers are used instead. Same-game legs are prohibited
-rather than silently multiplied as independent.
+game from the chosen strict or paper-only surface. On paper tickets, the
+adaptive individual-pick ROI-band gate is applied before this selection;
+bookmaker price never breaks a probability tie. Deterministic fixture, market,
+source, and forecast identifiers are used instead. Same-game legs are
+prohibited rather than silently multiplied as independent.
 For the requested leg count, a best-first search ranks combinations by:
 
 ```text

@@ -431,6 +431,39 @@ def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
     )
 
 
+def load_settled_pick_history(localdata: Path) -> Optional[List[Forecast]]:
+    """Read the rolling audit's settled single-pick rows for paper ROI bands.
+
+    ``None`` means no audit exists and lets the forecasting service use its
+    own prequential settled individual forecasts. An existing but malformed
+    audit fails closed rather than silently substituting acca outcomes or an
+    empty history.
+    """
+    path = Path(localdata) / "picks_audit_rolling.json"
+    if not path.exists():
+        return None
+    report = _read_json(path, {})
+    if not isinstance(report, dict) or not isinstance(report.get("settled_ledger"), list):
+        raise ValueError(f"settled pick audit has no valid settled_ledger: {path}")
+
+    history = []
+    for index, row in enumerate(report["settled_ledger"]):
+        if not isinstance(row, dict):
+            raise ValueError(f"invalid settled pick row {index} in {path}")
+        outcome = row.get("grade_status")
+        if outcome not in {"win", "loss", "push"}:
+            outcome = row.get("outcome")
+        if outcome not in {"win", "loss", "push"}:
+            continue
+        settled_row = deepcopy(row)
+        settled_row["outcome"] = outcome
+        try:
+            history.append(_forecast_from_row(settled_row))
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError(f"invalid settled pick row {index} in {path}: {exc}") from exc
+    return history
+
+
 def _grade_row(row: Dict[str, Any], games: Dict[str, Game]) -> Optional[str]:
     game = games.get(str(row["game_id"]))
     if game is None or game.status is not GameStatus.FINAL:
@@ -1349,23 +1382,25 @@ def _new_receipt(
     for index, acca in enumerate(accas, 1):
         legs = [_pick_row(leg, target_date) for leg in acca["legs"]]
         books = sorted({(leg.get("book") or {}).get("book") for leg in legs} - {None})
-        ticket_rows.append(
-            {
-                "ticket_id": acca["acca_id"],
-                "publication_index": index,
-                "combined_decimal_odds": acca["combined_decimal_odds"],
-                "stake_units": STAKE_UNITS_PER_ACCA,
-                "estimated_joint_win_probability": acca["estimated_joint_win_probability"],
-                "paper_only": True,
-                "provisional_sample_gate_bypassed": bool(
-                    acca.get("provisional_sample_gate_bypassed", False)
-                ),
-                "provisional_leg_count": int(acca.get("provisional_leg_count") or 0),
-                "ranking_status": acca.get("ranking_status"),
-                "bookmakers": books,
-                "legs": legs,
-            }
-        )
+        ticket_row = {
+            "ticket_id": acca["acca_id"],
+            "publication_index": index,
+            "combined_decimal_odds": acca["combined_decimal_odds"],
+            "stake_units": STAKE_UNITS_PER_ACCA,
+            "estimated_joint_win_probability": acca["estimated_joint_win_probability"],
+            "paper_only": True,
+            "provisional_sample_gate_bypassed": bool(
+                acca.get("provisional_sample_gate_bypassed", False)
+            ),
+            "provisional_leg_count": int(acca.get("provisional_leg_count") or 0),
+            "ranking_status": acca.get("ranking_status"),
+            "bookmakers": books,
+            "legs": legs,
+        }
+        pick_filter = acca.get("individual_pick_filter")
+        if isinstance(pick_filter, dict):
+            ticket_row["individual_pick_filter"] = deepcopy(pick_filter)
+        ticket_rows.append(ticket_row)
     return {
         "schema_version": TICKET_SCHEMA,
         "date": target_date,
@@ -1602,7 +1637,43 @@ def _render_ticket_card(
             f"   Published {_local_time(receipt['frozen_at'], timezone_name)} "
             f"· reference P1/{index} · joint p={acca['estimated_joint_win_probability']:.1%}"
         )
+        pick_filter = acca.get("individual_pick_filter") or {}
+        candidate_count = int(pick_filter.get("candidate_pick_count") or 0)
+        qualifying_count = int(pick_filter.get("qualifying_pick_count") or 0)
+        history_count = int(pick_filter.get("historical_unique_pick_count") or 0)
+        if pick_filter:
+            lines.append(
+                f"   Individual-pick ROI policy: {qualifying_count}/{candidate_count} "
+                f"eligible candidates qualify across "
+                f"{int(pick_filter.get('qualifying_band_count') or 0)} positive bands; "
+                f"{history_count} unique settled picks · status={pick_filter.get('status', 'unknown')}."
+            )
+        band_details = pick_filter.get("candidate_band_details") or {}
         for leg in acca["legs"]:
+            details = band_details.get(leg.get("forecast_id"))
+            if isinstance(details, dict):
+                observed_roi = details.get("observed_roi")
+                adjusted_roi = details.get("adjusted_roi")
+                observed_text = (
+                    f"{float(observed_roi):+.1%}"
+                    if isinstance(observed_roi, (int, float)) and not isinstance(observed_roi, bool)
+                    else "n/a"
+                )
+                adjusted_text = (
+                    f"{float(adjusted_roi):+.1%}"
+                    if isinstance(adjusted_roi, (int, float)) and not isinstance(adjusted_roi, bool)
+                    else "n/a"
+                )
+                lines.append(
+                    f"      ROI band: {details.get('market', leg.get('market'))} "
+                    f"{details.get('period', leg.get('period'))} · "
+                    f"p {details.get('probability_band', 'unknown')} · "
+                    f"odds {details.get('individual_odds_band', 'unknown')} · "
+                    f"n={int(details.get('historical_pick_count') or 0)} "
+                    f"W-L-P={int(details.get('wins') or 0)}-"
+                    f"{int(details.get('losses') or 0)}-{int(details.get('pushes') or 0)} · "
+                    f"ROI {observed_text} observed / {adjusted_text} adjusted."
+                )
             price = (leg.get("book") or {}).get("selected_decimal_price")
             probability = leg.get("calibrated_probability")
             if probability is None:
@@ -1697,7 +1768,7 @@ def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, 
         required_games = int(acca_report.get("requested_legs") or 3)
     except (TypeError, ValueError):
         required_games = 3
-    return {
+    funnel = {
         "scan_rows": len(rows),
         "exact_priced_rows": len(priced),
         "calibration_sufficient_rows": len(calibrated),
@@ -1716,6 +1787,10 @@ def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, 
         "required_games": required_games,
         "eligibility_blockers": dict(sorted(blockers.items())),
     }
+    pick_filter = acca_report.get("paper_pick_filter")
+    if isinstance(pick_filter, dict):
+        funnel["paper_pick_filter"] = deepcopy(pick_filter)
+    return funnel
 
 
 def _render_empty_ticket_scan(
@@ -1760,6 +1835,40 @@ def _render_empty_ticket_scan(
         f"  Need {candidate_funnel['required_games']} independent games for one acca; "
         "same-game legs are prohibited.",
     ]
+    pick_filter = candidate_funnel.get("paper_pick_filter")
+    if isinstance(pick_filter, dict):
+        candidate_count = int(pick_filter.get("candidate_pick_count") or 0)
+        qualifying_count = int(pick_filter.get("qualifying_pick_count") or 0)
+        history_count = int(pick_filter.get("historical_unique_pick_count") or 0)
+        lines.append(
+            f"  Individual-pick ROI filter: {qualifying_count}/{candidate_count} qualify "
+            f"across {int(pick_filter.get('qualifying_band_count') or 0)} positive bands; "
+            f"{history_count} unique settled picks · "
+            f"status={pick_filter.get('status', 'unknown')}."
+        )
+        for band in pick_filter.get("bands") or []:
+            if not isinstance(band, dict):
+                continue
+            weighted_roi = band.get("recency_weighted_roi")
+            adjusted_roi = band.get("adjusted_roi")
+            weighted_text = (
+                f"{float(weighted_roi):+.1%}"
+                if isinstance(weighted_roi, (int, float)) and not isinstance(weighted_roi, bool)
+                else "n/a"
+            )
+            adjusted_text = (
+                f"{float(adjusted_roi):+.1%}"
+                if isinstance(adjusted_roi, (int, float)) and not isinstance(adjusted_roi, bool)
+                else "n/a"
+            )
+            lines.append(
+                f"    {band.get('market', 'unknown')} {band.get('period', 'unknown')} "
+                f"p {band.get('probability_band', 'unknown')} · "
+                f"odds {band.get('individual_odds_band', 'unknown')} · "
+                f"n={int(band.get('historical_pick_count') or 0)} · "
+                f"recency ROI {weighted_text} / adjusted {adjusted_text} · "
+                f"{'qualifies' if band.get('qualifies') is True else 'blocked'}"
+            )
     blockers = candidate_funnel.get("eligibility_blockers") or {}
     if blockers:
         lines.append("  Blockers (a row can have more than one):")
@@ -2033,4 +2142,4 @@ def publish_operator_reports(
     }
 
 
-__all__ = ["publish_operator_reports"]
+__all__ = ["load_settled_pick_history", "publish_operator_reports"]
