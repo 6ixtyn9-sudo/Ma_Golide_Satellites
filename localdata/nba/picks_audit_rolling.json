@@ -1,6 +1,6 @@
 {
-  "archived_evidence_rows": 345,
-  "archived_pick_rows": 153,
+  "archived_evidence_rows": 349,
+  "archived_pick_rows": 154,
   "by_bucket": {
     "CAUTION": {
       "priced_profit_units": 0.30098968442599183,
@@ -113,7 +113,7 @@
       "wins": 2
     }
   },
-  "eligible_prior_picks": 123,
+  "eligible_prior_picks": 154,
   "fade_audit": {
     "break_even_basis": "mean inverse opposite decimal price among non-push fade quotes; book-implied and includes market margin",
     "break_even_hit_rate": null,
@@ -784,7 +784,7 @@
     "unpriced_sample": 123,
     "wins": 0
   },
-  "generated_utc": "2026-11-12T19:51:09Z",
+  "generated_utc": "2026-11-13T01:47:12Z",
   "grading_basis": "reconciled_official_finals_only; official_finals_settle_immediately; pending_is_not_a_loss; local_day_pending_cutoff; latest_observation_per_logical_pick",
   "hit_rate": 0.5121951219512195,
   "include_same_day_settled": true,
@@ -11234,8 +11234,8 @@
     },
     {
       "alternative_probabilities": {
-        "away": 0.26928,
-        "home": 0.73072
+        "away": 0.29822,
+        "home": 0.70178
       },
       "away": "Charlotte Hornets",
       "book": {
@@ -11245,7 +11245,7 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-12T19:51:10Z",
+        "observed_utc": "2026-11-13T01:47:13Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
@@ -11260,7 +11260,7 @@
         "source_modified_utc": null
       },
       "bucket": "SKIPPED_INELIGIBLE",
-      "calibrated_probability": 0.73072,
+      "calibrated_probability": 0.70178,
       "calibration": {
         "adjustment": 0.0,
         "n": 0,
@@ -11278,7 +11278,7 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "7b1f27e9a54eb60e9198",
+      "forecast_id": "4583f0d76f133f6fafc3",
       "game_id": "401909979",
       "grade_status": "pending",
       "home": "Phoenix Suns",
@@ -11290,15 +11290,15 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "7b1f27e9a54eb60e9198",
+      "pick_id": "4583f0d76f133f6fafc3",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-12T19:51:10Z",
+        "observed_utc": "2026-11-13T01:47:13Z",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
       "push_probability": 0.0,
-      "raw_probability": 0.73072,
+      "raw_probability": 0.70178,
       "residual_games": 0,
       "role": "favorite",
       "scheduled_utc": "2026-11-13T02:00:00Z",
@@ -11320,7 +11320,7 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-12T19:51:10Z",
+        "observed_utc": "2026-11-13T01:47:13Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
@@ -11367,7 +11367,7 @@
       },
       "expected_margin": 3.8115697293228123,
       "expected_total": 223.55586773882413,
-      "forecast_id": "c3f2f1740f7f3a119621",
+      "forecast_id": "571644ca843672736835",
       "game_id": "401909979",
       "grade_status": "pending",
       "home": "Phoenix Suns",
@@ -11379,7 +11379,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "c3f2f1740f7f3a119621",
+      "pick_id": "571644ca843672736835",
       "prediction": null,
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
       "push_probability": 0.0,
@@ -11388,6 +11388,85 @@
       "role": null,
       "scheduled_utc": "2026-11-13T02:00:00Z",
       "selection": "home",
+      "team_history": {
+        "away_effective_games": 8.598404,
+        "home_effective_games": 7.866362,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 156
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.53,
+        "home": 0.47
+      },
+      "away": "Charlotte Hornets",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "game_id": "401909979",
+        "line": -6.5,
+        "main_line": true,
+        "market": "spread",
+        "observed_utc": "2026-11-13T01:47:13Z",
+        "period": "full_game",
+        "pre_match": true,
+        "provider": "espn",
+        "selected_decimal_price": 1.8928571428571428,
+        "side_prices": {
+          "away": 1.8928571428571428,
+          "draw": null,
+          "home": 1.925925925925926,
+          "over": null,
+          "under": null
+        },
+        "source_modified_utc": null
+      },
+      "bucket": "SKIPPED_INELIGIBLE",
+      "calibrated_probability": 0.53,
+      "calibration": {
+        "adjustment": 0.0,
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "date": "2026-11-12",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 6.659999999999997,
+      "expected_total": 216.736,
+      "forecast_id": "92fbe6c75335b0e000ba",
+      "game_id": "401909979",
+      "grade_status": "pending",
+      "home": "Phoenix Suns",
+      "league": "NBA",
+      "line": -6.5,
+      "market": "spread",
+      "model": "provider:espn+team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "92fbe6c75335b0e000ba",
+      "prediction": {
+        "frozen": false,
+        "observed_utc": "2026-11-13T01:47:13Z",
+        "provider": "espn"
+      },
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.53,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-13T02:00:00Z",
+      "selection": "away",
       "team_history": {
         "away_effective_games": 8.598404,
         "home_effective_games": 7.866362,
@@ -11488,7 +11567,7 @@
         "line": 214.5,
         "main_line": true,
         "market": "total",
-        "observed_utc": "2026-11-12T19:51:10Z",
+        "observed_utc": "2026-11-13T01:47:13Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
@@ -11519,9 +11598,9 @@
           "insufficient_team_specific_history"
         ]
       },
-      "expected_margin": 7.768999999999991,
-      "expected_total": 216.43099999999998,
-      "forecast_id": "149b7475d20e2a00fde1",
+      "expected_margin": 6.659999999999997,
+      "expected_total": 216.736,
+      "forecast_id": "91d58535cf62f0e8cda3",
       "game_id": "401909979",
       "grade_status": "pending",
       "home": "Phoenix Suns",
@@ -11533,10 +11612,10 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "149b7475d20e2a00fde1",
+      "pick_id": "91d58535cf62f0e8cda3",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-12T19:51:10Z",
+        "observed_utc": "2026-11-13T01:47:13Z",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -11556,15 +11635,15 @@
     }
   ],
   "losses": 60,
-  "pending_picks": 0,
-  "pending_picks_total": 30,
+  "pending_picks": 31,
+  "pending_picks_total": 31,
   "priced_sample": 94,
   "profit_units": -3.147503928275544,
   "pushes": 0,
   "roi": -0.03348408434335685,
-  "same_day_cutoff": "2026-11-12",
-  "same_day_pending_picks": 30,
-  "same_day_rows_excluded": 30,
+  "same_day_cutoff": "2026-11-13",
+  "same_day_pending_picks": 0,
+  "same_day_rows_excluded": 0,
   "same_day_settled_picks": 0,
   "schema_version": "magolide.operator.v1",
   "settled_ledger": [
@@ -20077,7 +20156,7 @@
   ],
   "settled_picks": 123,
   "stake_policy": "flat_one_paper_unit_per_priced_pick",
-  "superseded_observations": 192,
+  "superseded_observations": 195,
   "window": {
     "days": 30,
     "end": "2026-11-12",

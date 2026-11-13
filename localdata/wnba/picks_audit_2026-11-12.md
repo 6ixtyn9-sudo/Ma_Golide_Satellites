@@ -1,6 +1,6 @@
 # Ma Golide — Recent picks audit (2026-10-14 to 2026-11-12)
 
-Generated: 2026-11-12 21:51 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-13 03:47 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
@@ -15,7 +15,7 @@ Generated: 2026-11-12 21:51 SAST · 30-day rolling window · Paper only
 ## Settlement policy
 
 - reconciled official finals settle immediately; pending rows are never losses
-- local-day pending cutoff: 2026-11-12
+- local-day pending cutoff: 2026-11-13
 - same-day pending rows outside prior-day counters: 0
 - same-day official-final picks included: 0
 - eligible prior-day picks: 0
