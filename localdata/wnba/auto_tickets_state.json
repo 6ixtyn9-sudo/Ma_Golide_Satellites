@@ -1,7 +1,7 @@
 {
   "base_paper_units": 100.0,
   "frozen_by_date": {},
-  "last_generated_utc": "2026-11-13T18:23:10Z",
+  "last_generated_utc": "2026-11-13T19:35:52Z",
   "paper_bank_units": 100.0,
   "scans": [
     {
@@ -123,6 +123,68 @@
       "fresh_paper_singles": 0,
       "receipt_present": false,
       "run_id": "43482022533_wnba_1_attempt_1"
+    },
+    {
+      "candidate_funnel": {
+        "calibration_sufficient_rows": 0,
+        "effective_paper_legs": null,
+        "eligibility_blockers": {},
+        "eligible_games": 0,
+        "eligible_rows": 0,
+        "exact_priced_rows": 0,
+        "paper_accas": 0,
+        "paper_candidate_games": 0,
+        "paper_candidate_rows": 0,
+        "paper_pick_filter": {
+          "as_of_utc": "2026-11-13T19:35:52Z",
+          "bands": [],
+          "candidate_band_count": 0,
+          "candidate_band_details": {},
+          "candidate_pick_count": 0,
+          "decision_rule": "at_least_one_settled_pick_and_positive_recency_weighted_band_roi and_positive_shrinkage_adjusted_roi",
+          "half_life_days": 14.0,
+          "historical_unique_pick_count": 0,
+          "history_source": "settled_pick_audit",
+          "individual_odds_bands": [
+            "1.00-<1.20",
+            "1.20-<1.50",
+            "1.50-<2.00",
+            "2.00+"
+          ],
+          "league_recency_weighted_roi": {},
+          "minimum_historical_pick_count_for_band": 1,
+          "performance_basis": "settled_individual_picks_only_not_acca_outcomes",
+          "policy": "adaptive_recency_weighted_positive_individual_pick_roi_bands",
+          "prior_hierarchy": "model_source_period_then_market_then_league",
+          "prior_strength_effective_picks": 3.0,
+          "probability_bands": [
+            "<0.50",
+            "0.50-<0.60",
+            "0.60-<0.70",
+            "0.70-<0.80",
+            "0.80-<0.90",
+            "0.90-1.00"
+          ],
+          "qualifying_band_count": 0,
+          "qualifying_pick_count": 0,
+          "result_available_after_hours": 4.0,
+          "stake_policy": "flat_one_unit_per_priced_pick_with_pushes_in_roi_denominator",
+          "status": "no_eligible_candidate_picks"
+        },
+        "paper_single_games": 0,
+        "paper_single_picks": 0,
+        "priced_and_calibrated_rows": 0,
+        "provisional_sample_only_games": 0,
+        "provisional_sample_only_rows": 0,
+        "required_games": 3,
+        "scan_rows": 0,
+        "strict_accas": 0
+      },
+      "captured_at": "2026-11-13T19:35:52Z",
+      "fresh_accas": 0,
+      "fresh_paper_singles": 0,
+      "receipt_present": false,
+      "run_id": "43493593714_wnba_1_attempt_1"
     }
   ],
   "schema_version": "magolide.paper_ticket_state.v1",
