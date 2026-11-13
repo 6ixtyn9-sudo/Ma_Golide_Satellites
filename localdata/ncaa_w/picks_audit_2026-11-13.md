@@ -87,8 +87,8 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game total 140.5: Under**
   - Actual Full-game total: **120** · Expected: **73.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 over · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -27.5: Arizona Wildcats (away)**
-  - Actual Full-game margin: **+32** · Expected: **68.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 home · DraftKings**
+- 🔴 **LOST — Full-game spread +27.5: Arizona Wildcats (away)**
+  - Actual Full-game margin: **+32** · Expected: **68.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 UCLA Bruins -27.5 (home) · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game moneyline: UCLA Bruins (home)**
   - Expected: **96.7%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
@@ -99,8 +99,8 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — First-half moneyline: UCLA Bruins (home)**
   - Actual First-half score: **37–24** · Expected: **66.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -24.5: Arizona Wildcats (away)**
-  - Actual Full-game margin: **+32** · Expected: **65.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 home · DraftKings**
+- 🔴 **LOST — Full-game spread +24.5: Arizona Wildcats (away)**
+  - Actual Full-game margin: **+32** · Expected: **65.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 UCLA Bruins -24.5 (home) · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game moneyline: UCLA Bruins (home)**
   - Expected: **72.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
@@ -114,8 +114,8 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — First-half moneyline: Washington Huskies (home)**
   - Actual First-half score: **50–22** · Expected: **67.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
-- 🟢 **WON — Full-game spread -42.5: Cal State Bakersfield Roadrunners (away)**
-  - Actual Full-game margin: **+34** · Expected: **84.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 home · DraftKings**
+- 🟢 **WON — Full-game spread +42.5: Cal State Bakersfield Roadrunners (away)**
+  - Actual Full-game margin: **+34** · Expected: **84.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 Washington Huskies -42.5 (home) · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game moneyline: Washington Huskies (home)**
   - Expected: **73.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
@@ -135,8 +135,8 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game total 135.5: Under**
   - Actual Full-game total: **118** · Expected: **58.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 over · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -32.5: Northern Iowa Panthers (away)**
-  - Actual Full-game margin: **+38** · Expected: **70.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 home · DraftKings**
+- 🔴 **LOST — Full-game spread +32.5: Northern Iowa Panthers (away)**
+  - Actual Full-game margin: **+38** · Expected: **70.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 Iowa Hawkeyes -32.5 (home) · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game moneyline: Iowa Hawkeyes (home)**
   - Expected: **99.4%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
@@ -199,7 +199,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
   - Expected: **64.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game spread +22.5: Ball State Cardinals (home)**
-  - Actual Full-game margin: **-21** · Expected: **94.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 away · DraftKings**
+  - Actual Full-game margin: **-21** · Expected: **94.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 Louisville Cardinals -22.5 (away) · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🔴 **LOST — Full-game moneyline: Ball State Cardinals (home)**
   - Expected: **64.0%** · Price: **21.000 · DraftKings** · Counterfactual fade: **WON @ 1.015 away · DraftKings**
@@ -255,8 +255,8 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — First-half moneyline: TCU Horned Frogs (home)**
   - Actual First-half score: **59–16** · Expected: **71.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -55.5: SE Louisiana Lady Lions (away)**
-  - Actual Full-game margin: **+59** · Expected: **90.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 home · DraftKings**
+- 🔴 **LOST — Full-game spread +55.5: SE Louisiana Lady Lions (away)**
+  - Actual Full-game margin: **+59** · Expected: **90.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 TCU Horned Frogs -55.5 (home) · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🔴 **LOST — Full-game total 136.5: Under**
   - Actual Full-game total: **153** · Expected: **60.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 over · DraftKings**
@@ -334,7 +334,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
   - Expected: **70.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 - 🔴 **LOST — Full-game spread +18.5: Columbia Lions (home)**
-  - Actual Full-game margin: **-23** · Expected: **91.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 away · DraftKings**
+  - Actual Full-game margin: **-23** · Expected: **91.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 Michigan Wolverines -18.5 (away) · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game moneyline: Michigan Wolverines (away)**
   - Expected: **92.9%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
@@ -397,7 +397,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
   - Actual First-half score: **13–51** · Expected: **66.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 - 🔴 **LOST — Full-game spread +38.5: Norfolk State Spartans (home)**
-  - Actual Full-game margin: **-62** · Expected: **100.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 away · DraftKings**
+  - Actual Full-game margin: **-62** · Expected: **100.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 Duke Blue Devils -38.5 (away) · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game moneyline: Duke Blue Devils (away)**
   - Expected: **99.8%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
@@ -418,7 +418,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
   - Expected: **70.0%** · Price: **36.000 · DraftKings** · Counterfactual fade: **WON @ 1.005 away · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game spread +26.5: Clemson Tigers (home)**
-  - Actual Full-game margin: **-21** · Expected: **94.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 away · DraftKings**
+  - Actual Full-game margin: **-21** · Expected: **94.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 South Carolina Gamecocks -26.5 (away) · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game total 133.5: Under**
   - Actual Full-game total: **109** · Expected: **53.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 over · DraftKings**
@@ -535,7 +535,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
   - Expected: **77.1%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
 - 🔴 **LOST — Full-game spread +9.5: Ohio State Buckeyes (home)**
-  - Actual Full-game margin: **-32** · Expected: **88.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 away · DraftKings**
+  - Actual Full-game margin: **-32** · Expected: **88.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 UConn Huskies -9.5 (away) · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — Full-game moneyline: UConn Huskies (away)**
   - Expected: **77.1%** · Price: **1.253 · DraftKings** · Counterfactual fade: **LOST @ 4.100 home · DraftKings**
@@ -613,7 +613,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
   - Expected: **98.2%** · Price: **1.011 · DraftKings** · Counterfactual fade: **WON @ 26.000 home · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
 - 🟢 **WON — Full-game spread +24.5: Tulsa Golden Hurricane (home)**
-  - Actual Full-game margin: **+2** · Expected: **94.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 away · DraftKings**
+  - Actual Full-game margin: **+2** · Expected: **94.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 Oklahoma State Cowgirls -24.5 (away) · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🔴 **LOST — Full-game moneyline: Oklahoma State Cowgirls (away)**
   - Expected: **98.2%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
@@ -921,10 +921,10 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 
 ### 2026-11-11: Vanderbilt Commodores vs Western Kentucky Lady Toppers (Final: **101–59**)
 
-- 🟢 **WON — Full-game spread -45.5: Western Kentucky Lady Toppers (away)**
+- 🟢 **WON — Full-game spread +45.5: Western Kentucky Lady Toppers (away)**
   - Actual Full-game margin: **+42** · Expected: **79.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
-- 🟢 **WON — Full-game spread -46.5: Western Kentucky Lady Toppers (away)**
+- 🟢 **WON — Full-game spread +46.5: Western Kentucky Lady Toppers (away)**
   - Actual Full-game margin: **+42** · Expected: **82.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: Vanderbilt Commodores (home)**
@@ -1059,7 +1059,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: Texas Longhorns (home)**
   - Expected: **89.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -27.5: South Dakota State Jackrabbits (away)**
+- 🔴 **LOST — Full-game spread +27.5: South Dakota State Jackrabbits (away)**
   - Actual Full-game margin: **+30** · Expected: **53.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: Texas Longhorns (home)**
@@ -1146,7 +1146,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: Ole Miss Rebels (home)**
   - Expected: **99.0%** · Price: **1.001 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
-- 🔴 **LOST — Full-game spread -30.5: UAlbany Great Danes (away)**
+- 🔴 **LOST — Full-game spread +30.5: UAlbany Great Danes (away)**
   - Actual Full-game margin: **+54** · Expected: **65.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: Ole Miss Rebels (home)**
@@ -1212,7 +1212,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: North Carolina Tar Heels (home)**
   - Expected: **83.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -46.5: North Carolina Central Eagles (away)**
+- 🔴 **LOST — Full-game spread +46.5: North Carolina Central Eagles (away)**
   - Actual Full-game margin: **+69** · Expected: **86.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: North Carolina Tar Heels (home)**
@@ -1260,7 +1260,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: Kentucky Wildcats (home)**
   - Expected: **87.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -50.5: Evansville Purple Aces (away)**
+- 🔴 **LOST — Full-game spread +50.5: Evansville Purple Aces (away)**
   - Actual Full-game margin: **+68** · Expected: **86.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: Kentucky Wildcats (home)**
@@ -1650,7 +1650,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: BYU Cougars (home)**
   - Expected: **99.1%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
-- 🟢 **WON — Full-game spread -39.5: Bethune-Cookman Wildcats (away)**
+- 🟢 **WON — Full-game spread +39.5: Bethune-Cookman Wildcats (away)**
   - Actual Full-game margin: **+26** · Expected: **68.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: BYU Cougars (home)**
@@ -1719,19 +1719,19 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: USC Trojans (home)**
   - Expected: **74.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -52.5: Charleston Cougars (away)**
+- 🔴 **LOST — Full-game spread +52.5: Charleston Cougars (away)**
   - Actual Full-game margin: **+61** · Expected: **87.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -42.5: Charleston Cougars (away)**
+- 🔴 **LOST — Full-game spread +42.5: Charleston Cougars (away)**
   - Actual Full-game margin: **+61** · Expected: **76.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -50.5: Charleston Cougars (away)**
+- 🔴 **LOST — Full-game spread +50.5: Charleston Cougars (away)**
   - Actual Full-game margin: **+61** · Expected: **86.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: USC Trojans (home)**
   - Actual First-half score: **58–23** · Expected: **75.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -46.5: Charleston Cougars (away)**
+- 🔴 **LOST — Full-game spread +46.5: Charleston Cougars (away)**
   - Actual Full-game margin: **+61** · Expected: **80.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 
@@ -2175,10 +2175,10 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🔴 **LOST — Full-game total 131.5: Over**
   - Actual Full-game total: **131** · Expected: **64.0%** · Price: **1.847 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
-- 🟢 **WON — Full-game spread -43.5: Iona Gaels (away)**
+- 🟢 **WON — Full-game spread +43.5: Iona Gaels (away)**
   - Actual Full-game margin: **+25** · Expected: **77.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
-- 🟢 **WON — Full-game spread -46.5: Iona Gaels (away)**
+- 🟢 **WON — Full-game spread +46.5: Iona Gaels (away)**
   - Actual Full-game margin: **+25** · Expected: **80.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: TCU Horned Frogs (home)**
@@ -2190,7 +2190,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: TCU Horned Frogs (home)**
   - Expected: **99.9%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
-- 🟢 **WON — Full-game spread -44.5: Iona Gaels (away)**
+- 🟢 **WON — Full-game spread +44.5: Iona Gaels (away)**
   - Actual Full-game margin: **+25** · Expected: **78.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **not priced (opposite_quote_not_preserved)**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 

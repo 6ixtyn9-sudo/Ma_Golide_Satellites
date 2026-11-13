@@ -102,7 +102,7 @@ class Forecast:
     raw_probability: float
     alternative_probabilities: Dict[str, float]
     source: str
-    line: Optional[float] = None
+    line: Optional[float] = None  # total threshold / home-oriented spread handicap
     push_probability: float = 0.0
     expected_margin: Optional[float] = None
     expected_total: Optional[float] = None

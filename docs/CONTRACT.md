@@ -76,12 +76,16 @@ The over/under decision is evaluated against the **posted bookmaker line**.
 The provider expected total is never copied into `Forecast.line`. Without an
 exact total snapshot for the requested period, no total wager is emitted.
 
-### Quarter spreads
+### Spread lines
 
-Q1–Q4 spreads use the same history-only period margin distribution. Lines are
-stored and interpreted as home-oriented handicaps: home cover value is
-`home_score + line - away_score`. The exact period and both side prices are
-required for acca eligibility.
+All spread lines (full game and sub-periods) are stored home-oriented. The
+home-side handicap is `line`; the away-side handicap is `-line`. For example,
+a stored line of `-27.5` means the home team is laying 27.5 and the away team
+is receiving `+27.5`. Grading uses the home cover value
+`home_score + line - away_score`. Human-readable reports must display the
+selected side's handicap, not the canonical home-oriented line beside an away
+selection. The exact period and both side prices are required for acca
+eligibility.
 
 ### First-half 1X2
 
