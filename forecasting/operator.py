@@ -1602,20 +1602,6 @@ def _render_ticket_card(
             f"   Published {_local_time(receipt['frozen_at'], timezone_name)} "
             f"· reference P1/{index} · joint p={acca['estimated_joint_win_probability']:.1%}"
         )
-        if provisional:
-            provisional_legs = [
-                leg for leg in acca["legs"] if _is_provisional_sample_only_row(leg)
-            ]
-            samples = ", ".join(
-                f"{leg.get('game_id', '?')} n={(leg.get('calibration') or {}).get('n', '?')}"
-                f"/{(leg.get('calibration') or {}).get('minimum_samples', '?')}"
-                for leg in provisional_legs
-            )
-            detail = f" · {samples}" if samples else ""
-            lines.append(
-                "   PROVISIONAL PAPER ONLY — sample-size gate bypassed; all other "
-                f"eligibility gates remain enforced{detail}"
-            )
         for leg in acca["legs"]:
             price = (leg.get("book") or {}).get("selected_decimal_price")
             probability = leg.get("calibrated_probability")

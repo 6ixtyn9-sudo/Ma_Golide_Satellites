@@ -629,8 +629,8 @@ def test_provisional_sample_only_acca_is_frozen_as_labeled_paper_evidence(tmp_pa
 
     ticket_text = Path(result["ticket_text"]).read_text()
     assert "PROVISIONAL SAMPLE GATE" in ticket_text
-    assert "PROVISIONAL PAPER ONLY — sample-size gate bypassed" in ticket_text
-    assert "game-1 n=4/?" in ticket_text
+    assert "PROVISIONAL PAPER ONLY — sample-size gate bypassed" not in ticket_text
+    assert "game-1 n=4/?" not in ticket_text
 
 
 def test_repeated_observations_render_and_grade_as_one_logical_pick(tmp_path):
