@@ -64,7 +64,8 @@ immutable audit ledgers.
 - `forecasting/shadow.py`: recency-decayed, prequential challenger diagnostics;
   never an acca input.
 - `forecasting/accas.py`: exact best-first ranking under the documented
-  cross-game independence assumption.
+  cross-game independence assumption, plus paper-ticket selection without
+  reusing exact wager selections across tickets.
 - `forecasting/service.py`: frozen historical replays, current champion and
   shadow reports, and atomic derived JSON writes.
 - `assayer/`: descriptive prediction-outcome statistics; it does not create or

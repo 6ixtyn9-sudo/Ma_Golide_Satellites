@@ -76,7 +76,9 @@ are not included in any live-coverage claim.
 - exact-tie suppression, push grading, and highest-quarter tie handling;
 - real-price/sample/push eligibility checks;
 - acca ranking by calibrated joint probability, exact brute-force comparison
-  on a small case, and unique game IDs across every leg.
+  on a small case, and unique game IDs within each acca;
+- paper-ticket portfolios do not repeat exact wager selections, while allowing a
+  different selection from the same game in another ticket.
 
 The synthetic multi-market service test generates every canonical market
 family and returns ranked accas once enough synthetic walk-forward samples and
