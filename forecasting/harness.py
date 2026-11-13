@@ -3,6 +3,8 @@
 from __future__ import annotations
 
 from dataclasses import dataclass
+import hashlib
+import json
 import math
 from typing import Any, Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
@@ -10,14 +12,40 @@ from ingestion.identity import parse_utc
 
 from assayer.assayer_engine import wilson_lower_bound
 
-from .types import Forecast
+from .types import LEGACY_VERSION_TAG, Forecast
 
 # Hard-reset: calibration must not borrow from pre-feature-freeze history.
 # Any downward threshold change would be a CRITICAL regime violation; this
 # epoch is the honest alternative — count n only from the freeze date.
 CALIBRATION_EPOCH_UTC = "2026-11-10T00:00:00Z"
 
-SegmentKey = Tuple[str, str, str, str]
+SegmentKey = Tuple[str, ...]
+
+# Reserved 5th/6th key dimension for diagnostics-only rows that did not clear
+# team-history sufficiency; these profiles are never applied.
+DIAG_POOL_TAG = "team_history_insufficient"
+
+
+def config_fingerprint(components: Mapping[str, Any]) -> str:
+    """Deterministic 12-hex fingerprint of prediction-relevant configuration.
+
+    The fingerprint covers exactly the components passed in: callers must pass
+    only the parameters that change prediction behaviour, so irrelevant or
+    volatile metadata (paths, timestamps, seeds, host data) cannot enter.
+    Mapping insertion order is irrelevant (canonical JSON with sorted keys),
+    and top-level float-integers normalize to integers, so ``30`` and ``30.0``
+    fingerprint identically. Any non-JSON-serializable component raises
+    ``ValueError`` instead of silently degrading the version identity.
+    """
+    normalized = {
+        str(key): int(value) if isinstance(value, float) and value.is_integer() else value
+        for key, value in components.items()
+    }
+    try:
+        payload = json.dumps(normalized, sort_keys=True, separators=(",", ":"), allow_nan=False)
+    except (TypeError, ValueError) as exc:
+        raise ValueError(f"config components must be JSON-serializable: {exc}") from exc
+    return hashlib.sha256(payload.encode()).hexdigest()[:12]
 
 
 @dataclass(frozen=True)
@@ -68,13 +96,18 @@ class CalibrationProfile:
         return min(config.probability_ceiling, max(config.probability_floor, adjusted))
 
     def to_dict(self) -> Dict[str, Any]:
-        # Support 5-tuple diagnostic keys where 5th dimension is team_history pool
-        is_diag = len(self.key) == 5
+        # Diagnostic rows carry the reserved DIAG_POOL_TAG as the final key
+        # dimension (6-tuples since version-aware segmentation; the version tag
+        # precedes it). Diagnostic profiles are visible in walk_forward.segments
+        # but are structurally never applied: apply_profiles matches the
+        # forecast's versioned 5-tuple key only.
+        is_diag = bool(self.key) and self.key[-1] == DIAG_POOL_TAG
         result = {
             "league": self.key[0],
             "market": self.key[1],
             "period": self.key[2],
             "source": self.key[3],
+            "calibration_version": self.key[4] if len(self.key) > 4 else LEGACY_VERSION_TAG,
             "n": self.n,
             "wins": self.wins,
             "losses": self.losses,
@@ -122,13 +155,17 @@ def build_profiles(
                     continue
             except Exception:
                 continue
+        # Version-aware segmentation: evidence from materially different model
+        # or config versions carries a distinct version tag and never merges.
+        # Records without version information carry the explicit ``legacy`` tag,
+        # which reproduces the historical grouping exactly.
         # Calibrate the population that may actually supply accas. League-prior
         # fallback rows remain visible in diagnostics, but cannot lend their
         # sample count or reliability adjustment to team-specific selections.
         if (record.team_history or {}).get("sufficient_for_accas") is False:
-            grouped_insufficient.setdefault(record.segment_key, []).append(record)
+            grouped_insufficient.setdefault(record.versioned_segment_key, []).append(record)
             continue
-        grouped.setdefault(record.segment_key, []).append(record)
+        grouped.setdefault(record.versioned_segment_key, []).append(record)
     profiles: Dict[SegmentKey, CalibrationProfile] = {}
     for key, rows in grouped.items():
         graded = [row for row in rows if row.outcome in {"win", "loss"}]
@@ -161,8 +198,9 @@ def build_profiles(
             min_samples=cfg.min_samples,
         )
     # Diagnostics-only parallel pool for rows that did not clear team-history.
-    # These profiles are visible in walk_forward.segments with a 5th key dimension
-    # and are structurally never applied (apply_profiles matches 4-tuple keys only).
+    # These profiles are visible in walk_forward.segments with the reserved
+    # DIAG_POOL_TAG as the final key dimension and are structurally never
+    # applied (apply_profiles matches the forecast's versioned 5-tuple only).
     for key, rows in grouped_insufficient.items():
         graded = [row for row in rows if row.outcome in {"win", "loss"}]
         pushes = sum(row.outcome == "push" for row in rows)
@@ -174,7 +212,7 @@ def build_profiles(
         observed = wins / n
         weight = n / (n + cfg.prior_strength)
         adjustment = weight * (observed - raw_mean)
-        diag_key = (*key, "team_history_insufficient")
+        diag_key = (*key, DIAG_POOL_TAG)
         profiles[diag_key] = CalibrationProfile(
             key=diag_key,
             wins=wins,
@@ -203,7 +241,7 @@ def apply_profiles(
     cfg = config or CalibrationConfig()
     calibrated: List[Forecast] = []
     for forecast in forecasts:
-        profile = profiles.get(forecast.segment_key)
+        profile = profiles.get(forecast.versioned_segment_key)
         if profile is None:
             probability = forecast.raw_probability
             forecast.calibration = {
@@ -211,6 +249,7 @@ def apply_profiles(
                 "n": 0,
                 "adjustment": 0.0,
                 "sufficient_for_accas": False,
+                "calibration_version": forecast.version_tag,
             }
         else:
             probability = profile.calibrate(forecast.raw_probability, cfg)
@@ -277,5 +316,6 @@ __all__ = [
     "SegmentKey",
     "apply_profiles",
     "build_profiles",
+    "config_fingerprint",
     "probability_metrics",
 ]

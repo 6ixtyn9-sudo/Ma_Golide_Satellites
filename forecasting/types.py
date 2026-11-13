@@ -11,6 +11,11 @@ from ingestion.models import BookSnapshot, Game, Market, Period, PeriodKind
 
 MODEL_VERSION = "team_history_empirical_v1"
 
+# Reserved tag for calibration evidence produced before version stamping
+# existed. Legacy rows are readable and explicit, and never merge with
+# evidence carrying a known version fingerprint.
+LEGACY_VERSION_TAG = "legacy"
+
 
 @dataclass(frozen=True)
 class BookEvidence:
@@ -118,6 +123,8 @@ class Forecast:
     calibrated_probability: Optional[float] = None
     calibration: Dict[str, Any] = field(default_factory=dict)
     eligibility: Dict[str, Any] = field(default_factory=dict)
+    calibration_version: Optional[str] = None
+    shadow_calibration: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
         for name, value in (
@@ -132,6 +139,19 @@ class Forecast:
     @property
     def segment_key(self) -> tuple[str, str, str, str]:
         return (self.league, self.market, self.period, self.source)
+
+    @property
+    def version_tag(self) -> str:
+        """Explicit calibration-evidence version tag.
+
+        Records without version information carry the reserved ``legacy`` tag;
+        they stay readable and are never silently merged with known versions.
+        """
+        return self.calibration_version or LEGACY_VERSION_TAG
+
+    @property
+    def versioned_segment_key(self) -> tuple[str, str, str, str, str]:
+        return (*self.segment_key, self.version_tag)
 
     @property
     def market_key(self) -> tuple[str, str, str]:
@@ -182,6 +202,66 @@ class Forecast:
             return None
         return self.book.price_for(side)
 
+    @property
+    def decision_explanation(self) -> Dict[str, Any]:
+        """Structured, data-backed explanation of this forecast's decision state.
+
+        Every field mirrors an existing calculation; nothing is inferred and no
+        labels are invented. ``effective_sample_size`` appears only when a
+        shadow evaluation populated ``shadow_calibration``. Consuming the
+        remaining keys of ``to_dict`` is unaffected: this block is additive.
+        """
+        explanation: Dict[str, Any] = {
+            "segment": {
+                "league": self.league,
+                "market": self.market,
+                "period": self.period,
+                "source": self.source,
+                "calibration_version": self.version_tag,
+            },
+            "calibration": dict(self.calibration) if self.calibration else None,
+            "eligibility": (
+                {
+                    "acca_eligible": self.eligibility.get("acca_eligible"),
+                    "reasons": list(self.eligibility.get("reasons", [])),
+                    "evidence_state": self.eligibility.get("evidence_state"),
+                }
+                if self.eligibility
+                else None
+            ),
+            "provenance": {
+                "prediction": (
+                    {
+                        "provider": self.prediction_provider,
+                        "observed_utc": self.prediction_observed_utc,
+                        "frozen": self.prediction_frozen,
+                    }
+                    if self.prediction_provider
+                    else None
+                ),
+                "book": (
+                    {
+                        "book": self.book.book,
+                        "provider": self.book.provider,
+                        "observed_utc": self.book.observed_utc,
+                        "pre_match": self.book.pre_match,
+                        "frozen": self.book.frozen,
+                        "main_line": self.book.main_line,
+                    }
+                    if self.book
+                    else None
+                ),
+            },
+            "prices": {
+                "selected_decimal_price": self.decimal_price,
+                "opposite_selection": self.opposite_selection,
+                "opposite_decimal_price": self.opposite_decimal_price,
+            },
+        }
+        if self.shadow_calibration:
+            explanation["effective_sample_size"] = self.shadow_calibration.get("ess")
+        return explanation
+
     def to_dict(self) -> Dict[str, Any]:
         book = None
         if self.book is not None:
@@ -227,6 +307,7 @@ class Forecast:
             "expected_total": self.expected_total,
             "model": self.source,
             "model_version": MODEL_VERSION,
+            "calibration_version": self.calibration_version,
             "training_games": self.training_games,
             "residual_games": self.residual_games,
             "team_history": (dict(self.team_history) if self.team_history is not None else None),
@@ -243,6 +324,7 @@ class Forecast:
             "outcome": self.outcome,
             "calibration": self.calibration,
             "eligibility": self.eligibility,
+            "explanation": self.decision_explanation,
         }
 
 
@@ -333,6 +415,7 @@ def grade_forecast(forecast: Forecast, game: Game) -> Optional[str]:
 __all__ = [
     "BookEvidence",
     "Forecast",
+    "LEGACY_VERSION_TAG",
     "MODEL_VERSION",
     "grade_forecast",
     "opposite_selection",
