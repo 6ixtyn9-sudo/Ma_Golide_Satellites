@@ -28,7 +28,11 @@ from ingestion.models import (
 )
 from ingestion.predictions import DEFAULT_PROVIDER_ORDER
 
-from .accas import build_accas, is_provisional_sample_only
+from .accas import (
+    build_accas,
+    filter_paper_candidate_picks,
+    is_provisional_sample_only,
+)
 from .harness import (
     CalibrationConfig,
     apply_profiles,
@@ -55,6 +59,7 @@ class MarketForecastService:
         calibration_config: CalibrationConfig | None = None,
         book_config: BookConfig | None = None,
         provider_order: Sequence[str] = DEFAULT_PROVIDER_ORDER,
+        paper_pick_history: Iterable[Forecast] | None = None,
     ) -> None:
         self.store = store
         self.league = league
@@ -62,6 +67,9 @@ class MarketForecastService:
         self.calibration_config = calibration_config or CalibrationConfig()
         self.book_config = book_config or BookConfig()
         self.provider_order = tuple(provider_order)
+        self.paper_pick_history = (
+            None if paper_pick_history is None else list(paper_pick_history)
+        )
         self.model = HistoryModel(self.forecast_config)
         self.shadow_config = RecencyConfig(
             result_delay_hours=self.forecast_config.result_available_after_hours
@@ -311,9 +319,8 @@ class MarketForecastService:
                 "status": "unavailable",
                 "error_type": type(exc).__name__,
             }
-        current_profiles = build_profiles(
-            self._available_records(records, as_of_utc), self.calibration_config
-        )
+        available_records = self._available_records(records, as_of_utc)
+        current_profiles = build_profiles(available_records, self.calibration_config)
         upcoming = []
         for game in games:
             if game.status is not GameStatus.SCHEDULED:
@@ -356,13 +363,32 @@ class MarketForecastService:
                     "error_type": type(exc).__name__,
                 }
         strict_accas = build_accas(current, legs=acca_legs, limit=acca_limit)
-        paper_accas = build_accas(
+        paper_history = (
+            available_records
+            if self.paper_pick_history is None
+            else self.paper_pick_history
+        )
+        paper_history_source = (
+            "prequential_settled_individual_forecasts"
+            if self.paper_pick_history is None
+            else "settled_pick_audit"
+        )
+        paper_candidates, paper_pick_filter = filter_paper_candidate_picks(
             current,
+            paper_history,
+            as_of_utc=as_of_utc,
+            history_source=paper_history_source,
+            result_available_after_hours=self.forecast_config.result_available_after_hours,
+        )
+        paper_accas = build_accas(
+            paper_candidates,
             legs=acca_legs,
             limit=acca_limit,
             allow_provisional=True,
             require_disjoint_legs=True,
         )
+        for acca in paper_accas:
+            acca["individual_pick_filter"] = dict(paper_pick_filter)
         market_counts = Counter(f"{forecast.period}:{forecast.market}" for forecast in current)
         eligible_games = {
             forecast.game_id for forecast in current if forecast.eligibility.get("acca_eligible")
@@ -372,6 +398,7 @@ class MarketForecastService:
         ]
         provisional_games = {forecast.game_id for forecast in provisional_rows}
         paper_candidate_games = eligible_games | provisional_games
+        paper_quality_candidate_games = {forecast.game_id for forecast in paper_candidates}
         return {
             "schema_version": "magolide.market_forecasts.v1",
             "status": "decision_support_only",
@@ -425,10 +452,15 @@ class MarketForecastService:
                 "paper_policy": (
                     "admits a provisional segment only with at least one graded non-push "
                     "sample when insufficient samples are the sole blocker; exact price, "
-                    "team-history, push-risk, and probability-floor gates remain enforced"
+                    "team-history, push-risk, and probability-floor gates remain enforced; "
+                    "paper tickets additionally require a positive recency-weighted, "
+                    "shrinkage-adjusted ROI band from past settled individual picks"
                 ),
                 "results_policy": "strict",
-                "paper_results_policy": "strict_plus_sample_only_provisional",
+                "paper_results_policy": (
+                    "strict_plus_sample_only_provisional_and_positive_roi_bands"
+                ),
+                "paper_pick_filter": paper_pick_filter,
                 "paper_ticket_leg_reuse_policy": "no_reused_wager_selections",
                 "requested_legs": acca_legs,
                 "requested_limit": acca_limit,
@@ -437,7 +469,9 @@ class MarketForecastService:
                 "provisional_sample_only_rows": len(provisional_rows),
                 "provisional_sample_only_games": len(provisional_games),
                 "paper_candidate_games": len(paper_candidate_games),
-                "ranking": "highest_estimated_joint_win_probability",
+                "paper_quality_candidate_picks": paper_pick_filter["qualifying_pick_count"],
+                "paper_quality_candidate_games": len(paper_quality_candidate_games),
+                "ranking": "highest_estimated_joint_win_probability_after_pick_filter",
                 "paper_result_count": len(paper_accas),
                 "strict_result_count": len(strict_accas),
                 "results": strict_accas,

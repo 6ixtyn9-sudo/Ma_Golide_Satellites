@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 from pathlib import Path
 import sys
 
@@ -17,6 +18,7 @@ sys.path.insert(0, str(ROOT))
 
 from forecasting.harness import CalibrationConfig  # noqa: E402
 from forecasting.model import ForecastConfig  # noqa: E402
+from forecasting.operator import load_settled_pick_history  # noqa: E402
 from forecasting.service import MarketForecastService, write_market_report  # noqa: E402
 from ingestion.books import BookConfig  # noqa: E402
 from ingestion.duckdb_store import DuckDBStore  # noqa: E402
@@ -28,6 +30,11 @@ from ingestion.warehouse import DEFAULT_WAREHOUSE  # noqa: E402
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--warehouse", default=DEFAULT_WAREHOUSE)
+    parser.add_argument(
+        "--localdata",
+        default=os.environ.get("LOCALDATA"),
+        help="operator history directory (defaults to localdata/<league-lowercase>)",
+    )
     parser.add_argument(
         "--league",
         default="NBA",
@@ -65,6 +72,7 @@ def main() -> int:
         min_samples=args.min_calibration_samples,
     )
     store = DuckDBStore(str(warehouse), persist=False)
+    localdata = Path(args.localdata) if args.localdata else Path("localdata") / args.league.lower()
     try:
         report = MarketForecastService(
             store,
@@ -72,6 +80,7 @@ def main() -> int:
             forecast_config=forecast_config,
             calibration_config=calibration_config,
             book_config=BookConfig(provider=provider, book=args.book),
+            paper_pick_history=load_settled_pick_history(localdata),
         ).build_report(
             as_of_utc=args.as_of or now_utc_iso(),
             date_yyyymmdd=args.date,

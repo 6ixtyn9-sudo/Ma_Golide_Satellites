@@ -24,7 +24,10 @@ from zoneinfo import ZoneInfo
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
-from forecasting.operator import publish_operator_reports  # noqa: E402
+from forecasting.operator import (  # noqa: E402
+    load_settled_pick_history,
+    publish_operator_reports,
+)
 from forecasting.service import MarketForecastService, write_market_report  # noqa: E402
 from ingestion.books import BookConfig  # noqa: E402
 from ingestion.cli import _offline_fixture_fetch  # noqa: E402
@@ -187,6 +190,7 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
                     store,
                     config.league_enum,
                     book_config=config.book,
+                    paper_pick_history=load_settled_pick_history(localdata),
                 ).build_report(
                     as_of_utc=_market_cutoff(args),
                     date_yyyymmdd=config.date_yyyymmdd,

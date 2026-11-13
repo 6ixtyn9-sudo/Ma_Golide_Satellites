@@ -53,6 +53,8 @@ def test_standalone_market_cli_reads_duckdb_without_modifying_it(tmp_path, monke
             "build_markets.py",
             "--warehouse",
             str(warehouse),
+            "--localdata",
+            str(tmp_path / "localdata"),
             "--league",
             "NBA",
             "--date",

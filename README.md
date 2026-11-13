@@ -127,7 +127,10 @@ python scripts/build_markets.py \
 
 For current fixtures, `--as-of` must be before scheduled tip. For historical
 backtests, only reconciled finals available at each simulated cutoff are used.
-The default result-availability delay is four hours.
+The default result-availability delay is four hours. The report reads a
+settled single-pick audit from `localdata/<league-lowercase>` (or the path passed
+with `--localdata`) when present; this is read-only. If no audit exists, it
+falls back to past-only prequential settled individual forecasts.
 
 The walk-forward harness fits separate reliability profiles by league, market,
 period, and model source. Each profile uses only earlier graded outcomes. Its
@@ -162,16 +165,35 @@ auto-ticket publisher and may include a provisional segment when at least one
 graded non-push sample exists and insufficient sample size is the segment's
 only blocker. Exact priced-market, team-history, push-risk, and probability-floor
 checks still apply. Such legs remain marked ineligible in the forecast
-and the frozen paper receipt labels the sample-size exception. Paper tickets
-are selected in descending joint-probability order without reusing the same
-wager selection (league, game, market, period, selection, and line) across
-tickets. Different selections from the same game may appear on separate tickets,
-but no acca includes two legs from one game. This prevents exact leg duplication;
-it does not make ticket outcomes mathematically mutually exclusive. Existing
-frozen receipts are not rewritten by later selection-policy changes. Paper-ticket
-grades are tracked separately and do not themselves bootstrap or inflate
-calibration sample counts, which continue to come from prequential forecast
-evidence.
+and the frozen paper receipt labels the sample-size exception. Before paper
+accas are assembled, each unique eligible wager selection must match a positive
+historical individual-pick performance band. The rolling `picks_audit_rolling.json`
+settled ledger is used when present; otherwise the service uses its own past-only
+prequential settled forecasts. Only settled single picks with calibrated
+probabilities and exact pre-tip prices count. Bands are separated by league,
+market, period, model source, calibrated-probability range, and individual-odds
+range (`<50%`, 50–60%, 60–70%, 70–80%, 80–90%, 90%+; odds below 1.20, 1.20–1.50,
+1.50–2.00, 2.00+).
+
+Band ROI uses flat one-unit stakes (win: decimal price minus one; loss: minus
+one; push: zero), a 14-day recency half-life, and shrinkage toward model,
+market, then league-level ROI. A band can qualify after one settled pick—there
+is no long fixed sample-size wait—but the band itself must have positive
+recency-weighted ROI and positive shrinkage-adjusted ROI. An unseen band cannot
+inherit eligibility from a profitable parent band. The policy is recalculated
+from settled individual picks each scan, so newer wins and losses can change
+future paper eligibility. Acca outcomes are kept separate and never enter this
+single-pick ROI calculation. A positive historical band is an exploratory
+paper-only signal, not statistical validation or proof of future profit.
+
+These are per-pick performance conditions, not a combined-acca odds or
+expected-value gate. Surviving picks are then selected in descending joint-
+probability order without reusing the same wager selection (league, game,
+market, period, selection, and line) across tickets. Different selections from
+the same game may appear on separate tickets, but no acca includes two legs from
+one game. Existing frozen receipts are not rewritten by later policy changes.
+Paper-ticket outcomes remain separate from calibration sample counts, which
+continue to come from prequential forecast evidence.
 
 Reports have schema `magolide.market_forecasts.v1` and status
 `decision_support_only`. They cannot place bets or trigger external betting

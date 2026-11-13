@@ -7,7 +7,7 @@ import math
 
 import pytest
 
-from forecasting.accas import build_accas
+from forecasting.accas import build_accas, filter_paper_candidate_picks
 from forecasting.harness import CalibrationConfig, apply_profiles, build_profiles
 from forecasting.model import ForecastConfig, HistoryModel
 import forecasting.service as forecasting_service_module
@@ -293,12 +293,22 @@ def test_all_old_markets_are_forecast_and_accas_use_calibrated_probabilities():
         assert acca["provisional_sample_gate_bypassed"] is False
     assert report["accas"]["strict_results"] == accas
     assert report["accas"]["paper_results"]
+    pick_filter = report["accas"]["paper_pick_filter"]
+    assert pick_filter["qualifying_pick_count"] >= 1
     assert all(
         row["provisional_sample_gate_bypassed"] is False
         for row in report["accas"]["paper_results"]
     )
     used_paper_leg_keys = set()
     for acca in report["accas"]["paper_results"]:
+        assert acca["individual_pick_filter"] == pick_filter
+        for leg in acca["legs"]:
+            band = pick_filter["candidate_band_details"][leg["forecast_id"]]
+            assert band["qualifies"] is True
+            assert band["historical_pick_count"] >= 1
+            assert band["market"] == leg["market"]
+            assert band["probability_band"]
+            assert band["individual_odds_band"]
         leg_keys = {_paper_leg_key(leg) for leg in acca["legs"]}
         assert used_paper_leg_keys.isdisjoint(leg_keys)
         assert acca["ticket_leg_reuse_policy"] == "no_reused_wager_selections"
@@ -314,8 +324,16 @@ def test_service_routes_sample_only_candidates_to_paper_results():
 
     assert accas["mode"] == "paper_only"
     assert accas["results_policy"] == "strict"
-    assert accas["paper_results_policy"] == "strict_plus_sample_only_provisional"
+    assert accas["paper_results_policy"] == (
+        "strict_plus_sample_only_provisional_and_positive_roi_bands"
+    )
     assert accas["paper_ticket_leg_reuse_policy"] == "no_reused_wager_selections"
+    pick_filter = accas["paper_pick_filter"]
+    assert pick_filter["history_source"] == "prequential_settled_individual_forecasts"
+    assert pick_filter["performance_basis"] == "settled_individual_picks_only_not_acca_outcomes"
+    assert pick_filter["minimum_historical_pick_count_for_band"] == 1
+    assert pick_filter["candidate_pick_count"] >= pick_filter["qualifying_pick_count"]
+    assert pick_filter["qualifying_pick_count"] >= 2
     assert accas["eligible_games"] == accas["strict_eligible_games"] == 0
     assert accas["results"] == accas["strict_results"] == []
     assert accas["paper_results"]
@@ -331,6 +349,7 @@ def test_service_routes_sample_only_candidates_to_paper_results():
         assert acca["provisional_leg_count"] == 2
         assert acca["ranking_status"] == "paper_only_provisional_sample_gate_bypassed"
         assert acca["ticket_leg_reuse_policy"] == "no_reused_wager_selections"
+        assert acca["individual_pick_filter"] == pick_filter
         leg_keys = {_paper_leg_key(leg) for leg in acca["legs"]}
         assert used_paper_leg_keys.isdisjoint(leg_keys)
         used_paper_leg_keys.update(leg_keys)
@@ -340,6 +359,9 @@ def test_service_routes_sample_only_candidates_to_paper_results():
             assert leg["calibration"]["status"] == "provisional"
             assert 0 < leg["calibration"]["n"] < leg["calibration"]["minimum_samples"]
             assert leg["book"]["selected_decimal_price"] > 1.0
+            band = pick_filter["candidate_band_details"][leg["forecast_id"]]
+            assert band["qualifies"] is True
+            assert band["historical_pick_count"] >= 1
 
 
 def test_service_stamps_model_config_and_runs_shadow_at_configured_delay():
@@ -643,6 +665,43 @@ def _forecast(game_id: str, probability: float, *, outcome=None) -> Forecast:
     )
 
 
+def _roi_forecast(
+    game_id: str,
+    probability: float,
+    price: float,
+    outcome: str,
+    *,
+    market: str = "moneyline",
+    period: str = "full_game",
+    selection: str = "home",
+    line: float | None = None,
+    source: str = "provider:test",
+    scheduled_utc: str = "2026-02-08T20:00:00Z",
+) -> Forecast:
+    scheduled = datetime.fromisoformat(scheduled_utc.replace("Z", "+00:00"))
+    row = _forecast(game_id, probability, outcome=outcome)
+    row.league = "NBA"
+    row.market = market
+    row.period = period
+    row.selection = selection
+    row.line = line
+    row.source = source
+    row.scheduled_utc = scheduled_utc
+    row.calibrated_probability = probability
+    row.eligibility = {"acca_eligible": True}
+    assert row.book is not None
+    row.book = replace(
+        row.book,
+        observed_utc=iso(scheduled - timedelta(hours=1)),
+        prices={selection: price},
+        game_id=game_id,
+        market=market,
+        period=period,
+        line=line,
+    )
+    return row
+
+
 def _paper_leg_key(leg):
     return (
         leg["league"],
@@ -782,6 +841,197 @@ def test_paper_accas_admit_only_provisional_sample_only_legs():
     assert paper[0]["provisional_leg_count"] == 1
     assert paper[0]["ranking_status"] == "paper_only_provisional_sample_gate_bypassed"
     assert {leg["game_id"] for leg in paper[0]["legs"]} == {"g0", "g1"}
+    provisional.scheduled_utc = "2026-02-11T20:00:00Z"
+    strict.scheduled_utc = "2026-02-11T20:00:00Z"
+    as_of = "2026-02-11T12:00:00Z"
+    filtered, quality = filter_paper_candidate_picks(
+        [provisional, strict], as_of_utc=as_of
+    )
+    assert filtered == []
+    assert quality["candidate_pick_count"] == 2
+    assert quality["qualifying_pick_count"] == 0
+    assert quality["status"] == "no_settled_historical_picks"
+
+    strict_history = _roi_forecast(
+        "past-strict", 0.81, 1.8, "win", scheduled_utc="2026-02-08T20:00:00Z"
+    )
+    filtered, quality = filter_paper_candidate_picks(
+        [provisional, strict], [strict_history], as_of_utc=as_of
+    )
+    assert {row.game_id for row in filtered} == {"g1"}
+    assert quality["candidate_pick_count"] == 2
+    assert quality["qualifying_pick_count"] == 1
+    assert quality["candidate_band_details"][strict.forecast_id]["historical_pick_count"] == 1
+    assert quality["candidate_band_details"][provisional.forecast_id]["historical_pick_count"] == 0
+
+
+def test_paper_roi_bands_start_from_positive_individual_pick_history():
+    as_of = "2026-02-10T00:00:00Z"
+    candidates = []
+    for game_id, market, probability, price in (
+        ("current-ml", "moneyline", 0.75, 1.30),
+        ("current-total", "total", 0.55, 1.80),
+        ("current-spread", "spread", 0.55, 1.80),
+        ("unseen-ml", "moneyline", 0.55, 1.80),
+    ):
+        candidate = _roi_forecast(
+            game_id,
+            probability,
+            price,
+            "win",
+            market=market,
+            selection="over" if market == "total" else "home",
+            line=220.5 if market == "total" else -1.5 if market == "spread" else None,
+            scheduled_utc="2026-02-11T20:00:00Z",
+        )
+        candidates.append(candidate)
+
+    history = []
+    for index in range(6):
+        history.append(
+            _roi_forecast(
+                f"hist-ml-{index}", 0.75, 1.30, "win", scheduled_utc="2026-02-08T20:00:00Z"
+            )
+        )
+    for index in range(17):
+        history.append(
+            _roi_forecast(
+                f"hist-total-win-{index}",
+                0.55,
+                1.95,
+                "win",
+                market="total",
+                selection="over",
+                line=220.5,
+            )
+        )
+    for index in range(12):
+        history.append(
+            _roi_forecast(
+                f"hist-total-loss-{index}",
+                0.55,
+                1.95,
+                "loss",
+                market="total",
+                selection="over",
+                line=220.5,
+            )
+        )
+    for index in range(15):
+        history.append(
+            _roi_forecast(
+                f"hist-spread-win-{index}",
+                0.55,
+                1.90,
+                "win",
+                market="spread",
+                line=-1.5,
+            )
+        )
+    for index in range(18):
+        history.append(
+            _roi_forecast(
+                f"hist-spread-loss-{index}",
+                0.55,
+                1.90,
+                "loss",
+                market="spread",
+                line=-1.5,
+            )
+        )
+    duplicate_pick = replace(
+        history[0], source="provider:other", calibrated_probability=0.74
+    )
+    history.append(duplicate_pick)
+    duplicate_candidate = replace(
+        candidates[0], source="provider:other", calibrated_probability=0.74
+    )
+
+    qualifying, summary = filter_paper_candidate_picks(
+        [*candidates, duplicate_candidate],
+        history,
+        as_of_utc=as_of,
+        history_source="settled_pick_audit",
+    )
+    assert summary["policy"] == "adaptive_recency_weighted_positive_individual_pick_roi_bands"
+    assert summary["performance_basis"] == "settled_individual_picks_only_not_acca_outcomes"
+    assert summary["historical_unique_pick_count"] == 68
+    assert summary["minimum_historical_pick_count_for_band"] == 1
+    assert summary["qualifying_pick_count"] == 2
+    assert {row.game_id for row in qualifying} == {"current-ml", "current-total"}
+
+    ml_band = summary["candidate_band_details"][candidates[0].forecast_id]
+    total_band = summary["candidate_band_details"][candidates[1].forecast_id]
+    spread_band = summary["candidate_band_details"][candidates[2].forecast_id]
+    unseen_band = summary["candidate_band_details"][candidates[3].forecast_id]
+    assert (ml_band["historical_pick_count"], ml_band["wins"], ml_band["losses"]) == (6, 6, 0)
+    assert (total_band["historical_pick_count"], total_band["wins"], total_band["losses"]) == (29, 17, 12)
+    assert ml_band["qualifies"] is True
+    assert total_band["qualifies"] is True
+    assert spread_band["recency_weighted_roi"] < 0
+    assert spread_band["qualifies"] is False
+    assert unseen_band["historical_pick_count"] == 0
+    assert unseen_band["parent_roi"] > 0
+    assert unseen_band["qualifies"] is False
+
+    tickets = build_accas(qualifying, legs=2, limit=1)
+    assert len(tickets) == 1
+
+
+def test_paper_roi_band_corrects_itself_as_new_individual_picks_settle():
+    as_of = "2026-02-10T00:00:00Z"
+    candidate = _roi_forecast(
+        "upcoming", 0.75, 1.30, "win", scheduled_utc="2026-02-11T20:00:00Z"
+    )
+    initial_history = [
+        _roi_forecast("settled-win", 0.75, 1.30, "win")
+    ]
+    qualifying, initial = filter_paper_candidate_picks(
+        [candidate], initial_history, as_of_utc=as_of
+    )
+    assert qualifying == [candidate]
+    assert initial["candidate_band_details"][candidate.forecast_id]["historical_pick_count"] == 1
+
+    new_losses = [
+        _roi_forecast(f"settled-loss-{index}", 0.75, 1.30, "loss")
+        for index in range(3)
+    ]
+    qualifying, updated = filter_paper_candidate_picks(
+        [candidate], [*initial_history, *new_losses], as_of_utc=as_of
+    )
+    details = updated["candidate_band_details"][candidate.forecast_id]
+    assert details["historical_pick_count"] == 4
+    assert details["recency_weighted_roi"] < 0
+    assert details["qualifies"] is False
+    assert qualifying == []
+    assert updated["status"] == "no_positive_historical_roi_band"
+
+
+def test_paper_roi_filter_excludes_future_and_not_yet_available_settlements():
+    as_of = "2026-02-10T00:00:00Z"
+    candidate = _roi_forecast(
+        "upcoming", 0.75, 1.30, "win", scheduled_utc="2026-02-11T20:00:00Z"
+    )
+    future = _roi_forecast(
+        "future-win",
+        0.75,
+        1.30,
+        "win",
+        scheduled_utc="2026-02-10T20:00:00Z",
+    )
+    too_recent = _roi_forecast(
+        "recent-win",
+        0.75,
+        1.30,
+        "win",
+        scheduled_utc="2026-02-09T23:00:00Z",
+    )
+    qualifying, summary = filter_paper_candidate_picks(
+        [candidate], [future, too_recent], as_of_utc=as_of
+    )
+    assert qualifying == []
+    assert summary["historical_unique_pick_count"] == 0
+    assert summary["status"] == "no_settled_historical_picks"
 
 
 @pytest.mark.parametrize(

@@ -94,23 +94,44 @@ prospective paper-only counterfactual described below.
 When `accas.paper_results` is present, the operator uses that paper-only
 candidate surface; `accas.results` remains the strict surface. Older reports
 without `paper_results` retain their prior behavior. For current
-`MarketForecastService` reports, the paper-ticket surface greedily accepts
-combinations in descending joint probability order and does not reuse an exact
-wager selection (league, game, market, period, selection, and line) across
-tickets. A different selection from the same game may appear
-on another ticket, while same-game legs are still prohibited within an acca.
-This is a no-repeated-leg rule, not mathematical outcome exclusivity: separate
-tickets may still win simultaneously. Strict `accas.results` rankings are
-unchanged and may overlap. The first non-empty paper acca report for a
+`MarketForecastService` reports, each unique paper-eligible wager selection
+must match a positive settled individual-pick ROI band before ticket assembly.
+The rolling audit's `settled_ledger` is used when available; otherwise the
+service uses its own past-only prequential settled forecasts. Pending/future
+rows, acca outcomes, missing calibrated probabilities, and picks without an
+exact pre-tip price are excluded. Bands are split by league, market, period,
+model source, calibrated-probability range, and individual-odds range. Flat
+one-unit ROI uses win profit `price - 1`, loss profit `-1`, and push profit `0`;
+pushes remain in the ROI denominator. A 14-day recency half-life and three-
+pick hierarchical shrinkage are applied, but no long minimum-sample waiting
+period is imposed: a band can start after one settled pick. The candidate band
+must itself have positive recency-weighted and adjusted ROI, so a band with no
+history cannot inherit eligibility from a positive parent.
+
+The adaptive decision is recalculated for each scan and may admit or suspend
+future picks as outcomes accumulate. Its source, settled-pick counts, per-band
+observed/recency-weighted/adjusted ROI, and pass decisions are reported in
+`accas.paper_pick_filter`, the empty-scan candidate funnel, and each new ticket
+receipt. The gate is per individual pick, not combined acca odds or EV, and is
+never relaxed to fill a ticket. The existing sample-only provisional allowance
+and its other eligibility safeguards remain in force. Positive historical ROI
+is an exploratory paper signal, not proof of statistical edge or future profit.
+
+Surviving combinations are greedily accepted in descending joint probability
+order and do not reuse an exact wager selection (league, game, market, period,
+selection, and line) across tickets. A different selection from the same game
+may appear on another ticket, while same-game legs are still prohibited within
+an acca. This is a no-repeated-leg rule, not mathematical outcome exclusivity:
+separate tickets may still win simultaneously. Strict `accas.results` rankings
+are unchanged and may overlap. The first non-empty paper acca report for a
 league/date writes a decision receipt and a write-once state lock. This includes
 a provisional paper acca when the sample-size gate alone is bypassed. The
-receipt stores and prints that status and the segment sample counts. Subsequent
-scans reprint the receipt even if the new candidate set differs. A missing
-locked receipt is an error;
-the engine never silently rebuilds or rotates a published card. A receipt
-recovered without its state lock adopts a lock from the immutable receipt
-itself. Existing frozen receipts are not rebalanced by the no-repeated-leg
-policy.
+receipt stores the settled-pick ROI-band snapshot and provisional status/sample
+counts. Subsequent scans reprint the receipt even if the new candidate set differs. A
+missing locked receipt is an error; the engine never silently rebuilds or
+rotates a published card. A receipt recovered without its state lock adopts a
+lock from the immutable receipt itself. Existing frozen receipts are never
+rebalanced or rewritten by selection-policy changes.
 
 A withdrawal is a deliberate exception recorded in `auto_tickets_state.json`:
 its decision ID is excluded from performance, its date cannot receive a
@@ -125,6 +146,7 @@ but do not cancel earlier positions or consume ticket identities.
 An empty latest-scan card includes a **candidate funnel**: current rows, exact
 priced rows, calibration-sufficient rows and their overlap, strict eligible
 rows/games, provisional sample-only rows/games, paper-candidate coverage,
+settled individual-pick ROI-band counts and observed/adjusted performance,
 paper/strict acca counts, the required independent-game count, and overlapping
 eligibility blocker counts. The same structure is stored under
 `candidate_funnel` in the bounded scan-state entry and operator result. These
