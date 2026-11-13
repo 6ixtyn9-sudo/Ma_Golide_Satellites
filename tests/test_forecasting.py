@@ -9,6 +9,7 @@ import pytest
 from forecasting.accas import build_accas
 from forecasting.harness import CalibrationConfig, apply_profiles, build_profiles
 from forecasting.model import ForecastConfig, HistoryModel
+import forecasting.service as forecasting_service_module
 from forecasting.service import MarketForecastService
 from forecasting.types import BookEvidence, Forecast, grade_forecast, opposite_selection
 from ingestion.models import (
@@ -148,6 +149,9 @@ def populated_store(*, finals: int = 12, upcoming: int = 3) -> InMemoryStore:
                 game_id=game_id,
                 provider="espn",
                 observed_utc=iso(observed),
+                model="espn-bpi",
+                model_version="adapter:espn-bpi-v1",
+                produced_by="ESPN BPI",
                 prob_home=0.65,
                 prob_away=0.35,
                 expected_home_score=110,
@@ -223,7 +227,9 @@ def populated_store(*, finals: int = 12, upcoming: int = 3) -> InMemoryStore:
     return store
 
 
-def service(store: InMemoryStore) -> MarketForecastService:
+def service(
+    store: InMemoryStore, *, result_available_after_hours: int = 4
+) -> MarketForecastService:
     return MarketForecastService(
         store,
         League.NBA,
@@ -233,6 +239,7 @@ def service(store: InMemoryStore) -> MarketForecastService:
             team_prior_games=1.0,
             training_window=50,
             residual_window=30,
+            result_available_after_hours=result_available_after_hours,
         ),
         calibration_config=CalibrationConfig(min_samples=3, prior_strength=2, calibration_epoch_utc="2026-01-01T00:00:00Z"),
     )
@@ -275,6 +282,110 @@ def test_all_old_markets_are_forecast_and_accas_use_calibrated_probabilities():
         assert all(leg["book"]["selected_decimal_price"] for leg in acca["legs"])
         assert acca["ranking_metric"] == "calibrated_joint_win_probability"
         assert acca["ranking_status"] == "highest_estimated_not_guaranteed"
+
+
+def test_service_stamps_model_config_and_runs_shadow_at_configured_delay():
+    forecast_service = service(
+        populated_store(finals=12, upcoming=3), result_available_after_hours=8
+    )
+    report = forecast_service.build_report(as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4)
+
+    shadow = report["walk_forward"]["shadow_challenger"]
+    assert shadow["status"] == "ok"
+    assert shadow["result_delay_hours"] == 8
+    assert shadow["rows_evaluated"] > 0
+    assert shadow["challenger_version"].startswith("recency_v1-")
+
+    current = report["forecasts"]
+    model_row = next(row for row in current if row["model"] == "team_history_empirical_v1")
+    assert model_row["calibration_version"] == forecast_service.model.calibration_version
+    assert model_row["calibration"]["calibration_version"] == forecast_service.model.calibration_version
+    shadow_explanation = model_row["explanation"]["shadow_calibration"]
+    assert shadow_explanation["challenger_version"] == shadow["challenger_version"]
+    assert shadow_explanation["n"] > 0
+    assert 0.01 <= shadow_explanation["candidate_probability"] <= 0.99
+
+    assert all(row["calibration_version"] for row in current)
+    provider_row = next(row for row in current if row["model"] == "provider:espn")
+    assert provider_row["calibration_version"].startswith("provider_prediction_v1-")
+    assert (
+        provider_row["explanation"]["segment"]["calibration_version"]
+        == provider_row["calibration_version"]
+    )
+    assert provider_row["prediction"]["model"] == "espn-bpi"
+    assert provider_row["prediction"]["model_version"] == "adapter:espn-bpi-v1"
+    assert provider_row["prediction"]["produced_by"] == "ESPN BPI"
+    hybrid_row = next(
+        row for row in current if row["model"].startswith("provider:espn+")
+    )
+    assert hybrid_row["calibration_version"].startswith("history_provider_hybrid_v1-")
+
+    forecasts_by_id = {row["forecast_id"]: row for row in current}
+    for acca in report["accas"]["results"]:
+        for leg in acca["legs"]:
+            source = forecasts_by_id[leg["forecast_id"]]
+            assert leg["calibrated_probability"] == source["calibrated_probability"]
+            assert (
+                leg["explanation"]["shadow_calibration"]["candidate_probability"]
+                == source["explanation"]["shadow_calibration"]["candidate_probability"]
+            )
+
+@pytest.mark.parametrize("failure_stage", ["evaluation", "annotation"])
+def test_shadow_failure_cannot_change_champion_or_acca_outputs(monkeypatch, failure_stage):
+    forecast_service = service(populated_store(finals=12, upcoming=3))
+    normal = forecast_service.build_report(as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4)
+
+    if failure_stage == "evaluation":
+        def fail_evaluation(*args, **kwargs):
+            raise RuntimeError("injected challenger failure")
+
+        monkeypatch.setattr(
+            forecasting_service_module, "prequential_shadow_evaluation", fail_evaluation
+        )
+    else:
+        def fail_annotation(forecasts, profiles, config):
+            forecasts[0].shadow_calibration = {"corrupt": True}
+            raise RuntimeError("injected annotation failure")
+
+        monkeypatch.setattr(
+            forecasting_service_module, "annotate_recency_profiles", fail_annotation
+        )
+
+    degraded = forecast_service.build_report(
+        as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4
+    )
+    assert degraded["walk_forward"]["shadow_challenger"] == {
+        "status": "unavailable",
+        "error_type": "RuntimeError",
+    }
+
+    def champion_surface(report):
+        return {
+            row["forecast_id"]: (
+                row["raw_probability"],
+                row["calibrated_probability"],
+                row["calibration"],
+                row["eligibility"],
+            )
+            for row in report["forecasts"]
+        }
+
+    def acca_surface(report):
+        return [
+            (
+                row["acca_id"],
+                row["estimated_joint_win_probability"],
+                tuple(leg["forecast_id"] for leg in row["legs"]),
+            )
+            for row in report["accas"]["results"]
+        ]
+
+    assert champion_surface(degraded) == champion_surface(normal)
+    assert acca_surface(degraded) == acca_surface(normal)
+    assert all(
+        "shadow_calibration" not in row["explanation"]
+        for row in degraded["forecasts"]
+    )
 
 
 def test_full_game_history_moneyline_earns_calibration_without_provider_history():

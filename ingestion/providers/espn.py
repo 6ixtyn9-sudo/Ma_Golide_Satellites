@@ -82,6 +82,11 @@ LEAGUE_SLUGS = {
     League.NCAA_W: "womens-college-basketball",
 }
 
+# ESPN does not expose a stable BPI model release. This adapter-owned tag is
+# the calibration boundary; bump it when the BPI source contract or normalized
+# prediction semantics change.
+ESPN_BPI_MODEL_VERSION = "adapter:espn-bpi-v1"
+
 # Increment when stored period interpretation changes. NCAAW history written
 # before v2 could label four quarters as two halves plus two overtime periods.
 RESULT_PERIOD_PARSER_VERSION = 2
@@ -1005,6 +1010,7 @@ def _dual_sided_bpi_prediction(
         game_id=str(event_id),
         provider="espn",
         model="espn-bpi",
+        model_version=ESPN_BPI_MODEL_VERSION,
         produced_by="ESPN BPI",
         observed_utc=to_utc_iso(parse_utc(now_utc)) if now_utc else now_utc_iso(),
         source_modified_utc=(to_utc_iso(parse_utc(last_modified)) if last_modified else None),
@@ -1150,6 +1156,7 @@ def fetch_bpi(
         game_id=str(event_id),
         provider="espn",
         model="espn-bpi",
+        model_version=ESPN_BPI_MODEL_VERSION,
         produced_by="ESPN BPI",
         observed_utc=(to_utc_iso(parse_utc(now_utc)) if now_utc else now_utc_iso()),
         source_modified_utc=(to_utc_iso(parse_utc(last_modified)) if last_modified else None),

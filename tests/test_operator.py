@@ -213,6 +213,21 @@ def test_book_side_prices_survive_forecast_serialization_and_row_rehydration():
         alternative_probabilities={"home": 0.6, "away": 0.4},
         source="test-model",
         line=4.5,
+        calibration_version="model-config-a",
+        prediction_provider="provider-a",
+        prediction_observed_utc="2026-11-07T17:00:00Z",
+        prediction_model="bpi-model",
+        prediction_model_version="bpi-42",
+        prediction_produced_by="ESPN BPI",
+        shadow_calibration={
+            "challenger_version": "recency_v1-test",
+            "status": "provisional",
+            "n": 12,
+            "weighted_n": 8.5,
+            "ess": 10.0,
+            "champion_probability": 0.61,
+            "probability": 0.62,
+        },
         book=BookEvidence.from_snapshot(snapshot, frozen=False),
     ).to_dict()
 
@@ -231,6 +246,14 @@ def test_book_side_prices_survive_forecast_serialization_and_row_rehydration():
     assert serialized_book["line"] == 4.5
 
     rehydrated = _forecast_from_row(forecast_row)
+    assert rehydrated.calibration_version == "model-config-a"
+    assert rehydrated.forecast_id == forecast_row["forecast_id"]
+    assert rehydrated.prediction_model == "bpi-model"
+    assert rehydrated.prediction_model_version == "bpi-42"
+    assert rehydrated.prediction_produced_by == "ESPN BPI"
+    assert rehydrated.shadow_calibration["challenger_version"] == "recency_v1-test"
+    assert rehydrated.shadow_calibration["ess"] == 10.0
+    assert rehydrated.shadow_calibration["champion_probability"] == 0.61
     assert rehydrated.book is not None
     assert rehydrated.book.prices == serialized_book["side_prices"]
     assert rehydrated.decimal_price is None

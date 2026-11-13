@@ -37,10 +37,10 @@ converted into prediction records.
 
 | Provider | League | Prediction fields | Key / freshness |
 | --- | --- | --- | --- |
-| ESPN BPI | NBA, WNBA, NCAA_M, NCAA_W | Home/away probabilities; expected scores, total, and margin when present | Public; per-prediction source modification time |
-| Hardwood | NBA | One artifact's probabilities, expected scores, total, margin, model provenance | Public artifact; generated-at freshness and team/time/ID join |
-| Predixsport | NBA and EuroLeague | Probabilities; detail endpoint can add expected total/margin and derived scores | `PREDIXSPORT_API_KEY`; disabled without a key; documentation-only endpoint schema |
-| Sportradar Global Basketball | CBA | Independent pre-match 2-way home/away probabilities; no expected scores or totals | `SPORTRADAR_API_KEY`, optional `SPORTRADAR_ACCESS_LEVEL=trial|production`; `DOCUMENTATION_ONLY` |
+| ESPN BPI | NBA, WNBA, NCAA_M, NCAA_W | Home/away probabilities; expected scores, total, and margin when present | Public; per-prediction source modification time; adapter version `adapter:espn-bpi-v1` |
+| Hardwood | NBA | One artifact's probabilities, expected scores, total, margin, model provenance | Public artifact; artifact-declared model version, generated-at freshness, and team/time/ID join |
+| Predixsport | NBA and EuroLeague | Probabilities; detail endpoint can add expected total/margin and derived scores | `PREDIXSPORT_API_KEY`; disabled without a key; adapter version `adapter:predixsport-v1`; documentation-only endpoint schema |
+| Sportradar Global Basketball | CBA | Independent pre-match 2-way home/away probabilities; no expected scores or totals | `SPORTRADAR_API_KEY`, optional `SPORTRADAR_ACCESS_LEVEL=trial|production`; declared adapter model tag `global-basketball-v2`; `DOCUMENTATION_ONLY` |
 
 Sportradar discovery requires one unique men's `CBA` competition in category
 `CHN`, then one non-disabled season containing the target date. Its documented
@@ -49,6 +49,13 @@ only through a unique one-to-one match on both canonical team identities and
 the exact confirmed UTC start time. Missing, duplicate, unconfirmed, live, or
 removed probability evidence remains a gap; it is never replaced with implied
 book probabilities.
+
+ESPN BPI and Predixsport do not expose a stable upstream model release in the
+fields this adapter consumes. Their `adapter:` model versions fence known
+adapter/provider changes and must be bumped when those changes are observed;
+they do not automatically detect a silent upstream model replacement.
+`produced_by` is also part of prediction calibration identity so Predixsport's
+early-season and mature-model outputs stay isolated.
 
 A probabilities-only prediction remains partial: it may support moneyline, but
 missing expected scores are not invented. Predixsport score derivation uses

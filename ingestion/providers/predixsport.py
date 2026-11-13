@@ -75,6 +75,7 @@ from . import FetchFn
 BASE_URL = "https://api.predixsport.com"
 ENV_KEY = "PREDIXSPORT_API_KEY"
 PROVIDER = "predixsport"
+PREDICTION_MODEL_VERSION = "adapter:predixsport-v1"
 VALID_LEAGUES = ("nba", "euroleague")
 
 EVIDENCE = "DOCUMENTATION_ONLY"
@@ -214,6 +215,7 @@ def fetch_upcoming(
                 provider=PROVIDER,
                 observed_utc=now_utc_iso(),
                 model=f"predixsport-{_league(league)}",
+                model_version=PREDICTION_MODEL_VERSION,
                 produced_by=row.get("produced_by") or PROVIDER,
                 prob_home=p_home,
                 prob_away=p_away,
@@ -267,6 +269,7 @@ def fetch_match_detail(
         provider=PROVIDER,
         observed_utc=now_utc_iso(),
         model=f"predixsport-{_league(league)}",
+        model_version=PREDICTION_MODEL_VERSION,
         produced_by=row.get("produced_by") or PROVIDER,
         prob_home=p_home,
         prob_away=p_away,

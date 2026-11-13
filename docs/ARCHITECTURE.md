@@ -57,12 +57,16 @@ immutable audit ledgers.
   CSV.GZ export, and CSV recovery.
 - `ingestion/warehouse.py`: independent read-only DuckDB connections and
   temporary research views.
-- `forecasting/model.py`: history-only empirical market distributions.
-- `forecasting/harness.py`: prequential reliability profiles and eligibility.
+- `forecasting/model.py`: history-only empirical market distributions and
+  deterministic `MODEL_VERSION`/`ForecastConfig` fingerprints.
+- `forecasting/harness.py`: version-aware prequential reliability profiles and
+  eligibility.
+- `forecasting/shadow.py`: recency-decayed, prequential challenger diagnostics;
+  never an acca input.
 - `forecasting/accas.py`: exact best-first ranking under the documented
   cross-game independence assumption.
-- `forecasting/service.py`: frozen historical replays, current reports, and
-  atomic derived JSON writes.
+- `forecasting/service.py`: frozen historical replays, current champion and
+  shadow reports, and atomic derived JSON writes.
 - `assayer/`: descriptive prediction-outcome statistics; it does not create or
   certify wagers.
 - `scripts/daily.py`: the only scheduled orchestrator.
@@ -139,11 +143,13 @@ canonical state.
    slate and whose tip is after `as_of`, using only evidence visible at that
    timestamp.
 
-The report contains capabilities, historical and calibrated metrics, segment
-profiles, all generated market forecasts, uncovered games, eligibility
-reasons, and ranked accas. It uses schema `magolide.market_forecasts.v1` and
-explicitly disclaims guaranteed/certified outcomes and external betting
-writes.
+The report contains capabilities, historical and calibrated metrics,
+version-aware segment profiles, prequential shadow-challenger metrics, current
+shadow diagnostics, all generated market forecasts, uncovered games,
+eligibility reasons, and ranked accas. Challenger probabilities and effective
+sample sizes are labeled separately and never enter acca selection. The report
+uses schema `magolide.market_forecasts.v1` and explicitly disclaims
+guaranteed/certified outcomes and external betting writes.
 
 `write_market_report` writes a temporary sibling and atomically replaces the
 derived JSON report. Identical bytes are left untouched. This atomic report

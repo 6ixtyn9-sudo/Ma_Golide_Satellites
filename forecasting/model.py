@@ -7,13 +7,14 @@ lines and prices remain immutable evidence attached to each forecast.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import asdict, dataclass
 from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from ingestion.identity import canonical_team_key, parse_utc
 from ingestion.models import BookSnapshot, Game, Market, Period, Prediction
 
+from .harness import config_fingerprint
 from .types import BookEvidence, Forecast, MODEL_VERSION, _period_scores
 
 QUARTERS = (Period.Q1, Period.Q2, Period.Q3, Period.Q4)
@@ -80,6 +81,33 @@ class _TeamRates:
 class HistoryModel:
     def __init__(self, config: ForecastConfig | None = None) -> None:
         self.config = config or ForecastConfig()
+        # Every setting in ForecastConfig can change the available evidence or
+        # empirical probabilities. Source identity remains a separate segment
+        # dimension; this tag isolates the algorithm/configuration itself.
+        components = {"model_version": MODEL_VERSION, **asdict(self.config)}
+        self.calibration_version = f"{MODEL_VERSION}-{config_fingerprint(components)}"
+
+    def _prediction_calibration_version(
+        self, prediction: Prediction, *, hybrid: bool = False
+    ) -> str:
+        """Fingerprint stable prediction provenance, never per-event revisions.
+
+        Provider artifacts may update their ``source_revision`` every game, so
+        only provider/model identity and the declared model version identify a
+        calibration segment. Hybrid history-plus-provider lines also include
+        this model's full configuration fingerprint.
+        """
+        components = {
+            "provider": prediction.provider,
+            "model": prediction.model,
+            "model_version": prediction.model_version,
+            "produced_by": prediction.produced_by,
+        }
+        prefix = "provider_prediction_v1"
+        if hybrid:
+            components["history_model_calibration_version"] = self.calibration_version
+            prefix = "history_provider_hybrid_v1"
+        return f"{prefix}-{config_fingerprint(components)}"
 
     def available_history(
         self, games: Iterable[Game], *, scheduled_utc: str, as_of_utc: str
@@ -352,10 +380,14 @@ class HistoryModel:
                     raw_probability=probabilities[selection],
                     alternative_probabilities=probabilities,
                     source=f"provider:{prediction.provider}",
+                    calibration_version=self._prediction_calibration_version(prediction),
                     book=evidence,
                     prediction_provider=prediction.provider,
                     prediction_observed_utc=prediction.observed_utc,
                     prediction_frozen=prediction_frozen,
+                    prediction_model=prediction.model,
+                    prediction_model_version=prediction.model_version,
+                    prediction_produced_by=prediction.produced_by,
                     role=role,
                 )
             )
@@ -394,6 +426,7 @@ class HistoryModel:
                 raw_probability=probabilities[selection],
                 alternative_probabilities=probabilities,
                 source=MODEL_VERSION,
+                calibration_version=self.calibration_version,
                 expected_margin=distribution.baseline.margin,
                 expected_total=distribution.baseline.total,
                 training_games=distribution.baseline.games,
@@ -486,6 +519,11 @@ class HistoryModel:
                     residual_games=distribution.residuals,
                     team_history=self._team_history([distribution.baseline]),
                     source=source,
+                    calibration_version=(
+                        self._prediction_calibration_version(prediction, hybrid=True)
+                        if source.startswith("provider:") and prediction is not None
+                        else self.calibration_version
+                    ),
                     book=BookEvidence.from_snapshot(
                         snapshot, frozen=frozen_books.get(_book_key(snapshot), False)
                     ),
@@ -497,6 +535,15 @@ class HistoryModel:
                     ),
                     prediction_frozen=(
                         prediction_frozen if source.startswith("provider:") else False
+                    ),
+                    prediction_model=(
+                        prediction.model if source.startswith("provider:") else None
+                    ),
+                    prediction_model_version=(
+                        prediction.model_version if source.startswith("provider:") else None
+                    ),
+                    prediction_produced_by=(
+                        prediction.produced_by if source.startswith("provider:") else None
                     ),
                 )
             )
@@ -554,6 +601,7 @@ class HistoryModel:
                 raw_probability=probabilities[selection],
                 alternative_probabilities=probabilities,
                 source=MODEL_VERSION,
+                calibration_version=self.calibration_version,
                 training_games=len(history),
                 residual_games=len(vectors),
                 team_history=self._team_history(

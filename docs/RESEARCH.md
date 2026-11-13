@@ -46,14 +46,29 @@ The resulting `walk_forward` report section contains:
 - `graded_forecasts`: historical forecasts with valid outcomes;
 - `raw_metrics`: unadjusted probability diagnostics;
 - `prequential_calibrated_metrics`: diagnostics after each round's past-only
-  adjustment;
-- `segments`: per-league/market/period/source sample and reliability profiles;
+  champion adjustment;
+- `segments`: versioned per-league/market/period/source calibration profiles;
+- `shadow_challenger`: prequential raw/champion/recency-decayed metrics,
+  coverage, effective sample sizes, and the fixed challenger configuration;
 - `guards`: the leakage and grading exclusions applied.
 
 Brier score and log loss evaluate probability quality; accuracy alone does
 not. One-sided Wilson lower bounds describe uncertainty but are not edge
 certificates. Pushes are reported separately and excluded from win/loss
 calibration.
+
+History-model calibration segments include a stable fingerprint of the model
+revision and prediction-affecting `ForecastConfig`. Provider-prediction segments
+fingerprint provider/model identity, `model_version`, and `produced_by`; ESPN
+BPI and Predixsport receive explicit adapter-owned versions because their feeds
+do not publish stable model releases. These adapter tags require a manual bump
+when a provider change is known and cannot detect a silent upstream change.
+Per-game artifact revisions are excluded. Hybrid segments fingerprint both
+sources, and legacy records remain separate. The service runs the recency-decayed
+challenger on the same chronological rows and result-delay boundary. Current
+forecasts expose its candidate probability and effective sample size as
+separate shadow diagnostics only. The acca engine continues to rank on the
+champion probability, and any promotion requires untouched prospective data.
 
 ## Rich ESPN context and leakage boundary
 
