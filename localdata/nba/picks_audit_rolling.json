@@ -1,6 +1,6 @@
 {
-  "archived_evidence_rows": 471,
-  "archived_pick_rows": 211,
+  "archived_evidence_rows": 522,
+  "archived_pick_rows": 220,
   "by_bucket": {
     "CAUTION": {
       "priced_profit_units": -2.1087824850912713,
@@ -784,7 +784,7 @@
     "unpriced_sample": 137,
     "wins": 4
   },
-  "generated_utc": "2026-11-13T10:51:17Z",
+  "generated_utc": "2026-11-13T13:33:26Z",
   "grading_basis": "reconciled_official_finals_only; official_finals_settle_immediately; pending_is_not_a_loss; local_day_pending_cutoff; latest_observation_per_logical_pick",
   "hit_rate": 0.5454545454545454,
   "include_same_day_settled": true,
@@ -11646,6 +11646,7 @@
       "calibrated_probability": 0.287222,
       "calibration": {
         "brier_score": 0.222633,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.637383,
         "losses": 4,
@@ -11664,6 +11665,7 @@
         "wilson_lower_95": 0.117265,
         "wins": 2
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -11676,7 +11678,67 @@
       },
       "expected_margin": null,
       "expected_total": 222.20927166376367,
-      "forecast_id": "0ec9a17784a4476b9f9c",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.222633,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.637383,
+          "losses": 4,
+          "market": "highest_quarter",
+          "mean_raw_probability": 0.35,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.333333,
+          "period": "full_game",
+          "pool": "eligible",
+          "probability_adjustment": -0.002778,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.117265,
+          "wins": 2
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples",
+            "below_calibrated_probability_floor"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": null,
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "highest_quarter",
+          "period": "full_game",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": -0.003822,
+          "candidate_probability": 0.28617759723689357,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.2872222222222222,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.28617759723689357,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "50509fe641be15b4b347",
       "game_id": "401909296",
       "grade_status": "pending",
       "home": "Indiana Pacers",
@@ -11688,7 +11750,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "0ec9a17784a4476b9f9c",
+      "pick_id": "50509fe641be15b4b347",
       "prediction": null,
       "price_evidence": "UNMATCHED",
       "push_probability": 0.0,
@@ -11717,6 +11779,7 @@
       "calibrated_probability": 0.600556,
       "calibration": {
         "brier_score": 0.225567,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.64376,
         "losses": 1,
@@ -11735,6 +11798,7 @@
         "wilson_lower_95": 0.497553,
         "wins": 5
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -11746,7 +11810,66 @@
       },
       "expected_margin": -3.204611318140877,
       "expected_total": 111.83667329918198,
-      "forecast_id": "1ab50136a0522aeec024",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.225567,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.64376,
+          "losses": 1,
+          "market": "moneyline",
+          "mean_raw_probability": 0.53,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.833333,
+          "period": "H1",
+          "pool": "eligible",
+          "probability_adjustment": 0.050556,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.497553,
+          "wins": 5
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": null,
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "H1",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.04629,
+          "candidate_probability": 0.5962898247532532,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.6005555555555556,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.5962898247532532,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "a6d1d17356bc28dd3e01",
       "game_id": "401909296",
       "grade_status": "pending",
       "home": "Indiana Pacers",
@@ -11758,7 +11881,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "H1",
-      "pick_id": "1ab50136a0522aeec024",
+      "pick_id": "a6d1d17356bc28dd3e01",
       "prediction": null,
       "price_evidence": "UNMATCHED",
       "push_probability": 0.0,
@@ -11789,15 +11912,15 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.3717472118959106,
+        "selected_decimal_price": 1.3367003367003367,
         "side_prices": {
-          "away": 1.3717472118959106,
+          "away": 1.3367003367003367,
           "draw": null,
-          "home": 3.2,
+          "home": 3.41,
           "over": null,
           "under": null
         },
@@ -11807,6 +11930,7 @@
       "calibrated_probability": 0.580833,
       "calibration": {
         "brier_score": 0.235983,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.665074,
         "losses": 1,
@@ -11825,6 +11949,7 @@
         "wilson_lower_95": 0.497553,
         "wins": 5
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -11835,7 +11960,72 @@
       },
       "expected_margin": -2.1344859597882646,
       "expected_total": 222.85172331383507,
-      "forecast_id": "520be5024252c62b6aae",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.235983,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.665074,
+          "losses": 1,
+          "market": "moneyline",
+          "mean_raw_probability": 0.528333,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.833333,
+          "period": "full_game",
+          "pool": "eligible",
+          "probability_adjustment": 0.050833,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.497553,
+          "wins": 5
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 3.41,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.3367003367003367
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.050324,
+          "candidate_probability": 0.5803244052461303,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.5808333333333333,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.5803244052461303,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "b4756049e91eca2cccee",
       "game_id": "401909296",
       "grade_status": "pending",
       "home": "Indiana Pacers",
@@ -11847,7 +12037,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "520be5024252c62b6aae",
+      "pick_id": "b4756049e91eca2cccee",
       "prediction": null,
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
       "push_probability": 0.0,
@@ -11877,15 +12067,15 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.3717472118959106,
+        "selected_decimal_price": 1.3367003367003367,
         "side_prices": {
-          "away": 1.3717472118959106,
+          "away": 1.3367003367003367,
           "draw": null,
-          "home": 3.2,
+          "home": 3.41,
           "over": null,
           "under": null
         },
@@ -11895,10 +12085,12 @@
       "calibrated_probability": 0.77435,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "provider_prediction_v2-7fb3e30d878d",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "provider_prediction_v2-7fb3e30d878d",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -11910,7 +12102,66 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "8ed57bf7d01f2ba494a9",
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 3.41,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.3367003367003367
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:27Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "provider:espn"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.77435,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.77435,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.77435,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "e356dcb85f5d62fa75a1",
       "game_id": "401909296",
       "grade_status": "pending",
       "home": "Indiana Pacers",
@@ -11922,10 +12173,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "8ed57bf7d01f2ba494a9",
+      "pick_id": "e356dcb85f5d62fa75a1",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T10:51:21Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:27Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -12018,6 +12272,147 @@
     },
     {
       "alternative_probabilities": {
+        "away": 0.55,
+        "home": 0.45
+      },
+      "away": "New York Knicks",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "game_id": "401909296",
+        "line": 8.5,
+        "main_line": true,
+        "market": "spread",
+        "observed_utc": "2026-11-13T13:33:26Z",
+        "period": "full_game",
+        "pre_match": true,
+        "provider": "espn",
+        "selected_decimal_price": 1.9523809523809523,
+        "side_prices": {
+          "away": 1.9523809523809523,
+          "draw": null,
+          "home": 1.8695652173913042,
+          "over": null,
+          "under": null
+        },
+        "source_modified_utc": null
+      },
+      "bucket": "CAUTION",
+      "calibrated_probability": 0.55,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+      "date": "2026-11-13",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "expected_margin": -9.584999999999994,
+      "expected_total": 216.34699999999998,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.8695652173913042,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.9523809523809523
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:27Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "spread",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.55,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.55,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.55,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "590701fdc4f82a840402",
+      "game_id": "401909296",
+      "grade_status": "pending",
+      "home": "Indiana Pacers",
+      "league": "NBA",
+      "line": 8.5,
+      "market": "spread",
+      "model": "provider:espn+team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "590701fdc4f82a840402",
+      "prediction": {
+        "frozen": false,
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:27Z",
+        "produced_by": "ESPN BPI",
+        "provider": "espn"
+      },
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.55,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-14T00:00:00Z",
+      "selection": "away",
+      "team_history": {
+        "away_effective_games": 8.598404,
+        "home_effective_games": 9.305511,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": true
+      },
+      "training_games": 158
+    },
+    {
+      "alternative_probabilities": {
         "away": 0.56,
         "home": 0.44
       },
@@ -12086,6 +12481,147 @@
       "role": null,
       "scheduled_utc": "2026-11-14T00:00:00Z",
       "selection": "away",
+      "team_history": {
+        "away_effective_games": 8.598404,
+        "home_effective_games": 9.305511,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": true
+      },
+      "training_games": 158
+    },
+    {
+      "alternative_probabilities": {
+        "over": 0.41,
+        "under": 0.59
+      },
+      "away": "New York Knicks",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "game_id": "401909296",
+        "line": 218.5,
+        "main_line": true,
+        "market": "total",
+        "observed_utc": "2026-11-13T13:33:26Z",
+        "period": "full_game",
+        "pre_match": true,
+        "provider": "espn",
+        "selected_decimal_price": 1.9345794392523366,
+        "side_prices": {
+          "away": null,
+          "draw": null,
+          "home": null,
+          "over": 1.8849557522123894,
+          "under": 1.9345794392523366
+        },
+        "source_modified_utc": null
+      },
+      "bucket": "CAUTION",
+      "calibrated_probability": 0.59,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+      "date": "2026-11-13",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "expected_margin": -9.584999999999994,
+      "expected_total": 216.34699999999998,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.8849557522123894,
+          "opposite_selection": "over",
+          "selected_decimal_price": 1.9345794392523366
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:27Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "total",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.59,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.59,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.59,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "eff61f84144457d16dcc",
+      "game_id": "401909296",
+      "grade_status": "pending",
+      "home": "Indiana Pacers",
+      "league": "NBA",
+      "line": 218.5,
+      "market": "total",
+      "model": "provider:espn+team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "eff61f84144457d16dcc",
+      "prediction": {
+        "frozen": false,
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:27Z",
+        "produced_by": "ESPN BPI",
+        "provider": "espn"
+      },
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.59,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-14T00:00:00Z",
+      "selection": "under",
       "team_history": {
         "away_effective_games": 8.598404,
         "home_effective_games": 9.305511,
@@ -12185,6 +12721,7 @@
       "calibrated_probability": 0.297222,
       "calibration": {
         "brier_score": 0.222633,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.637383,
         "losses": 4,
@@ -12203,6 +12740,7 @@
         "wilson_lower_95": 0.117265,
         "wins": 2
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -12215,7 +12753,67 @@
       },
       "expected_margin": null,
       "expected_total": 223.32993834838516,
-      "forecast_id": "71ef3eab20ceff08fa00",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.222633,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.637383,
+          "losses": 4,
+          "market": "highest_quarter",
+          "mean_raw_probability": 0.35,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.333333,
+          "period": "full_game",
+          "pool": "eligible",
+          "probability_adjustment": -0.002778,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.117265,
+          "wins": 2
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples",
+            "below_calibrated_probability_floor"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": null,
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "highest_quarter",
+          "period": "full_game",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": -0.003822,
+          "candidate_probability": 0.2961775972368936,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.2972222222222222,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.2961775972368936,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "e7812260245b5acf7662",
       "game_id": "401909297",
       "grade_status": "pending",
       "home": "Orlando Magic",
@@ -12227,7 +12825,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "71ef3eab20ceff08fa00",
+      "pick_id": "e7812260245b5acf7662",
       "prediction": null,
       "price_evidence": "UNMATCHED",
       "push_probability": 0.0,
@@ -12256,6 +12854,7 @@
       "calibrated_probability": 0.640556,
       "calibration": {
         "brier_score": 0.225567,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.64376,
         "losses": 1,
@@ -12274,6 +12873,7 @@
         "wilson_lower_95": 0.497553,
         "wins": 5
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -12285,7 +12885,66 @@
       },
       "expected_margin": 1.5222109143484346,
       "expected_total": 111.58232943045817,
-      "forecast_id": "ad2b6b18e5c850836c6d",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.225567,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.64376,
+          "losses": 1,
+          "market": "moneyline",
+          "mean_raw_probability": 0.53,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.833333,
+          "period": "H1",
+          "pool": "eligible",
+          "probability_adjustment": 0.050556,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.497553,
+          "wins": 5
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": null,
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "H1",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.04629,
+          "candidate_probability": 0.6362898247532531,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.6405555555555555,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.6362898247532531,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "f5f2d1957ab0690d0466",
       "game_id": "401909297",
       "grade_status": "pending",
       "home": "Orlando Magic",
@@ -12297,7 +12956,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "H1",
-      "pick_id": "ad2b6b18e5c850836c6d",
+      "pick_id": "f5f2d1957ab0690d0466",
       "prediction": null,
       "price_evidence": "UNMATCHED",
       "push_probability": 0.0,
@@ -12327,7 +12986,7 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
@@ -12345,10 +13004,12 @@
       "calibrated_probability": 0.77469,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "provider_prediction_v2-7fb3e30d878d",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "provider_prediction_v2-7fb3e30d878d",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -12360,7 +13021,66 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "12239f49999ed2dd7903",
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 4.0,
+          "opposite_selection": "away",
+          "selected_decimal_price": 1.2645502645502646
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "provider:espn"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.77469,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.77469,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.77469,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "f7372b6d2d8e712f8667",
       "game_id": "401909297",
       "grade_status": "pending",
       "home": "Orlando Magic",
@@ -12372,10 +13092,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "12239f49999ed2dd7903",
+      "pick_id": "f7372b6d2d8e712f8667",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T10:51:21Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -12402,7 +13125,7 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
@@ -12420,6 +13143,7 @@
       "calibrated_probability": 0.650833,
       "calibration": {
         "brier_score": 0.235983,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.665074,
         "losses": 1,
@@ -12438,6 +13162,7 @@
         "wilson_lower_95": 0.497553,
         "wins": 5
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -12448,7 +13173,72 @@
       },
       "expected_margin": 3.710344690489123,
       "expected_total": 224.67504262229983,
-      "forecast_id": "8e6ecdc50787584a667f",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.235983,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.665074,
+          "losses": 1,
+          "market": "moneyline",
+          "mean_raw_probability": 0.528333,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.833333,
+          "period": "full_game",
+          "pool": "eligible",
+          "probability_adjustment": 0.050833,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.497553,
+          "wins": 5
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 4.0,
+          "opposite_selection": "away",
+          "selected_decimal_price": 1.2645502645502646
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.050324,
+          "candidate_probability": 0.6503244052461302,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.6508333333333334,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.6503244052461302,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "ff39e42b2bb7fcbb7e57",
       "game_id": "401909297",
       "grade_status": "pending",
       "home": "Orlando Magic",
@@ -12460,7 +13250,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "8e6ecdc50787584a667f",
+      "pick_id": "ff39e42b2bb7fcbb7e57",
       "prediction": null,
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
       "push_probability": 0.0,
@@ -12490,15 +13280,15 @@
         "line": -9.5,
         "main_line": true,
         "market": "spread",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.9090909090909092,
+        "selected_decimal_price": 1.8403361344537816,
         "side_prices": {
-          "away": 1.9090909090909092,
+          "away": 1.8403361344537816,
           "draw": null,
-          "home": 1.9090909090909092,
+          "home": 1.9803921568627452,
           "over": null,
           "under": null
         },
@@ -12508,10 +13298,12 @@
       "calibrated_probability": 0.53,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -12522,7 +13314,65 @@
       },
       "expected_margin": 9.600000000000009,
       "expected_total": 225.21800000000002,
-      "forecast_id": "2d8e3a20c0e4d58d4cfb",
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.9803921568627452,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.8403361344537816
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "spread",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.53,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.53,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.53,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "19fa8dfc41ea3000c0a5",
       "game_id": "401909297",
       "grade_status": "pending",
       "home": "Orlando Magic",
@@ -12534,10 +13384,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "2d8e3a20c0e4d58d4cfb",
+      "pick_id": "19fa8dfc41ea3000c0a5",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T10:51:21Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -12635,6 +13488,147 @@
     },
     {
       "alternative_probabilities": {
+        "over": 0.59,
+        "under": 0.41
+      },
+      "away": "Milwaukee Bucks",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "game_id": "401909297",
+        "line": 222.5,
+        "main_line": true,
+        "market": "total",
+        "observed_utc": "2026-11-13T13:33:26Z",
+        "period": "full_game",
+        "pre_match": true,
+        "provider": "espn",
+        "selected_decimal_price": 1.8928571428571428,
+        "side_prices": {
+          "away": null,
+          "draw": null,
+          "home": null,
+          "over": 1.8928571428571428,
+          "under": 1.925925925925926
+        },
+        "source_modified_utc": null
+      },
+      "bucket": "CAUTION",
+      "calibrated_probability": 0.59,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+      "date": "2026-11-13",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "expected_margin": 9.600000000000009,
+      "expected_total": 225.21800000000002,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.925925925925926,
+          "opposite_selection": "under",
+          "selected_decimal_price": 1.8928571428571428
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "total",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.59,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.59,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.59,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "bee835ece246e1235e93",
+      "game_id": "401909297",
+      "grade_status": "pending",
+      "home": "Orlando Magic",
+      "league": "NBA",
+      "line": 222.5,
+      "market": "total",
+      "model": "provider:espn+team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "bee835ece246e1235e93",
+      "prediction": {
+        "frozen": false,
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
+        "provider": "espn"
+      },
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.59,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-14T00:00:00Z",
+      "selection": "over",
+      "team_history": {
+        "away_effective_games": 9.305511,
+        "home_effective_games": 8.598404,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": true
+      },
+      "training_games": 158
+    },
+    {
+      "alternative_probabilities": {
         "Q1": 0.27,
         "Q2": 0.35,
         "Q3": 0.2,
@@ -12646,6 +13640,7 @@
       "calibrated_probability": 0.347222,
       "calibration": {
         "brier_score": 0.222633,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.637383,
         "losses": 4,
@@ -12664,6 +13659,7 @@
         "wilson_lower_95": 0.117265,
         "wins": 2
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -12676,7 +13672,67 @@
       },
       "expected_margin": null,
       "expected_total": 228.44833310177938,
-      "forecast_id": "434ed51b1a43cc2b8df3",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.222633,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.637383,
+          "losses": 4,
+          "market": "highest_quarter",
+          "mean_raw_probability": 0.35,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.333333,
+          "period": "full_game",
+          "pool": "eligible",
+          "probability_adjustment": -0.002778,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.117265,
+          "wins": 2
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples",
+            "below_calibrated_probability_floor"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": null,
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "highest_quarter",
+          "period": "full_game",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": -0.003822,
+          "candidate_probability": 0.34617759723689356,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.3472222222222222,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.34617759723689356,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "9110750809743c718915",
       "game_id": "401909298",
       "grade_status": "pending",
       "home": "Miami Heat",
@@ -12688,7 +13744,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "434ed51b1a43cc2b8df3",
+      "pick_id": "9110750809743c718915",
       "prediction": null,
       "price_evidence": "UNMATCHED",
       "push_probability": 0.0,
@@ -12718,7 +13774,7 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
@@ -12736,10 +13792,12 @@
       "calibrated_probability": 0.64263,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "provider_prediction_v2-7fb3e30d878d",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "provider_prediction_v2-7fb3e30d878d",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -12751,7 +13809,66 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "f39de39d2f342176b2ec",
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.7407407407407407,
+          "opposite_selection": "home",
+          "selected_decimal_price": 2.1399999999999997
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "provider:espn"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.64263,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.64263,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.64263,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "32c3dcc66d2ebf85b4d3",
       "game_id": "401909298",
       "grade_status": "pending",
       "home": "Miami Heat",
@@ -12763,10 +13880,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "f39de39d2f342176b2ec",
+      "pick_id": "32c3dcc66d2ebf85b4d3",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T10:51:21Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -12793,7 +13913,7 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
@@ -12811,6 +13931,7 @@
       "calibrated_probability": 0.570833,
       "calibration": {
         "brier_score": 0.235983,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.665074,
         "losses": 1,
@@ -12829,6 +13950,7 @@
         "wilson_lower_95": 0.497553,
         "wins": 5
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -12839,7 +13961,72 @@
       },
       "expected_margin": -0.4085913975435176,
       "expected_total": 230.1565250187493,
-      "forecast_id": "d817d5614376e8810109",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.235983,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.665074,
+          "losses": 1,
+          "market": "moneyline",
+          "mean_raw_probability": 0.528333,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.833333,
+          "period": "full_game",
+          "pool": "eligible",
+          "probability_adjustment": 0.050833,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.497553,
+          "wins": 5
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 2.1399999999999997,
+          "opposite_selection": "away",
+          "selected_decimal_price": 1.7407407407407407
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.050324,
+          "candidate_probability": 0.5703244052461303,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.5708333333333333,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.5703244052461303,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "f025acbc50a1d8b97665",
       "game_id": "401909298",
       "grade_status": "pending",
       "home": "Miami Heat",
@@ -12851,7 +14038,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "d817d5614376e8810109",
+      "pick_id": "f025acbc50a1d8b97665",
       "prediction": null,
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
       "push_probability": 0.0,
@@ -12881,7 +14068,7 @@
         "line": -2.5,
         "main_line": true,
         "market": "spread",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
@@ -12899,10 +14086,12 @@
       "calibrated_probability": 0.69,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -12913,7 +14102,65 @@
       },
       "expected_margin": -4.561000000000007,
       "expected_total": 238.535,
-      "forecast_id": "e717c92ea60711606a8a",
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.925925925925926,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.8928571428571428
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "spread",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.69,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.69,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.69,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "39c0028b4aec75ad1e5d",
       "game_id": "401909298",
       "grade_status": "pending",
       "home": "Miami Heat",
@@ -12925,10 +14172,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "e717c92ea60711606a8a",
+      "pick_id": "39c0028b4aec75ad1e5d",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T10:51:21Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -13026,6 +14276,147 @@
     },
     {
       "alternative_probabilities": {
+        "over": 0.59,
+        "under": 0.41
+      },
+      "away": "Cleveland Cavaliers",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "game_id": "401909298",
+        "line": 235.5,
+        "main_line": true,
+        "market": "total",
+        "observed_utc": "2026-11-13T13:33:26Z",
+        "period": "full_game",
+        "pre_match": true,
+        "provider": "espn",
+        "selected_decimal_price": 1.9090909090909092,
+        "side_prices": {
+          "away": null,
+          "draw": null,
+          "home": null,
+          "over": 1.9090909090909092,
+          "under": 1.9090909090909092
+        },
+        "source_modified_utc": null
+      },
+      "bucket": "CAUTION",
+      "calibrated_probability": 0.59,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+      "date": "2026-11-13",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "expected_margin": -4.561000000000007,
+      "expected_total": 238.535,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.9090909090909092,
+          "opposite_selection": "under",
+          "selected_decimal_price": 1.9090909090909092
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "total",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.59,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.59,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.59,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "c4a3283e5d8accebcf33",
+      "game_id": "401909298",
+      "grade_status": "pending",
+      "home": "Miami Heat",
+      "league": "NBA",
+      "line": 235.5,
+      "market": "total",
+      "model": "provider:espn+team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "c4a3283e5d8accebcf33",
+      "prediction": {
+        "frozen": false,
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
+        "provider": "espn"
+      },
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.59,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-14T01:00:00Z",
+      "selection": "over",
+      "team_history": {
+        "away_effective_games": 9.305511,
+        "home_effective_games": 8.598404,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": true
+      },
+      "training_games": 158
+    },
+    {
+      "alternative_probabilities": {
         "Q1": 0.26,
         "Q2": 0.36,
         "Q3": 0.2,
@@ -13037,6 +14428,7 @@
       "calibrated_probability": 0.357222,
       "calibration": {
         "brier_score": 0.222633,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.637383,
         "losses": 4,
@@ -13055,6 +14447,7 @@
         "wilson_lower_95": 0.117265,
         "wins": 2
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -13068,7 +14461,68 @@
       },
       "expected_margin": null,
       "expected_total": 232.1172374161951,
-      "forecast_id": "0c1f34cf69fe60c5d7f0",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.222633,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.637383,
+          "losses": 4,
+          "market": "highest_quarter",
+          "mean_raw_probability": 0.35,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.333333,
+          "period": "full_game",
+          "pool": "eligible",
+          "probability_adjustment": -0.002778,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.117265,
+          "wins": 2
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history",
+            "below_calibrated_probability_floor"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": null,
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "highest_quarter",
+          "period": "full_game",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": -0.003822,
+          "candidate_probability": 0.3561775972368936,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.3572222222222222,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.3561775972368936,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "dcb67309f5ba5ff354af",
       "game_id": "401909299",
       "grade_status": "pending",
       "home": "Chicago Bulls",
@@ -13080,7 +14534,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "0c1f34cf69fe60c5d7f0",
+      "pick_id": "dcb67309f5ba5ff354af",
       "prediction": null,
       "price_evidence": "UNMATCHED",
       "push_probability": 0.0,
@@ -13109,6 +14563,7 @@
       "calibrated_probability": 0.580556,
       "calibration": {
         "brier_score": 0.225567,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.64376,
         "losses": 1,
@@ -13127,6 +14582,7 @@
         "wilson_lower_95": 0.497553,
         "wins": 5
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -13139,7 +14595,67 @@
       },
       "expected_margin": -2.1357737205659433,
       "expected_total": 118.40185065670414,
-      "forecast_id": "b50e0ac891b2218543df",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.225567,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.64376,
+          "losses": 1,
+          "market": "moneyline",
+          "mean_raw_probability": 0.53,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.833333,
+          "period": "H1",
+          "pool": "eligible",
+          "probability_adjustment": 0.050556,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.497553,
+          "wins": 5
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": null,
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "H1",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.04629,
+          "candidate_probability": 0.5762898247532532,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.5805555555555556,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.5762898247532532,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "fedb1f7fef46ea860698",
       "game_id": "401909299",
       "grade_status": "pending",
       "home": "Chicago Bulls",
@@ -13151,11 +14667,169 @@
       "outcome": null,
       "paper_only": true,
       "period": "H1",
-      "pick_id": "b50e0ac891b2218543df",
+      "pick_id": "fedb1f7fef46ea860698",
       "prediction": null,
       "price_evidence": "UNMATCHED",
       "push_probability": 0.0,
       "raw_probability": 0.53,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-14T01:00:00Z",
+      "selection": "away",
+      "team_history": {
+        "away_effective_games": 9.305511,
+        "home_effective_games": 7.866362,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 158
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.55,
+        "draw": 0.0,
+        "home": 0.45
+      },
+      "away": "Atlanta Hawks",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "game_id": "401909299",
+        "line": null,
+        "main_line": true,
+        "market": "moneyline",
+        "observed_utc": "2026-11-13T13:33:26Z",
+        "period": "full_game",
+        "pre_match": true,
+        "provider": "espn",
+        "selected_decimal_price": 1.3448275862068966,
+        "side_prices": {
+          "away": 1.3448275862068966,
+          "draw": null,
+          "home": 3.36,
+          "over": null,
+          "under": null
+        },
+        "source_modified_utc": null
+      },
+      "bucket": "SKIPPED_INELIGIBLE",
+      "calibrated_probability": 0.600833,
+      "calibration": {
+        "brier_score": 0.235983,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
+        "league": "NBA",
+        "log_loss": 0.665074,
+        "losses": 1,
+        "market": "moneyline",
+        "mean_raw_probability": 0.528333,
+        "minimum_samples": 30,
+        "n": 6,
+        "observed_win_rate": 0.833333,
+        "period": "full_game",
+        "pool": "eligible",
+        "probability_adjustment": 0.050833,
+        "pushes": 0,
+        "source": "team_history_empirical_v1",
+        "status": "provisional",
+        "sufficient_for_accas": false,
+        "wilson_lower_95": 0.497553,
+        "wins": 5
+      },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
+      "date": "2026-11-13",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": -2.6225955804662675,
+      "expected_total": 232.774818900821,
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.235983,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.665074,
+          "losses": 1,
+          "market": "moneyline",
+          "mean_raw_probability": 0.528333,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.833333,
+          "period": "full_game",
+          "pool": "eligible",
+          "probability_adjustment": 0.050833,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.497553,
+          "wins": 5
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 3.36,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.3448275862068966
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.050324,
+          "candidate_probability": 0.6003244052461303,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.6008333333333333,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.6003244052461303,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "d746816526104270cd6d",
+      "game_id": "401909299",
+      "grade_status": "pending",
+      "home": "Chicago Bulls",
+      "league": "NBA",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "d746816526104270cd6d",
+      "prediction": null,
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.55,
       "residual_games": 100,
       "role": null,
       "scheduled_utc": "2026-11-14T01:00:00Z",
@@ -13181,15 +14855,15 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.3610108303249098,
+        "selected_decimal_price": 1.3448275862068966,
         "side_prices": {
-          "away": 1.3610108303249098,
+          "away": 1.3448275862068966,
           "draw": null,
-          "home": 3.27,
+          "home": 3.36,
           "over": null,
           "under": null
         },
@@ -13199,10 +14873,12 @@
       "calibrated_probability": 0.74994,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "provider_prediction_v2-7fb3e30d878d",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "provider_prediction_v2-7fb3e30d878d",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -13214,7 +14890,66 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "1401cec95c8c1fd06ee5",
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 3.36,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.3448275862068966
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "provider:espn"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.74994,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.74994,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.74994,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "e9aae54380f87eb176d9",
       "game_id": "401909299",
       "grade_status": "pending",
       "home": "Chicago Bulls",
@@ -13226,10 +14961,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "1401cec95c8c1fd06ee5",
+      "pick_id": "e9aae54380f87eb176d9",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T10:51:21Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -13241,96 +14979,6 @@
       "selection": "away",
       "team_history": null,
       "training_games": 0
-    },
-    {
-      "alternative_probabilities": {
-        "away": 0.55,
-        "draw": 0.0,
-        "home": 0.45
-      },
-      "away": "Atlanta Hawks",
-      "book": {
-        "book": "DraftKings",
-        "frozen": false,
-        "game_id": "401909299",
-        "line": null,
-        "main_line": true,
-        "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
-        "period": "full_game",
-        "pre_match": true,
-        "provider": "espn",
-        "selected_decimal_price": 1.3610108303249098,
-        "side_prices": {
-          "away": 1.3610108303249098,
-          "draw": null,
-          "home": 3.27,
-          "over": null,
-          "under": null
-        },
-        "source_modified_utc": null
-      },
-      "bucket": "SKIPPED_INELIGIBLE",
-      "calibrated_probability": 0.600833,
-      "calibration": {
-        "brier_score": 0.235983,
-        "league": "NBA",
-        "log_loss": 0.665074,
-        "losses": 1,
-        "market": "moneyline",
-        "mean_raw_probability": 0.528333,
-        "minimum_samples": 30,
-        "n": 6,
-        "observed_win_rate": 0.833333,
-        "period": "full_game",
-        "pool": "eligible",
-        "probability_adjustment": 0.050833,
-        "pushes": 0,
-        "source": "team_history_empirical_v1",
-        "status": "provisional",
-        "sufficient_for_accas": false,
-        "wilson_lower_95": 0.497553,
-        "wins": 5
-      },
-      "date": "2026-11-13",
-      "eligibility": {
-        "acca_eligible": false,
-        "evidence_state": "current_pre_tip_unfrozen",
-        "reasons": [
-          "insufficient_walk_forward_samples",
-          "insufficient_team_specific_history"
-        ]
-      },
-      "expected_margin": -2.6225955804662675,
-      "expected_total": 232.774818900821,
-      "forecast_id": "a3703703705fbe259cc4",
-      "game_id": "401909299",
-      "grade_status": "pending",
-      "home": "Chicago Bulls",
-      "league": "NBA",
-      "line": null,
-      "market": "moneyline",
-      "model": "team_history_empirical_v1",
-      "model_version": "team_history_empirical_v1",
-      "outcome": null,
-      "paper_only": true,
-      "period": "full_game",
-      "pick_id": "a3703703705fbe259cc4",
-      "prediction": null,
-      "price_evidence": "NAMED_BOOKMAKER_PRICE",
-      "push_probability": 0.0,
-      "raw_probability": 0.55,
-      "residual_games": 100,
-      "role": null,
-      "scheduled_utc": "2026-11-14T01:00:00Z",
-      "selection": "away",
-      "team_history": {
-        "away_effective_games": 9.305511,
-        "home_effective_games": 7.866362,
-        "required_effective_games_per_team": 8.0,
-        "sufficient_for_accas": false
-      },
-      "training_games": 158
     },
     {
       "alternative_probabilities": {
@@ -13424,7 +15072,7 @@
         "line": 7.5,
         "main_line": true,
         "market": "spread",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
@@ -13442,10 +15090,12 @@
       "calibrated_probability": 0.55,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -13457,7 +15107,66 @@
       },
       "expected_margin": -8.536999999999992,
       "expected_total": 243.897,
-      "forecast_id": "3785b1196ec37bdd5f38",
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.8928571428571428,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.925925925925926
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "spread",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.55,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.55,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.55,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "237377cb053552ab1a28",
       "game_id": "401909299",
       "grade_status": "pending",
       "home": "Chicago Bulls",
@@ -13469,10 +15178,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "3785b1196ec37bdd5f38",
+      "pick_id": "237377cb053552ab1a28",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T10:51:21Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -13557,6 +15269,149 @@
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
       "push_probability": 0.0,
       "raw_probability": 0.58,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-14T01:00:00Z",
+      "selection": "under",
+      "team_history": {
+        "away_effective_games": 9.305511,
+        "home_effective_games": 7.866362,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 158
+    },
+    {
+      "alternative_probabilities": {
+        "over": 0.4,
+        "under": 0.6
+      },
+      "away": "Atlanta Hawks",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "game_id": "401909299",
+        "line": 246.5,
+        "main_line": true,
+        "market": "total",
+        "observed_utc": "2026-11-13T13:33:26Z",
+        "period": "full_game",
+        "pre_match": true,
+        "provider": "espn",
+        "selected_decimal_price": 1.8771929824561404,
+        "side_prices": {
+          "away": null,
+          "draw": null,
+          "home": null,
+          "over": 1.9433962264150944,
+          "under": 1.8771929824561404
+        },
+        "source_modified_utc": null
+      },
+      "bucket": "SKIPPED_INELIGIBLE",
+      "calibrated_probability": 0.6,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+      "date": "2026-11-13",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": -8.536999999999992,
+      "expected_total": 243.897,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.9433962264150944,
+          "opposite_selection": "over",
+          "selected_decimal_price": 1.8771929824561404
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "total",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.6,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.6,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.6,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "d4d37961239190c264dc",
+      "game_id": "401909299",
+      "grade_status": "pending",
+      "home": "Chicago Bulls",
+      "league": "NBA",
+      "line": 246.5,
+      "market": "total",
+      "model": "provider:espn+team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "d4d37961239190c264dc",
+      "prediction": {
+        "frozen": false,
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
+        "provider": "espn"
+      },
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.6,
       "residual_games": 100,
       "role": null,
       "scheduled_utc": "2026-11-14T01:00:00Z",
@@ -13725,15 +15580,15 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.6024096385542168,
+        "selected_decimal_price": 1.704225352112676,
         "side_prices": {
-          "away": 1.6024096385542168,
+          "away": 1.704225352112676,
           "draw": null,
-          "home": 2.4,
+          "home": 2.2,
           "over": null,
           "under": null
         },
@@ -13743,6 +15598,7 @@
       "calibrated_probability": 0.600833,
       "calibration": {
         "brier_score": 0.235983,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.665074,
         "losses": 1,
@@ -13761,6 +15617,7 @@
         "wilson_lower_95": 0.497553,
         "wins": 5
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -13771,7 +15628,72 @@
       },
       "expected_margin": -2.6381164445111267,
       "expected_total": 231.69000405360538,
-      "forecast_id": "76710c912089c026894c",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.235983,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.665074,
+          "losses": 1,
+          "market": "moneyline",
+          "mean_raw_probability": 0.528333,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.833333,
+          "period": "full_game",
+          "pool": "eligible",
+          "probability_adjustment": 0.050833,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.497553,
+          "wins": 5
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 2.2,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.704225352112676
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.050324,
+          "candidate_probability": 0.6003244052461303,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.6008333333333333,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.6003244052461303,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "20800cb90ef20dd62d89",
       "game_id": "401909300",
       "grade_status": "pending",
       "home": "New Orleans Pelicans",
@@ -13783,7 +15705,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "76710c912089c026894c",
+      "pick_id": "20800cb90ef20dd62d89",
       "prediction": null,
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
       "push_probability": 0.0,
@@ -13813,15 +15735,15 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.6024096385542168,
+        "selected_decimal_price": 1.704225352112676,
         "side_prices": {
-          "away": 1.6024096385542168,
+          "away": 1.704225352112676,
           "draw": null,
-          "home": 2.4,
+          "home": 2.2,
           "over": null,
           "under": null
         },
@@ -13831,10 +15753,12 @@
       "calibrated_probability": 0.57739,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "provider_prediction_v2-7fb3e30d878d",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "provider_prediction_v2-7fb3e30d878d",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -13846,7 +15770,66 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "ddfa6a1af70710f7af64",
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 2.2,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.704225352112676
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "provider:espn"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.57739,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.57739,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.57739,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "459f3443c751137ad819",
       "game_id": "401909300",
       "grade_status": "pending",
       "home": "New Orleans Pelicans",
@@ -13858,10 +15841,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "ddfa6a1af70710f7af64",
+      "pick_id": "459f3443c751137ad819",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T10:51:21Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -13954,6 +15940,147 @@
     },
     {
       "alternative_probabilities": {
+        "away": 0.53,
+        "home": 0.47
+      },
+      "away": "Memphis Grizzlies",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "game_id": "401909300",
+        "line": 2.5,
+        "main_line": true,
+        "market": "spread",
+        "observed_utc": "2026-11-13T13:33:26Z",
+        "period": "full_game",
+        "pre_match": true,
+        "provider": "espn",
+        "selected_decimal_price": 1.8928571428571428,
+        "side_prices": {
+          "away": 1.8928571428571428,
+          "draw": null,
+          "home": 1.925925925925926,
+          "over": null,
+          "under": null
+        },
+        "source_modified_utc": null
+      },
+      "bucket": "CAUTION",
+      "calibrated_probability": 0.53,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+      "date": "2026-11-13",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "expected_margin": -2.426000000000002,
+      "expected_total": 238.18200000000002,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.925925925925926,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.8928571428571428
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "spread",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.53,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.53,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.53,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "c2a05c77a78f03bc50cf",
+      "game_id": "401909300",
+      "grade_status": "pending",
+      "home": "New Orleans Pelicans",
+      "league": "NBA",
+      "line": 2.5,
+      "market": "spread",
+      "model": "provider:espn+team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "c2a05c77a78f03bc50cf",
+      "prediction": {
+        "frozen": false,
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
+        "provider": "espn"
+      },
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.53,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-14T01:00:00Z",
+      "selection": "away",
+      "team_history": {
+        "away_effective_games": 8.598404,
+        "home_effective_games": 9.305511,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": true
+      },
+      "training_games": 158
+    },
+    {
+      "alternative_probabilities": {
         "over": 0.59,
         "under": 0.41
       },
@@ -13965,17 +16092,17 @@
         "line": 235.5,
         "main_line": true,
         "market": "total",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.8928571428571428,
+        "selected_decimal_price": 1.9345794392523366,
         "side_prices": {
           "away": null,
           "draw": null,
           "home": null,
-          "over": 1.8928571428571428,
-          "under": 1.925925925925926
+          "over": 1.9345794392523366,
+          "under": 1.8849557522123894
         },
         "source_modified_utc": null
       },
@@ -13983,10 +16110,12 @@
       "calibrated_probability": 0.59,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -13997,7 +16126,65 @@
       },
       "expected_margin": -2.426000000000002,
       "expected_total": 238.18200000000002,
-      "forecast_id": "0fdb698b125d589e398b",
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.8849557522123894,
+          "opposite_selection": "under",
+          "selected_decimal_price": 1.9345794392523366
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "total",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.59,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.59,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.59,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "880c4799a63e14f931c0",
       "game_id": "401909300",
       "grade_status": "pending",
       "home": "New Orleans Pelicans",
@@ -14009,10 +16196,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "0fdb698b125d589e398b",
+      "pick_id": "880c4799a63e14f931c0",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T10:51:21Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -14102,80 +16292,6 @@
     },
     {
       "alternative_probabilities": {
-        "away": 0.11535,
-        "home": 0.88465
-      },
-      "away": "Utah Jazz",
-      "book": {
-        "book": "DraftKings",
-        "frozen": false,
-        "game_id": "401909301",
-        "line": null,
-        "main_line": true,
-        "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
-        "period": "full_game",
-        "pre_match": true,
-        "provider": "espn",
-        "selected_decimal_price": 1.0632911392405062,
-        "side_prices": {
-          "away": 10.0,
-          "draw": null,
-          "home": 1.0632911392405062,
-          "over": null,
-          "under": null
-        },
-        "source_modified_utc": null
-      },
-      "bucket": "SKIPPED_INELIGIBLE",
-      "calibrated_probability": 0.88465,
-      "calibration": {
-        "adjustment": 0.0,
-        "n": 0,
-        "status": "no_history",
-        "sufficient_for_accas": false
-      },
-      "date": "2026-11-13",
-      "eligibility": {
-        "acca_eligible": false,
-        "evidence_state": "current_pre_tip_unfrozen",
-        "reasons": [
-          "insufficient_walk_forward_samples",
-          "insufficient_team_specific_history"
-        ]
-      },
-      "expected_margin": null,
-      "expected_total": null,
-      "forecast_id": "5637b2fb5a420ca8a8c4",
-      "game_id": "401909301",
-      "grade_status": "pending",
-      "home": "Houston Rockets",
-      "league": "NBA",
-      "line": null,
-      "market": "moneyline",
-      "model": "provider:espn",
-      "model_version": "team_history_empirical_v1",
-      "outcome": null,
-      "paper_only": true,
-      "period": "full_game",
-      "pick_id": "5637b2fb5a420ca8a8c4",
-      "prediction": {
-        "frozen": false,
-        "observed_utc": "2026-11-13T10:51:21Z",
-        "provider": "espn"
-      },
-      "price_evidence": "NAMED_BOOKMAKER_PRICE",
-      "push_probability": 0.0,
-      "raw_probability": 0.88465,
-      "residual_games": 0,
-      "role": "favorite",
-      "scheduled_utc": "2026-11-14T01:30:00Z",
-      "selection": "home",
-      "team_history": null,
-      "training_games": 0
-    },
-    {
-      "alternative_probabilities": {
         "away": 0.34,
         "draw": 0.0,
         "home": 0.66
@@ -14188,15 +16304,15 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.0632911392405062,
+        "selected_decimal_price": 1.0684931506849316,
         "side_prices": {
-          "away": 10.0,
+          "away": 9.5,
           "draw": null,
-          "home": 1.0632911392405062,
+          "home": 1.0684931506849316,
           "over": null,
           "under": null
         },
@@ -14206,6 +16322,7 @@
       "calibrated_probability": 0.710833,
       "calibration": {
         "brier_score": 0.235983,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.665074,
         "losses": 1,
@@ -14224,6 +16341,7 @@
         "wilson_lower_95": 0.497553,
         "wins": 5
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -14234,7 +16352,72 @@
       },
       "expected_margin": 5.911239670366882,
       "expected_total": 224.26693993804284,
-      "forecast_id": "7613e1481cac4cf0d79c",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.235983,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.665074,
+          "losses": 1,
+          "market": "moneyline",
+          "mean_raw_probability": 0.528333,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.833333,
+          "period": "full_game",
+          "pool": "eligible",
+          "probability_adjustment": 0.050833,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.497553,
+          "wins": 5
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 9.5,
+          "opposite_selection": "away",
+          "selected_decimal_price": 1.0684931506849316
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.050324,
+          "candidate_probability": 0.7103244052461303,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.7108333333333334,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.7103244052461303,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "49c7ad839e3726ffd84d",
       "game_id": "401909301",
       "grade_status": "pending",
       "home": "Houston Rockets",
@@ -14246,7 +16429,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "7613e1481cac4cf0d79c",
+      "pick_id": "49c7ad839e3726ffd84d",
       "prediction": null,
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
       "push_probability": 0.0,
@@ -14265,6 +16448,144 @@
     },
     {
       "alternative_probabilities": {
+        "away": 0.11535,
+        "home": 0.88465
+      },
+      "away": "Utah Jazz",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "game_id": "401909301",
+        "line": null,
+        "main_line": true,
+        "market": "moneyline",
+        "observed_utc": "2026-11-13T13:33:26Z",
+        "period": "full_game",
+        "pre_match": true,
+        "provider": "espn",
+        "selected_decimal_price": 1.0684931506849316,
+        "side_prices": {
+          "away": 9.5,
+          "draw": null,
+          "home": 1.0684931506849316,
+          "over": null,
+          "under": null
+        },
+        "source_modified_utc": null
+      },
+      "bucket": "SKIPPED_INELIGIBLE",
+      "calibrated_probability": 0.88465,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+      "date": "2026-11-13",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 9.5,
+          "opposite_selection": "away",
+          "selected_decimal_price": 1.0684931506849316
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "provider:espn"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.88465,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.88465,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.88465,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "52621d8419fa59cbdf43",
+      "game_id": "401909301",
+      "grade_status": "pending",
+      "home": "Houston Rockets",
+      "league": "NBA",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "52621d8419fa59cbdf43",
+      "prediction": {
+        "frozen": false,
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
+        "provider": "espn"
+      },
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.88465,
+      "residual_games": 0,
+      "role": "favorite",
+      "scheduled_utc": "2026-11-14T01:30:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
         "away": 0.55,
         "home": 0.45
       },
@@ -14276,15 +16597,15 @@
         "line": -16.5,
         "main_line": true,
         "market": "spread",
-        "observed_utc": "2026-11-13T08:50:04Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.9615384615384617,
+        "selected_decimal_price": 1.8695652173913042,
         "side_prices": {
-          "away": 1.9615384615384617,
+          "away": 1.8695652173913042,
           "draw": null,
-          "home": 1.8547008547008548,
+          "home": 1.9523809523809523,
           "over": null,
           "under": null
         },
@@ -14294,10 +16615,12 @@
       "calibrated_probability": 0.55,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -14306,9 +16629,67 @@
           "insufficient_walk_forward_samples"
         ]
       },
-      "expected_margin": 15.534999999999997,
-      "expected_total": 224.625,
-      "forecast_id": "ec76070686c24b695c78",
+      "expected_margin": 15.835999999999999,
+      "expected_total": 224.59199999999998,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.9523809523809523,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.8695652173913042
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "spread",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.55,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.55,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.55,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "3917618184a55c151131",
       "game_id": "401909301",
       "grade_status": "pending",
       "home": "Houston Rockets",
@@ -14320,10 +16701,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "ec76070686c24b695c78",
+      "pick_id": "3917618184a55c151131",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T08:50:05Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -14411,6 +16795,147 @@
       "role": null,
       "scheduled_utc": "2026-11-14T01:30:00Z",
       "selection": "away",
+      "team_history": {
+        "away_effective_games": 9.305511,
+        "home_effective_games": 9.305511,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": true
+      },
+      "training_games": 158
+    },
+    {
+      "alternative_probabilities": {
+        "over": 0.63,
+        "under": 0.37
+      },
+      "away": "Utah Jazz",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "game_id": "401909301",
+        "line": 218.5,
+        "main_line": true,
+        "market": "total",
+        "observed_utc": "2026-11-13T13:33:26Z",
+        "period": "full_game",
+        "pre_match": true,
+        "provider": "espn",
+        "selected_decimal_price": 1.8695652173913042,
+        "side_prices": {
+          "away": null,
+          "draw": null,
+          "home": null,
+          "over": 1.8695652173913042,
+          "under": 1.9523809523809523
+        },
+        "source_modified_utc": null
+      },
+      "bucket": "CAUTION",
+      "calibrated_probability": 0.63,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+      "date": "2026-11-13",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "expected_margin": 15.835999999999999,
+      "expected_total": 224.59199999999998,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.9523809523809523,
+          "opposite_selection": "under",
+          "selected_decimal_price": 1.8695652173913042
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "total",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.63,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.63,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.63,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "ae28ed287b1ce43f9ebb",
+      "game_id": "401909301",
+      "grade_status": "pending",
+      "home": "Houston Rockets",
+      "league": "NBA",
+      "line": 218.5,
+      "market": "total",
+      "model": "provider:espn+team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "ae28ed287b1ce43f9ebb",
+      "prediction": {
+        "frozen": false,
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
+        "provider": "espn"
+      },
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.63,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-14T01:30:00Z",
+      "selection": "over",
       "team_history": {
         "away_effective_games": 9.305511,
         "home_effective_games": 9.305511,
@@ -14510,6 +17035,7 @@
       "calibrated_probability": 0.297222,
       "calibration": {
         "brier_score": 0.222633,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.637383,
         "losses": 4,
@@ -14528,6 +17054,7 @@
         "wilson_lower_95": 0.117265,
         "wins": 2
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -14540,7 +17067,67 @@
       },
       "expected_margin": null,
       "expected_total": 226.46892491903765,
-      "forecast_id": "5f2539be0062a52e18f8",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.222633,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.637383,
+          "losses": 4,
+          "market": "highest_quarter",
+          "mean_raw_probability": 0.35,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.333333,
+          "period": "full_game",
+          "pool": "eligible",
+          "probability_adjustment": -0.002778,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.117265,
+          "wins": 2
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples",
+            "below_calibrated_probability_floor"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": null,
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "highest_quarter",
+          "period": "full_game",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": -0.003822,
+          "candidate_probability": 0.2961775972368936,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.2972222222222222,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.2961775972368936,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "66088d79fab058a0247f",
       "game_id": "401909302",
       "grade_status": "pending",
       "home": "San Antonio Spurs",
@@ -14552,7 +17139,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "5f2539be0062a52e18f8",
+      "pick_id": "66088d79fab058a0247f",
       "prediction": null,
       "price_evidence": "UNMATCHED",
       "push_probability": 0.0,
@@ -14561,6 +17148,162 @@
       "role": null,
       "scheduled_utc": "2026-11-14T02:30:00Z",
       "selection": "Q2",
+      "team_history": {
+        "away_effective_games": 9.305511,
+        "home_effective_games": 9.305511,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": true
+      },
+      "training_games": 158
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.45,
+        "draw": 0.0,
+        "home": 0.55
+      },
+      "away": "Golden State Warriors",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "game_id": "401909302",
+        "line": null,
+        "main_line": true,
+        "market": "moneyline",
+        "observed_utc": "2026-11-13T13:33:26Z",
+        "period": "full_game",
+        "pre_match": true,
+        "provider": "espn",
+        "selected_decimal_price": 1.1428571428571428,
+        "side_prices": {
+          "away": 6.01,
+          "draw": null,
+          "home": 1.1428571428571428,
+          "over": null,
+          "under": null
+        },
+        "source_modified_utc": null
+      },
+      "bucket": "CAUTION",
+      "calibrated_probability": 0.600833,
+      "calibration": {
+        "brier_score": 0.235983,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
+        "league": "NBA",
+        "log_loss": 0.665074,
+        "losses": 1,
+        "market": "moneyline",
+        "mean_raw_probability": 0.528333,
+        "minimum_samples": 30,
+        "n": 6,
+        "observed_win_rate": 0.833333,
+        "period": "full_game",
+        "pool": "eligible",
+        "probability_adjustment": 0.050833,
+        "pushes": 0,
+        "source": "team_history_empirical_v1",
+        "status": "provisional",
+        "sufficient_for_accas": false,
+        "wilson_lower_95": 0.497553,
+        "wins": 5
+      },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
+      "date": "2026-11-13",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "expected_margin": 1.4775952395018805,
+      "expected_total": 228.179954713922,
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.235983,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.665074,
+          "losses": 1,
+          "market": "moneyline",
+          "mean_raw_probability": 0.528333,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.833333,
+          "period": "full_game",
+          "pool": "eligible",
+          "probability_adjustment": 0.050833,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.497553,
+          "wins": 5
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 6.01,
+          "opposite_selection": "away",
+          "selected_decimal_price": 1.1428571428571428
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.050324,
+          "candidate_probability": 0.6003244052461303,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.6008333333333333,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.6003244052461303,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "8a8d8bdd193d7541621a",
+      "game_id": "401909302",
+      "grade_status": "pending",
+      "home": "San Antonio Spurs",
+      "league": "NBA",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "8a8d8bdd193d7541621a",
+      "prediction": null,
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.55,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-14T02:30:00Z",
+      "selection": "home",
       "team_history": {
         "away_effective_games": 9.305511,
         "home_effective_games": 9.305511,
@@ -14582,15 +17325,15 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.1333333333333333,
+        "selected_decimal_price": 1.1428571428571428,
         "side_prices": {
-          "away": 6.3,
+          "away": 6.01,
           "draw": null,
-          "home": 1.1333333333333333,
+          "home": 1.1428571428571428,
           "over": null,
           "under": null
         },
@@ -14600,10 +17343,12 @@
       "calibrated_probability": 0.86745,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "provider_prediction_v2-7fb3e30d878d",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "provider_prediction_v2-7fb3e30d878d",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -14615,7 +17360,66 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "b78b3ea91b98cf11f85b",
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 6.01,
+          "opposite_selection": "away",
+          "selected_decimal_price": 1.1428571428571428
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "provider:espn"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.86745,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.86745,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.86745,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "b17d8469fd4f57e37765",
       "game_id": "401909302",
       "grade_status": "pending",
       "home": "San Antonio Spurs",
@@ -14627,10 +17431,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "b78b3ea91b98cf11f85b",
+      "pick_id": "b17d8469fd4f57e37765",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T10:51:21Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -14645,54 +17452,41 @@
     },
     {
       "alternative_probabilities": {
-        "away": 0.45,
-        "draw": 0.0,
-        "home": 0.55
+        "away": 0.46,
+        "home": 0.54
       },
       "away": "Golden State Warriors",
       "book": {
         "book": "DraftKings",
         "frozen": false,
         "game_id": "401909302",
-        "line": null,
+        "line": -11.5,
         "main_line": true,
-        "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "market": "spread",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.1333333333333333,
+        "selected_decimal_price": 1.8849557522123894,
         "side_prices": {
-          "away": 6.3,
+          "away": 1.9345794392523366,
           "draw": null,
-          "home": 1.1333333333333333,
+          "home": 1.8849557522123894,
           "over": null,
           "under": null
         },
         "source_modified_utc": null
       },
       "bucket": "CAUTION",
-      "calibrated_probability": 0.600833,
+      "calibrated_probability": 0.54,
       "calibration": {
-        "brier_score": 0.235983,
-        "league": "NBA",
-        "log_loss": 0.665074,
-        "losses": 1,
-        "market": "moneyline",
-        "mean_raw_probability": 0.528333,
-        "minimum_samples": 30,
-        "n": 6,
-        "observed_win_rate": 0.833333,
-        "period": "full_game",
-        "pool": "eligible",
-        "probability_adjustment": 0.050833,
-        "pushes": 0,
-        "source": "team_history_empirical_v1",
-        "status": "provisional",
-        "sufficient_for_accas": false,
-        "wilson_lower_95": 0.497553,
-        "wins": 5
+        "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
       },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -14701,25 +17495,90 @@
           "insufficient_walk_forward_samples"
         ]
       },
-      "expected_margin": 1.4775952395018805,
-      "expected_total": 228.179954713922,
-      "forecast_id": "d68db655a4e82ee224c7",
+      "expected_margin": 14.602999999999994,
+      "expected_total": 226.293,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.9345794392523366,
+          "opposite_selection": "away",
+          "selected_decimal_price": 1.8849557522123894
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "spread",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.54,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.54,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.54,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "84efba7fa7af1d14b9f6",
       "game_id": "401909302",
       "grade_status": "pending",
       "home": "San Antonio Spurs",
       "league": "NBA",
-      "line": null,
-      "market": "moneyline",
-      "model": "team_history_empirical_v1",
+      "line": -11.5,
+      "market": "spread",
+      "model": "provider:espn+team_history_empirical_v1",
       "model_version": "team_history_empirical_v1",
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "d68db655a4e82ee224c7",
-      "prediction": null,
+      "pick_id": "84efba7fa7af1d14b9f6",
+      "prediction": {
+        "frozen": false,
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
+        "provider": "espn"
+      },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
       "push_probability": 0.0,
-      "raw_probability": 0.55,
+      "raw_probability": 0.54,
       "residual_games": 100,
       "role": null,
       "scheduled_utc": "2026-11-14T02:30:00Z",
@@ -14890,6 +17749,147 @@
     },
     {
       "alternative_probabilities": {
+        "over": 0.65,
+        "under": 0.35
+      },
+      "away": "Golden State Warriors",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "game_id": "401909302",
+        "line": 218.5,
+        "main_line": true,
+        "market": "total",
+        "observed_utc": "2026-11-13T13:33:26Z",
+        "period": "full_game",
+        "pre_match": true,
+        "provider": "espn",
+        "selected_decimal_price": 1.925925925925926,
+        "side_prices": {
+          "away": null,
+          "draw": null,
+          "home": null,
+          "over": 1.925925925925926,
+          "under": 1.8928571428571428
+        },
+        "source_modified_utc": null
+      },
+      "bucket": "CAUTION",
+      "calibrated_probability": 0.65,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+      "date": "2026-11-13",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "expected_margin": 14.602999999999994,
+      "expected_total": 226.293,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.8928571428571428,
+          "opposite_selection": "under",
+          "selected_decimal_price": 1.925925925925926
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "total",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.65,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.65,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.65,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "5d2df4bec994b9f646ca",
+      "game_id": "401909302",
+      "grade_status": "pending",
+      "home": "San Antonio Spurs",
+      "league": "NBA",
+      "line": 218.5,
+      "market": "total",
+      "model": "provider:espn+team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "5d2df4bec994b9f646ca",
+      "prediction": {
+        "frozen": false,
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
+        "provider": "espn"
+      },
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.65,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-14T02:30:00Z",
+      "selection": "over",
+      "team_history": {
+        "away_effective_games": 9.305511,
+        "home_effective_games": 9.305511,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": true
+      },
+      "training_games": 158
+    },
+    {
+      "alternative_probabilities": {
         "over": 0.63,
         "under": 0.37
       },
@@ -14979,6 +17979,7 @@
       "calibrated_probability": 0.417222,
       "calibration": {
         "brier_score": 0.222633,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.637383,
         "losses": 4,
@@ -14997,6 +17998,7 @@
         "wilson_lower_95": 0.117265,
         "wins": 2
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -15009,7 +18011,67 @@
       },
       "expected_margin": null,
       "expected_total": 228.74567532649303,
-      "forecast_id": "8facb8b2f3b1de48ee96",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.222633,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.637383,
+          "losses": 4,
+          "market": "highest_quarter",
+          "mean_raw_probability": 0.35,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.333333,
+          "period": "full_game",
+          "pool": "eligible",
+          "probability_adjustment": -0.002778,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.117265,
+          "wins": 2
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples",
+            "below_calibrated_probability_floor"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": null,
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "highest_quarter",
+          "period": "full_game",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": -0.003822,
+          "candidate_probability": 0.41617759723689357,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.4172222222222222,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.41617759723689357,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "aba7609c8d11ed6a5f42",
       "game_id": "401909303",
       "grade_status": "pending",
       "home": "Sacramento Kings",
@@ -15021,7 +18083,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "8facb8b2f3b1de48ee96",
+      "pick_id": "aba7609c8d11ed6a5f42",
       "prediction": null,
       "price_evidence": "UNMATCHED",
       "push_probability": 0.0,
@@ -15050,6 +18112,7 @@
       "calibrated_probability": 0.590556,
       "calibration": {
         "brier_score": 0.225567,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.64376,
         "losses": 1,
@@ -15068,6 +18131,7 @@
         "wilson_lower_95": 0.497553,
         "wins": 5
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -15079,7 +18143,66 @@
       },
       "expected_margin": -2.8657952208827666,
       "expected_total": 117.08619517972403,
-      "forecast_id": "8f5d2861b37c929e5ed7",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.225567,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.64376,
+          "losses": 1,
+          "market": "moneyline",
+          "mean_raw_probability": 0.53,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.833333,
+          "period": "H1",
+          "pool": "eligible",
+          "probability_adjustment": 0.050556,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.497553,
+          "wins": 5
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": null,
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "H1",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.04629,
+          "candidate_probability": 0.5862898247532532,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.5905555555555556,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.5862898247532532,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "b19fe322592ad7ed44cb",
       "game_id": "401909303",
       "grade_status": "pending",
       "home": "Sacramento Kings",
@@ -15091,100 +18214,11 @@
       "outcome": null,
       "paper_only": true,
       "period": "H1",
-      "pick_id": "8f5d2861b37c929e5ed7",
+      "pick_id": "b19fe322592ad7ed44cb",
       "prediction": null,
       "price_evidence": "UNMATCHED",
       "push_probability": 0.0,
       "raw_probability": 0.54,
-      "residual_games": 100,
-      "role": null,
-      "scheduled_utc": "2026-11-14T03:00:00Z",
-      "selection": "away",
-      "team_history": {
-        "away_effective_games": 8.598404,
-        "home_effective_games": 8.598404,
-        "required_effective_games_per_team": 8.0,
-        "sufficient_for_accas": true
-      },
-      "training_games": 158
-    },
-    {
-      "alternative_probabilities": {
-        "away": 0.55,
-        "draw": 0.0,
-        "home": 0.45
-      },
-      "away": "Portland Trail Blazers",
-      "book": {
-        "book": "DraftKings",
-        "frozen": false,
-        "game_id": "401909303",
-        "line": null,
-        "main_line": true,
-        "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
-        "period": "full_game",
-        "pre_match": true,
-        "provider": "espn",
-        "selected_decimal_price": 1.1941747572815533,
-        "side_prices": {
-          "away": 1.1941747572815533,
-          "draw": null,
-          "home": 4.92,
-          "over": null,
-          "under": null
-        },
-        "source_modified_utc": null
-      },
-      "bucket": "CAUTION",
-      "calibrated_probability": 0.600833,
-      "calibration": {
-        "brier_score": 0.235983,
-        "league": "NBA",
-        "log_loss": 0.665074,
-        "losses": 1,
-        "market": "moneyline",
-        "mean_raw_probability": 0.528333,
-        "minimum_samples": 30,
-        "n": 6,
-        "observed_win_rate": 0.833333,
-        "period": "full_game",
-        "pool": "eligible",
-        "probability_adjustment": 0.050833,
-        "pushes": 0,
-        "source": "team_history_empirical_v1",
-        "status": "provisional",
-        "sufficient_for_accas": false,
-        "wilson_lower_95": 0.497553,
-        "wins": 5
-      },
-      "date": "2026-11-13",
-      "eligibility": {
-        "acca_eligible": false,
-        "evidence_state": "current_pre_tip_unfrozen",
-        "reasons": [
-          "insufficient_walk_forward_samples"
-        ]
-      },
-      "expected_margin": -3.0930622936643033,
-      "expected_total": 229.40152607548586,
-      "forecast_id": "e4af61237d9a6dee9e84",
-      "game_id": "401909303",
-      "grade_status": "pending",
-      "home": "Sacramento Kings",
-      "league": "NBA",
-      "line": null,
-      "market": "moneyline",
-      "model": "team_history_empirical_v1",
-      "model_version": "team_history_empirical_v1",
-      "outcome": null,
-      "paper_only": true,
-      "period": "full_game",
-      "pick_id": "e4af61237d9a6dee9e84",
-      "prediction": null,
-      "price_evidence": "NAMED_BOOKMAKER_PRICE",
-      "push_probability": 0.0,
-      "raw_probability": 0.55,
       "residual_games": 100,
       "role": null,
       "scheduled_utc": "2026-11-14T03:00:00Z",
@@ -15210,15 +18244,15 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.1941747572815533,
+        "selected_decimal_price": 1.2012072434607646,
         "side_prices": {
-          "away": 1.1941747572815533,
+          "away": 1.2012072434607646,
           "draw": null,
-          "home": 4.92,
+          "home": 4.8,
           "over": null,
           "under": null
         },
@@ -15228,10 +18262,12 @@
       "calibrated_probability": 0.82492,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "provider_prediction_v2-7fb3e30d878d",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "provider_prediction_v2-7fb3e30d878d",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -15243,7 +18279,66 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "f6f8b8319807554e2080",
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 4.8,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.2012072434607646
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "provider:espn"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.8249200000000001,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.8249200000000001,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.8249200000000001,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "473e7a3215b393b6c856",
       "game_id": "401909303",
       "grade_status": "pending",
       "home": "Sacramento Kings",
@@ -15255,10 +18350,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "f6f8b8319807554e2080",
+      "pick_id": "473e7a3215b393b6c856",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T10:51:21Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -15274,6 +18372,162 @@
     {
       "alternative_probabilities": {
         "away": 0.55,
+        "draw": 0.0,
+        "home": 0.45
+      },
+      "away": "Portland Trail Blazers",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "game_id": "401909303",
+        "line": null,
+        "main_line": true,
+        "market": "moneyline",
+        "observed_utc": "2026-11-13T13:33:26Z",
+        "period": "full_game",
+        "pre_match": true,
+        "provider": "espn",
+        "selected_decimal_price": 1.2012072434607646,
+        "side_prices": {
+          "away": 1.2012072434607646,
+          "draw": null,
+          "home": 4.8,
+          "over": null,
+          "under": null
+        },
+        "source_modified_utc": null
+      },
+      "bucket": "CAUTION",
+      "calibrated_probability": 0.600833,
+      "calibration": {
+        "brier_score": 0.235983,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
+        "league": "NBA",
+        "log_loss": 0.665074,
+        "losses": 1,
+        "market": "moneyline",
+        "mean_raw_probability": 0.528333,
+        "minimum_samples": 30,
+        "n": 6,
+        "observed_win_rate": 0.833333,
+        "period": "full_game",
+        "pool": "eligible",
+        "probability_adjustment": 0.050833,
+        "pushes": 0,
+        "source": "team_history_empirical_v1",
+        "status": "provisional",
+        "sufficient_for_accas": false,
+        "wilson_lower_95": 0.497553,
+        "wins": 5
+      },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
+      "date": "2026-11-13",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "expected_margin": -3.0930622936643033,
+      "expected_total": 229.40152607548586,
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.235983,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.665074,
+          "losses": 1,
+          "market": "moneyline",
+          "mean_raw_probability": 0.528333,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.833333,
+          "period": "full_game",
+          "pool": "eligible",
+          "probability_adjustment": 0.050833,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.497553,
+          "wins": 5
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 4.8,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.2012072434607646
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.050324,
+          "candidate_probability": 0.6003244052461303,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.6008333333333333,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.6003244052461303,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "d3c57a398906041ba0d5",
+      "game_id": "401909303",
+      "grade_status": "pending",
+      "home": "Sacramento Kings",
+      "league": "NBA",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical_v1",
+      "model_version": "team_history_empirical_v1",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "d3c57a398906041ba0d5",
+      "prediction": null,
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.55,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-14T03:00:00Z",
+      "selection": "away",
+      "team_history": {
+        "away_effective_games": 8.598404,
+        "home_effective_games": 8.598404,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": true
+      },
+      "training_games": 158
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.55,
         "home": 0.45
       },
       "away": "Portland Trail Blazers",
@@ -15284,7 +18538,7 @@
         "line": 10.5,
         "main_line": true,
         "market": "spread",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
@@ -15302,10 +18556,12 @@
       "calibrated_probability": 0.55,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -15316,7 +18572,65 @@
       },
       "expected_margin": -12.049000000000007,
       "expected_total": 229.679,
-      "forecast_id": "2056029fab05ddd26c15",
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.925925925925926,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.8928571428571428
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "spread",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.55,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.55,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.55,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "f62469174b20146af2b4",
       "game_id": "401909303",
       "grade_status": "pending",
       "home": "Sacramento Kings",
@@ -15328,10 +18642,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "2056029fab05ddd26c15",
+      "pick_id": "f62469174b20146af2b4",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T10:51:21Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -15362,17 +18679,17 @@
         "line": 228.5,
         "main_line": true,
         "market": "total",
-        "observed_utc": "2026-11-13T06:03:28Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.8695652173913042,
+        "selected_decimal_price": 1.8849557522123894,
         "side_prices": {
           "away": null,
           "draw": null,
           "home": null,
-          "over": 1.8695652173913042,
-          "under": 1.9523809523809523
+          "over": 1.8849557522123894,
+          "under": 1.9345794392523366
         },
         "source_modified_utc": null
       },
@@ -15380,10 +18697,12 @@
       "calibrated_probability": 0.51,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -15392,9 +18711,67 @@
           "insufficient_walk_forward_samples"
         ]
       },
-      "expected_margin": -12.239999999999995,
-      "expected_total": 229.74,
-      "forecast_id": "830faf9830a8d6bf490e",
+      "expected_margin": -12.049000000000007,
+      "expected_total": 229.679,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.9345794392523366,
+          "opposite_selection": "under",
+          "selected_decimal_price": 1.8849557522123894
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "total",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.51,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.51,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.51,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "1c52b8c12f94dcc8ccc2",
       "game_id": "401909303",
       "grade_status": "pending",
       "home": "Sacramento Kings",
@@ -15406,10 +18783,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "830faf9830a8d6bf490e",
+      "pick_id": "1c52b8c12f94dcc8ccc2",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T06:03:29Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -15662,15 +19042,15 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.353356890459364,
+        "selected_decimal_price": 1.3717472118959106,
         "side_prices": {
-          "away": 1.353356890459364,
+          "away": 1.3717472118959106,
           "draw": null,
-          "home": 3.31,
+          "home": 3.2,
           "over": null,
           "under": null
         },
@@ -15680,10 +19060,12 @@
       "calibrated_probability": 0.7634,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "provider_prediction_v2-7fb3e30d878d",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "provider_prediction_v2-7fb3e30d878d",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -15695,7 +19077,66 @@
       },
       "expected_margin": null,
       "expected_total": null,
-      "forecast_id": "5981641c8981c51d5752",
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 3.2,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.3717472118959106
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "provider_prediction_v2-7fb3e30d878d",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "provider:espn"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.7634000000000001,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.7634000000000001,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.7634000000000001,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "2b90994b64039d0b5797",
       "game_id": "401909304",
       "grade_status": "pending",
       "home": "Los Angeles Clippers",
@@ -15707,10 +19148,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "5981641c8981c51d5752",
+      "pick_id": "2b90994b64039d0b5797",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T10:51:21Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -15737,15 +19181,15 @@
         "line": null,
         "main_line": true,
         "market": "moneyline",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.353356890459364,
+        "selected_decimal_price": 1.3717472118959106,
         "side_prices": {
-          "away": 1.353356890459364,
+          "away": 1.3717472118959106,
           "draw": null,
-          "home": 3.31,
+          "home": 3.2,
           "over": null,
           "under": null
         },
@@ -15755,6 +19199,7 @@
       "calibrated_probability": 0.580833,
       "calibration": {
         "brier_score": 0.235983,
+        "calibration_version": "team_history_empirical_v1-6281ec8643db",
         "league": "NBA",
         "log_loss": 0.665074,
         "losses": 1,
@@ -15773,6 +19218,7 @@
         "wilson_lower_95": 0.497553,
         "wins": 5
       },
+      "calibration_version": "team_history_empirical_v1-6281ec8643db",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -15784,7 +19230,73 @@
       },
       "expected_margin": -2.1315266066068546,
       "expected_total": 227.03171145242172,
-      "forecast_id": "f6709e11dc001abdb58f",
+      "explanation": {
+        "calibration": {
+          "brier_score": 0.235983,
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "log_loss": 0.665074,
+          "losses": 1,
+          "market": "moneyline",
+          "mean_raw_probability": 0.528333,
+          "minimum_samples": 30,
+          "n": 6,
+          "observed_win_rate": 0.833333,
+          "period": "full_game",
+          "pool": "eligible",
+          "probability_adjustment": 0.050833,
+          "pushes": 0,
+          "source": "team_history_empirical_v1",
+          "status": "provisional",
+          "sufficient_for_accas": false,
+          "wilson_lower_95": 0.497553,
+          "wins": 5
+        },
+        "effective_sample_size": 5.985862,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 3.2,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.3717472118959106
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical_v1-6281ec8643db",
+          "league": "NBA",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.050324,
+          "candidate_probability": 0.5803244052461303,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.5808333333333333,
+          "ess": 5.985862,
+          "n": 6,
+          "probability": 0.5803244052461303,
+          "status": "provisional",
+          "weighted_n": 5.568078
+        }
+      },
+      "forecast_id": "9ad35dba83b3837d7cea",
       "game_id": "401909304",
       "grade_status": "pending",
       "home": "Los Angeles Clippers",
@@ -15796,7 +19308,7 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "f6709e11dc001abdb58f",
+      "pick_id": "9ad35dba83b3837d7cea",
       "prediction": null,
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
       "push_probability": 0.0,
@@ -15826,15 +19338,15 @@
         "line": 7.5,
         "main_line": true,
         "market": "spread",
-        "observed_utc": "2026-11-13T08:50:04Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
-        "selected_decimal_price": 1.9345794392523366,
+        "selected_decimal_price": 1.970873786407767,
         "side_prices": {
-          "away": 1.9345794392523366,
+          "away": 1.970873786407767,
           "draw": null,
-          "home": 1.8849557522123894,
+          "home": 1.847457627118644,
           "over": null,
           "under": null
         },
@@ -15844,10 +19356,12 @@
       "calibrated_probability": 0.55,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -15857,9 +19371,68 @@
           "insufficient_team_specific_history"
         ]
       },
-      "expected_margin": -8.965000000000003,
-      "expected_total": 220.643,
-      "forecast_id": "080c825b20165dbe4929",
+      "expected_margin": -9.105999999999995,
+      "expected_total": 220.772,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.847457627118644,
+          "opposite_selection": "home",
+          "selected_decimal_price": 1.970873786407767
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "spread",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.55,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.55,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.55,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "2b4aa7f4c8188ff0d7d9",
       "game_id": "401909304",
       "grade_status": "pending",
       "home": "Los Angeles Clippers",
@@ -15871,10 +19444,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "080c825b20165dbe4929",
+      "pick_id": "2b4aa7f4c8188ff0d7d9",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T08:50:06Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "NAMED_BOOKMAKER_PRICE",
@@ -15984,7 +19560,7 @@
         "line": 222.5,
         "main_line": true,
         "market": "total",
-        "observed_utc": "2026-11-13T10:51:19Z",
+        "observed_utc": "2026-11-13T13:33:26Z",
         "period": "full_game",
         "pre_match": true,
         "provider": "espn",
@@ -16002,10 +19578,12 @@
       "calibrated_probability": 0.58,
       "calibration": {
         "adjustment": 0.0,
+        "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
         "n": 0,
         "status": "no_history",
         "sufficient_for_accas": false
       },
+      "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
       "date": "2026-11-13",
       "eligibility": {
         "acca_eligible": false,
@@ -16018,7 +19596,67 @@
       },
       "expected_margin": -9.105999999999995,
       "expected_total": 220.772,
-      "forecast_id": "53736e7bc6c8d83dc2ea",
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "missing_selected_decimal_price",
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": 1.8928571428571428,
+          "opposite_selection": "over",
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "main_line": true,
+            "observed_utc": "2026-11-13T13:33:26Z",
+            "pre_match": true,
+            "provider": "espn"
+          },
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi-v1",
+            "observed_utc": "2026-11-13T13:33:28Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "history_provider_hybrid_v2-ee02621a09b7",
+          "league": "NBA",
+          "market": "total",
+          "period": "full_game",
+          "source": "provider:espn+team_history_empirical_v1"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.58,
+          "challenger_version": "recency_v1-389a235f88f3",
+          "champion_probability": 0.58,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.58,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "95fe726484a9aa94d883",
       "game_id": "401909304",
       "grade_status": "pending",
       "home": "Los Angeles Clippers",
@@ -16030,10 +19668,13 @@
       "outcome": null,
       "paper_only": true,
       "period": "full_game",
-      "pick_id": "53736e7bc6c8d83dc2ea",
+      "pick_id": "95fe726484a9aa94d883",
       "prediction": {
         "frozen": false,
-        "observed_utc": "2026-11-13T10:51:21Z",
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi-v1",
+        "observed_utc": "2026-11-13T13:33:28Z",
+        "produced_by": "ESPN BPI",
         "provider": "espn"
       },
       "price_evidence": "MATCHED_BUT_SELECTED_PRICE_MISSING",
@@ -16054,14 +19695,14 @@
   ],
   "losses": 70,
   "pending_picks": 0,
-  "pending_picks_total": 57,
+  "pending_picks_total": 66,
   "priced_sample": 116,
   "profit_units": -0.7993568302112879,
   "pushes": 0,
   "roi": -0.006891007156993861,
   "same_day_cutoff": "2026-11-13",
-  "same_day_pending_picks": 57,
-  "same_day_rows_excluded": 57,
+  "same_day_pending_picks": 66,
+  "same_day_rows_excluded": 66,
   "same_day_settled_picks": 0,
   "schema_version": "magolide.operator.v1",
   "settled_ledger": [
@@ -26912,7 +30553,7 @@
   ],
   "settled_picks": 154,
   "stake_policy": "flat_one_paper_unit_per_priced_pick",
-  "superseded_observations": 260,
+  "superseded_observations": 302,
   "window": {
     "days": 30,
     "end": "2026-11-13",

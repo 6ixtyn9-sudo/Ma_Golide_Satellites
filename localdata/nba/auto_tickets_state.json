@@ -1,7 +1,14 @@
 {
   "base_paper_units": 100.0,
-  "frozen_by_date": {},
-  "last_generated_utc": "2026-11-13T10:51:17Z",
+  "frozen_by_date": {
+    "2026-11-13": {
+      "final": true,
+      "frozen_at": "2026-11-13T13:33:26Z",
+      "lock_source": "state",
+      "receipt_path": "auto_tickets_2026-11-13_decision.json"
+    }
+  },
+  "last_generated_utc": "2026-11-13T13:33:26Z",
   "paper_bank_units": 100.0,
   "scans": [
     {
@@ -318,6 +325,34 @@
       "fresh_accas": 0,
       "receipt_present": false,
       "run_id": "43412245758_nba_1_attempt_1"
+    },
+    {
+      "candidate_funnel": {
+        "calibration_sufficient_rows": 0,
+        "eligibility_blockers": {
+          "below_calibrated_probability_floor": 8,
+          "insufficient_team_specific_history": 19,
+          "insufficient_walk_forward_samples": 51,
+          "missing_selected_decimal_price": 1,
+          "no_exact_bookmaker_market": 15
+        },
+        "eligible_games": 0,
+        "eligible_rows": 0,
+        "exact_priced_rows": 35,
+        "paper_accas": 5,
+        "paper_candidate_games": 7,
+        "paper_candidate_rows": 7,
+        "priced_and_calibrated_rows": 0,
+        "provisional_sample_only_games": 7,
+        "provisional_sample_only_rows": 7,
+        "required_games": 3,
+        "scan_rows": 51,
+        "strict_accas": 0
+      },
+      "captured_at": "2026-11-13T13:33:26Z",
+      "fresh_accas": 5,
+      "receipt_present": true,
+      "run_id": "43434560492_nba_1_attempt_1"
     }
   ],
   "schema_version": "magolide.paper_ticket_state.v1",
