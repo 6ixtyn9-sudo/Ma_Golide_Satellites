@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from dataclasses import replace
 from datetime import datetime, timedelta, timezone
 import itertools
 import math
@@ -296,6 +297,13 @@ def test_all_old_markets_are_forecast_and_accas_use_calibrated_probabilities():
         row["provisional_sample_gate_bypassed"] is False
         for row in report["accas"]["paper_results"]
     )
+    used_paper_leg_keys = set()
+    for acca in report["accas"]["paper_results"]:
+        leg_keys = {_paper_leg_key(leg) for leg in acca["legs"]}
+        assert used_paper_leg_keys.isdisjoint(leg_keys)
+        assert acca["ticket_leg_reuse_policy"] == "no_reused_wager_selections"
+        used_paper_leg_keys.update(leg_keys)
+    assert report["accas"]["paper_ticket_leg_reuse_policy"] == "no_reused_wager_selections"
 
 
 def test_service_routes_sample_only_candidates_to_paper_results():
@@ -307,6 +315,7 @@ def test_service_routes_sample_only_candidates_to_paper_results():
     assert accas["mode"] == "paper_only"
     assert accas["results_policy"] == "strict"
     assert accas["paper_results_policy"] == "strict_plus_sample_only_provisional"
+    assert accas["paper_ticket_leg_reuse_policy"] == "no_reused_wager_selections"
     assert accas["eligible_games"] == accas["strict_eligible_games"] == 0
     assert accas["results"] == accas["strict_results"] == []
     assert accas["paper_results"]
@@ -316,10 +325,15 @@ def test_service_routes_sample_only_candidates_to_paper_results():
     assert accas["paper_candidate_games"] == 3
     assert report["execution"]["external_betting_writes"] is False
 
+    used_paper_leg_keys = set()
     for acca in accas["paper_results"]:
         assert acca["provisional_sample_gate_bypassed"] is True
         assert acca["provisional_leg_count"] == 2
         assert acca["ranking_status"] == "paper_only_provisional_sample_gate_bypassed"
+        assert acca["ticket_leg_reuse_policy"] == "no_reused_wager_selections"
+        leg_keys = {_paper_leg_key(leg) for leg in acca["legs"]}
+        assert used_paper_leg_keys.isdisjoint(leg_keys)
+        used_paper_leg_keys.update(leg_keys)
         for leg in acca["legs"]:
             assert leg["eligibility"]["acca_eligible"] is False
             assert leg["eligibility"]["reasons"] == ["insufficient_walk_forward_samples"]
@@ -629,6 +643,17 @@ def _forecast(game_id: str, probability: float, *, outcome=None) -> Forecast:
     )
 
 
+def _paper_leg_key(leg):
+    return (
+        leg["league"],
+        leg["game_id"],
+        leg["market"],
+        leg["period"],
+        leg["selection"],
+        leg.get("line"),
+    )
+
+
 def test_market_accuracy_adjusts_confidence_and_eligibility():
     records = [_forecast(f"g{index}", 0.8, outcome="loss") for index in range(10)]
     config = CalibrationConfig(min_samples=5, prior_strength=2, calibration_epoch_utc="2026-01-01T00:00:00Z")
@@ -657,6 +682,74 @@ def test_acca_search_matches_brute_force_optimum():
     assert len(actual) == 5
     for result, (probability, _) in zip(actual, expected[:5]):
         assert result["estimated_joint_win_probability"] == pytest.approx(probability, abs=1e-7)
+
+
+def test_paper_accas_never_reuse_exact_wager_selections():
+    forecasts = []
+    for index, probability in enumerate((0.93, 0.90, 0.87, 0.84, 0.81, 0.78, 0.75)):
+        row = _forecast(f"g{index}", probability)
+        row.calibrated_probability = probability
+        row.eligibility = {"acca_eligible": True}
+        forecasts.append(row)
+
+    analytical = build_accas(forecasts, legs=3, limit=5)
+    assert len(analytical) == 5
+    assert all("ticket_leg_reuse_policy" not in acca for acca in analytical)
+
+    paper_tickets = build_accas(
+        forecasts, legs=3, limit=5, require_disjoint_legs=True
+    )
+    assert len(paper_tickets) == 2
+    used_leg_keys = set()
+    for acca in paper_tickets:
+        leg_keys = {_paper_leg_key(leg) for leg in acca["legs"]}
+        assert len(leg_keys) == 3
+        assert used_leg_keys.isdisjoint(leg_keys)
+        assert acca["ticket_leg_reuse_policy"] == "no_reused_wager_selections"
+        used_leg_keys.update(leg_keys)
+
+
+def test_paper_tickets_can_reuse_a_game_with_a_different_selection():
+    forecasts = []
+    for game_id, selection, probability, source in (
+        ("g0", "home", 0.92, "provider:primary"),
+        ("g0", "home", 0.88, "provider:alternate"),
+        ("g0", "away", 0.80, "provider:primary"),
+        ("g1", "home", 0.90, "provider:primary"),
+        ("g1", "away", 0.82, "provider:primary"),
+    ):
+        row = _forecast(game_id, probability)
+        row.source = source
+        row.selection = selection
+        row.raw_probability = probability
+        row.calibrated_probability = probability
+        row.alternative_probabilities = (
+            {"home": probability, "away": 1 - probability}
+            if selection == "home"
+            else {"home": 1 - probability, "away": probability}
+        )
+        assert row.book is not None
+        row.book = replace(row.book, prices={"home": 1.8, "away": 1.8})
+        row.eligibility = {"acca_eligible": True}
+        forecasts.append(row)
+
+    assert forecasts[0].forecast_id != forecasts[1].forecast_id
+    tickets = build_accas(forecasts, legs=2, limit=5, require_disjoint_legs=True)
+    assert len(tickets) == 2
+    first_games = {leg["game_id"] for leg in tickets[0]["legs"]}
+    second_games = {leg["game_id"] for leg in tickets[1]["legs"]}
+    assert first_games == second_games == {"g0", "g1"}
+    assert {(leg["game_id"], leg["selection"]) for leg in tickets[0]["legs"]} == {
+        ("g0", "home"),
+        ("g1", "home"),
+    }
+    assert {(leg["game_id"], leg["selection"]) for leg in tickets[1]["legs"]} == {
+        ("g0", "away"),
+        ("g1", "away"),
+    }
+    first_leg_keys = {_paper_leg_key(leg) for leg in tickets[0]["legs"]}
+    second_leg_keys = {_paper_leg_key(leg) for leg in tickets[1]["legs"]}
+    assert first_leg_keys.isdisjoint(second_leg_keys)
 
 
 def test_paper_accas_admit_only_provisional_sample_only_legs():

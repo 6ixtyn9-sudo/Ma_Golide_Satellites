@@ -210,6 +210,17 @@ these rows. `MarketForecastService` keeps `accas.results` (and its explicit
 `accas.strict_results` alias) strict, and emits the expanded exploratory set as
 `accas.paper_results` for the paper-ticket publisher only. The default
 `build_accas()` behavior remains strict.
+
+The paper-ticket surface greedily accepts combinations in descending joint
+probability order and does not reuse an exact wager selection (league, game,
+market, period, selection, and line) across tickets. A different selection from
+the same game may be used on another ticket, while same-game legs remain
+prohibited within any one acca. This is a no-repeated-leg rule, not mathematical
+outcome exclusivity: separate tickets may still win simultaneously. The strict
+`results`/`strict_results` analytical ranking remains unchanged and can contain
+overlapping combinations. Fewer paper tickets are returned when the requested
+limit exceeds the available non-repeated leg sets.
+
 Frozen paper receipts label every combination that uses a provisional leg.
 Paper ticket outcomes are collected in the separate paper-performance ledger;
 they do not directly count as calibration samples or feed the profile fit.

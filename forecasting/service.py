@@ -357,7 +357,11 @@ class MarketForecastService:
                 }
         strict_accas = build_accas(current, legs=acca_legs, limit=acca_limit)
         paper_accas = build_accas(
-            current, legs=acca_legs, limit=acca_limit, allow_provisional=True
+            current,
+            legs=acca_legs,
+            limit=acca_limit,
+            allow_provisional=True,
+            require_disjoint_legs=True,
         )
         market_counts = Counter(f"{forecast.period}:{forecast.market}" for forecast in current)
         eligible_games = {
@@ -425,6 +429,7 @@ class MarketForecastService:
                 ),
                 "results_policy": "strict",
                 "paper_results_policy": "strict_plus_sample_only_provisional",
+                "paper_ticket_leg_reuse_policy": "no_reused_wager_selections",
                 "requested_legs": acca_legs,
                 "requested_limit": acca_limit,
                 "eligible_games": len(eligible_games),

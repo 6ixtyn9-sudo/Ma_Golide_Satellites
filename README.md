@@ -162,7 +162,13 @@ auto-ticket publisher and may include a provisional segment when at least one
 graded non-push sample exists and insufficient sample size is the segment's
 only blocker. Exact priced-market, team-history, push-risk, and probability-floor
 checks still apply. Such legs remain marked ineligible in the forecast
-and the frozen paper receipt labels the sample-size exception. Paper-ticket
+and the frozen paper receipt labels the sample-size exception. Paper tickets
+are selected in descending joint-probability order without reusing the same
+wager selection (league, game, market, period, selection, and line) across
+tickets. Different selections from the same game may appear on separate tickets,
+but no acca includes two legs from one game. This prevents exact leg duplication;
+it does not make ticket outcomes mathematically mutually exclusive. Existing
+frozen receipts are not rewritten by later selection-policy changes. Paper-ticket
 grades are tracked separately and do not themselves bootstrap or inflate
 calibration sample counts, which continue to come from prequential forecast
 evidence.

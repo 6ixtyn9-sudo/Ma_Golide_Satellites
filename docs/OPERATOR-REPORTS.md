@@ -93,14 +93,24 @@ prospective paper-only counterfactual described below.
 
 When `accas.paper_results` is present, the operator uses that paper-only
 candidate surface; `accas.results` remains the strict surface. Older reports
-without `paper_results` retain their prior behavior. The first non-empty paper
-acca report for a league/date writes a decision receipt and a write-once state
-lock. This includes a provisional paper acca when the sample-size gate alone
-is bypassed; the receipt stores and prints that status and the segment sample
-counts. Subsequent scans reprint the receipt even if the new candidate set
-differs. A missing locked receipt is an error; the
-engine never silently rebuilds or rotates a published card. A receipt recovered
-without its state lock adopts a lock from the immutable receipt itself.
+without `paper_results` retain their prior behavior. For current
+`MarketForecastService` reports, the paper-ticket surface greedily accepts
+combinations in descending joint probability order and does not reuse an exact
+wager selection (league, game, market, period, selection, and line) across
+tickets. A different selection from the same game may appear
+on another ticket, while same-game legs are still prohibited within an acca.
+This is a no-repeated-leg rule, not mathematical outcome exclusivity: separate
+tickets may still win simultaneously. Strict `accas.results` rankings are
+unchanged and may overlap. The first non-empty paper acca report for a
+league/date writes a decision receipt and a write-once state lock. This includes
+a provisional paper acca when the sample-size gate alone is bypassed. The
+receipt stores and prints that status and the segment sample counts. Subsequent
+scans reprint the receipt even if the new candidate set differs. A missing
+locked receipt is an error;
+the engine never silently rebuilds or rotates a published card. A receipt
+recovered without its state lock adopts a lock from the immutable receipt
+itself. Existing frozen receipts are not rebalanced by the no-repeated-leg
+policy.
 
 A withdrawal is a deliberate exception recorded in `auto_tickets_state.json`:
 its decision ID is excluded from performance, its date cannot receive a

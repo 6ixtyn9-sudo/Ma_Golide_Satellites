@@ -107,26 +107,90 @@ def _neighbors(state: Tuple[int, ...], population: int) -> Iterable[Tuple[int, .
         yield tuple(candidate)
 
 
+def _wager_leg_key(
+    league: str,
+    game_id: str,
+    market: str,
+    period: str,
+    selection: str,
+    line: float | None,
+) -> Tuple[str, str, str, str, str, str]:
+    return (
+        league,
+        game_id,
+        market,
+        period,
+        selection,
+        "" if line is None else float(line).hex(),
+    )
+
+
 def build_accas(
     forecasts: Iterable[Forecast],
     *,
     legs: int = 3,
     limit: int = 5,
     allow_provisional: bool = False,
+    require_disjoint_legs: bool = False,
 ) -> List[dict]:
-    """Return exact top independent-probability combinations for the leg count.
+    """Return highest-probability accas for the requested leg count.
 
     The optional paper path admits provisional forecasts only when insufficient
     sample size is their sole blocker and at least one graded observation exists.
     It never relaxes price, team-history, push-risk, or probability-floor gates.
-    The default remains strict. The best leg from each game dominates every
-    other leg from that game, so best-first search avoids combinatorial
-    materialization under the cross-game conditional-independence assumption.
+    When ``require_disjoint_legs`` is true, greedily select top-ranked accas
+    without reusing an exact wager selection (league, game, market, period,
+    selection, and line). A different selection from the same game can be used
+    in a later ticket. The default retains all top combinations for analytical
+    ranking. Same-game legs remain prohibited within each acca.
     """
     if legs < 2 or legs > 6:
         raise ValueError("acca legs must be between two and six")
     if limit < 1 or limit > 100:
         raise ValueError("acca limit must be between one and one hundred")
+    if require_disjoint_legs:
+        all_forecasts = list(forecasts)
+        used_leg_keys: set[Tuple[str, str, str, str, str, str]] = set()
+        output: List[dict] = []
+        while len(output) < limit:
+            remaining = [
+                forecast
+                for forecast in all_forecasts
+                if _wager_leg_key(
+                    forecast.league,
+                    forecast.game_id,
+                    forecast.market,
+                    forecast.period,
+                    forecast.selection,
+                    forecast.line,
+                )
+                not in used_leg_keys
+            ]
+            best = build_accas(
+                remaining,
+                legs=legs,
+                limit=1,
+                allow_provisional=allow_provisional,
+            )
+            if not best:
+                break
+            ticket = best[0]
+            ticket["rank"] = len(output) + 1
+            ticket["ticket_leg_reuse_policy"] = "no_reused_wager_selections"
+            output.append(ticket)
+            for leg in ticket["legs"]:
+                used_leg_keys.add(
+                    _wager_leg_key(
+                        leg["league"],
+                        leg["game_id"],
+                        leg["market"],
+                        leg["period"],
+                        leg["selection"],
+                        leg.get("line"),
+                    )
+                )
+        return output
+
     candidates = _best_leg_per_game(forecasts, allow_provisional=allow_provisional)
     if len(candidates) < legs:
         return []
@@ -135,7 +199,7 @@ def build_accas(
     initial = tuple(range(legs))
     heap: List[tuple[float, Tuple[int, ...]]] = [(sum(costs[index] for index in initial), initial)]
     visited = {initial}
-    output: List[dict] = []
+    output = []
     while heap and len(output) < limit:
         cost, state = heapq.heappop(heap)
         selected = [candidates[index] for index in state]
