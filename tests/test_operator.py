@@ -8,6 +8,7 @@ import pytest
 from forecasting.operator import (
     _audit_market_selection,
     _forecast_from_row,
+    _render_empty_ticket_scan,
     load_settled_pick_history,
     _selection_label,
     opposite_quote,
@@ -530,6 +531,59 @@ def test_all_push_acca_returns_stake_without_a_win_loss_decision(tmp_path):
     assert "no win/loss decisions yet" in Path(result["performance_text"]).read_text()
 
 
+def test_empty_ticket_card_summarizes_no_acca_without_printing_candidate_funnel():
+    band = {
+        "market": "moneyline",
+        "period": "full_game",
+        "probability_band": "0.60-<0.70",
+        "individual_odds_band": "1.50-<2.00",
+        "historical_pick_count": 12,
+        "recency_weighted_roi": 0.12,
+        "adjusted_roi": 0.08,
+        "qualifies": True,
+    }
+    candidate_funnel = {
+        "scan_rows": 50,
+        "provisional_sample_only_rows": 7,
+        "paper_candidate_rows": 7,
+        "paper_single_picks": 1,
+        "paper_single_games": 1,
+        "paper_accas": 0,
+        "strict_accas": 0,
+        "eligibility_blockers": {"insufficient_walk_forward_samples": 7},
+        "paper_pick_filter": {
+            "candidate_pick_count": 7,
+            "qualifying_pick_count": 1,
+            "qualifying_band_count": 1,
+            "historical_unique_pick_count": 12,
+            "bands": [band],
+            "status": "applied",
+        },
+    }
+    text = _render_empty_ticket_scan(
+        league=League.NBA,
+        target_date=DATE,
+        generated_utc=AS_OF,
+        performance={
+            "paper_bank_units": 100.0,
+            "paper_free_units": 100.0,
+            "paper_committed_units": 0.0,
+        },
+        timezone_name="UTC",
+        candidate_funnel=candidate_funnel,
+    )
+
+    assert (
+        "NO MULTI-LEG PAPER ACCA — 1 of 7 candidate picks passed individual-pick ROI; "
+        "only 1 distinct game qualifies; 2 are required."
+    ) in text
+    assert text.index("NO MULTI-LEG PAPER ACCA") < text.index("CURRENT PAPER BANK")
+    assert "CANDIDATE FUNNEL" not in text
+    assert "50 scan rows" not in text
+    assert "recency ROI" not in text
+    assert "insufficient_walk_forward_samples" not in text
+
+
 def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp_path):
     rows = [
         forecast(1),
@@ -554,13 +608,14 @@ def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp
     assert "Total archived pick evidence rows: 4" in text
     assert result["ticket_receipt"] is None
     ticket_text = Path(result["ticket_text"]).read_text()
-    assert "NO PAPER BET" in ticket_text
-    assert "CANDIDATE FUNNEL" in ticket_text
-    assert "4 scan rows · 3 exact priced · 2 calibration-sufficient" in ticket_text
-    assert "2 priced + calibrated · 1 eligible row · 1 eligible game" in ticket_text
-    assert "1 provisional sample-only row · 1 game · 0 paper accas (0 strict)" in ticket_text
-    assert "0 ROI-qualified paper singles across 0 games · combination size none legs" in ticket_text
-    assert "2 insufficient_walk_forward_samples" in ticket_text
+    assert (
+        "NO PAPER BET — no ROI-qualified paper singles or multi-leg acca in this scan."
+        in ticket_text
+    )
+    assert ticket_text.index("NO PAPER BET") < ticket_text.index("CURRENT PAPER BANK")
+    assert "CANDIDATE FUNNEL" not in ticket_text
+    assert "Individual-pick ROI filter" not in ticket_text
+    assert "insufficient_walk_forward_samples" not in ticket_text
     assert result["candidate_funnel"] == {
         "scan_rows": 4,
         "exact_priced_rows": 3,
@@ -584,6 +639,8 @@ def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp
             "no_exact_bookmaker_market": 1,
         },
     }
+    ticket_state = json.loads(Path(result["ticket_state"]).read_text())
+    assert ticket_state["scans"][-1]["candidate_funnel"] == result["candidate_funnel"]
     buckets = {row["bucket"] for row in json.loads(Path(result["dated_picks"]).read_text())}
     assert buckets == {"ELIGIBLE_CLEAN", "CAUTION", "WATCHLIST_NO_ODDS", "SKIPPED_INELIGIBLE"}
     audit = json.loads(Path(result["rolling_audit"]).read_text())
@@ -643,9 +700,16 @@ def test_roi_qualified_pick_is_published_as_a_paper_single_without_an_acca(tmp_p
     assert "ROI-qualified individual paper singles: 1" in picks_text
     assert result["ticket_receipt"] is None
     ticket_text = Path(result["ticket_text"]).read_text()
-    assert "NO MULTI-LEG PAPER ACCA — 1 ROI-qualified single pick(s)" in ticket_text
-    assert "1 ROI-qualified paper singles across 1 games · combination size none legs" in ticket_text
+    assert (
+        "NO MULTI-LEG PAPER ACCA — 1 of 1 candidate pick passed individual-pick ROI; "
+        "only 1 distinct game qualifies; 2 are required."
+    ) in ticket_text
+    assert "CANDIDATE FUNNEL" not in ticket_text
+    assert "recency ROI" not in ticket_text
     assert result["candidate_funnel"]["paper_single_picks"] == 1
+    assert result["candidate_funnel"]["paper_pick_filter"] == paper_filter
+    ticket_state = json.loads(Path(result["ticket_state"]).read_text())
+    assert ticket_state["scans"][-1]["candidate_funnel"] == result["candidate_funnel"]
     assert result["counts"]["paper_single_picks"] == 1
 
 
