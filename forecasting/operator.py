@@ -387,6 +387,21 @@ def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
             line=book_row.get("line"),
         )
     prediction = row.get("prediction") or {}
+    explanation = row.get("explanation") or {}
+    shadow_explanation = explanation.get("shadow_calibration") or {}
+    shadow_calibration = (
+        {
+            "challenger_version": shadow_explanation.get("challenger_version"),
+            "status": shadow_explanation.get("status"),
+            "n": shadow_explanation.get("n", 0),
+            "weighted_n": shadow_explanation.get("weighted_n", 0.0),
+            "ess": explanation.get("effective_sample_size"),
+            "champion_probability": shadow_explanation.get("champion_probability"),
+            "probability": shadow_explanation.get("candidate_probability"),
+        }
+        if shadow_explanation
+        else {}
+    )
     return Forecast(
         game_id=str(row["game_id"]),
         league=str(row["league"]),
@@ -410,9 +425,13 @@ def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
         prediction_provider=prediction.get("provider"),
         prediction_observed_utc=prediction.get("observed_utc"),
         prediction_frozen=bool(prediction.get("frozen", False)),
+        prediction_model=prediction.get("model"),
+        prediction_model_version=prediction.get("model_version"),
         role=row.get("role"),
         outcome=row.get("outcome"),
         calibrated_probability=row.get("calibrated_probability"),
+        calibration_version=row.get("calibration_version"),
+        shadow_calibration=shadow_calibration,
         calibration=dict(row.get("calibration") or {}),
         eligibility=dict(row.get("eligibility") or {}),
     )

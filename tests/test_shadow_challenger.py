@@ -10,6 +10,7 @@ from forecasting.accas import build_accas
 from forecasting.harness import CalibrationConfig, apply_profiles, build_profiles
 from forecasting.shadow import (
     RecencyConfig,
+    annotate_recency_profiles,
     build_recency_profiles,
     prequential_shadow_evaluation,
 )
@@ -27,7 +28,13 @@ def _record(
     league: str = "NBA",
     source: str = "provider:test",
     market: str = "moneyline",
+    selection: str = "home",
 ) -> Forecast:
+    alternatives = (
+        {"home": probability, "away": 1 - probability}
+        if selection == "home"
+        else {"home": 1 - probability, "away": probability}
+    )
     return Forecast(
         game_id=game_id,
         league=league,
@@ -36,9 +43,9 @@ def _record(
         away_name="Away",
         market=market,
         period="full_game",
-        selection="home",
+        selection=selection,
         raw_probability=probability,
-        alternative_probabilities={"home": probability, "away": 1 - probability},
+        alternative_probabilities=alternatives,
         source=source,
         outcome=outcome,
         calibration_version=version,
@@ -60,6 +67,47 @@ def test_result_delay_respected_and_boundary_is_inclusive():
     assert after.shadow_calibration["probability"] != after.raw_probability
 
 
+def test_zero_delay_does_not_leak_outcomes_between_forecasts_for_same_game():
+    tip = "2026-11-12T12:00:00Z"
+    home = _record("same-game", tip, 0.7, "win", selection="home")
+    away = _record("same-game", tip, 0.3, "loss", selection="away")
+    prequential_shadow_evaluation(
+        [home, away], RecencyConfig(result_delay_hours=0.0)
+    )
+    assert home.shadow_calibration["status"] == "no_history"
+    assert away.shadow_calibration["status"] == "no_history"
+    assert home.shadow_calibration["n"] == away.shadow_calibration["n"] == 0
+
+
+def test_shadow_champion_mirror_uses_supplied_epoch_prior_and_probability_bounds():
+    old = _record("old", "2026-11-11T10:00:00Z", 0.9, "win")
+    history = [
+        _record(f"h{i}", "2026-11-12T10:00:00Z", 0.6, "win") for i in range(3)
+    ]
+    probe = _record("probe", "2026-11-12T20:00:00Z", 0.7, "loss")
+    champion_cfg = CalibrationConfig(
+        prior_strength=2,
+        min_samples=2,
+        probability_floor=0.4,
+        probability_ceiling=0.8,
+        calibration_epoch_utc="2026-11-12T00:00:00Z",
+    )
+    challenger_cfg = RecencyConfig(half_life_days=1e9, result_delay_hours=1.0)
+    profiles = build_profiles(history, champion_cfg)
+    apply_profiles([probe], profiles, champion_cfg)
+
+    summary = prequential_shadow_evaluation(
+        [old, *history, probe], challenger_cfg, champion_config=champion_cfg
+    )
+
+    assert summary["rows_evaluated"] == 4
+    assert summary["rows_ungraded_or_ineligible_skipped"] == 1
+    assert probe.shadow_calibration["champion_n"] == 3
+    assert probe.shadow_calibration["champion_status"] == "sufficient"
+    assert probe.shadow_calibration["champion_probability"] == probe.calibrated_probability
+    assert probe.calibrated_probability == 0.8  # champion-specific upper clamp
+
+
 def test_input_order_does_not_change_results():
     cfg = RecencyConfig(result_delay_hours=2.0)
     rows = [
@@ -74,6 +122,26 @@ def test_input_order_does_not_change_results():
     random.Random(7).shuffle(shuffled)
     second = prequential_shadow_evaluation(shuffled, cfg)
     assert first == second
+
+
+def test_duplicate_forecast_ids_remain_deterministic_when_rows_are_reordered():
+    cfg = RecencyConfig(result_delay_hours=0.0)
+    duplicate_win = _record("dup", "2026-11-12T10:00:00Z", 0.65, "win")
+    duplicate_loss = _record("dup", "2026-11-12T10:00:00Z", 0.75, "loss")
+    later = _record("later", "2026-11-12T12:00:00Z", 0.6, "win")
+    assert duplicate_win.forecast_id == duplicate_loss.forecast_id
+
+    first = [duplicate_win, duplicate_loss, later]
+    second = [duplicate_loss, later, duplicate_win]
+    first_summary = prequential_shadow_evaluation(first, cfg)
+    second_summary = prequential_shadow_evaluation(second, cfg)
+
+    assert first_summary == second_summary
+    assert duplicate_win.shadow_calibration["status"] == "no_history"
+    assert duplicate_loss.shadow_calibration["status"] == "no_history"
+    assert duplicate_win.shadow_calibration["probability"] == 0.65
+    assert duplicate_loss.shadow_calibration["probability"] == 0.75
+    assert later.shadow_calibration["n"] == 2
 
 
 def test_only_earlier_available_outcomes_inform_each_prediction():
@@ -277,13 +345,52 @@ def test_shadow_evaluation_cannot_change_acca_inputs_or_selection():
     legs_after = accas_after[0]["legs"][0]
     assert {k for k in legs_after if legs_after[k] != legs_before[k]} == {"explanation"}
     assert set(legs_after["explanation"]) - set(legs_before["explanation"]) == {
-        "effective_sample_size"
+        "effective_sample_size",
+        "shadow_calibration",
     }
-    # The explanation gains only the shadow ESS; nothing else moves.
+    # The explanation gains only explicit shadow diagnostics; nothing else moves.
     explanation_after = dict(first.to_dict()["explanation"])
-    assert set(explanation_after) - set(explanation_before) == {"effective_sample_size"}
+    assert set(explanation_after) - set(explanation_before) == {
+        "effective_sample_size",
+        "shadow_calibration",
+    }
     assert summary["rows_evaluated"] == 42
     assert first.shadow_calibration["status"] == "sufficient"
+
+
+def test_current_shadow_annotation_is_diagnostic_only_for_accas():
+    history = [
+        _record(f"h{i}", "2026-11-12T12:00:00Z", 0.7, "win") for i in range(40)
+    ]
+    first, second = _eligible_forecast("f1"), _eligible_forecast("f2")
+    apply_profiles([first, second], build_profiles(history), CalibrationConfig())
+    before_inputs = [
+        (forecast.calibrated_probability, copy.deepcopy(forecast.eligibility))
+        for forecast in (first, second)
+    ]
+    before_accas = build_accas([first, second], legs=2)
+    cfg = RecencyConfig()
+    shadow_profiles = build_recency_profiles(
+        history, cfg, as_of_utc="2026-11-13T01:00:00Z"
+    )
+
+    annotate_recency_profiles([first, second], shadow_profiles, cfg)
+
+    after_inputs = [
+        (forecast.calibrated_probability, copy.deepcopy(forecast.eligibility))
+        for forecast in (first, second)
+    ]
+    after_accas = build_accas([first, second], legs=2)
+    assert after_inputs == before_inputs
+    assert [row["acca_id"] for row in after_accas] == [row["acca_id"] for row in before_accas]
+    assert [row["estimated_joint_win_probability"] for row in after_accas] == [
+        row["estimated_joint_win_probability"] for row in before_accas
+    ]
+    explanation = first.to_dict()["explanation"]["shadow_calibration"]
+    assert explanation["challenger_version"] == cfg.version_tag
+    assert explanation["n"] == 40
+    assert explanation["champion_probability"] == first.calibrated_probability
+    assert explanation["candidate_probability"] == first.shadow_calibration["probability"]
 
 
 def test_incremental_matches_naive_rebuild_on_synthetic_stream():

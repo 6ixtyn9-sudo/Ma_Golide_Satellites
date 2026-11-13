@@ -36,6 +36,12 @@ from .harness import (
     probability_metrics,
 )
 from .model import ForecastConfig, HistoryModel, QUARTERS
+from .shadow import (
+    RecencyConfig,
+    annotate_recency_profiles,
+    build_recency_profiles,
+    prequential_shadow_evaluation,
+)
 from .types import Forecast, MODEL_VERSION, grade_forecast
 
 
@@ -57,6 +63,9 @@ class MarketForecastService:
         self.book_config = book_config or BookConfig()
         self.provider_order = tuple(provider_order)
         self.model = HistoryModel(self.forecast_config)
+        self.shadow_config = RecencyConfig(
+            result_delay_hours=self.forecast_config.result_available_after_hours
+        )
 
     def _prediction(
         self, game: Game, *, as_of_utc: str, historical: bool
@@ -276,6 +285,26 @@ class MarketForecastService:
                 prequential.append(forecast)
                 records.append(forecast)
 
+        shadow_profiles = None
+        try:
+            shadow_summary = prequential_shadow_evaluation(
+                prequential,
+                self.shadow_config,
+                champion_config=self.calibration_config,
+            )
+            shadow_profiles = build_recency_profiles(
+                records,
+                self.shadow_config,
+                as_of_utc=as_of_utc,
+                champion_config=self.calibration_config,
+            )
+        except Exception as exc:
+            # Shadow diagnostics are optional and must not make champion
+            # forecasts or the usual report unavailable.
+            shadow_summary = {
+                "status": "unavailable",
+                "error_type": type(exc).__name__,
+            }
         current_profiles = build_profiles(
             self._available_records(records, as_of_utc), self.calibration_config
         )
@@ -309,6 +338,17 @@ class MarketForecastService:
                 )
             current.extend(generated)
         current = apply_profiles(current, current_profiles, self.calibration_config)
+        if shadow_profiles is not None:
+            previous_shadow = [dict(forecast.shadow_calibration) for forecast in current]
+            try:
+                current = annotate_recency_profiles(current, shadow_profiles, self.shadow_config)
+            except Exception as exc:
+                for forecast, previous in zip(current, previous_shadow):
+                    forecast.shadow_calibration = previous
+                shadow_summary = {
+                    "status": "unavailable",
+                    "error_type": type(exc).__name__,
+                }
         accas = build_accas(current, legs=acca_legs, limit=acca_limit)
         market_counts = Counter(f"{forecast.period}:{forecast.market}" for forecast in current)
         eligible_games = {
@@ -342,11 +382,13 @@ class MarketForecastService:
             },
             "walk_forward": {
                 "method": "prequential_by_scheduled_tip",
-                "result_available_after_hours": (self.forecast_config.result_available_after_hours),
+                "result_available_after_hours": self.forecast_config.result_available_after_hours,
+                "calibration_epoch_utc": self.calibration_config.calibration_epoch_utc,
                 "historical_finals": len(finals),
                 "graded_forecasts": len(records),
                 "raw_metrics": probability_metrics(prequential),
                 "prequential_calibrated_metrics": probability_metrics(prequential, calibrated=True),
+                "shadow_challenger": shadow_summary,
                 "segments": [current_profiles[key].to_dict() for key in sorted(current_profiles)],
                 "guards": [
                     "future_finals_excluded_per_forecast",

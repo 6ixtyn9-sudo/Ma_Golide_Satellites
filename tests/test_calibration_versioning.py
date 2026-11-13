@@ -1,6 +1,8 @@
 """Version-aware calibration segmentation: deterministic fingerprints,
 explicit legacy handling, and no silent merging across versions."""
 
+from dataclasses import replace
+
 import pytest
 
 from forecasting.harness import (
@@ -9,7 +11,9 @@ from forecasting.harness import (
     build_profiles,
     config_fingerprint,
 )
+from forecasting.model import ForecastConfig, HistoryModel
 from forecasting.types import LEGACY_VERSION_TAG, Forecast
+from ingestion.models import Prediction
 
 
 def _record(
@@ -63,6 +67,12 @@ def test_config_fingerprint_rejects_unserializable_components():
         config_fingerprint({"bad": {1, 2}})
 
 
+@pytest.mark.parametrize("version", ["", "legacy", 7])
+def test_reserved_or_invalid_calibration_versions_are_rejected(version):
+    with pytest.raises(ValueError, match="calibration_version"):
+        _record("g1", "2026-11-12T20:00:00Z", 0.7, "win", version=version)
+
+
 def test_records_without_version_carry_explicit_legacy_tag():
     row = _record("g1", "2026-11-12T20:00:00Z", 0.7, "win")
     assert row.version_tag == LEGACY_VERSION_TAG == "legacy"
@@ -80,6 +90,65 @@ def test_versioned_records_carry_their_tag_through_serialization():
     row = _record("g1", "2026-11-12T20:00:00Z", 0.7, "win", version="a1b2c3d4e5f6")
     assert row.version_tag == "a1b2c3d4e5f6"
     assert row.to_dict()["calibration_version"] == "a1b2c3d4e5f6"
+
+
+def test_history_model_version_fingerprints_all_prediction_config():
+    default = HistoryModel(ForecastConfig()).calibration_version
+    equivalent = HistoryModel(ForecastConfig()).calibration_version
+    changed = HistoryModel(
+        ForecastConfig(recent_half_life_games=21.0)
+    ).calibration_version
+    assert default == equivalent
+    assert default.startswith("team_history_empirical_v1-")
+    assert changed != default
+
+
+def test_provider_versions_use_model_metadata_not_per_event_revisions():
+    model = HistoryModel(ForecastConfig())
+    prediction = Prediction(
+        game_id="g1",
+        provider="espn",
+        observed_utc="2026-11-12T10:00:00Z",
+        model="espn-bpi",
+        model_version="bpi-2026.1",
+        prob_home=0.7,
+        prob_away=0.3,
+        source_revision="event-revision-a",
+    )
+    original = model._prediction_calibration_version(prediction)
+    changed_event = model._prediction_calibration_version(
+        replace(
+            prediction,
+            game_id="g2",
+            observed_utc="2026-11-13T10:00:00Z",
+            source_revision="event-revision-b",
+            prob_home=0.6,
+            prob_away=0.4,
+        )
+    )
+    changed_model = model._prediction_calibration_version(
+        replace(prediction, model_version="bpi-2026.2")
+    )
+    assert original == changed_event
+    assert original.startswith("provider_prediction_v1-")
+    assert changed_model != original
+
+    hybrid = model._prediction_calibration_version(prediction, hybrid=True)
+    changed_history_config = HistoryModel(
+        ForecastConfig(recent_half_life_games=21.0)
+    )._prediction_calibration_version(prediction, hybrid=True)
+    assert hybrid.startswith("history_provider_hybrid_v1-")
+    assert changed_history_config != hybrid
+
+
+def test_stamped_forecast_ids_change_but_legacy_ids_remain_stable():
+    legacy = _record("g1", "2026-11-12T20:00:00Z", 0.7, "win")
+    same_legacy = _record("g1", "2026-11-12T20:00:00Z", 0.7, "win")
+    stamped_a = _record("g1", "2026-11-12T20:00:00Z", 0.7, "win", version="cfg-a")
+    stamped_b = _record("g1", "2026-11-12T20:00:00Z", 0.7, "win", version="cfg-b")
+    assert legacy.forecast_id == same_legacy.forecast_id
+    assert stamped_a.forecast_id != stamped_b.forecast_id
+    assert legacy.forecast_id != stamped_a.forecast_id
 
 
 def test_legacy_grouping_matches_historical_four_tuple_semantics():

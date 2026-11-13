@@ -118,6 +118,8 @@ class Forecast:
     prediction_provider: Optional[str] = None
     prediction_observed_utc: Optional[str] = None
     prediction_frozen: bool = False
+    prediction_model: Optional[str] = None
+    prediction_model_version: Optional[str] = None
     role: Optional[str] = None
     outcome: Optional[str] = None
     calibrated_probability: Optional[float] = None
@@ -127,6 +129,12 @@ class Forecast:
     shadow_calibration: Dict[str, Any] = field(default_factory=dict)
 
     def __post_init__(self) -> None:
+        if self.calibration_version is not None and (
+            not isinstance(self.calibration_version, str)
+            or not self.calibration_version
+            or self.calibration_version == LEGACY_VERSION_TAG
+        ):
+            raise ValueError("calibration_version must be a non-empty, non-legacy string")
         for name, value in (
             ("raw_probability", self.raw_probability),
             ("push_probability", self.push_probability),
@@ -159,21 +167,23 @@ class Forecast:
 
     @property
     def forecast_id(self) -> str:
-        raw = "|".join(
-            [
-                self.game_id,
-                self.market,
-                self.period,
-                self.selection,
-                "" if self.line is None else f"{self.line:g}",
-                self.source,
-                self.prediction_observed_utc or "",
-                self.book.key if self.book else "no_book",
-                self.book.observed_utc if self.book else "",
-                MODEL_VERSION,
-            ]
-        )
-        return hashlib.sha256(raw.encode()).hexdigest()[:20]
+        identity = [
+            self.game_id,
+            self.market,
+            self.period,
+            self.selection,
+            "" if self.line is None else f"{self.line:g}",
+            self.source,
+            self.prediction_observed_utc or "",
+            self.book.key if self.book else "no_book",
+            self.book.observed_utc if self.book else "",
+            MODEL_VERSION,
+        ]
+        # Preserve legacy IDs, but distinguish forecasts whose calibration
+        # segment is explicitly stamped with a model/config fingerprint.
+        if self.calibration_version is not None:
+            identity.append(self.calibration_version)
+        return hashlib.sha256("|".join(identity).encode()).hexdigest()[:20]
 
     @property
     def decimal_price(self) -> Optional[float]:
@@ -233,6 +243,8 @@ class Forecast:
                 "prediction": (
                     {
                         "provider": self.prediction_provider,
+                        "model": self.prediction_model,
+                        "model_version": self.prediction_model_version,
                         "observed_utc": self.prediction_observed_utc,
                         "frozen": self.prediction_frozen,
                     }
@@ -260,6 +272,14 @@ class Forecast:
         }
         if self.shadow_calibration:
             explanation["effective_sample_size"] = self.shadow_calibration.get("ess")
+            explanation["shadow_calibration"] = {
+                "challenger_version": self.shadow_calibration.get("challenger_version"),
+                "status": self.shadow_calibration.get("status"),
+                "n": self.shadow_calibration.get("n", 0),
+                "weighted_n": self.shadow_calibration.get("weighted_n", 0.0),
+                "champion_probability": self.shadow_calibration.get("champion_probability"),
+                "candidate_probability": self.shadow_calibration.get("probability"),
+            }
         return explanation
 
     def to_dict(self) -> Dict[str, Any]:
@@ -314,6 +334,8 @@ class Forecast:
             "prediction": (
                 {
                     "provider": self.prediction_provider,
+                    "model": self.prediction_model,
+                    "model_version": self.prediction_model_version,
                     "observed_utc": self.prediction_observed_utc,
                     "frozen": self.prediction_frozen,
                 }

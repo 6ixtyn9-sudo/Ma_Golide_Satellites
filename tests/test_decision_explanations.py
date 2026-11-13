@@ -84,6 +84,8 @@ def _priced_forecast() -> Forecast:
         prediction_provider="test",
         prediction_observed_utc="2026-11-13T00:00:00Z",
         prediction_frozen=True,
+        prediction_model="test-model",
+        prediction_model_version="v1",
         book=BookEvidence(
             provider="test",
             book="book",
@@ -117,6 +119,8 @@ def test_explanation_mirrors_the_calculations_that_produced_it():
     }
     assert explanation["provenance"]["prediction"] == {
         "provider": "test",
+        "model": "test-model",
+        "model_version": "v1",
         "observed_utc": "2026-11-13T00:00:00Z",
         "frozen": True,
     }
@@ -203,3 +207,11 @@ def test_shadow_ess_appears_only_when_shadow_ran():
     explanation = forecast.to_dict()["explanation"]
     assert isinstance(explanation["effective_sample_size"], (int, float))
     assert explanation["effective_sample_size"] == forecast.shadow_calibration["ess"]
+    assert explanation["shadow_calibration"] == {
+        "challenger_version": forecast.shadow_calibration["challenger_version"],
+        "status": forecast.shadow_calibration["status"],
+        "n": forecast.shadow_calibration["n"],
+        "weighted_n": forecast.shadow_calibration["weighted_n"],
+        "champion_probability": forecast.shadow_calibration["champion_probability"],
+        "candidate_probability": forecast.shadow_calibration["probability"],
+    }

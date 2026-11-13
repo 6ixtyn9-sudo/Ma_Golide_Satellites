@@ -142,8 +142,18 @@ from their segment's reliability fit, so fallback rows cannot manufacture an
 ACCA-eligible sample count. Unreconciled finals and ungradeable rows are
 excluded. Pushes do not count as wins or losses in the reliability adjustment.
 
-Profiles are segmented by `(league, market, period, source)`. For a segment
-with `n` non-push outcomes:
+Profiles are segmented by `(league, market, period, source,
+calibration_version)`. History-model forecasts stamp a deterministic fingerprint
+of `MODEL_VERSION` and all prediction-affecting `ForecastConfig` fields.
+Provider-prediction forecasts fingerprint provider/model identity and the
+provider's declared `model_version`; a missing upstream version remains visible
+as missing provenance and cannot detect an in-place provider model change.
+Per-game source revisions and observation times are deliberately excluded.
+Hybrid history/provider forecasts include both configurations. Previously stored
+rows without a calibration version retain the explicit `legacy` segment tag and
+never merge with stamped history. A version change starts a separate
+calibration sample rather than borrowing another version's evidence. For a
+segment with `n` non-push outcomes:
 
 ```text
 observed adjustment = observed win rate - mean raw predicted probability
@@ -157,6 +167,17 @@ probability, adjustment, one-sided Wilson lower bound, Brier score, and log
 loss. Raw and prequential-calibrated overall metrics are reported separately.
 These are diagnostics, not certification. The default minimum for acca use is
 30 graded non-push samples in the exact segment.
+
+The same `walk_forward` object includes `shadow_challenger`: raw, champion, and
+recency-decayed challenger Brier/log-loss metrics, coverage, effective sample
+size, the challenger fingerprint, and the result-availability delay. Historical
+rows are evaluated prequentially with the service's exact calibration epoch,
+champion settings, and result delay. Current forecast explanations may include
+a separate shadow candidate probability, status, sample count, and effective
+sample size. Evaluation or annotation failure marks the shadow result
+`unavailable` while preserving the normal champion report. These fields are
+diagnostic only; `build_accas` consumes only the champion
+`calibrated_probability` and existing eligibility flag.
 
 ## 6. Acca eligibility and ranking
 

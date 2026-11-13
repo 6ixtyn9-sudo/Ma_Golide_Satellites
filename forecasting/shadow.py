@@ -31,7 +31,8 @@ from __future__ import annotations
 from dataclasses import dataclass
 from datetime import timedelta
 import math
-from typing import Any, Dict, Iterable, List, Optional, Tuple
+from itertools import groupby
+from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 
 from ingestion.identity import parse_utc
 
@@ -152,12 +153,22 @@ def _tip(record: Forecast):
         return None
 
 
+def _calibration_epoch(config: CalibrationConfig):
+    epoch_raw = getattr(config, "calibration_epoch_utc", CALIBRATION_EPOCH_UTC)
+    try:
+        return parse_utc(epoch_raw) if epoch_raw else None
+    except Exception:
+        # Match build_profiles: a missing/invalid configured epoch disables
+        # this date filter rather than silently using a different cutoff.
+        return None
+
+
 def _eligible_evidence(record: Forecast, epoch) -> bool:
     """Mirror the champion's evidence filters (epoch, team-history pool)."""
     if (record.team_history or {}).get("sufficient_for_accas") is False:
         return False
     tip = _tip(record)
-    return tip is not None and tip >= epoch
+    return tip is not None and (epoch is None or tip >= epoch)
 
 
 def build_recency_profiles(
@@ -165,6 +176,7 @@ def build_recency_profiles(
     config: RecencyConfig | None = None,
     *,
     as_of_utc: str,
+    champion_config: CalibrationConfig | None = None,
 ) -> Dict[Tuple[str, ...], RecencyProfile]:
     """Naive reference builder: weights relative to ``as_of_utc``.
 
@@ -173,8 +185,9 @@ def build_recency_profiles(
     pass uses an incremental equivalent (cross-checked in tests).
     """
     cfg = config or RecencyConfig()
+    calibration_cfg = champion_config or CalibrationConfig()
     as_of = parse_utc(as_of_utc)
-    epoch = parse_utc(CALIBRATION_EPOCH_UTC)
+    epoch = _calibration_epoch(calibration_cfg)
     delay = timedelta(hours=cfg.result_delay_hours)
     grouped: Dict[Tuple[str, ...], List[Forecast]] = {}
     for record in records:
@@ -224,8 +237,54 @@ def build_recency_profiles(
     return profiles
 
 
+def annotate_recency_profiles(
+    forecasts: Iterable[Forecast],
+    profiles: Mapping[Tuple[str, ...], RecencyProfile],
+    config: RecencyConfig,
+) -> List[Forecast]:
+    """Attach challenger diagnostics without changing champion or acca fields."""
+    annotated: List[Forecast] = []
+    for forecast in forecasts:
+        profile = profiles.get((*forecast.versioned_segment_key, config.version_tag))
+        if profile is None:
+            forecast.shadow_calibration = {
+                "challenger_version": config.version_tag,
+                "status": "no_history",
+                "n": 0,
+                "weighted_n": 0.0,
+                "ess": 0.0,
+                "adjustment": 0.0,
+                "probability": forecast.raw_probability,
+                "champion_probability": (
+                    forecast.calibrated_probability
+                    if forecast.calibrated_probability is not None
+                    else forecast.raw_probability
+                ),
+            }
+        else:
+            forecast.shadow_calibration = {
+                "challenger_version": config.version_tag,
+                "status": "sufficient" if profile.sufficient else "provisional",
+                "n": profile.n,
+                "weighted_n": round(profile.weighted_n, 6),
+                "ess": round(profile.ess, 6),
+                "adjustment": round(profile.adjustment, 6),
+                "probability": profile.apply(forecast.raw_probability, config),
+                "champion_probability": (
+                    forecast.calibrated_probability
+                    if forecast.calibrated_probability is not None
+                    else forecast.raw_probability
+                ),
+            }
+        annotated.append(forecast)
+    return annotated
+
+
 def prequential_shadow_evaluation(
-    records: Iterable[Forecast], config: RecencyConfig | None = None
+    records: Iterable[Forecast],
+    config: RecencyConfig | None = None,
+    *,
+    champion_config: CalibrationConfig | None = None,
 ) -> Dict[str, Any]:
     """Shadow-only prequential evaluation of the recency-decayed challenger.
 
@@ -237,8 +296,8 @@ def prequential_shadow_evaluation(
     selection cannot change.
     """
     cfg = config or RecencyConfig()
-    champion_cfg = CalibrationConfig()
-    epoch = parse_utc(CALIBRATION_EPOCH_UTC)
+    champion_cfg = champion_config or CalibrationConfig()
+    epoch = _calibration_epoch(champion_cfg)
     delay = timedelta(hours=cfg.result_delay_hours)
     # Ingest at the weight that makes the incremental normalization equivalent
     # to the naive tip-anchored convention: a record ingested at its
@@ -261,9 +320,27 @@ def prequential_shadow_evaluation(
             ungraded += 1
             continue
         pool.append((tip, record))
-    pool.sort(key=lambda item: (item[0], item[1].forecast_id))
+    pool.sort(
+        key=lambda item: (
+            item[0],
+            item[1].game_id,
+            item[1].forecast_id,
+            item[1].versioned_segment_key,
+            item[1].raw_probability,
+            item[1].outcome or "",
+        )
+    )
     availability = sorted(
-        (tip + delay, record.forecast_id, record) for tip, record in pool
+        (
+            (tip + delay, tip, record.game_id, record.forecast_id, record)
+            for tip, record in pool
+        ),
+        key=lambda item: (
+            *item[:4],
+            item[4].versioned_segment_key,
+            item[4].raw_probability,
+            item[4].outcome or "",
+        ),
     )
     evaluated = [(tip, record) for tip, record in pool if record.outcome in {"win", "loss"}]
 
@@ -352,8 +429,8 @@ def prequential_shadow_evaluation(
             "status": "sufficient" if weighted_n >= cfg.min_samples else "provisional",
         }
 
-    def _bounded(probability: float, adjustment: float) -> float:
-        return min(cfg.probability_ceiling, max(cfg.probability_floor, probability + adjustment))
+    def _bounded(probability: float, adjustment: float, *, floor: float, ceiling: float) -> float:
+        return min(ceiling, max(floor, probability + adjustment))
 
     index = 0
     raw_brier = raw_log = champ_brier = champ_log = chall_brier = chall_log = 0.0
@@ -362,70 +439,95 @@ def prequential_shadow_evaluation(
         "challenger": {"no_history": 0, "provisional": 0, "sufficient": 0},
     }
     ess_total = weighted_total = challenger_n_total = 0.0
-    for tip, record in evaluated:
-        while index < len(availability) and availability[index][0] <= tip:
-            _ingest(availability[index][0], availability[index][2])
+    for (tip, game_id), group in groupby(
+        pool, key=lambda item: (item[0], item[1].game_id)
+    ):
+        group_records = [record for _, record in group]
+        while index < len(availability):
+            available_at, available_tip, available_game, _, available_record = availability[index]
+            if available_at > tip or (available_tip, available_game) >= (tip, game_id):
+                break
+            _ingest(available_at, available_record)
             index += 1
-        won = record.outcome == "win"
-        target = float(won)
-        raw_brier += (record.raw_probability - target) ** 2
-        raw_log += _log_loss(record.raw_probability, won)
 
-        champ_state = _champion_state(record.versioned_segment_key)
-        if champ_state is None:
-            champ_probability = record.raw_probability
-            champ_adjustment = 0.0
-            coverage["champion"]["no_history"] += 1
-        else:
-            champ_probability = _bounded(
-                record.raw_probability, champ_state["adjustment"]
+        # Score every forecast for one game as a batch before allowing any
+        # same-game outcome into the next profile. This matters when the
+        # configured availability delay is zero.
+        for record in group_records:
+            if record.outcome not in {"win", "loss"}:
+                continue
+            won = record.outcome == "win"
+            target = float(won)
+            raw_brier += (record.raw_probability - target) ** 2
+            raw_log += _log_loss(record.raw_probability, won)
+
+            champ_state = _champion_state(record.versioned_segment_key)
+            if champ_state is None:
+                champ_probability = record.raw_probability
+                champ_adjustment = 0.0
+                coverage["champion"]["no_history"] += 1
+            else:
+                champ_probability = _bounded(
+                    record.raw_probability,
+                    champ_state["adjustment"],
+                    floor=champion_cfg.probability_floor,
+                    ceiling=champion_cfg.probability_ceiling,
+                )
+                champ_adjustment = champ_state["adjustment"]
+                coverage["champion"][champ_state["status"]] += 1
+            champ_brier += (champ_probability - target) ** 2
+            champ_log += _log_loss(champ_probability, won)
+
+            chall_state = _challenger_state(
+                (*record.versioned_segment_key, cfg.version_tag), tip
             )
-            champ_adjustment = champ_state["adjustment"]
-            coverage["champion"][champ_state["status"]] += 1
-        champ_brier += (champ_probability - target) ** 2
-        champ_log += _log_loss(champ_probability, won)
-
-        chall_state = _challenger_state(
-            (*record.versioned_segment_key, cfg.version_tag), tip
-        )
-        if chall_state is None:
-            chall_probability = record.raw_probability
-            shadow = {
-                "status": "no_history",
-                "n": 0,
-                "weighted_n": 0.0,
-                "ess": 0.0,
-                "adjustment": 0.0,
-                "probability": record.raw_probability,
-                "champion_status": (
-                    "no_history" if champ_state is None else champ_state["status"]
-                ),
-                "champion_n": 0 if champ_state is None else champ_state["n"],
-                "champion_adjustment": champ_adjustment,
-            }
-            coverage["challenger"]["no_history"] += 1
-        else:
-            chall_probability = _bounded(record.raw_probability, chall_state["adjustment"])
-            shadow = {
-                "status": chall_state["status"],
-                "n": chall_state["n"],
-                "weighted_n": round(chall_state["weighted_n"], 6),
-                "ess": round(chall_state["ess"], 6),
-                "adjustment": round(chall_state["adjustment"], 6),
-                "probability": chall_probability,
-                "champion_status": (
-                    "no_history" if champ_state is None else champ_state["status"]
-                ),
-                "champion_n": 0 if champ_state is None else champ_state["n"],
-                "champion_adjustment": champ_adjustment,
-            }
-            coverage["challenger"][chall_state["status"]] += 1
-            ess_total += chall_state["ess"]
-            weighted_total += chall_state["weighted_n"]
-            challenger_n_total += chall_state["n"]
-        record.shadow_calibration = shadow
-        chall_brier += (chall_probability - target) ** 2
-        chall_log += _log_loss(chall_probability, won)
+            if chall_state is None:
+                chall_probability = record.raw_probability
+                shadow = {
+                    "challenger_version": cfg.version_tag,
+                    "status": "no_history",
+                    "n": 0,
+                    "weighted_n": 0.0,
+                    "ess": 0.0,
+                    "adjustment": 0.0,
+                    "probability": record.raw_probability,
+                    "champion_probability": champ_probability,
+                    "champion_status": (
+                        "no_history" if champ_state is None else champ_state["status"]
+                    ),
+                    "champion_n": 0 if champ_state is None else champ_state["n"],
+                    "champion_adjustment": champ_adjustment,
+                }
+                coverage["challenger"]["no_history"] += 1
+            else:
+                chall_probability = _bounded(
+                    record.raw_probability,
+                    chall_state["adjustment"],
+                    floor=cfg.probability_floor,
+                    ceiling=cfg.probability_ceiling,
+                )
+                shadow = {
+                    "challenger_version": cfg.version_tag,
+                    "status": chall_state["status"],
+                    "n": chall_state["n"],
+                    "weighted_n": round(chall_state["weighted_n"], 6),
+                    "ess": round(chall_state["ess"], 6),
+                    "adjustment": round(chall_state["adjustment"], 6),
+                    "probability": chall_probability,
+                    "champion_probability": champ_probability,
+                    "champion_status": (
+                        "no_history" if champ_state is None else champ_state["status"]
+                    ),
+                    "champion_n": 0 if champ_state is None else champ_state["n"],
+                    "champion_adjustment": champ_adjustment,
+                }
+                coverage["challenger"][chall_state["status"]] += 1
+                ess_total += chall_state["ess"]
+                weighted_total += chall_state["weighted_n"]
+                challenger_n_total += chall_state["n"]
+            record.shadow_calibration = shadow
+            chall_brier += (chall_probability - target) ** 2
+            chall_log += _log_loss(chall_probability, won)
 
     count = len(evaluated)
 
@@ -436,7 +538,9 @@ def prequential_shadow_evaluation(
         return {"brier_score": _mean(total_brier), "log_loss": _mean(total_log)}
 
     return {
+        "status": "ok",
         "challenger_version": cfg.version_tag,
+        "result_delay_hours": cfg.result_delay_hours,
         "rows_input": len(pool) + ungraded,
         "rows_ungraded_or_ineligible_skipped": ungraded,
         "rows_push_skipped": len(pool) - count,
@@ -461,6 +565,7 @@ __all__ = [
     "CHALLENGER_TAG",
     "RecencyConfig",
     "RecencyProfile",
+    "annotate_recency_profiles",
     "build_recency_profiles",
     "prequential_shadow_evaluation",
 ]
