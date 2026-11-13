@@ -295,6 +295,14 @@ def test_all_old_markets_are_forecast_and_accas_use_calibrated_probabilities():
     assert report["accas"]["paper_results"]
     pick_filter = report["accas"]["paper_pick_filter"]
     assert pick_filter["qualifying_pick_count"] >= 1
+    assert report["accas"]["paper_single_pick_count"] == pick_filter["qualifying_pick_count"]
+    assert len(report["accas"]["paper_single_picks"]) == pick_filter["qualifying_pick_count"]
+    for single in report["accas"]["paper_single_picks"]:
+        assert (
+            pick_filter["candidate_band_details"][single["forecast_id"]]["qualifies"]
+            is True
+        )
+        assert single["individual_pick_roi_band"]["qualifies"] is True
     assert all(
         row["provisional_sample_gate_bypassed"] is False
         for row in report["accas"]["paper_results"]
@@ -362,6 +370,73 @@ def test_service_routes_sample_only_candidates_to_paper_results():
             band = pick_filter["candidate_band_details"][leg["forecast_id"]]
             assert band["qualifies"] is True
             assert band["historical_pick_count"] >= 1
+
+
+def test_service_falls_back_to_double_when_only_two_qualified_games_exist(monkeypatch):
+    def two_game_filter(forecasts, historical_forecasts=(), **kwargs):
+        candidates = []
+        seen_games = set()
+        for row in forecasts:
+            if (
+                row.eligibility.get("acca_eligible")
+                and row.decimal_price is not None
+                and row.game_id not in seen_games
+            ):
+                candidates.append(row)
+                seen_games.add(row.game_id)
+                if len(candidates) == 2:
+                    break
+        assert len(candidates) == 2
+        details = {
+            row.forecast_id: {
+                "league": row.league,
+                "market": row.market,
+                "period": row.period,
+                "model": row.source,
+                "probability_band": "0.60-<0.70",
+                "individual_odds_band": "1.50-<2.00",
+                "candidate_pick_count": 2,
+                "historical_pick_count": 1,
+                "wins": 1,
+                "losses": 0,
+                "pushes": 0,
+                "observed_roi": 0.8,
+                "recency_weighted_roi": 0.8,
+                "parent_roi": 0.0,
+                "adjusted_roi": 0.2,
+                "qualifies": True,
+            }
+            for row in candidates
+        }
+        return candidates, {
+            "policy": "adaptive_recency_weighted_positive_individual_pick_roi_bands",
+            "history_source": "settled_pick_audit",
+            "performance_basis": "settled_individual_picks_only_not_acca_outcomes",
+            "candidate_pick_count": 2,
+            "candidate_band_count": 2,
+            "qualifying_pick_count": 2,
+            "qualifying_band_count": 2,
+            "historical_unique_pick_count": 2,
+            "candidate_band_details": details,
+            "bands": list(details.values()),
+            "status": "applied",
+        }
+
+    monkeypatch.setattr(
+        forecasting_service_module, "filter_paper_candidate_picks", two_game_filter
+    )
+    report = service(populated_store()).build_report(
+        as_of_utc=iso(AS_OF), acca_legs=3, acca_limit=4
+    )
+
+    accas = report["accas"]
+    assert accas["requested_legs"] == 3
+    assert accas["effective_paper_legs"] == 2
+    assert accas["roi_qualified_single_games"] == 2
+    assert len(accas["paper_single_picks"]) == 2
+    assert accas["paper_results"]
+    assert all(ticket["leg_count"] == 2 for ticket in accas["paper_results"])
+    assert all(len(ticket["legs"]) == 2 for ticket in accas["paper_results"])
 
 
 def test_service_stamps_model_config_and_runs_shadow_at_configured_delay():

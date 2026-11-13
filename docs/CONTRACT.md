@@ -236,19 +236,27 @@ settle; acca-ledger outcomes are never used as individual-pick evidence. A
 positive band is an exploratory paper-only signal, not statistical validation
 or proof of future profit.
 
-If too few independent qualifying picks remain, no paper acca is emitted. This
-performance gate does not relax or add a calibration-sample gate: the existing
-sample-only provisional path and all other strict eligibility safeguards remain
-in force.
+Every passing individual pick is exposed in `accas.paper_single_picks` and
+flagged as a `paper_roi_band_eligible` single in the operator pick JSON/text, so
+a qualifying pick remains available even when there are not enough games for a
+multi-leg ticket. This performance gate does not relax or add a calibration-
+sample gate: the existing sample-only provisional path and all other strict
+eligibility safeguards remain in force.
 
-The paper-ticket surface then greedily accepts combinations in descending joint
-probability order and does not reuse an exact wager selection across tickets.
+For combinations, the requested leg count is an upper bound. The effective
+paper leg count is the smaller of that request and the number of distinct games
+with ROI-qualified picks. A combination is emitted only when at least two such
+games exist. For the default three-leg request, two qualifying games produce a
+double; one qualifying game produces singles only, not a forced acca. The paper
+combination surface greedily accepts tickets in descending joint-probability
+order and does not reuse an exact wager selection across separate acca tickets.
 A different selection from the same game may be used on another ticket, while
 same-game legs remain prohibited within any one acca. This is a no-repeated-leg
 rule, not mathematical outcome exclusivity: separate tickets may still win
 simultaneously. The strict `results`/`strict_results` analytical ranking is
-unchanged and can contain overlapping combinations. Fewer paper tickets are
-returned when the requested limit exceeds the available non-repeated leg sets.
+unchanged and can contain overlapping combinations. Fewer paper combinations
+are returned when the requested limit exceeds the available non-repeated leg
+sets.
 
 Frozen paper receipts label every combination that uses a provisional leg.
 Paper ticket outcomes are collected in the separate paper-performance ledger;
@@ -261,7 +269,8 @@ adaptive individual-pick ROI-band gate is applied before this selection;
 bookmaker price never breaks a probability tie. Deterministic fixture, market,
 source, and forecast identifiers are used instead. Same-game legs are
 prohibited rather than silently multiplied as independent.
-For the requested leg count, a best-first search ranks combinations by:
+For the effective paper leg count (or the unchanged requested count on the strict
+analytical surface), a best-first search ranks combinations by:
 
 ```text
 estimated joint win probability = product(calibrated leg probabilities)

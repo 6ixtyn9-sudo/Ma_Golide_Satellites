@@ -102,6 +102,8 @@ def main() -> int:
                 "eligible_acca_games": report["accas"]["eligible_games"],
                 "accas": len(report["accas"]["results"]),
                 "paper_accas": len(report["accas"].get("paper_results") or []),
+                "paper_single_picks": len(report["accas"].get("paper_single_picks") or []),
+                "paper_effective_legs": report["accas"].get("effective_paper_legs"),
                 "external_writes": False,
             },
             indent=2,

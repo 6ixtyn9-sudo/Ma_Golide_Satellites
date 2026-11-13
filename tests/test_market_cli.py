@@ -75,6 +75,8 @@ def test_standalone_market_cli_reads_duckdb_without_modifying_it(tmp_path, monke
     summary = json.loads(capsys.readouterr().out)
     report = json.loads(output.read_text())
     assert summary["forecast_count"] == 1
+    assert summary["paper_single_picks"] == 0
+    assert summary["paper_effective_legs"] is None
     assert summary["external_writes"] is False
     assert report["forecasts"][0]["market"] == "moneyline"
     assert report["forecasts"][0]["eligibility"]["reasons"] == [

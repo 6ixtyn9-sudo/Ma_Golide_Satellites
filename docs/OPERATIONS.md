@@ -206,7 +206,8 @@ walk-forward delay.
 `--output` chooses the derived JSON report. If omitted, the default is
 `localdata/markets_<league>_<date-or-upcoming>.json`. The command refuses a
 non-JSON suffix or an output path equal to the warehouse. Stdout contains a
-short report summary. For paper ROI-band eligibility, it reads the settled
+short report summary, including ROI-qualified singles and the effective paper
+combination leg count. For paper ROI-band eligibility, it reads the settled
 single-pick audit from `--localdata` (or `LOCALDATA`; otherwise
 `localdata/<league-lowercase>`) when present; it never reads acca performance as
 pick history and does not write the audit.

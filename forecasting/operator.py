@@ -654,6 +654,30 @@ def _render_picks(
             f"n={calibration.get('n', 0)} · reasons={reasons} "
             f"· prediction={(row.get('prediction') or {}).get('provider', 'history')}"
         )
+        roi_band = row.get("paper_roi_band")
+        if isinstance(roi_band, dict):
+            weighted_roi = roi_band.get("recency_weighted_roi")
+            adjusted_roi = roi_band.get("adjusted_roi")
+            weighted_text = (
+                f"{float(weighted_roi):+.1%}"
+                if isinstance(weighted_roi, (int, float)) and not isinstance(weighted_roi, bool)
+                else "n/a"
+            )
+            adjusted_text = (
+                f"{float(adjusted_roi):+.1%}"
+                if isinstance(adjusted_roi, (int, float)) and not isinstance(adjusted_roi, bool)
+                else "n/a"
+            )
+            status = "PAPER SINGLE" if row.get("paper_roi_band_eligible") else "ROI-BAND BLOCKED"
+            lines.append(
+                f"      {status} · {roi_band.get('market', 'unknown')} "
+                f"{roi_band.get('period', 'unknown')} · p {roi_band.get('probability_band', 'unknown')} "
+                f"· odds {roi_band.get('individual_odds_band', 'unknown')} · "
+                f"n={int(roi_band.get('historical_pick_count') or 0)} · "
+                f"recency ROI {weighted_text} / adjusted {adjusted_text}"
+            )
+        elif row.get("paper_roi_band_eligible"):
+            lines.append("      PAPER SINGLE · positive settled individual-pick ROI band")
         revisions = revision_counts[_logical_pick_key(row)]
         if revisions > 1:
             latest = _latest_evidence_utc(row) or "unknown"
@@ -701,6 +725,8 @@ def _render_picks(
         [
             "",
             "Active summary: " + " ".join(f"{bucket}={counts.get(bucket, 0)}" for bucket in order),
+            f"ROI-qualified individual paper singles: "
+            f"{sum(bool(row.get('paper_roi_band_eligible')) for row in upcoming)}",
             f"Archive status: IN_PROGRESS_OR_AWAITING_RESULT={len(started)} SETTLED={len(settled)}",
             f"Logical picks shown: {len(logical_rows)} · "
             f"superseded observations: {len(rows) - len(logical_rows)}",
@@ -1628,8 +1654,10 @@ def _render_ticket_card(
         books = ", ".join(acca.get("bookmakers") or []) or "multiple/no book"
         provisional = bool(acca.get("provisional_sample_gate_bypassed"))
         provisional_label = " · PROVISIONAL SAMPLE GATE" if provisional else ""
+        leg_count = int(acca.get("leg_count") or len(acca.get("legs") or []))
         lines.append(
-            f"[PAPER ACCA #{index}]{provisional_label} @{acca['combined_decimal_odds']:.3f} "
+            f"[PAPER {leg_count}-LEG ACCA #{index}]{provisional_label} "
+            f"@{acca['combined_decimal_odds']:.3f} "
             f"— {acca['stake_units']:.6f} paper units — {books} "
             f"· {acca['grade_status'].upper()}"
         )
@@ -1728,7 +1756,7 @@ def _is_provisional_sample_only_row(row: Dict[str, Any]) -> bool:
 
 
 def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, Any]:
-    """Explain strict and paper-exploratory supply without changing the report."""
+    """Summarize eligible picks, ROI-qualified singles, and paper combinations."""
     report = market_report or {}
     rows = list(report.get("forecasts") or [])
     acca_report = report.get("accas") or {}
@@ -1756,6 +1784,19 @@ def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, 
     if paper_results is None:  # legacy reports expose only the strict result surface
         paper_results = acca_report.get("results")
     paper_accas = list(paper_results or [])
+    paper_single_picks = list(acca_report.get("paper_single_picks") or [])
+    effective_paper_legs = acca_report.get("effective_paper_legs")
+    if (
+        isinstance(effective_paper_legs, bool)
+        or not isinstance(effective_paper_legs, int)
+        or effective_paper_legs < 2
+    ):
+        effective_paper_legs = (
+            len(paper_accas[0].get("legs") or []) if paper_accas else None
+        )
+    roi_qualified_games = {
+        row.get("game_id") for row in paper_single_picks if row.get("game_id")
+    }
     strict_accas = acca_report.get("strict_results")
     if strict_accas is None:  # pre-exploration report compatibility
         strict_accas = list(acca_report.get("results") or [])
@@ -1782,9 +1823,12 @@ def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, 
         "provisional_sample_only_games": len(provisional_games),
         "paper_candidate_rows": len(eligible) + len(provisional),
         "paper_candidate_games": len(eligible_games | provisional_games),
+        "paper_single_picks": len(paper_single_picks),
+        "paper_single_games": len(roi_qualified_games),
         "paper_accas": len(paper_accas),
         "strict_accas": len(strict_accas),
         "required_games": required_games,
+        "effective_paper_legs": effective_paper_legs,
         "eligibility_blockers": dict(sorted(blockers.items())),
     }
     pick_filter = acca_report.get("paper_pick_filter")
@@ -1804,6 +1848,20 @@ def _render_empty_ticket_scan(
     withdrawal: Optional[Dict[str, Any]] = None,
 ) -> str:
     """A mutable latest-scan view, never a frozen no-bet receipt."""
+    paper_single_count = int(candidate_funnel.get("paper_single_picks") or 0)
+    paper_single_games = int(candidate_funnel.get("paper_single_games") or 0)
+    effective_legs = candidate_funnel.get("effective_paper_legs")
+    if withdrawal:
+        scan_status = (
+            "NO PAPER BET — the earlier ticket publication was withdrawn for model-integrity failure."
+        )
+    elif paper_single_count:
+        scan_status = (
+            f"NO MULTI-LEG PAPER ACCA — {paper_single_count} ROI-qualified single "
+            f"pick(s) are listed in the picks card."
+        )
+    else:
+        scan_status = "NO PAPER BET — no ROI-qualified paper singles or multi-leg acca in this scan."
     lines = [
         f"MA GOLIDE PAPER TICKETS — {league.value} {target_date}",
         "=" * 72,
@@ -1811,11 +1869,7 @@ def _render_empty_ticket_scan(
         f"· free {performance['paper_free_units']:.3f} / reserved {performance['paper_committed_units']:.3f}",
         f"Latest scan: {_local_time(generated_utc, timezone_name)}",
         "",
-        (
-            "NO PAPER BET — the earlier ticket publication was withdrawn for model-integrity failure."
-            if withdrawal
-            else "NO PAPER BET — no strict or provisional paper acca in this scan."
-        ),
+        scan_status,
         "",
         "CANDIDATE FUNNEL",
         f"  {candidate_funnel['scan_rows']} scan rows · "
@@ -1832,8 +1886,10 @@ def _render_empty_ticket_scan(
         f"{'game' if candidate_funnel['provisional_sample_only_games'] == 1 else 'games'} · "
         f"{candidate_funnel['paper_accas']} paper accas "
         f"({candidate_funnel['strict_accas']} strict)",
-        f"  Need {candidate_funnel['required_games']} independent games for one acca; "
-        "same-game legs are prohibited.",
+        f"  {paper_single_count} ROI-qualified paper singles across {paper_single_games} "
+        f"games · combination size {effective_legs or 'none'} legs "
+        f"(requested up to {candidate_funnel['required_games']}).",
+        "  Multi-leg tickets require distinct games; exact wager selections are not reused across accas.",
     ]
     pick_filter = candidate_funnel.get("paper_pick_filter")
     if isinstance(pick_filter, dict):
@@ -1989,7 +2045,25 @@ def publish_operator_reports(
         _pick_row(row, target_date)
         for row in deepcopy((market_report or {}).get("forecasts") or [])
     ]
+    acca_report = (market_report or {}).get("accas") or {}
     candidate_funnel = _ticket_candidate_funnel(market_report)
+    paper_filter = acca_report.get("paper_pick_filter") or {}
+    band_details = paper_filter.get("candidate_band_details") or {}
+    single_rows = list(acca_report.get("paper_single_picks") or [])
+    single_details = {
+        str(row.get("forecast_id")): row.get("individual_pick_roi_band")
+        for row in single_rows
+        if row.get("forecast_id")
+    }
+    single_ids = set(single_details)
+    for row in current:
+        pick_id = str(row["pick_id"])
+        band = band_details.get(pick_id) or single_details.get(pick_id)
+        if isinstance(band, dict):
+            row["paper_roi_band"] = deepcopy(band)
+            row["paper_roi_band_eligible"] = band.get("qualifies") is True
+        elif pick_id in single_ids:
+            row["paper_roi_band_eligible"] = True
     dated_path = localdata / f"picks_{target_date}.json"
     prior = _read_json(dated_path, [])
     if not isinstance(prior, list):
@@ -2044,6 +2118,7 @@ def publish_operator_reports(
             "run_id": run_id,
             "captured_at": generated_utc,
             "fresh_accas": len(ticket_accas),
+            "fresh_paper_singles": candidate_funnel.get("paper_single_picks", 0),
             "receipt_present": receipt is not None,
             "candidate_funnel": deepcopy(candidate_funnel),
         }
@@ -2138,6 +2213,7 @@ def publish_operator_reports(
             "published_accas": len(receipt["accas"]) if receipt else 0,
             "settled_accas": performance["settled_accas"],
             "pending_accas": performance["pending_accas"],
+            "paper_single_picks": candidate_funnel.get("paper_single_picks", 0),
         },
     }
 
