@@ -275,6 +275,7 @@ jobs:
                   "forecast_count": markets.get("forecast_count"),
                   "graded_walk_forward_forecasts": walk_forward.get("graded_forecasts"),
                   "acca_count": len(accas.get("results") or []),
+                  "paper_acca_count": len(accas.get("paper_results") or []),
               }
               print("```json")
               print(json.dumps(summary, indent=2, default=str))
