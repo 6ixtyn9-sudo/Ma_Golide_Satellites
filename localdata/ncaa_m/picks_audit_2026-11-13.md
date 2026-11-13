@@ -1,14 +1,14 @@
 # Ma Golide — Recent picks audit (2026-10-15 to 2026-11-13)
 
-Generated: 2026-11-13 19:16 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-13 20:23 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
-- archived logical picks: 1367
-- dated evidence rows: 3639 (2272 superseded observations)
-- settled picks: 978 (628 wins / 350 losses / 0 pushes)
-- hit rate: 64.2% (628/978 win/loss decisions)
-- pending/unmatched picks: 0 prior-day · 389 total
+- archived logical picks: 1381
+- dated evidence rows: 3854 (2473 superseded observations)
+- settled picks: 981 (631 wins / 350 losses / 0 pushes)
+- hit rate: 64.3% (631/981 win/loss decisions)
+- pending/unmatched picks: 0 prior-day · 400 total
 - priced picks: 720
 - paper P&L: -32.040 units
 - ROI: -4.4% (P&L / 720 priced picks)
@@ -17,8 +17,8 @@ Generated: 2026-11-13 19:16 SAST · 30-day rolling window · Paper only
 
 - reconciled official finals settle immediately; pending rows are never losses
 - local-day pending cutoff: 2026-11-13
-- same-day pending rows outside prior-day counters: 389
-- same-day official-final picks included: 0
+- same-day pending rows outside prior-day counters: 400
+- same-day official-final picks included: 3
 - eligible prior-day picks: 978
 - latest observation per logical pick; superseded dated evidence remains in JSON
 
@@ -27,13 +27,13 @@ Generated: 2026-11-13 19:16 SAST · 30-day rolling window · Paper only
 | Bucket | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `SKIPPED_INELIGIBLE` | 720 | 417–303–0 | 57.9% | 720 | -4.4% |
-| `WATCHLIST_NO_ODDS` | 258 | 211–47–0 | 81.8% | 0 | n/a |
+| `WATCHLIST_NO_ODDS` | 261 | 214–47–0 | 82.0% | 0 | n/a |
 
 ## By market
 
 | Market | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `moneyline` | 496 | 384–112–0 | 77.4% | 239 | -5.7% |
+| `moneyline` | 499 | 387–112–0 | 77.6% | 239 | -5.7% |
 | `spread` | 205 | 97–108–0 | 47.3% | 205 | -10.1% |
 | `total` | 277 | 147–130–0 | 53.1% | 276 | +0.9% |
 
@@ -42,7 +42,7 @@ Generated: 2026-11-13 19:16 SAST · 30-day rolling window · Paper only
 | Market:Selection | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `moneyline:away` | 26 | 13–13–0 | 50.0% | 25 | -34.1% |
-| `moneyline:home` | 470 | 371–99–0 | 78.9% | 214 | -2.4% |
+| `moneyline:home` | 473 | 374–99–0 | 79.1% | 214 | -2.4% |
 | `spread:away` | 76 | 37–39–0 | 48.7% | 76 | -7.4% |
 | `spread:home` | 129 | 60–69–0 | 46.5% | 129 | -11.7% |
 | `total:over` | 162 | 78–84–0 | 48.1% | 161 | -8.9% |
@@ -52,16 +52,16 @@ Generated: 2026-11-13 19:16 SAST · 30-day rolling window · Paper only
 
 Counterfactual reporting only — this is not a strategy, pick, or ticket. A settled result is reversed (win↔loss; push stays push) and priced only when the exact opposite quote is preserved in the same pre-tip book snapshot, market, period, line, and observation. No quote is inferred or historically backfilled; selected-side price is not required.
 
-- settled rows with exact opposite quotes: 99/978
+- settled rows with exact opposite quotes: 99/981
 - fade record: 32–67–0
 - fade hit rate: 32.3% (32/99 decisions)
 - paper P&L: -20.637 units · ROI: -20.8% (one unit per priced fade, pushes included)
 - mean market-implied break-even hit rate: 38.8% (n=99 non-push quotes; includes vig)
-- unpriced settled rows: `market_has_no_single_opposite_side`=165, `no_book_evidence`=92, `opposite_quote_not_preserved`=622
+- unpriced settled rows: `market_has_no_single_opposite_side`=166, `no_book_evidence`=94, `opposite_quote_not_preserved`=622
 
 | Market | Settled candidates | Exact quotes | Fade W–L–P | ROI |
 | --- | ---: | ---: | ---: | ---: |
-| `moneyline` | 496 | 48 | 13–35–0 | -12.6% |
+| `moneyline` | 499 | 48 | 13–35–0 | -12.6% |
 | `spread` | 205 | 25 | 10–15–0 | -23.0% |
 | `total` | 277 | 26 | 9–17–0 | -34.0% |
 
@@ -70,14 +70,26 @@ Numeric selected-probability bands (calibrated probability, otherwise raw):
 | Probability band | Settled candidates | Exact quotes | Fade W–L–P | ROI |
 | --- | ---: | ---: | ---: | ---: |
 | `0.50-<0.60` | 167 | 18 | 6–12–0 | -35.7% |
-| `0.60-<0.70` | 196 | 22 | 11–11–0 | +6.8% |
-| `0.70-<0.80` | 293 | 13 | 5–8–0 | +27.4% |
+| `0.60-<0.70` | 197 | 22 | 11–11–0 | +6.8% |
+| `0.70-<0.80` | 294 | 13 | 5–8–0 | +27.4% |
 | `0.80-<0.90` | 218 | 37 | 10–27–0 | -27.7% |
-| `0.90-1.00` | 104 | 9 | 0–9–0 | -100.0% |
+| `0.90-1.00` | 105 | 9 | 0–9–0 | -100.0% |
 
 ## Settled picks — official-final audit
 
 Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+### 2026-11-13: Green Bay Phoenix vs Viterbo V-Hawks (Final: **66–46**)
+
+- 🟢 **WON — Full-game moneyline: Green Bay Phoenix (home)**
+  - Expected: **74.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Green Bay Phoenix (home)**
+  - Actual First-half score: **24–23** · Expected: **69.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Green Bay Phoenix (home)**
+  - Expected: **99.8%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
 
 ### 2026-11-12: Cal State Northridge Matadors vs Grace (CA) Talons (Final: **108–69**)
 

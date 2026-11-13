@@ -1,14 +1,14 @@
 # Ma Golide — Recent picks audit (2026-10-15 to 2026-11-13)
 
-Generated: 2026-11-13 19:17 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-13 20:23 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
-- archived logical picks: 700
-- dated evidence rows: 1396 (696 superseded observations)
-- settled picks: 591 (446 wins / 145 losses / 0 pushes)
-- hit rate: 75.5% (446/591 win/loss decisions)
-- pending/unmatched picks: 0 prior-day · 109 total
+- archived logical picks: 702
+- dated evidence rows: 1429 (727 superseded observations)
+- settled picks: 603 (457 wins / 146 losses / 0 pushes)
+- hit rate: 75.8% (457/603 win/loss decisions)
+- pending/unmatched picks: 0 prior-day · 99 total
 - priced picks: 69
 - paper P&L: +15.871 units
 - ROI: +23.0% (P&L / 69 priced picks)
@@ -17,8 +17,8 @@ Generated: 2026-11-13 19:17 SAST · 30-day rolling window · Paper only
 
 - reconciled official finals settle immediately; pending rows are never losses
 - local-day pending cutoff: 2026-11-13
-- same-day pending rows outside prior-day counters: 109
-- same-day official-final picks included: 6
+- same-day pending rows outside prior-day counters: 99
+- same-day official-final picks included: 18
 - eligible prior-day picks: 585
 - latest observation per logical pick; superseded dated evidence remains in JSON
 
@@ -27,13 +27,13 @@ Generated: 2026-11-13 19:17 SAST · 30-day rolling window · Paper only
 | Bucket | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `SKIPPED_INELIGIBLE` | 69 | 38–31–0 | 55.1% | 69 | +23.0% |
-| `WATCHLIST_NO_ODDS` | 522 | 408–114–0 | 78.2% | 0 | n/a |
+| `WATCHLIST_NO_ODDS` | 534 | 419–115–0 | 78.5% | 0 | n/a |
 
 ## By market
 
 | Market | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `moneyline` | 542 | 423–119–0 | 78.0% | 20 | +104.6% |
+| `moneyline` | 554 | 434–120–0 | 78.3% | 20 | +104.6% |
 | `spread` | 27 | 12–15–0 | 44.4% | 27 | -15.3% |
 | `total` | 22 | 11–11–0 | 50.0% | 22 | -4.2% |
 
@@ -41,8 +41,8 @@ Generated: 2026-11-13 19:17 SAST · 30-day rolling window · Paper only
 
 | Market:Selection | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `moneyline:away` | 44 | 33–11–0 | 75.0% | 5 | -13.6% |
-| `moneyline:home` | 498 | 390–108–0 | 78.3% | 15 | +144.0% |
+| `moneyline:away` | 45 | 33–12–0 | 73.3% | 5 | -13.6% |
+| `moneyline:home` | 509 | 401–108–0 | 78.8% | 15 | +144.0% |
 | `spread:away` | 19 | 7–12–0 | 36.8% | 19 | -29.7% |
 | `spread:home` | 8 | 5–3–0 | 62.5% | 8 | +18.8% |
 | `total:over` | 7 | 4–3–0 | 57.1% | 7 | +9.1% |
@@ -52,16 +52,16 @@ Generated: 2026-11-13 19:17 SAST · 30-day rolling window · Paper only
 
 Counterfactual reporting only — this is not a strategy, pick, or ticket. A settled result is reversed (win↔loss; push stays push) and priced only when the exact opposite quote is preserved in the same pre-tip book snapshot, market, period, line, and observation. No quote is inferred or historically backfilled; selected-side price is not required.
 
-- settled rows with exact opposite quotes: 32/591
+- settled rows with exact opposite quotes: 32/603
 - fade record: 14–18–0
 - fade hit rate: 43.8% (14/32 decisions)
 - paper P&L: +15.503 units · ROI: +48.4% (one unit per priced fade, pushes included)
 - mean market-implied break-even hit rate: 49.0% (n=32 non-push quotes; includes vig)
-- unpriced settled rows: `market_has_no_single_opposite_side`=174, `no_book_evidence`=348, `opposite_quote_not_preserved`=37
+- unpriced settled rows: `market_has_no_single_opposite_side`=178, `no_book_evidence`=356, `opposite_quote_not_preserved`=37
 
 | Market | Settled candidates | Exact quotes | Fade W–L–P | ROI |
 | --- | ---: | ---: | ---: | ---: |
-| `moneyline` | 542 | 12 | 5–7–0 | +152.7% |
+| `moneyline` | 554 | 12 | 5–7–0 | +152.7% |
 | `spread` | 27 | 11 | 7–4–0 | +21.5% |
 | `total` | 22 | 9 | 2–7–0 | -57.6% |
 
@@ -69,15 +69,51 @@ Numeric selected-probability bands (calibrated probability, otherwise raw):
 
 | Probability band | Settled candidates | Exact quotes | Fade W–L–P | ROI |
 | --- | ---: | ---: | ---: | ---: |
-| `0.50-<0.60` | 27 | 3 | 0–3–0 | -100.0% |
-| `0.60-<0.70` | 78 | 5 | 4–1–0 | +34.9% |
-| `0.70-<0.80` | 193 | 9 | 4–5–0 | -42.1% |
-| `0.80-<0.90` | 171 | 4 | 2–2–0 | -4.5% |
-| `0.90-1.00` | 122 | 11 | 4–7–0 | +188.4% |
+| `0.50-<0.60` | 29 | 3 | 0–3–0 | -100.0% |
+| `0.60-<0.70` | 81 | 5 | 4–1–0 | +34.9% |
+| `0.70-<0.80` | 197 | 9 | 4–5–0 | -42.1% |
+| `0.80-<0.90` | 172 | 4 | 2–2–0 | -4.5% |
+| `0.90-1.00` | 124 | 11 | 4–7–0 | +188.4% |
 
 ## Settled picks — official-final audit
 
 Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+### 2026-11-13: Southern Jaguars vs Louisiana Christian Wildcats (Final: **93–48**)
+
+- 🟢 **WON — Full-game moneyline: Southern Jaguars (home)**
+  - Expected: **64.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Southern Jaguars (home)**
+  - Actual First-half score: **49–18** · Expected: **62.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Southern Jaguars (home)**
+  - Expected: **99.7%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+
+### 2026-11-13: Belmont Bruins vs Troy Trojans (Final: **72–46**)
+
+- 🟢 **WON — First-half moneyline: Belmont Bruins (home)**
+  - Actual First-half score: **42–26** · Expected: **70.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Belmont Bruins (home)**
+  - Expected: **56.1%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Belmont Bruins (home)**
+  - Expected: **70.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-13: Oklahoma Sooners vs Oral Roberts Golden Eagles (Final: **93–62**)
+
+- 🟢 **WON — First-half moneyline: Oklahoma Sooners (home)**
+  - Actual First-half score: **51–27** · Expected: **70.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Oklahoma Sooners (home)**
+  - Expected: **77.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Oklahoma Sooners (home)**
+  - Expected: **99.9%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
 
 ### 2026-11-13: Loyola Maryland Greyhounds vs Towson Tigers (Final: **53–57**)
 
@@ -102,6 +138,18 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: Purdue Fort Wayne Mastodons (home)**
   - Expected: **64.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-13: Delaware State Hornets vs American University Eagles (Final: **72–63**)
+
+- 🟢 **WON — First-half moneyline: Delaware State Hornets (home)**
+  - Actual First-half score: **39–30** · Expected: **58.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Delaware State Hornets (home)**
+  - Expected: **60.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: American University Eagles (away)**
+  - Expected: **81.9%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
 
 ### 2026-11-12: UCLA Bruins vs Arizona Wildcats (Final: **76–44**)
 
