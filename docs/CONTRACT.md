@@ -145,15 +145,20 @@ excluded. Pushes do not count as wins or losses in the reliability adjustment.
 Profiles are segmented by `(league, market, period, source,
 calibration_version)`. History-model forecasts stamp a deterministic fingerprint
 of `MODEL_VERSION` and all prediction-affecting `ForecastConfig` fields.
-Provider-prediction forecasts fingerprint provider/model identity, the
-`model_version`, and `produced_by` metadata. Hardwood carries an artifact
-version; ESPN BPI and Predixsport use explicit adapter-owned versions because
-their feeds do not expose a stable model release. Bump those adapter versions
-when a known provider-model or normalization change occurs. They cannot reveal a
-silent upstream change on their own. Per-game source revisions and observation
-times are deliberately excluded. Hybrid history/provider forecasts include
-both configurations. Previously stored rows without a calibration version
-retain the explicit `legacy` segment tag and never merge with stamped history.
+Provider-prediction forecasts fingerprint provider/model identity and the
+`model_version`. Payload-derived `produced_by` labels remain provenance for
+display but are excluded from segmentation because they may vary per row. A
+closed Predixsport normalization recognizes only its exact `earlyseason` and
+``mature` model-phase suffixes, preserving that known distinction without
+fingerprinting arbitrary text. Hardwood carries an artifact version; ESPN BPI
+and Predixsport use explicit adapter-owned versions because their feeds do not
+expose a stable model release. Bump those adapter versions when a known
+provider-model or normalization change occurs. They cannot reveal a silent
+upstream change on
+their own. Per-game source revisions and observation times are deliberately
+excluded. Hybrid history/provider forecasts include both configurations.
+Previously stored rows without a calibration version retain the explicit
+`legacy` segment tag and never merge with stamped history.
 A version change starts a separate calibration sample rather than borrowing
 another version's evidence. For a segment with `n` non-push outcomes:
 
@@ -177,13 +182,15 @@ rows are evaluated prequentially with the service's exact calibration epoch,
 champion settings, and result delay. Current forecast explanations may include
 a separate shadow candidate probability, status, sample count, and effective
 sample size. Evaluation or annotation failure marks the shadow result
-`unavailable` while preserving the normal champion report. These fields are
-diagnostic only; `build_accas` consumes only the champion
-`calibrated_probability` and existing eligibility flag.
+`unavailable` while preserving the normal champion report. Shadow fields remain
+diagnostic only: `build_accas` never consumes challenger probabilities. Its
+strict mode uses champion `calibrated_probability` and the existing eligibility
+flag; the service's paper-only mode also checks champion calibration status and
+eligibility reasons solely to recognize the sample-only exception.
 
 ## 6. Acca eligibility and ranking
 
-A current forecast can supply an acca leg only if:
+A current forecast is **strictly eligible** to supply an acca leg only if:
 
 - its exact visible pre-tip bookmaker market and selected decimal price exist;
 - any provider prediction used by the forecast is visible and strictly pre-tip;
@@ -194,8 +201,23 @@ A current forecast can supply an acca leg only if:
 - calibrated probability is at least 0.50 by default;
 - estimated push probability is at most 0.005 by default.
 
-The highest-calibrated-probability eligible forecast is selected per game.
-Bookmaker price never breaks a probability tie; deterministic fixture, market,
+A separate **paper-only exploratory** report surface may bypass only the sample
+minimum: a forecast must have at least one graded non-push sample, a provisional
+calibration profile, and `insufficient_walk_forward_samples` as its sole
+eligibility reason. Exact price, team-history, push-risk, and probability-floor
+gates remain enforced. `Forecast.eligibility.acca_eligible` stays false for
+these rows. `MarketForecastService` keeps `accas.results` (and its explicit
+`accas.strict_results` alias) strict, and emits the expanded exploratory set as
+`accas.paper_results` for the paper-ticket publisher only. The default
+`build_accas()` behavior remains strict.
+Frozen paper receipts label every combination that uses a provisional leg.
+Paper ticket outcomes are collected in the separate paper-performance ledger;
+they do not directly count as calibration samples or feed the profile fit.
+Calibration continues to use prequential, past-only forecast evidence.
+
+The ranking stage selects the highest-calibrated-probability candidate per
+game from the chosen strict or paper-only surface. Bookmaker price never breaks
+a probability tie; deterministic fixture, market,
 source, and forecast identifiers are used instead. Same-game legs are prohibited
 rather than silently multiplied as independent.
 For the requested leg count, a best-first search ranks combinations by:

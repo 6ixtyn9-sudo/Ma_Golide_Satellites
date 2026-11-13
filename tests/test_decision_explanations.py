@@ -210,10 +210,6 @@ def test_shadow_ess_appears_only_when_shadow_ran():
     assert isinstance(explanation["effective_sample_size"], (int, float))
     assert explanation["effective_sample_size"] == forecast.shadow_calibration["ess"]
     assert explanation["shadow_calibration"] == {
-        "challenger_version": forecast.shadow_calibration["challenger_version"],
-        "status": forecast.shadow_calibration["status"],
-        "n": forecast.shadow_calibration["n"],
-        "weighted_n": forecast.shadow_calibration["weighted_n"],
-        "champion_probability": forecast.shadow_calibration["champion_probability"],
+        **forecast.shadow_calibration,
         "candidate_probability": forecast.shadow_calibration["probability"],
     }

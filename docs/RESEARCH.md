@@ -59,10 +59,14 @@ calibration.
 
 History-model calibration segments include a stable fingerprint of the model
 revision and prediction-affecting `ForecastConfig`. Provider-prediction segments
-fingerprint provider/model identity, `model_version`, and `produced_by`; ESPN
-BPI and Predixsport receive explicit adapter-owned versions because their feeds
-do not publish stable model releases. These adapter tags require a manual bump
-when a provider change is known and cannot detect a silent upstream change.
+fingerprint provider/model identity and `model_version`; payload-derived
+`produced_by` labels remain provenance but arbitrary values are excluded
+because they may vary row by row. A closed normalization preserves only the
+recognized Predixsport `earlyseason` and `mature` model phases. ESPN BPI and
+Predixsport receive explicit adapter-owned versions because their feeds do not
+publish stable model releases. These adapter tags
+require a manual bump when a provider change is known and cannot detect a silent
+upstream change.
 Per-game artifact revisions are excluded. Hybrid segments fingerprint both
 sources, and legacy records remain separate. The service runs the recency-decayed
 challenger on the same chronological rows and result-delay boundary. Current
@@ -82,10 +86,12 @@ pre-tip feature would leak the result.
 A future context feature therefore needs an identity-checked observation that
 was available before the simulated tip, an immutable/frozen acquisition time,
 and a walk-forward comparison against the existing baseline. Current rich
-context does not relax the exact-book/period rules, the 30-sample calibration
-floor, same-game ACCA exclusion, or paper-only operation. Untimestamped core
-odds open/close objects and post-game predictor updates do not create pre-tip
-history.
+context does not relax the exact-book/period rules, the strict 30-sample
+calibration gate, same-game acca exclusion, or paper-only operation. The
+exploratory paper lane may bypass only the sample gate once a segment has at
+least one graded non-push sample; it never promotes a row to strict eligibility.
+Untimestamped core odds open/close objects and post-game predictor updates do
+not create pre-tip history.
 
 ## Probability adjustment
 
@@ -97,8 +103,13 @@ is added to later raw probabilities and clamped away from 0 and 1.
 This is deliberately interpretable reliability adjustment, not a claim of
 optimal calibration. It avoids choosing markets using future outcomes and
 prevents a small sample from receiving the same correction as a large one.
-Acca use additionally requires at least 30 graded samples in the exact
-segment by default.
+Strict acca eligibility additionally requires at least 30 graded non-push
+samples in the exact segment by default. The separate exploratory paper-only
+surface can admit a provisional segment from its first graded non-push sample
+when sample size is the only blocker. Ticket grading remains separate from the
+calibration fit: it measures frozen-paper-ticket performance but does not
+bootstrap or double-count the prequential forecast evidence used to adjust
+probabilities.
 
 ## Dependence policy
 

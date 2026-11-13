@@ -228,7 +228,10 @@ def populated_store(*, finals: int = 12, upcoming: int = 3) -> InMemoryStore:
 
 
 def service(
-    store: InMemoryStore, *, result_available_after_hours: int = 4
+    store: InMemoryStore,
+    *,
+    result_available_after_hours: int = 4,
+    min_calibration_samples: int = 3,
 ) -> MarketForecastService:
     return MarketForecastService(
         store,
@@ -241,7 +244,11 @@ def service(
             residual_window=30,
             result_available_after_hours=result_available_after_hours,
         ),
-        calibration_config=CalibrationConfig(min_samples=3, prior_strength=2, calibration_epoch_utc="2026-01-01T00:00:00Z"),
+        calibration_config=CalibrationConfig(
+            min_samples=min_calibration_samples,
+            prior_strength=2,
+            calibration_epoch_utc="2026-01-01T00:00:00Z",
+        ),
     )
 
 
@@ -282,6 +289,43 @@ def test_all_old_markets_are_forecast_and_accas_use_calibrated_probabilities():
         assert all(leg["book"]["selected_decimal_price"] for leg in acca["legs"])
         assert acca["ranking_metric"] == "calibrated_joint_win_probability"
         assert acca["ranking_status"] == "highest_estimated_not_guaranteed"
+        assert acca["provisional_sample_gate_bypassed"] is False
+    assert report["accas"]["strict_results"] == accas
+    assert report["accas"]["paper_results"]
+    assert all(
+        row["provisional_sample_gate_bypassed"] is False
+        for row in report["accas"]["paper_results"]
+    )
+
+
+def test_service_routes_sample_only_candidates_to_paper_results():
+    report = service(
+        populated_store(), min_calibration_samples=30
+    ).build_report(as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4)
+    accas = report["accas"]
+
+    assert accas["mode"] == "paper_only"
+    assert accas["results_policy"] == "strict"
+    assert accas["paper_results_policy"] == "strict_plus_sample_only_provisional"
+    assert accas["eligible_games"] == accas["strict_eligible_games"] == 0
+    assert accas["results"] == accas["strict_results"] == []
+    assert accas["paper_results"]
+    assert accas["paper_result_count"] == len(accas["paper_results"])
+    assert accas["provisional_sample_only_rows"] > 0
+    assert accas["provisional_sample_only_games"] == 3
+    assert accas["paper_candidate_games"] == 3
+    assert report["execution"]["external_betting_writes"] is False
+
+    for acca in accas["paper_results"]:
+        assert acca["provisional_sample_gate_bypassed"] is True
+        assert acca["provisional_leg_count"] == 2
+        assert acca["ranking_status"] == "paper_only_provisional_sample_gate_bypassed"
+        for leg in acca["legs"]:
+            assert leg["eligibility"]["acca_eligible"] is False
+            assert leg["eligibility"]["reasons"] == ["insufficient_walk_forward_samples"]
+            assert leg["calibration"]["status"] == "provisional"
+            assert 0 < leg["calibration"]["n"] < leg["calibration"]["minimum_samples"]
+            assert leg["book"]["selected_decimal_price"] > 1.0
 
 
 def test_service_stamps_model_config_and_runs_shadow_at_configured_delay():
@@ -307,7 +351,7 @@ def test_service_stamps_model_config_and_runs_shadow_at_configured_delay():
 
     assert all(row["calibration_version"] for row in current)
     provider_row = next(row for row in current if row["model"] == "provider:espn")
-    assert provider_row["calibration_version"].startswith("provider_prediction_v1-")
+    assert provider_row["calibration_version"].startswith("provider_prediction_v2-")
     assert (
         provider_row["explanation"]["segment"]["calibration_version"]
         == provider_row["calibration_version"]
@@ -318,7 +362,7 @@ def test_service_stamps_model_config_and_runs_shadow_at_configured_delay():
     hybrid_row = next(
         row for row in current if row["model"].startswith("provider:espn+")
     )
-    assert hybrid_row["calibration_version"].startswith("history_provider_hybrid_v1-")
+    assert hybrid_row["calibration_version"].startswith("history_provider_hybrid_v2-")
 
     forecasts_by_id = {row["forecast_id"]: row for row in current}
     for acca in report["accas"]["results"]:
@@ -334,9 +378,13 @@ def test_service_stamps_model_config_and_runs_shadow_at_configured_delay():
 def test_shadow_failure_cannot_change_champion_or_acca_outputs(monkeypatch, failure_stage):
     forecast_service = service(populated_store(finals=12, upcoming=3))
     normal = forecast_service.build_report(as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4)
+    partially_annotated_history = []
 
     if failure_stage == "evaluation":
-        def fail_evaluation(*args, **kwargs):
+        def fail_evaluation(rows, *args, **kwargs):
+            if rows:
+                rows[0].shadow_calibration = {"partial": True}
+                partially_annotated_history.extend(rows)
             raise RuntimeError("injected challenger failure")
 
         monkeypatch.setattr(
@@ -358,6 +406,9 @@ def test_shadow_failure_cannot_change_champion_or_acca_outputs(monkeypatch, fail
         "status": "unavailable",
         "error_type": "RuntimeError",
     }
+    if failure_stage == "evaluation":
+        assert partially_annotated_history
+        assert all(not row.shadow_calibration for row in partially_annotated_history)
 
     def champion_surface(report):
         return {
@@ -606,6 +657,118 @@ def test_acca_search_matches_brute_force_optimum():
     assert len(actual) == 5
     for result, (probability, _) in zip(actual, expected[:5]):
         assert result["estimated_joint_win_probability"] == pytest.approx(probability, abs=1e-7)
+
+
+def test_paper_accas_admit_only_provisional_sample_only_legs():
+    provisional = _forecast("g0", 0.74)
+    provisional.calibrated_probability = 0.74
+    provisional.calibration = {
+        "status": "provisional",
+        "n": 4,
+        "minimum_samples": 30,
+        "sufficient_for_accas": False,
+    }
+    provisional.eligibility = {
+        "acca_eligible": False,
+        "reasons": ["insufficient_walk_forward_samples"],
+    }
+    strict = _forecast("g1", 0.81)
+    strict.calibrated_probability = 0.81
+    strict.calibration = {
+        "status": "calibrated",
+        "n": 30,
+        "minimum_samples": 30,
+        "sufficient_for_accas": True,
+    }
+    strict.eligibility = {"acca_eligible": True, "reasons": []}
+
+    assert build_accas([provisional, strict], legs=2, limit=1) == []
+    paper = build_accas([provisional, strict], legs=2, limit=1, allow_provisional=True)
+    assert len(paper) == 1
+    assert paper[0]["provisional_sample_gate_bypassed"] is True
+    assert paper[0]["provisional_leg_count"] == 1
+    assert paper[0]["ranking_status"] == "paper_only_provisional_sample_gate_bypassed"
+    assert {leg["game_id"] for leg in paper[0]["legs"]} == {"g0", "g1"}
+
+
+@pytest.mark.parametrize(
+    ("calibration", "reasons"),
+    [
+        (
+            {
+                "status": "provisional",
+                "n": 4,
+                "minimum_samples": 30,
+                "sufficient_for_accas": False,
+            },
+            ["insufficient_walk_forward_samples", "no_exact_bookmaker_market"],
+        ),
+        (
+            {
+                "status": "provisional",
+                "n": 4,
+                "minimum_samples": 30,
+                "sufficient_for_accas": False,
+            },
+            ["insufficient_walk_forward_samples", "insufficient_team_specific_history"],
+        ),
+        (
+            {
+                "status": "provisional",
+                "n": 4,
+                "minimum_samples": 30,
+                "sufficient_for_accas": False,
+            },
+            ["insufficient_walk_forward_samples", "push_risk_requires_leg_void_rules"],
+        ),
+        (
+            {
+                "status": "provisional",
+                "n": 4,
+                "minimum_samples": 30,
+                "sufficient_for_accas": False,
+            },
+            ["insufficient_walk_forward_samples", "below_calibrated_probability_floor"],
+        ),
+        (
+            {
+                "status": "provisional",
+                "n": 0,
+                "minimum_samples": 30,
+                "sufficient_for_accas": False,
+            },
+            ["insufficient_walk_forward_samples"],
+        ),
+        (
+            {
+                "status": "no_history",
+                "n": 0,
+                "minimum_samples": 30,
+                "sufficient_for_accas": False,
+            },
+            ["insufficient_walk_forward_samples"],
+        ),
+        (
+            {
+                "status": "provisional",
+                "n": 30,
+                "minimum_samples": 30,
+                "sufficient_for_accas": False,
+            },
+            ["insufficient_walk_forward_samples"],
+        ),
+    ],
+)
+def test_paper_accas_do_not_bypass_other_gates_or_no_history(calibration, reasons):
+    rejected = _forecast("g0", 0.74)
+    rejected.calibrated_probability = 0.74
+    rejected.calibration = calibration
+    rejected.eligibility = {"acca_eligible": False, "reasons": reasons}
+    strict = _forecast("g1", 0.81)
+    strict.calibrated_probability = 0.81
+    strict.eligibility = {"acca_eligible": True, "reasons": []}
+
+    assert build_accas([rejected, strict], legs=2, limit=1, allow_provisional=True) == []
 
 
 def test_bookmaker_price_never_breaks_acca_probability_ties():

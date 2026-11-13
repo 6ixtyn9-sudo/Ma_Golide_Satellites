@@ -275,11 +275,9 @@ class Forecast:
         if self.shadow_calibration:
             explanation["effective_sample_size"] = self.shadow_calibration.get("ess")
             explanation["shadow_calibration"] = {
-                "challenger_version": self.shadow_calibration.get("challenger_version"),
-                "status": self.shadow_calibration.get("status"),
-                "n": self.shadow_calibration.get("n", 0),
-                "weighted_n": self.shadow_calibration.get("weighted_n", 0.0),
-                "champion_probability": self.shadow_calibration.get("champion_probability"),
+                **self.shadow_calibration,
+                # Preserve the human-facing name while retaining the original
+                # ``probability`` key for lossless operator rehydration.
                 "candidate_probability": self.shadow_calibration.get("probability"),
             }
         return explanation

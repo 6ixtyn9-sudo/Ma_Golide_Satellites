@@ -54,8 +54,12 @@ ESPN BPI and Predixsport do not expose a stable upstream model release in the
 fields this adapter consumes. Their `adapter:` model versions fence known
 adapter/provider changes and must be bumped when those changes are observed;
 they do not automatically detect a silent upstream model replacement.
-`produced_by` is also part of prediction calibration identity so Predixsport's
-early-season and mature-model outputs stay isolated.
+`produced_by` is retained as prediction provenance but arbitrary payload labels
+are excluded from calibration identity because they can vary row by row. The
+fingerprint uses only a closed Predixsport mapping for the recognized
+`earlyseason` and `mature` model phases. If a provider's model changes, use a
+stable `model_version` or bump its adapter-owned version; do not use free-text
+producer labels to split samples.
 
 A probabilities-only prediction remains partial: it may support moneyline, but
 missing expected scores are not invented. Predixsport score derivation uses
