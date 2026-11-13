@@ -122,6 +122,7 @@ def test_golden_bpi_401909938_maps_exact_prediction_facts(load_fixture, fixture_
     )
     assert prediction.provider == "espn"
     assert prediction.model == "espn-bpi"
+    assert prediction.model_version == "adapter:espn-bpi-v1"
     assert prediction.game_id == GOLDEN_EVENT
     assert prediction.prob_home == pytest.approx(0.23062)
     assert prediction.prob_away == pytest.approx(0.76938)

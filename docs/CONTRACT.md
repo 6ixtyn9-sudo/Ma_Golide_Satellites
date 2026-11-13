@@ -145,15 +145,17 @@ excluded. Pushes do not count as wins or losses in the reliability adjustment.
 Profiles are segmented by `(league, market, period, source,
 calibration_version)`. History-model forecasts stamp a deterministic fingerprint
 of `MODEL_VERSION` and all prediction-affecting `ForecastConfig` fields.
-Provider-prediction forecasts fingerprint provider/model identity and the
-provider's declared `model_version`; a missing upstream version remains visible
-as missing provenance and cannot detect an in-place provider model change.
-Per-game source revisions and observation times are deliberately excluded.
-Hybrid history/provider forecasts include both configurations. Previously stored
-rows without a calibration version retain the explicit `legacy` segment tag and
-never merge with stamped history. A version change starts a separate
-calibration sample rather than borrowing another version's evidence. For a
-segment with `n` non-push outcomes:
+Provider-prediction forecasts fingerprint provider/model identity, the
+`model_version`, and `produced_by` metadata. Hardwood carries an artifact
+version; ESPN BPI and Predixsport use explicit adapter-owned versions because
+their feeds do not expose a stable model release. Bump those adapter versions
+when a known provider-model or normalization change occurs. They cannot reveal a
+silent upstream change on their own. Per-game source revisions and observation
+times are deliberately excluded. Hybrid history/provider forecasts include
+both configurations. Previously stored rows without a calibration version
+retain the explicit `legacy` segment tag and never merge with stamped history.
+A version change starts a separate calibration sample rather than borrowing
+another version's evidence. For a segment with `n` non-push outcomes:
 
 ```text
 observed adjustment = observed win rate - mean raw predicted probability

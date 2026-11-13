@@ -86,6 +86,7 @@ def _priced_forecast() -> Forecast:
         prediction_frozen=True,
         prediction_model="test-model",
         prediction_model_version="v1",
+        prediction_produced_by="test producer",
         book=BookEvidence(
             provider="test",
             book="book",
@@ -121,6 +122,7 @@ def test_explanation_mirrors_the_calculations_that_produced_it():
         "provider": "test",
         "model": "test-model",
         "model_version": "v1",
+        "produced_by": "test producer",
         "observed_utc": "2026-11-13T00:00:00Z",
         "frozen": True,
     }

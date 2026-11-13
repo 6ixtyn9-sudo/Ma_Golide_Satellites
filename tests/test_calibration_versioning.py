@@ -111,6 +111,7 @@ def test_provider_versions_use_model_metadata_not_per_event_revisions():
         observed_utc="2026-11-12T10:00:00Z",
         model="espn-bpi",
         model_version="bpi-2026.1",
+        produced_by="ESPN BPI",
         prob_home=0.7,
         prob_away=0.3,
         source_revision="event-revision-a",
@@ -129,9 +130,17 @@ def test_provider_versions_use_model_metadata_not_per_event_revisions():
     changed_model = model._prediction_calibration_version(
         replace(prediction, model_version="bpi-2026.2")
     )
+    changed_producer = model._prediction_calibration_version(
+        replace(prediction, produced_by="ESPN BPI revised model")
+    )
+    adapter_versioned = model._prediction_calibration_version(
+        replace(prediction, model_version="adapter:espn-bpi-v1")
+    )
     assert original == changed_event
     assert original.startswith("provider_prediction_v1-")
     assert changed_model != original
+    assert changed_producer != original
+    assert adapter_versioned != original  # old unversioned evidence stays isolated
 
     hybrid = model._prediction_calibration_version(prediction, hybrid=True)
     changed_history_config = HistoryModel(

@@ -59,10 +59,12 @@ calibration.
 
 History-model calibration segments include a stable fingerprint of the model
 revision and prediction-affecting `ForecastConfig`. Provider-prediction segments
-fingerprint the provider/model identity and declared upstream model version;
-per-game artifact revisions are excluded, and absent upstream version metadata
-cannot reveal an in-place provider change. Hybrid segments fingerprint both
-sources. Legacy records remain separate. The service runs the recency-decayed
+fingerprint provider/model identity, `model_version`, and `produced_by`; ESPN
+BPI and Predixsport receive explicit adapter-owned versions because their feeds
+do not publish stable model releases. These adapter tags require a manual bump
+when a provider change is known and cannot detect a silent upstream change.
+Per-game artifact revisions are excluded. Hybrid segments fingerprint both
+sources, and legacy records remain separate. The service runs the recency-decayed
 challenger on the same chronological rows and result-delay boundary. Current
 forecasts expose its candidate probability and effective sample size as
 separate shadow diagnostics only. The acca engine continues to rank on the

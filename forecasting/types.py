@@ -120,6 +120,7 @@ class Forecast:
     prediction_frozen: bool = False
     prediction_model: Optional[str] = None
     prediction_model_version: Optional[str] = None
+    prediction_produced_by: Optional[str] = None
     role: Optional[str] = None
     outcome: Optional[str] = None
     calibrated_probability: Optional[float] = None
@@ -245,6 +246,7 @@ class Forecast:
                         "provider": self.prediction_provider,
                         "model": self.prediction_model,
                         "model_version": self.prediction_model_version,
+                        "produced_by": self.prediction_produced_by,
                         "observed_utc": self.prediction_observed_utc,
                         "frozen": self.prediction_frozen,
                     }
@@ -336,6 +338,7 @@ class Forecast:
                     "provider": self.prediction_provider,
                     "model": self.prediction_model,
                     "model_version": self.prediction_model_version,
+                    "produced_by": self.prediction_produced_by,
                     "observed_utc": self.prediction_observed_utc,
                     "frozen": self.prediction_frozen,
                 }

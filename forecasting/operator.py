@@ -427,6 +427,7 @@ def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
         prediction_frozen=bool(prediction.get("frozen", False)),
         prediction_model=prediction.get("model"),
         prediction_model_version=prediction.get("model_version"),
+        prediction_produced_by=prediction.get("produced_by"),
         role=row.get("role"),
         outcome=row.get("outcome"),
         calibrated_probability=row.get("calibrated_probability"),

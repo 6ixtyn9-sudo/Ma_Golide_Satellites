@@ -101,6 +101,7 @@ class HistoryModel:
             "provider": prediction.provider,
             "model": prediction.model,
             "model_version": prediction.model_version,
+            "produced_by": prediction.produced_by,
         }
         prefix = "provider_prediction_v1"
         if hybrid:
@@ -386,6 +387,7 @@ class HistoryModel:
                     prediction_frozen=prediction_frozen,
                     prediction_model=prediction.model,
                     prediction_model_version=prediction.model_version,
+                    prediction_produced_by=prediction.produced_by,
                     role=role,
                 )
             )
@@ -539,6 +541,9 @@ class HistoryModel:
                     ),
                     prediction_model_version=(
                         prediction.model_version if source.startswith("provider:") else None
+                    ),
+                    prediction_produced_by=(
+                        prediction.produced_by if source.startswith("provider:") else None
                     ),
                 )
             )

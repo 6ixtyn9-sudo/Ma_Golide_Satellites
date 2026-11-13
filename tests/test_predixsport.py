@@ -215,6 +215,7 @@ def test_missing_total_leaves_scores_none(monkeypatch):
     first = predictions[0]
     assert first.game_id == "px-nba-401909287"
     assert first.provider == "predixsport"
+    assert first.model_version == "adapter:predixsport-v1"
     assert first.produced_by == "predixsport-nba-earlyseason"  # preserved
     assert first.prob_home == pytest.approx(0.713845)
     assert first.prob_away == pytest.approx(0.286155)

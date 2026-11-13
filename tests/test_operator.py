@@ -218,6 +218,7 @@ def test_book_side_prices_survive_forecast_serialization_and_row_rehydration():
         prediction_observed_utc="2026-11-07T17:00:00Z",
         prediction_model="bpi-model",
         prediction_model_version="bpi-42",
+        prediction_produced_by="ESPN BPI",
         shadow_calibration={
             "challenger_version": "recency_v1-test",
             "status": "provisional",
@@ -249,6 +250,7 @@ def test_book_side_prices_survive_forecast_serialization_and_row_rehydration():
     assert rehydrated.forecast_id == forecast_row["forecast_id"]
     assert rehydrated.prediction_model == "bpi-model"
     assert rehydrated.prediction_model_version == "bpi-42"
+    assert rehydrated.prediction_produced_by == "ESPN BPI"
     assert rehydrated.shadow_calibration["challenger_version"] == "recency_v1-test"
     assert rehydrated.shadow_calibration["ess"] == 10.0
     assert rehydrated.shadow_calibration["champion_probability"] == 0.61

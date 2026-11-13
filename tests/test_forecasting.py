@@ -149,6 +149,9 @@ def populated_store(*, finals: int = 12, upcoming: int = 3) -> InMemoryStore:
                 game_id=game_id,
                 provider="espn",
                 observed_utc=iso(observed),
+                model="espn-bpi",
+                model_version="adapter:espn-bpi-v1",
+                produced_by="ESPN BPI",
                 prob_home=0.65,
                 prob_away=0.35,
                 expected_home_score=110,
@@ -309,8 +312,9 @@ def test_service_stamps_model_config_and_runs_shadow_at_configured_delay():
         provider_row["explanation"]["segment"]["calibration_version"]
         == provider_row["calibration_version"]
     )
-    assert provider_row["prediction"]["model"] is None
-    assert provider_row["prediction"]["model_version"] is None
+    assert provider_row["prediction"]["model"] == "espn-bpi"
+    assert provider_row["prediction"]["model_version"] == "adapter:espn-bpi-v1"
+    assert provider_row["prediction"]["produced_by"] == "ESPN BPI"
     hybrid_row = next(
         row for row in current if row["model"].startswith("provider:espn+")
     )
