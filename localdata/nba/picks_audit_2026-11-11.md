@@ -57,10 +57,10 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 
 ### 2026-11-11: Indiana Pacers vs Washington Wizards (Final: **114–101**)
 
-- 🔴 **LOST — Full-game spread -2.5: Washington Wizards (away)**
+- 🔴 **LOST — Full-game spread +2.5: Washington Wizards (away)**
   - Actual Full-game margin: **+13** · Expected: **56.0%** · Price: **1.952 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -3.5: Washington Wizards (away)**
+- 🔴 **LOST — Full-game spread +3.5: Washington Wizards (away)**
   - Actual Full-game margin: **+13** · Expected: **56.0%** · Price: **1.893 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
 - 🔴 **LOST — Full-game total 225.5: Over**
@@ -90,7 +90,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🔴 **LOST — Full-game total 224.5: Under**
   - Actual Full-game total: **226** · Expected: **61.0%** · Price: **1.870 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread +1.5: Oklahoma City Thunder (away)**
+- 🔴 **LOST — Full-game spread -1.5: Oklahoma City Thunder (away)**
   - Actual Full-game margin: **+20** · Expected: **54.0%** · Price: **1.901 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
 - 🟢 **WON — Full-game total 226.5: Under**
@@ -99,7 +99,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🔴 **LOST — Full-game moneyline: Oklahoma City Thunder (away)**
   - Expected: **53.4%** calibrated (raw 51.0%) · Price: **1.800 · DraftKings**
   - Calibration: **n=4** · provisional · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread +2.5: Oklahoma City Thunder (away)**
+- 🔴 **LOST — Full-game spread -2.5: Oklahoma City Thunder (away)**
   - Actual Full-game margin: **+20** · Expected: **52.0%** · Price: **1.962 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
 - 🔴 **LOST — First-half moneyline: Oklahoma City Thunder (away)**
@@ -123,7 +123,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: Orlando Magic (away)**
   - Expected: **71.6%** · Price: **1.461 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
-- 🟢 **WON — Full-game spread +6.5: Orlando Magic (away)**
+- 🟢 **WON — Full-game spread -6.5: Orlando Magic (away)**
   - Actual Full-game margin: **-7** · Expected: **56.0%** · Price: **1.962 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
 - 🔴 **LOST — Full-game total 223.5: Over**
@@ -132,10 +132,10 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🔴 **LOST — Full-game total 222.5: Over**
   - Actual Full-game total: **207** · Expected: **60.0%** · Price: **1.952 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread +7.5: Orlando Magic (away)**
+- 🔴 **LOST — Full-game spread -7.5: Orlando Magic (away)**
   - Actual Full-game margin: **-7** · Expected: **53.0%** · Price: **1.971 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
-- 🟢 **WON — Full-game spread +5.5: Orlando Magic (away)**
+- 🟢 **WON — Full-game spread -5.5: Orlando Magic (away)**
   - Actual Full-game margin: **-7** · Expected: **55.0%** · Price: **1.893 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
 

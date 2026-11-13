@@ -90,10 +90,10 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 
 ### 2026-11-11: Vanderbilt Commodores vs Western Kentucky Lady Toppers (Final: **101–59**)
 
-- 🟢 **WON — Full-game spread -45.5: Western Kentucky Lady Toppers (away)**
+- 🟢 **WON — Full-game spread +45.5: Western Kentucky Lady Toppers (away)**
   - Actual Full-game margin: **+42** · Expected: **79.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
-- 🟢 **WON — Full-game spread -46.5: Western Kentucky Lady Toppers (away)**
+- 🟢 **WON — Full-game spread +46.5: Western Kentucky Lady Toppers (away)**
   - Actual Full-game margin: **+42** · Expected: **82.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: Vanderbilt Commodores (home)**
@@ -216,7 +216,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: Texas Longhorns (home)**
   - Expected: **89.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -27.5: South Dakota State Jackrabbits (away)**
+- 🔴 **LOST — Full-game spread +27.5: South Dakota State Jackrabbits (away)**
   - Actual Full-game margin: **+30** · Expected: **53.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: Texas Longhorns (home)**
@@ -303,7 +303,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: Ole Miss Rebels (home)**
   - Expected: **99.0%** · Price: **1.001 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
-- 🔴 **LOST — Full-game spread -30.5: UAlbany Great Danes (away)**
+- 🔴 **LOST — Full-game spread +30.5: UAlbany Great Danes (away)**
   - Actual Full-game margin: **+54** · Expected: **65.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: Ole Miss Rebels (home)**
@@ -369,7 +369,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: North Carolina Tar Heels (home)**
   - Expected: **83.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -46.5: North Carolina Central Eagles (away)**
+- 🔴 **LOST — Full-game spread +46.5: North Carolina Central Eagles (away)**
   - Actual Full-game margin: **+69** · Expected: **86.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: North Carolina Tar Heels (home)**
@@ -417,7 +417,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: Kentucky Wildcats (home)**
   - Expected: **87.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -50.5: Evansville Purple Aces (away)**
+- 🔴 **LOST — Full-game spread +50.5: Evansville Purple Aces (away)**
   - Actual Full-game margin: **+68** · Expected: **86.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: Kentucky Wildcats (home)**
@@ -807,7 +807,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: BYU Cougars (home)**
   - Expected: **99.1%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
-- 🟢 **WON — Full-game spread -39.5: Bethune-Cookman Wildcats (away)**
+- 🟢 **WON — Full-game spread +39.5: Bethune-Cookman Wildcats (away)**
   - Actual Full-game margin: **+26** · Expected: **68.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: BYU Cougars (home)**
@@ -876,19 +876,19 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: USC Trojans (home)**
   - Expected: **74.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -52.5: Charleston Cougars (away)**
+- 🔴 **LOST — Full-game spread +52.5: Charleston Cougars (away)**
   - Actual Full-game margin: **+61** · Expected: **87.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -42.5: Charleston Cougars (away)**
+- 🔴 **LOST — Full-game spread +42.5: Charleston Cougars (away)**
   - Actual Full-game margin: **+61** · Expected: **76.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -50.5: Charleston Cougars (away)**
+- 🔴 **LOST — Full-game spread +50.5: Charleston Cougars (away)**
   - Actual Full-game margin: **+61** · Expected: **86.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: USC Trojans (home)**
   - Actual First-half score: **58–23** · Expected: **75.0%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
-- 🔴 **LOST — Full-game spread -46.5: Charleston Cougars (away)**
+- 🔴 **LOST — Full-game spread +46.5: Charleston Cougars (away)**
   - Actual Full-game margin: **+61** · Expected: **80.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 
@@ -1332,10 +1332,10 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🔴 **LOST — Full-game total 131.5: Over**
   - Actual Full-game total: **131** · Expected: **64.0%** · Price: **1.847 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
-- 🟢 **WON — Full-game spread -43.5: Iona Gaels (away)**
+- 🟢 **WON — Full-game spread +43.5: Iona Gaels (away)**
   - Actual Full-game margin: **+25** · Expected: **77.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
-- 🟢 **WON — Full-game spread -46.5: Iona Gaels (away)**
+- 🟢 **WON — Full-game spread +46.5: Iona Gaels (away)**
   - Actual Full-game margin: **+25** · Expected: **80.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: TCU Horned Frogs (home)**
@@ -1347,7 +1347,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: TCU Horned Frogs (home)**
   - Expected: **99.9%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
-- 🟢 **WON — Full-game spread -44.5: Iona Gaels (away)**
+- 🟢 **WON — Full-game spread +44.5: Iona Gaels (away)**
   - Actual Full-game margin: **+25** · Expected: **78.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 

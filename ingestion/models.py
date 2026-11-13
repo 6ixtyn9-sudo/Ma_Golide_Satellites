@@ -372,7 +372,7 @@ class BookSnapshot:
 
     Invariants enforced by construction and by ``books.py``:
     - ``period`` is exact (FULL_GAME / H1 / Q1..Q4); no derived periods exist.
-    - ``line`` for totals markets is the LINE VALUE (e.g. 232.0), never a price.
+    - ``line`` for totals is the threshold; for spreads it is the home-oriented handicap.
     - prices are decimal; American odds are converted at ingestion.
     """
 
@@ -383,7 +383,7 @@ class BookSnapshot:
     period: Period
     observed_utc: str
     source_modified_utc: Optional[str] = None
-    line: Optional[float] = None  # total line / spread value
+    line: Optional[float] = None  # total threshold / home-oriented spread handicap
     over_price_decimal: Optional[float] = None
     under_price_decimal: Optional[float] = None
     home_price_decimal: Optional[float] = None

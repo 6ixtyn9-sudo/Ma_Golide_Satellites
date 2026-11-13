@@ -5,7 +5,13 @@ from pathlib import Path
 
 import pytest
 
-from forecasting.operator import _forecast_from_row, opposite_quote, publish_operator_reports
+from forecasting.operator import (
+    _audit_market_selection,
+    _forecast_from_row,
+    _selection_label,
+    opposite_quote,
+    publish_operator_reports,
+)
 from forecasting.types import BookEvidence, Forecast
 from ingestion.models import (
     ActualResult,
@@ -662,6 +668,37 @@ def test_paper_fade_audit_uses_exact_opposite_quotes_only(tmp_path):
     assert "Counterfactual fade: **LOST @ 2.100 away · Test Book**" in markdown
     assert "Counterfactual fade: **not priced (opposite_quote_not_preserved)**" in markdown
     assert "No quote is inferred or historically backfilled" in markdown
+
+
+def test_spread_displays_use_selected_side_handicap_everywhere(tmp_path):
+    row = forecast(1, market="spread", selection="away", price=1.9090909090909092)
+    row["line"] = -27.5  # canonical spread line is home-oriented
+    row = with_quote_evidence(
+        row,
+        {
+            "home": 1.9090909090909092,
+            "away": 1.9090909090909092,
+            "draw": None,
+            "over": None,
+            "under": None,
+        },
+    )
+
+    assert _selection_label(row) == "SPREAD full_game +27.5 -> AWAY"
+    assert _audit_market_selection(row) == "Full-game spread +27.5: Away 1 (away)"
+
+    home_pick = {**row, "selection": "home"}
+    assert _selection_label(home_pick) == "SPREAD full_game -27.5 -> HOME"
+    assert _audit_market_selection(home_pick) == "Full-game spread -27.5: Home 1 (home)"
+
+    result = publish(
+        tmp_path,
+        Store([game(1, home_score=76, away_score=44)]),
+        report([row]),
+    )
+    markdown = Path(result["dated_audit"]).read_text()
+    assert "LOST — Full-game spread +27.5: Away 1 (away)" in markdown
+    assert "Counterfactual fade: **WON @ 1.909 Home 1 -27.5 (home) · Test Book**" in markdown
 
 
 def test_started_and_settled_games_leave_the_active_pick_sections(tmp_path):

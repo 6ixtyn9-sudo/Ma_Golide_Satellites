@@ -431,12 +431,36 @@ def _set_grade(row: Dict[str, Any], games: Dict[str, Game]) -> None:
     row["grade_status"] = outcome or "pending"
 
 
+def _spread_line_for_selection(
+    row: Dict[str, Any], selection: Optional[str] = None
+) -> Optional[float]:
+    """Convert a canonical home-oriented spread line to the selected side."""
+    line = row.get("line")
+    side = str(
+        selection if selection is not None else row.get("selection") or ""
+    ).lower()
+    if (
+        side not in {"home", "away"}
+        or isinstance(line, bool)
+        or not isinstance(line, (int, float))
+    ):
+        return None
+    value = float(line)
+    if not math.isfinite(value):
+        return None
+    return value if side == "home" else -value
+
+
 def _selection_label(row: Dict[str, Any]) -> str:
     market = str(row.get("market") or "?").replace("_", " ").upper()
     period = str(row.get("period") or "?")
     selection = str(row.get("selection") or "?").upper()
     line = row.get("line")
-    line_text = "" if line is None else f" {float(line):g}"
+    if market == "SPREAD":
+        selected_line = _spread_line_for_selection(row)
+        line_text = "" if selected_line is None else f" {selected_line:+g}"
+    else:
+        line_text = "" if line is None else f" {float(line):g}"
     return f"{market} {period}{line_text} -> {selection}"
 
 
@@ -689,6 +713,24 @@ def _audit_period_label(period: str) -> str:
     }.get(period, period.replace("_", " "))
 
 
+def _spread_side_label(row: Dict[str, Any], selection: str) -> str:
+    side = str(selection or "").lower()
+    if side == "home":
+        team = row.get("home")
+    elif side == "away":
+        team = row.get("away")
+    else:
+        team = None
+    line = _spread_line_for_selection(row, side)
+    parts = [str(team)] if team else []
+    if line is not None:
+        parts.append(f"{line:+g}")
+    if not parts:
+        return side or "?"
+    label = " ".join(parts)
+    return f"{label} ({side})" if side else label
+
+
 def _audit_market_selection(row: Dict[str, Any]) -> str:
     period = _audit_period_label(str(row["period"]))
     market = str(row["market"])
@@ -704,8 +746,8 @@ def _audit_market_selection(row: Dict[str, Any]) -> str:
         line_text = f" {float(line):g}" if line is not None else ""
         return f"{period} total{line_text}: {selection.title()}"
     if market == "spread":
-        line = row.get("line")
-        line_text = f" {float(line):+g}" if line is not None else ""
+        line = _spread_line_for_selection(row)
+        line_text = f" {line:+g}" if line is not None else ""
         side = f"{selected_team} ({selection})" if selected_team else selection.title()
         return f"{period} spread{line_text}: {side}"
     if market == "highest_quarter":
@@ -1038,8 +1080,11 @@ def _render_pick_audit_markdown(
                     "loss": "WON",
                     "push": "PUSH",
                 }[grade]
+                fade_side = opposite_side
+                if row.get("market") == "spread" and opposite_side in {"home", "away"}:
+                    fade_side = _spread_side_label(row, opposite_side)
                 fade_text = (
-                    f"{fade_result} @ {opposite_price:.3f} {opposite_side} · "
+                    f"{fade_result} @ {opposite_price:.3f} {fade_side} · "
                     f"{book_display or 'book unknown'}"
                 )
             facts.append(f"Counterfactual fade: **{fade_text}**")

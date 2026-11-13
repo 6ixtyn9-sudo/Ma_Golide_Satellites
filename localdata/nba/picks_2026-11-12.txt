@@ -21,11 +21,11 @@ CAUTION PICKS
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=espn
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Philadelphia 76ers vs Toronto Raptors · KO 2026-11-13 02:00 SAST
-      SPREAD full_game -9.5 -> AWAY · p=55.0% (raw 55.0%) @1.971 DraftKings
+      SPREAD full_game +9.5 -> AWAY · p=55.0% (raw 55.0%) @1.971 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=espn
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Philadelphia 76ers vs Toronto Raptors · KO 2026-11-13 02:00 SAST
-      SPREAD full_game -8.5 -> AWAY · p=55.0% (raw 55.0%) @1.909 DraftKings
+      SPREAD full_game +8.5 -> AWAY · p=55.0% (raw 55.0%) @1.909 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=espn
   [team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Dallas Mavericks · KO 2026-11-13 03:00 SAST
@@ -130,7 +130,7 @@ SKIPPED — INELIGIBLE
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
       archived_revisions=2 · latest_evidence_utc=2026-11-12T15:21:34Z
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Washington Wizards vs Detroit Pistons · KO 2026-11-13 02:00 SAST
-      SPREAD full_game 10.5 -> HOME · p=53.0% (raw 53.0%) @1.926 DraftKings
+      SPREAD full_game +10.5 -> HOME · p=53.0% (raw 53.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
       archived_revisions=2 · latest_evidence_utc=2026-11-12T15:21:34Z

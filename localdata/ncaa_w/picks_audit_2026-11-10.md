@@ -478,10 +478,10 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🔴 **LOST — Full-game total 131.5: Over**
   - Actual Full-game total: **131** · Expected: **64.0%** · Price: **1.847 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
-- 🟢 **WON — Full-game spread -43.5: Iona Gaels (away)**
+- 🟢 **WON — Full-game spread +43.5: Iona Gaels (away)**
   - Actual Full-game margin: **+25** · Expected: **77.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
-- 🟢 **WON — Full-game spread -46.5: Iona Gaels (away)**
+- 🟢 **WON — Full-game spread +46.5: Iona Gaels (away)**
   - Actual Full-game margin: **+25** · Expected: **80.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 - 🟢 **WON — First-half moneyline: TCU Horned Frogs (home)**
@@ -493,7 +493,7 @@ Grouped by fixture. Every settled logical pick in the window is included; unpric
 - 🟢 **WON — Full-game moneyline: TCU Horned Frogs (home)**
   - Expected: **99.9%** · Price: **No exact bookmaker price**
   - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
-- 🟢 **WON — Full-game spread -44.5: Iona Gaels (away)**
+- 🟢 **WON — Full-game spread +44.5: Iona Gaels (away)**
   - Actual Full-game margin: **+25** · Expected: **78.0%** · Price: **1.909 · DraftKings**
   - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
 
