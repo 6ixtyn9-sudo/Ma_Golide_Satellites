@@ -380,13 +380,30 @@ class MarketForecastService:
             history_source=paper_history_source,
             result_available_after_hours=self.forecast_config.result_available_after_hours,
         )
-        paper_accas = build_accas(
-            paper_candidates,
-            legs=acca_legs,
-            limit=acca_limit,
-            allow_provisional=True,
-            require_disjoint_legs=True,
-        )
+        band_details_by_id = paper_pick_filter["candidate_band_details"]
+        paper_single_picks = []
+        for candidate in paper_candidates:
+            single = candidate.to_dict()
+            band = band_details_by_id.get(candidate.forecast_id)
+            if band is not None:
+                single["individual_pick_roi_band"] = dict(band)
+            paper_single_picks.append(single)
+
+        qualified_game_count = len({candidate.game_id for candidate in paper_candidates})
+        effective_paper_legs = min(acca_legs, qualified_game_count)
+        if effective_paper_legs < 2:
+            effective_paper_legs = None
+            paper_accas = []
+        else:
+            # Keep the requested size when enough qualifying games exist; if
+            # fewer remain, make the largest viable smaller combo (minimum two).
+            paper_accas = build_accas(
+                paper_candidates,
+                legs=effective_paper_legs,
+                limit=acca_limit,
+                allow_provisional=True,
+                require_disjoint_legs=True,
+            )
         for acca in paper_accas:
             acca["individual_pick_filter"] = dict(paper_pick_filter)
         market_counts = Counter(f"{forecast.period}:{forecast.market}" for forecast in current)
@@ -454,15 +471,25 @@ class MarketForecastService:
                     "sample when insufficient samples are the sole blocker; exact price, "
                     "team-history, push-risk, and probability-floor gates remain enforced; "
                     "paper tickets additionally require a positive recency-weighted, "
-                    "shrinkage-adjusted ROI band from past settled individual picks"
+                    "shrinkage-adjusted ROI band from past settled individual picks; "
+                    "qualifying selections remain available as singles and combo size "
+                    "falls to available distinct qualifying games"
                 ),
                 "results_policy": "strict",
                 "paper_results_policy": (
                     "strict_plus_sample_only_provisional_and_positive_roi_bands"
                 ),
                 "paper_pick_filter": paper_pick_filter,
+                "paper_single_picks": paper_single_picks,
+                "paper_single_pick_count": len(paper_single_picks),
                 "paper_ticket_leg_reuse_policy": "no_reused_wager_selections",
+                "paper_ticket_leg_count_policy": (
+                    "use_minimum_of_requested_legs_and_distinct_roi_qualified_games; "
+                    "combination_requires_at_least_two_games"
+                ),
                 "requested_legs": acca_legs,
+                "effective_paper_legs": effective_paper_legs,
+                "roi_qualified_single_games": qualified_game_count,
                 "requested_limit": acca_limit,
                 "eligible_games": len(eligible_games),
                 "strict_eligible_games": len(eligible_games),

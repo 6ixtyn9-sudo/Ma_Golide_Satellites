@@ -382,7 +382,7 @@ def test_ticket_is_frozen_empty_scans_do_not_cancel_and_known_leg_loss_settles(t
     assert performance["profit_units"] == -1.0
     assert performance["paper_bank_units"] == 99.0
     ticket_text = Path(first["ticket_text"]).read_text()
-    assert "[PAPER ACCA #1]" in ticket_text
+    assert "[PAPER 3-LEG ACCA #1]" in ticket_text
     assert "LOSS" in ticket_text
     assert receipt_path.read_bytes() == frozen_bytes
 
@@ -559,7 +559,7 @@ def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp
     assert "4 scan rows · 3 exact priced · 2 calibration-sufficient" in ticket_text
     assert "2 priced + calibrated · 1 eligible row · 1 eligible game" in ticket_text
     assert "1 provisional sample-only row · 1 game · 0 paper accas (0 strict)" in ticket_text
-    assert "Need 3 independent games for one acca" in ticket_text
+    assert "0 ROI-qualified paper singles across 0 games · combination size none legs" in ticket_text
     assert "2 insufficient_walk_forward_samples" in ticket_text
     assert result["candidate_funnel"] == {
         "scan_rows": 4,
@@ -572,9 +572,12 @@ def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp
         "provisional_sample_only_games": 1,
         "paper_candidate_rows": 2,
         "paper_candidate_games": 2,
+        "paper_single_picks": 0,
+        "paper_single_games": 0,
         "paper_accas": 0,
         "strict_accas": 0,
         "required_games": 3,
+        "effective_paper_legs": None,
         "eligibility_blockers": {
             "below_calibrated_probability_floor": 1,
             "insufficient_walk_forward_samples": 2,
@@ -587,6 +590,63 @@ def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp
     assert audit["archived_pick_rows"] == 4
     assert audit["same_day_rows_excluded"] == 4
     assert audit["settled_picks"] == 0
+
+
+def test_roi_qualified_pick_is_published_as_a_paper_single_without_an_acca(tmp_path):
+    row = forecast(1)
+    band = {
+        "league": "NBA",
+        "market": "moneyline",
+        "period": "full_game",
+        "model": "provider-history",
+        "probability_band": "0.60-<0.70",
+        "individual_odds_band": "1.50-<2.00",
+        "candidate_pick_count": 1,
+        "historical_pick_count": 6,
+        "wins": 6,
+        "losses": 0,
+        "pushes": 0,
+        "observed_roi": 0.8,
+        "recency_weighted_roi": 0.8,
+        "parent_roi": 0.0,
+        "adjusted_roi": 0.2,
+        "qualifies": True,
+    }
+    paper_filter = {
+        "candidate_pick_count": 1,
+        "candidate_band_count": 1,
+        "qualifying_pick_count": 1,
+        "qualifying_band_count": 1,
+        "historical_unique_pick_count": 6,
+        "candidate_band_details": {row["forecast_id"]: band},
+        "bands": [band],
+        "status": "applied",
+    }
+    market_report = report([row])
+    market_report["accas"].update(
+        paper_results=[],
+        strict_results=[],
+        requested_legs=3,
+        effective_paper_legs=None,
+        paper_single_picks=[{**row, "individual_pick_roi_band": band}],
+        paper_pick_filter=paper_filter,
+    )
+
+    result = publish(tmp_path, Store([game(1)]), market_report)
+
+    today = json.loads(Path(result["picks_today"]).read_text())
+    assert len(today) == 1
+    assert today[0]["paper_roi_band_eligible"] is True
+    assert today[0]["paper_roi_band"]["qualifies"] is True
+    picks_text = Path(result["picks_text"]).read_text()
+    assert "PAPER SINGLE · moneyline full_game" in picks_text
+    assert "ROI-qualified individual paper singles: 1" in picks_text
+    assert result["ticket_receipt"] is None
+    ticket_text = Path(result["ticket_text"]).read_text()
+    assert "NO MULTI-LEG PAPER ACCA — 1 ROI-qualified single pick(s)" in ticket_text
+    assert "1 ROI-qualified paper singles across 1 games · combination size none legs" in ticket_text
+    assert result["candidate_funnel"]["paper_single_picks"] == 1
+    assert result["counts"]["paper_single_picks"] == 1
 
 
 def test_provisional_sample_only_acca_is_frozen_as_labeled_paper_evidence(tmp_path):

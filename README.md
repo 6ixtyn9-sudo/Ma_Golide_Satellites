@@ -166,14 +166,16 @@ graded non-push sample exists and insufficient sample size is the segment's
 only blocker. Exact priced-market, team-history, push-risk, and probability-floor
 checks still apply. Such legs remain marked ineligible in the forecast
 and the frozen paper receipt labels the sample-size exception. Before paper
-accas are assembled, each unique eligible wager selection must match a positive
-historical individual-pick performance band. The rolling `picks_audit_rolling.json`
-settled ledger is used when present; otherwise the service uses its own past-only
-prequential settled forecasts. Only settled single picks with calibrated
-probabilities and exact pre-tip prices count. Bands are separated by league,
-market, period, model source, calibrated-probability range, and individual-odds
-range (`<50%`, 50–60%, 60–70%, 70–80%, 80–90%, 90%+; odds below 1.20, 1.20–1.50,
-1.50–2.00, 2.00+).
+tickets are assembled, each unique eligible wager selection must match a
+positive historical individual-pick performance band. Every passing selection
+is also published as a single in `accas.paper_single_picks` and flagged in the
+picks JSON/text. The rolling `picks_audit_rolling.json` settled ledger is used
+when present; otherwise the service uses its own past-only prequential settled
+forecasts. Only settled single picks with calibrated probabilities and exact
+pre-tip prices count. Bands are separated by league, market, period, model
+source, calibrated-probability range, and individual-odds range (`<50%`,
+50–60%, 60–70%, 70–80%, 80–90%, 90%+; odds below 1.20, 1.20–1.50, 1.50–2.00,
+2.00+).
 
 Band ROI uses flat one-unit stakes (win: decimal price minus one; loss: minus
 one; push: zero), a 14-day recency half-life, and shrinkage toward model,
@@ -187,13 +189,18 @@ single-pick ROI calculation. A positive historical band is an exploratory
 paper-only signal, not statistical validation or proof of future profit.
 
 These are per-pick performance conditions, not a combined-acca odds or
-expected-value gate. Surviving picks are then selected in descending joint-
-probability order without reusing the same wager selection (league, game,
-market, period, selection, and line) across tickets. Different selections from
-the same game may appear on separate tickets, but no acca includes two legs from
-one game. Existing frozen receipts are not rewritten by later policy changes.
-Paper-ticket outcomes remain separate from calibration sample counts, which
-continue to come from prequential forecast evidence.
+expected-value gate. The requested leg count is an upper bound for combinations:
+when fewer distinct ROI-qualified games are available, the paper combo shrinks to
+that count if at least two games qualify. With only one qualifying game, its
+pick remains available as a single and no acca is forced. Thus a default
+three-leg request can produce a triple, a double, or singles-only output without
+relaxing the pick checks. Multi-leg combinations are ranked by joint probability
+and do not reuse the same wager selection across separate acca tickets. Different
+selections from one game can appear on separate tickets, but no acca includes
+two legs from one game. Existing frozen receipts are not rewritten by later
+policy changes. Paper-pick outcomes and acca outcomes remain separate from
+calibration sample counts, which continue to come from prequential forecast
+evidence.
 
 Reports have schema `magolide.market_forecasts.v1` and status
 `decision_support_only`. They cannot place bets or trigger external betting
