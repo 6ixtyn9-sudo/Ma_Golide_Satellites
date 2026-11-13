@@ -1847,108 +1847,80 @@ def _render_empty_ticket_scan(
     candidate_funnel: Dict[str, Any],
     withdrawal: Optional[Dict[str, Any]] = None,
 ) -> str:
-    """A mutable latest-scan view, never a frozen no-bet receipt."""
+    """A concise mutable latest-scan view, never a frozen no-bet receipt."""
     paper_single_count = int(candidate_funnel.get("paper_single_picks") or 0)
     paper_single_games = int(candidate_funnel.get("paper_single_games") or 0)
-    effective_legs = candidate_funnel.get("effective_paper_legs")
+    pick_filter = candidate_funnel.get("paper_pick_filter")
+    candidate_pick_count = 0
+    qualifying_pick_count = paper_single_count
+    if isinstance(pick_filter, dict):
+        candidate_pick_count = int(pick_filter.get("candidate_pick_count") or 0)
+        raw_qualifying_count = pick_filter.get("qualifying_pick_count")
+        if raw_qualifying_count is not None:
+            qualifying_pick_count = int(raw_qualifying_count)
+    candidate_label = "candidate pick" if candidate_pick_count == 1 else "candidate picks"
+
     if withdrawal:
         scan_status = (
             "NO PAPER BET — the earlier ticket publication was withdrawn for model-integrity failure."
         )
     elif paper_single_count:
-        scan_status = (
-            f"NO MULTI-LEG PAPER ACCA — {paper_single_count} ROI-qualified single "
-            f"pick(s) are listed in the picks card."
-        )
+        if candidate_pick_count:
+            roi_summary = (
+                f"{qualifying_pick_count} of {candidate_pick_count} {candidate_label} passed "
+                "individual-pick ROI"
+            )
+        else:
+            pick_label = "pick" if paper_single_count == 1 else "picks"
+            roi_summary = f"{paper_single_count} ROI-qualified single {pick_label}"
+        if paper_single_games == 1:
+            game_reason = "only 1 distinct game qualifies; 2 are required"
+        elif paper_single_games == 0:
+            game_reason = "no distinct games qualify; 2 are required"
+        elif paper_single_games < 2:
+            game_reason = f"only {paper_single_games} distinct games qualify; 2 are required"
+        else:
+            game_reason = "no multi-leg acca was produced"
+        scan_status = f"NO MULTI-LEG PAPER ACCA — {roi_summary}; {game_reason}."
     else:
-        scan_status = "NO PAPER BET — no ROI-qualified paper singles or multi-leg acca in this scan."
+        scan_rows = int(candidate_funnel.get("scan_rows") or 0)
+        paper_candidate_rows = int(candidate_funnel.get("paper_candidate_rows") or 0)
+        if scan_rows == 0:
+            scan_status = "NO PAPER BET — no current forecasts were generated."
+        elif candidate_pick_count:
+            scan_status = (
+                f"NO PAPER BET — {qualifying_pick_count} of {candidate_pick_count} {candidate_label} "
+                "passed individual-pick ROI."
+            )
+        elif paper_candidate_rows == 0:
+            scan_status = "NO PAPER BET — no forecasts passed the paper eligibility gates."
+        else:
+            scan_status = (
+                "NO PAPER BET — no ROI-qualified paper singles or multi-leg acca in this scan."
+            )
+
     lines = [
         f"MA GOLIDE PAPER TICKETS — {league.value} {target_date}",
         "=" * 72,
+        scan_status,
+        "",
         f"CURRENT PAPER BANK (all dates): {performance['paper_bank_units']:.3f} units "
         f"· free {performance['paper_free_units']:.3f} / reserved {performance['paper_committed_units']:.3f}",
         f"Latest scan: {_local_time(generated_utc, timezone_name)}",
         "",
-        scan_status,
+        (
+            "This date is closed to replacement ticket publication after the withdrawal."
+            if withdrawal
+            else "This scan card is not a frozen receipt; a later qualifying scan may publish tickets."
+        ),
+        (
+            "The withdrawn receipt is excluded from performance and retained unchanged as evidence."
+            if withdrawal
+            else "Empty scans never cancel or resize earlier frozen positions."
+        ),
+        "Paper only. No real-money stakes or automatic promotion.",
         "",
-        "CANDIDATE FUNNEL",
-        f"  {candidate_funnel['scan_rows']} scan rows · "
-        f"{candidate_funnel['exact_priced_rows']} exact priced · "
-        f"{candidate_funnel['calibration_sufficient_rows']} calibration-sufficient",
-        f"  {candidate_funnel['priced_and_calibrated_rows']} priced + calibrated · "
-        f"{candidate_funnel['eligible_rows']} eligible "
-        f"{'row' if candidate_funnel['eligible_rows'] == 1 else 'rows'} · "
-        f"{candidate_funnel['eligible_games']} eligible "
-        f"{'game' if candidate_funnel['eligible_games'] == 1 else 'games'}",
-        f"  {candidate_funnel['provisional_sample_only_rows']} provisional sample-only "
-        f"{'row' if candidate_funnel['provisional_sample_only_rows'] == 1 else 'rows'} · "
-        f"{candidate_funnel['provisional_sample_only_games']} "
-        f"{'game' if candidate_funnel['provisional_sample_only_games'] == 1 else 'games'} · "
-        f"{candidate_funnel['paper_accas']} paper accas "
-        f"({candidate_funnel['strict_accas']} strict)",
-        f"  {paper_single_count} ROI-qualified paper singles across {paper_single_games} "
-        f"games · combination size {effective_legs or 'none'} legs "
-        f"(requested up to {candidate_funnel['required_games']}).",
-        "  Multi-leg tickets require distinct games; exact wager selections are not reused across accas.",
     ]
-    pick_filter = candidate_funnel.get("paper_pick_filter")
-    if isinstance(pick_filter, dict):
-        candidate_count = int(pick_filter.get("candidate_pick_count") or 0)
-        qualifying_count = int(pick_filter.get("qualifying_pick_count") or 0)
-        history_count = int(pick_filter.get("historical_unique_pick_count") or 0)
-        lines.append(
-            f"  Individual-pick ROI filter: {qualifying_count}/{candidate_count} qualify "
-            f"across {int(pick_filter.get('qualifying_band_count') or 0)} positive bands; "
-            f"{history_count} unique settled picks · "
-            f"status={pick_filter.get('status', 'unknown')}."
-        )
-        for band in pick_filter.get("bands") or []:
-            if not isinstance(band, dict):
-                continue
-            weighted_roi = band.get("recency_weighted_roi")
-            adjusted_roi = band.get("adjusted_roi")
-            weighted_text = (
-                f"{float(weighted_roi):+.1%}"
-                if isinstance(weighted_roi, (int, float)) and not isinstance(weighted_roi, bool)
-                else "n/a"
-            )
-            adjusted_text = (
-                f"{float(adjusted_roi):+.1%}"
-                if isinstance(adjusted_roi, (int, float)) and not isinstance(adjusted_roi, bool)
-                else "n/a"
-            )
-            lines.append(
-                f"    {band.get('market', 'unknown')} {band.get('period', 'unknown')} "
-                f"p {band.get('probability_band', 'unknown')} · "
-                f"odds {band.get('individual_odds_band', 'unknown')} · "
-                f"n={int(band.get('historical_pick_count') or 0)} · "
-                f"recency ROI {weighted_text} / adjusted {adjusted_text} · "
-                f"{'qualifies' if band.get('qualifies') is True else 'blocked'}"
-            )
-    blockers = candidate_funnel.get("eligibility_blockers") or {}
-    if blockers:
-        lines.append("  Blockers (a row can have more than one):")
-        for reason, count in sorted(blockers.items(), key=lambda item: (-item[1], item[0])):
-            lines.append(f"    {count:>3} {reason}")
-    elif not candidate_funnel["scan_rows"]:
-        lines.append("  No current forecasts were generated.")
-    lines.extend(
-        [
-            "",
-            (
-                "This date is closed to replacement ticket publication after the withdrawal."
-                if withdrawal
-                else "This scan card is not a frozen receipt; a later qualifying scan may publish tickets."
-            ),
-            (
-                "The withdrawn receipt is excluded from performance and retained unchanged as evidence."
-                if withdrawal
-                else "Empty scans never cancel or resize earlier frozen positions."
-            ),
-            "Paper only. No real-money stakes or automatic promotion.",
-            "",
-        ]
-    )
     return "\n".join(lines)
 
 

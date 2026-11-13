@@ -110,9 +110,9 @@ history cannot inherit eligibility from a positive parent.
 
 The adaptive decision is recalculated for each scan and may admit or suspend
 future picks as outcomes accumulate. Its source, settled-pick counts, per-band
-observed/recency-weighted/adjusted ROI, and pass decisions are reported in
-`accas.paper_pick_filter`, the empty-scan candidate funnel, and each new ticket
-receipt. The gate is per individual pick, not combined acca odds or EV, and is
+observed/recency-weighted/adjusted ROI, and pass decisions are retained in
+`accas.paper_pick_filter`, the structured scan `candidate_funnel`, and each new
+ticket receipt. The gate is per individual pick, not combined acca odds or EV, and is
 never relaxed to fill a ticket. The existing sample-only provisional allowance
 and its other eligibility safeguards remain in force. Positive historical ROI
 is an exploratory paper signal, not proof of statistical edge or future profit.
@@ -152,15 +152,15 @@ Each acca uses exactly one flat paper unit. The initial 100-unit figure is only
 an accounting base, not money or a recommended bankroll. Empty scans are logged
 but do not cancel earlier positions or consume ticket identities.
 
-An empty latest-scan card includes a **candidate funnel**: current rows, exact
-priced rows, calibration-sufficient rows and their overlap, strict eligible
-rows/games, provisional sample-only rows/games, paper-candidate coverage,
-settled individual-pick ROI-band counts and observed/adjusted performance,
-paper/strict acca counts, ROI-qualified singles, the requested/effective
-combination size, and overlapping eligibility-blocker counts. The same
-structure is stored under `candidate_funnel` in the bounded scan-state entry
-and operator result. These are diagnostics only; they never override an
-eligibility guard or synthesize a pick or ticket.
+The human-readable empty latest-scan card is intentionally concise: it leads
+with **NO PAPER BET** or **NO MULTI-LEG PAPER ACCA** and a brief reason. It omits
+the full funnel, per-band ROI breakdown, and blocker list. Those diagnostics
+remain structured under `candidate_funnel` in the bounded scan-state entry and
+operator result, including current/exact-priced/calibrated rows, eligibility
+coverage, provisional sample-only rows, paper/strict acca counts, qualified
+singles, requested/effective combination size, ROI-band evidence, and
+eligibility blockers. These diagnostics never override an eligibility guard or
+synthesize a pick or ticket.
 
 Dated pick ledgers also retain earlier rows when later scans omit them. Fresh
 versions of the same forecast id replace the dated evidence row; distinct
