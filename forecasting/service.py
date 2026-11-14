@@ -472,8 +472,9 @@ class MarketForecastService:
                     "team-history, push-risk, and probability-floor gates remain enforced; "
                     "paper tickets additionally require a positive recency-weighted, "
                     "shrinkage-adjusted ROI band from past settled individual picks; "
-                    "qualifying selections remain available as singles and combo size "
-                    "falls to available distinct qualifying games"
+                    "qualifying selections remain available as singles, and the operator "
+                    "freezes a one-unit paper single only when exactly one selection qualifies; "
+                    "combo size falls to available distinct qualifying games"
                 ),
                 "results_policy": "strict",
                 "paper_results_policy": (
@@ -483,6 +484,10 @@ class MarketForecastService:
                 "paper_single_picks": paper_single_picks,
                 "paper_single_pick_count": len(paper_single_picks),
                 "paper_ticket_leg_reuse_policy": "no_reused_wager_selections",
+                "paper_single_ticket_policy": (
+                    "freeze_one_unit_paper_single_only_when_exactly_one_"
+                    "roi_qualified_selection_exists"
+                ),
                 "paper_ticket_leg_count_policy": (
                     "use_minimum_of_requested_legs_and_distinct_roi_qualified_games; "
                     "combination_requires_at_least_two_games"

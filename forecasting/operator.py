@@ -14,10 +14,11 @@ Durable contracts (all beneath one league's localdata directory):
 - ``auto_tickets_state.json``: write-once date locks and bounded scan telemetry.
 - ``auto_tickets_performance.json`` / ``.txt``: reconstructed paper performance.
 
-A known losing leg settles its acca as a loss even when other legs are still
-pending. Push legs are removed from the effective price once every other leg
-has resolved. Pending tickets never count as wins or losses. Empty scans never
-cancel or rotate a frozen receipt. All stakes are flat one paper unit per acca.
+A known losing leg settles its paper position as a loss even when other legs
+are still pending. Push legs are removed from an acca's effective price once
+every other leg has resolved; a single settles at its selected decimal price.
+Pending tickets never count as wins or losses. Empty scans never cancel or
+rotate a frozen receipt. Every position has a flat one-paper-unit stake.
 """
 
 from __future__ import annotations
@@ -25,6 +26,7 @@ from __future__ import annotations
 from collections import Counter, defaultdict
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
+import hashlib
 import json
 import math
 import os
@@ -1396,6 +1398,82 @@ def _load_state(localdata: Path) -> Dict[str, Any]:
     return state
 
 
+def _single_ticket_candidate(
+    pick: Dict[str, Any], paper_filter: Dict[str, Any] | None
+) -> Optional[Dict[str, Any]]:
+    """Adapt exactly one ROI-qualified pick to the frozen ticket contract.
+
+    The candidate must already come from ``paper_single_picks``. Rechecking
+    its positive ROI-band decision, exact price, calibrated probability, and
+    strict-or-narrow-provisional eligibility here prevents this adapter from
+    becoming a second path around the service's existing gates.
+    """
+    if not isinstance(pick, dict):
+        return None
+    forecast_id = pick.get("forecast_id")
+    if not isinstance(forecast_id, str) or not forecast_id.strip():
+        return None
+    band = pick.get("individual_pick_roi_band")
+    if not isinstance(band, dict):
+        details = (
+            paper_filter.get("candidate_band_details") or {}
+            if isinstance(paper_filter, dict)
+            else {}
+        )
+        band = details.get(forecast_id) if isinstance(details, dict) else None
+    if not isinstance(band, dict) or band.get("qualifies") is not True:
+        return None
+
+    eligibility = pick.get("eligibility") or {}
+    if not isinstance(eligibility, dict):
+        return None
+    provisional = _is_provisional_sample_only_row(pick)
+    if eligibility.get("acca_eligible") is not True and not provisional:
+        return None
+
+    book = pick.get("book") or {}
+    raw_price = book.get("selected_decimal_price") if isinstance(book, dict) else None
+    raw_probability = pick.get("calibrated_probability")
+    if (
+        isinstance(raw_price, bool)
+        or not isinstance(raw_price, (int, float))
+        or isinstance(raw_probability, bool)
+        or not isinstance(raw_probability, (int, float))
+    ):
+        return None
+    try:
+        price = float(raw_price)
+        probability = float(raw_probability)
+    except OverflowError:
+        return None
+    if not math.isfinite(price) or price <= 1.0:
+        return None
+    if not math.isfinite(probability) or not 0.0 < probability <= 1.0:
+        return None
+
+    ticket_id = hashlib.sha256(f"paper-single|{forecast_id}".encode()).hexdigest()[:20]
+    return {
+        "ticket_id": ticket_id,
+        "acca_id": ticket_id,
+        "ticket_type": "single",
+        "legs": [pick],
+        "leg_count": 1,
+        "combined_decimal_odds": price,
+        "estimated_win_probability": probability,
+        "estimated_joint_win_probability": probability,
+        "provisional_sample_gate_bypassed": provisional,
+        "provisional_leg_count": int(provisional),
+        "ranking_status": (
+            "paper_only_provisional_sample_gate_bypassed"
+            if provisional
+            else "paper_only_roi_qualified_single"
+        ),
+        "individual_pick_filter": deepcopy(paper_filter)
+        if isinstance(paper_filter, dict)
+        else None,
+    }
+
+
 def _new_receipt(
     *,
     league: League,
@@ -1404,13 +1482,16 @@ def _new_receipt(
     run_id: str,
     accas: List[Dict[str, Any]],
 ) -> Dict[str, Any]:
-    ticket_rows = []
+    ticket_rows: Dict[str, List[Dict[str, Any]]] = {"acca": [], "single": []}
     for index, acca in enumerate(accas, 1):
+        ticket_type = "single" if acca.get("ticket_type") == "single" else "acca"
         legs = [_pick_row(leg, target_date) for leg in acca["legs"]]
         books = sorted({(leg.get("book") or {}).get("book") for leg in legs} - {None})
         ticket_row = {
-            "ticket_id": acca["acca_id"],
+            "ticket_id": acca.get("ticket_id") or acca["acca_id"],
+            "ticket_type": ticket_type,
             "publication_index": index,
+            "leg_count": int(acca.get("leg_count") or len(legs)),
             "combined_decimal_odds": acca["combined_decimal_odds"],
             "stake_units": STAKE_UNITS_PER_ACCA,
             "estimated_joint_win_probability": acca["estimated_joint_win_probability"],
@@ -1423,10 +1504,14 @@ def _new_receipt(
             "bookmakers": books,
             "legs": legs,
         }
+        if ticket_type == "single":
+            ticket_row["estimated_win_probability"] = acca.get(
+                "estimated_win_probability", acca["estimated_joint_win_probability"]
+            )
         pick_filter = acca.get("individual_pick_filter")
         if isinstance(pick_filter, dict):
             ticket_row["individual_pick_filter"] = deepcopy(pick_filter)
-        ticket_rows.append(ticket_row)
+        ticket_rows[ticket_type].append(ticket_row)
     return {
         "schema_version": TICKET_SCHEMA,
         "date": target_date,
@@ -1437,7 +1522,9 @@ def _new_receipt(
         "captured_at": captured_utc,
         "frozen_at": captured_utc,
         "stake_units_per_acca": STAKE_UNITS_PER_ACCA,
-        "accas": ticket_rows,
+        "stake_units_per_position": STAKE_UNITS_PER_ACCA,
+        "accas": ticket_rows["acca"],
+        "singles": ticket_rows["single"],
     }
 
 
@@ -1525,23 +1612,43 @@ def _ticket_receipt(
     return receipt
 
 
+def _receipt_positions(
+    receipt: Dict[str, Any],
+) -> List[tuple[str, Dict[str, Any]]]:
+    """Return positions from current receipts and legacy acca-only receipts."""
+    positions: List[tuple[str, Dict[str, Any]]] = []
+    for collection, default_type in (("accas", "acca"), ("singles", "single")):
+        rows = receipt.get(collection) or []
+        if not isinstance(rows, list):
+            continue
+        for row in rows:
+            if not isinstance(row, dict):
+                continue
+            ticket_type = row.get("ticket_type")
+            if ticket_type not in {"acca", "single"}:
+                ticket_type = default_type
+            positions.append((ticket_type, row))
+    return positions
+
+
 def _grade_receipt(receipt: Dict[str, Any], games: Dict[str, Game]) -> Dict[str, Any]:
     graded = deepcopy(receipt)
-    for acca in graded["accas"]:
+    for ticket_type, position in _receipt_positions(graded):
+        position.setdefault("ticket_type", ticket_type)
         outcomes: List[Optional[str]] = []
-        for leg in acca["legs"]:
+        for leg in position["legs"]:
             _set_grade(leg, games)
             outcomes.append(leg["outcome"])
-        acca["leg_outcomes"] = outcomes
-        acca["push_legs"] = sum(outcome == "push" for outcome in outcomes)
-        acca["unresolved_legs"] = sum(outcome is None for outcome in outcomes)
-        stake = float(acca["stake_units"])
+        position["leg_outcomes"] = outcomes
+        position["push_legs"] = sum(outcome == "push" for outcome in outcomes)
+        position["unresolved_legs"] = sum(outcome is None for outcome in outcomes)
+        stake = float(position["stake_units"])
         effective_odds = math.prod(
             float((leg.get("book") or {})["selected_decimal_price"])
-            for leg in acca["legs"]
+            for leg in position["legs"]
             if leg["outcome"] != "push"
         )
-        acca["effective_decimal_odds"] = effective_odds
+        position["effective_decimal_odds"] = effective_odds
         if any(outcome == "loss" for outcome in outcomes):
             status = "loss"
             profit = -stake
@@ -1554,28 +1661,36 @@ def _grade_receipt(receipt: Dict[str, Any], games: Dict[str, Game]) -> Dict[str,
         else:
             status = "win"
             profit = stake * (effective_odds - 1.0)
-        acca["grade_status"] = status
-        acca["profit_units"] = profit
+        position["grade_status"] = status
+        position["profit_units"] = profit
     return graded
 
 
 def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict[str, Any]:
     history = [_grade_receipt(receipt, games) for receipt in receipts]
-    accas = [acca for receipt in history for acca in receipt["accas"]]
-    settled = [acca for acca in accas if acca["profit_units"] is not None]
-    pending = [acca for acca in accas if acca["profit_units"] is None]
-    profit = sum(float(acca["profit_units"]) for acca in settled)
-    staked = sum(float(acca["stake_units"]) for acca in settled)
-    committed = sum(float(acca["stake_units"]) for acca in pending)
-    wins = sum(acca["grade_status"] == "win" for acca in settled)
-    losses = sum(acca["grade_status"] == "loss" for acca in settled)
-    pushes = sum(acca["grade_status"] == "push" for acca in settled)
-    unresolved_legs = sum(acca["unresolved_legs"] for acca in accas)
+    positions = [
+        position
+        for receipt in history
+        for _, position in _receipt_positions(receipt)
+    ]
+    settled = [position for position in positions if position["profit_units"] is not None]
+    pending = [position for position in positions if position["profit_units"] is None]
+    settled_accas = [position for position in settled if position["ticket_type"] == "acca"]
+    settled_singles = [position for position in settled if position["ticket_type"] == "single"]
+    pending_accas = [position for position in pending if position["ticket_type"] == "acca"]
+    pending_singles = [position for position in pending if position["ticket_type"] == "single"]
+    profit = sum(float(position["profit_units"]) for position in settled)
+    staked = sum(float(position["stake_units"]) for position in settled)
+    committed = sum(float(position["stake_units"]) for position in pending)
+    wins = sum(position["grade_status"] == "win" for position in settled)
+    losses = sum(position["grade_status"] == "loss" for position in settled)
+    pushes = sum(position["grade_status"] == "push" for position in settled)
+    unresolved_legs = sum(position["unresolved_legs"] for position in positions)
     brier = []
     seen_legs = set()
     for receipt in history:
-        for acca in receipt["accas"]:
-            for leg in acca["legs"]:
+        for _, position in _receipt_positions(receipt):
+            for leg in position["legs"]:
                 identity = (receipt["date"], leg["pick_id"])
                 if identity in seen_legs or leg["outcome"] not in {"win", "loss"}:
                     continue
@@ -1587,12 +1702,14 @@ def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict
     days = []
     equity = BASE_PAPER_UNITS
     for receipt in sorted(history, key=lambda row: row["date"]):
-        daily = receipt["accas"]
-        daily_settled = [acca for acca in daily if acca["profit_units"] is not None]
-        daily_pending = [acca for acca in daily if acca["profit_units"] is None]
-        daily_stake = sum(float(acca["stake_units"]) for acca in daily_settled)
-        daily_profit = sum(float(acca["profit_units"]) for acca in daily_settled)
-        daily_pending_stake = sum(float(acca["stake_units"]) for acca in daily_pending)
+        daily = [position for _, position in _receipt_positions(receipt)]
+        daily_accas = [position for position in daily if position["ticket_type"] == "acca"]
+        daily_singles = [position for position in daily if position["ticket_type"] == "single"]
+        daily_settled = [position for position in daily if position["profit_units"] is not None]
+        daily_pending = [position for position in daily if position["profit_units"] is None]
+        daily_stake = sum(float(position["stake_units"]) for position in daily_settled)
+        daily_profit = sum(float(position["profit_units"]) for position in daily_settled)
+        daily_pending_stake = sum(float(position["stake_units"]) for position in daily_pending)
         equity += daily_profit
         days.append(
             {
@@ -1600,15 +1717,23 @@ def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict
                 "league": receipt["league"],
                 "decision_id": receipt["decision_id"],
                 "frozen_at": receipt["frozen_at"],
-                "wins": sum(acca["grade_status"] == "win" for acca in daily_settled),
-                "losses": sum(acca["grade_status"] == "loss" for acca in daily_settled),
-                "pushes": sum(acca["grade_status"] == "push" for acca in daily_settled),
+                "wins": sum(position["grade_status"] == "win" for position in daily_settled),
+                "losses": sum(position["grade_status"] == "loss" for position in daily_settled),
+                "pushes": sum(position["grade_status"] == "push" for position in daily_settled),
+                "settled_positions": len(daily_settled),
+                "pending_positions": len(daily_pending),
+                "settled_accas": sum(position["profit_units"] is not None for position in daily_accas),
+                "pending_accas": sum(position["profit_units"] is None for position in daily_accas),
+                "settled_singles": sum(position["profit_units"] is not None for position in daily_singles),
+                "pending_singles": sum(position["profit_units"] is None for position in daily_singles),
                 "staked_units": daily_stake,
                 "returned_units": daily_stake + daily_profit if daily_settled else None,
                 "profit_units": daily_profit if daily_settled else None,
                 "pending_units": daily_pending_stake,
                 "bank_units": equity,
-                "accas": daily,
+                "positions": daily,
+                "accas": daily_accas,
+                "singles": daily_singles,
             }
         )
     return {
@@ -1619,17 +1744,21 @@ def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict
         "paper_free_units": BASE_PAPER_UNITS + profit - committed,
         "paper_committed_units": committed,
         "settled_stake_units": staked,
-        "settled_accas": len(settled),
+        "settled_positions": len(settled),
+        "pending_positions": len(pending),
+        "settled_accas": len(settled_accas),
+        "settled_singles": len(settled_singles),
         "wins": wins,
         "losses": losses,
         "pushes": pushes,
         "hit_rate": wins / (wins + losses) if wins + losses else None,
-        "pending_accas": len(pending),
+        "pending_accas": len(pending_accas),
+        "pending_singles": len(pending_singles),
         "unresolved_result_legs": unresolved_legs,
         "profit_units": profit,
         "roi": profit / staked if staked else None,
         "selected_leg_brier_score": sum(brier) / len(brier) if brier else None,
-        "stake_policy": "flat_one_paper_unit_per_acca_no_refill_no_real_money",
+        "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
         "drawdown_basis": "not_a_settlement_time_equity_curve",
         "history": days,
     }
@@ -1638,34 +1767,54 @@ def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict
 def _render_ticket_card(
     receipt: Dict[str, Any], performance: Dict[str, Any], timezone_name: str
 ) -> str:
+    positions = _receipt_positions(receipt)
+    acca_count = sum(ticket_type == "acca" for ticket_type, _ in positions)
+    single_count = sum(ticket_type == "single" for ticket_type, _ in positions)
+    position_labels = []
+    if acca_count:
+        position_labels.append(f"{acca_count} paper acca" + ("s" if acca_count != 1 else ""))
+    if single_count:
+        position_labels.append(f"{single_count} paper single" + ("s" if single_count != 1 else ""))
+    if not position_labels:
+        position_labels.append("0 paper positions")
     lines = [
         f"MA GOLIDE PAPER TICKETS — {receipt['league']} {receipt['date']}",
         "=" * 72,
         f"CURRENT PAPER BANK (all dates): {performance['paper_bank_units']:.3f} units "
         f"· free {performance['paper_free_units']:.3f} / reserved {performance['paper_committed_units']:.3f}",
-        f"{len(receipt['accas'])} paper accas · 1 ticket publication · times in {timezone_name}",
-        "PAPER ONLY — flat one unit per acca; no automatic betting writes.",
+        f"{', '.join(position_labels)} · 1 ticket publication · times in {timezone_name}",
+        "PAPER ONLY — flat one unit per position; no automatic betting writes.",
         "Frozen tickets retain their original decision basis; empty scans do not cancel them.",
         "",
     ]
-    if not receipt["accas"]:
-        lines.extend(["NO PAPER BET — no strict or provisional paper acca at publication.", ""])
-    for index, acca in enumerate(receipt["accas"], 1):
-        books = ", ".join(acca.get("bookmakers") or []) or "multiple/no book"
-        provisional = bool(acca.get("provisional_sample_gate_bypassed"))
+    if not positions:
+        lines.extend(["NO PAPER BET — no single or multi-leg paper ticket at publication.", ""])
+    type_indexes = Counter()
+    for publication_index, (ticket_type, position) in enumerate(positions, 1):
+        type_indexes[ticket_type] += 1
+        type_index = type_indexes[ticket_type]
+        books = ", ".join(position.get("bookmakers") or []) or "multiple/no book"
+        provisional = bool(position.get("provisional_sample_gate_bypassed"))
         provisional_label = " · PROVISIONAL SAMPLE GATE" if provisional else ""
-        leg_count = int(acca.get("leg_count") or len(acca.get("legs") or []))
+        leg_count = int(position.get("leg_count") or len(position.get("legs") or []))
+        ticket_label = (
+            f"PAPER SINGLE #{type_index}"
+            if ticket_type == "single"
+            else f"PAPER {leg_count}-LEG ACCA #{type_index}"
+        )
+        probability_label = "estimated p" if ticket_type == "single" else "joint p"
         lines.append(
-            f"[PAPER {leg_count}-LEG ACCA #{index}]{provisional_label} "
-            f"@{acca['combined_decimal_odds']:.3f} "
-            f"— {acca['stake_units']:.6f} paper units — {books} "
-            f"· {acca['grade_status'].upper()}"
+            f"[{ticket_label}]{provisional_label} "
+            f"@{position['combined_decimal_odds']:.3f} "
+            f"— {position['stake_units']:.6f} paper units — {books} "
+            f"· {position['grade_status'].upper()}"
         )
         lines.append(
             f"   Published {_local_time(receipt['frozen_at'], timezone_name)} "
-            f"· reference P1/{index} · joint p={acca['estimated_joint_win_probability']:.1%}"
+            f"· reference P1/{publication_index} · {probability_label}="
+            f"{position['estimated_joint_win_probability']:.1%}"
         )
-        pick_filter = acca.get("individual_pick_filter") or {}
+        pick_filter = position.get("individual_pick_filter") or {}
         candidate_count = int(pick_filter.get("candidate_pick_count") or 0)
         qualifying_count = int(pick_filter.get("qualifying_pick_count") or 0)
         history_count = int(pick_filter.get("historical_unique_pick_count") or 0)
@@ -1677,8 +1826,10 @@ def _render_ticket_card(
                 f"{history_count} unique settled picks · status={pick_filter.get('status', 'unknown')}."
             )
         band_details = pick_filter.get("candidate_band_details") or {}
-        for leg in acca["legs"]:
+        for leg in position["legs"]:
             details = band_details.get(leg.get("forecast_id"))
+            if not isinstance(details, dict):
+                details = leg.get("individual_pick_roi_band")
             if isinstance(details, dict):
                 observed_roi = details.get("observed_roi")
                 adjusted_roi = details.get("adjusted_roi")
@@ -1864,6 +2015,12 @@ def _render_empty_ticket_scan(
         scan_status = (
             "NO PAPER BET — the earlier ticket publication was withdrawn for model-integrity failure."
         )
+    elif paper_single_count == 1:
+        scan_status = (
+            "NO PAPER BET — one ROI-qualified selection was present, but its preserved "
+            "eligibility/price evidence could not be frozen as a single; no multi-leg "
+            "ticket was forced."
+        )
     elif paper_single_count:
         if candidate_pick_count:
             roi_summary = (
@@ -1925,6 +2082,8 @@ def _render_empty_ticket_scan(
 
 
 def _render_performance(report: Dict[str, Any], timezone_name: str) -> str:
+    settled_positions = int(report.get("settled_positions", report.get("settled_accas", 0)))
+    pending_positions = int(report.get("pending_positions", report.get("pending_accas", 0)))
     lines = [
         "MA GOLIDE AUTO-TICKETS (ROLLING) — paper performance",
         "=" * 72,
@@ -1938,16 +2097,16 @@ def _render_performance(report: Dict[str, Any], timezone_name: str) -> str:
             f"RECORD   {report['wins']}W / {report['losses']}L / {report['pushes']}P "
             f"({report['hit_rate']:.1%} hit) · ROI {report['roi']:+.1%}"
         )
-    elif report["settled_accas"]:
+    elif settled_positions:
         lines.append(
             f"RECORD   no win/loss decisions yet · {report['pushes']} pushes · "
             f"ROI {report['roi']:+.1%}"
         )
     else:
-        lines.append("RECORD   no settled accas yet")
+        lines.append("RECORD   no settled paper positions yet")
     lines.extend(
         [
-            f"OPEN     {report['pending_accas']} held accas · "
+            f"OPEN     {pending_positions} held paper positions · "
             f"{report['unresolved_result_legs']} unresolved leg results",
             f"LEGS     Brier {report['selected_leg_brier_score']:.4f}"
             if report["selected_leg_brier_score"] is not None
@@ -1967,16 +2126,25 @@ def _render_performance(report: Dict[str, Any], timezone_name: str) -> str:
     lines.append("")
     lines.append("HELD (not yet settled; stake counted as committed)")
     held = False
+    type_indexes = Counter()
     for day in report["history"]:
-        for index, acca in enumerate(day["accas"], 1):
-            if acca["grade_status"] != "pending":
+        daily_positions = day.get("positions")
+        if daily_positions is None:
+            daily_positions = day.get("accas") or []
+        for position in daily_positions:
+            if position["grade_status"] != "pending":
                 continue
+            ticket_type = position.get("ticket_type", "acca")
+            ticket_type = "single" if ticket_type == "single" else "acca"
+            type_indexes[ticket_type] += 1
+            type_label = "SINGLE" if ticket_type == "single" else "ACCA"
             held = True
             lines.append(
-                f"  {day['date']} ACCA #{index} @{acca['combined_decimal_odds']:.3f} "
-                f"stake {acca['stake_units']:.3f} · receipt {day['decision_id']}"
+                f"  {day['date']} {type_label} #{type_indexes[ticket_type]} "
+                f"@{position['combined_decimal_odds']:.3f} "
+                f"stake {position['stake_units']:.3f} · receipt {day['decision_id']}"
             )
-            for leg in acca["legs"]:
+            for leg in position["legs"]:
                 lines.append(
                     f"      {leg['home']} vs {leg['away']} · {_selection_label(leg)} "
                     f"· {leg['grade_status'].upper()}"
@@ -1989,8 +2157,8 @@ def _render_performance(report: Dict[str, Any], timezone_name: str) -> str:
             "NOTES",
             "  bank* is reconstructed from latest known results by ticket date; pending is held at cost.",
             "  This is not a settlement-time equity curve or certified betting ROI.",
-            "  A known losing leg settles its acca as a loss even if other legs remain unresolved.",
-            "  Push legs are removed from effective price after every other leg resolves.",
+            "  A known losing leg settles its paper position as a loss even if other legs remain unresolved.",
+            "  Push legs are removed from effective price after every other leg resolves; a single uses its exact selected odds.",
             "  Empty scans never cancel tickets. Frozen receipts are never resized or rotated.",
             "  Paper only. No real-money stakes or automatic promotion.",
             "",
@@ -2075,7 +2243,11 @@ def publish_operator_reports(
     paper_results = acca_report.get("paper_results")
     if paper_results is None:  # legacy reports expose only the strict result surface
         paper_results = acca_report.get("results") or []
-    ticket_accas = deepcopy(paper_results or [])
+    ticket_candidates = deepcopy(paper_results or [])
+    if not ticket_candidates and len(single_rows) == 1:
+        single_ticket = _single_ticket_candidate(single_rows[0], paper_filter)
+        if single_ticket is not None:
+            ticket_candidates.append(single_ticket)
     receipt = _ticket_receipt(
         localdata,
         state=state,
@@ -2083,13 +2255,16 @@ def publish_operator_reports(
         target_date=target_date,
         captured_utc=generated_utc,
         run_id=run_id,
-        accas=ticket_accas,
+        accas=ticket_candidates,
     )
     state["scans"].append(
         {
             "run_id": run_id,
             "captured_at": generated_utc,
-            "fresh_accas": len(ticket_accas),
+            "fresh_accas": sum(row.get("ticket_type") != "single" for row in ticket_candidates),
+            "fresh_single_tickets": sum(
+                row.get("ticket_type") == "single" for row in ticket_candidates
+            ),
             "fresh_paper_singles": candidate_funnel.get("paper_single_picks", 0),
             "receipt_present": receipt is not None,
             "candidate_funnel": deepcopy(candidate_funnel),
@@ -2182,9 +2357,14 @@ def publish_operator_reports(
             "graded_picks": audit["settled_picks"],
             # Backward-compatible alias; this now includes same-day finals.
             "graded_prior_picks": audit["settled_picks"],
-            "published_accas": len(receipt["accas"]) if receipt else 0,
+            "published_accas": len(receipt.get("accas") or []) if receipt else 0,
+            "published_singles": len(receipt.get("singles") or []) if receipt else 0,
+            "settled_positions": performance["settled_positions"],
+            "pending_positions": performance["pending_positions"],
             "settled_accas": performance["settled_accas"],
             "pending_accas": performance["pending_accas"],
+            "settled_singles": performance["settled_singles"],
+            "pending_singles": performance["pending_singles"],
             "paper_single_picks": candidate_funnel.get("paper_single_picks", 0),
         },
     }
