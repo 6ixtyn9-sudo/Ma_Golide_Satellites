@@ -2,8 +2,8 @@ MA GOLIDE AUTO-TICKETS (ROLLING) — paper performance
 ========================================================================
 BANK     100.000 units   x1.000 of the 100-unit base
 CAPITAL  100.000 free / 0.000 reserved paper units
-RECORD   no settled accas yet
-OPEN     0 held accas · 0 unresolved leg results
+RECORD   no settled paper positions yet
+OPEN     0 held paper positions · 0 unresolved leg results
 LEGS     Brier n/a
 
 BET-DAYS, oldest first (0)
@@ -14,7 +14,7 @@ HELD (not yet settled; stake counted as committed)
 NOTES
   bank* is reconstructed from latest known results by ticket date; pending is held at cost.
   This is not a settlement-time equity curve or certified betting ROI.
-  A known losing leg settles its acca as a loss even if other legs remain unresolved.
-  Push legs are removed from effective price after every other leg resolves.
+  A known losing leg settles its paper position as a loss even if other legs remain unresolved.
+  Push legs are removed from effective price after every other leg resolves; a single uses its exact selected odds.
   Empty scans never cancel tickets. Frozen receipts are never resized or rotated.
   Paper only. No real-money stakes or automatic promotion.

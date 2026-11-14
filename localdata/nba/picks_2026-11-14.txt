@@ -1,6 +1,6 @@
 Ma Golide Picks — NBA 2026-11-14
 ========================================================================
-Generated at: 2026-11-14 08:17 SAST
+Generated at: 2026-11-14 11:34 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Active sections show the latest pending pre-tip observation per logical pick.
 Started and settled games are retained separately as archive status.
@@ -13,19 +13,29 @@ ELIGIBLE CLEAN PICKS
 CAUTION PICKS
 ========================================================================
   [team_history_empirical_v1/team_history_empirical_v1] Memphis Grizzlies vs Brooklyn Nets · KO 2026-11-15 03:00 SAST
-      MONEYLINE full_game -> HOME · p=58.2% (raw 57.0%) @1.446 DraftKings
+      MONEYLINE full_game -> HOME · p=61.6% (raw 59.0%) @1.488 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
-      calibration=provisional n=1 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 1.20-<1.50 · n=0 · recency ROI n/a / adjusted n/a
+      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.20-<1.50 · n=0 · recency ROI n/a / adjusted n/a
+      archived_revisions=2 · latest_evidence_utc=2026-11-14T09:34:22Z
+  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Memphis Grizzlies vs Brooklyn Nets · KO 2026-11-15 03:00 SAST
+      TOTAL full_game 225.5 -> OVER · p=61.0% (raw 61.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [team_history_empirical_v1/team_history_empirical_v1] Cleveland Cavaliers vs Dallas Mavericks · KO 2026-11-15 02:30 SAST
+      MONEYLINE full_game -> HOME · p=58.6% (raw 56.0%) @1.769 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
+      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=4 · recency ROI +74.2% / adjusted +47.4%
+      archived_revisions=2 · latest_evidence_utc=2026-11-14T09:34:22Z
+  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Cleveland Cavaliers vs Dallas Mavericks · KO 2026-11-15 02:30 SAST
+      SPREAD full_game -2.5 -> HOME · p=56.0% (raw 56.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=espn
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Memphis Grizzlies vs Brooklyn Nets · KO 2026-11-15 03:00 SAST
       TOTAL full_game 226.5 -> OVER · p=56.0% (raw 56.0%) @1.885 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=espn
-  [team_history_empirical_v1/team_history_empirical_v1] Cleveland Cavaliers vs Dallas Mavericks · KO 2026-11-15 02:30 SAST
-      MONEYLINE full_game -> HOME · p=55.2% (raw 54.0%) @1.741 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
-      calibration=provisional n=1 · reasons=insufficient_walk_forward_samples · prediction=history
-      PAPER SINGLE · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=3 · recency ROI +74.3% / adjusted +36.7%
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Memphis Grizzlies vs Brooklyn Nets · KO 2026-11-15 03:00 SAST
       SPREAD full_game +5.5 -> AWAY · p=55.0% (raw 55.0%) @1.855 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
@@ -34,17 +44,22 @@ CAUTION PICKS
       TOTAL full_game 231.5 -> UNDER · p=54.0% (raw 54.0%) @1.909 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=2 · latest_evidence_utc=2026-11-14T09:34:22Z
+  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Memphis Grizzlies vs Brooklyn Nets · KO 2026-11-15 03:00 SAST
+      SPREAD full_game -4.5 -> HOME · p=52.0% (raw 52.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=espn
 
 WATCHLIST — NO MATCHED ODDS
 ========================================================================
   [team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Chicago Bulls · KO 2026-11-15 03:00 SAST
-      MONEYLINE H1 -> HOME · p=60.3% (raw 59.0%) @n/a no matched book
+      MONEYLINE H1 -> HOME · p=58.6% (raw 59.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=PENDING
-      calibration=provisional n=1 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] New Orleans Pelicans vs Denver Nuggets · KO 2026-11-15 02:00 SAST
-      MONEYLINE H1 -> AWAY · p=55.3% (raw 54.0%) @n/a no matched book
+      calibration=provisional n=2 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Memphis Grizzlies vs Brooklyn Nets · KO 2026-11-15 03:00 SAST
+      MONEYLINE H1 -> HOME · p=54.6% (raw 55.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=PENDING
-      calibration=provisional n=1 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      calibration=provisional n=2 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Cleveland Cavaliers vs Dallas Mavericks · KO 2026-11-15 02:30 SAST
       SPREAD full_game -3.5 -> HOME · p=54.0% (raw 54.0%) @n/a DraftKings
       bucket=WATCHLIST_NO_ODDS · price_evidence=MATCHED_BUT_SELECTED_PRICE_MISSING · acca_eligible=False · grade=PENDING
@@ -57,30 +72,42 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE H1 -> AWAY · p=53.3% (raw 52.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=PENDING
       calibration=provisional n=1 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Memphis Grizzlies vs Brooklyn Nets · KO 2026-11-15 03:00 SAST
-      MONEYLINE H1 -> HOME · p=52.3% (raw 51.0%) @n/a no matched book
+  [team_history_empirical_v1/team_history_empirical_v1] New Orleans Pelicans vs Denver Nuggets · KO 2026-11-15 02:00 SAST
+      MONEYLINE H1 -> AWAY · p=50.6% (raw 51.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=PENDING
-      calibration=provisional n=1 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
+      calibration=provisional n=2 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Memphis Grizzlies vs Brooklyn Nets · KO 2026-11-15 03:00 SAST
-      HIGHEST QUARTER full_game -> Q2 · p=39.1% (raw 40.0%) @n/a no matched book
+      HIGHEST QUARTER full_game -> Q2 · p=35.2% (raw 37.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=PENDING
-      calibration=provisional n=1 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+      calibration=provisional n=2 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Miami Heat vs Detroit Pistons · KO 2026-11-15 03:00 SAST
       HIGHEST QUARTER full_game -> Q2 · p=30.1% (raw 31.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=PENDING
       calibration=provisional n=1 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Cleveland Cavaliers vs Dallas Mavericks · KO 2026-11-15 02:30 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=29.2% (raw 31.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=PENDING
+      calibration=provisional n=2 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Cleveland Cavaliers vs Dallas Mavericks · KO 2026-11-15 02:30 SAST
       HIGHEST QUARTER full_game -> Q2 · p=29.1% (raw 30.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=PENDING
       calibration=provisional n=1 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Chicago Bulls · KO 2026-11-15 03:00 SAST
-      HIGHEST QUARTER full_game -> Q1 · p=29.1% (raw 30.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=PENDING
-      calibration=provisional n=1 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] New Orleans Pelicans vs Denver Nuggets · KO 2026-11-15 02:00 SAST
       HIGHEST QUARTER full_game -> Q2 · p=29.1% (raw 30.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=PENDING
       calibration=provisional n=1 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] New Orleans Pelicans vs Denver Nuggets · KO 2026-11-15 02:00 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=28.2% (raw 30.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=PENDING
+      calibration=provisional n=2 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Miami Heat vs Detroit Pistons · KO 2026-11-15 03:00 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=27.2% (raw 29.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=PENDING
+      calibration=provisional n=2 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Chicago Bulls · KO 2026-11-15 03:00 SAST
+      HIGHEST QUARTER full_game -> Q1 · p=27.2% (raw 29.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=PENDING
+      calibration=provisional n=2 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
 
 WATCHLIST — INSUFFICIENT CONTEXT
 ========================================================================
@@ -89,51 +116,71 @@ WATCHLIST — INSUFFICIENT CONTEXT
 SKIPPED — INELIGIBLE
 ========================================================================
   [provider:espn/team_history_empirical_v1] Minnesota Timberwolves vs Chicago Bulls · KO 2026-11-15 03:00 SAST
-      MONEYLINE full_game -> HOME · p=88.6% (raw 88.6%) @1.119 DraftKings
+      MONEYLINE full_game -> HOME · p=89.4% (raw 89.4%) @1.114 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
+      archived_revisions=2 · latest_evidence_utc=2026-11-14T09:34:22Z
   [provider:espn/team_history_empirical_v1] New Orleans Pelicans vs Denver Nuggets · KO 2026-11-15 02:00 SAST
-      MONEYLINE full_game -> AWAY · p=78.3% (raw 78.3%) @1.180 DraftKings
+      MONEYLINE full_game -> AWAY · p=80.1% (raw 80.1%) @1.180 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
+      archived_revisions=2 · latest_evidence_utc=2026-11-14T09:34:22Z
   [team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Chicago Bulls · KO 2026-11-15 03:00 SAST
-      MONEYLINE full_game -> HOME · p=70.2% (raw 69.0%) @1.119 DraftKings
+      MONEYLINE full_game -> HOME · p=71.6% (raw 69.0%) @1.114 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
-      calibration=provisional n=1 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [provider:espn/team_history_empirical_v1] Cleveland Cavaliers vs Dallas Mavericks · KO 2026-11-15 02:30 SAST
-      MONEYLINE full_game -> HOME · p=66.5% (raw 66.5%) @1.741 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
+      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      archived_revisions=2 · latest_evidence_utc=2026-11-14T09:34:22Z
   [provider:espn/team_history_empirical_v1] Memphis Grizzlies vs Brooklyn Nets · KO 2026-11-15 03:00 SAST
-      MONEYLINE full_game -> HOME · p=62.7% (raw 62.7%) @1.446 DraftKings
+      MONEYLINE full_game -> HOME · p=65.7% (raw 65.7%) @1.488 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
+      archived_revisions=2 · latest_evidence_utc=2026-11-14T09:34:22Z
+  [provider:espn/team_history_empirical_v1] Cleveland Cavaliers vs Dallas Mavericks · KO 2026-11-15 02:30 SAST
+      MONEYLINE full_game -> HOME · p=65.6% (raw 65.6%) @1.769 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
+      archived_revisions=2 · latest_evidence_utc=2026-11-14T09:34:22Z
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] New Orleans Pelicans vs Denver Nuggets · KO 2026-11-15 02:00 SAST
-      TOTAL full_game 234.5 -> OVER · p=60.0% (raw 60.0%) @1.909 DraftKings
+      TOTAL full_game 234.5 -> OVER · p=61.0% (raw 61.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
+      archived_revisions=2 · latest_evidence_utc=2026-11-14T09:34:22Z
   [team_history_empirical_v1/team_history_empirical_v1] New Orleans Pelicans vs Denver Nuggets · KO 2026-11-15 02:00 SAST
-      MONEYLINE full_game -> AWAY · p=58.2% (raw 57.0%) @1.180 DraftKings
+      MONEYLINE full_game -> AWAY · p=57.6% (raw 55.0%) @1.180 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
-      calibration=provisional n=1 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [provider:espn/team_history_empirical_v1] Miami Heat vs Detroit Pistons · KO 2026-11-15 03:00 SAST
-      MONEYLINE full_game -> AWAY · p=57.5% (raw 57.5%) @1.524 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
-  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Chicago Bulls · KO 2026-11-15 03:00 SAST
-      TOTAL full_game 236.5 -> UNDER · p=55.0% (raw 55.0%) @1.893 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
+      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      archived_revisions=2 · latest_evidence_utc=2026-11-14T09:34:22Z
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Miami Heat vs Detroit Pistons · KO 2026-11-15 03:00 SAST
-      SPREAD full_game +4.5 -> HOME · p=54.0% (raw 54.0%) @1.926 DraftKings
+      SPREAD full_game +4.5 -> HOME · p=56.0% (raw 56.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
+      archived_revisions=2 · latest_evidence_utc=2026-11-14T09:34:22Z
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Chicago Bulls · KO 2026-11-15 03:00 SAST
-      SPREAD full_game -14.5 -> HOME · p=53.0% (raw 53.0%) @1.952 DraftKings
+      TOTAL full_game 236.5 -> UNDER · p=56.0% (raw 56.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
+      archived_revisions=2 · latest_evidence_utc=2026-11-14T09:34:22Z
+  [team_history_empirical_v1/team_history_empirical_v1] Miami Heat vs Detroit Pistons · KO 2026-11-15 03:00 SAST
+      MONEYLINE full_game -> HOME · p=55.6% (raw 53.0%) @2.600 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
+      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Chicago Bulls · KO 2026-11-15 03:00 SAST
+      SPREAD full_game -14.5 -> HOME · p=55.0% (raw 55.0%) @1.952 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
+      archived_revisions=2 · latest_evidence_utc=2026-11-14T09:34:22Z
+  [provider:espn/team_history_empirical_v1] Miami Heat vs Detroit Pistons · KO 2026-11-15 03:00 SAST
+      MONEYLINE full_game -> AWAY · p=54.7% (raw 54.7%) @1.524 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
+      archived_revisions=2 · latest_evidence_utc=2026-11-14T09:34:22Z
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] New Orleans Pelicans vs Denver Nuggets · KO 2026-11-15 02:00 SAST
-      SPREAD full_game +11.5 -> HOME · p=53.0% (raw 53.0%) @1.877 DraftKings
+      SPREAD full_game +11.5 -> HOME · p=52.0% (raw 52.0%) @1.935 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
+      archived_revisions=2 · latest_evidence_utc=2026-11-14T09:34:22Z
+  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Miami Heat vs Detroit Pistons · KO 2026-11-15 03:00 SAST
+      TOTAL full_game 229.5 -> UNDER · p=51.0% (raw 51.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=espn
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Miami Heat vs Detroit Pistons · KO 2026-11-15 03:00 SAST
@@ -149,10 +196,10 @@ SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
   (none)
 
-Active summary: ELIGIBLE_CLEAN=0 CAUTION=5 WATCHLIST_NO_ODDS=11 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=13
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=8 WATCHLIST_NO_ODDS=14 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=15
 ROI-qualified individual paper singles: 1
 Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=0
-Logical picks shown: 29 · superseded observations: 0
-Total archived pick evidence rows: 29
+Logical picks shown: 37 · superseded observations: 15
+Total archived pick evidence rows: 52
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.
