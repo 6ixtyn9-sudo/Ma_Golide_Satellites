@@ -1,83 +1,596 @@
 # Ma Golide — Recent picks audit (2026-10-16 to 2026-11-14)
 
-Generated: 2026-11-14 19:56 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-15 00:17 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
-- archived logical picks: 1834
-- dated evidence rows: 5122 (3288 superseded observations)
-- settled picks: 1404 (906 wins / 498 losses / 0 pushes)
-- hit rate: 64.5% (906/1404 win/loss decisions)
-- pending/unmatched picks: 0 prior-day · 430 total
-- priced picks: 1055
-- paper P&L: -24.338 units
-- ROI: -2.3% (P&L / 1055 priced picks)
+- archived logical picks: 1844
+- dated evidence rows: 5230 (3386 superseded observations)
+- settled picks: 1552 (987 wins / 565 losses / 0 pushes)
+- hit rate: 63.6% (987/1552 win/loss decisions)
+- pending/unmatched picks: 292 prior-day · 292 total
+- priced picks: 1158
+- paper P&L: -33.904 units
+- ROI: -2.9% (P&L / 1158 priced picks)
 
 ## Settlement policy
 
 - reconciled official finals settle immediately; pending rows are never losses
-- local-day pending cutoff: 2026-11-14
-- same-day pending rows outside prior-day counters: 430
+- local-day pending cutoff: 2026-11-15
+- same-day pending rows outside prior-day counters: 0
 - same-day official-final picks included: 0
-- eligible prior-day picks: 1404
+- eligible prior-day picks: 1844
 - latest observation per logical pick; superseded dated evidence remains in JSON
 
 ## Bucket performance
 
 | Bucket | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `SKIPPED_INELIGIBLE` | 1055 | 622–433–0 | 59.0% | 1055 | -2.3% |
-| `WATCHLIST_NO_ODDS` | 349 | 284–65–0 | 81.4% | 0 | n/a |
+| `SKIPPED_INELIGIBLE` | 1158 | 675–483–0 | 58.3% | 1158 | -2.9% |
+| `WATCHLIST_NO_ODDS` | 394 | 312–82–0 | 79.2% | 0 | n/a |
 
 ## By market
 
 | Market | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `moneyline` | 683 | 525–158–0 | 76.9% | 335 | -8.3% |
-| `spread` | 311 | 165–146–0 | 53.1% | 311 | +0.9% |
-| `total` | 410 | 216–194–0 | 52.7% | 409 | +0.2% |
+| `moneyline` | 762 | 569–193–0 | 74.7% | 369 | -10.6% |
+| `spread` | 343 | 179–164–0 | 52.2% | 343 | -0.8% |
+| `total` | 447 | 239–208–0 | 53.5% | 446 | +1.8% |
 
 ## By selection — over/under & side bias
 
 | Market:Selection | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `moneyline:away` | 34 | 17–17–0 | 50.0% | 33 | -31.4% |
-| `moneyline:home` | 649 | 508–141–0 | 78.3% | 302 | -5.8% |
-| `spread:away` | 133 | 81–52–0 | 60.9% | 133 | +16.0% |
-| `spread:home` | 178 | 84–94–0 | 47.2% | 178 | -10.5% |
-| `total:over` | 224 | 104–120–0 | 46.4% | 223 | -12.0% |
-| `total:under` | 186 | 112–74–0 | 60.2% | 186 | +14.8% |
+| `moneyline:away` | 38 | 20–18–0 | 52.6% | 37 | -27.5% |
+| `moneyline:home` | 724 | 549–175–0 | 75.8% | 332 | -8.7% |
+| `spread:away` | 143 | 89–54–0 | 62.2% | 143 | +18.6% |
+| `spread:home` | 200 | 90–110–0 | 45.0% | 200 | -14.6% |
+| `total:over` | 236 | 108–128–0 | 45.8% | 235 | -13.2% |
+| `total:under` | 211 | 131–80–0 | 62.1% | 211 | +18.5% |
 
 ## Paper-only opposite-side fade audit
 
 Counterfactual reporting only — this is not a strategy, pick, or ticket. A settled result is reversed (win↔loss; push stays push) and priced only when the exact opposite quote is preserved in the same pre-tip book snapshot, market, period, line, and observation. No quote is inferred or historically backfilled; selected-side price is not required.
 
-- settled rows with exact opposite quotes: 434/1404
-- fade record: 162–272–0
-- fade hit rate: 37.3% (162/434 decisions)
-- paper P&L: -97.953 units · ROI: -22.6% (one unit per priced fade, pushes included)
-- mean market-implied break-even hit rate: 43.3% (n=434 non-push quotes; includes vig)
-- unpriced settled rows: `market_has_no_single_opposite_side`=226, `no_book_evidence`=122, `opposite_quote_not_preserved`=622
+- settled rows with exact opposite quotes: 537/1552
+- fade record: 212–325–0
+- fade hit rate: 39.5% (212/537 decisions)
+- paper P&L: -86.659 units · ROI: -16.1% (one unit per priced fade, pushes included)
+- mean market-implied break-even hit rate: 43.9% (n=537 non-push quotes; includes vig)
+- unpriced settled rows: `market_has_no_single_opposite_side`=249, `no_book_evidence`=144, `opposite_quote_not_preserved`=622
 
 | Market | Settled candidates | Exact quotes | Fade W–L–P | ROI |
 | --- | ---: | ---: | ---: | ---: |
-| `moneyline` | 683 | 144 | 41–103–0 | -27.1% |
-| `spread` | 311 | 131 | 48–83–0 | -30.2% |
-| `total` | 410 | 159 | 73–86–0 | -12.2% |
+| `moneyline` | 762 | 178 | 59–119–0 | -11.2% |
+| `spread` | 343 | 163 | 66–97–0 | -22.8% |
+| `total` | 447 | 196 | 87–109–0 | -15.1% |
 
 Numeric selected-probability bands (calibrated probability, otherwise raw):
 
 | Probability band | Settled candidates | Exact quotes | Fade W–L–P | ROI |
 | --- | ---: | ---: | ---: | ---: |
-| `0.50-<0.60` | 254 | 105 | 42–63–0 | -23.3% |
-| `0.60-<0.70` | 284 | 99 | 54–45–0 | +8.3% |
-| `0.70-<0.80` | 487 | 141 | 46–95–0 | -27.9% |
-| `0.80-<0.90` | 246 | 65 | 20–45–0 | -28.2% |
-| `0.90-1.00` | 133 | 24 | 0–24–0 | -100.0% |
+| `0.50-<0.60` | 283 | 133 | 57–76–0 | -17.0% |
+| `0.60-<0.70` | 317 | 124 | 70–54–0 | +12.5% |
+| `0.70-<0.80` | 538 | 165 | 52–113–0 | -27.1% |
+| `0.80-<0.90` | 270 | 86 | 30–56–0 | -13.6% |
+| `0.90-1.00` | 144 | 29 | 3–26–0 | -79.9% |
 
 ## Settled picks — official-final audit
 
 Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+### 2026-11-14: Gonzaga Bulldogs vs LSU Tigers (Final: **80–81**)
+
+- 🔴 **LOST — Full-game moneyline: Gonzaga Bulldogs (home)**
+  - Expected: **69.0%** · Price: **1.444 · DraftKings** · Counterfactual fade: **WON @ 2.850 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 162.5: Under**
+  - Actual Full-game total: **161** · Expected: **83.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -6.5: Gonzaga Bulldogs (home)**
+  - Actual Full-game margin: **-1** · Expected: **62.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **WON @ 1.893 LSU Tigers +6.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -5.5: Gonzaga Bulldogs (home)**
+  - Actual Full-game margin: **-1** · Expected: **63.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **WON @ 1.870 LSU Tigers +5.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 161.5: Under**
+  - Actual Full-game total: **161** · Expected: **78.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **LOST @ 1.952 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — First-half moneyline: Gonzaga Bulldogs (home)**
+  - Actual First-half score: **37–39** · Expected: **76.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 160.5: Under**
+  - Actual Full-game total: **161** · Expected: **78.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **WON @ 1.893 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Gonzaga Bulldogs (home)**
+  - Expected: **86.1%** · Price: **1.444 · DraftKings** · Counterfactual fade: **WON @ 2.850 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+
+### 2026-11-14: Northern Kentucky Norse vs Central Michigan Chippewas (Final: **57–68**)
+
+- 🔴 **LOST — Full-game moneyline: Northern Kentucky Norse (home)**
+  - Expected: **63.4%** · Price: **1.617 · DraftKings** · Counterfactual fade: **WON @ 2.360 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 162.5: Under**
+  - Actual Full-game total: **125** · Expected: **78.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Northern Kentucky Norse (home)**
+  - Expected: **66.0%** · Price: **1.617 · DraftKings** · Counterfactual fade: **WON @ 2.360 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Northern Kentucky Norse (home)**
+  - Actual First-half score: **26–22** · Expected: **71.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 161.5: Under**
+  - Actual Full-game total: **125** · Expected: **76.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **LOST @ 1.870 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -3.5: Northern Kentucky Norse (home)**
+  - Actual Full-game margin: **-11** · Expected: **59.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **WON @ 1.870 Central Michigan Chippewas +3.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Denver Pioneers vs Wyoming Cowboys (Final: **53–76**)
+
+- 🟢 **WON — Full-game total 149.5: Under**
+  - Actual Full-game total: **129** · Expected: **53.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **LOST @ 1.870 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Denver Pioneers (home)**
+  - Expected: **69.0%** · Price: **3.500 · DraftKings** · Counterfactual fade: **WON @ 1.323 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 148.5: Under**
+  - Actual Full-game total: **129** · Expected: **54.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Wyoming Cowboys (away)**
+  - Expected: **62.1%** · Price: **1.323 · DraftKings** · Counterfactual fade: **LOST @ 3.500 home · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🔴 **LOST — First-half moneyline: Denver Pioneers (home)**
+  - Actual First-half score: **24–36** · Expected: **76.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +7.5: Denver Pioneers (home)**
+  - Actual Full-game margin: **-23** · Expected: **80.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **WON @ 1.926 Wyoming Cowboys -7.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Radford Highlanders vs Shenandoah Hornets (Final: **102–63**)
+
+- 🟢 **WON — Full-game moneyline: Radford Highlanders (home)**
+  - Expected: **99.8%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — First-half moneyline: Radford Highlanders (home)**
+  - Actual First-half score: **57–33** · Expected: **76.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Radford Highlanders (home)**
+  - Expected: **69.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Winthrop Eagles vs Jackson State Tigers (Final: **72–76**)
+
+- 🔴 **LOST — Full-game moneyline: Winthrop Eagles (home)**
+  - Expected: **70.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Winthrop Eagles (home)**
+  - Expected: **81.9%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 163.5: Under**
+  - Actual Full-game total: **148** · Expected: **82.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Winthrop Eagles (home)**
+  - Expected: **70.0%** · Price: **1.235 · DraftKings** · Counterfactual fade: **WON @ 4.300 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Winthrop Eagles (home)**
+  - Expected: **81.9%** · Price: **1.235 · DraftKings** · Counterfactual fade: **WON @ 4.300 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 165.5: Under**
+  - Actual Full-game total: **148** · Expected: **84.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **LOST @ 1.952 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Winthrop Eagles (home)**
+  - Actual First-half score: **28–27** · Expected: **73.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -7.5: Winthrop Eagles (home)**
+  - Actual Full-game margin: **-4** · Expected: **58.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 Jackson State Tigers +7.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -9.5: Winthrop Eagles (home)**
+  - Actual Full-game margin: **-4** · Expected: **56.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **WON @ 1.893 Jackson State Tigers +9.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 164.5: Under**
+  - Actual Full-game total: **148** · Expected: **84.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **LOST @ 1.870 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Florida Atlantic Owls vs Coastal Georgia Mariner (Final: **78–63**)
+
+- 🟢 **WON — Full-game moneyline: Florida Atlantic Owls (home)**
+  - Expected: **70.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Florida Atlantic Owls (home)**
+  - Expected: **99.9%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — First-half moneyline: Florida Atlantic Owls (home)**
+  - Actual First-half score: **46–34** · Expected: **74.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Queens University Royals vs Wofford Terriers (Final: **97–92**)
+
+- 🟢 **WON — Full-game moneyline: Queens University Royals (home)**
+  - Expected: **75.6%** · Price: **1.377 · DraftKings** · Counterfactual fade: **LOST @ 3.150 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Queens University Royals (home)**
+  - Expected: **75.6%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🔴 **LOST — Full-game total 172.5: Under**
+  - Actual Full-game total: **189** · Expected: **89.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **WON @ 1.870 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Queens University Royals (home)**
+  - Expected: **66.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -7.5: Queens University Royals (home)**
+  - Actual Full-game margin: **+5** · Expected: **53.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 Wofford Terriers +7.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Queens University Royals (home)**
+  - Expected: **66.0%** · Price: **1.377 · DraftKings** · Counterfactual fade: **LOST @ 3.150 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 176.5: Under**
+  - Actual Full-game total: **189** · Expected: **93.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **WON @ 1.926 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Queens University Royals (home)**
+  - Actual First-half score: **46–40** · Expected: **68.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -5.5: Queens University Royals (home)**
+  - Actual Full-game margin: **+5** · Expected: **57.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **WON @ 1.952 Wofford Terriers +5.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: North Florida Ospreys vs The Citadel Bulldogs (Final: **74–77**)
+
+- 🟢 **WON — Full-game total 154.5: Under**
+  - Actual Full-game total: **151** · Expected: **62.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: North Florida Ospreys (home)**
+  - Actual First-half score: **35–29** · Expected: **66.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 155.5: Under**
+  - Actual Full-game total: **151** · Expected: **67.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **LOST @ 1.926 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: North Florida Ospreys (home)**
+  - Expected: **64.0%** · Price: **1.556 · DraftKings** · Counterfactual fade: **WON @ 2.500 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -4.5: North Florida Ospreys (home)**
+  - Actual Full-game margin: **-3** · Expected: **57.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **WON @ 1.870 The Citadel Bulldogs +4.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -3.5: North Florida Ospreys (home)**
+  - Actual Full-game margin: **-3** · Expected: **57.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **WON @ 1.926 The Citadel Bulldogs +3.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: North Florida Ospreys (home)**
+  - Expected: **62.1%** · Price: **1.556 · DraftKings** · Counterfactual fade: **WON @ 2.500 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+
+### 2026-11-14: North Carolina A&T Aggies vs Cheyney (PA) Wolves (Final: **104–76**)
+
+- 🟢 **WON — First-half moneyline: North Carolina A&T Aggies (home)**
+  - Actual First-half score: **63–33** · Expected: **73.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: North Carolina A&T Aggies (home)**
+  - Expected: **99.6%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: North Carolina A&T Aggies (home)**
+  - Expected: **69.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Stephen F. Austin Lumberjacks vs Rice Owls (Final: **78–81**)
+
+- 🟢 **WON — Full-game total 147.5: Over**
+  - Actual Full-game total: **159** · Expected: **51.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -11.5: Stephen F. Austin Lumberjacks (home)**
+  - Actual Full-game margin: **-3** · Expected: **52.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **WON @ 1.870 Rice Owls +11.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Stephen F. Austin Lumberjacks (home)**
+  - Expected: **82.9%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🔴 **LOST — Full-game total 148.5: Under**
+  - Actual Full-game total: **159** · Expected: **53.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — First-half moneyline: Stephen F. Austin Lumberjacks (home)**
+  - Actual First-half score: **30–39** · Expected: **77.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -9.5: Stephen F. Austin Lumberjacks (home)**
+  - Actual Full-game margin: **-3** · Expected: **56.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **WON @ 1.926 Rice Owls +9.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Stephen F. Austin Lumberjacks (home)**
+  - Expected: **70.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Stephen F. Austin Lumberjacks (home)**
+  - Expected: **82.9%** · Price: **1.187 · DraftKings** · Counterfactual fade: **WON @ 5.000 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🔴 **LOST — Full-game moneyline: Stephen F. Austin Lumberjacks (home)**
+  - Expected: **70.0%** · Price: **1.187 · DraftKings** · Counterfactual fade: **WON @ 5.000 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Bellarmine Knights vs Northern Illinois Huskies (Final: **64–72**)
+
+- 🔴 **LOST — Full-game moneyline: Bellarmine Knights (home)**
+  - Expected: **54.3%** · Price: **2.050 · DraftKings** · Counterfactual fade: **WON @ 1.800 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🔴 **LOST — Full-game spread -1.5: Bellarmine Knights (home)**
+  - Actual Full-game margin: **-8** · Expected: **68.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **WON @ 1.952 Northern Illinois Huskies +1.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Bellarmine Knights (home)**
+  - Expected: **69.0%** · Price: **2.050 · DraftKings** · Counterfactual fade: **WON @ 1.800 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 150.5: Under**
+  - Actual Full-game total: **136** · Expected: **56.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **LOST @ 1.870 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +1.5: Bellarmine Knights (home)**
+  - Actual Full-game margin: **-8** · Expected: **70.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **WON @ 1.870 Northern Illinois Huskies -1.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Bellarmine Knights (home)**
+  - Expected: **54.3%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — First-half moneyline: Bellarmine Knights (home)**
+  - Actual First-half score: **31–27** · Expected: **78.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 149.5: Under**
+  - Actual Full-game total: **136** · Expected: **53.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Bellarmine Knights (home)**
+  - Expected: **69.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Texas Tech Red Raiders vs Stonehill Skyhawks (Final: **88–37**)
+
+- 🔴 **LOST — Full-game total 143.5: Over**
+  - Actual Full-game total: **125** · Expected: **61.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **WON @ 1.893 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Texas Tech Red Raiders (home)**
+  - Expected: **99.6%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — First-half moneyline: Texas Tech Red Raiders (home)**
+  - Actual First-half score: **43–21** · Expected: **79.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +39.5: Stonehill Skyhawks (away)**
+  - Actual Full-game margin: **+51** · Expected: **94.0%** · Price: **1.847 · DraftKings** · Counterfactual fade: **WON @ 1.980 Texas Tech Red Raiders -39.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Texas Tech Red Raiders (home)**
+  - Expected: **70.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 142.5: Over**
+  - Actual Full-game total: **125** · Expected: **67.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **WON @ 1.952 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +40.5: Stonehill Skyhawks (away)**
+  - Actual Full-game margin: **+51** · Expected: **95.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 Texas Tech Red Raiders -40.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: South Florida Bulls vs Coppin State Eagles (Final: **73–63**)
+
+- 🟢 **WON — Full-game moneyline: South Florida Bulls (home)**
+  - Expected: **97.1%** · Price: **1.010 · DraftKings** · Counterfactual fade: **LOST @ 31.000 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game spread +25.5: Coppin State Eagles (away)**
+  - Actual Full-game margin: **+10** · Expected: **79.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **LOST @ 1.893 South Florida Bulls -25.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — First-half moneyline: South Florida Bulls (home)**
+  - Actual First-half score: **30–31** · Expected: **73.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: South Florida Bulls (home)**
+  - Expected: **69.0%** · Price: **1.010 · DraftKings** · Counterfactual fade: **LOST @ 31.000 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +27.5: Coppin State Eagles (away)**
+  - Actual Full-game margin: **+10** · Expected: **85.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 South Florida Bulls -27.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +28.5: Coppin State Eagles (away)**
+  - Actual Full-game margin: **+10** · Expected: **85.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **LOST @ 1.870 South Florida Bulls -28.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 150.5: Under**
+  - Actual Full-game total: **136** · Expected: **61.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 149.5: Under**
+  - Actual Full-game total: **136** · Expected: **56.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: South Carolina Gamecocks vs Gardner-Webb Runnin' Bulldogs (Final: **79–62**)
+
+- 🔴 **LOST — Full-game total 145.5: Over**
+  - Actual Full-game total: **141** · Expected: **52.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **WON @ 1.893 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: South Carolina Gamecocks (home)**
+  - Expected: **97.8%** · Price: **1.005 · DraftKings** · Counterfactual fade: **LOST @ 36.000 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: South Carolina Gamecocks (home)**
+  - Expected: **71.0%** · Price: **1.005 · DraftKings** · Counterfactual fade: **LOST @ 36.000 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +26.5: Gardner-Webb Runnin' Bulldogs (away)**
+  - Actual Full-game margin: **+17** · Expected: **79.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **LOST @ 1.870 South Carolina Gamecocks -26.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 142.5: Over**
+  - Actual Full-game total: **141** · Expected: **57.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **WON @ 1.952 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: South Carolina Gamecocks (home)**
+  - Actual First-half score: **35–33** · Expected: **78.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +25.5: Gardner-Webb Runnin' Bulldogs (away)**
+  - Actual Full-game margin: **+17** · Expected: **77.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 South Carolina Gamecocks -25.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +27.5: Gardner-Webb Runnin' Bulldogs (away)**
+  - Actual Full-game margin: **+17** · Expected: **83.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 South Carolina Gamecocks -27.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Evansville Purple Aces vs Miami (OH) RedHawks (Final: **78–86**)
+
+- 🟢 **WON — Full-game moneyline: Miami (OH) RedHawks (away)**
+  - Expected: **80.7%** · Price: **1.235 · DraftKings** · Counterfactual fade: **LOST @ 4.300 home · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🔴 **LOST — Full-game total 151.5: Under**
+  - Actual Full-game total: **164** · Expected: **61.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **WON @ 1.926 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Evansville Purple Aces (home)**
+  - Actual First-half score: **45–43** · Expected: **73.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 153.5: Under**
+  - Actual Full-game total: **164** · Expected: **68.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **WON @ 1.870 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +8.5: Evansville Purple Aces (home)**
+  - Actual Full-game margin: **-8** · Expected: **84.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **LOST @ 1.870 Miami (OH) RedHawks -8.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Evansville Purple Aces (home)**
+  - Expected: **69.0%** · Price: **4.300 · DraftKings** · Counterfactual fade: **WON @ 1.235 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Colorado State Rams vs Loyola Chicago Ramblers (Final: **58–73**)
+
+- 🔴 **LOST — Full-game moneyline: Colorado State Rams (home)**
+  - Expected: **84.3%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🔴 **LOST — First-half moneyline: Colorado State Rams (home)**
+  - Actual First-half score: **24–44** · Expected: **79.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -9.5: Colorado State Rams (home)**
+  - Actual Full-game margin: **-15** · Expected: **57.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **WON @ 1.893 Loyola Chicago Ramblers +9.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Colorado State Rams (home)**
+  - Expected: **77.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Colorado State Rams (home)**
+  - Expected: **84.2%** · Price: **1.263 · DraftKings** · Counterfactual fade: **WON @ 4.000 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 151.5: Under**
+  - Actual Full-game total: **131** · Expected: **54.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **LOST @ 1.870 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -7.5: Colorado State Rams (home)**
+  - Actual Full-game margin: **-15** · Expected: **63.0%** · Price: **1.847 · DraftKings** · Counterfactual fade: **WON @ 1.980 Loyola Chicago Ramblers +7.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Colorado State Rams (home)**
+  - Expected: **76.0%** · Price: **1.263 · DraftKings** · Counterfactual fade: **WON @ 4.000 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Washington State Cougars vs Northwest University Eagles (Final: **123–87**)
+
+- 🟢 **WON — Full-game moneyline: Washington State Cougars (home)**
+  - Expected: **99.9%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — First-half moneyline: Washington State Cougars (home)**
+  - Actual First-half score: **69–42** · Expected: **78.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Washington State Cougars (home)**
+  - Expected: **69.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Maine Black Bears vs Drexel Dragons (Final: **64–66**)
+
+- 🟢 **WON — Full-game spread +3.5: Maine Black Bears (home)**
+  - Actual Full-game margin: **-2** · Expected: **76.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **LOST @ 1.926 Drexel Dragons -3.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Maine Black Bears (home)**
+  - Expected: **70.0%** · Price: **2.360 · DraftKings** · Counterfactual fade: **WON @ 1.617 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — First-half moneyline: Maine Black Bears (home)**
+  - Actual First-half score: **30–33** · Expected: **76.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Drexel Dragons (away)**
+  - Expected: **53.3%** · Price: **1.617 · DraftKings** · Counterfactual fade: **LOST @ 2.360 home · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game spread +4.5: Maine Black Bears (home)**
+  - Actual Full-game margin: **-2** · Expected: **77.0%** · Price: **1.847 · DraftKings** · Counterfactual fade: **LOST @ 1.980 Drexel Dragons -4.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 130.5: Over**
+  - Actual Full-game total: **130** · Expected: **85.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **WON @ 1.952 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 128.5: Over**
+  - Actual Full-game total: **130** · Expected: **86.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **LOST @ 1.926 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Youngstown State Penguins vs Marshall Thundering Herd (Final: **74–71**)
+
+- 🔴 **LOST — First-half moneyline: Youngstown State Penguins (home)**
+  - Actual First-half score: **28–34** · Expected: **76.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 157.5: Under**
+  - Actual Full-game total: **145** · Expected: **76.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **LOST @ 1.926 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +1.5: Youngstown State Penguins (home)**
+  - Actual Full-game margin: **+3** · Expected: **76.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **LOST @ 1.926 Marshall Thundering Herd -1.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 159.5: Under**
+  - Actual Full-game total: **145** · Expected: **76.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **LOST @ 1.893 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Youngstown State Penguins (home)**
+  - Expected: **53.7%** · Price: **2.000 · DraftKings** · Counterfactual fade: **LOST @ 1.833 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Youngstown State Penguins (home)**
+  - Expected: **69.0%** · Price: **2.000 · DraftKings** · Counterfactual fade: **LOST @ 1.833 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Vermont Catamounts vs Plattsburgh Cardinals (Final: **104–59**)
+
+- 🟢 **WON — First-half moneyline: Vermont Catamounts (home)**
+  - Actual First-half score: **57–32** · Expected: **76.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Vermont Catamounts (home)**
+  - Expected: **99.8%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Vermont Catamounts (home)**
+  - Expected: **69.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: George Mason Patriots vs Bradley Braves (Final: **62–61**)
+
+- 🔴 **LOST — Full-game total 129.5: Over**
+  - Actual Full-game total: **123** · Expected: **82.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **WON @ 1.893 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: George Mason Patriots (home)**
+  - Expected: **79.4%** · Price: **1.111 · DraftKings** · Counterfactual fade: **LOST @ 7.000 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🔴 **LOST — Full-game total 128.5: Over**
+  - Actual Full-game total: **123** · Expected: **85.0%** · Price: **1.847 · DraftKings** · Counterfactual fade: **WON @ 1.980 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +13.5: Bradley Braves (away)**
+  - Actual Full-game margin: **+1** · Expected: **54.0%** · Price: **1.847 · DraftKings** · Counterfactual fade: **LOST @ 1.980 George Mason Patriots -13.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: George Mason Patriots (home)**
+  - Expected: **75.0%** · Price: **1.111 · DraftKings** · Counterfactual fade: **LOST @ 7.000 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — First-half moneyline: George Mason Patriots (home)**
+  - Actual First-half score: **27–31** · Expected: **78.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 130.5: Over**
+  - Actual Full-game total: **123** · Expected: **82.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **WON @ 1.893 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Army Black Knights vs St. Thomas Tommies (Final: **79–77**)
+
+- 🟢 **WON — Full-game total 146.5: Over**
+  - Actual Full-game total: **156** · Expected: **58.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **LOST @ 1.926 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Army Black Knights (home)**
+  - Expected: **69.0%** · Price: **3.300 · DraftKings** · Counterfactual fade: **LOST @ 1.351 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +6.5: Army Black Knights (home)**
+  - Actual Full-game margin: **+2** · Expected: **77.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **LOST @ 1.952 St. Thomas Tommies -6.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 148.5: Over**
+  - Actual Full-game total: **156** · Expected: **53.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **LOST @ 1.870 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +7.5: Army Black Knights (home)**
+  - Actual Full-game margin: **+2** · Expected: **77.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 St. Thomas Tommies -7.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: St. Thomas Tommies (away)**
+  - Expected: **54.2%** · Price: **1.351 · DraftKings** · Counterfactual fade: **WON @ 3.300 home · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🔴 **LOST — First-half moneyline: Army Black Knights (home)**
+  - Actual First-half score: **35–39** · Expected: **73.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-14: Akron Zips vs Tulane Green Wave (Final: **65–63**)
+
+- 🟢 **WON — Full-game moneyline: Akron Zips (home)**
+  - Expected: **84.8%** · Price: **1.125 · DraftKings** · Counterfactual fade: **LOST @ 6.500 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Akron Zips (home)**
+  - Expected: **69.0%** · Price: **1.125 · DraftKings** · Counterfactual fade: **LOST @ 6.500 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +12.5: Tulane Green Wave (away)**
+  - Actual Full-game margin: **+2** · Expected: **54.0%** · Price: **1.847 · DraftKings** · Counterfactual fade: **LOST @ 1.980 Akron Zips -12.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 155.5: Under**
+  - Actual Full-game total: **128** · Expected: **74.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **LOST @ 1.870 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Akron Zips (home)**
+  - Actual First-half score: **36–26** · Expected: **73.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 
 ### 2026-11-13: California Baptist Lancers vs Arkansas-Pine Bluff Golden Lions (Final: **74–60**)
 
