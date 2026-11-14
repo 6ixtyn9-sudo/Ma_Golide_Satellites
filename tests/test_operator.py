@@ -546,14 +546,14 @@ def test_empty_ticket_card_summarizes_no_acca_without_printing_candidate_funnel(
         "scan_rows": 50,
         "provisional_sample_only_rows": 7,
         "paper_candidate_rows": 7,
-        "paper_single_picks": 1,
+        "paper_single_picks": 2,
         "paper_single_games": 1,
         "paper_accas": 0,
         "strict_accas": 0,
         "eligibility_blockers": {"insufficient_walk_forward_samples": 7},
         "paper_pick_filter": {
             "candidate_pick_count": 7,
-            "qualifying_pick_count": 1,
+            "qualifying_pick_count": 2,
             "qualifying_band_count": 1,
             "historical_unique_pick_count": 12,
             "bands": [band],
@@ -574,7 +574,7 @@ def test_empty_ticket_card_summarizes_no_acca_without_printing_candidate_funnel(
     )
 
     assert (
-        "NO MULTI-LEG PAPER ACCA — 1 of 7 candidate picks passed individual-pick ROI; "
+        "NO MULTI-LEG PAPER ACCA — 2 of 7 candidate picks passed individual-pick ROI; "
         "only 1 distinct game qualifies; 2 are required."
     ) in text
     assert text.index("NO MULTI-LEG PAPER ACCA") < text.index("CURRENT PAPER BANK")
@@ -698,19 +698,208 @@ def test_roi_qualified_pick_is_published_as_a_paper_single_without_an_acca(tmp_p
     picks_text = Path(result["picks_text"]).read_text()
     assert "PAPER SINGLE · moneyline full_game" in picks_text
     assert "ROI-qualified individual paper singles: 1" in picks_text
-    assert result["ticket_receipt"] is None
+    assert result["ticket_receipt"] is not None
+    receipt = json.loads(Path(result["ticket_receipt"]).read_text())
+    assert receipt["status"] == "frozen"
+    assert receipt["paper_only"] is True
+    assert receipt["accas"] == []
+    assert len(receipt["singles"]) == 1
+    single = receipt["singles"][0]
+    assert single["ticket_type"] == "single"
+    assert single["leg_count"] == 1
+    assert single["stake_units"] == 1.0
+    assert single["combined_decimal_odds"] == 1.8
+    assert single["estimated_win_probability"] == 0.62
+    assert single["estimated_joint_win_probability"] == 0.62
+    assert single["individual_pick_filter"] == paper_filter
+    assert single["legs"][0]["individual_pick_roi_band"] == band
     ticket_text = Path(result["ticket_text"]).read_text()
-    assert (
-        "NO MULTI-LEG PAPER ACCA — 1 of 1 candidate pick passed individual-pick ROI; "
-        "only 1 distinct game qualifies; 2 are required."
-    ) in ticket_text
+    assert "[PAPER SINGLE #1]" in ticket_text
+    assert "1 paper single · 1 ticket publication" in ticket_text
+    assert "ROI band: moneyline full_game" in ticket_text
+    assert "NO MULTI-LEG PAPER ACCA" not in ticket_text
     assert "CANDIDATE FUNNEL" not in ticket_text
     assert "recency ROI" not in ticket_text
     assert result["candidate_funnel"]["paper_single_picks"] == 1
     assert result["candidate_funnel"]["paper_pick_filter"] == paper_filter
     ticket_state = json.loads(Path(result["ticket_state"]).read_text())
     assert ticket_state["scans"][-1]["candidate_funnel"] == result["candidate_funnel"]
+    assert ticket_state["scans"][-1]["fresh_single_tickets"] == 1
+    assert result["counts"]["published_accas"] == 0
+    assert result["counts"]["published_singles"] == 1
+    assert result["counts"]["pending_positions"] == 1
+    assert result["counts"]["pending_singles"] == 1
     assert result["counts"]["paper_single_picks"] == 1
+    performance = json.loads(Path(result["performance"]).read_text())
+    assert performance["settled_positions"] == 0
+    assert performance["pending_positions"] == 1
+    assert performance["pending_singles"] == 1
+    assert performance["paper_committed_units"] == 1.0
+
+
+def test_multiple_roi_qualified_selections_in_one_game_do_not_force_singles(tmp_path):
+    rows = [
+        forecast(1, market="moneyline", selection="home"),
+        forecast(1, market="total", selection="under"),
+    ]
+    bands = {
+        row["forecast_id"]: {
+            "market": row["market"],
+            "period": row["period"],
+            "candidate_pick_count": 2,
+            "historical_pick_count": 6,
+            "wins": 6,
+            "losses": 0,
+            "pushes": 0,
+            "observed_roi": 0.8,
+            "adjusted_roi": 0.2,
+            "qualifies": True,
+        }
+        for row in rows
+    }
+    for row in rows:
+        row["individual_pick_roi_band"] = bands[row["forecast_id"]]
+    paper_filter = {
+        "candidate_pick_count": 2,
+        "qualifying_pick_count": 2,
+        "qualifying_band_count": 2,
+        "historical_unique_pick_count": 12,
+        "candidate_band_details": bands,
+        "status": "applied",
+    }
+    market_report = report(rows)
+    market_report["accas"].update(
+        paper_results=[],
+        paper_single_picks=rows,
+        paper_pick_filter=paper_filter,
+    )
+
+    result = publish(tmp_path, Store([game(1)]), market_report)
+
+    assert result["ticket_receipt"] is None
+    assert result["counts"]["published_singles"] == 0
+    ticket_text = Path(result["ticket_text"]).read_text()
+    assert (
+        "NO MULTI-LEG PAPER ACCA — 2 of 2 candidate picks passed individual-pick ROI; "
+        "only 1 distinct game qualifies; 2 are required."
+    ) in ticket_text
+
+
+def test_single_ticket_does_not_bypass_non_sample_eligibility_gates(tmp_path):
+    row = forecast(
+        1,
+        eligible=False,
+        reasons=["below_calibrated_probability_floor"],
+    )
+    band = {
+        "market": "moneyline",
+        "period": "full_game",
+        "candidate_pick_count": 1,
+        "historical_pick_count": 6,
+        "observed_roi": 0.8,
+        "adjusted_roi": 0.2,
+        "qualifies": True,
+    }
+    row["individual_pick_roi_band"] = band
+    market_report = report([row])
+    market_report["accas"].update(
+        paper_results=[],
+        paper_single_picks=[row],
+        paper_pick_filter={
+            "candidate_band_details": {row["forecast_id"]: band},
+            "candidate_pick_count": 1,
+            "qualifying_pick_count": 1,
+        },
+    )
+
+    result = publish(tmp_path, Store([game(1)]), market_report)
+
+    assert result["ticket_receipt"] is None
+    assert result["counts"]["published_singles"] == 0
+    assert "eligibility/price evidence could not be frozen as a single" in Path(
+        result["ticket_text"]
+    ).read_text()
+
+
+def test_paper_single_settles_at_single_odds_and_keeps_write_once_receipt(tmp_path):
+    first_pick = forecast(1)
+    first_band = {
+        "market": "moneyline",
+        "period": "full_game",
+        "probability_band": "0.60-<0.70",
+        "individual_odds_band": "1.50-<2.00",
+        "candidate_pick_count": 1,
+        "historical_pick_count": 6,
+        "wins": 6,
+        "losses": 0,
+        "pushes": 0,
+        "observed_roi": 0.8,
+        "adjusted_roi": 0.2,
+        "qualifies": True,
+    }
+    first_filter = {
+        "candidate_pick_count": 1,
+        "qualifying_pick_count": 1,
+        "qualifying_band_count": 1,
+        "historical_unique_pick_count": 6,
+        "candidate_band_details": {first_pick["forecast_id"]: first_band},
+        "status": "applied",
+    }
+    first_pick["individual_pick_roi_band"] = first_band
+    first_report = report([first_pick])
+    first_report["accas"].update(
+        paper_results=[],
+        paper_single_picks=[first_pick],
+        paper_pick_filter=first_filter,
+    )
+
+    first = publish(tmp_path, Store([game(1)]), first_report, run_id="single-first")
+    receipt_path = Path(first["ticket_receipt"])
+    frozen_bytes = receipt_path.read_bytes()
+    pending = json.loads(Path(first["performance"]).read_text())
+    assert pending["pending_singles"] == 1
+    assert pending["pending_positions"] == 1
+    assert pending["settled_accas"] == 0
+    assert pending["paper_committed_units"] == 1.0
+
+    replacement_pick = forecast(2)
+    replacement_pick["individual_pick_roi_band"] = first_band
+    replacement_report = report([replacement_pick])
+    replacement_report["accas"].update(
+        paper_results=[],
+        paper_single_picks=[replacement_pick],
+        paper_pick_filter=first_filter,
+    )
+    settled = publish_operator_reports(
+        Store([game(1, home_score=110, away_score=100), game(2)]),
+        League.NBA,
+        replacement_report,
+        tmp_path,
+        target_date=DATE,
+        generated_utc="2026-11-07T23:00:00Z",
+        run_id="single-replacement-must-not-rotate",
+    )
+
+    assert receipt_path.read_bytes() == frozen_bytes
+    performance = json.loads(Path(settled["performance"]).read_text())
+    assert performance["settled_singles"] == 1
+    assert performance["settled_positions"] == 1
+    assert performance["settled_accas"] == 0
+    assert performance["wins"] == 1
+    assert performance["profit_units"] == pytest.approx(0.8)
+    assert performance["roi"] == pytest.approx(0.8)
+    assert performance["settled_stake_units"] == 1.0
+    assert performance["paper_bank_units"] == pytest.approx(100.8)
+    assert performance["paper_committed_units"] == 0.0
+    assert performance["selected_leg_brier_score"] == pytest.approx((0.62 - 1) ** 2)
+    daily = performance["history"][0]
+    assert daily["singles"][0]["grade_status"] == "win"
+    assert daily["singles"][0]["profit_units"] == pytest.approx(0.8)
+    assert daily["accas"] == []
+    ticket_text = Path(settled["ticket_text"]).read_text()
+    assert "[PAPER SINGLE #1]" in ticket_text
+    assert "· WIN" in ticket_text
+    assert "Home 1 vs Away 1" in ticket_text
 
 
 def test_provisional_sample_only_acca_is_frozen_as_labeled_paper_evidence(tmp_path):

@@ -191,16 +191,18 @@ paper-only signal, not statistical validation or proof of future profit.
 These are per-pick performance conditions, not a combined-acca odds or
 expected-value gate. The requested leg count is an upper bound for combinations:
 when fewer distinct ROI-qualified games are available, the paper combo shrinks to
-that count if at least two games qualify. With only one qualifying game, its
-pick remains available as a single and no acca is forced. Thus a default
-three-leg request can produce a triple, a double, or singles-only output without
-relaxing the pick checks. Multi-leg combinations are ranked by joint probability
-and do not reuse the same wager selection across separate acca tickets. Different
-selections from one game can appear on separate tickets, but no acca includes
-two legs from one game. Existing frozen receipts are not rewritten by later
-policy changes. Paper-pick outcomes and acca outcomes remain separate from
-calibration sample counts, which continue to come from prequential forecast
-evidence.
+that count if at least two games qualify. When exactly one ROI-qualified
+selection exists, the operator freezes it as a one-unit paper single instead of
+forcing an acca. This does not issue separate singles for a pool containing
+multiple selections, even if they all come from one game. Thus a default
+three-leg request can produce a triple, a double, or a single position without
+relaxing the pick checks. Singles and accas are both graded and counted as paper
+positions; their results remain separate from calibration samples, which
+continue to use prequential forecast evidence. Multi-leg combinations are ranked
+by joint probability and do not reuse the same wager selection across separate
+acca tickets. Different selections from one game can appear on separate tickets,
+but no acca includes two legs from one game. Existing frozen receipts are not
+rewritten by later policy changes.
 
 Reports have schema `magolide.market_forecasts.v1` and status
 `decision_support_only`. They cannot place bets or trigger external betting

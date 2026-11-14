@@ -247,21 +247,25 @@ For combinations, the requested leg count is an upper bound. The effective
 paper leg count is the smaller of that request and the number of distinct games
 with ROI-qualified picks. A combination is emitted only when at least two such
 games exist. For the default three-leg request, two qualifying games produce a
-double; one qualifying game produces singles only, not a forced acca. The paper
-combination surface greedily accepts tickets in descending joint-probability
-order and does not reuse an exact wager selection across separate acca tickets.
-A different selection from the same game may be used on another ticket, while
-same-game legs remain prohibited within any one acca. This is a no-repeated-leg
-rule, not mathematical outcome exclusivity: separate tickets may still win
-simultaneously. The strict `results`/`strict_results` analytical ranking is
-unchanged and can contain overlapping combinations. Fewer paper combinations
-are returned when the requested limit exceeds the available non-repeated leg
-sets.
+double. When exactly one ROI-qualified selection exists, the operator instead
+freezes that pick as a one-unit paper single; it does not force an acca. This
+single-ticket rule does not turn a pool of multiple selections into separate
+singleton bets, even if they all come from one game. The paper combination
+surface greedily accepts tickets in descending joint-probability order; it does
+not reuse an exact wager selection across separate acca tickets. A different
+selection from the same game may be used on another ticket, while same-game legs
+remain prohibited
+within any one acca. This is a no-repeated-leg rule, not mathematical outcome
+exclusivity: separate tickets may still win simultaneously. The strict
+`results`/`strict_results` analytical ranking is unchanged and can contain
+overlapping combinations. Fewer paper combinations are returned when the
+requested limit exceeds the available non-repeated leg sets.
 
-Frozen paper receipts label every combination that uses a provisional leg.
-Paper ticket outcomes are collected in the separate paper-performance ledger;
-they do not directly count as calibration samples or feed the profile fit.
-Calibration continues to use prequential, past-only forecast evidence.
+Frozen paper receipts label every combination or single that uses the existing
+provisional sample-size exception. Singles and combinations are graded as paper
+positions in the separate paper-performance ledger; those outcomes do not
+become calibration samples or feed the profile fit. Calibration continues to
+use prequential, past-only forecast evidence.
 
 The ranking stage selects the highest-calibrated-probability candidate per
 game from the chosen strict or paper-only surface. On paper tickets, the

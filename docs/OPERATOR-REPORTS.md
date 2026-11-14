@@ -34,11 +34,11 @@ profitability.
 | `picks_YYYY-MM-DD.txt` | Human-readable latest picks, marking ROI-qualified paper singles, plus started/settled archive sections |
 | `picks_audit_rolling.json` | Thirty-day logical and settled ledgers plus flat-stake diagnostics |
 | `picks_audit_YYYY-MM-DD.md` | Readable rolling summary and every settled logical pick in the window |
-| `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper accas |
+| `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper singles and accas |
 | `auto_tickets_YYYY-MM-DD.txt` | Frozen receipt with leg grades, or an explicit unfrozen no-bet scan card |
 | `auto_tickets_state.json` | Write-once date locks and bounded scan telemetry |
-| `auto_tickets_performance.json` | Complete reconstructed paper-performance state and history |
-| `auto_tickets_performance.txt` | Bank, settled record, bet-days, held accas, and grading notes |
+| `auto_tickets_performance.json` | Complete reconstructed paper-position performance state and history |
+| `auto_tickets_performance.txt` | Bank, settled record, bet-days, held positions, and grading notes |
 
 The daily summary's `operator` object lists the generated paths and counts.
 
@@ -119,12 +119,16 @@ is an exploratory paper signal, not proof of statistical edge or future profit.
 
 Every positive-band candidate is flagged as a paper single in the current and
 dated pick JSON/text, and its outcome is tracked in the individual-pick audit.
-This remains available even when there are too few distinct games to make a
-combination. The requested leg count is an upper bound for paper combinations:
-the service reduces it to the number of distinct ROI-qualified games, with a
-two-leg minimum. Thus the default three-leg request becomes a double when only
-two games qualify, and produces singles only when just one game qualifies. No
-pick-quality or price gate is relaxed to fill a combination.
+When exactly one ROI-qualified selection exists, the operator freezes that pick
+as a one-unit paper single. The singleton uses the same exact-price, eligibility,
+and positive-ROI-band decision as the candidate surface; it does not lower a gate
+or manufacture another leg. If multiple selections qualify but no multi-leg
+combination can be built (for example, they are all from one game), the operator
+does not issue a separate ticket for each selection. The requested leg count is
+an upper bound for paper combinations: the service reduces it to the number of
+distinct ROI-qualified games, with a two-leg minimum. Thus the default three-leg
+request becomes a double when only two games qualify. No pick-quality or price
+gate is relaxed to fill a combination.
 
 Combinations are greedily accepted in descending joint-probability order and do
 not reuse an exact wager selection (league, game, market, period, selection, and
@@ -132,15 +136,16 @@ line) across separate acca tickets. A different selection from the same game may
 appear on another ticket, while same-game legs are still prohibited within an
 acca. This is a no-repeated-leg rule, not mathematical outcome exclusivity:
 separate tickets may still win simultaneously. Strict `accas.results` rankings
-are unchanged and may overlap. The first non-empty multi-leg paper acca report
-for a league/date writes a decision receipt and a write-once state lock. This
-includes a provisional paper acca when the sample-size gate alone is bypassed.
-The receipt stores the settled-pick ROI-band snapshot and provisional
-status/sample counts. Subsequent scans reprint the receipt even if the new
-candidate set differs. A missing locked receipt is an error; the engine never
-silently rebuilds or rotates a published card. A receipt recovered without its
-state lock adopts a lock from the immutable receipt itself. Existing frozen
-receipts are never rebalanced or rewritten by selection-policy changes.
+are unchanged and may overlap. The first non-empty paper ticket report (single
+or multi-leg acca) for a league/date writes a decision receipt and a write-once
+state lock. This includes a provisional paper position when the existing
+sample-size-only exception applies. New receipts store singles separately from
+accas and preserve the settled-pick ROI-band snapshot and provisional status/sample
+counts. Subsequent scans reprint the receipt even if the new candidate set
+differs. A missing locked receipt is an error; the engine never silently
+rebuilds or rotates a published card. A receipt recovered without its state lock
+adopts a lock from the immutable receipt itself. Existing frozen receipts are
+never rebalanced or rewritten by selection-policy changes.
 
 A withdrawal is a deliberate exception recorded in `auto_tickets_state.json`:
 its decision ID is excluded from performance, its date cannot receive a
@@ -148,9 +153,13 @@ replacement ticket, and the Git publisher rejects that ID if an old cache
 returns it. The original receipt is never rewritten; withdrawals preserve it as
 evidence.
 
-Each acca uses exactly one flat paper unit. The initial 100-unit figure is only
-an accounting base, not money or a recommended bankroll. Empty scans are logged
-but do not cancel earlier positions or consume ticket identities.
+Each paper single or acca position uses exactly one flat paper unit. A settled
+single is credited profit of decimal price minus one on a win, minus one on a
+loss, and zero on a push; pending singles reserve one unit. Singles and accas
+are both counted in paper-position performance, while their counts remain
+separately available. The initial 100-unit figure is only an accounting base,
+not money or a recommended bankroll. Empty scans are logged but do not cancel
+earlier positions or consume ticket identities.
 
 The human-readable empty latest-scan card is intentionally concise: it leads
 with **NO PAPER BET** or **NO MULTI-LEG PAPER ACCA** and a brief reason. It omits
