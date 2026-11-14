@@ -32,3 +32,19 @@ def test_workflow_allowlist_sync():
     # Pin the withdrawn sidecar is present in every block
     assert all("withdrawn" in b for b in src_blocks)
     assert all("withdrawn" in b for b in inst_blocks)
+
+
+def test_operator_state_restore_uses_latest_main_not_event_sha():
+    repo = Path(__file__).resolve().parents[1]
+    for path in (
+        repo / "workflows" / "ingestion.yml",
+        repo / ".github" / "workflows" / "ingestion.yml",
+    ):
+        text = path.read_text()
+        assert (
+            "git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main" in text
+        )
+        assert 'MAIN_REF=refs/remotes/origin/main' in text
+        assert 'git cat-file -e "${MAIN_REF}:${STATE_DIR}"' in text
+        assert 'git restore --source="$MAIN_REF" --worktree -- "$STATE_DIR"' in text
+        assert 'git cat-file -e "HEAD:${STATE_DIR}"' not in text
