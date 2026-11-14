@@ -160,6 +160,11 @@ jobs:
         run: |
           set -euo pipefail
           STATE_DIR="localdata/${{ matrix.state_key }}"
+          # Scheduled runs are pinned to their event SHA, which may predate a
+          # serialized publisher commit that added a frozen receipt. Fetch the
+          # latest Git-authoritative operator state before using the cache.
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          MAIN_REF=refs/remotes/origin/main
           # Delete only root-level derived operator files recovered from the
           # cache. Canonical DuckDB/CSV data, ledgers, nested evidence, and
           # unapproved files are not touched. Git then restores the current
@@ -196,8 +201,8 @@ jobs:
                   ):
                       path.unlink()
           PY
-          if git cat-file -e "HEAD:${STATE_DIR}" 2>/dev/null; then
-            git restore --source=HEAD --worktree -- "$STATE_DIR"
+          if git cat-file -e "${MAIN_REF}:${STATE_DIR}" 2>/dev/null; then
+            git restore --source="$MAIN_REF" --worktree -- "$STATE_DIR"
           fi
 
       - name: Resolve league acquisition date automatically
