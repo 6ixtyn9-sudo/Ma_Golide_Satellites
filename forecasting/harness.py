@@ -133,28 +133,80 @@ def _log_loss(probability: float, won: bool) -> float:
     return -math.log(bounded if won else 1 - bounded)
 
 
-def build_profiles(
-    records: Iterable[Forecast], config: CalibrationConfig | None = None
-) -> Dict[SegmentKey, CalibrationProfile]:
-    """Fit additive reliability adjustments from graded past forecasts only."""
-    cfg = config or CalibrationConfig()
+_PROFILE_STAGE_FIELDS = (
+    "input_records",
+    "ungraded_records",
+    "graded_records",
+    "invalid_scheduled_times",
+    "excluded_before_epoch",
+    "epoch_eligible_records",
+    "team_history_insufficient_records",
+    "team_history_insufficient_samples",
+    "team_history_insufficient_pushes",
+    "profile_pool_records",
+    "profile_pool_samples",
+    "profile_pool_pushes",
+)
+
+
+def _empty_profile_stage_counts() -> Dict[str, int]:
+    return {field: 0 for field in _PROFILE_STAGE_FIELDS}
+
+
+def _segment_dimensions(key: SegmentKey) -> Dict[str, str]:
+    return {
+        "league": key[0],
+        "market": key[1],
+        "period": key[2],
+        "source": key[3],
+        "calibration_version": key[4] if len(key) > 4 else LEGACY_VERSION_TAG,
+    }
+
+
+def _group_profile_records(
+    records: Iterable[Forecast], cfg: CalibrationConfig
+) -> tuple[
+    Dict[SegmentKey, List[Forecast]],
+    Dict[SegmentKey, List[Forecast]],
+    Dict[str, Any],
+]:
+    """Apply the exact profile admission rules and retain stage counts."""
     epoch_raw = getattr(cfg, "calibration_epoch_utc", CALIBRATION_EPOCH_UTC)
     try:
         epoch = parse_utc(epoch_raw) if epoch_raw else None
     except Exception:
         epoch = None
+
     grouped: Dict[SegmentKey, List[Forecast]] = {}
     grouped_insufficient: Dict[SegmentKey, List[Forecast]] = {}
+    totals = _empty_profile_stage_counts()
+    by_segment: Dict[SegmentKey, Dict[str, int]] = {}
+
+    def increment(key: SegmentKey, field: str) -> None:
+        totals[field] += 1
+        counts = by_segment.setdefault(key, _empty_profile_stage_counts())
+        counts[field] += 1
+
     for record in records:
+        key = record.versioned_segment_key
+        increment(key, "input_records")
         if record.outcome not in {"win", "loss", "push"}:
+            increment(key, "ungraded_records")
             continue
+        increment(key, "graded_records")
+
         # Hard-reset: ignore any graded record before the feature-freeze epoch.
         if epoch is not None:
             try:
-                if parse_utc(record.scheduled_utc) < epoch:
-                    continue
+                scheduled = parse_utc(record.scheduled_utc)
             except Exception:
+                increment(key, "invalid_scheduled_times")
                 continue
+            if scheduled < epoch:
+                increment(key, "excluded_before_epoch")
+                continue
+        increment(key, "epoch_eligible_records")
+
         # Version-aware segmentation: evidence from materially different model
         # or config versions carries a distinct version tag and never merges.
         # Records without version information carry the explicit ``legacy`` tag,
@@ -163,9 +215,56 @@ def build_profiles(
         # fallback rows remain visible in diagnostics, but cannot lend their
         # sample count or reliability adjustment to team-specific selections.
         if (record.team_history or {}).get("sufficient_for_accas") is False:
-            grouped_insufficient.setdefault(record.versioned_segment_key, []).append(record)
+            grouped_insufficient.setdefault(key, []).append(record)
+            increment(key, "team_history_insufficient_records")
+            increment(
+                key,
+                "team_history_insufficient_pushes"
+                if record.outcome == "push"
+                else "team_history_insufficient_samples",
+            )
             continue
-        grouped.setdefault(record.versioned_segment_key, []).append(record)
+
+        grouped.setdefault(key, []).append(record)
+        increment(key, "profile_pool_records")
+        increment(
+            key,
+            "profile_pool_pushes" if record.outcome == "push" else "profile_pool_samples",
+        )
+
+    diagnostics = {
+        "calibration_epoch_utc": epoch_raw,
+        "calibration_epoch_enabled": epoch is not None,
+        **totals,
+        "segments": [
+            {**_segment_dimensions(key), **by_segment[key]}
+            for key in sorted(by_segment)
+        ],
+    }
+    return grouped, grouped_insufficient, diagnostics
+
+
+def calibration_population_diagnostics(
+    records: Iterable[Forecast], config: CalibrationConfig | None = None
+) -> Dict[str, Any]:
+    """Count record inclusion and exclusion at each calibration-profile stage.
+
+    The same grouping routine powers :func:`build_profiles`, so these counts
+    cannot drift from its graded-outcome, epoch, and team-history filters.
+    ``profile_pool_samples`` counts wins and losses; pushes are reported
+    separately and never contribute to profile ``n``.
+    """
+    cfg = config or CalibrationConfig()
+    _, _, diagnostics = _group_profile_records(records, cfg)
+    return diagnostics
+
+
+def build_profiles(
+    records: Iterable[Forecast], config: CalibrationConfig | None = None
+) -> Dict[SegmentKey, CalibrationProfile]:
+    """Fit additive reliability adjustments from graded past forecasts only."""
+    cfg = config or CalibrationConfig()
+    grouped, grouped_insufficient, _ = _group_profile_records(records, cfg)
     profiles: Dict[SegmentKey, CalibrationProfile] = {}
     for key, rows in grouped.items():
         graded = [row for row in rows if row.outcome in {"win", "loss"}]
@@ -316,6 +415,7 @@ __all__ = [
     "SegmentKey",
     "apply_profiles",
     "build_profiles",
+    "calibration_population_diagnostics",
     "config_fingerprint",
     "probability_metrics",
 ]

@@ -37,6 +37,7 @@ from .harness import (
     CalibrationConfig,
     apply_profiles,
     build_profiles,
+    calibration_population_diagnostics,
     probability_metrics,
 )
 from .model import ForecastConfig, HistoryModel, QUARTERS
@@ -268,9 +269,26 @@ class MarketForecastService:
             and parse_utc(game.scheduled_utc) < as_of
         ]
         finals.sort(key=lambda game: (parse_utc(game.scheduled_utc), game.game_id))
+        final_status_games = [game for game in games if game.status is GameStatus.FINAL]
+        finals_without_actual = sum(game.actual is None for game in final_status_games)
+        finals_with_unreconciled_actual = sum(
+            game.actual is not None and not game.actual.reconciles()[0]
+            for game in final_status_games
+        )
+        reconciled_finals_not_yet_past = sum(
+            game.actual is not None
+            and game.actual.reconciles()[0]
+            and parse_utc(game.scheduled_utc) >= as_of
+            for game in final_status_games
+        )
 
         records: List[Forecast] = []
         prequential: List[Forecast] = []
+        replay_generated_by_segment: Counter = Counter()
+        replay_ungraded_by_segment: Counter = Counter()
+        replay_graded_by_segment: Counter = Counter()
+        replay_outcomes: Counter = Counter()
+        finals_with_generated_forecasts = 0
         for game in finals:
             # Simulate a forecast at tip: later finals are excluded by the
             # availability cutoff, and all prediction/book evidence is frozen.
@@ -282,12 +300,19 @@ class MarketForecastService:
                     historical=True,
                 )
             )
+            if generated:
+                finals_with_generated_forecasts += 1
             available = self._available_records(records, game.scheduled_utc)
             profiles = build_profiles(available, self.calibration_config)
             for forecast in generated:
+                key = forecast.versioned_segment_key
+                replay_generated_by_segment[key] += 1
                 outcome = grade_forecast(forecast, game)
                 if outcome is None:
+                    replay_ungraded_by_segment[key] += 1
                     continue
+                replay_graded_by_segment[key] += 1
+                replay_outcomes[outcome] += 1
                 forecast.outcome = outcome
                 apply_profiles([forecast], profiles, self.calibration_config)
                 prequential.append(forecast)
@@ -321,6 +346,9 @@ class MarketForecastService:
             }
         available_records = self._available_records(records, as_of_utc)
         current_profiles = build_profiles(available_records, self.calibration_config)
+        calibration_population = calibration_population_diagnostics(
+            available_records, self.calibration_config
+        )
         upcoming = []
         for game in games:
             if game.status is not GameStatus.SCHEDULED:
@@ -362,6 +390,145 @@ class MarketForecastService:
                     "status": "unavailable",
                     "error_type": type(exc).__name__,
                 }
+
+        current_by_segment = Counter(forecast.versioned_segment_key for forecast in current)
+        current_no_history_by_segment = Counter(
+            forecast.versioned_segment_key
+            for forecast in current
+            if forecast.calibration.get("status") == "no_history"
+        )
+        available_by_segment = Counter(
+            forecast.versioned_segment_key for forecast in available_records
+        )
+        population_by_segment = {
+            (
+                row["league"],
+                row["market"],
+                row["period"],
+                row["source"],
+                row["calibration_version"],
+            ): row
+            for row in calibration_population["segments"]
+        }
+        diagnostic_segment_keys = (
+            set(replay_generated_by_segment)
+            | set(replay_graded_by_segment)
+            | set(population_by_segment)
+            | set(current_by_segment)
+        )
+        replay_diagnostic_segments = []
+        for key in sorted(diagnostic_segment_keys):
+            stage = population_by_segment.get(key, {})
+            generated_count = replay_generated_by_segment[key]
+            graded_count = replay_graded_by_segment[key]
+            available_count = available_by_segment[key]
+            deferred_count = max(0, graded_count - available_count)
+            profile = current_profiles.get(key)
+            profile_n = profile.n if profile is not None else 0
+            profile_pool_n = stage.get("profile_pool_samples", 0)
+            if profile_n:
+                zero_n_reason = None
+                sample_status = "sufficient" if profile.sufficient else "below_minimum"
+            else:
+                sample_status = "zero_n"
+                if graded_count == 0 and generated_count:
+                    zero_n_reason = "replayed_forecasts_not_gradeable"
+                elif graded_count == 0:
+                    zero_n_reason = "no_replayed_forecasts_for_segment"
+                elif available_count == 0 and deferred_count:
+                    zero_n_reason = "all_graded_forecasts_withheld_by_result_delay"
+                elif (
+                    available_count
+                    and stage.get("excluded_before_epoch", 0) == available_count
+                ):
+                    zero_n_reason = "all_available_forecasts_precede_calibration_epoch"
+                elif (
+                    available_count
+                    and stage.get("invalid_scheduled_times", 0) == available_count
+                ):
+                    zero_n_reason = "invalid_scheduled_times_excluded"
+                elif (
+                    stage.get("team_history_insufficient_records", 0)
+                    and not stage.get("profile_pool_records", 0)
+                ):
+                    zero_n_reason = "team_history_insufficient_records_routed_to_diagnostics"
+                elif not profile_pool_n and stage.get("profile_pool_pushes", 0):
+                    zero_n_reason = "pushes_excluded_from_n"
+                elif profile_pool_n:
+                    zero_n_reason = "profile_missing_despite_eligible_samples"
+                else:
+                    zero_n_reason = "no_records_reached_calibration_profile_pool"
+
+            replay_diagnostic_segments.append(
+                {
+                    "league": key[0],
+                    "market": key[1],
+                    "period": key[2],
+                    "source": key[3],
+                    "calibration_version": key[4],
+                    "current_forecasts": current_by_segment[key],
+                    "current_forecasts_no_history": current_no_history_by_segment[key],
+                    "generated_replay_forecasts": generated_count,
+                    "ungradeable_replay_forecasts": replay_ungraded_by_segment[key],
+                    "graded_replay_forecasts": graded_count,
+                    "withheld_by_result_delay": deferred_count,
+                    "available_for_profile_filtering": available_count,
+                    "invalid_scheduled_times": stage.get("invalid_scheduled_times", 0),
+                    "excluded_before_epoch": stage.get("excluded_before_epoch", 0),
+                    "epoch_eligible_records": stage.get("epoch_eligible_records", 0),
+                    "team_history_insufficient_records": stage.get(
+                        "team_history_insufficient_records", 0
+                    ),
+                    "team_history_insufficient_sample_n": stage.get(
+                        "team_history_insufficient_samples", 0
+                    ),
+                    "team_history_insufficient_pushes": stage.get(
+                        "team_history_insufficient_pushes", 0
+                    ),
+                    "profile_pool_records": stage.get("profile_pool_records", 0),
+                    "profile_pool_pushes": stage.get("profile_pool_pushes", 0),
+                    "profile_pool_n": profile_pool_n,
+                    "profile_n": profile_n,
+                    "diagnostic_profile_n": stage.get("team_history_insufficient_samples", 0),
+                    "minimum_samples": self.calibration_config.min_samples,
+                    "sample_status": sample_status,
+                    "zero_n_reason": zero_n_reason,
+                }
+            )
+
+        replay_diagnostics = {
+            "finals": {
+                "league_games": len(games),
+                "final_status_games": len(final_status_games),
+                "finals_without_actual": finals_without_actual,
+                "finals_with_unreconciled_actual": finals_with_unreconciled_actual,
+                "reconciled_finals_not_yet_past_as_of": reconciled_finals_not_yet_past,
+                "historical_finals_replayed": len(finals),
+            },
+            "forecast_replay": {
+                "historical_finals_with_generated_forecasts": finals_with_generated_forecasts,
+                "historical_finals_without_generated_forecasts": (
+                    len(finals) - finals_with_generated_forecasts
+                ),
+                "generated_forecasts": sum(replay_generated_by_segment.values()),
+                "ungradeable_forecasts": sum(replay_ungraded_by_segment.values()),
+                "graded_forecasts": len(records),
+                "graded_outcomes": {
+                    outcome: replay_outcomes[outcome] for outcome in ("win", "loss", "push")
+                },
+            },
+            "result_availability": {
+                "graded_forecasts": len(records),
+                "withheld_by_result_delay": len(records) - len(available_records),
+                "available_for_profile_filtering": len(available_records),
+            },
+            "calibration_population": {
+                key: value
+                for key, value in calibration_population.items()
+                if key != "segments"
+            },
+            "segments": replay_diagnostic_segments,
+        }
         strict_accas = build_accas(current, legs=acca_legs, limit=acca_limit)
         paper_history = (
             available_records
@@ -450,6 +617,7 @@ class MarketForecastService:
                 "graded_forecasts": len(records),
                 "raw_metrics": probability_metrics(prequential),
                 "prequential_calibrated_metrics": probability_metrics(prequential, calibrated=True),
+                "replay_diagnostics": replay_diagnostics,
                 "shadow_challenger": shadow_summary,
                 "segments": [current_profiles[key].to_dict() for key in sorted(current_profiles)],
                 "guards": [

@@ -8,7 +8,12 @@ import math
 import pytest
 
 from forecasting.accas import build_accas, filter_paper_candidate_picks
-from forecasting.harness import CalibrationConfig, apply_profiles, build_profiles
+from forecasting.harness import (
+    CalibrationConfig,
+    apply_profiles,
+    build_profiles,
+    calibration_population_diagnostics,
+)
 from forecasting.model import ForecastConfig, HistoryModel
 import forecasting.service as forecasting_service_module
 from forecasting.service import MarketForecastService
@@ -281,6 +286,20 @@ def test_all_old_markets_are_forecast_and_accas_use_calibrated_probabilities():
     assert report["walk_forward"]["graded_forecasts"] > 0
     assert report["walk_forward"]["segments"]
     assert report["walk_forward"]["raw_metrics"]["brier_score"] is not None
+    replay_diagnostics = report["walk_forward"]["replay_diagnostics"]
+    assert replay_diagnostics["forecast_replay"]["graded_forecasts"] == report[
+        "walk_forward"
+    ]["graded_forecasts"]
+    assert replay_diagnostics["calibration_population"]["input_records"] == replay_diagnostics[
+        "result_availability"
+    ]["available_for_profile_filtering"]
+    assert sum(
+        segment["profile_n"] + segment["diagnostic_profile_n"]
+        for segment in replay_diagnostics["segments"]
+    ) == sum(segment["n"] for segment in report["walk_forward"]["segments"])
+    assert sum(
+        segment["current_forecasts_no_history"] for segment in replay_diagnostics["segments"]
+    ) == sum(row["calibration"]["status"] == "no_history" for row in report["forecasts"])
     accas = report["accas"]["results"]
     assert accas
     probabilities = [row["estimated_joint_win_probability"] for row in accas]
@@ -322,6 +341,80 @@ def test_all_old_markets_are_forecast_and_accas_use_calibrated_probabilities():
         assert acca["ticket_leg_reuse_policy"] == "no_reused_wager_selections"
         used_paper_leg_keys.update(leg_keys)
     assert report["accas"]["paper_ticket_leg_reuse_policy"] == "no_reused_wager_selections"
+
+
+def test_walk_forward_diagnostics_explain_epoch_exclusions_for_current_segments():
+    replay = MarketForecastService(
+        populated_store(finals=12, upcoming=3),
+        League.NBA,
+        forecast_config=ForecastConfig(
+            min_history_games=3,
+            min_residual_games=3,
+            team_prior_games=1.0,
+            training_window=50,
+            residual_window=30,
+        ),
+        calibration_config=CalibrationConfig(
+            min_samples=3,
+            prior_strength=2,
+            calibration_epoch_utc="2099-01-01T00:00:00Z",
+        ),
+    ).build_report(as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4)
+
+    walk_forward = replay["walk_forward"]
+    diagnostics = walk_forward["replay_diagnostics"]
+    population = diagnostics["calibration_population"]
+    assert replay["forecast_count"] > 0
+    assert diagnostics["forecast_replay"]["generated_forecasts"] > 0
+    assert diagnostics["forecast_replay"]["graded_forecasts"] == walk_forward["graded_forecasts"]
+    assert diagnostics["result_availability"]["available_for_profile_filtering"] > 0
+    assert population["input_records"] == diagnostics["result_availability"][
+        "available_for_profile_filtering"
+    ]
+    assert population["excluded_before_epoch"] == population["input_records"]
+    assert walk_forward["segments"] == []
+
+    current_segment = next(
+        row for row in diagnostics["segments"] if row["current_forecasts"] > 0
+    )
+    assert current_segment["current_forecasts_no_history"] == current_segment[
+        "current_forecasts"
+    ]
+    assert current_segment["profile_n"] == 0
+    assert current_segment["sample_status"] == "zero_n"
+    assert current_segment["zero_n_reason"] == "all_available_forecasts_precede_calibration_epoch"
+
+
+def test_walk_forward_diagnostics_count_result_delay_withheld_replay_rows():
+    as_of = datetime(2026, 1, 23, 23, tzinfo=UTC)
+    replay = MarketForecastService(
+        populated_store(finals=12, upcoming=0),
+        League.NBA,
+        forecast_config=ForecastConfig(
+            min_history_games=3,
+            min_residual_games=3,
+            team_prior_games=1.0,
+            training_window=50,
+            residual_window=30,
+            result_available_after_hours=4,
+        ),
+        calibration_config=CalibrationConfig(
+            min_samples=3,
+            prior_strength=2,
+            calibration_epoch_utc="2026-01-01T00:00:00Z",
+        ),
+    ).build_report(as_of_utc=iso(as_of))
+
+    diagnostics = replay["walk_forward"]["replay_diagnostics"]
+    maturity = diagnostics["result_availability"]
+    assert maturity["withheld_by_result_delay"] > 0
+    assert maturity["graded_forecasts"] == (
+        maturity["withheld_by_result_delay"]
+        + maturity["available_for_profile_filtering"]
+    )
+    assert sum(row["withheld_by_result_delay"] for row in diagnostics["segments"]) == (
+        maturity["withheld_by_result_delay"]
+    )
 
 
 def test_service_routes_sample_only_candidates_to_paper_results():
@@ -797,6 +890,57 @@ def _forecast(game_id: str, probability: float, *, outcome=None) -> Forecast:
         ),
         outcome=outcome,
     )
+
+
+def test_calibration_population_diagnostics_match_profile_admission_rules():
+    config = CalibrationConfig(
+        min_samples=30,
+        prior_strength=2,
+        calibration_epoch_utc="2026-11-10T00:00:00Z",
+    )
+    records = [
+        _forecast("pre-epoch", 0.6, outcome="win"),
+        _forecast("post-win", 0.6, outcome="win"),
+        _forecast("post-loss", 0.6, outcome="loss"),
+        _forecast("post-push", 0.6, outcome="push"),
+        _forecast("team-history-fallback", 0.6, outcome="win"),
+        _forecast("ungraded", 0.6),
+        _forecast("invalid-time", 0.6, outcome="loss"),
+    ]
+    dates = (
+        "2026-11-09T23:00:00Z",
+        "2026-11-11T00:00:00Z",
+        "2026-11-12T00:00:00Z",
+        "2026-11-13T00:00:00Z",
+        "2026-11-14T00:00:00Z",
+        "2026-11-14T12:00:00Z",
+        "not-a-date",
+    )
+    for record, scheduled_utc in zip(records, dates):
+        record.scheduled_utc = scheduled_utc
+        record.calibration_version = "test-model-v1"
+    records[4].team_history = {"sufficient_for_accas": False}
+
+    diagnostics = calibration_population_diagnostics(records, config)
+    assert diagnostics["input_records"] == 7
+    assert diagnostics["ungraded_records"] == 1
+    assert diagnostics["graded_records"] == 6
+    assert diagnostics["invalid_scheduled_times"] == 1
+    assert diagnostics["excluded_before_epoch"] == 1
+    assert diagnostics["epoch_eligible_records"] == 4
+    assert diagnostics["team_history_insufficient_records"] == 1
+    assert diagnostics["team_history_insufficient_samples"] == 1
+    assert diagnostics["profile_pool_records"] == 3
+    assert diagnostics["profile_pool_samples"] == 2
+    assert diagnostics["profile_pool_pushes"] == 1
+
+    key = records[1].versioned_segment_key
+    profiles = build_profiles(records, config)
+    assert profiles[key].n == diagnostics["profile_pool_samples"]
+    assert profiles[key].pushes == diagnostics["profile_pool_pushes"]
+    diagnostic_segment = diagnostics["segments"][0]
+    assert diagnostic_segment["calibration_version"] == "test-model-v1"
+    assert diagnostic_segment["profile_pool_samples"] == profiles[key].n
 
 
 def _roi_forecast(
