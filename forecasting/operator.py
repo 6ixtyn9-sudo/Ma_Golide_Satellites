@@ -44,6 +44,10 @@ FADE_AUDIT_SCHEMA = "magolide.paper_fade_audit.v1"
 TICKET_SCHEMA = "magolide.paper_ticket_receipt.v1"
 STATE_SCHEMA = "magolide.paper_ticket_state.v1"
 UNPRICED_AUDIT_SCHEMA = "magolide.unpriced_forecast_audit.v1"
+UNPRICED_SUCCESS_RATE_THRESHOLD = 0.70
+UNPRICED_SUCCESS_RATE_MIN_DECISIONS_EXCLUSIVE = 10
+UNPRICED_SUCCESS_RATE_HISTORY_DAYS = 30
+UNPRICED_SUCCESS_RATE_RESULT_DELAY_HOURS = 4.0
 BASE_PAPER_UNITS = 100.0
 STAKE_UNITS_PER_ACCA = 1.0
 BUCKET_ORDER = [
@@ -1778,7 +1782,173 @@ def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict
     }
 
 
-def _unpriced_candidate_record(row: Dict[str, Any]) -> Dict[str, Any]:
+def _calibrated_probability_band(row: Dict[str, Any]) -> Optional[str]:
+    """Return the historical-comparison band without falling back to raw p."""
+    value = row.get("calibrated_probability")
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    try:
+        probability = float(value)
+    except (OverflowError, TypeError, ValueError):
+        return None
+    if not math.isfinite(probability) or not 0.0 <= probability <= 1.0:
+        return None
+    return _confidence_band({"calibrated_probability": probability})
+
+
+def _unpriced_historical_success_rate(
+    row: Dict[str, Any], settled_history: List[Dict[str, Any]]
+) -> Dict[str, Any]:
+    """Measure prior comparable win rate; no odds or current pick result used."""
+    probability_band = _calibrated_probability_band(row)
+    scope = {
+        "league": row.get("league"),
+        "market": row.get("market"),
+        "period": row.get("period"),
+        "model": row.get("model"),
+        "calibrated_probability_band": probability_band,
+    }
+    result = {
+        "threshold": UNPRICED_SUCCESS_RATE_THRESHOLD,
+        "minimum_decisions_exclusive": UNPRICED_SUCCESS_RATE_MIN_DECISIONS_EXCLUSIVE,
+        "history_window_days": UNPRICED_SUCCESS_RATE_HISTORY_DAYS,
+        "result_available_after_hours": UNPRICED_SUCCESS_RATE_RESULT_DELAY_HOURS,
+        "comparison_scope": scope,
+        "wins": 0,
+        "losses": 0,
+        "decisions": 0,
+        "rate": None,
+        "qualifies": False,
+        "status": "insufficient_history",
+    }
+    if probability_band is None:
+        result["status"] = "missing_calibrated_probability"
+        return result
+    if any(
+        not value or str(value).strip().lower() == "unknown"
+        for key, value in scope.items()
+        if key != "calibrated_probability_band"
+    ):
+        result["status"] = "missing_comparison_scope"
+        return result
+    prediction = row.get("prediction")
+    observed_utc = prediction.get("observed_utc") if isinstance(prediction, dict) else None
+    try:
+        history_cutoff = (
+            parse_utc(str(observed_utc))
+            - timedelta(hours=UNPRICED_SUCCESS_RATE_RESULT_DELAY_HOURS)
+        )
+    except (TypeError, ValueError):
+        result["status"] = "missing_forecast_as_of"
+        return result
+    candidate_game_id = str(row.get("game_id") or "")
+    if not candidate_game_id:
+        result["status"] = "missing_game_identity"
+        return result
+
+    wins = losses = 0
+    seen_historical_picks = set()
+    for historical in settled_history:
+        if not isinstance(historical, dict):
+            continue
+        outcome = historical.get("grade_status")
+        if outcome not in {"win", "loss"}:
+            outcome = historical.get("outcome")
+        outcome = str(outcome or "").lower()
+        if outcome not in {"win", "loss"}:
+            # Pushes, voids, pending rows, and unknown outcomes are not hit-rate
+            # decisions. No-price historical picks can still count once settled.
+            continue
+        historical_game_id = str(historical.get("game_id") or "")
+        if not historical_game_id or historical_game_id == candidate_game_id:
+            continue
+        if any(
+            str(historical.get(key) or "") != str(scope[key])
+            for key in ("league", "market", "period", "model")
+        ):
+            continue
+        if _calibrated_probability_band(historical) != probability_band:
+            continue
+        try:
+            historical_scheduled = parse_utc(str(historical["scheduled_utc"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+        if historical_scheduled > history_cutoff:
+            continue
+        historical_selection = str(historical.get("selection") or "")
+        if not historical_selection:
+            continue
+        raw_line = historical.get("line")
+        if raw_line is None:
+            line = None
+        elif isinstance(raw_line, bool):
+            continue
+        else:
+            try:
+                line = float(raw_line)
+            except (OverflowError, TypeError, ValueError):
+                continue
+            if not math.isfinite(line):
+                continue
+        wager_key = (
+            historical_game_id,
+            str(historical.get("market") or ""),
+            str(historical.get("period") or ""),
+            historical_selection,
+            line,
+            str(historical.get("model") or ""),
+        )
+        if wager_key in seen_historical_picks:
+            continue
+        seen_historical_picks.add(wager_key)
+        if outcome == "win":
+            wins += 1
+        else:
+            losses += 1
+
+    decisions = wins + losses
+    rate = wins / decisions if decisions else None
+    qualifies = (
+        decisions > UNPRICED_SUCCESS_RATE_MIN_DECISIONS_EXCLUSIVE
+        and rate is not None
+        and rate >= UNPRICED_SUCCESS_RATE_THRESHOLD
+    )
+    result.update(
+        {
+            "wins": wins,
+            "losses": losses,
+            "decisions": decisions,
+            "rate": round(rate, 6) if rate is not None else None,
+            "qualifies": qualifies,
+            "status": (
+                "qualified"
+                if qualifies
+                else "insufficient_history"
+                if decisions <= UNPRICED_SUCCESS_RATE_MIN_DECISIONS_EXCLUSIVE
+                else "below_threshold"
+            ),
+        }
+    )
+    return result
+
+
+def _annotate_unpriced_audit_rows(
+    rows: List[Dict[str, Any]], settled_history: List[Dict[str, Any]]
+) -> List[Dict[str, Any]]:
+    """Attach a non-persistent gate result for reporting and card rendering."""
+    annotated = []
+    for row in rows:
+        candidate = dict(row)
+        candidate["_historical_success_rate"] = _unpriced_historical_success_rate(
+            row, settled_history
+        )
+        annotated.append(candidate)
+    return annotated
+
+
+def _unpriced_candidate_record(
+    row: Dict[str, Any], success_rate: Dict[str, Any]
+) -> Dict[str, Any]:
     """One audit record for one no-exact-price forecast; never a wager position.
 
     ``candidate_id`` is the immutable forecast/evidence ID. The logical identity
@@ -1856,6 +2026,17 @@ def _unpriced_candidate_record(row: Dict[str, Any]) -> Dict[str, Any]:
         "stake_units": 0.0,
         "grade_status": str(row.get("grade_status") or "pending"),
         "outcome": row.get("outcome"),
+        "historical_success_rate": success_rate.get("rate"),
+        "historical_success_wins": success_rate.get("wins", 0),
+        "historical_success_losses": success_rate.get("losses", 0),
+        "historical_success_decisions": success_rate.get("decisions", 0),
+        "historical_success_threshold": success_rate.get("threshold"),
+        "historical_success_minimum_decisions_exclusive": success_rate.get(
+            "minimum_decisions_exclusive"
+        ),
+        "historical_success_qualifies": success_rate.get("qualifies") is True,
+        "historical_success_status": success_rate.get("status"),
+        "historical_success_comparison_scope": success_rate.get("comparison_scope"),
         "eligibility_reasons": list(eligibility.get("reasons") or []),
     }
 
@@ -1871,7 +2052,12 @@ def _unpriced_audit_summary(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
         for row in rows
         for reason in ((row.get("eligibility") or {}).get("reasons") or [])
     )
-    records = [_unpriced_candidate_record(row) for row in rows]
+    records = []
+    for row in rows:
+        success_rate = row.get("_historical_success_rate")
+        if not isinstance(success_rate, dict):
+            success_rate = _unpriced_historical_success_rate(row, [])
+        records.append(_unpriced_candidate_record(row, success_rate))
     records.sort(key=lambda item: (
         str(item.get("date") or ""),
         str(item.get("game_id") or ""),
@@ -1883,6 +2069,13 @@ def _unpriced_audit_summary(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
         str(item.get("book") or ""),
         str(item.get("candidate_id") or ""),
     ))
+    success_status_counts = Counter(
+        str(record.get("historical_success_status") or "unknown")
+        for record in records
+    )
+    success_qualified_count = sum(
+        record.get("historical_success_qualifies") is True for record in records
+    )
     return {
         "schema_version": UNPRICED_AUDIT_SCHEMA,
         "record_type": "unpriced_shadow_ticket_audit",
@@ -1890,6 +2083,26 @@ def _unpriced_audit_summary(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
         "ticketable": False,
         "stake_units": 0.0,
         "count": len(rows),
+        "historical_success_qualified_count": success_qualified_count,
+        "historical_success_excluded_count": len(rows) - success_qualified_count,
+        "historical_success_status_counts": dict(sorted(success_status_counts.items())),
+        "historical_success_policy": {
+            "metric": "wins / (wins + losses)",
+            "threshold_at_least": UNPRICED_SUCCESS_RATE_THRESHOLD,
+            "minimum_decisions_exclusive": UNPRICED_SUCCESS_RATE_MIN_DECISIONS_EXCLUSIVE,
+            "history_window_days": UNPRICED_SUCCESS_RATE_HISTORY_DAYS,
+            "result_available_after_hours": UNPRICED_SUCCESS_RATE_RESULT_DELAY_HOURS,
+            "comparison_keys": [
+                "league", "market", "period", "model", "calibrated_probability_band",
+            ],
+            "odds_required": False,
+            "excluded_outcomes": ["push", "void", "pending", "unknown"],
+            "same_game_history_excluded": True,
+            "historical_deduplication_key": [
+                "game_id", "market", "period", "selection", "line", "model",
+            ],
+            "history_source": "rolling_pick_audit.settled_ledger",
+        },
         "forecast_ids": sorted(
             str(row.get("forecast_id") or row.get("pick_id"))
             for row in rows
@@ -1908,21 +2121,43 @@ def _unpriced_audit_summary(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
 def _render_unpriced_audit_section(
     rows: List[Dict[str, Any]], timezone_name: str
 ) -> List[str]:
-    """Render no-price forecasts beside tickets without counting them as bets."""
+    """Render only hit-rate-qualified no-price candidates, never as bets."""
     if not rows:
         return []
-    grade_counts = Counter(str(row.get("grade_status") or "pending") for row in rows)
+    threshold_text = f"{UNPRICED_SUCCESS_RATE_THRESHOLD:.0%}"
+    minimum_text = f"n>{UNPRICED_SUCCESS_RATE_MIN_DECISIONS_EXCLUSIVE}"
+    annotated = []
+    for row in rows:
+        success_rate = row.get("_historical_success_rate")
+        if not isinstance(success_rate, dict):
+            success_rate = _unpriced_historical_success_rate(row, [])
+        if success_rate.get("qualifies") is True:
+            candidate = dict(row)
+            candidate["_historical_success_rate"] = success_rate
+            annotated.append(candidate)
+    if not annotated:
+        return [
+            "",
+            f"UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 0 QUALIFY "
+            f"({len(rows)} audited; requires ≥{threshold_text} historical success, {minimum_text})",
+            "No no-price candidate meets the historical success-rate gate for display.",
+            "All candidates remain individually recorded in the audit ledger; none are wager positions.",
+        ]
+    grade_counts = Counter(str(row.get("grade_status") or "pending") for row in annotated)
     grade_summary = ", ".join(
         f"{count} {status.upper()}"
         for status, count in sorted(grade_counts.items())
     )
     lines = [
         "",
-        f"UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — {len(rows)} ({grade_summary})",
+        f"UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS; ≥{threshold_text} HISTORICAL SUCCESS, {minimum_text}) — "
+        f"{len(annotated)} ({grade_summary}; {len(rows)} audited)",
         "Not wager positions: no selected price, zero stake, and excluded from ticket bank/ROI.",
-        "Each forecast is persisted in the dated pick ledger and graded from reconciled official results.",
+        f"Shown only when comparable prior picks have at least {threshold_text} success over more than "
+        f"{UNPRICED_SUCCESS_RATE_MIN_DECISIONS_EXCLUSIVE} win/loss decisions.",
+        "Every no-price forecast remains individually persisted and graded from reconciled official results.",
     ]
-    for row in rows:
+    for row in annotated:
         probability = row.get("calibrated_probability")
         if probability is None:
             probability = row.get("raw_probability")
@@ -1941,13 +2176,19 @@ def _render_unpriced_audit_section(
         reasons = (row.get("eligibility") or {}).get("reasons") or []
         reason_text = ", ".join(str(reason) for reason in reasons) or "no recorded eligibility reason"
         calibration = row.get("calibration") or {}
+        success_rate = row["_historical_success_rate"]
+        success_text = (
+            f"historical success={success_rate['rate']:.1%} "
+            f"({success_rate['wins']}/{success_rate['decisions']})"
+        )
         forecast_id = row.get("forecast_id") or row.get("pick_id") or "unknown"
         status = str(row.get("grade_status") or "pending").upper()
         tip = _local_time(str(row["scheduled_utc"]), timezone_name)
         lines.append(
             f"  [{status}] {row['home']} vs {row['away']} · {tip} · "
             f"{_audit_market_selection(row)} · p={probability_text} · {price_text} · "
-            f"WF n={calibration.get('n', 0)} ({calibration.get('status', 'unknown')}) · "
+            f"{success_text} · WF n={calibration.get('n', 0)} "
+            f"({calibration.get('status', 'unknown')}) · "
             f"blockers: {reason_text} · forecast={forecast_id}"
         )
     return lines
@@ -2436,6 +2677,13 @@ def publish_operator_reports(
         generated_utc=generated_utc,
         timezone_name=timezone_name,
         games=games,
+    )
+    settled_history = list(audit.get("settled_ledger") or [])
+    current_unpriced_audit = _annotate_unpriced_audit_rows(
+        current_unpriced_audit, settled_history
+    )
+    dated_unpriced_audit = _annotate_unpriced_audit_rows(
+        dated_unpriced_audit, settled_history
     )
 
     state = _load_state(localdata)

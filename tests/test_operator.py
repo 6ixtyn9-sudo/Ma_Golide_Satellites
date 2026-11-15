@@ -8,6 +8,7 @@ import pytest
 from forecasting.operator import (
     _audit_market_selection,
     _forecast_from_row,
+    _pick_row,
     _render_empty_ticket_scan,
     load_settled_pick_history,
     _selection_label,
@@ -38,7 +39,15 @@ class Store:
         return [game for game in self.games if game.league is league]
 
 
-def game(number: int, *, home_score=None, away_score=None, total=None):
+def game(
+    number: int,
+    *,
+    home_score=None,
+    away_score=None,
+    total=None,
+    game_id=None,
+    scheduled_utc=None,
+):
     if total is not None:
         home_score = total / 2
         away_score = total / 2
@@ -53,14 +62,14 @@ def game(number: int, *, home_score=None, away_score=None, total=None):
             away_final=away_score,
         )
     return Game(
-        game_id=f"game-{number}",
+        game_id=game_id or f"game-{number}",
         league=League.NBA,
         season="2026-27",
         home_team_id=f"home-{number}",
         away_team_id=f"away-{number}",
         home_name=f"Home {number}",
         away_name=f"Away {number}",
-        scheduled_utc=f"2026-11-{6 + number:02d}T20:00:00Z",
+        scheduled_utc=scheduled_utc or f"2026-11-{6 + number:02d}T20:00:00Z",
         status=GameStatus.SCHEDULED if scheduled else GameStatus.FINAL,
         actual=actual,
     )
@@ -188,6 +197,74 @@ def publish(tmp_path, store, market_report, run_id="run-1"):
         generated_utc=AS_OF,
         run_id=run_id,
     )
+
+
+def seed_historical_success_picks(tmp_path, market, *, wins, losses):
+    """Persist settled, no-price history to exercise the win-rate gate."""
+    rows = []
+    games = []
+    selection = "home" if market == "moneyline" else "under"
+    for index in range(wins + losses):
+        outcome = "win" if index < wins else "loss"
+        game_id = f"history-{market}-{index}"
+        scheduled_utc = f"2026-10-30T{index:02d}:00:00Z"
+        forecast_row = forecast(
+            1000 + index,
+            market=market,
+            selection=selection,
+            price=None,
+            eligible=False,
+            reasons=["no_exact_bookmaker_market"],
+            calibration_n=40,
+        )
+        forecast_row["game_id"] = game_id
+        forecast_row["forecast_id"] = f"history-forecast-{market}-{index}"
+        forecast_row["scheduled_utc"] = scheduled_utc
+        forecast_row["prediction"]["observed_utc"] = "2026-10-29T12:00:00Z"
+        history_row = _pick_row(forecast_row, "2026-10-30")
+        rows.append(history_row)
+        if index == 0:
+            # A second book observation is still one historical wager decision.
+            duplicate = {
+                **history_row,
+                "forecast_id": f"history-forecast-{market}-{index}-other-book",
+                "pick_id": f"history-forecast-{market}-{index}-other-book",
+                "book": {
+                    "provider": "history-books",
+                    "book": "Second Book",
+                    "observed_utc": "2026-10-29T11:00:00Z",
+                    "source_modified_utc": None,
+                    "pre_match": True,
+                    "main_line": True,
+                    "frozen": False,
+                    "game_id": game_id,
+                    "market": market,
+                    "period": "full_game",
+                    "line": 200.0 if market == "total" else None,
+                    "selected_decimal_price": None,
+                    "side_prices": {selection: None},
+                },
+            }
+            rows.append(duplicate)
+
+        if market == "moneyline":
+            home_score, away_score = (110, 100) if outcome == "win" else (100, 110)
+        else:
+            home_score, away_score = (90, 95) if outcome == "win" else (105, 110)
+        games.append(
+            game(
+                1000 + index,
+                home_score=home_score,
+                away_score=away_score,
+                game_id=game_id,
+                scheduled_utc=scheduled_utc,
+            )
+        )
+
+    ledger = tmp_path / "picks_2026-10-30.json"
+    existing = json.loads(ledger.read_text()) if ledger.exists() else []
+    ledger.write_text(json.dumps([*existing, *rows], indent=2) + "\n")
+    return games
 
 
 def test_book_side_prices_survive_forecast_serialization_and_row_rehydration():
@@ -613,10 +690,12 @@ def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp
         in ticket_text
     )
     assert ticket_text.index("NO PAPER BET") < ticket_text.index("CURRENT PAPER BANK")
-    assert "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 1 (1 PENDING)" in ticket_text
-    assert "no exact selected-side book match" in ticket_text
-    assert "forecast=forecast-3-moneyline-home" in ticket_text
-    assert "zero stake" in ticket_text
+    assert (
+        "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 0 QUALIFY "
+        "(1 audited; requires ≥70% historical success, n>10)"
+    ) in ticket_text
+    assert "forecast=forecast-3-moneyline-home" not in ticket_text
+    assert "All candidates remain individually recorded in the audit ledger" in ticket_text
     assert "CANDIDATE FUNNEL" not in ticket_text
     assert "Individual-pick ROI filter" not in ticket_text
     assert result["candidate_funnel"] == {
@@ -661,6 +740,13 @@ def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp
     assert records[0]["ticket_status"] == "audit_only_no_exact_selected_price"
     assert records[0]["ticketable"] is False
     assert records[0]["stake_units"] == 0.0
+    assert records[0]["historical_success_rate"] is None
+    assert records[0]["historical_success_decisions"] == 0
+    assert records[0]["historical_success_qualifies"] is False
+    assert records[0]["historical_success_status"] == "insufficient_history"
+    assert unpriced_scan["historical_success_qualified_count"] == 0
+    assert unpriced_scan["historical_success_policy"]["threshold_at_least"] == 0.70
+    assert unpriced_scan["historical_success_policy"]["minimum_decisions_exclusive"] == 10
     assert result["counts"]["current_unpriced_picks"] == 1
     assert result["counts"]["dated_unpriced_audit_picks"] == 1
     buckets = {row["bucket"] for row in json.loads(Path(result["dated_picks"]).read_text())}
@@ -1251,8 +1337,8 @@ def test_unpriced_forecasts_are_audit_only_and_settle_without_paper_stake(tmp_pa
     state = json.loads(Path(first["ticket_state"]).read_text())
     assert state["frozen_by_date"] == {}
     card = Path(first["ticket_text"]).read_text()
-    assert "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 1 (1 PENDING)" in card
-    assert "forecast=forecast-1-moneyline-home" in card
+    assert "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 0 QUALIFY" in card
+    assert "forecast=forecast-1-moneyline-home" not in card
     assert "NO PAPER BET" in card
     audit = json.loads(Path(first["rolling_audit"]).read_text())
     assert audit["pending_picks_total"] == 1
@@ -1274,8 +1360,8 @@ def test_unpriced_forecasts_are_audit_only_and_settle_without_paper_stake(tmp_pa
 
     assert settled["ticket_receipt"] is None
     ticket_text = Path(settled["ticket_text"]).read_text()
-    assert "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 1 (1 WIN)" in ticket_text
-    assert "forecast=forecast-1-moneyline-home" in ticket_text
+    assert "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 0 QUALIFY" in ticket_text
+    assert "forecast=forecast-1-moneyline-home" not in ticket_text
     settled_records = settled["unpriced_audit"]["candidate_records"]
     assert len(settled_records) == 1
     assert settled_records[0]["candidate_id"] == "forecast-1-moneyline-home"
@@ -1283,6 +1369,8 @@ def test_unpriced_forecasts_are_audit_only_and_settle_without_paper_stake(tmp_pa
     assert settled_records[0]["outcome"] == "win"
     assert settled_records[0]["price"] is None
     assert settled_records[0]["ticket_id"] is None
+    assert settled_records[0]["historical_success_decisions"] == 0
+    assert settled_records[0]["historical_success_qualifies"] is False
     settled_audit = json.loads(Path(settled["rolling_audit"]).read_text())
     assert settled_audit["settled_picks"] == 1
     assert settled_audit["wins"] == 1
@@ -1322,12 +1410,15 @@ def test_unpriced_matched_market_reports_missing_selected_side_quote(tmp_path):
 
     assert result["ticket_receipt"] is None
     card = Path(result["ticket_text"]).read_text()
-    assert "Test Book matched; selected-side quote missing" in card
+    assert "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 0 QUALIFY" in card
+    assert "Test Book matched; selected-side quote missing" not in card
     assert "1.950" not in card
     state = json.loads(Path(result["ticket_state"]).read_text())
-    assert state["scans"][-1]["unpriced_audit"]["price_evidence_counts"] == {
+    unpriced_scan = state["scans"][-1]["unpriced_audit"]
+    assert unpriced_scan["price_evidence_counts"] == {
         "MATCHED_BUT_SELECTED_PRICE_MISSING": 1
     }
+    assert unpriced_scan["candidate_records"][0]["price_state"] == "selected_side_quote_missing"
     saved = json.loads(Path(result["dated_picks"]).read_text())[0]
     assert saved["book"]["selected_decimal_price"] is None
     assert saved["book"]["side_prices"]["away"] == 1.95
@@ -1362,9 +1453,12 @@ def test_unpriced_audit_rows_do_not_enter_a_frozen_priced_ticket(tmp_path):
         reasons=["no_exact_bookmaker_market", "insufficient_walk_forward_samples"],
         calibration_n=0,
     )
+    history_games = seed_historical_success_picks(
+        tmp_path, "moneyline", wins=8, losses=3
+    ) + seed_historical_success_picks(tmp_path, "total", wins=8, losses=3)
     result = publish(
         tmp_path,
-        Store([game(number) for number in (1, 2, 3, 4)]),
+        Store([game(number) for number in (1, 2, 3, 4)] + history_games),
         report([*priced, unpriced, unpriced_away, unpriced_total], [acca(priced)]),
     )
 
@@ -1382,7 +1476,11 @@ def test_unpriced_audit_rows_do_not_enter_a_frozen_priced_ticket(tmp_path):
     )
     ticket_text = Path(result["ticket_text"]).read_text()
     assert "[PAPER 3-LEG ACCA #1]" in ticket_text
-    assert "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 3 (3 PENDING)" in ticket_text
+    assert (
+        "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS; ≥70% HISTORICAL SUCCESS, n>10) — "
+        "3 (3 PENDING; 3 audited)"
+    ) in ticket_text
+    assert "historical success=72.7% (8/11)" in ticket_text
     assert "forecast=forecast-4-moneyline-home" in ticket_text
     assert "forecast=forecast-4-moneyline-away" in ticket_text
     assert "forecast=forecast-4-total-under" in ticket_text
@@ -1395,6 +1493,10 @@ def test_unpriced_audit_rows_do_not_enter_a_frozen_priced_ticket(tmp_path):
     }
     assert {record["market"] for record in records} == {"moneyline", "total"}
     assert {record["selection"] for record in records} == {"home", "away", "under"}
+    assert all(record["historical_success_rate"] == 0.727273 for record in records)
+    assert all(record["historical_success_decisions"] == 11 for record in records)
+    assert all(record["historical_success_qualifies"] is True for record in records)
+    assert state["scans"][-1]["unpriced_audit"]["historical_success_qualified_count"] == 3
     assert all(record["ticket_id"] is None for record in records)
     assert all(record["ticketable"] is False for record in records)
     assert all(record["stake_units"] == 0.0 for record in records)
@@ -1403,6 +1505,40 @@ def test_unpriced_audit_rows_do_not_enter_a_frozen_priced_ticket(tmp_path):
     assert performance["paper_committed_units"] == 1.0
     assert result["counts"]["current_unpriced_picks"] == 3
     assert result["counts"]["dated_unpriced_audit_picks"] == 3
+
+
+def test_unpriced_success_rate_requires_70_percent_and_more_than_10_decisions(tmp_path):
+    cases = [
+        ("ten-decisions", 8, 2, 0.8, 10, "insufficient_history"),
+        ("low-hit-rate", 7, 4, 0.636364, 11, "below_threshold"),
+    ]
+    for name, wins, losses, expected_rate, expected_n, expected_status in cases:
+        localdata = tmp_path / name
+        localdata.mkdir()
+        history_games = seed_historical_success_picks(
+            localdata, "moneyline", wins=wins, losses=losses
+        )
+        row = forecast(
+            5,
+            price=None,
+            eligible=False,
+            reasons=["no_exact_bookmaker_market"],
+            calibration_n=40,
+        )
+        result = publish(
+            localdata,
+            Store([game(5), *history_games]),
+            report([row]),
+            run_id=name,
+        )
+
+        record = result["unpriced_audit"]["candidate_records"][0]
+        assert record["historical_success_rate"] == expected_rate
+        assert record["historical_success_decisions"] == expected_n
+        assert record["historical_success_qualifies"] is False
+        assert record["historical_success_status"] == expected_status
+        assert "0 QUALIFY" in Path(result["ticket_text"]).read_text()
+        assert row["forecast_id"] not in Path(result["ticket_text"]).read_text()
 
 
 def test_prior_dated_picks_are_graded_without_changing_frozen_evidence(tmp_path):

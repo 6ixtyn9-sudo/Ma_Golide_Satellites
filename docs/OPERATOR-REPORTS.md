@@ -65,20 +65,31 @@ price evidence, model/prediction provenance, calibration sample count,
 eligibility reasons, and grade.
 
 No-price forecasts remain **audit-only**, never ticket legs. The rendered daily
-auto-ticket card lists the latest logical no-price forecasts separately with
-forecast ID, selection, probability, price-evidence state, blockers, and current
-grade. The picks dated ledger and rolling audit remain the grading source of
-truth; audit-only rows have zero stake, do not enter paper-position performance
-or ROI, and do not create a frozen decision receipt or date lock. Each
+auto-ticket card shows only the latest logical no-price forecasts that pass a
+historical success-rate gate; qualifying lines include forecast ID, selection,
+probability, historical hit rate, price-evidence state, blockers, and current
+grade. The gate is wins divided by wins plus losses among prior settled
+individual picks in the rolling 30-day audit, matched on league, market, period,
+model, and calibrated-probability band (no odds band). Repeated observations or
+book snapshots of the same settled wager count once. It requires at least 70%
+success with more than 10 win/loss decisions; pushes, pending/void/unknown
+outcomes, the same game, and historical picks scheduled less than four hours
+before the forecast observation are excluded. A missing comparison band or
+insufficient history fails closed. Historical priced and unpriced picks both
+contribute settled win/loss outcomes; no current price or ROI is inferred.
+
+The picks dated ledger and rolling audit remain the grading source of truth;
+all audit-only rows have zero stake, do not enter paper-position performance or
+ROI, and do not create a frozen decision receipt or date lock. Each
 `auto_tickets_state.json` scan records both summary counts and a
-`unpriced_audit.candidate_records` array: one record per forecast ID, including
-fixture, market, period, selection, line, model/book identity, grade, missing
-price state, and an explicit `ticket_id: null`, `ticketable: false`, and zero
-stake. Different markets or selections on the same fixture stay separate; the
-array is not a fixture-level aggregate or a wager position. Repeated observations
-remain in the dated evidence ledger, while the rolling audit still uses the
-latest observation for each existing logical-pick key. This adds ticket-decision
-visibility without inventing odds or relaxing ticket eligibility.
+`unpriced_audit.candidate_records` array containing every no-price forecast,
+including its individual historical success rate, decision count, gate result,
+and status. Every record has an explicit `ticket_id: null`, `ticketable: false`,
+and zero stake. Different markets or selections on the same fixture stay
+separate; the array is not a fixture-level aggregate or a wager position. Rows
+that fail the success-rate gate remain in the JSON audit and dated ledger but do
+not appear as picks on the ticket card. This adds ticket-decision visibility
+without inventing odds or relaxing priced-ticket eligibility.
 
 Repeated scans can produce distinct forecast IDs because book and prediction
 observation times are part of those IDs. The dated JSON retains every evidence
