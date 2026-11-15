@@ -175,6 +175,20 @@ loss. Raw and prequential-calibrated overall metrics are reported separately.
 These are diagnostics, not certification. The default minimum for acca use is
 30 graded non-push samples in the exact segment.
 
+`walk_forward.replay_diagnostics` reports the replay funnel separately from the
+settled-pick audit: eligible final inventory, generated and ungradeable replay
+forecasts, forecasts withheld by the result-availability delay, and calibration
+population counts after the epoch and team-history filters. Its segment rows
+use the exact `(league, market, period, source, calibration_version)` key and
+show the current forecast count, replayed/available counts, epoch exclusions,
+team-history diagnostic-pool samples, pushes, resulting `profile_n`, and a
+`zero_n_reason` when the exact segment has no non-push sample. Pushes are shown
+but never counted in `n`; team-history fallback samples are diagnostic-only.
+These fields explain profile construction only and do not relax the sample
+minimum, exact-price, eligibility, or ROI policies. The rolling settled-pick
+audit remains a separate input to the individual-pick performance gate, not a
+source of calibration samples.
+
 The same `walk_forward` object includes `shadow_challenger`: raw, champion, and
 recency-decayed challenger Brier/log-loss metrics, coverage, effective sample
 size, the challenger fingerprint, and the result-availability delay. Historical

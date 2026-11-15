@@ -137,10 +137,15 @@ with `--localdata`) when present; this is read-only. If no audit exists, it
 falls back to past-only prequential settled individual forecasts.
 
 The walk-forward harness fits separate reliability profiles by league, market,
-period, and model source. Each profile uses only earlier graded outcomes. Its
-shrunken observed-minus-claimed adjustment changes later calibrated
-probabilities; strict ACCA eligibility requires at least 30 graded non-push
-samples in the exact segment by default.
+period, model source, and calibration-version fingerprint. Each profile uses
+only earlier graded outcomes. Its shrunken observed-minus-claimed adjustment
+changes later calibrated probabilities; strict ACCA eligibility requires at
+least 30 graded non-push samples in the exact segment by default. The market
+JSON's `walk_forward.replay_diagnostics` shows replay counts by stage and exact
+segment (including result-delay, calibration-epoch, and team-history exclusions)
+when a profile has no samples. These diagnostics do not change eligibility,
+minimum-sample, paper-ticket, or ROI policies; the settled-pick audit remains
+separate from calibration evidence.
 
 Strict ACCA eligibility requires every leg to have:
 
