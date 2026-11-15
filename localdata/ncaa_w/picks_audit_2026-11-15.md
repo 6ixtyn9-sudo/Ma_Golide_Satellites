@@ -1,11 +1,11 @@
 # Ma Golide — Recent picks audit (2026-10-17 to 2026-11-15)
 
-Generated: 2026-11-15 08:52 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-15 10:32 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
 - archived logical picks: 1085
-- dated evidence rows: 1976 (891 superseded observations)
+- dated evidence rows: 2046 (961 superseded observations)
 - settled picks: 867 (646 wins / 221 losses / 0 pushes)
 - hit rate: 74.5% (646/867 win/loss decisions)
 - pending/unmatched picks: 0 prior-day · 218 total
