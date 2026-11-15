@@ -35,7 +35,7 @@ profitability.
 | `picks_audit_rolling.json` | Thirty-day logical and settled ledgers plus flat-stake diagnostics |
 | `picks_audit_YYYY-MM-DD.md` | Readable rolling summary and every settled logical pick in the window |
 | `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper singles and accas |
-| `auto_tickets_YYYY-MM-DD.txt` | Frozen receipt with leg grades, or an explicit unfrozen no-bet scan card |
+| `auto_tickets_YYYY-MM-DD.txt` | Frozen receipt with leg grades, or an explicit unfrozen no-bet card; dated no-price forecasts appear in a separate audit-only section |
 | `auto_tickets_state.json` | Write-once date locks and bounded scan telemetry |
 | `auto_tickets_performance.json` | Complete reconstructed paper-position performance state and history |
 | `auto_tickets_performance.txt` | Bank, settled record, bet-days, held positions, and grading notes |
@@ -63,6 +63,16 @@ Every row includes fixture, tip-off in Africa/Johannesburg time, native period,
 selection and line, raw/calibrated probability, selected price and bookmaker,
 price evidence, model/prediction provenance, calibration sample count,
 eligibility reasons, and grade.
+
+No-price forecasts remain **audit-only**, never ticket legs. The rendered daily
+auto-ticket card lists the latest logical no-price forecasts separately with
+forecast ID, selection, probability, price-evidence state, blockers, and current
+grade. The picks dated ledger and rolling audit remain the grading source of
+truth; audit-only rows have zero stake, do not enter paper-position performance
+or ROI, and do not create a frozen decision receipt or date lock. Each
+`auto_tickets_state.json` scan also records a compact `unpriced_audit` summary
+with forecast IDs, price-evidence counts, eligibility reasons, and grade counts.
+This adds visibility without inventing odds or relaxing ticket eligibility.
 
 Repeated scans can produce distinct forecast IDs because book and prediction
 observation times are part of those IDs. The dated JSON retains every evidence

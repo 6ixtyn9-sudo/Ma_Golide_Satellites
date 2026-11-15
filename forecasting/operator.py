@@ -43,6 +43,7 @@ OPERATOR_SCHEMA = "magolide.operator.v1"
 FADE_AUDIT_SCHEMA = "magolide.paper_fade_audit.v1"
 TICKET_SCHEMA = "magolide.paper_ticket_receipt.v1"
 STATE_SCHEMA = "magolide.paper_ticket_state.v1"
+UNPRICED_AUDIT_SCHEMA = "magolide.unpriced_forecast_audit.v1"
 BASE_PAPER_UNITS = 100.0
 STAKE_UNITS_PER_ACCA = 1.0
 BUCKET_ORDER = [
@@ -138,6 +139,19 @@ def _price_evidence(forecast: Dict[str, Any]) -> str:
     if book:
         return "MATCHED_BUT_SELECTED_PRICE_MISSING"
     return "UNMATCHED"
+
+
+def _has_exact_selected_price(row: Dict[str, Any]) -> bool:
+    """Whether a row has a usable exact selected-side decimal price."""
+    book = row.get("book") or {}
+    value = book.get("selected_decimal_price") if isinstance(book, dict) else None
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return False
+    try:
+        price = float(value)
+    except OverflowError:
+        return False
+    return math.isfinite(price) and price > 1.0
 
 
 def _opposite_selection_for_row(row: Dict[str, Any]) -> Optional[str]:
@@ -1764,8 +1778,90 @@ def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict
     }
 
 
+def _unpriced_audit_summary(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Summarize forecasts recorded for audit but not as ticket positions."""
+    grade_counts = Counter(str(row.get("grade_status") or "pending") for row in rows)
+    evidence_counts = Counter(
+        str(row.get("price_evidence") or _price_evidence(row)) for row in rows
+    )
+    reason_counts = Counter(
+        str(reason)
+        for row in rows
+        for reason in ((row.get("eligibility") or {}).get("reasons") or [])
+    )
+    return {
+        "schema_version": UNPRICED_AUDIT_SCHEMA,
+        "record_type": "unpriced_shadow_ticket_audit",
+        "audit_only": True,
+        "ticketable": False,
+        "stake_units": 0.0,
+        "count": len(rows),
+        "forecast_ids": sorted(
+            str(row.get("forecast_id") or row.get("pick_id"))
+            for row in rows
+            if row.get("forecast_id") or row.get("pick_id")
+        ),
+        "grade_counts": dict(sorted(grade_counts.items())),
+        "price_evidence_counts": dict(sorted(evidence_counts.items())),
+        "eligibility_reason_counts": dict(sorted(reason_counts.items())),
+        "recorded_in": ["dated_pick_ledger", "rolling_pick_audit"],
+    }
+
+
+def _render_unpriced_audit_section(
+    rows: List[Dict[str, Any]], timezone_name: str
+) -> List[str]:
+    """Render no-price forecasts beside tickets without counting them as bets."""
+    if not rows:
+        return []
+    grade_counts = Counter(str(row.get("grade_status") or "pending") for row in rows)
+    grade_summary = ", ".join(
+        f"{count} {status.upper()}"
+        for status, count in sorted(grade_counts.items())
+    )
+    lines = [
+        "",
+        f"UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — {len(rows)} ({grade_summary})",
+        "Not wager positions: no selected price, zero stake, and excluded from ticket bank/ROI.",
+        "Each forecast is persisted in the dated pick ledger and graded from reconciled official results.",
+    ]
+    for row in rows:
+        probability = row.get("calibrated_probability")
+        if probability is None:
+            probability = row.get("raw_probability")
+        try:
+            probability_text = f"{float(probability):.1%}"
+        except (TypeError, ValueError, OverflowError):
+            probability_text = "n/a"
+        evidence = str(row.get("price_evidence") or _price_evidence(row))
+        book = row.get("book") or {}
+        if evidence == "UNMATCHED":
+            price_text = "no exact selected-side book match"
+        elif evidence == "MATCHED_BUT_SELECTED_PRICE_MISSING":
+            price_text = f"{book.get('book') or 'book'} matched; selected-side quote missing"
+        else:
+            price_text = "no usable exact selected-side price"
+        reasons = (row.get("eligibility") or {}).get("reasons") or []
+        reason_text = ", ".join(str(reason) for reason in reasons) or "no recorded eligibility reason"
+        calibration = row.get("calibration") or {}
+        forecast_id = row.get("forecast_id") or row.get("pick_id") or "unknown"
+        status = str(row.get("grade_status") or "pending").upper()
+        tip = _local_time(str(row["scheduled_utc"]), timezone_name)
+        lines.append(
+            f"  [{status}] {row['home']} vs {row['away']} · {tip} · "
+            f"{_audit_market_selection(row)} · p={probability_text} · {price_text} · "
+            f"WF n={calibration.get('n', 0)} ({calibration.get('status', 'unknown')}) · "
+            f"blockers: {reason_text} · forecast={forecast_id}"
+        )
+    return lines
+
+
 def _render_ticket_card(
-    receipt: Dict[str, Any], performance: Dict[str, Any], timezone_name: str
+    receipt: Dict[str, Any],
+    performance: Dict[str, Any],
+    timezone_name: str,
+    *,
+    unpriced_audit_picks: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     positions = _receipt_positions(receipt)
     acca_count = sum(ticket_type == "acca" for ticket_type, _ in positions)
@@ -1867,6 +1963,9 @@ def _render_ticket_card(
             )
         lines.append("")
     lines.extend(
+        _render_unpriced_audit_section(unpriced_audit_picks or [], timezone_name)
+    )
+    lines.extend(
         [
             f"FROZEN AT {_local_time(receipt['frozen_at'], timezone_name)[11:16]} - FINAL",
             "Existing tickets are unchanged by later scans or corrected forecasts.",
@@ -1913,13 +2012,7 @@ def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, 
     acca_report = report.get("accas") or {}
 
     def exact_price(row: Dict[str, Any]) -> bool:
-        price = (row.get("book") or {}).get("selected_decimal_price")
-        return (
-            isinstance(price, (int, float))
-            and not isinstance(price, bool)
-            and math.isfinite(price)
-            and price > 1.0
-        )
+        return _has_exact_selected_price(row)
 
     priced = [row for row in rows if exact_price(row)]
     calibrated = [
@@ -1997,6 +2090,7 @@ def _render_empty_ticket_scan(
     timezone_name: str,
     candidate_funnel: Dict[str, Any],
     withdrawal: Optional[Dict[str, Any]] = None,
+    unpriced_audit_picks: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     """A concise mutable latest-scan view, never a frozen no-bet receipt."""
     paper_single_count = int(candidate_funnel.get("paper_single_picks") or 0)
@@ -2078,6 +2172,9 @@ def _render_empty_ticket_scan(
         "Paper only. No real-money stakes or automatic promotion.",
         "",
     ]
+    lines.extend(
+        _render_unpriced_audit_section(unpriced_audit_picks or [], timezone_name)
+    )
     return "\n".join(lines)
 
 
@@ -2221,6 +2318,12 @@ def publish_operator_reports(
     for row in current:
         if row["pick_id"] in merged:
             row.update(merged[row["pick_id"]])
+    current_unpriced_audit = [row for row in current if not _has_exact_selected_price(row)]
+    dated_unpriced_audit = [
+        row
+        for row in _latest_logical_rows(archived)
+        if not _has_exact_selected_price(row)
+    ]
     _write_json(localdata / "picks_today.json", current)
     _write_json(dated_path, archived)
     _refresh_dated_pick_reports(
@@ -2268,6 +2371,7 @@ def publish_operator_reports(
             "fresh_paper_singles": candidate_funnel.get("paper_single_picks", 0),
             "receipt_present": receipt is not None,
             "candidate_funnel": deepcopy(candidate_funnel),
+            "unpriced_audit": _unpriced_audit_summary(current_unpriced_audit),
         }
     )
     state["scans"] = state["scans"][-100:]
@@ -2316,7 +2420,12 @@ def publish_operator_reports(
         )
         ticket_path = _write_text(
             localdata / f"auto_tickets_{target_date}.txt",
-            _render_ticket_card(graded_receipt, performance, timezone_name),
+            _render_ticket_card(
+                graded_receipt,
+                performance,
+                timezone_name,
+                unpriced_audit_picks=dated_unpriced_audit,
+            ),
         )
     else:
         ticket_path = _write_text(
@@ -2329,6 +2438,7 @@ def publish_operator_reports(
                 timezone_name=timezone_name,
                 candidate_funnel=candidate_funnel,
                 withdrawal=withdrawal,
+                unpriced_audit_picks=dated_unpriced_audit,
             ),
         )
     state["last_generated_utc"] = generated_utc
@@ -2351,8 +2461,11 @@ def publish_operator_reports(
         "performance": str(localdata / "auto_tickets_performance.json"),
         "performance_text": str(localdata / "auto_tickets_performance.txt"),
         "candidate_funnel": candidate_funnel,
+        "unpriced_audit": _unpriced_audit_summary(dated_unpriced_audit),
         "counts": {
             "current_picks": len(current),
+            "current_unpriced_picks": len(current_unpriced_audit),
+            "dated_unpriced_audit_picks": len(dated_unpriced_audit),
             "archived_picks": len(archived),
             "graded_picks": audit["settled_picks"],
             # Backward-compatible alias; this now includes same-day finals.
