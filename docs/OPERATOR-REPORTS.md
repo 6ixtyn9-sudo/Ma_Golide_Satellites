@@ -68,11 +68,15 @@ No-price forecasts remain **audit-only**, never ticket legs. The rendered daily
 auto-ticket card shows only the latest logical no-price forecasts that pass a
 historical success-rate gate; qualifying lines include forecast ID, selection,
 probability, historical hit rate, price-evidence state, blockers, and current
-grade. The gate is wins divided by wins plus losses among prior settled
-individual picks in the rolling 30-day audit, matched on league, market, period,
-model, and calibrated-probability band (no odds band). Repeated observations or
-book snapshots of the same settled wager count once. It requires at least 70%
-success with more than 10 win/loss decisions; pushes, pending/void/unknown
+grade. Those qualifying picks are partitioned into display-only shadow groups
+of up to three, with at most one pick from each fixture per group; each pick
+appears once. The groups have no odds, ticket ID, receipt, stake, combined hit
+rate, or ticket-bank/ROI impact. The gate is wins divided by wins plus losses
+among prior settled individual picks in the rolling 30-day audit, matched on
+league, market, period, model, and calibrated-probability band (no odds band).
+Repeated observations or book snapshots of the same settled wager count once.
+The gate requires at least 70% success with more than 10 win/loss decisions;
+pushes, pending/void/unknown
 outcomes, the same game, and historical picks scheduled less than four hours
 before the forecast observation are excluded. A missing comparison band or
 insufficient history fails closed. Historical priced and unpriced picks both

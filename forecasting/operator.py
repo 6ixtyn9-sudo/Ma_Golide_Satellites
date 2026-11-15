@@ -48,6 +48,7 @@ UNPRICED_SUCCESS_RATE_THRESHOLD = 0.70
 UNPRICED_SUCCESS_RATE_MIN_DECISIONS_EXCLUSIVE = 10
 UNPRICED_SUCCESS_RATE_HISTORY_DAYS = 30
 UNPRICED_SUCCESS_RATE_RESULT_DELAY_HOURS = 4.0
+UNPRICED_SHADOW_GROUP_MAX_PICKS = 3
 BASE_PAPER_UNITS = 100.0
 STAKE_UNITS_PER_ACCA = 1.0
 BUCKET_ORDER = [
@@ -2103,6 +2104,16 @@ def _unpriced_audit_summary(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
             ],
             "history_source": "rolling_pick_audit.settled_ledger",
         },
+        "shadow_group_policy": {
+            "display_only": True,
+            "max_picks_per_group": UNPRICED_SHADOW_GROUP_MAX_PICKS,
+            "one_pick_per_game": True,
+            "each_qualified_candidate_once": True,
+            "joint_success_rate_calculated": False,
+            "ticket_id": None,
+            "receipt_created": False,
+            "stake_units": 0.0,
+        },
         "forecast_ids": sorted(
             str(row.get("forecast_id") or row.get("pick_id"))
             for row in rows
@@ -2118,15 +2129,11 @@ def _unpriced_audit_summary(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
     }
 
 
-def _render_unpriced_audit_section(
-    rows: List[Dict[str, Any]], timezone_name: str
-) -> List[str]:
-    """Render only hit-rate-qualified no-price candidates, never as bets."""
-    if not rows:
-        return []
-    threshold_text = f"{UNPRICED_SUCCESS_RATE_THRESHOLD:.0%}"
-    minimum_text = f"n>{UNPRICED_SUCCESS_RATE_MIN_DECISIONS_EXCLUSIVE}"
-    annotated = []
+def _group_unpriced_shadow_candidates(
+    rows: List[Dict[str, Any]],
+) -> List[List[Dict[str, Any]]]:
+    """Partition qualifying audit picks into display groups, not ticket objects."""
+    qualifying = []
     for row in rows:
         success_rate = row.get("_historical_success_rate")
         if not isinstance(success_rate, dict):
@@ -2134,63 +2141,124 @@ def _render_unpriced_audit_section(
         if success_rate.get("qualifies") is True:
             candidate = dict(row)
             candidate["_historical_success_rate"] = success_rate
-            annotated.append(candidate)
-    if not annotated:
+            qualifying.append(candidate)
+    qualifying.sort(
+        key=lambda row: (
+            -float(row["_historical_success_rate"].get("rate") or 0.0),
+            str(row.get("scheduled_utc") or ""),
+            str(row.get("game_id") or ""),
+            str(row.get("market") or ""),
+            str(row.get("period") or ""),
+            str(row.get("selection") or ""),
+            str(row.get("line") or ""),
+            str(row.get("forecast_id") or row.get("pick_id") or ""),
+        )
+    )
+
+    groups: List[Dict[str, Any]] = []
+    for candidate in qualifying:
+        game_id = str(candidate.get("game_id") or "")
+        group = next(
+            (
+                existing
+                for existing in groups
+                if len(existing["rows"]) < UNPRICED_SHADOW_GROUP_MAX_PICKS
+                and game_id not in existing["game_ids"]
+            ),
+            None,
+        )
+        if group is None:
+            group = {"rows": [], "game_ids": set()}
+            groups.append(group)
+        group["rows"].append(candidate)
+        group["game_ids"].add(game_id)
+    return [group["rows"] for group in groups]
+
+
+def _render_unpriced_candidate_line(
+    row: Dict[str, Any], timezone_name: str
+) -> str:
+    probability = row.get("calibrated_probability")
+    if probability is None:
+        probability = row.get("raw_probability")
+    try:
+        probability_text = f"{float(probability):.1%}"
+    except (TypeError, ValueError, OverflowError):
+        probability_text = "n/a"
+    evidence = str(row.get("price_evidence") or _price_evidence(row))
+    book = row.get("book") or {}
+    if evidence == "UNMATCHED":
+        price_text = "no exact selected-side book match"
+    elif evidence == "MATCHED_BUT_SELECTED_PRICE_MISSING":
+        price_text = f"{book.get('book') or 'book'} matched; selected-side quote missing"
+    else:
+        price_text = "no usable exact selected-side price"
+    reasons = (row.get("eligibility") or {}).get("reasons") or []
+    reason_text = ", ".join(str(reason) for reason in reasons) or "no recorded eligibility reason"
+    calibration = row.get("calibration") or {}
+    success_rate = row["_historical_success_rate"]
+    success_text = (
+        f"historical success={success_rate['rate']:.1%} "
+        f"({success_rate['wins']}/{success_rate['decisions']})"
+    )
+    forecast_id = row.get("forecast_id") or row.get("pick_id") or "unknown"
+    status = str(row.get("grade_status") or "pending").upper()
+    tip = _local_time(str(row["scheduled_utc"]), timezone_name)
+    return (
+        f"    [{status}] {row['home']} vs {row['away']} · {tip} · "
+        f"{_audit_market_selection(row)} · p={probability_text} · {price_text} · "
+        f"{success_text} · WF n={calibration.get('n', 0)} "
+        f"({calibration.get('status', 'unknown')}) · "
+        f"blockers: {reason_text} · forecast={forecast_id}"
+    )
+
+
+def _render_unpriced_audit_section(
+    rows: List[Dict[str, Any]], timezone_name: str
+) -> List[str]:
+    """Render hit-rate-qualified no-price picks in non-wagerable display groups."""
+    if not rows:
+        return []
+    threshold_text = f"{UNPRICED_SUCCESS_RATE_THRESHOLD:.0%}"
+    minimum_text = f"n>{UNPRICED_SUCCESS_RATE_MIN_DECISIONS_EXCLUSIVE}"
+    groups = _group_unpriced_shadow_candidates(rows)
+    if not groups:
         return [
             "",
-            f"UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 0 QUALIFY "
+            f"UNPRICED AUDIT-ONLY SHADOW GROUPS — 0 QUALIFY "
             f"({len(rows)} audited; requires ≥{threshold_text} historical success, {minimum_text})",
             "No no-price candidate meets the historical success-rate gate for display.",
             "All candidates remain individually recorded in the audit ledger; none are wager positions.",
         ]
-    grade_counts = Counter(str(row.get("grade_status") or "pending") for row in annotated)
+
+    qualified = [row for group in groups for row in group]
+    grade_counts = Counter(str(row.get("grade_status") or "pending") for row in qualified)
     grade_summary = ", ".join(
         f"{count} {status.upper()}"
         for status, count in sorted(grade_counts.items())
     )
+    group_label = "group" if len(groups) == 1 else "groups"
     lines = [
         "",
-        f"UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS; ≥{threshold_text} HISTORICAL SUCCESS, {minimum_text}) — "
-        f"{len(annotated)} ({grade_summary}; {len(rows)} audited)",
-        "Not wager positions: no selected price, zero stake, and excluded from ticket bank/ROI.",
-        f"Shown only when comparable prior picks have at least {threshold_text} success over more than "
-        f"{UNPRICED_SUCCESS_RATE_MIN_DECISIONS_EXCLUSIVE} win/loss decisions.",
+        f"UNPRICED AUDIT-ONLY SHADOW GROUPS (≥{threshold_text} HISTORICAL SUCCESS, {minimum_text}) — "
+        f"{len(qualified)} picks in {len(groups)} {group_label} ({grade_summary}; {len(rows)} audited)",
+        "Display grouping only: no odds, combined success rate, ticket ID, receipt, or stake; no bank/ROI impact.",
+        f"Each pick passes the individual historical gate; groups hold up to {UNPRICED_SHADOW_GROUP_MAX_PICKS} picks, "
+        "with at most one pick per fixture. Group success is not estimated.",
         "Every no-price forecast remains individually persisted and graded from reconciled official results.",
     ]
-    for row in annotated:
-        probability = row.get("calibrated_probability")
-        if probability is None:
-            probability = row.get("raw_probability")
-        try:
-            probability_text = f"{float(probability):.1%}"
-        except (TypeError, ValueError, OverflowError):
-            probability_text = "n/a"
-        evidence = str(row.get("price_evidence") or _price_evidence(row))
-        book = row.get("book") or {}
-        if evidence == "UNMATCHED":
-            price_text = "no exact selected-side book match"
-        elif evidence == "MATCHED_BUT_SELECTED_PRICE_MISSING":
-            price_text = f"{book.get('book') or 'book'} matched; selected-side quote missing"
-        else:
-            price_text = "no usable exact selected-side price"
-        reasons = (row.get("eligibility") or {}).get("reasons") or []
-        reason_text = ", ".join(str(reason) for reason in reasons) or "no recorded eligibility reason"
-        calibration = row.get("calibration") or {}
-        success_rate = row["_historical_success_rate"]
-        success_text = (
-            f"historical success={success_rate['rate']:.1%} "
-            f"({success_rate['wins']}/{success_rate['decisions']})"
+    for index, group in enumerate(groups, 1):
+        group_grades = Counter(str(row.get("grade_status") or "pending") for row in group)
+        group_grade_summary = ", ".join(
+            f"{count} {status.upper()}"
+            for status, count in sorted(group_grades.items())
         )
-        forecast_id = row.get("forecast_id") or row.get("pick_id") or "unknown"
-        status = str(row.get("grade_status") or "pending").upper()
-        tip = _local_time(str(row["scheduled_utc"]), timezone_name)
+        pick_label = "pick" if len(group) == 1 else "picks"
         lines.append(
-            f"  [{status}] {row['home']} vs {row['away']} · {tip} · "
-            f"{_audit_market_selection(row)} · p={probability_text} · {price_text} · "
-            f"{success_text} · WF n={calibration.get('n', 0)} "
-            f"({calibration.get('status', 'unknown')}) · "
-            f"blockers: {reason_text} · forecast={forecast_id}"
+            f"  SHADOW GROUP {index} — {len(group)} audit-only {pick_label} "
+            f"({group_grade_summary})"
         )
+        lines.extend(_render_unpriced_candidate_line(row, timezone_name) for row in group)
     return lines
 
 

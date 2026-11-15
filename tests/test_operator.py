@@ -691,7 +691,7 @@ def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp
     )
     assert ticket_text.index("NO PAPER BET") < ticket_text.index("CURRENT PAPER BANK")
     assert (
-        "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 0 QUALIFY "
+        "UNPRICED AUDIT-ONLY SHADOW GROUPS — 0 QUALIFY "
         "(1 audited; requires ≥70% historical success, n>10)"
     ) in ticket_text
     assert "forecast=forecast-3-moneyline-home" not in ticket_text
@@ -1337,7 +1337,7 @@ def test_unpriced_forecasts_are_audit_only_and_settle_without_paper_stake(tmp_pa
     state = json.loads(Path(first["ticket_state"]).read_text())
     assert state["frozen_by_date"] == {}
     card = Path(first["ticket_text"]).read_text()
-    assert "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 0 QUALIFY" in card
+    assert "UNPRICED AUDIT-ONLY SHADOW GROUPS — 0 QUALIFY" in card
     assert "forecast=forecast-1-moneyline-home" not in card
     assert "NO PAPER BET" in card
     audit = json.loads(Path(first["rolling_audit"]).read_text())
@@ -1360,7 +1360,7 @@ def test_unpriced_forecasts_are_audit_only_and_settle_without_paper_stake(tmp_pa
 
     assert settled["ticket_receipt"] is None
     ticket_text = Path(settled["ticket_text"]).read_text()
-    assert "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 0 QUALIFY" in ticket_text
+    assert "UNPRICED AUDIT-ONLY SHADOW GROUPS — 0 QUALIFY" in ticket_text
     assert "forecast=forecast-1-moneyline-home" not in ticket_text
     settled_records = settled["unpriced_audit"]["candidate_records"]
     assert len(settled_records) == 1
@@ -1410,7 +1410,7 @@ def test_unpriced_matched_market_reports_missing_selected_side_quote(tmp_path):
 
     assert result["ticket_receipt"] is None
     card = Path(result["ticket_text"]).read_text()
-    assert "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 0 QUALIFY" in card
+    assert "UNPRICED AUDIT-ONLY SHADOW GROUPS — 0 QUALIFY" in card
     assert "Test Book matched; selected-side quote missing" not in card
     assert "1.950" not in card
     state = json.loads(Path(result["ticket_state"]).read_text())
@@ -1477,10 +1477,13 @@ def test_unpriced_audit_rows_do_not_enter_a_frozen_priced_ticket(tmp_path):
     ticket_text = Path(result["ticket_text"]).read_text()
     assert "[PAPER 3-LEG ACCA #1]" in ticket_text
     assert (
-        "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS; ≥70% HISTORICAL SUCCESS, n>10) — "
-        "3 (3 PENDING; 3 audited)"
+        "UNPRICED AUDIT-ONLY SHADOW GROUPS (≥70% HISTORICAL SUCCESS, n>10) — "
+        "3 picks in 3 groups (3 PENDING; 3 audited)"
     ) in ticket_text
     assert "historical success=72.7% (8/11)" in ticket_text
+    assert "SHADOW GROUP 1 — 1 audit-only pick (1 PENDING)" in ticket_text
+    assert "SHADOW GROUP 2 — 1 audit-only pick (1 PENDING)" in ticket_text
+    assert "SHADOW GROUP 3 — 1 audit-only pick (1 PENDING)" in ticket_text
     assert "forecast=forecast-4-moneyline-home" in ticket_text
     assert "forecast=forecast-4-moneyline-away" in ticket_text
     assert "forecast=forecast-4-total-under" in ticket_text
@@ -1497,6 +1500,14 @@ def test_unpriced_audit_rows_do_not_enter_a_frozen_priced_ticket(tmp_path):
     assert all(record["historical_success_decisions"] == 11 for record in records)
     assert all(record["historical_success_qualifies"] is True for record in records)
     assert state["scans"][-1]["unpriced_audit"]["historical_success_qualified_count"] == 3
+    group_policy = state["scans"][-1]["unpriced_audit"]["shadow_group_policy"]
+    assert group_policy["display_only"] is True
+    assert group_policy["max_picks_per_group"] == 3
+    assert group_policy["one_pick_per_game"] is True
+    assert group_policy["joint_success_rate_calculated"] is False
+    assert group_policy["ticket_id"] is None
+    assert group_policy["receipt_created"] is False
+    assert group_policy["stake_units"] == 0.0
     assert all(record["ticket_id"] is None for record in records)
     assert all(record["ticketable"] is False for record in records)
     assert all(record["stake_units"] == 0.0 for record in records)
@@ -1505,6 +1516,53 @@ def test_unpriced_audit_rows_do_not_enter_a_frozen_priced_ticket(tmp_path):
     assert performance["paper_committed_units"] == 1.0
     assert result["counts"]["current_unpriced_picks"] == 3
     assert result["counts"]["dated_unpriced_audit_picks"] == 3
+
+
+def test_qualified_no_price_picks_are_grouped_without_creating_a_ticket(tmp_path):
+    history_games = seed_historical_success_picks(
+        tmp_path, "moneyline", wins=8, losses=3
+    )
+    rows = [
+        forecast(
+            number,
+            price=None,
+            eligible=False,
+            reasons=["no_exact_bookmaker_market"],
+            calibration_n=0,
+        )
+        for number in (5, 6, 7)
+    ]
+    result = publish(
+        tmp_path,
+        Store([game(number) for number in (5, 6, 7)] + history_games),
+        report(rows),
+    )
+
+    assert result["ticket_receipt"] is None
+    card = Path(result["ticket_text"]).read_text()
+    assert (
+        "UNPRICED AUDIT-ONLY SHADOW GROUPS (≥70% HISTORICAL SUCCESS, n>10) — "
+        "3 picks in 1 group (3 PENDING; 3 audited)"
+    ) in card
+    assert "SHADOW GROUP 1 — 3 audit-only picks (3 PENDING)" in card
+    assert card.count("  SHADOW GROUP ") == 1
+    assert "Display grouping only: no odds, combined success rate, ticket ID, receipt, or stake" in card
+    for row in rows:
+        assert f"forecast={row['forecast_id']}" in card
+
+    audit = result["unpriced_audit"]
+    assert audit["count"] == 3
+    assert audit["historical_success_qualified_count"] == 3
+    assert len(audit["candidate_records"]) == 3
+    assert all(record["historical_success_qualifies"] is True for record in audit["candidate_records"])
+    assert all(record["ticket_id"] is None for record in audit["candidate_records"])
+    assert all(record["ticketable"] is False for record in audit["candidate_records"])
+    assert all(record["stake_units"] == 0.0 for record in audit["candidate_records"])
+    state = json.loads(Path(result["ticket_state"]).read_text())
+    assert state["frozen_by_date"] == {}
+    performance = json.loads(Path(result["performance"]).read_text())
+    assert performance["pending_positions"] == 0
+    assert performance["paper_bank_units"] == 100.0
 
 
 def test_unpriced_success_rate_requires_70_percent_and_more_than_10_decisions(tmp_path):
