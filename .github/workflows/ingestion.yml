@@ -75,7 +75,7 @@ jobs:
           - label: NCAA women
             league: NCAA_W
             state_key: ncaa_w
-            required_secret: ISPORTS_API_KEY
+            required_secret: ""
     name: ${{ matrix.label }}
     env:
       LOCALDATA: localdata/${{ matrix.state_key }}
