@@ -70,9 +70,15 @@ forecast ID, selection, probability, price-evidence state, blockers, and current
 grade. The picks dated ledger and rolling audit remain the grading source of
 truth; audit-only rows have zero stake, do not enter paper-position performance
 or ROI, and do not create a frozen decision receipt or date lock. Each
-`auto_tickets_state.json` scan also records a compact `unpriced_audit` summary
-with forecast IDs, price-evidence counts, eligibility reasons, and grade counts.
-This adds visibility without inventing odds or relaxing ticket eligibility.
+`auto_tickets_state.json` scan records both summary counts and a
+`unpriced_audit.candidate_records` array: one record per forecast ID, including
+fixture, market, period, selection, line, model/book identity, grade, missing
+price state, and an explicit `ticket_id: null`, `ticketable: false`, and zero
+stake. Different markets or selections on the same fixture stay separate; the
+array is not a fixture-level aggregate or a wager position. Repeated observations
+remain in the dated evidence ledger, while the rolling audit still uses the
+latest observation for each existing logical-pick key. This adds ticket-decision
+visibility without inventing odds or relaxing ticket eligibility.
 
 Repeated scans can produce distinct forecast IDs because book and prediction
 observation times are part of those IDs. The dated JSON retains every evidence
