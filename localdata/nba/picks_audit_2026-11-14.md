@@ -1,17 +1,17 @@
 # Ma Golide — Recent picks audit (2026-10-16 to 2026-11-14)
 
-Generated: 2026-11-15 00:17 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-15 06:33 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
 - archived logical picks: 278
 - dated evidence rows: 752 (474 superseded observations)
-- settled picks: 226 (121 wins / 105 losses / 0 pushes)
-- hit rate: 53.5% (121/226 win/loss decisions)
-- pending/unmatched picks: 52 prior-day · 52 total
-- priced picks: 173
-- paper P&L: -3.328 units
-- ROI: -1.9% (P&L / 173 priced picks)
+- settled picks: 278 (150 wins / 128 losses / 0 pushes)
+- hit rate: 54.0% (150/278 win/loss decisions)
+- pending/unmatched picks: 0 prior-day · 0 total
+- priced picks: 211
+- paper P&L: +2.577 units
+- ROI: +1.2% (P&L / 211 priced picks)
 
 ## Settlement policy
 
@@ -26,64 +26,236 @@ Generated: 2026-11-15 00:17 SAST · 30-day rolling window · Paper only
 
 | Bucket | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `CAUTION` | 91 | 53–38–0 | 58.2% | 91 | +3.6% |
-| `SKIPPED_INELIGIBLE` | 82 | 47–35–0 | 57.3% | 82 | -8.0% |
-| `WATCHLIST_NO_ODDS` | 53 | 21–32–0 | 39.6% | 0 | n/a |
+| `CAUTION` | 107 | 66–41–0 | 61.7% | 107 | +12.0% |
+| `SKIPPED_INELIGIBLE` | 104 | 57–47–0 | 54.8% | 104 | -9.8% |
+| `WATCHLIST_NO_ODDS` | 67 | 27–40–0 | 40.3% | 0 | n/a |
 
 ## By market
 
 | Market | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `highest_quarter` | 28 | 7–21–0 | 25.0% | 0 | n/a |
-| `moneyline` | 82 | 54–28–0 | 65.9% | 58 | -2.3% |
-| `spread` | 52 | 25–27–0 | 48.1% | 52 | -8.0% |
-| `total` | 64 | 35–29–0 | 54.7% | 63 | +3.5% |
+| `highest_quarter` | 36 | 10–26–0 | 27.8% | 0 | n/a |
+| `moneyline` | 98 | 63–35–0 | 64.3% | 69 | +1.4% |
+| `spread` | 67 | 36–31–0 | 53.7% | 66 | +1.5% |
+| `total` | 77 | 41–36–0 | 53.2% | 76 | +0.8% |
 
 ## By selection — over/under & side bias
 
 | Market:Selection | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `highest_quarter:Q2` | 27 | 7–20–0 | 25.9% | 0 | n/a |
-| `highest_quarter:Q3` | 1 | 0–1–0 | 0.0% | 0 | n/a |
-| `moneyline:away` | 46 | 27–19–0 | 58.7% | 31 | -11.3% |
-| `moneyline:home` | 36 | 27–9–0 | 75.0% | 27 | +8.0% |
-| `spread:away` | 41 | 17–24–0 | 41.5% | 41 | -20.8% |
-| `spread:home` | 11 | 8–3–0 | 72.7% | 11 | +40.0% |
-| `total:over` | 47 | 27–20–0 | 57.4% | 47 | +10.2% |
-| `total:under` | 17 | 8–9–0 | 47.1% | 16 | -16.2% |
+| `highest_quarter:Q1` | 1 | 0–1–0 | 0.0% | 0 | n/a |
+| `highest_quarter:Q2` | 31 | 8–23–0 | 25.8% | 0 | n/a |
+| `highest_quarter:Q3` | 4 | 2–2–0 | 50.0% | 0 | n/a |
+| `moneyline:away` | 53 | 30–23–0 | 56.6% | 35 | -14.9% |
+| `moneyline:home` | 45 | 33–12–0 | 73.3% | 34 | +18.2% |
+| `spread:away` | 43 | 17–26–0 | 39.5% | 43 | -24.5% |
+| `spread:home` | 24 | 19–5–0 | 79.2% | 23 | +50.3% |
+| `total:over` | 55 | 32–23–0 | 58.2% | 55 | +11.4% |
+| `total:under` | 22 | 9–13–0 | 40.9% | 21 | -27.1% |
 
 ## Paper-only opposite-side fade audit
 
 Counterfactual reporting only — this is not a strategy, pick, or ticket. A settled result is reversed (win↔loss; push stays push) and priced only when the exact opposite quote is preserved in the same pre-tip book snapshot, market, period, line, and observation. No quote is inferred or historically backfilled; selected-side price is not required.
 
-- settled rows with exact opposite quotes: 74/226
-- fade record: 29–45–0
-- fade hit rate: 39.2% (29/74 decisions)
-- paper P&L: -9.359 units · ROI: -12.6% (one unit per priced fade, pushes included)
-- mean market-implied break-even hit rate: 44.2% (n=74 non-push quotes; includes vig)
-- unpriced settled rows: `market_has_no_single_opposite_side`=52, `opposite_quote_not_preserved`=100
+- settled rows with exact opposite quotes: 113/278
+- fade record: 44–69–0
+- fade hit rate: 38.9% (44/113 decisions)
+- paper P&L: -6.095 units · ROI: -5.4% (one unit per priced fade, pushes included)
+- mean market-implied break-even hit rate: 45.6% (n=113 non-push quotes; includes vig)
+- unpriced settled rows: `market_has_no_single_opposite_side`=65, `opposite_quote_not_preserved`=100
 
 | Market | Settled candidates | Exact quotes | Fade W–L–P | ROI |
 | --- | ---: | ---: | ---: | ---: |
-| `highest_quarter` | 28 | 0 | 0–0–0 | n/a |
-| `moneyline` | 82 | 26 | 7–19–0 | -13.5% |
-| `spread` | 52 | 23 | 11–12–0 | -8.5% |
-| `total` | 64 | 25 | 11–14–0 | -15.6% |
+| `highest_quarter` | 36 | 0 | 0–0–0 | n/a |
+| `moneyline` | 98 | 37 | 11–26–0 | +17.8% |
+| `spread` | 67 | 38 | 15–23–0 | -24.3% |
+| `total` | 77 | 38 | 18–20–0 | -9.1% |
 
 Numeric selected-probability bands (calibrated probability, otherwise raw):
 
 | Probability band | Settled candidates | Exact quotes | Fade W–L–P | ROI |
 | --- | ---: | ---: | ---: | ---: |
-| `0.50-<0.60` | 135 | 44 | 18–26–0 | -14.4% |
-| `0.60-<0.70` | 41 | 17 | 7–10–0 | -13.8% |
-| `0.70-<0.80` | 14 | 10 | 4–6–0 | +23.1% |
-| `0.80-<0.90` | 5 | 3 | 0–3–0 | -100.0% |
-| `0.90-1.00` | 1 | 0 | 0–0–0 | n/a |
-| `<0.50` | 30 | 0 | 0–0–0 | n/a |
+| `0.50-<0.60` | 169 | 73 | 29–44–0 | -18.1% |
+| `0.60-<0.70` | 48 | 24 | 9–15–0 | -20.9% |
+| `0.70-<0.80` | 15 | 11 | 5–6–0 | +83.8% |
+| `0.80-<0.90` | 6 | 4 | 0–4–0 | -100.0% |
+| `0.90-1.00` | 2 | 1 | 1–0–0 | +690.0% |
+| `<0.50` | 38 | 0 | 0–0–0 | n/a |
 
 ## Settled picks — official-final audit
 
 Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+### 2026-11-14: Minnesota Timberwolves vs Chicago Bulls (Final: **106–117**)
+
+- 🔴 **LOST — Full-game moneyline: Minnesota Timberwolves (home)**
+  - Expected: **90.7%** · Price: **1.093 · DraftKings** · Counterfactual fade: **WON @ 7.900 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🔴 **LOST — Full-game spread -15.5: Minnesota Timberwolves (home)**
+  - Actual Full-game margin: **-11** · Expected: **56.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **WON @ 1.926 Chicago Bulls +15.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 234.5: Over**
+  - Actual Full-game total: **223** · Expected: **54.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **WON @ 1.952 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -14.5: Minnesota Timberwolves (home)**
+  - Actual Full-game margin: **-11** · Expected: **55.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **WON @ 1.870 Chicago Bulls +14.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Highest quarter: Q1**
+  - Expected: **27.2%** calibrated (raw 29.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=2** · provisional · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Minnesota Timberwolves (home)**
+  - Expected: **71.6%** calibrated (raw 69.0%) · Price: **1.093 · DraftKings** · Counterfactual fade: **WON @ 7.900 away · DraftKings**
+  - Calibration: **n=2** · provisional · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — First-half moneyline: Minnesota Timberwolves (home)**
+  - Actual First-half score: **45–58** · Expected: **58.6%** calibrated (raw 59.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=2** · provisional · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 236.5: Under**
+  - Actual Full-game total: **223** · Expected: **56.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **LOST @ 1.926 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+
+### 2026-11-14: Memphis Grizzlies vs Brooklyn Nets (Final: **129–110**)
+
+- 🟢 **WON — Full-game total 227.5: Over**
+  - Actual Full-game total: **239** · Expected: **53.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **LOST @ 1.893 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game spread -4.5: Memphis Grizzlies (home)**
+  - Actual Full-game margin: **+19** · Expected: **52.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **LOST @ 1.952 Brooklyn Nets +4.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +5.5: Brooklyn Nets (away)**
+  - Actual Full-game margin: **+19** · Expected: **55.0%** · Price: **1.855 · DraftKings** · Counterfactual fade: **WON @ 1.962 Memphis Grizzlies -5.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game spread -1.5: Memphis Grizzlies (home)**
+  - Actual Full-game margin: **+19** · Expected: **57.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **LOST @ 1.926 Brooklyn Nets +1.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Memphis Grizzlies (home)**
+  - Expected: **66.0%** · Price: **1.769 · DraftKings** · Counterfactual fade: **LOST @ 2.100 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 226.5: Over**
+  - Actual Full-game total: **239** · Expected: **56.0%** · Price: **1.885 · DraftKings** · Counterfactual fade: **LOST @ 1.935 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Memphis Grizzlies (home)**
+  - Actual First-half score: **71–54** · Expected: **54.6%** calibrated (raw 55.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=2** · provisional · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 228.5: Under**
+  - Actual Full-game total: **239** · Expected: **52.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **WON @ 1.952 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game spread -2.5: Memphis Grizzlies (home)**
+  - Actual Full-game margin: **+19** · Expected: **56.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 Brooklyn Nets +2.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Memphis Grizzlies (home)**
+  - Expected: **61.6%** calibrated (raw 59.0%) · Price: **1.769 · DraftKings** · Counterfactual fade: **LOST @ 2.100 away · DraftKings**
+  - Calibration: **n=2** · provisional · Bucket: `CAUTION` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Highest quarter: Q2**
+  - Expected: **35.2%** calibrated (raw 37.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=2** · provisional · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 225.5: Over**
+  - Actual Full-game total: **239** · Expected: **61.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **LOST @ 1.952 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+
+### 2026-11-14: Miami Heat vs Detroit Pistons (Final: **137–117**)
+
+- 🔴 **LOST — Highest quarter: Q2**
+  - Expected: **30.1%** calibrated (raw 31.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=1** · provisional · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Detroit Pistons (away)**
+  - Expected: **63.7%** · Price: **1.578 · DraftKings** · Counterfactual fade: **WON @ 2.460 home · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Miami Heat (home)**
+  - Expected: **55.6%** calibrated (raw 53.0%) · Price: **2.460 · DraftKings** · Counterfactual fade: **LOST @ 1.578 away · DraftKings**
+  - Calibration: **n=2** · provisional · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — First-half moneyline: Detroit Pistons (away)**
+  - Actual First-half score: **68–60** · Expected: **53.3%** calibrated (raw 52.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=1** · provisional · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -3.5: Detroit Pistons (away)**
+  - Actual Full-game margin: **+20** · Expected: **53.0%** · Price: **1.855 · DraftKings** · Counterfactual fade: **WON @ 1.962 Miami Heat +3.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 228.5: Under**
+  - Actual Full-game total: **254** · Expected: **51.0%** · Price: **1.885 · DraftKings** · Counterfactual fade: **WON @ 1.935 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +4.5: Miami Heat (home)**
+  - Actual Full-game margin: **+20** · Expected: **56.0%** · Price: **1.971 · DraftKings** · Counterfactual fade: **LOST @ 1.855 Detroit Pistons -4.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Highest quarter: Q3**
+  - Expected: **27.2%** calibrated (raw 29.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=2** · provisional · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 229.5: Under**
+  - Actual Full-game total: **254** · Expected: **54.0%** · Price: **1.885 · DraftKings** · Counterfactual fade: **WON @ 1.935 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game total 228.5: Over**
+  - Actual Full-game total: **254** · Expected: **53.0%** · Price: **1.885 · DraftKings** · Counterfactual fade: **LOST @ 1.935 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+
+### 2026-11-14: Cleveland Cavaliers vs Dallas Mavericks (Final: **127–117**)
+
+- 🔴 **LOST — Highest quarter: Q2**
+  - Expected: **29.1%** calibrated (raw 30.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=1** · provisional · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Cleveland Cavaliers (home)**
+  - Expected: **65.6%** · Price: **2.200 · DraftKings** · Counterfactual fade: **LOST @ 1.704 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🔴 **LOST — Full-game total 231.5: Under**
+  - Actual Full-game total: **244** · Expected: **54.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Cleveland Cavaliers (home)**
+  - Expected: **58.6%** calibrated (raw 56.0%) · Price: **2.840 · DraftKings** · Counterfactual fade: **LOST @ 1.450 away · DraftKings**
+  - Calibration: **n=2** · provisional · Bucket: `CAUTION` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: Dallas Mavericks (away)**
+  - Expected: **51.0%** · Price: **1.450 · DraftKings** · Counterfactual fade: **WON @ 2.840 home · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game spread -2.5: Cleveland Cavaliers (home)**
+  - Actual Full-game margin: **+10** · Expected: **56.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **LOST @ 1.893 Dallas Mavericks +2.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — First-half moneyline: Dallas Mavericks (away)**
+  - Actual First-half score: **71–53** · Expected: **53.3%** calibrated (raw 52.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=1** · provisional · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread -3.5: Cleveland Cavaliers (home)**
+  - Actual Full-game margin: **+10** · Expected: **54.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **LOST @ 1.952 Dallas Mavericks +3.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +5.5: Cleveland Cavaliers (home)**
+  - Actual Full-game margin: **+10** · Expected: **59.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **LOST @ 1.893 Dallas Mavericks -5.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Highest quarter: Q3**
+  - Expected: **29.2%** calibrated (raw 31.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=2** · provisional · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 228.5: Over**
+  - Actual Full-game total: **244** · Expected: **53.0%** · Price: **1.935 · DraftKings** · Counterfactual fade: **LOST @ 1.885 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game spread -1.5: Cleveland Cavaliers (home)**
+  - Actual Full-game margin: **+10** · Expected: **57.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 Dallas Mavericks +1.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +2.5: Cleveland Cavaliers (home)**
+  - Actual Full-game margin: **+10** · Expected: **64.0%** · Price: **1.901 · DraftKings** · Counterfactual fade: **LOST @ 1.917 Dallas Mavericks -2.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+
+### 2026-11-14: New Orleans Pelicans vs Denver Nuggets (Final: **108–116**)
+
+- 🟢 **WON — Full-game spread +12.5: New Orleans Pelicans (home)**
+  - Actual Full-game margin: **-8** · Expected: **53.0%** · Price: **1.901 · DraftKings** · Counterfactual fade: **LOST @ 1.917 Denver Nuggets -12.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 235.5: Over**
+  - Actual Full-game total: **224** · Expected: **59.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **WON @ 1.893 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Highest quarter: Q3**
+  - Expected: **28.2%** calibrated (raw 30.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=2** · provisional · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +11.5: New Orleans Pelicans (home)**
+  - Actual Full-game margin: **-8** · Expected: **52.0%** · Price: **1.962 · DraftKings** · Counterfactual fade: **LOST @ 1.855 Denver Nuggets -11.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Denver Nuggets (away)**
+  - Expected: **57.6%** calibrated (raw 55.0%) · Price: **1.154 · DraftKings** · Counterfactual fade: **LOST @ 5.700 home · DraftKings**
+  - Calibration: **n=2** · provisional · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Denver Nuggets (away)**
+  - Actual First-half score: **51–56** · Expected: **50.6%** calibrated (raw 51.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=2** · provisional · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 234.5: Over**
+  - Actual Full-game total: **224** · Expected: **61.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **WON @ 1.870 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Denver Nuggets (away)**
+  - Expected: **80.7%** · Price: **1.154 · DraftKings** · Counterfactual fade: **LOST @ 5.700 home · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🔴 **LOST — Highest quarter: Q2**
+  - Expected: **29.1%** calibrated (raw 30.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=1** · provisional · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
 
 ### 2026-11-13: Los Angeles Clippers vs Oklahoma City Thunder (Final: **113–112**)
 
