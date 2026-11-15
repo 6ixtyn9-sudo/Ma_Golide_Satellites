@@ -104,12 +104,16 @@ Live CBA acquisition requires `ISPORTS_API_KEY` for fixtures/results/books and
 NCAA book acquisition uses `THE_ODDS_API_KEY`; a missing key disables that
 provider rather than inventing book evidence.
 
-Deliberate persistence requires both the CLI flag and environment opt-in:
+Direct CLI persistence requires both the CLI flag and environment opt-in:
 
 ```bash
 ALLOW_MAGOLIDE_WRITES=true python scripts/daily.py \
   --auto-once --date 2026-11-07 --write
 ```
+
+The scheduled GitHub Actions workflow defaults `ALLOW_MAGOLIDE_WRITES` to
+`true`; set that repository variable to `false` to opt out of canonical writes.
+Manual workflow dispatch remains a dry run.
 
 ## Forecast and acca reports
 
