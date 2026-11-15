@@ -48,3 +48,32 @@ def test_operator_state_restore_uses_latest_main_not_event_sha():
         assert 'git cat-file -e "${MAIN_REF}:${STATE_DIR}"' in text
         assert 'git restore --source="$MAIN_REF" --worktree -- "$STATE_DIR"' in text
         assert 'git cat-file -e "HEAD:${STATE_DIR}"' not in text
+
+
+def test_scheduled_write_default_and_ncaaw_secret_gate_are_correct():
+    repo = Path(__file__).resolve().parents[1]
+    workflow_paths = (
+        repo / "workflows" / "ingestion.yml",
+        repo / ".github" / "workflows" / "ingestion.yml",
+    )
+    for path in workflow_paths:
+        text = path.read_text()
+        assert "ALLOW_MAGOLIDE_WRITES: ${{ vars.ALLOW_MAGOLIDE_WRITES || 'true' }}" in text
+        assert (
+            'if [ "$GITHUB_EVENT_NAME" = "schedule" ] && '
+            '[ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then'
+        ) in text
+        assert re.search(
+            r"(?m)^          - label: NCAA women\n"
+            r"            league: NCAA_W\n"
+            r"            state_key: ncaa_w\n"
+            r"            required_secret: \"\"$",
+            text,
+        ), f"NCAA_W must not require an iSports credential in {path}"
+        assert re.search(
+            r"(?m)^          - label: Chinese CBA\n"
+            r"            league: CBA\n"
+            r"            state_key: cba\n"
+            r"            required_secret: ISPORTS_API_KEY$",
+            text,
+        ), f"CBA must retain its iSports credential gate in {path}"

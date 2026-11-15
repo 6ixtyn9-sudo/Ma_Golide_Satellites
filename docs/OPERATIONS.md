@@ -43,7 +43,8 @@ ALLOW_NOTIFICATION_WRITES=true
 ```
 
 Canonical persistence separately requires `ALLOW_MAGOLIDE_WRITES=true` and
-`--write`. Never commit credentials or runtime state.
+`--write`. The scheduled workflow defaults the variable to true; manual
+workflow dispatch remains a dry run. Never commit credentials or runtime state.
 
 ## Daily orchestration
 
@@ -98,12 +99,14 @@ Each matrix job has isolated state and artifacts:
 Safety behavior is deliberate:
 
 - Manual dispatch is a live all-league canonical **dry run**. It may consume
-  provider quota but never adds `--write` and never sends notifications.
-- Scheduled runs add `--write` only when repository variable
-  `ALLOW_MAGOLIDE_WRITES=true`. Otherwise they still acquire every available
-  provider as a canonical dry run; missing credentials remain visible gaps.
-- Successful scheduled runs save league state even during canonical dry runs,
-  preserving public acquisition caches and receipts. This does not persist
+  provider quota but never adds `--write` and never sends notifications, even
+  when `ALLOW_MAGOLIDE_WRITES` is true.
+- Scheduled runs default to `--write`: the workflow falls back to
+  `ALLOW_MAGOLIDE_WRITES=true` when the repository variable is unset. Set the
+  variable to `false` to disable canonical persistence; runs still acquire
+  available providers and report missing credentials.
+- Scheduled runs save league state. When canonical writes are disabled, this
+  preserves public acquisition caches and receipts but does not persist
   DuckDB/CSV sports state or advance deep-history cursors. Reports and
   immutable ledgers are uploaded on every outcome when present. Git is
   authoritative for operator files after cache recovery.
