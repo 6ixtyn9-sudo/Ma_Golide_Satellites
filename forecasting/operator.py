@@ -1778,8 +1778,90 @@ def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict
     }
 
 
+def _unpriced_candidate_record(row: Dict[str, Any]) -> Dict[str, Any]:
+    """One audit record for one no-exact-price forecast; never a wager position.
+
+    ``candidate_id`` is the immutable forecast/evidence ID. The logical identity
+    is descriptive and mirrors ``_logical_pick_key``; it does not collapse this
+    record with another candidate. In particular, markets, periods, selections,
+    lines, models, and books remain separately inspectable.
+    """
+    book = row.get("book") if isinstance(row.get("book"), dict) else {}
+    forecast_id = str(row.get("forecast_id") or row.get("pick_id") or "")
+    probability = row.get("calibrated_probability")
+    if probability is None:
+        probability = row.get("raw_probability")
+
+    def finite_number(value):
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return None
+        try:
+            number = float(value)
+        except (OverflowError, TypeError, ValueError):
+            return None
+        return number if math.isfinite(number) else None
+
+    probability = finite_number(probability)
+    logical = _logical_pick_key(row)
+    eligibility = row.get("eligibility") if isinstance(row.get("eligibility"), dict) else {}
+    calibration = row.get("calibration") if isinstance(row.get("calibration"), dict) else {}
+    return {
+        "record_type": "unpriced_forecast_candidate",
+        "candidate_id": forecast_id,
+        "forecast_id": forecast_id or None,
+        "pick_id": str(row.get("pick_id") or forecast_id) or None,
+        "date": str(row.get("date") or "")[:10] or None,
+        "game_id": row.get("game_id"),
+        "home": row.get("home"),
+        "away": row.get("away"),
+        "scheduled_utc": row.get("scheduled_utc"),
+        "market": row.get("market"),
+        "period": row.get("period"),
+        "selection": row.get("selection"),
+        "line": logical[4],
+        "model": row.get("model"),
+        "model_version": row.get("model_version"),
+        "bucket": row.get("bucket"),
+        "acca_eligible": eligibility.get("acca_eligible"),
+        "calibration_status": calibration.get("status"),
+        "calibration_n": calibration.get("n"),
+        "logical_pick_identity": {
+            "game_id": logical[0],
+            "market": logical[1],
+            "period": logical[2],
+            "selection": logical[3],
+            "line": logical[4],
+            "model": logical[5],
+            "book_provider": logical[6],
+            "book": logical[7],
+        },
+        "probability": probability,
+        "raw_probability": finite_number(row.get("raw_probability")),
+        "calibrated_probability": finite_number(row.get("calibrated_probability")),
+        "price": None,
+        "price_evidence": str(row.get("price_evidence") or _price_evidence(row)),
+        "price_state": (
+            "unmatched" if not book
+            else "selected_side_quote_missing"
+            if book.get("selected_decimal_price") is None
+            else "selected_price_unusable"
+        ),
+        "book_provider": book.get("provider"),
+        "book": _canonical_book_for_key(book.get("book")),
+        "book_observed_utc": book.get("observed_utc"),
+        "ticket_id": None,
+        "ticket_status": "audit_only_no_exact_selected_price",
+        "ticketable": False,
+        "audit_only": True,
+        "stake_units": 0.0,
+        "grade_status": str(row.get("grade_status") or "pending"),
+        "outcome": row.get("outcome"),
+        "eligibility_reasons": list(eligibility.get("reasons") or []),
+    }
+
+
 def _unpriced_audit_summary(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
-    """Summarize forecasts recorded for audit but not as ticket positions."""
+    """Summarize no-price audit candidates while retaining one record per pick."""
     grade_counts = Counter(str(row.get("grade_status") or "pending") for row in rows)
     evidence_counts = Counter(
         str(row.get("price_evidence") or _price_evidence(row)) for row in rows
@@ -1789,6 +1871,18 @@ def _unpriced_audit_summary(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
         for row in rows
         for reason in ((row.get("eligibility") or {}).get("reasons") or [])
     )
+    records = [_unpriced_candidate_record(row) for row in rows]
+    records.sort(key=lambda item: (
+        str(item.get("date") or ""),
+        str(item.get("game_id") or ""),
+        str(item.get("market") or ""),
+        str(item.get("period") or ""),
+        str(item.get("selection") or ""),
+        str(item.get("line") or ""),
+        str(item.get("model") or ""),
+        str(item.get("book") or ""),
+        str(item.get("candidate_id") or ""),
+    ))
     return {
         "schema_version": UNPRICED_AUDIT_SCHEMA,
         "record_type": "unpriced_shadow_ticket_audit",
@@ -1801,10 +1895,13 @@ def _unpriced_audit_summary(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
             for row in rows
             if row.get("forecast_id") or row.get("pick_id")
         ),
+        "candidate_records": records,
         "grade_counts": dict(sorted(grade_counts.items())),
         "price_evidence_counts": dict(sorted(evidence_counts.items())),
         "eligibility_reason_counts": dict(sorted(reason_counts.items())),
-        "recorded_in": ["dated_pick_ledger", "rolling_pick_audit"],
+        "recorded_in": [
+            "ticket_state_scan", "dated_pick_ledger", "rolling_pick_audit",
+        ],
     }
 
 

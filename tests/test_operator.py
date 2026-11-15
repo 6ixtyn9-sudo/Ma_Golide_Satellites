@@ -651,6 +651,16 @@ def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp
     assert unpriced_scan["count"] == 1
     assert unpriced_scan["grade_counts"] == {"pending": 1}
     assert unpriced_scan["price_evidence_counts"] == {"UNMATCHED": 1}
+    records = unpriced_scan["candidate_records"]
+    assert len(records) == 1
+    assert records[0]["candidate_id"] == "forecast-3-moneyline-home"
+    assert records[0]["market"] == "moneyline"
+    assert records[0]["selection"] == "home"
+    assert records[0]["price"] is None
+    assert records[0]["ticket_id"] is None
+    assert records[0]["ticket_status"] == "audit_only_no_exact_selected_price"
+    assert records[0]["ticketable"] is False
+    assert records[0]["stake_units"] == 0.0
     assert result["counts"]["current_unpriced_picks"] == 1
     assert result["counts"]["dated_unpriced_audit_picks"] == 1
     buckets = {row["bucket"] for row in json.loads(Path(result["dated_picks"]).read_text())}
@@ -1266,6 +1276,13 @@ def test_unpriced_forecasts_are_audit_only_and_settle_without_paper_stake(tmp_pa
     ticket_text = Path(settled["ticket_text"]).read_text()
     assert "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 1 (1 WIN)" in ticket_text
     assert "forecast=forecast-1-moneyline-home" in ticket_text
+    settled_records = settled["unpriced_audit"]["candidate_records"]
+    assert len(settled_records) == 1
+    assert settled_records[0]["candidate_id"] == "forecast-1-moneyline-home"
+    assert settled_records[0]["grade_status"] == "win"
+    assert settled_records[0]["outcome"] == "win"
+    assert settled_records[0]["price"] is None
+    assert settled_records[0]["ticket_id"] is None
     settled_audit = json.loads(Path(settled["rolling_audit"]).read_text())
     assert settled_audit["settled_picks"] == 1
     assert settled_audit["wins"] == 1
@@ -1326,25 +1343,66 @@ def test_unpriced_audit_rows_do_not_enter_a_frozen_priced_ticket(tmp_path):
         reasons=["no_exact_bookmaker_market", "insufficient_walk_forward_samples"],
         calibration_n=0,
     )
+    # Same fixture, different selections and market: none may be collapsed
+    # into a generic fixture-level shadow record.
+    unpriced_away = forecast(
+        4,
+        selection="away",
+        price=None,
+        eligible=False,
+        reasons=["no_exact_bookmaker_market", "insufficient_walk_forward_samples"],
+        calibration_n=0,
+    )
+    unpriced_total = forecast(
+        4,
+        market="total",
+        selection="under",
+        price=None,
+        eligible=False,
+        reasons=["no_exact_bookmaker_market", "insufficient_walk_forward_samples"],
+        calibration_n=0,
+    )
     result = publish(
         tmp_path,
         Store([game(number) for number in (1, 2, 3, 4)]),
-        report([*priced, unpriced], [acca(priced)]),
+        report([*priced, unpriced, unpriced_away, unpriced_total], [acca(priced)]),
     )
 
     assert result["ticket_receipt"] is not None
     receipt = json.loads(Path(result["ticket_receipt"]).read_text())
     assert len(receipt["accas"]) == 1
     assert len(receipt["accas"][0]["legs"]) == 3
-    assert all(leg["forecast_id"] != unpriced["forecast_id"] for leg in receipt["accas"][0]["legs"])
+    assert all(
+        leg["forecast_id"] not in {
+            unpriced["forecast_id"],
+            unpriced_away["forecast_id"],
+            unpriced_total["forecast_id"],
+        }
+        for leg in receipt["accas"][0]["legs"]
+    )
     ticket_text = Path(result["ticket_text"]).read_text()
     assert "[PAPER 3-LEG ACCA #1]" in ticket_text
-    assert "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 1 (1 PENDING)" in ticket_text
+    assert "UNPRICED AUDIT-ONLY PICKS (SHADOW TICKETS) — 3 (3 PENDING)" in ticket_text
+    assert "forecast=forecast-4-moneyline-home" in ticket_text
+    assert "forecast=forecast-4-moneyline-away" in ticket_text
+    assert "forecast=forecast-4-total-under" in ticket_text
+    state = json.loads(Path(result["ticket_state"]).read_text())
+    records = state["scans"][-1]["unpriced_audit"]["candidate_records"]
+    assert {record["candidate_id"] for record in records} == {
+        unpriced["forecast_id"],
+        unpriced_away["forecast_id"],
+        unpriced_total["forecast_id"],
+    }
+    assert {record["market"] for record in records} == {"moneyline", "total"}
+    assert {record["selection"] for record in records} == {"home", "away", "under"}
+    assert all(record["ticket_id"] is None for record in records)
+    assert all(record["ticketable"] is False for record in records)
+    assert all(record["stake_units"] == 0.0 for record in records)
     performance = json.loads(Path(result["performance"]).read_text())
     assert performance["pending_positions"] == 1
     assert performance["paper_committed_units"] == 1.0
-    assert result["counts"]["current_unpriced_picks"] == 1
-    assert result["counts"]["dated_unpriced_audit_picks"] == 1
+    assert result["counts"]["current_unpriced_picks"] == 3
+    assert result["counts"]["dated_unpriced_audit_picks"] == 3
 
 
 def test_prior_dated_picks_are_graded_without_changing_frozen_evidence(tmp_path):
