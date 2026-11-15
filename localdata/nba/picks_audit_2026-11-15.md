@@ -1,43 +1,44 @@
 # Ma Golide — Recent picks audit (2026-10-17 to 2026-11-15)
 
-Generated: 2026-11-15 18:18 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-16 00:45 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
-- archived logical picks: 350
-- dated evidence rows: 1044 (694 superseded observations)
-- settled picks: 278 (150 wins / 128 losses / 0 pushes)
-- hit rate: 54.0% (150/278 win/loss decisions)
-- pending/unmatched picks: 0 prior-day · 72 total
-- priced picks: 211
-- paper P&L: +2.577 units
-- ROI: +1.2% (P&L / 211 priced picks)
+- archived logical picks: 353
+- dated evidence rows: 1064 (711 superseded observations)
+- settled picks: 286 (154 wins / 132 losses / 0 pushes)
+- hit rate: 53.8% (154/286 win/loss decisions)
+- pending/unmatched picks: 67 prior-day · 67 total
+- priced picks: 217
+- paper P&L: +1.147 units
+- ROI: +0.5% (P&L / 217 priced picks)
 
 ## Settlement policy
 
 - reconciled official finals settle immediately; pending rows are never losses
-- local-day pending cutoff: 2026-11-15
-- same-day pending rows outside prior-day counters: 72
+- local-day pending cutoff: 2026-11-16
+- same-day pending rows outside prior-day counters: 0
 - same-day official-final picks included: 0
-- eligible prior-day picks: 278
+- eligible prior-day picks: 353
 - latest observation per logical pick; superseded dated evidence remains in JSON
 
 ## Bucket performance
 
 | Bucket | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `CAUTION` | 107 | 66–41–0 | 61.7% | 107 | +12.0% |
-| `SKIPPED_INELIGIBLE` | 104 | 57–47–0 | 54.8% | 104 | -9.8% |
-| `WATCHLIST_NO_ODDS` | 67 | 27–40–0 | 40.3% | 0 | n/a |
+| `CAUTION` | 111 | 67–44–0 | 60.4% | 111 | +9.6% |
+| `ELIGIBLE_CLEAN` | 1 | 1–0–0 | 100.0% | 1 | +36.1% |
+| `SKIPPED_INELIGIBLE` | 105 | 58–47–0 | 55.2% | 105 | -9.4% |
+| `WATCHLIST_NO_ODDS` | 69 | 28–41–0 | 40.6% | 0 | n/a |
 
 ## By market
 
 | Market | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `highest_quarter` | 36 | 10–26–0 | 27.8% | 0 | n/a |
-| `moneyline` | 98 | 63–35–0 | 64.3% | 69 | +1.4% |
-| `spread` | 67 | 36–31–0 | 53.7% | 66 | +1.5% |
-| `total` | 77 | 41–36–0 | 53.2% | 76 | +0.8% |
+| `highest_quarter` | 37 | 10–27–0 | 27.0% | 0 | n/a |
+| `moneyline` | 101 | 66–35–0 | 65.3% | 71 | +2.4% |
+| `spread` | 69 | 37–32–0 | 53.6% | 68 | +1.3% |
+| `total` | 79 | 41–38–0 | 51.9% | 78 | -1.8% |
 
 ## By selection — over/under & side bias
 
@@ -45,46 +46,73 @@ Generated: 2026-11-15 18:18 SAST · 30-day rolling window · Paper only
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `highest_quarter:Q1` | 1 | 0–1–0 | 0.0% | 0 | n/a |
 | `highest_quarter:Q2` | 31 | 8–23–0 | 25.8% | 0 | n/a |
-| `highest_quarter:Q3` | 4 | 2–2–0 | 50.0% | 0 | n/a |
+| `highest_quarter:Q3` | 5 | 2–3–0 | 40.0% | 0 | n/a |
 | `moneyline:away` | 53 | 30–23–0 | 56.6% | 35 | -14.9% |
-| `moneyline:home` | 45 | 33–12–0 | 73.3% | 34 | +18.2% |
+| `moneyline:home` | 48 | 36–12–0 | 75.0% | 36 | +19.2% |
 | `spread:away` | 43 | 17–26–0 | 39.5% | 43 | -24.5% |
-| `spread:home` | 24 | 19–5–0 | 79.2% | 23 | +50.3% |
+| `spread:home` | 26 | 20–6–0 | 76.9% | 25 | +45.6% |
 | `total:over` | 55 | 32–23–0 | 58.2% | 55 | +11.4% |
-| `total:under` | 22 | 9–13–0 | 40.9% | 21 | -27.1% |
+| `total:under` | 24 | 9–15–0 | 37.5% | 23 | -33.5% |
 
 ## Paper-only opposite-side fade audit
 
 Counterfactual reporting only — this is not a strategy, pick, or ticket. A settled result is reversed (win↔loss; push stays push) and priced only when the exact opposite quote is preserved in the same pre-tip book snapshot, market, period, line, and observation. No quote is inferred or historically backfilled; selected-side price is not required.
 
-- settled rows with exact opposite quotes: 113/278
-- fade record: 44–69–0
-- fade hit rate: 38.9% (44/113 decisions)
-- paper P&L: -6.095 units · ROI: -5.4% (one unit per priced fade, pushes included)
-- mean market-implied break-even hit rate: 45.6% (n=113 non-push quotes; includes vig)
-- unpriced settled rows: `market_has_no_single_opposite_side`=65, `opposite_quote_not_preserved`=100
+- settled rows with exact opposite quotes: 119/286
+- fade record: 47–72–0
+- fade hit rate: 39.5% (47/119 decisions)
+- paper P&L: -6.388 units · ROI: -5.4% (one unit per priced fade, pushes included)
+- mean market-implied break-even hit rate: 45.6% (n=119 non-push quotes; includes vig)
+- unpriced settled rows: `market_has_no_single_opposite_side`=67, `opposite_quote_not_preserved`=100
 
 | Market | Settled candidates | Exact quotes | Fade W–L–P | ROI |
 | --- | ---: | ---: | ---: | ---: |
-| `highest_quarter` | 36 | 0 | 0–0–0 | n/a |
-| `moneyline` | 98 | 37 | 11–26–0 | +17.8% |
-| `spread` | 67 | 38 | 15–23–0 | -24.3% |
-| `total` | 77 | 38 | 18–20–0 | -9.1% |
+| `highest_quarter` | 37 | 0 | 0–0–0 | n/a |
+| `moneyline` | 101 | 39 | 11–28–0 | +11.8% |
+| `spread` | 69 | 40 | 16–24–0 | -23.5% |
+| `total` | 79 | 40 | 20–20–0 | -4.0% |
 
 Numeric selected-probability bands (calibrated probability, otherwise raw):
 
 | Probability band | Settled candidates | Exact quotes | Fade W–L–P | ROI |
 | --- | ---: | ---: | ---: | ---: |
-| `0.50-<0.60` | 169 | 73 | 29–44–0 | -18.1% |
+| `0.50-<0.60` | 174 | 77 | 32–45–0 | -14.9% |
 | `0.60-<0.70` | 48 | 24 | 9–15–0 | -20.9% |
-| `0.70-<0.80` | 15 | 11 | 5–6–0 | +83.8% |
-| `0.80-<0.90` | 6 | 4 | 0–4–0 | -100.0% |
+| `0.70-<0.80` | 16 | 12 | 5–7–0 | +68.5% |
+| `0.80-<0.90` | 7 | 5 | 0–5–0 | -100.0% |
 | `0.90-1.00` | 2 | 1 | 1–0–0 | +690.0% |
-| `<0.50` | 38 | 0 | 0–0–0 | n/a |
+| `<0.50` | 39 | 0 | 0–0–0 | n/a |
 
 ## Settled picks — official-final audit
 
 Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+### 2026-11-15: Philadelphia 76ers vs Indiana Pacers (Final: **131–124**)
+
+- 🔴 **LOST — Highest quarter: Q3**
+  - Expected: **35.3%** calibrated (raw 31.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=40** · calibrated · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Philadelphia 76ers (home)**
+  - Expected: **72.3%** calibrated (raw 58.0%) · Price: **1.361 · DraftKings** · Counterfactual fade: **LOST @ 3.260 away · DraftKings**
+  - Calibration: **n=40** · calibrated · Bucket: `ELIGIBLE_CLEAN` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Philadelphia 76ers (home)**
+  - Expected: **80.1%** · Price: **1.361 · DraftKings** · Counterfactual fade: **LOST @ 3.260 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — First-half moneyline: Philadelphia 76ers (home)**
+  - Actual First-half score: **58–57** · Expected: **57.0%** calibrated (raw 55.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=36** · calibrated · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread -6.5: Philadelphia 76ers (home)**
+  - Actual Full-game margin: **+7** · Expected: **58.0%** · Price: **1.847 · DraftKings** · Counterfactual fade: **LOST @ 1.980 Indiana Pacers +6.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 225.5: Under**
+  - Actual Full-game total: **255** · Expected: **59.0%** · Price: **1.885 · DraftKings** · Counterfactual fade: **WON @ 1.935 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -7.5: Philadelphia 76ers (home)**
+  - Actual Full-game margin: **+7** · Expected: **58.0%** · Price: **1.980 · DraftKings** · Counterfactual fade: **WON @ 1.847 Indiana Pacers +7.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 224.5: Under**
+  - Actual Full-game total: **255** · Expected: **57.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **WON @ 1.926 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
 
 ### 2026-11-14: Minnesota Timberwolves vs Chicago Bulls (Final: **106–117**)
 
