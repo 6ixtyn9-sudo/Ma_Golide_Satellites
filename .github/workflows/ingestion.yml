@@ -4,8 +4,8 @@
 # - Optional book/prediction keys degrade to reported gaps, never fabricated data.
 # - Scheduled runs acquire evidence and persist canonical state by default.
 #   Set ALLOW_MAGOLIDE_WRITES=false to disable persistence only; acquisition continues.
-# Derived picks/tickets/audits are committed to localdata/<league> on main by
-# one serialized publisher, independently of the canonical-write gate.
+# Compact pick cards and paper-ticket state are committed to localdata/<league>;
+# raw forecast JSON stays in cache/artifacts, not permanent Git history.
 # Install as .github/workflows/ingestion.yml (editing that path requires the
 # GitHub `workflows` permission).
 
@@ -162,10 +162,10 @@ jobs:
           # latest Git-authoritative operator state before using the cache.
           git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
           MAIN_REF=refs/remotes/origin/main
-          # Delete only root-level derived operator files recovered from the
-          # cache. Canonical DuckDB/CSV data, ledgers, nested evidence, and
-          # unapproved files are not touched. Git then restores the current
-          # authoritative operator files; receipts deleted in Git stay deleted.
+          # Delete only Git-durable, compact operator state recovered from the
+          # cache before restoring it. Full picks JSON and dated Markdown remain
+          # cache/artifact-only, so preserve them across runs. Canonical data,
+          # ledgers, nested evidence, and unapproved files are not touched.
           python - "$STATE_DIR" <<'PY'
           from pathlib import Path
           import re
@@ -176,11 +176,7 @@ jobs:
           allowed = tuple(
               re.compile(pattern)
               for pattern in (
-                  r"picks_today\.json",
-                  rf"picks_{date}\.json",
                   rf"picks_{date}\.txt",
-                  r"picks_audit_rolling\.json",
-                  rf"picks_audit_{date}\.md",
                   r"auto_tickets_state\.json",
                   r"auto_tickets_performance\.json",
                   r"auto_tickets_performance\.txt",
@@ -352,7 +348,7 @@ jobs:
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+users.noreply.github.com"
           if [ -d localdata ]; then
             git add -A -- localdata
           fi
