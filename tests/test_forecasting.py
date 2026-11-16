@@ -848,6 +848,114 @@ def test_quarter_line_is_not_synthesized_for_other_periods():
     assert {row.period for row in rows} == {Period.Q1.value}
 
 
+def test_default_history_has_no_global_200_game_cap_and_index_matches_reference():
+    start = datetime(2024, 1, 1, 22, tzinfo=UTC)
+    games = [
+        _game(f"deep-{index:03d}", start + timedelta(days=index), True, index)
+        for index in range(260)
+    ]
+    target_tip = start + timedelta(days=261)
+    target = _game("deep-target", target_tip, False, 261)
+    model = HistoryModel(
+        ForecastConfig(
+            min_history_games=10,
+            min_residual_games=5,
+            team_prior_games=2.0,
+            residual_window=17,
+            result_available_after_hours=4,
+        )
+    )
+    history = model.available_history(
+        games,
+        scheduled_utc=iso(target_tip),
+        as_of_utc=iso(target_tip + timedelta(hours=8)),
+    )
+    assert len(history) == 260
+
+    indexed = model.baseline(target, history, Period.FULL_GAME)
+    scanned = model.baseline(target, list(history), Period.FULL_GAME)
+    assert indexed is not None and scanned is not None
+    assert indexed.home == pytest.approx(scanned.home)
+    assert indexed.away == pytest.approx(scanned.away)
+    assert indexed.home_team_effective_games == pytest.approx(
+        scanned.home_team_effective_games
+    )
+    assert indexed.away_team_effective_games == pytest.approx(
+        scanned.away_team_effective_games
+    )
+
+    fast_margins, fast_totals = model._residuals(history, Period.FULL_GAME)
+    reference_margins = []
+    reference_totals = []
+    for index, game in enumerate(list(history)):
+        cutoff = datetime.fromisoformat(game.scheduled_utc.replace("Z", "+00:00")) - timedelta(
+            hours=model.config.result_available_after_hours
+        )
+        priors = [
+            prior
+            for prior in list(history)[:index]
+            if datetime.fromisoformat(prior.scheduled_utc.replace("Z", "+00:00")) <= cutoff
+        ]
+        baseline = model.baseline(game, priors, Period.FULL_GAME)
+        actual = game.actual.home_final, game.actual.away_final
+        if baseline is not None:
+            reference_margins.append(actual[0] - actual[1] - baseline.margin)
+            reference_totals.append(actual[0] + actual[1] - baseline.total)
+    assert fast_margins == pytest.approx(reference_margins[-17:])
+    assert fast_totals == pytest.approx(reference_totals[-17:])
+
+
+def test_history_index_refreshes_when_mutable_source_sequence_grows():
+    start = datetime(2024, 1, 1, 22, tzinfo=UTC)
+    games = [
+        _game(f"growing-{index}", start + timedelta(days=index), True, index)
+        for index in range(3)
+    ]
+    model = HistoryModel(ForecastConfig(min_history_games=2, min_residual_games=1))
+    target_tip = start + timedelta(days=5)
+    first = model.available_history(
+        games,
+        scheduled_utc=iso(target_tip),
+        as_of_utc=iso(target_tip + timedelta(hours=8)),
+    )
+    assert len(first) == 3
+
+    games.append(_game("growing-3", start + timedelta(days=3), True, 3))
+    refreshed = model.available_history(
+        games,
+        scheduled_utc=iso(target_tip),
+        as_of_utc=iso(target_tip + timedelta(hours=8)),
+    )
+    assert len(refreshed) == 4
+    assert refreshed[-1].game_id == "growing-3"
+
+
+def test_provider_only_forecasts_do_not_need_internal_team_history():
+    config = CalibrationConfig(
+        min_samples=3,
+        prior_strength=2,
+        min_probability=0.5,
+        calibration_epoch_utc=None,
+    )
+    records = [_forecast(f"provider-{i}", 0.8, outcome="win") for i in range(3)]
+    # Even an incidental false history flag must not exclude provider-only
+    # evidence from provider calibration.
+    records[0].team_history = {"sufficient_for_accas": False}
+    target = _forecast("provider-target", 0.8)
+    provider_profile = build_profiles(records, config)
+    apply_profiles([target], provider_profile, config)
+    assert target.eligibility["acca_eligible"] is True
+    assert "insufficient_team_specific_history" not in target.eligibility["reasons"]
+
+    history_model_target = _forecast("history-target", 0.8)
+    history_model_target.source = "team_history_empirical_v1"
+    apply_profiles([history_model_target], provider_profile, config)
+    assert history_model_target.eligibility["acca_eligible"] is False
+    assert "insufficient_team_specific_history" in history_model_target.eligibility[
+        "reasons"
+    ]
+
+
 def test_history_cutoff_excludes_future_and_not_yet_available_finals():
     store = populated_store(finals=4, upcoming=1)
     model = HistoryModel(ForecastConfig(result_available_after_hours=4))
@@ -919,6 +1027,7 @@ def test_calibration_population_diagnostics_match_profile_admission_rules():
     for record, scheduled_utc in zip(records, dates):
         record.scheduled_utc = scheduled_utc
         record.calibration_version = "test-model-v1"
+    records[4].source = "team_history_empirical_v1"
     records[4].team_history = {"sufficient_for_accas": False}
 
     diagnostics = calibration_population_diagnostics(records, config)

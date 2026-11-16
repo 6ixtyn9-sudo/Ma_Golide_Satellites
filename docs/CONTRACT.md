@@ -104,11 +104,14 @@ adapter fabricates this market.
 
 ## 4. History-only model
 
-`HistoryModel` builds baselines from games strictly before the target and
-available under the result delay. Team rates are recency weighted with a
-half-life and shrunk toward the league mean. Margin and total residual samples
-are generated in chronological order: every residual's own baseline can use
-only games available before that residual's target.
+`HistoryModel` builds baselines from every reconciled final strictly before
+the target and available under the result delay. There is no default league-wide
+200-game training cap; a finite `training_window` is available only when an
+operator explicitly configures one. Prefix indexes make league and team
+lookups efficient across the full chronological history. Team rates are
+recency weighted with a half-life and shrunk toward the league mean. Margin and
+total residual samples use the most recent configured residual scenarios, but
+each residual's own baseline can use all earlier available games.
 
 The distribution is empirical. Probabilities are counts over residual
 scenarios, not claims from a fitted sportsbook or a certified probability
@@ -209,9 +212,11 @@ A current forecast is **strictly eligible** to supply an acca leg only if:
 - its exact visible pre-tip bookmaker market and selected decimal price exist;
 - any provider prediction used by the forecast is visible and strictly pre-tip;
 - its segment has at least the configured walk-forward sample minimum;
-- every history-based forecast has at least as much effective prior evidence for
-  each team as the configured league-prior strength (eight effective games by
-  default), so a league-average fallback cannot masquerade as team evidence;
+- every history-based forecast has at least as much effective prior evidence
+  for each team as the configured league-prior strength (eight effective games
+  by default), so a league-average fallback cannot masquerade as team evidence;
+  a provider-only prediction does not depend on internal team-history data and
+  is not subject to this guard; history-plus-provider hybrids are subject to it;
 - calibrated probability is at least 0.50 by default;
 - estimated push probability is at most 0.005 by default.
 

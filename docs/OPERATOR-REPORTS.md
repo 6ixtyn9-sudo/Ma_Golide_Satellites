@@ -4,17 +4,26 @@
 the selected league's `localdata` directory. Keep each league on its own
 `LOCALDATA` path.
 
-The workflow has two complementary outputs:
+The workflow has three complementary output tiers, following Edge Factory's
+raw-dump storage approach:
 
-- artifacts retain operational reports and recovery evidence for 14 days;
-- the serialized `publish-localdata` job commits the allowlisted pick, ticket,
-  audit, and performance files to `localdata/<league>` on `main`, making them
-  visible in the repository and durable across cold caches, as Edge does.
+- the league Actions cache retains working forecast archives and audit inputs
+  across active runs; downloaded Actions artifacts retain the raw picks JSON,
+  dated Markdown, operational reports, and recovery evidence for 14 days;
+- Git tracks the compact human-readable picks/ticket cards and the paper-ticket
+  receipts, write-once locks, and performance state needed to preserve operator
+  decisions;
+- large `picks_*.json` scan/history dumps and expanded dated Markdown audits
+  are deliberately not committed, preventing every full forecast payload from
+  becoming permanent Git history.
 
-The publisher overlays current files without deleting older history and aborts
-if a recovered immutable decision receipt differs from the repository receipt.
-After cache restoration, Git-tracked operator state takes precedence over stale
-cached copies. DuckDB, CSV, acquisition ledgers, and credentials are never
+The publisher overlays Git-durable files without deleting older history and
+aborts if a recovered immutable decision receipt differs from the repository
+receipt. Git-tracked ticket state takes precedence over stale cached copies;
+cache-only pick evidence is preserved across scheduled runs. If the rolling pick
+audit is absent after a cold-cache recovery, the forecaster uses its documented
+past-only prequential fallback rather than inventing or importing stale picks.
+DuckDB, CSV, acquisition ledgers, raw pick JSON, and credentials are never
 committed by this publisher. Derived Git publication runs for both manual and
 scheduled executions; it is independent of the canonical `ALLOW_MAGOLIDE_WRITES`
 gate.
@@ -29,11 +38,11 @@ profitability.
 
 | File | Purpose |
 | --- | --- |
-| `picks_today.json` | Current scan of every forecast; ROI-qualified singles carry their band decision and diagnostics |
-| `picks_YYYY-MM-DD.json` | Cumulative dated pick evidence, keyed by forecast id, with grades and the scan-time ROI-band decision |
-| `picks_YYYY-MM-DD.txt` | Human-readable latest picks, marking ROI-qualified paper singles, plus started/settled archive sections |
-| `picks_audit_rolling.json` | Thirty-day logical and settled ledgers plus flat-stake diagnostics |
-| `picks_audit_YYYY-MM-DD.md` | Readable rolling summary and every settled logical pick in the window |
+| `picks_today.json` | Current scan of every forecast; cache/artifact only, not Git |
+| `picks_YYYY-MM-DD.json` | Cumulative dated pick evidence; cache/artifact only, not Git |
+| `picks_YYYY-MM-DD.txt` | Compact human-readable latest picks and started/settled sections; Git durable |
+| `picks_audit_rolling.json` | Thirty-day logical and settled ledgers; cache/artifact only, not Git |
+| `picks_audit_YYYY-MM-DD.md` | Expanded rolling summary; cache/artifact only, not Git |
 | `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper singles and accas |
 | `auto_tickets_YYYY-MM-DD.txt` | Frozen receipt with leg grades, or an explicit unfrozen no-bet card; audit-only shadow display (unpriced generally, priced-ineligible for NCAA_M) |
 | `auto_tickets_state.json` | Write-once date locks and bounded scan telemetry |
@@ -95,19 +104,19 @@ this priced-ineligible group.
 
 The picks dated ledger and rolling audit remain the grading source of truth;
 all audit-only rows have zero stake, do not enter paper-position performance or
-ROI, and do not create a frozen decision receipt or date lock. Each
-`auto_tickets_state.json` scan records an `unpriced_audit.candidate_records`
-array containing every no-price forecast, including its individual historical
-success rate, decision count, gate result, and status. Every record has an
-explicit `ticket_id: null`, `ticketable: false`, and zero stake. For NCAA_M,
-scans also record `priced_ineligible_shadow` with the threshold-qualified
-selected prices, probability basis, blockers, grades, and display groups; those
-records likewise have no ticket ID, ticketability, receipt, or stake. Different
-markets or selections on the same fixture stay separate; neither array is a
-fixture-level aggregate or a wager position. Unpriced records remain in the
-JSON audit and dated ledger even when the NCAA_M card displays the separate
-priced-ineligible group. This adds ticket-decision visibility without
-inventing odds or relaxing priced-ticket eligibility.
+ROI, and do not create a frozen decision receipt or date lock. Full candidate
+rows and per-pick history diagnostics remain in the cache-only picks JSON and
+run artifacts. To avoid storing the same large row set in every Git-persisted
+scan, `auto_tickets_state.json` retains compact counts, blocker/status
+histograms, and policy summaries, while dropping duplicate `candidate_records`,
+`forecast_ids`, and per-pick ROI-band detail from its bounded scan history.
+Immutable date locks and ticket-performance state remain intact. The current
+run artifact and picks JSON retain per-candidate details, including for NCAA_M
+priced-ineligible shadows; these records remain display-only, with no ticket ID,
+ticketability, receipt, or stake. Different markets or selections on one
+fixture remain separate wager candidates, not fixture-level aggregates. This
+preserves ticket-decision visibility without duplicating large audit rows into
+the repository's long-lived state file or relaxing priced-ticket eligibility.
 
 Repeated scans can produce distinct forecast IDs because book and prediction
 observation times are part of those IDs. The dated JSON retains every evidence

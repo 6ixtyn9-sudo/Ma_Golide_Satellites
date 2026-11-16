@@ -67,6 +67,42 @@ def test_result_delay_respected_and_boundary_is_inclusive():
     assert after.shadow_calibration["probability"] != after.raw_probability
 
 
+def test_provider_shadow_rows_are_not_filtered_by_internal_team_history():
+    config = RecencyConfig(min_samples=1.0)
+    champion = CalibrationConfig(calibration_epoch_utc=None)
+    provider_row = _record(
+        "provider-history",
+        "2026-11-11T12:00:00Z",
+        0.7,
+        "win",
+        team_history={"sufficient_for_accas": False},
+    )
+
+    profiles = build_recency_profiles(
+        [provider_row],
+        config,
+        as_of_utc="2026-11-12T20:00:00Z",
+        champion_config=champion,
+    )
+    assert len(profiles) == 1
+    assert next(iter(profiles.values())).n == 1
+
+    history_row = _record(
+        "history-model",
+        "2026-11-11T12:00:00Z",
+        0.7,
+        "win",
+        source="team_history_empirical_v1",
+        team_history={"sufficient_for_accas": False},
+    )
+    assert build_recency_profiles(
+        [history_row],
+        config,
+        as_of_utc="2026-11-12T20:00:00Z",
+        champion_config=champion,
+    ) == {}
+
+
 def test_zero_delay_does_not_leak_outcomes_between_forecasts_for_same_game():
     tip = "2026-11-12T12:00:00Z"
     home = _record("same-game", tip, 0.7, "win", selection="home")

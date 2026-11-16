@@ -4,15 +4,14 @@ This module is a presentation/settlement layer only. It does not select a
 winner, alter a probability, or place a bet. Current forecasts come from
 ``MarketForecastService``; outcomes come only from reconciled official finals.
 
-Durable contracts (all beneath one league's localdata directory):
-- ``picks_YYYY-MM-DD.json``: cumulative pick evidence keyed by forecast id.
-- ``picks_YYYY-MM-DD.txt``: latest logical picks, with started/settled archive sections.
-- ``picks_today.json``: the current scan, not a replacement for dated history.
-- ``picks_audit_rolling.json`` / ``picks_audit_YYYY-MM-DD.md``: rolling grades.
-- ``auto_tickets_YYYY-MM-DD_decision.json``: immutable paper ticket receipt.
-- ``auto_tickets_YYYY-MM-DD.txt``: receipt rendered with current leg grades.
-- ``auto_tickets_state.json``: write-once date locks and bounded scan telemetry.
-- ``auto_tickets_performance.json`` / ``.txt``: reconstructed paper performance.
+Operator evidence files live beneath one league's localdata directory:
+- ``picks_YYYY-MM-DD.json``, ``picks_today.json``, and rolling/dated audit
+  files are full forecast evidence kept in the active cache and workflow artifacts.
+- ``picks_YYYY-MM-DD.txt`` is the compact human card retained in Git.
+- ``auto_tickets_YYYY-MM-DD_decision.json`` is an immutable paper receipt.
+- ``auto_tickets_YYYY-MM-DD.txt`` renders a receipt with current leg grades.
+- ``auto_tickets_state.json`` stores write-once date locks and bounded scan telemetry.
+- ``auto_tickets_performance.json`` / ``.txt`` reconstruct paper performance.
 
 A known losing leg settles its paper position as a loss even when other legs
 are still pending. Push legs are removed from an acca's effective price once
@@ -1403,6 +1402,29 @@ def _write_pick_audit(
     return report
 
 
+def _compact_scan_record(record: Dict[str, Any]) -> Dict[str, Any]:
+    """Drop row-level duplicates from the bounded, Git-persisted scan history.
+
+    Full candidate evidence remains in the dated/rolling picks reports and the
+    run artifact. The ticket state only needs compact counts/policies plus the
+    immutable date locks; copying every candidate into every scan made this
+    file grow to multiple megabytes per league.
+    """
+    compact = deepcopy(record)
+    for key in ("unpriced_audit", "priced_ineligible_shadow"):
+        summary = compact.get(key)
+        if isinstance(summary, dict):
+            summary.pop("candidate_records", None)
+            summary.pop("forecast_ids", None)
+    funnel = compact.get("candidate_funnel")
+    if isinstance(funnel, dict):
+        pick_filter = funnel.get("paper_pick_filter")
+        if isinstance(pick_filter, dict):
+            pick_filter.pop("candidate_band_details", None)
+            pick_filter.pop("bands", None)
+    return compact
+
+
 def _load_state(localdata: Path) -> Dict[str, Any]:
     state = _read_json(
         localdata / "auto_tickets_state.json",
@@ -1418,6 +1440,11 @@ def _load_state(localdata: Path) -> Dict[str, Any]:
         raise ValueError("unsupported or corrupt auto ticket state; refusing to reset it")
     state.setdefault("frozen_by_date", {})
     state.setdefault("scans", [])
+    if isinstance(state["scans"], list):
+        state["scans"] = [
+            _compact_scan_record(scan) if isinstance(scan, dict) else scan
+            for scan in state["scans"]
+        ]
     return state
 
 
@@ -2128,7 +2155,7 @@ def _unpriced_audit_summary(rows: List[Dict[str, Any]]) -> Dict[str, Any]:
         "price_evidence_counts": dict(sorted(evidence_counts.items())),
         "eligibility_reason_counts": dict(sorted(reason_counts.items())),
         "recorded_in": [
-            "ticket_state_scan", "dated_pick_ledger", "rolling_pick_audit",
+            "current_run_artifact", "dated_pick_ledger", "rolling_pick_audit",
         ],
     }
 
@@ -3061,7 +3088,7 @@ def publish_operator_reports(
             current_priced_ineligible,
             current_priced_ineligible_shadow,
         )
-    state["scans"].append(scan_record)
+    state["scans"].append(_compact_scan_record(scan_record))
     state["scans"] = state["scans"][-100:]
     withdrawal = state["frozen_by_date"].get(target_date)
     if not (isinstance(withdrawal, dict) and withdrawal.get("withdrawn") is True):

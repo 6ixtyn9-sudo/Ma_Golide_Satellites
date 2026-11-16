@@ -39,10 +39,11 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
 
     report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
 
-    assert report["copied_count"] == 5
-    assert (repo / "localdata" / "nba" / "picks_today.json").read_bytes() == b"today\n"
-    assert (repo / "localdata" / "cba" / "picks_today.json").read_bytes() == b"cba\n"
-    assert (repo / "localdata" / "wnba" / "picks_today.json").read_bytes() == b"wnba\n"
+    assert report["copied_count"] == 2
+    assert (repo / "localdata" / "nba" / "picks_2026-11-12.txt").read_bytes() == b"picks\n"
+    assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12_decision.json").read_bytes() == b"receipt\n"
+    for state in ("nba", "cba", "wnba"):
+        assert not (repo / "localdata" / state / "picks_today.json").exists()
     assert historical.read_text() == "retain me"
     assert not (repo / "localdata" / "nba" / "warehouse.duckdb").exists()
     assert not (repo / "localdata" / "nba" / "picks_unapproved.json").exists()
@@ -118,11 +119,7 @@ def test_withdrawn_cached_receipt_is_not_republished(tmp_path):
 
 def test_allowlist_is_narrow_and_missing_artifact_directory_is_a_noop(tmp_path):
     expected = {
-        "picks_today.json",
-        "picks_2026-11-12.json",
         "picks_2026-11-12.txt",
-        "picks_audit_rolling.json",
-        "picks_audit_2026-11-12.md",
         "auto_tickets_state.json",
         "auto_tickets_performance.json",
         "auto_tickets_performance.txt",
@@ -130,6 +127,10 @@ def test_allowlist_is_narrow_and_missing_artifact_directory_is_a_noop(tmp_path):
         "auto_tickets_2026-11-12_decision.json",
     }
     assert all(allowed_operator_file(name) for name in expected)
+    assert not allowed_operator_file("picks_today.json")
+    assert not allowed_operator_file("picks_2026-11-12.json")
+    assert not allowed_operator_file("picks_audit_rolling.json")
+    assert not allowed_operator_file("picks_audit_2026-11-12.md")
     assert not allowed_operator_file("picks_unapproved.json")
     assert not allowed_operator_file("auto_tickets_2026-11-12.json")
     assert not allowed_operator_file("warehouse.duckdb")
@@ -157,4 +158,5 @@ def test_cli_reports_json(tmp_path, capsys, monkeypatch):
     )
     assert main() == 0
     output = json.loads(capsys.readouterr().out)
-    assert output["copied_count"] == 1
+    assert output["copied_count"] == 0
+    assert not (tmp_path / "repo" / "localdata" / "nba" / "picks_today.json").exists()

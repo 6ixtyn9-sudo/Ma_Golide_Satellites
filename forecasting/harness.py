@@ -12,7 +12,7 @@ from ingestion.identity import parse_utc
 
 from assayer.assayer_engine import wilson_lower_bound
 
-from .types import LEGACY_VERSION_TAG, Forecast
+from .types import LEGACY_VERSION_TAG, MODEL_VERSION, Forecast
 
 # Hard-reset: calibration must not borrow from pre-feature-freeze history.
 # Any downward threshold change would be a CRITICAL regime violation; this
@@ -24,6 +24,11 @@ SegmentKey = Tuple[str, ...]
 # Reserved 5th/6th key dimension for diagnostics-only rows that did not clear
 # team-history sufficiency; these profiles are never applied.
 DIAG_POOL_TAG = "team_history_insufficient"
+
+
+def _requires_team_history(forecast: Forecast) -> bool:
+    """Only the history model (and history-based hybrids) need team evidence."""
+    return forecast.source == MODEL_VERSION or forecast.source.endswith(f"+{MODEL_VERSION}")
 
 
 def config_fingerprint(components: Mapping[str, Any]) -> str:
@@ -214,7 +219,9 @@ def _group_profile_records(
         # Calibrate the population that may actually supply accas. League-prior
         # fallback rows remain visible in diagnostics, but cannot lend their
         # sample count or reliability adjustment to team-specific selections.
-        if (record.team_history or {}).get("sufficient_for_accas") is False:
+        if _requires_team_history(record) and (record.team_history or {}).get(
+            "sufficient_for_accas"
+        ) is False:
             grouped_insufficient.setdefault(key, []).append(record)
             increment(key, "team_history_insufficient_records")
             increment(
@@ -362,7 +369,9 @@ def apply_profiles(
             reasons.append("missing_selected_decimal_price")
         if profile is None or not profile.sufficient:
             reasons.append("insufficient_walk_forward_samples")
-        if (forecast.team_history or {}).get("sufficient_for_accas") is not True:
+        if _requires_team_history(forecast) and (forecast.team_history or {}).get(
+            "sufficient_for_accas"
+        ) is not True:
             reasons.append("insufficient_team_specific_history")
         if forecast.push_probability > cfg.max_push_probability:
             reasons.append("push_risk_requires_leg_void_rules")

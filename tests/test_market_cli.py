@@ -82,7 +82,6 @@ def test_standalone_market_cli_reads_duckdb_without_modifying_it(tmp_path, monke
     assert report["forecasts"][0]["eligibility"]["reasons"] == [
         "no_exact_bookmaker_market",
         "insufficient_walk_forward_samples",
-        "insufficient_team_specific_history",
     ]
     assert report["accas"]["results"] == []
     assert _digest(warehouse) == before
