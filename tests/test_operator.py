@@ -1518,6 +1518,140 @@ def test_unpriced_audit_rows_do_not_enter_a_frozen_priced_ticket(tmp_path):
     assert result["counts"]["dated_unpriced_audit_picks"] == 3
 
 
+def test_ncaam_shadow_uses_priced_ineligible_picks_with_odds_and_probability_floors(tmp_path):
+    def candidate(number, *, price, probability, raw_probability=0.60, eligible=False, reasons=None):
+        row = forecast(
+            number,
+            price=price,
+            eligible=eligible,
+            reasons=reasons,
+            calibration_n=10 if reasons == ["insufficient_walk_forward_samples"] else 40,
+        )
+        row["league"] = "NCAA_M"
+        row["calibrated_probability"] = probability
+        row["raw_probability"] = raw_probability
+        if price is not None:
+            row = with_quote_evidence(
+                row,
+                {"home": price, "away": 2.0, "draw": None, "over": None, "under": None},
+                selected_decimal_price=price,
+            )
+        return row
+
+    threshold_candidate = candidate(
+        1,
+        price=1.30,
+        probability=0.70,
+        reasons=["insufficient_walk_forward_samples"],
+    )
+    higher_candidate = candidate(
+        2,
+        price=2.0,
+        probability=0.80,
+        reasons=["insufficient_team_specific_history"],
+    )
+    below_odds_floor = candidate(
+        3,
+        price=1.29,
+        probability=0.90,
+        reasons=["insufficient_team_specific_history"],
+    )
+    below_probability_floor = candidate(
+        4,
+        price=2.0,
+        probability=0.699,
+        raw_probability=0.99,
+        reasons=["insufficient_team_specific_history"],
+    )
+    raw_probability_fallback = candidate(
+        7,
+        price=1.30,
+        probability=None,
+        raw_probability=0.70,
+        reasons=["insufficient_team_specific_history"],
+    )
+    eligible = candidate(
+        5,
+        price=1.80,
+        probability=0.85,
+        eligible=True,
+    )
+    unpriced = candidate(
+        6,
+        price=None,
+        probability=0.90,
+        reasons=["no_exact_bookmaker_market"],
+    )
+
+    result = publish_operator_reports(
+        Store([]),
+        League.NCAA_M,
+        report([
+            threshold_candidate,
+            higher_candidate,
+            below_odds_floor,
+            below_probability_floor,
+            raw_probability_fallback,
+            eligible,
+            unpriced,
+        ]),
+        tmp_path,
+        target_date=DATE,
+        generated_utc=AS_OF,
+        run_id="ncaam-priced-ineligible-shadow",
+    )
+
+    card = Path(result["ticket_text"]).read_text()
+    assert (
+        "PRICED-INELIGIBLE AUDIT-ONLY SHADOW GROUPS "
+        "(decimal odds ≥1.30; p ≥70%) — 3 picks in 1 group "
+        "(3 PENDING; 5 exact-priced ineligible audited)"
+    ) in card
+    assert "selected decimal odds=1.300 Test Book" in card
+    assert "p=70.0% (calibrated_probability)" in card
+    assert "bucket=CAUTION" in card
+    assert f"forecast={threshold_candidate['forecast_id']}" in card
+    assert f"forecast={higher_candidate['forecast_id']}" in card
+    assert f"forecast={raw_probability_fallback['forecast_id']}" in card
+    assert "p=70.0% (raw_probability)" in card
+    assert "UNPRICED AUDIT-ONLY SHADOW GROUPS" not in card
+    for excluded in (below_odds_floor, below_probability_floor, eligible, unpriced):
+        assert f"forecast={excluded['forecast_id']}" not in card
+
+    assert result["ticket_receipt"] is None
+    assert result["unpriced_audit"]["count"] == 1
+    shadow = result["priced_ineligible_shadow"]
+    assert shadow["priced_ineligible_audited_count"] == 5
+    assert shadow["qualified_count"] == 3
+    assert shadow["minimum_selected_decimal_odds"] == 1.30
+    assert shadow["minimum_probability"] == 0.70
+    assert {row["candidate_id"] for row in shadow["candidate_records"]} == {
+        threshold_candidate["forecast_id"],
+        higher_candidate["forecast_id"],
+        raw_probability_fallback["forecast_id"],
+    }
+    assert all(row["acca_eligible"] is False for row in shadow["candidate_records"])
+    fallback_record = next(
+        row for row in shadow["candidate_records"]
+        if row["candidate_id"] == raw_probability_fallback["forecast_id"]
+    )
+    assert fallback_record["probability"] == 0.70
+    assert fallback_record["probability_basis"] == "raw_probability"
+    assert all(row["ticketable"] is False for row in shadow["candidate_records"])
+    assert all(row["stake_units"] == 0.0 for row in shadow["candidate_records"])
+
+    state = json.loads(Path(result["ticket_state"]).read_text())
+    scan_shadow = state["scans"][-1]["priced_ineligible_shadow"]
+    assert scan_shadow["qualified_count"] == 3
+    assert scan_shadow["shadow_groups"] == [[
+        higher_candidate["forecast_id"],
+        threshold_candidate["forecast_id"],
+        raw_probability_fallback["forecast_id"],
+    ]]
+    assert state["scans"][-1]["unpriced_audit"]["count"] == 1
+    assert state["frozen_by_date"] == {}
+
+
 def test_qualified_no_price_picks_are_grouped_without_creating_a_ticket(tmp_path):
     history_games = seed_historical_success_picks(
         tmp_path, "moneyline", wins=8, losses=3

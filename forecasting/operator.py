@@ -48,7 +48,11 @@ UNPRICED_SUCCESS_RATE_THRESHOLD = 0.70
 UNPRICED_SUCCESS_RATE_MIN_DECISIONS_EXCLUSIVE = 10
 UNPRICED_SUCCESS_RATE_HISTORY_DAYS = 30
 UNPRICED_SUCCESS_RATE_RESULT_DELAY_HOURS = 4.0
-UNPRICED_SHADOW_GROUP_MAX_PICKS = 3
+SHADOW_GROUP_MAX_PICKS = 3
+UNPRICED_SHADOW_GROUP_MAX_PICKS = SHADOW_GROUP_MAX_PICKS
+PRICED_INELIGIBLE_SHADOW_MIN_DECIMAL_ODDS = 1.30
+PRICED_INELIGIBLE_SHADOW_MIN_PROBABILITY = 0.70
+PRICED_INELIGIBLE_SHADOW_SCHEMA = "magolide.priced_ineligible_shadow.v1"
 BASE_PAPER_UNITS = 100.0
 STAKE_UNITS_PER_ACCA = 1.0
 BUCKET_ORDER = [
@@ -2175,6 +2179,158 @@ def _group_unpriced_shadow_candidates(
     return [group["rows"] for group in groups]
 
 
+def _priced_ineligible_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Return exact-priced forecasts whose existing eligibility gate failed."""
+    return [
+        row
+        for row in rows
+        if _has_exact_selected_price(row)
+        and isinstance(row.get("eligibility"), dict)
+        and row["eligibility"].get("acca_eligible") is False
+    ]
+
+
+def _priced_ineligible_shadow_candidates(
+    rows: List[Dict[str, Any]],
+) -> List[Dict[str, Any]]:
+    """Filter NCAA_M shadow candidates by selected decimal price and model p.
+
+    Calibrated probability is preferred; raw probability is the same fallback
+    used by operator-card rendering when no calibrated value is available.
+    This is display-only and never changes the forecast's eligibility state.
+    """
+    candidates = []
+    for row in _priced_ineligible_rows(rows):
+        book = row.get("book") or {}
+        try:
+            price = float(book.get("selected_decimal_price"))
+        except (TypeError, ValueError, OverflowError):
+            continue
+        probability, probability_basis = _confidence_probability(row)
+        if (
+            price < PRICED_INELIGIBLE_SHADOW_MIN_DECIMAL_ODDS
+            or probability is None
+            or probability < PRICED_INELIGIBLE_SHADOW_MIN_PROBABILITY
+        ):
+            continue
+        candidate = dict(row)
+        candidate["_shadow_probability"] = probability
+        candidate["_shadow_probability_basis"] = probability_basis
+        candidates.append(candidate)
+
+    candidates.sort(
+        key=lambda row: (
+            -float(row["_shadow_probability"]),
+            str(row.get("scheduled_utc") or ""),
+            str(row.get("game_id") or ""),
+            str(row.get("market") or ""),
+            str(row.get("period") or ""),
+            str(row.get("selection") or ""),
+            str(row.get("forecast_id") or row.get("pick_id") or ""),
+        )
+    )
+    return candidates
+
+
+def _group_priced_ineligible_shadow_candidates(
+    rows: List[Dict[str, Any]],
+) -> List[List[Dict[str, Any]]]:
+    """Group priced-ineligible candidates for display, never as tickets."""
+    groups: List[Dict[str, Any]] = []
+    for candidate in rows:
+        game_id = str(candidate.get("game_id") or "")
+        group = next(
+            (
+                existing
+                for existing in groups
+                if len(existing["rows"]) < SHADOW_GROUP_MAX_PICKS
+                and game_id not in existing["game_ids"]
+            ),
+            None,
+        )
+        if group is None:
+            group = {"rows": [], "game_ids": set()}
+            groups.append(group)
+        group["rows"].append(candidate)
+        group["game_ids"].add(game_id)
+    return [group["rows"] for group in groups]
+
+
+def _priced_ineligible_candidate_record(row: Dict[str, Any]) -> Dict[str, Any]:
+    book = row.get("book") if isinstance(row.get("book"), dict) else {}
+    probability, probability_basis = _confidence_probability(row)
+    price = book.get("selected_decimal_price")
+    forecast_id = str(row.get("forecast_id") or row.get("pick_id") or "")
+    return {
+        "record_type": "priced_ineligible_forecast_candidate",
+        "candidate_id": forecast_id,
+        "forecast_id": forecast_id or None,
+        "pick_id": str(row.get("pick_id") or forecast_id) or None,
+        "date": str(row.get("date") or "")[:10] or None,
+        "game_id": row.get("game_id"),
+        "home": row.get("home"),
+        "away": row.get("away"),
+        "scheduled_utc": row.get("scheduled_utc"),
+        "market": row.get("market"),
+        "period": row.get("period"),
+        "selection": row.get("selection"),
+        "line": row.get("line"),
+        "model": row.get("model"),
+        "model_version": row.get("model_version"),
+        "bucket": row.get("bucket"),
+        "acca_eligible": False,
+        "eligibility_reasons": list((row.get("eligibility") or {}).get("reasons") or []),
+        "probability": probability,
+        "probability_basis": probability_basis,
+        "selected_decimal_price": float(price),
+        "price_evidence": str(row.get("price_evidence") or _price_evidence(row)),
+        "book_provider": book.get("provider"),
+        "book": _canonical_book_for_key(book.get("book")),
+        "book_observed_utc": book.get("observed_utc"),
+        "book_pre_match": book.get("pre_match"),
+        "grade_status": str(row.get("grade_status") or "pending"),
+        "outcome": row.get("outcome"),
+        "ticket_id": None,
+        "ticketable": False,
+        "audit_only": True,
+        "stake_units": 0.0,
+    }
+
+
+def _priced_ineligible_shadow_summary(
+    audited_rows: List[Dict[str, Any]],
+    candidates: List[Dict[str, Any]],
+) -> Dict[str, Any]:
+    groups = _group_priced_ineligible_shadow_candidates(candidates)
+    return {
+        "schema_version": PRICED_INELIGIBLE_SHADOW_SCHEMA,
+        "record_type": "priced_ineligible_shadow_audit",
+        "audit_only": True,
+        "ticketable": False,
+        "stake_units": 0.0,
+        "priced_ineligible_audited_count": len(audited_rows),
+        "qualified_count": len(candidates),
+        "minimum_selected_decimal_odds": PRICED_INELIGIBLE_SHADOW_MIN_DECIMAL_ODDS,
+        "minimum_probability": PRICED_INELIGIBLE_SHADOW_MIN_PROBABILITY,
+        "probability_policy": "calibrated_probability_then_raw_probability_fallback",
+        "candidate_records": [
+            _priced_ineligible_candidate_record(row) for row in candidates
+        ],
+        "shadow_groups": [
+            [str(row.get("forecast_id") or row.get("pick_id") or "") for row in group]
+            for group in groups
+        ],
+        "shadow_group_policy": {
+            "display_only": True,
+            "max_picks_per_group": SHADOW_GROUP_MAX_PICKS,
+            "one_pick_per_game": True,
+            "ticket_id": None,
+            "receipt_created": False,
+            "stake_units": 0.0,
+        },
+    }
+
+
 def _render_unpriced_candidate_line(
     row: Dict[str, Any], timezone_name: str
 ) -> str:
@@ -2211,6 +2367,87 @@ def _render_unpriced_candidate_line(
         f"({calibration.get('status', 'unknown')}) · "
         f"blockers: {reason_text} · forecast={forecast_id}"
     )
+
+
+def _render_priced_ineligible_candidate_line(
+    row: Dict[str, Any], timezone_name: str
+) -> str:
+    probability = row.get("_shadow_probability")
+    probability_basis = row.get("_shadow_probability_basis") or "probability"
+    try:
+        probability_text = f"{float(probability):.1%}"
+    except (TypeError, ValueError, OverflowError):
+        probability_text = "n/a"
+    book = row.get("book") or {}
+    price = float(book["selected_decimal_price"])
+    book_name = _canonical_book_for_key(book.get("book")) or "named book"
+    observed = str(book.get("observed_utc") or "time unknown")
+    reasons = (row.get("eligibility") or {}).get("reasons") or []
+    reason_text = ", ".join(str(reason) for reason in reasons) or "no recorded eligibility reason"
+    status = str(row.get("grade_status") or "pending").upper()
+    tip = _local_time(str(row["scheduled_utc"]), timezone_name)
+    forecast_id = row.get("forecast_id") or row.get("pick_id") or "unknown"
+    return (
+        f"    [{status}] {row['home']} vs {row['away']} · {tip} · "
+        f"{_audit_market_selection(row)} · p={probability_text} ({probability_basis}) · "
+        f"selected decimal odds={price:.3f} {book_name} (observed {observed}) · "
+        f"bucket={row.get('bucket') or 'unknown'} · blockers: {reason_text} · "
+        f"forecast={forecast_id}"
+    )
+
+
+def _render_priced_ineligible_shadow_section(
+    rows: List[Dict[str, Any]],
+    *,
+    audited_count: int,
+    timezone_name: str,
+) -> List[str]:
+    """Render exact-priced, ineligible NCAA_M candidates without ticketing."""
+    if audited_count <= 0:
+        return []
+    odds_text = f"{PRICED_INELIGIBLE_SHADOW_MIN_DECIMAL_ODDS:.2f}"
+    probability_text = f"{PRICED_INELIGIBLE_SHADOW_MIN_PROBABILITY:.0%}"
+    groups = _group_priced_ineligible_shadow_candidates(rows)
+    if not groups:
+        return [
+            "",
+            "PRICED-INELIGIBLE AUDIT-ONLY SHADOW GROUPS — 0 QUALIFY "
+            f"({audited_count} exact-priced ineligible audited; requires decimal odds ≥{odds_text} "
+            f"and p ≥{probability_text})",
+            "No candidate meets both shadow-display thresholds.",
+            "These candidates remain ineligible; none is a paper position or ticket leg.",
+        ]
+
+    qualified = [row for group in groups for row in group]
+    grade_counts = Counter(str(row.get("grade_status") or "pending") for row in qualified)
+    grade_summary = ", ".join(
+        f"{count} {status.upper()}" for status, count in sorted(grade_counts.items())
+    )
+    group_label = "group" if len(groups) == 1 else "groups"
+    lines = [
+        "",
+        f"PRICED-INELIGIBLE AUDIT-ONLY SHADOW GROUPS (decimal odds ≥{odds_text}; p ≥{probability_text}) — "
+        f"{len(qualified)} picks in {len(groups)} {group_label} ({grade_summary}; "
+        f"{audited_count} exact-priced ineligible audited)",
+        "Display grouping only: selected prices are shown, but eligibility remains false; no ticket ID, receipt, or stake.",
+        f"Each pick meets both display thresholds; groups hold up to {SHADOW_GROUP_MAX_PICKS} picks, "
+        "with at most one pick per fixture. No combined probability, bank, or ROI impact.",
+    ]
+    for index, group in enumerate(groups, 1):
+        group_grades = Counter(str(row.get("grade_status") or "pending") for row in group)
+        group_grade_summary = ", ".join(
+            f"{count} {status.upper()}" for status, count in sorted(group_grades.items())
+        )
+        pick_label = "pick" if len(group) == 1 else "picks"
+        lines.append(
+            f"  SHADOW GROUP {index} — {len(group)} priced-ineligible audit-only {pick_label} "
+            f"({group_grade_summary})"
+        )
+        lines.extend(
+            _render_priced_ineligible_candidate_line(row, timezone_name)
+            for row in group
+        )
+    return lines
 
 
 def _render_unpriced_audit_section(
@@ -2268,6 +2505,8 @@ def _render_ticket_card(
     timezone_name: str,
     *,
     unpriced_audit_picks: Optional[List[Dict[str, Any]]] = None,
+    priced_ineligible_shadow_picks: Optional[List[Dict[str, Any]]] = None,
+    priced_ineligible_audited_count: int = 0,
 ) -> str:
     positions = _receipt_positions(receipt)
     acca_count = sum(ticket_type == "acca" for ticket_type, _ in positions)
@@ -2368,9 +2607,18 @@ def _render_ticket_card(
                 ]
             )
         lines.append("")
-    lines.extend(
-        _render_unpriced_audit_section(unpriced_audit_picks or [], timezone_name)
-    )
+    if priced_ineligible_shadow_picks is None:
+        lines.extend(
+            _render_unpriced_audit_section(unpriced_audit_picks or [], timezone_name)
+        )
+    else:
+        lines.extend(
+            _render_priced_ineligible_shadow_section(
+                priced_ineligible_shadow_picks,
+                audited_count=priced_ineligible_audited_count,
+                timezone_name=timezone_name,
+            )
+        )
     lines.extend(
         [
             f"FROZEN AT {_local_time(receipt['frozen_at'], timezone_name)[11:16]} - FINAL",
@@ -2497,6 +2745,8 @@ def _render_empty_ticket_scan(
     candidate_funnel: Dict[str, Any],
     withdrawal: Optional[Dict[str, Any]] = None,
     unpriced_audit_picks: Optional[List[Dict[str, Any]]] = None,
+    priced_ineligible_shadow_picks: Optional[List[Dict[str, Any]]] = None,
+    priced_ineligible_audited_count: int = 0,
 ) -> str:
     """A concise mutable latest-scan view, never a frozen no-bet receipt."""
     paper_single_count = int(candidate_funnel.get("paper_single_picks") or 0)
@@ -2578,9 +2828,18 @@ def _render_empty_ticket_scan(
         "Paper only. No real-money stakes or automatic promotion.",
         "",
     ]
-    lines.extend(
-        _render_unpriced_audit_section(unpriced_audit_picks or [], timezone_name)
-    )
+    if priced_ineligible_shadow_picks is None:
+        lines.extend(
+            _render_unpriced_audit_section(unpriced_audit_picks or [], timezone_name)
+        )
+    else:
+        lines.extend(
+            _render_priced_ineligible_shadow_section(
+                priced_ineligible_shadow_picks,
+                audited_count=priced_ineligible_audited_count,
+                timezone_name=timezone_name,
+            )
+        )
     return "\n".join(lines)
 
 
@@ -2725,11 +2984,23 @@ def publish_operator_reports(
         if row["pick_id"] in merged:
             row.update(merged[row["pick_id"]])
     current_unpriced_audit = [row for row in current if not _has_exact_selected_price(row)]
+    dated_logical_rows = _latest_logical_rows(archived)
     dated_unpriced_audit = [
-        row
-        for row in _latest_logical_rows(archived)
-        if not _has_exact_selected_price(row)
+        row for row in dated_logical_rows if not _has_exact_selected_price(row)
     ]
+    current_priced_ineligible: List[Dict[str, Any]] = []
+    dated_priced_ineligible: List[Dict[str, Any]] = []
+    current_priced_ineligible_shadow: List[Dict[str, Any]] = []
+    dated_priced_ineligible_shadow: List[Dict[str, Any]] = []
+    if league == League.NCAA_M:
+        current_priced_ineligible = _priced_ineligible_rows(current)
+        dated_priced_ineligible = _priced_ineligible_rows(dated_logical_rows)
+        current_priced_ineligible_shadow = _priced_ineligible_shadow_candidates(
+            current_priced_ineligible
+        )
+        dated_priced_ineligible_shadow = _priced_ineligible_shadow_candidates(
+            dated_priced_ineligible
+        )
     _write_json(localdata / "picks_today.json", current)
     _write_json(dated_path, archived)
     _refresh_dated_pick_reports(
@@ -2773,20 +3044,24 @@ def publish_operator_reports(
         run_id=run_id,
         accas=ticket_candidates,
     )
-    state["scans"].append(
-        {
-            "run_id": run_id,
-            "captured_at": generated_utc,
-            "fresh_accas": sum(row.get("ticket_type") != "single" for row in ticket_candidates),
-            "fresh_single_tickets": sum(
-                row.get("ticket_type") == "single" for row in ticket_candidates
-            ),
-            "fresh_paper_singles": candidate_funnel.get("paper_single_picks", 0),
-            "receipt_present": receipt is not None,
-            "candidate_funnel": deepcopy(candidate_funnel),
-            "unpriced_audit": _unpriced_audit_summary(current_unpriced_audit),
-        }
-    )
+    scan_record = {
+        "run_id": run_id,
+        "captured_at": generated_utc,
+        "fresh_accas": sum(row.get("ticket_type") != "single" for row in ticket_candidates),
+        "fresh_single_tickets": sum(
+            row.get("ticket_type") == "single" for row in ticket_candidates
+        ),
+        "fresh_paper_singles": candidate_funnel.get("paper_single_picks", 0),
+        "receipt_present": receipt is not None,
+        "candidate_funnel": deepcopy(candidate_funnel),
+        "unpriced_audit": _unpriced_audit_summary(current_unpriced_audit),
+    }
+    if league == League.NCAA_M:
+        scan_record["priced_ineligible_shadow"] = _priced_ineligible_shadow_summary(
+            current_priced_ineligible,
+            current_priced_ineligible_shadow,
+        )
+    state["scans"].append(scan_record)
     state["scans"] = state["scans"][-100:]
     withdrawal = state["frozen_by_date"].get(target_date)
     if not (isinstance(withdrawal, dict) and withdrawal.get("withdrawn") is True):
@@ -2838,6 +3113,16 @@ def publish_operator_reports(
                 performance,
                 timezone_name,
                 unpriced_audit_picks=dated_unpriced_audit,
+                priced_ineligible_shadow_picks=(
+                    dated_priced_ineligible_shadow
+                    if league == League.NCAA_M
+                    else None
+                ),
+                priced_ineligible_audited_count=(
+                    len(dated_priced_ineligible)
+                    if league == League.NCAA_M
+                    else 0
+                ),
             ),
         )
     else:
@@ -2852,6 +3137,16 @@ def publish_operator_reports(
                 candidate_funnel=candidate_funnel,
                 withdrawal=withdrawal,
                 unpriced_audit_picks=dated_unpriced_audit,
+                priced_ineligible_shadow_picks=(
+                    dated_priced_ineligible_shadow
+                    if league == League.NCAA_M
+                    else None
+                ),
+                priced_ineligible_audited_count=(
+                    len(dated_priced_ineligible)
+                    if league == League.NCAA_M
+                    else 0
+                ),
             ),
         )
     state["last_generated_utc"] = generated_utc
@@ -2875,6 +3170,14 @@ def publish_operator_reports(
         "performance_text": str(localdata / "auto_tickets_performance.txt"),
         "candidate_funnel": candidate_funnel,
         "unpriced_audit": _unpriced_audit_summary(dated_unpriced_audit),
+        "priced_ineligible_shadow": (
+            _priced_ineligible_shadow_summary(
+                dated_priced_ineligible,
+                dated_priced_ineligible_shadow,
+            )
+            if league == League.NCAA_M
+            else None
+        ),
         "counts": {
             "current_picks": len(current),
             "current_unpriced_picks": len(current_unpriced_audit),
