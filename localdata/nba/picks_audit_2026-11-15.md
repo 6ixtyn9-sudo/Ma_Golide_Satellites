@@ -1,17 +1,17 @@
 # Ma Golide — Recent picks audit (2026-10-17 to 2026-11-15)
 
-Generated: 2026-11-16 00:45 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-16 05:54 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
 - archived logical picks: 353
 - dated evidence rows: 1064 (711 superseded observations)
-- settled picks: 286 (154 wins / 132 losses / 0 pushes)
-- hit rate: 53.8% (154/286 win/loss decisions)
-- pending/unmatched picks: 67 prior-day · 67 total
-- priced picks: 217
-- paper P&L: +1.147 units
-- ROI: +0.5% (P&L / 217 priced picks)
+- settled picks: 346 (195 wins / 151 losses / 0 pushes)
+- hit rate: 56.4% (195/346 win/loss decisions)
+- pending/unmatched picks: 7 prior-day · 7 total
+- priced picks: 262
+- paper P&L: +4.811 units
+- ROI: +1.8% (P&L / 262 priced picks)
 
 ## Settlement policy
 
@@ -26,19 +26,19 @@ Generated: 2026-11-16 00:45 SAST · 30-day rolling window · Paper only
 
 | Bucket | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `CAUTION` | 111 | 67–44–0 | 60.4% | 111 | +9.6% |
-| `ELIGIBLE_CLEAN` | 1 | 1–0–0 | 100.0% | 1 | +36.1% |
-| `SKIPPED_INELIGIBLE` | 105 | 58–47–0 | 55.2% | 105 | -9.4% |
-| `WATCHLIST_NO_ODDS` | 69 | 28–41–0 | 40.6% | 0 | n/a |
+| `CAUTION` | 137 | 80–57–0 | 58.4% | 137 | +6.7% |
+| `ELIGIBLE_CLEAN` | 9 | 7–2–0 | 77.8% | 9 | +8.1% |
+| `SKIPPED_INELIGIBLE` | 116 | 68–48–0 | 58.6% | 116 | -4.4% |
+| `WATCHLIST_NO_ODDS` | 84 | 40–44–0 | 47.6% | 0 | n/a |
 
 ## By market
 
 | Market | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `highest_quarter` | 37 | 10–27–0 | 27.0% | 0 | n/a |
-| `moneyline` | 101 | 66–35–0 | 65.3% | 71 | +2.4% |
-| `spread` | 69 | 37–32–0 | 53.6% | 68 | +1.3% |
-| `total` | 79 | 41–38–0 | 51.9% | 78 | -1.8% |
+| `highest_quarter` | 44 | 15–29–0 | 34.1% | 0 | n/a |
+| `moneyline` | 123 | 85–38–0 | 69.1% | 86 | +5.9% |
+| `spread` | 82 | 42–40–0 | 51.2% | 80 | -4.6% |
+| `total` | 97 | 53–44–0 | 54.6% | 96 | +3.5% |
 
 ## By selection — over/under & side bias
 
@@ -46,46 +46,247 @@ Generated: 2026-11-16 00:45 SAST · 30-day rolling window · Paper only
 | --- | ---: | ---: | ---: | ---: | ---: |
 | `highest_quarter:Q1` | 1 | 0–1–0 | 0.0% | 0 | n/a |
 | `highest_quarter:Q2` | 31 | 8–23–0 | 25.8% | 0 | n/a |
-| `highest_quarter:Q3` | 5 | 2–3–0 | 40.0% | 0 | n/a |
-| `moneyline:away` | 53 | 30–23–0 | 56.6% | 35 | -14.9% |
-| `moneyline:home` | 48 | 36–12–0 | 75.0% | 36 | +19.2% |
-| `spread:away` | 43 | 17–26–0 | 39.5% | 43 | -24.5% |
-| `spread:home` | 26 | 20–6–0 | 76.9% | 25 | +45.6% |
-| `total:over` | 55 | 32–23–0 | 58.2% | 55 | +11.4% |
-| `total:under` | 24 | 9–15–0 | 37.5% | 23 | -33.5% |
+| `highest_quarter:Q3` | 12 | 7–5–0 | 58.3% | 0 | n/a |
+| `moneyline:away` | 67 | 44–23–0 | 65.7% | 44 | -4.4% |
+| `moneyline:home` | 56 | 41–15–0 | 73.2% | 42 | +16.7% |
+| `spread:away` | 48 | 18–30–0 | 37.5% | 48 | -28.5% |
+| `spread:home` | 34 | 24–10–0 | 70.6% | 32 | +31.2% |
+| `total:over` | 70 | 42–28–0 | 60.0% | 70 | +14.7% |
+| `total:under` | 27 | 11–16–0 | 40.7% | 26 | -26.5% |
 
 ## Paper-only opposite-side fade audit
 
 Counterfactual reporting only — this is not a strategy, pick, or ticket. A settled result is reversed (win↔loss; push stays push) and priced only when the exact opposite quote is preserved in the same pre-tip book snapshot, market, period, line, and observation. No quote is inferred or historically backfilled; selected-side price is not required.
 
-- settled rows with exact opposite quotes: 119/286
-- fade record: 47–72–0
-- fade hit rate: 39.5% (47/119 decisions)
-- paper P&L: -6.388 units · ROI: -5.4% (one unit per priced fade, pushes included)
-- mean market-implied break-even hit rate: 45.6% (n=119 non-push quotes; includes vig)
-- unpriced settled rows: `market_has_no_single_opposite_side`=67, `opposite_quote_not_preserved`=100
+- settled rows with exact opposite quotes: 165/346
+- fade record: 63–102–0
+- fade hit rate: 38.2% (63/165 decisions)
+- paper P&L: -22.328 units · ROI: -13.5% (one unit per priced fade, pushes included)
+- mean market-implied break-even hit rate: 45.8% (n=165 non-push quotes; includes vig)
+- unpriced settled rows: `market_has_no_single_opposite_side`=81, `opposite_quote_not_preserved`=100
 
 | Market | Settled candidates | Exact quotes | Fade W–L–P | ROI |
 | --- | ---: | ---: | ---: | ---: |
-| `highest_quarter` | 37 | 0 | 0–0–0 | n/a |
-| `moneyline` | 101 | 39 | 11–28–0 | +11.8% |
-| `spread` | 69 | 40 | 16–24–0 | -23.5% |
-| `total` | 79 | 40 | 20–20–0 | -4.0% |
+| `highest_quarter` | 44 | 0 | 0–0–0 | n/a |
+| `moneyline` | 123 | 54 | 13–41–0 | -13.4% |
+| `spread` | 82 | 53 | 24–29–0 | -13.2% |
+| `total` | 97 | 58 | 26–32–0 | -14.0% |
 
 Numeric selected-probability bands (calibrated probability, otherwise raw):
 
 | Probability band | Settled candidates | Exact quotes | Fade W–L–P | ROI |
 | --- | ---: | ---: | ---: | ---: |
-| `0.50-<0.60` | 174 | 77 | 32–45–0 | -14.9% |
-| `0.60-<0.70` | 48 | 24 | 9–15–0 | -20.9% |
-| `0.70-<0.80` | 16 | 12 | 5–7–0 | +68.5% |
-| `0.80-<0.90` | 7 | 5 | 0–5–0 | -100.0% |
+| `0.50-<0.60` | 204 | 101 | 42–59–0 | -16.1% |
+| `0.60-<0.70` | 66 | 41 | 15–26–0 | -27.2% |
+| `0.70-<0.80` | 19 | 15 | 5–10–0 | +34.8% |
+| `0.80-<0.90` | 9 | 7 | 0–7–0 | -100.0% |
 | `0.90-1.00` | 2 | 1 | 1–0–0 | +690.0% |
-| `<0.50` | 39 | 0 | 0–0–0 | n/a |
+| `<0.50` | 46 | 0 | 0–0–0 | n/a |
 
 ## Settled picks — official-final audit
 
 Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+### 2026-11-15: Milwaukee Bucks vs Atlanta Hawks (Final: **106–113**)
+
+- 🟢 **WON — Full-game total 234.5: Under**
+  - Actual Full-game total: **219** · Expected: **59.0%** · Price: **1.935 · DraftKings** · Counterfactual fade: **LOST @ 1.885 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -7.5: Atlanta Hawks (away)**
+  - Actual Full-game margin: **-7** · Expected: **52.0%** · Price: **1.877 · DraftKings** · Counterfactual fade: **WON @ 1.943 Milwaukee Bucks +7.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Highest quarter: Q3**
+  - Expected: **38.3%** calibrated (raw 37.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=40** · calibrated · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +8.5: Milwaukee Bucks (home)**
+  - Actual Full-game margin: **-7** · Expected: **51.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **LOST @ 1.943 Atlanta Hawks -8.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Atlanta Hawks (away)**
+  - Expected: **65.4%** calibrated (raw 56.0%) · Price: **1.309 · DraftKings** · Counterfactual fade: **LOST @ 3.610 home · DraftKings**
+  - Calibration: **n=36** · calibrated · Bucket: `ELIGIBLE_CLEAN` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Atlanta Hawks (away)**
+  - Expected: **73.9%** · Price: **1.309 · DraftKings** · Counterfactual fade: **LOST @ 3.610 home · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 233.5: Under**
+  - Actual Full-game total: **219** · Expected: **57.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **LOST @ 1.943 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Atlanta Hawks (away)**
+  - Actual First-half score: **53–55** · Expected: **55.8%** calibrated (raw 55.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=39** · calibrated · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-15: Washington Wizards vs Houston Rockets (Final: **119–147**)
+
+- 🟢 **WON — First-half moneyline: Houston Rockets (away)**
+  - Actual First-half score: **54–73** · Expected: **55.8%** calibrated (raw 55.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=39** · calibrated · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Houston Rockets (away)**
+  - Expected: **66.4%** calibrated (raw 57.0%) · Price: **1.290 · DraftKings** · Counterfactual fade: **LOST @ 3.760 home · DraftKings**
+  - Calibration: **n=36** · calibrated · Bucket: `ELIGIBLE_CLEAN` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 223.5: Over**
+  - Actual Full-game total: **266** · Expected: **53.0%** · Price: **1.935 · DraftKings** · Counterfactual fade: **LOST @ 1.885 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Houston Rockets (away)**
+  - Expected: **73.8%** · Price: **1.290 · DraftKings** · Counterfactual fade: **LOST @ 3.760 home · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🔴 **LOST — Full-game spread +9.5: Washington Wizards (home)**
+  - Actual Full-game margin: **-28** · Expected: **54.0%** · Price: **1.862 · DraftKings** · Counterfactual fade: **WON @ 1.952 Houston Rockets -9.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +8.5: Washington Wizards (home)**
+  - Actual Full-game margin: **-28** · Expected: **51.0%** · Price: **1.885 · DraftKings** · Counterfactual fade: **WON @ 1.935 Houston Rockets -8.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Highest quarter: Q3**
+  - Expected: **34.3%** calibrated (raw 33.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=40** · calibrated · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 222.5: Over**
+  - Actual Full-game total: **266** · Expected: **60.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **LOST @ 1.952 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+
+### 2026-11-15: Toronto Raptors vs New York Knicks (Final: **108–112**)
+
+- 🟢 **WON — Full-game spread -3.5: New York Knicks (away)**
+  - Actual Full-game margin: **-4** · Expected: **58.0%** · Price: **1.877 · DraftKings** · Counterfactual fade: **LOST @ 1.943 Toronto Raptors +3.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 217.5: Under**
+  - Actual Full-game total: **220** · Expected: **60.0%** · Price: **1.935 · DraftKings** · Counterfactual fade: **WON @ 1.885 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread -4.5: New York Knicks (away)**
+  - Actual Full-game margin: **-4** · Expected: **54.0%** · Price: **1.943 · DraftKings** · Counterfactual fade: **WON @ 1.870 Toronto Raptors +4.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: New York Knicks (away)**
+  - Expected: **68.7%** · Price: **1.637 · DraftKings** · Counterfactual fade: **LOST @ 2.320 home · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🔴 **LOST — Full-game moneyline: Toronto Raptors (home)**
+  - Expected: **68.3%** calibrated (raw 54.0%) · Price: **2.600 · DraftKings** · Counterfactual fade: **WON @ 1.524 away · DraftKings**
+  - Calibration: **n=40** · calibrated · Bucket: `ELIGIBLE_CLEAN` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Highest quarter: Q3**
+  - Expected: **32.3%** calibrated (raw 31.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=40** · calibrated · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: New York Knicks (away)**
+  - Expected: **64.4%** calibrated (raw 55.0%) · Price: **1.637 · DraftKings** · Counterfactual fade: **LOST @ 2.320 home · DraftKings**
+  - Calibration: **n=36** · calibrated · Bucket: `ELIGIBLE_CLEAN` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: New York Knicks (away)**
+  - Actual First-half score: **43–47** · Expected: **53.8%** calibrated (raw 53.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=39** · calibrated · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-15: Boston Celtics vs Dallas Mavericks (Final: **131–94**)
+
+- 🔴 **LOST — Full-game spread +13.5: Dallas Mavericks (away)**
+  - Actual Full-game margin: **+37** · Expected: **54.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **WON @ 1.926 Boston Celtics -13.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Boston Celtics (home)**
+  - Expected: **85.3%** · Price: **1.103 · DraftKings** · Counterfactual fade: **LOST @ 7.400 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 217.5: Over**
+  - Actual Full-game total: **225** · Expected: **59.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **LOST @ 1.952 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game total 219.5: Over**
+  - Actual Full-game total: **225** · Expected: **55.0%** · Price: **1.935 · DraftKings** · Counterfactual fade: **LOST @ 1.885 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game total 216.5: Over**
+  - Actual Full-game total: **225** · Expected: **62.0%** · Price: **1.885 · DraftKings** · Counterfactual fade: **LOST @ 1.935 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Boston Celtics (home)**
+  - Actual First-half score: **67–37** · Expected: **62.8%** calibrated (raw 62.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=39** · calibrated · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Boston Celtics (home)**
+  - Expected: **68.4%** calibrated (raw 59.0%) · Price: **1.103 · DraftKings** · Counterfactual fade: **LOST @ 7.400 away · DraftKings**
+  - Calibration: **n=36** · calibrated · Bucket: `ELIGIBLE_CLEAN` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Highest quarter: Q3**
+  - Expected: **31.3%** calibrated (raw 30.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=40** · calibrated · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +15.5: Dallas Mavericks (away)**
+  - Actual Full-game margin: **+37** · Expected: **55.0%** · Price: **1.862 · DraftKings** · Counterfactual fade: **WON @ 1.962 Boston Celtics -15.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+
+### 2026-11-15: Utah Jazz vs San Antonio Spurs (Final: **102–110**)
+
+- 🔴 **LOST — Highest quarter: Q3**
+  - Expected: **39.3%** calibrated (raw 35.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=40** · calibrated · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 223.5: Over**
+  - Actual Full-game total: **212** · Expected: **62.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **WON @ 1.952 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: San Antonio Spurs (away)**
+  - Expected: **89.1%** · Price: **1.075 · DraftKings** · Counterfactual fade: **LOST @ 9.100 home · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — First-half moneyline: San Antonio Spurs (away)**
+  - Actual First-half score: **55–58** · Expected: **59.0%** calibrated (raw 57.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=36** · calibrated · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 222.5: Over**
+  - Actual Full-game total: **212** · Expected: **63.0%** · Price: **1.877 · DraftKings** · Counterfactual fade: **WON @ 1.943 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 226.5: Over**
+  - Actual Full-game total: **212** · Expected: **55.0%** · Price: **1.935 · DraftKings** · Counterfactual fade: **WON @ 1.885 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 224.5: Over**
+  - Actual Full-game total: **212** · Expected: **60.0%** · Price: **1.935 · DraftKings** · Counterfactual fade: **WON @ 1.893 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 225.5: Over**
+  - Actual Full-game total: **212** · Expected: **57.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +17.5: Utah Jazz (home)**
+  - Actual Full-game margin: **-8** · Expected: **52.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **LOST @ 1.885 San Antonio Spurs -17.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: San Antonio Spurs (away)**
+  - Expected: **78.3%** calibrated (raw 64.0%) · Price: **1.075 · DraftKings** · Counterfactual fade: **LOST @ 9.100 home · DraftKings**
+  - Calibration: **n=40** · calibrated · Bucket: `ELIGIBLE_CLEAN` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +16.5: Utah Jazz (home)**
+  - Actual Full-game margin: **-8** · Expected: **51.0%** · Price: **1.862 · DraftKings** · Counterfactual fade: **LOST @ 1.962 San Antonio Spurs -16.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+
+### 2026-11-15: Los Angeles Clippers vs Charlotte Hornets (Final: **113–105**)
+
+- 🔴 **LOST — First-half moneyline: Los Angeles Clippers (home)**
+  - Actual First-half score: **51–52** · Expected: **53.0%** calibrated (raw 51.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=36** · calibrated · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 214.5: Over**
+  - Actual Full-game total: **218** · Expected: **60.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game total 215.5: Over**
+  - Actual Full-game total: **218** · Expected: **55.0%** · Price: **1.935 · DraftKings** · Counterfactual fade: **LOST @ 1.885 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Los Angeles Clippers (home)**
+  - Expected: **68.3%** calibrated (raw 54.0%) · Price: **1.952 · DraftKings** · Counterfactual fade: **LOST @ 1.885 away · DraftKings**
+  - Calibration: **n=40** · calibrated · Bucket: `ELIGIBLE_CLEAN` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +1.5: Los Angeles Clippers (home)**
+  - Actual Full-game margin: **+8** · Expected: **56.0%** · Price: **1.855 · DraftKings** · Counterfactual fade: **LOST @ 1.971 Charlotte Hornets -1.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Los Angeles Clippers (home)**
+  - Expected: **54.5%** · Price: **1.952 · DraftKings** · Counterfactual fade: **LOST @ 1.885 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Highest quarter: Q3**
+  - Expected: **36.3%** calibrated (raw 32.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=40** · calibrated · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-15: Phoenix Suns vs Los Angeles Lakers (Final: **123–131**)
+
+- 🔴 **LOST — Full-game moneyline: Phoenix Suns (home)**
+  - Expected: **65.3%** calibrated (raw 51.0%) · Price: **2.300 · DraftKings** · Counterfactual fade: **WON @ 1.649 away · DraftKings**
+  - Calibration: **n=40** · calibrated · Bucket: `ELIGIBLE_CLEAN` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 225.5: Over**
+  - Actual Full-game total: **254** · Expected: **62.0%** · Price: **1.877 · DraftKings** · Counterfactual fade: **LOST @ 1.943 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game total 226.5: Over**
+  - Actual Full-game total: **254** · Expected: **60.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game total 228.5: Over**
+  - Actual Full-game total: **254** · Expected: **51.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **LOST @ 1.926 under · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Los Angeles Lakers (away)**
+  - Actual First-half score: **54–64** · Expected: **54.0%** calibrated (raw 52.0%) · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=36** · calibrated · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +3.5: Phoenix Suns (home)**
+  - Actual Full-game margin: **-8** · Expected: **52.0%** · Price: **1.862 · DraftKings** · Counterfactual fade: **WON @ 1.962 Los Angeles Lakers -3.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn+team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Los Angeles Lakers (away)**
+  - Expected: **57.1%** · Price: **1.649 · DraftKings** · Counterfactual fade: **LOST @ 2.300 home · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🔴 **LOST — Highest quarter: Q3**
+  - Expected: **31.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +2.5: Phoenix Suns (home)**
+  - Actual Full-game margin: **-8** · Expected: **51.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **WON @ 1.870 Los Angeles Lakers -2.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `CAUTION` · Model: `provider:espn+team_history_empirical_v1`
 
 ### 2026-11-15: Philadelphia 76ers vs Indiana Pacers (Final: **131–124**)
 

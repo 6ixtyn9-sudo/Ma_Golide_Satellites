@@ -1,7 +1,7 @@
 {
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
-  "generated_utc": "2026-11-15T22:45:02Z",
+  "generated_utc": "2026-11-16T03:54:54Z",
   "history": [
     {
       "accas": [],
@@ -696,16 +696,16 @@
     },
     {
       "accas": [],
-      "bank_units": 100.76923076923077,
+      "bank_units": 101.72161172161172,
       "date": "2026-11-15",
       "decision_id": "43734635454_nba_1_attempt_1",
       "frozen_at": "2026-11-15T16:18:14Z",
       "league": "NBA",
       "losses": 0,
       "pending_accas": 0,
-      "pending_positions": 1,
-      "pending_singles": 1,
-      "pending_units": 1.0,
+      "pending_positions": 0,
+      "pending_singles": 0,
+      "pending_units": 0,
       "positions": [
         {
           "bookmakers": [
@@ -715,7 +715,7 @@
           "effective_decimal_odds": 1.9523809523809523,
           "estimated_joint_win_probability": 0.682857,
           "estimated_win_probability": 0.682857,
-          "grade_status": "pending",
+          "grade_status": "win",
           "individual_pick_filter": {
             "as_of_utc": "2026-11-15T16:18:25Z",
             "bands": [
@@ -1066,7 +1066,7 @@
           },
           "leg_count": 1,
           "leg_outcomes": [
-            null
+            "win"
           ],
           "legs": [
             {
@@ -1194,7 +1194,7 @@
               },
               "forecast_id": "b33506705e96b7a6dc49",
               "game_id": "401909987",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Los Angeles Clippers",
               "individual_pick_roi_band": {
                 "adjusted_roi": 0.361526,
@@ -1223,7 +1223,7 @@
               "market": "moneyline",
               "model": "team_history_empirical_v1",
               "model_version": "team_history_empirical_v1",
-              "outcome": null,
+              "outcome": "win",
               "paper_only": true,
               "period": "full_game",
               "pick_id": "b33506705e96b7a6dc49",
@@ -1245,7 +1245,7 @@
             }
           ],
           "paper_only": true,
-          "profit_units": null,
+          "profit_units": 0.9523809523809523,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 1,
@@ -1254,15 +1254,15 @@
           "stake_units": 1.0,
           "ticket_id": "176b53892c789938fe38",
           "ticket_type": "single",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         }
       ],
-      "profit_units": null,
+      "profit_units": 0.9523809523809523,
       "pushes": 0,
-      "returned_units": null,
+      "returned_units": 1.9523809523809523,
       "settled_accas": 0,
-      "settled_positions": 0,
-      "settled_singles": 0,
+      "settled_positions": 1,
+      "settled_singles": 1,
       "singles": [
         {
           "bookmakers": [
@@ -1272,7 +1272,7 @@
           "effective_decimal_odds": 1.9523809523809523,
           "estimated_joint_win_probability": 0.682857,
           "estimated_win_probability": 0.682857,
-          "grade_status": "pending",
+          "grade_status": "win",
           "individual_pick_filter": {
             "as_of_utc": "2026-11-15T16:18:25Z",
             "bands": [
@@ -1623,7 +1623,7 @@
           },
           "leg_count": 1,
           "leg_outcomes": [
-            null
+            "win"
           ],
           "legs": [
             {
@@ -1751,7 +1751,7 @@
               },
               "forecast_id": "b33506705e96b7a6dc49",
               "game_id": "401909987",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Los Angeles Clippers",
               "individual_pick_roi_band": {
                 "adjusted_roi": 0.361526,
@@ -1780,7 +1780,7 @@
               "market": "moneyline",
               "model": "team_history_empirical_v1",
               "model_version": "team_history_empirical_v1",
-              "outcome": null,
+              "outcome": "win",
               "paper_only": true,
               "period": "full_game",
               "pick_id": "b33506705e96b7a6dc49",
@@ -1802,7 +1802,7 @@
             }
           ],
           "paper_only": true,
-          "profit_units": null,
+          "profit_units": 0.9523809523809523,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 1,
@@ -1811,33 +1811,33 @@
           "stake_units": 1.0,
           "ticket_id": "176b53892c789938fe38",
           "ticket_type": "single",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         }
       ],
-      "staked_units": 0,
-      "wins": 0
+      "staked_units": 1.0,
+      "wins": 1
     }
   ],
   "hit_rate": 1.0,
   "league": "NBA",
   "losses": 0,
-  "paper_bank_units": 100.76923076923077,
-  "paper_committed_units": 1.0,
-  "paper_free_units": 99.76923076923077,
+  "paper_bank_units": 101.72161172161172,
+  "paper_committed_units": 0,
+  "paper_free_units": 101.72161172161172,
   "paper_only": true,
   "pending_accas": 0,
-  "pending_positions": 1,
-  "pending_singles": 1,
-  "profit_units": 0.7692307692307692,
+  "pending_positions": 0,
+  "pending_singles": 0,
+  "profit_units": 1.7216117216117215,
   "pushes": 0,
-  "roi": 0.7692307692307692,
+  "roi": 0.8608058608058607,
   "schema_version": "magolide.operator.v1",
-  "selected_leg_brier_score": 0.17144733984400004,
+  "selected_leg_brier_score": 0.1360135111465,
   "settled_accas": 0,
-  "settled_positions": 1,
-  "settled_singles": 1,
-  "settled_stake_units": 1.0,
+  "settled_positions": 2,
+  "settled_singles": 2,
+  "settled_stake_units": 2.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 1,
-  "wins": 1
+  "unresolved_result_legs": 0,
+  "wins": 2
 }

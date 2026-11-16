@@ -1,17 +1,17 @@
 # Ma Golide — Recent picks audit (2026-10-17 to 2026-11-15)
 
-Generated: 2026-11-16 00:45 SAST · 30-day rolling window · Paper only
+Generated: 2026-11-16 05:54 SAST · 30-day rolling window · Paper only
 
 ## Overall
 
 - archived logical picks: 2129
 - dated evidence rows: 6432 (4303 superseded observations)
-- settled picks: 2050 (1311 wins / 739 losses / 0 pushes)
-- hit rate: 64.0% (1311/2050 win/loss decisions)
-- pending/unmatched picks: 79 prior-day · 79 total
-- priced picks: 1543
-- paper P&L: -7.647 units
-- ROI: -0.5% (P&L / 1543 priced picks)
+- settled picks: 2120 (1358 wins / 762 losses / 0 pushes)
+- hit rate: 64.1% (1358/2120 win/loss decisions)
+- pending/unmatched picks: 9 prior-day · 9 total
+- priced picks: 1589
+- paper P&L: -10.278 units
+- ROI: -0.6% (P&L / 1589 priced picks)
 
 ## Settlement policy
 
@@ -26,58 +26,298 @@ Generated: 2026-11-16 00:45 SAST · 30-day rolling window · Paper only
 
 | Bucket | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `SKIPPED_INELIGIBLE` | 1543 | 915–628–0 | 59.3% | 1543 | -0.5% |
-| `WATCHLIST_NO_ODDS` | 507 | 396–111–0 | 78.1% | 0 | n/a |
+| `SKIPPED_INELIGIBLE` | 1589 | 942–647–0 | 59.3% | 1589 | -0.6% |
+| `WATCHLIST_NO_ODDS` | 531 | 416–115–0 | 78.3% | 0 | n/a |
 
 ## By market
 
 | Market | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `moneyline` | 1003 | 745–258–0 | 74.3% | 497 | -7.7% |
-| `spread` | 460 | 236–224–0 | 51.3% | 460 | -2.4% |
-| `total` | 587 | 330–257–0 | 56.2% | 586 | +7.1% |
+| `moneyline` | 1039 | 776–263–0 | 74.7% | 509 | -7.4% |
+| `spread` | 475 | 241–234–0 | 50.7% | 475 | -3.4% |
+| `total` | 606 | 341–265–0 | 56.3% | 605 | +7.2% |
 
 ## By selection — over/under & side bias
 
 | Market:Selection | Settled | W–L–P | Hit rate | Priced | ROI |
 | --- | ---: | ---: | ---: | ---: | ---: |
-| `moneyline:away` | 52 | 27–25–0 | 51.9% | 51 | -26.0% |
-| `moneyline:home` | 951 | 718–233–0 | 75.5% | 446 | -5.6% |
-| `spread:away` | 189 | 109–80–0 | 57.7% | 189 | +9.9% |
-| `spread:home` | 271 | 127–144–0 | 46.9% | 271 | -10.9% |
+| `moneyline:away` | 54 | 29–25–0 | 53.7% | 52 | -24.3% |
+| `moneyline:home` | 985 | 747–238–0 | 75.8% | 457 | -5.4% |
+| `spread:away` | 202 | 114–88–0 | 56.4% | 202 | +7.5% |
+| `spread:home` | 273 | 127–146–0 | 46.5% | 273 | -11.5% |
 | `total:over` | 303 | 144–159–0 | 47.5% | 302 | -9.7% |
-| `total:under` | 284 | 186–98–0 | 65.5% | 284 | +25.0% |
+| `total:under` | 303 | 197–106–0 | 65.0% | 303 | +24.0% |
 
 ## Paper-only opposite-side fade audit
 
 Counterfactual reporting only — this is not a strategy, pick, or ticket. A settled result is reversed (win↔loss; push stays push) and priced only when the exact opposite quote is preserved in the same pre-tip book snapshot, market, period, line, and observation. No quote is inferred or historically backfilled; selected-side price is not required.
 
-- settled rows with exact opposite quotes: 922/2050
-- fade record: 357–565–0
-- fade hit rate: 38.7% (357/922 decisions)
-- paper P&L: -171.773 units · ROI: -18.6% (one unit per priced fade, pushes included)
-- mean market-implied break-even hit rate: 44.6% (n=922 non-push quotes; includes vig)
-- unpriced settled rows: `market_has_no_single_opposite_side`=327, `no_book_evidence`=179, `opposite_quote_not_preserved`=622
+- settled rows with exact opposite quotes: 968/2120
+- fade record: 376–592–0
+- fade hit rate: 38.8% (376/968 decisions)
+- paper P&L: -181.692 units · ROI: -18.8% (one unit per priced fade, pushes included)
+- mean market-implied break-even hit rate: 44.6% (n=968 non-push quotes; includes vig)
+- unpriced settled rows: `market_has_no_single_opposite_side`=337, `no_book_evidence`=193, `opposite_quote_not_preserved`=622
 
 | Market | Settled candidates | Exact quotes | Fade W–L–P | ROI |
 | --- | ---: | ---: | ---: | ---: |
-| `moneyline` | 1003 | 306 | 95–211–0 | -18.3% |
-| `spread` | 460 | 280 | 126–154–0 | -14.2% |
-| `total` | 587 | 336 | 136–200–0 | -22.6% |
+| `moneyline` | 1039 | 318 | 96–222–0 | -20.8% |
+| `spread` | 475 | 295 | 136–159–0 | -12.1% |
+| `total` | 606 | 355 | 144–211–0 | -22.5% |
 
 Numeric selected-probability bands (calibrated probability, otherwise raw):
 
 | Probability band | Settled candidates | Exact quotes | Fade W–L–P | ROI |
 | --- | ---: | ---: | ---: | ---: |
-| `0.50-<0.60` | 388 | 238 | 112–126–0 | -9.5% |
-| `0.60-<0.70` | 473 | 235 | 106–129–0 | -7.8% |
-| `0.70-<0.80` | 706 | 280 | 84–196–0 | -32.7% |
-| `0.80-<0.90` | 316 | 130 | 48–82–0 | -10.5% |
-| `0.90-1.00` | 167 | 39 | 7–32–0 | -65.5% |
+| `0.50-<0.60` | 399 | 249 | 118–131–0 | -8.9% |
+| `0.60-<0.70` | 493 | 243 | 108–135–0 | -9.3% |
+| `0.70-<0.80` | 725 | 293 | 92–201–0 | -30.6% |
+| `0.80-<0.90` | 326 | 139 | 48–91–0 | -16.3% |
+| `0.90-1.00` | 177 | 44 | 10–34–0 | -56.3% |
 
 ## Settled picks — official-final audit
 
 Grouped by fixture. Every settled logical pick in the window is included; unpriced grades do not enter ROI.
+
+### 2026-11-15: San José State Spartans vs Alabama State Hornets (Final: **80–68**)
+
+- 🟢 **WON — Full-game spread +13.5: Alabama State Hornets (away)**
+  - Actual Full-game margin: **+12** · Expected: **70.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 San José State Spartans -13.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 151.5: Under**
+  - Actual Full-game total: **148** · Expected: **63.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **LOST @ 1.893 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: San José State Spartans (home)**
+  - Expected: **65.0%** · Price: **1.100 · DraftKings** · Counterfactual fade: **LOST @ 7.500 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 157.5: Under**
+  - Actual Full-game total: **148** · Expected: **74.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: San José State Spartans (home)**
+  - Expected: **65.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 150.5: Under**
+  - Actual Full-game total: **148** · Expected: **61.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **LOST @ 1.926 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: San José State Spartans (home)**
+  - Expected: **93.8%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: San José State Spartans (home)**
+  - Expected: **93.8%** · Price: **1.100 · DraftKings** · Counterfactual fade: **LOST @ 7.500 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game spread +12.5: Alabama State Hornets (away)**
+  - Actual Full-game margin: **+12** · Expected: **68.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 San José State Spartans -12.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 155.5: Under**
+  - Actual Full-game total: **148** · Expected: **72.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: San José State Spartans (home)**
+  - Actual First-half score: **35–29** · Expected: **65.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-15: UTSA Roadrunners vs Texas State Bobcats (Final: **67–87**)
+
+- 🔴 **LOST — Full-game total 147.5: Under**
+  - Actual Full-game total: **154** · Expected: **51.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **WON @ 1.952 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +3.5: UTSA Roadrunners (home)**
+  - Actual Full-game margin: **-20** · Expected: **77.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 Texas State Bobcats -3.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Texas State Bobcats (away)**
+  - Expected: **66.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🔴 **LOST — First-half moneyline: UTSA Roadrunners (home)**
+  - Actual First-half score: **39–44** · Expected: **67.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 149.5: Under**
+  - Actual Full-game total: **154** · Expected: **54.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **WON @ 1.893 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Texas State Bobcats (away)**
+  - Expected: **66.0%** · Price: **1.617 · DraftKings** · Counterfactual fade: **LOST @ 2.360 home · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🔴 **LOST — Full-game spread +4.5: UTSA Roadrunners (home)**
+  - Actual Full-game margin: **-20** · Expected: **78.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **WON @ 1.952 Texas State Bobcats -4.5 (away) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: UTSA Roadrunners (home)**
+  - Expected: **71.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game moneyline: UTSA Roadrunners (home)**
+  - Expected: **71.0%** · Price: **2.360 · DraftKings** · Counterfactual fade: **WON @ 1.617 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-15: Bethune-Cookman Wildcats vs Paine Lions (Final: **88–64**)
+
+- 🟢 **WON — Full-game moneyline: Bethune-Cookman Wildcats (home)**
+  - Expected: **70.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Bethune-Cookman Wildcats (home)**
+  - Actual First-half score: **42–27** · Expected: **65.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Bethune-Cookman Wildcats (home)**
+  - Expected: **99.8%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+
+### 2026-11-15: Wisconsin Badgers vs Coastal Carolina Chanticleers (Final: **89–81**)
+
+- 🔴 **LOST — First-half moneyline: Wisconsin Badgers (home)**
+  - Actual First-half score: **38–43** · Expected: **62.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Wisconsin Badgers (home)**
+  - Expected: **59.0%** · Price: **1.002 · DraftKings** · Counterfactual fade: **LOST @ 41.000 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +28.5: Coastal Carolina Chanticleers (away)**
+  - Actual Full-game margin: **+8** · Expected: **87.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **LOST @ 1.952 Wisconsin Badgers -28.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Wisconsin Badgers (home)**
+  - Expected: **97.5%** · Price: **1.002 · DraftKings** · Counterfactual fade: **LOST @ 41.000 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🔴 **LOST — Full-game total 148.5: Under**
+  - Actual Full-game total: **170** · Expected: **52.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **WON @ 1.926 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +29.5: Coastal Carolina Chanticleers (away)**
+  - Actual Full-game margin: **+8** · Expected: **86.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **LOST @ 1.893 Wisconsin Badgers -29.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game spread +27.5: Coastal Carolina Chanticleers (away)**
+  - Actual Full-game margin: **+8** · Expected: **86.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **LOST @ 1.870 Wisconsin Badgers -27.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 147.5: Under**
+  - Actual Full-game total: **170** · Expected: **51.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **WON @ 1.870 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-15: USC Trojans vs Arkansas-Pine Bluff Golden Lions (Final: **122–46**)
+
+- 🔴 **LOST — Full-game spread +43.5: Arkansas-Pine Bluff Golden Lions (away)**
+  - Actual Full-game margin: **+76** · Expected: **94.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 USC Trojans -43.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: USC Trojans (home)**
+  - Expected: **78.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 158.5: Under**
+  - Actual Full-game total: **168** · Expected: **77.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +46.5: Arkansas-Pine Bluff Golden Lions (away)**
+  - Actual Full-game margin: **+76** · Expected: **95.0%** · Price: **1.893 · DraftKings** · Counterfactual fade: **WON @ 1.926 USC Trojans -46.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 156.5: Under**
+  - Actual Full-game total: **168** · Expected: **73.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **WON @ 1.870 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 159.5: Under**
+  - Actual Full-game total: **168** · Expected: **79.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **WON @ 1.909 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: USC Trojans (home)**
+  - Expected: **99.5%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🔴 **LOST — Full-game spread +44.5: Arkansas-Pine Bluff Golden Lions (away)**
+  - Actual Full-game margin: **+76** · Expected: **95.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **WON @ 1.952 USC Trojans -44.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game total 157.5: Under**
+  - Actual Full-game total: **168** · Expected: **76.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **WON @ 1.870 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: USC Trojans (home)**
+  - Actual First-half score: **62–19** · Expected: **72.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-15: St. John's Red Storm vs Syracuse Orange (Final: **79–62**)
+
+- 🟢 **WON — Full-game moneyline: St. John's Red Storm (home)**
+  - Expected: **82.2%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 150.5: Under**
+  - Actual Full-game total: **141** · Expected: **57.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **LOST @ 1.952 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: St. John's Red Storm (home)**
+  - Expected: **70.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +11.5: Syracuse Orange (away)**
+  - Actual Full-game margin: **+17** · Expected: **63.0%** · Price: **2.000 · DraftKings** · Counterfactual fade: **WON @ 1.833 St. John's Red Storm -11.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +12.5: Syracuse Orange (away)**
+  - Actual Full-game margin: **+17** · Expected: **66.0%** · Price: **1.847 · DraftKings** · Counterfactual fade: **WON @ 1.980 St. John's Red Storm -12.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — First-half moneyline: St. John's Red Storm (home)**
+  - Actual First-half score: **30–33** · Expected: **65.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: St. John's Red Storm (home)**
+  - Expected: **70.0%** · Price: **1.111 · DraftKings** · Counterfactual fade: **LOST @ 7.000 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: St. John's Red Storm (home)**
+  - Expected: **82.2%** · Price: **1.111 · DraftKings** · Counterfactual fade: **LOST @ 7.000 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 149.5: Under**
+  - Actual Full-game total: **141** · Expected: **54.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **LOST @ 1.952 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-15: UT Martin Skyhawks vs Ecclesia Royals (Final: **128–44**)
+
+- 🟢 **WON — Full-game moneyline: UT Martin Skyhawks (home)**
+  - Expected: **99.8%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: UT Martin Skyhawks (home)**
+  - Expected: **72.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: UT Martin Skyhawks (home)**
+  - Actual First-half score: **67–16** · Expected: **65.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-15: Montana State Bobcats vs Cal Poly Mustangs (Final: **77–52**)
+
+- 🟢 **WON — Full-game moneyline: Montana State Bobcats (home)**
+  - Expected: **70.0%** · Price: **1.345 · DraftKings** · Counterfactual fade: **LOST @ 3.350 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 164.5: Under**
+  - Actual Full-game total: **129** · Expected: **82.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **LOST @ 1.870 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +6.5: Cal Poly Mustangs (away)**
+  - Actual Full-game margin: **+25** · Expected: **53.0%** · Price: **1.952 · DraftKings** · Counterfactual fade: **WON @ 1.870 Montana State Bobcats -6.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Montana State Bobcats (home)**
+  - Actual First-half score: **36–22** · Expected: **63.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Montana State Bobcats (home)**
+  - Expected: **82.0%** · Price: **1.345 · DraftKings** · Counterfactual fade: **LOST @ 3.350 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game total 166.5: Under**
+  - Actual Full-game total: **129** · Expected: **85.0%** · Price: **1.909 · DraftKings** · Counterfactual fade: **LOST @ 1.909 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 165.5: Under**
+  - Actual Full-game total: **129** · Expected: **84.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **LOST @ 1.952 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +7.5: Cal Poly Mustangs (away)**
+  - Actual Full-game margin: **+25** · Expected: **54.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **WON @ 1.952 Montana State Bobcats -7.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+
+### 2026-11-15: Buffalo Bulls vs Canisius Golden Griffins (Final: **79–55**)
+
+- 🟢 **WON — Full-game total 151.5: Under**
+  - Actual Full-game total: **134** · Expected: **57.0%** · Price: **1.870 · DraftKings** · Counterfactual fade: **LOST @ 1.952 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: Buffalo Bulls (home)**
+  - Expected: **84.0%** · Price: **1.083 · DraftKings** · Counterfactual fade: **LOST @ 8.500 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `provider:espn`
+- 🟢 **WON — Full-game moneyline: Buffalo Bulls (home)**
+  - Expected: **69.0%** · Price: **1.083 · DraftKings** · Counterfactual fade: **LOST @ 8.500 away · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🔴 **LOST — Full-game spread +14.5: Canisius Golden Griffins (away)**
+  - Actual Full-game margin: **+24** · Expected: **71.0%** · Price: **1.847 · DraftKings** · Counterfactual fade: **WON @ 1.980 Buffalo Bulls -14.5 (home) · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game total 150.5: Under**
+  - Actual Full-game total: **134** · Expected: **54.0%** · Price: **1.926 · DraftKings** · Counterfactual fade: **LOST @ 1.893 over · DraftKings**
+  - Calibration: **n=0** · no history · Bucket: `SKIPPED_INELIGIBLE` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: Buffalo Bulls (home)**
+  - Actual First-half score: **44–31** · Expected: **63.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+
+### 2026-11-15: South Dakota Coyotes vs Doane Tigers (Final: **81–57**)
+
+- 🟢 **WON — Full-game moneyline: South Dakota Coyotes (home)**
+  - Expected: **66.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — First-half moneyline: South Dakota Coyotes (home)**
+  - Actual First-half score: **37–23** · Expected: **65.0%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (market_has_no_single_opposite_side)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `team_history_empirical_v1`
+- 🟢 **WON — Full-game moneyline: South Dakota Coyotes (home)**
+  - Expected: **99.5%** · Price: **No exact bookmaker price** · Counterfactual fade: **not priced (no_book_evidence)**
+  - Calibration: **n=0** · no history · Bucket: `WATCHLIST_NO_ODDS` · Model: `provider:espn`
 
 ### 2026-11-15: Southern Indiana Screaming Eagles vs Western Michigan Broncos (Final: **59–80**)
 
