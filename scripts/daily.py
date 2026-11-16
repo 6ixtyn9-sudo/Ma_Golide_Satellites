@@ -342,7 +342,15 @@ def main() -> int:
     parser.add_argument(
         "--book-provider",
         default="none",
-        choices=["none", "therundown", "sportsgameodds", "theoddsapi", "isportsapi", "espn"],
+        choices=[
+            "none",
+            "therundown",
+            "sportsgameodds",
+            "theoddsapi",
+            "isportsapi",
+            "betexplorer",
+            "espn",
+        ],
     )
     parser.add_argument("--notify", action="store_true", help="build an operations heartbeat")
     parser.add_argument(

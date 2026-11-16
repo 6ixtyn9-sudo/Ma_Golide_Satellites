@@ -58,12 +58,18 @@ SCHEDULE_URL = "https://api-live.euroleague.net/v2/competitions/E/seasons/{seaso
 BOXSCORE_URL = (
     "https://live.euroleague.net/api/Boxscore?gamecode={gamecode}&seasoncode={seasoncode}"
 )
-STANDINGS_URL = "https://api-live.euroleague.net/v2/competitions/E/seasons/{seasoncode}/standings"
+# v3 per-round standings replaced the dead v2 path (live 2026-11-16: the v2
+# ``standings`` endpoint answers 404; the v3 per-round basicstandings answers
+# 200 for completed rounds and 404 for rounds not yet finished).
+STANDINGS_URL = (
+    "https://api-live.euroleague.net/v3/competitions/E/seasons/{seasoncode}"
+    "/rounds/{round}/basicstandings"
+)
 
 # Evidence labels used by smoke reports.
-VERIFICATION_LIVE = "LIVE_VERIFIED (live captures 2026-11-06)"
+VERIFICATION_LIVE = "LIVE_VERIFIED (live captures 2026-11-06; standings 2026-11-16)"
 VERIFICATION_FIXTURE = "FIXTURE_VERIFIED"
-EVIDENCE_STANDINGS = "DOCUMENTATION_ONLY"  # standings endpoint not confirmed
+EVIDENCE_STANDINGS = "LIVE_VERIFIED (v3 per-round standings 2026-11-16)"
 
 OT_PERIODS_KEY = "euroleague_ot_periods"
 
@@ -82,6 +88,26 @@ def _season_display(seasoncode: str) -> str:
 # ---------------------------------------------------------------------------
 
 
+def _fetch_season_rows(fetch: FetchFn, seasoncode: str) -> List[Dict[str, Any]]:
+    """Fetch and validate the raw season schedule rows (one request)."""
+    payload = fetch(SCHEDULE_URL.format(seasoncode=seasoncode))
+    rows = payload.get("data") if isinstance(payload, dict) else payload
+    if not isinstance(rows, list):
+        raise ValueError(
+            f"euroleague schedule for {seasoncode} has no data list (got {type(payload).__name__})"
+        )
+    if not rows:
+        # Live trap (verified 2026-11-16): a bare-year season code (``2026``
+        # instead of ``E2026``) answers HTTP 200 with an EMPTY data list.
+        # Silence would poison backfill with a season of zero games, so an
+        # empty season payload is refused outright.
+        raise ValueError(
+            f"euroleague schedule for {seasoncode} is empty; a wrong season code "
+            "(e.g. '2026' instead of 'E2026') answers 200 with no rows"
+        )
+    return [row for row in rows if isinstance(row, dict)]
+
+
 def discover_games(
     date_iso: Optional[str], fetch: FetchFn, seasoncode: str = "E2026"
 ) -> List[Game]:
@@ -94,16 +120,8 @@ def discover_games(
     ``euroleague_season``), alongside ``euroleague_ot_periods`` when the
     schedule partials already show overtime.
     """
-    payload = fetch(SCHEDULE_URL.format(seasoncode=seasoncode))
-    rows = payload.get("data") if isinstance(payload, dict) else payload
-    if not isinstance(rows, list):
-        raise ValueError(
-            f"euroleague schedule for {seasoncode} has no data list (got {type(payload).__name__})"
-        )
     games: List[Game] = []
-    for row in rows:
-        if not isinstance(row, dict):
-            continue
+    for row in _fetch_season_rows(fetch, seasoncode):
         utc_date = row.get("utcDate")
         if date_iso and not str(utc_date or "").startswith(date_iso):
             continue
@@ -191,6 +209,117 @@ def schedule_ot_periods(game: Game) -> int:
         return int(game.provider_ids.get(OT_PERIODS_KEY, "0") or 0)
     except (TypeError, ValueError):
         return 0
+
+
+# ---------------------------------------------------------------------------
+# Schedule-row results (whole-season reconcilable finals, one request)
+# ---------------------------------------------------------------------------
+
+
+def _partial(row: Dict[str, Any], key: str, game_ref: str) -> float:
+    value = (row.get("partials") or {}).get(key)
+    if value is None or isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(
+            f"euroleague schedule result {game_ref} lacks numeric {key}; refusing "
+            "a final-score-only record"
+        )
+    return float(value)
+
+
+def _actual_from_schedule_row(row: Dict[str, Any], seasoncode: str) -> ActualResult:
+    """Reconciled result built from a played schedule row only.
+
+    Schedule rows carry the official final score per side plus the official
+    per-quarter partials (``partials1..4``) and any overtime partials
+    (``extraPeriods``, e.g. ``{'1': 19}``). All four regulation partials are
+    required per side — a row without them is refused (never stored as a
+    final-score-only record). Reconciliation is enforced exactly as for the
+    boxscore path.
+    """
+    game_ref = f"{seasoncode}-{row.get('gameCode')}"
+
+    def side(side_key: str) -> Tuple[List[float], Optional[float], int]:
+        block = row.get(side_key) or {}
+        quarters = [_partial(block, f"partials{i}", game_ref) for i in (1, 2, 3, 4)]
+        extras = (block.get("partials") or {}).get("extraPeriods") or {}
+        values = []
+        for key in sorted(extras, key=lambda item: str(item)):
+            value = extras[key]
+            if value is None or isinstance(value, bool) or not isinstance(value, (int, float)):
+                raise ValueError(
+                    f"euroleague schedule result {game_ref} has invalid extraPeriods "
+                    f"entry {key!r}: {value!r}"
+                )
+            values.append(float(value))
+        return quarters, (sum(values) if values else None), len(values)
+
+    home_quarters, home_ot, home_extra = side("local")
+    away_quarters, away_ot, away_extra = side("road")
+    overtime_periods = max(home_extra, away_extra)
+    if (home_ot is None) != (away_ot is None):
+        raise ValueError(
+            f"euroleague schedule result {game_ref}: only one side shows overtime partials"
+        )
+    home_final = _partial_score(row, "local", game_ref)
+    away_final = _partial_score(row, "road", game_ref)
+    actual = ActualResult(
+        period_kind=PeriodKind.QUARTERS,
+        home_quarters=home_quarters,
+        away_quarters=away_quarters,
+        home_overtime=home_ot,
+        away_overtime=away_ot,
+        home_final=home_final,
+        away_final=away_final,
+        overtime_periods=overtime_periods,
+        source=f"euroleague schedule season={seasoncode}",
+    )
+    ok, reason = actual.reconciles()
+    if not ok:
+        raise ValueError(f"euroleague schedule result {game_ref} failed reconciliation: {reason}")
+    return actual
+
+
+def _partial_score(row: Dict[str, Any], side_key: str, game_ref: str) -> float:
+    block = row.get(side_key) or {}
+    value = block.get("score")
+    if value is None or isinstance(value, bool) or not isinstance(value, (int, float)):
+        raise ValueError(f"euroleague schedule result {game_ref} lacks the {side_key} score")
+    return float(value)
+
+
+def season_results(
+    seasoncode: str,
+    fetch: FetchFn,
+    failures: Optional[List[Dict[str, str]]] = None,
+) -> List[Game]:
+    """Reconciled finals for every played game of one season.
+
+    One schedule request covers the whole season: every played row already
+    carries the official score and per-quarter partials, so a full season
+    of reconcilable history costs a single request. Rows that fail identity
+    or reconciliation are skipped and, when ``failures`` is given, recorded
+    there — never folded, never silently dropped.
+    """
+    games: List[Game] = []
+    for row in _fetch_season_rows(fetch, seasoncode):
+        try:
+            game = _game_from_schedule_row(row, seasoncode)
+        except (IdentityError, ValueError) as exc:
+            if failures is not None:
+                failures.append(
+                    {"game_id": str(row.get("gameCode")), "error": f"schedule row: {exc}"}
+                )
+            continue
+        if game.status is not GameStatus.FINAL:
+            continue
+        try:
+            game.actual = _actual_from_schedule_row(row, seasoncode)
+        except ValueError as exc:
+            if failures is not None:
+                failures.append({"game_id": game.game_id, "error": str(exc)})
+            continue
+        games.append(game)
+    return games
 
 
 def ot_games_from_schedule(fetch: FetchFn, seasoncode: str = "E2026") -> List[str]:
@@ -465,60 +594,76 @@ def _final_scores(
 
 
 # ---------------------------------------------------------------------------
-# Standings (endpoint not confirmed at baseline — defensive, never raises)
+# Standings (v3 per-round basicstandings; live-verified 2026-11-16)
 # ---------------------------------------------------------------------------
+
+
+def _latest_completed_round(fetch: FetchFn, seasoncode: str) -> Optional[int]:
+    """Highest round with played games in the season schedule (1 request)."""
+    rounds = [
+        int(row.get("round"))
+        for row in _fetch_season_rows(fetch, seasoncode)
+        if row.get("played") and isinstance(row.get("round"), (int, float))
+    ]
+    return max(rounds) if rounds else None
 
 
 def fetch_standings(
     fetch: FetchFn,
     seasoncode: str = "E2026",
+    round: Optional[int] = None,
     report: Optional[Dict[str, str]] = None,
 ) -> List[Dict[str, Any]]:
-    """Best-effort standings fetch; returns ``[]`` with a reason on failure.
+    """Standings from the v3 per-round basicstandings endpoint.
 
-    The official standings endpoint was NOT confirmed at baseline, so this
-    never raises: any fetch/parse failure yields ``[]`` and fills ``report``
-    (when given) with ``{'status', 'reason', 'evidence'}`` where evidence is
-    ``DOCUMENTATION_ONLY``.  A plausible ``{'data': [...]}`` payload is
-    parsed leniently into plain row dicts.
+    The endpoint answers 200 only for COMPLETED rounds (verified 2026-11-16:
+    round 11 OK, round 12 → 404 ``{"detail": "Not found standings for
+    season: E2026, round: 12"}``). With ``round=None`` the latest completed
+    round is derived from the season schedule (one extra request). The call
+    stays defensive — standings must never break a run — and every failure
+    fills ``report`` with ``{'status', 'reason', 'evidence'}``.
     """
 
     def _fail(reason: str) -> List[Dict[str, Any]]:
         if report is not None:
-            report.update(
-                {"status": "unavailable", "reason": reason, "evidence": EVIDENCE_STANDINGS}
-            )
+            report.update({"status": "unavailable", "reason": reason, "evidence": EVIDENCE_STANDINGS})
         return []
 
     try:
-        payload = fetch(STANDINGS_URL.format(seasoncode=seasoncode))
+        if round is None:
+            round = _latest_completed_round(fetch, seasoncode)
+            if round is None:
+                return _fail(f"season {seasoncode} has no played rounds yet")
+        payload = fetch(STANDINGS_URL.format(seasoncode=seasoncode, round=int(round)))
     except Exception as exc:  # deliberate: standings must never break a run
         return _fail(f"standings fetch failed: {type(exc).__name__}: {exc}")
 
-    rows = payload.get("data") if isinstance(payload, dict) else payload
-    if not isinstance(rows, list):
+    teams = payload.get("teams") if isinstance(payload, dict) else payload
+    if not isinstance(teams, list):
         return _fail(
             "unexpected standings payload shape "
-            f"(got {type(payload).__name__}); schema stays DOCUMENTATION_ONLY"
+            f"(got {type(payload).__name__}); schema stays fixture-labelled"
         )
     out: List[Dict[str, Any]] = []
-    for row in rows:
+    for row in teams:
         if not isinstance(row, dict):
             continue
-        team = row.get("team")
+        club = row.get("club") or row.get("team")
         out.append(
             {
                 "position": row.get("position"),
-                "team": team.get("name") if isinstance(team, dict) else team,
-                "games": row.get("games"),
-                "wins": row.get("wins"),
-                "losses": row.get("losses"),
+                "team": club.get("name") if isinstance(club, dict) else club,
+                "games": row.get("gamesPlayed", row.get("games")),
+                "wins": row.get("gamesWon", row.get("won", row.get("wins"))),
+                "losses": row.get("gamesLost", row.get("lost", row.get("losses"))),
                 "points_for": row.get("pointsFor", row.get("points_for")),
                 "points_against": row.get("pointsAgainst", row.get("points_against")),
             }
         )
     if report is not None:
-        report.update({"status": "ok", "reason": "", "evidence": EVIDENCE_STANDINGS})
+        report.update(
+            {"status": "ok", "reason": "", "evidence": EVIDENCE_STANDINGS, "round": str(round)}
+        )
     return out
 
 

@@ -296,7 +296,7 @@ def test_boxscore_seasoncode_from_provider_ids_or_season():
 # ---------------------------------------------------------------------------
 
 
-def test_standings_fetch_failure_returns_empty_with_documentation_only_reason():
+def test_standings_fetch_failure_returns_empty_and_reports_verified_evidence():
     report: dict = {}
 
     def _boom(url):
@@ -306,7 +306,9 @@ def test_standings_fetch_failure_returns_empty_with_documentation_only_reason():
     assert rows == []
     assert report["status"] == "unavailable"
     assert "network down" in report["reason"]
-    assert report["evidence"] == "DOCUMENTATION_ONLY"
+    # The v3 per-round endpoint was live-verified 2026-11-16; failures keep
+    # that evidence label rather than degrading it to documentation-only.
+    assert report["evidence"].startswith("LIVE_VERIFIED")
 
 
 def test_standings_malformed_payload_returns_empty_never_raises():
@@ -316,27 +318,31 @@ def test_standings_malformed_payload_returns_empty_never_raises():
     assert report["status"] == "unavailable"
 
 
-def test_standings_plausible_payload_parses_defensively():
+def test_standings_verified_v3_schema_parses():
     payload = {
-        "data": [
+        "winner": None,
+        "teams": [
             {
                 "position": 1,
-                "team": {"name": "Real Madrid", "code": "MAD"},
-                "games": 10,
-                "wins": 8,
-                "losses": 2,
+                "positionChange": "Up",
+                "gamesPlayed": 10,
+                "gamesWon": 8,
+                "gamesLost": 2,
+                "club": {"code": "MAD", "name": "Real Madrid"},
                 "pointsFor": 850,
                 "pointsAgainst": 800,
             }
-        ]
+        ],
     }
     report: dict = {}
-    rows = el.fetch_standings(lambda url: payload, report=report)
+    rows = el.fetch_standings(lambda url: payload, round=10, report=report)
     assert len(rows) == 1
     assert rows[0]["team"] == "Real Madrid"
+    assert rows[0]["games"] == 10
+    assert rows[0]["wins"] == 8 and rows[0]["losses"] == 2
     assert rows[0]["points_for"] == 850
     assert report["status"] == "ok"
-    assert report["evidence"] == "DOCUMENTATION_ONLY"  # schema still unconfirmed
+    assert report["evidence"].startswith("LIVE_VERIFIED")
 
 
 # ---------------------------------------------------------------------------

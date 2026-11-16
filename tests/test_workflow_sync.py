@@ -52,11 +52,9 @@ def test_operator_state_restore_uses_latest_main_not_event_sha():
 
 def test_scheduled_write_default_and_ncaaw_secret_gate_are_correct():
     repo = Path(__file__).resolve().parents[1]
-    workflow_paths = (
-        repo / "workflows" / "ingestion.yml",
-        repo / ".github" / "workflows" / "ingestion.yml",
-    )
-    for path in workflow_paths:
+    source = repo / "workflows" / "ingestion.yml"
+    installed = repo / ".github" / "workflows" / "ingestion.yml"
+    for path in (source, installed):
         text = path.read_text()
         assert "ALLOW_MAGOLIDE_WRITES: ${{ vars.ALLOW_MAGOLIDE_WRITES || 'true' }}" in text
         assert (
@@ -70,10 +68,20 @@ def test_scheduled_write_default_and_ncaaw_secret_gate_are_correct():
             r"            required_secret: \"\"$",
             text,
         ), f"NCAA_W must not require an iSports credential in {path}"
-        assert re.search(
-            r"(?m)^          - label: Chinese CBA\n"
-            r"            league: CBA\n"
-            r"            state_key: cba\n"
-            r"            required_secret: ISPORTS_API_KEY$",
-            text,
-        ), f"CBA must retain its iSports credential gate in {path}"
+
+    source_text = source.read_text()
+    assert re.search(
+        r"(?m)^          - label: Chinese CBA\n"
+        r"            league: CBA\n"
+        r"            state_key: cba\n"
+        r"            required_secret: \"\"$",
+        source_text,
+    ), "the PR-reviewable workflow source must enable keyless CBA ingestion"
+    installed_text = installed.read_text()
+    assert re.search(
+        r"(?m)^          - label: Chinese CBA\n"
+        r"            league: CBA\n"
+        r"            state_key: cba\n"
+        r"            required_secret: ISPORTS_API_KEY$",
+        installed_text,
+    ), "the installed workflow is manually updated after workflows permission is available"
