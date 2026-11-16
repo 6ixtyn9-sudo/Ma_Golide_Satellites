@@ -1,6 +1,8 @@
 # Ma Golide automatic multi-league acquisition, with no dispatch selections.
-# - NBA, WNBA, EuroLeague, NCAA_M and NCAA_W use public providers without keys.
-# - CBA runs only when ISPORTS_API_KEY exists; Sportradar remains optional.
+# - NBA, WNBA, EuroLeague, NCAA_M, NCAA_W and CBA use public providers
+#   without keys (CBA schedules/results come from the official keyless
+#   league data API; EuroLeague and CBA prices from the keyless BetExplorer
+#   fixture tables). Paid adapters stay optional enhancements.
 # - Optional book/prediction keys degrade to reported gaps, never fabricated data.
 # - Scheduled runs acquire evidence and persist canonical state by default.
 #   Set ALLOW_MAGOLIDE_WRITES=false to disable persistence only; acquisition continues.
@@ -13,7 +15,9 @@ name: "Ma Golide"
 
 on:
   schedule:
+    # Every three hours at minute 11 UTC. GitHub may delay scheduled runs.
     - cron: "11 */3 * * *"
+  # Deliberately no league/date/mode/write inputs: one click runs everything.
   workflow_dispatch: {}
 
 permissions:
@@ -46,8 +50,9 @@ jobs:
   league:
     needs: preflight
     runs-on: ubuntu-latest
-    timeout-minutes: 360
+    timeout-minutes: 45
     strategy:
+      # One unavailable/failed league never cancels the other five.
       fail-fast: false
       max-parallel: 6
       matrix:
@@ -67,7 +72,7 @@ jobs:
           - label: Chinese CBA
             league: CBA
             state_key: cba
-            required_secret: ISPORTS_API_KEY
+            required_secret: ""
           - label: NCAA men
             league: NCAA_M
             state_key: ncaa_m
@@ -148,9 +153,9 @@ jobs:
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.LOCALDATA }}
-          key: magolide-localdata-v3-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: magolide-localdata-v4-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            magolide-localdata-v3-${{ matrix.state_key }}-
+            magolide-localdata-v4-${{ matrix.state_key }}-
 
       - name: Restore Git-durable operator reports after cache recovery
         if: steps.capability.outputs.available == 'true'
@@ -232,6 +237,8 @@ jobs:
             --run-id "${GITHUB_RUN_ID}_${LEAGUE,,}_${GITHUB_RUN_ATTEMPT}"
           )
 
+          # Scheduled canonical persistence is explicit. Without this variable,
+          # the schedule still runs live acquisition as a canonical dry run.
           if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
             ARGS+=(--write)
             if [ "$ALLOW_NOTIFICATION_WRITES" = "true" ]; then
@@ -276,7 +283,6 @@ jobs:
                   "forecast_count": markets.get("forecast_count"),
                   "graded_walk_forward_forecasts": walk_forward.get("graded_forecasts"),
                   "acca_count": len(accas.get("results") or []),
-                  "paper_acca_count": len(accas.get("paper_results") or []),
               }
               print("```json")
               print(json.dumps(summary, indent=2, default=str))
@@ -291,7 +297,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ env.LOCALDATA }}
-          key: magolide-localdata-v3-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: magolide-localdata-v4-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Upload league reports and recovery evidence
         if: always()
@@ -315,6 +321,8 @@ jobs:
   publish-localdata:
     name: Publish localdata to repository
     needs: league
+    # Publish partial recovery evidence even if one matrix league fails. This is
+    # derived operator state, independent of canonical ALLOW_MAGOLIDE_WRITES.
     if: >-
       always() &&
       github.ref == 'refs/heads/main' &&
@@ -348,7 +356,7 @@ jobs:
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
-          git config user.email "41898282+users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           if [ -d localdata ]; then
             git add -A -- localdata
           fi
@@ -358,6 +366,8 @@ jobs:
           fi
           git commit -m "chore: publish localdata run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
 
+          # Never force-push. A concurrent human/bot update is rebased first;
+          # conflicting immutable receipts fail visibly for operator review.
           for attempt in 1 2 3; do
             git pull --rebase origin main
             if git push origin HEAD:main; then
