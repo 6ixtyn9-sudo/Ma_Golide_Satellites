@@ -1,11 +1,9 @@
 # Ma Golide automatic multi-league acquisition, with no dispatch selections.
-# - NBA, WNBA, EuroLeague, NCAA_M, NCAA_W and CBA use public providers
-#   without keys (CBA schedules/results come from the official keyless
-#   league data API; EuroLeague and CBA prices from the keyless BetExplorer
-#   fixture tables). Paid adapters stay optional enhancements.
-# - Optional book/prediction keys degrade to reported gaps, never fabricated data.
-# - Scheduled runs acquire evidence and persist canonical state by default.
-#   Set ALLOW_MAGOLIDE_WRITES=false to disable persistence only; acquisition continues.
+# - All six leagues use keyless public data and price providers by default.
+#   Paid API integrations and external notifications are intentionally disabled.
+# - No GitHub Actions secrets or repository variables are required.
+# - Scheduled and manually dispatched runs persist canonical state by default.
+#   Change ALLOW_MAGOLIDE_WRITES below to "false" to disable persistence only.
 # Compact pick cards and paper-ticket state are committed to localdata/<league>;
 # raw forecast JSON stays in cache/artifacts, not permanent Git history.
 # Install as .github/workflows/ingestion.yml (editing that path requires the
@@ -60,75 +58,38 @@ jobs:
           - label: NBA
             league: NBA
             state_key: nba
-            required_secret: ""
           - label: WNBA
             league: WNBA
             state_key: wnba
-            required_secret: ""
           - label: EuroLeague
             league: EuroLeague
             state_key: euroleague
-            required_secret: ""
           - label: Chinese CBA
             league: CBA
             state_key: cba
-            required_secret: ""
           - label: NCAA men
             league: NCAA_M
             state_key: ncaa_m
-            required_secret: ""
           - label: NCAA women
             league: NCAA_W
             state_key: ncaa_w
-            required_secret: ""
     name: ${{ matrix.label }}
     env:
       LOCALDATA: localdata/${{ matrix.state_key }}
       MAGOLIDE_WAREHOUSE: localdata/${{ matrix.state_key }}/warehouse.duckdb
-      PREDIXSPORT_API_KEY: ${{ secrets.PREDIXSPORT_API_KEY }}
-      THERUNDOWN_API_KEY: ${{ secrets.THERUNDOWN_API_KEY }}
-      SPORTSGAMEODDS_API_KEY: ${{ secrets.SPORTSGAMEODDS_API_KEY }}
-      THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
-      ISPORTS_API_KEY: ${{ secrets.ISPORTS_API_KEY }}
-      SPORTRADAR_API_KEY: ${{ secrets.SPORTRADAR_API_KEY }}
-      SPORTRADAR_ACCESS_LEVEL: ${{ vars.SPORTRADAR_ACCESS_LEVEL || 'trial' }}
-      ALLOW_MAGOLIDE_WRITES: ${{ vars.ALLOW_MAGOLIDE_WRITES || 'true' }}
-      WHATSAPP_TOKEN: ${{ secrets.WHATSAPP_TOKEN }}
-      WHATSAPP_PHONE_NUMBER_ID: ${{ secrets.WHATSAPP_PHONE_NUMBER_ID }}
-      WHATSAPP_RECIPIENT: ${{ secrets.WHATSAPP_RECIPIENT }}
-      ALLOW_NOTIFICATION_WRITES: ${{ vars.ALLOW_NOTIFICATION_WRITES || 'false' }}
+      SPORTRADAR_ACCESS_LEVEL: "trial"
+      ALLOW_MAGOLIDE_WRITES: "true"
+      ALLOW_NOTIFICATION_WRITES: "false"
 
     steps:
-      - name: Select providers available without user input
+      - name: Enable keyless public provider path
         id: capability
         env:
           LEAGUE: ${{ matrix.league }}
-          REQUIRED_SECRET: ${{ matrix.required_secret }}
         run: |
           set -euo pipefail
-          if [ -n "$REQUIRED_SECRET" ] && [ -z "${!REQUIRED_SECRET:-}" ]; then
-            echo "available=false" >> "$GITHUB_OUTPUT"
-            echo "$LEAGUE skipped: required $REQUIRED_SECRET is absent; all other leagues continue."
-            cat > daily-output.json <<EOF
-          {
-            "schema_version": "magolide.daily.v1",
-            "run_id": "${GITHUB_RUN_ID}_${LEAGUE,,}_${GITHUB_RUN_ATTEMPT}",
-            "league": "$LEAGUE",
-            "status": "skipped",
-            "reason": "Required bootstrap credential $REQUIRED_SECRET is not configured; other leagues continue",
-            "mode": "skipped_unavailable",
-            "verification": "UNAUTHORIZED",
-            "system_of_record": "not_acquired",
-            "capabilities": {
-              "fixture_provider_available": false,
-              "missing_required_secret": "$REQUIRED_SECRET"
-            }
-          }
-          EOF
-          else
-            echo "available=true" >> "$GITHUB_OUTPUT"
-            echo "$LEAGUE enabled; optional missing providers will report coverage gaps."
-          fi
+          echo "available=true" >> "$GITHUB_OUTPUT"
+          echo "$LEAGUE enabled with public keyless providers; paid integrations are disabled."
 
       - name: Check out repository
         if: steps.capability.outputs.available == 'true'
@@ -162,8 +123,8 @@ jobs:
         run: |
           set -euo pipefail
           STATE_DIR="localdata/${{ matrix.state_key }}"
-          # Scheduled runs are pinned to their event SHA, which may predate a
-          # serialized publisher commit that added a frozen receipt. Fetch the
+          # Runs are pinned to their event SHA, which may predate a serialized
+          # publisher commit that added a frozen receipt. Fetch the
           # latest Git-authoritative operator state before using the cache.
           git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
           MAIN_REF=refs/remotes/origin/main
@@ -237,9 +198,8 @@ jobs:
             --run-id "${GITHUB_RUN_ID}_${LEAGUE,,}_${GITHUB_RUN_ATTEMPT}"
           )
 
-          # Scheduled canonical persistence is explicit. Without this variable,
-          # the schedule still runs live acquisition as a canonical dry run.
-          if [ "$GITHUB_EVENT_NAME" = "schedule" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
+          # Canonical writes are controlled entirely by the YAML literal above.
+          if [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
             ARGS+=(--write)
             if [ "$ALLOW_NOTIFICATION_WRITES" = "true" ]; then
               ARGS+=(--notify --send-notifications)
@@ -293,7 +253,7 @@ jobs:
         if: >-
           success() &&
           steps.capability.outputs.available == 'true' &&
-          github.event_name == 'schedule'
+          (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
         uses: actions/cache/save@v4
         with:
           path: ${{ env.LOCALDATA }}

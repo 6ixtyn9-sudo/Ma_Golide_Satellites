@@ -50,28 +50,22 @@ def test_operator_state_restore_uses_latest_main_not_event_sha():
         assert 'git cat-file -e "HEAD:${STATE_DIR}"' not in text
 
 
-def test_scheduled_write_default_and_ncaaw_secret_gate_are_correct():
+def test_workflow_uses_inline_keyless_configuration_without_secrets_or_variables():
     repo = Path(__file__).resolve().parents[1]
     source = repo / "workflows" / "ingestion.yml"
     installed = repo / ".github" / "workflows" / "ingestion.yml"
     for path in (source, installed):
         text = path.read_text()
-        assert "ALLOW_MAGOLIDE_WRITES: ${{ vars.ALLOW_MAGOLIDE_WRITES || 'true' }}" in text
+        assert 'ALLOW_MAGOLIDE_WRITES: "true"' in text
+        assert 'SPORTRADAR_ACCESS_LEVEL: "trial"' in text
+        assert 'ALLOW_NOTIFICATION_WRITES: "false"' in text
+        assert "${{ secrets." not in text
+        assert "${{ vars." not in text
+        assert "required_secret" not in text
+        assert text.count("state_key:") == 6
+        assert "available=true" in text
+        assert 'if [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then' in text
         assert (
-            'if [ "$GITHUB_EVENT_NAME" = "schedule" ] && '
-            '[ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then'
-        ) in text
-        assert re.search(
-            r"(?m)^          - label: NCAA women\n"
-            r"            league: NCAA_W\n"
-            r"            state_key: ncaa_w\n"
-            r"            required_secret: \"\"$",
-            text,
-        ), f"NCAA_W must not require an iSports credential in {path}"
-        assert re.search(
-            r"(?m)^          - label: Chinese CBA\n"
-            r"            league: CBA\n"
-            r"            state_key: cba\n"
-            r"            required_secret: \"\"$",
-            text,
-        ), f"CBA must run keyless in {path}; paid adapters remain optional"
+            "(github.event_name == 'schedule' || "
+            "github.event_name == 'workflow_dispatch')"
+        ) in text, "both scheduled and manual runs must persist canonical state when enabled"
