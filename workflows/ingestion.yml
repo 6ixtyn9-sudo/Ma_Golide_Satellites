@@ -1,6 +1,8 @@
 # Ma Golide automatic multi-league acquisition, with no dispatch selections.
-# - NBA, WNBA, EuroLeague, NCAA_M and NCAA_W use public providers without keys.
-# - CBA runs only when ISPORTS_API_KEY exists; Sportradar remains optional.
+# - NBA, WNBA, EuroLeague, NCAA_M, NCAA_W and CBA use public providers
+#   without keys (CBA schedules/results come from the official keyless
+#   league data API; EuroLeague and CBA prices from the keyless BetExplorer
+#   fixture tables). Paid adapters stay optional enhancements.
 # - Optional book/prediction keys degrade to reported gaps, never fabricated data.
 # - Scheduled runs acquire evidence and persist canonical state by default.
 #   Set ALLOW_MAGOLIDE_WRITES=false to disable persistence only; acquisition continues.
@@ -70,7 +72,7 @@ jobs:
           - label: Chinese CBA
             league: CBA
             state_key: cba
-            required_secret: ISPORTS_API_KEY
+            required_secret: ""
           - label: NCAA men
             league: NCAA_M
             state_key: ncaa_m

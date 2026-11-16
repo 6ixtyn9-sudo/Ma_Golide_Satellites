@@ -21,7 +21,7 @@ from ingestion.models import (
     Prediction,
 )
 from ingestion.pipeline import Pipeline, PipelineConfig
-from ingestion.providers import espn, isportsapi, sportradar, theoddsapi
+from ingestion.providers import cbaleague, espn, isportsapi, sportradar, theoddsapi
 from ingestion.store import InMemoryStore
 
 
@@ -418,7 +418,7 @@ def test_cba_pipeline_separates_sportradar_predictions_from_isportsapi_books(mon
         home_price_decimal=1.8,
         away_price_decimal=2.1,
     )
-    monkeypatch.setattr(isportsapi, "discover_games", lambda *_args: [game])
+    monkeypatch.setattr(cbaleague, "discover_games", lambda *_args: [game])
     monkeypatch.setattr(isportsapi, "is_enabled", lambda: True)
     monkeypatch.setattr(sportradar, "is_enabled", lambda: True)
     probability_calls = []
@@ -548,7 +548,7 @@ def test_cba_and_ncaa_results_use_their_native_provider(monkeypatch):
         away_name="Away",
         scheduled_utc="2026-11-07T23:00:00Z",
     )
-    monkeypatch.setattr(isportsapi, "fetch_recent_results", lambda *_args: [cba_final])
+    monkeypatch.setattr(cbaleague, "fetch_recent_results", lambda *_args: [cba_final])
     monkeypatch.setattr(espn, "fetch_recent_results", lambda *_args, **_kwargs: [ncaa_final])
     cba_pipeline = Pipeline(PipelineConfig(league="CBA", date_yyyymmdd="20261107"), InMemoryStore())
     ncaa_pipeline = Pipeline(

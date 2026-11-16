@@ -41,7 +41,52 @@ DEFAULT_TEAM_ALIASES: Dict[str, List[str]] = {
     "Panathinaikos AKTOR Athens": ["Panathinaikos", "PAO", "Panathinaikos AKTOR"],
     "Besiktas Istanbul": ["Besiktas", "BJK"],
     "Zalgiris Kaunas": ["Zalgiris", "ZAL"],
-    "FC Barcelona": ["Barca", "BAR"],
+    "FC Barcelona": ["Barca", "BAR", "Barcelona"],
+    # EuroLeague — BetExplorer display names (live-verified 2026-11-16
+    # against the official api-live schedule for the same games).
+    "Dubai Basketball": ["Dubai"],
+    "Anadolu Efes Istanbul": ["Anadolu Efes"],
+    "Maccabi Rapyd Tel Aviv": ["Maccabi Tel Aviv"],
+    "Olympiacos Piraeus": ["Olympiacos"],
+    "Fenerbahce Tarfin Istanbul": ["Fenerbahce"],
+    "LDLC ASVEL Villeurbanne": ["ASVEL", "Lyon-Villeurbanne"],
+    "FC Bayern Munich": ["Bayern", "Bayern Munich"],
+    "Armani Olimpia Milan": ["Olimpia Milano", "Milan"],
+    "Crvena Zvezda Meridianbet Belgrade": [
+        "Crvena Zvezda",
+        "Crvena Zvezda Meridianbet",
+        "Red Star Belgrade",
+    ],
+    "Kosner Baskonia Vitoria-Gasteiz": ["Baskonia", "Saski Baskonia"],
+    "Hapoel IBI Tel Aviv": ["Hapoel Tel Aviv"],
+    "Partizan Mozzart Bet Belgrade": ["Partizan", "Partizan Mozzart Bet"],
+    "Valencia Basket": ["Valencia"],
+    "Paris Basketball": ["Paris"],
+    # CBA — canonical names are the BetExplorer display spellings; the
+    # Chinese variants are the official 2026-27 sponsor names observed live
+    # on the league data API (every team seen 2026-10-24..2026-11-03). The
+    # mapping is season-scoped evidence: sponsor names change, and unknown
+    # Chinese names stay unmapped (they quarantine, never guess).
+    "Beijing": ["北京首钢"],
+    "Beijing Royal Fighters": ["北京控股"],
+    "Fujian": ["福建晋江文旅"],
+    "Guangdong": ["广东东阳光"],
+    "Guangzhou": ["广州智都集团"],
+    "Jiangsu Dragons": ["江苏肯帝亚"],
+    "Jilin": ["长白山恩都里", "吉林东北虎"],
+    "Liaoning": ["辽宁本钢"],
+    "Nanjing Tongxi": ["南京同曦宙光"],
+    "Ningbo Rockets": ["宁波町渥"],
+    "Qingdao": ["青岛崂山啤酒"],
+    "Shandong": ["山东高速"],
+    "Shanghai": ["上海久事"],
+    "Shanxi Zhongyu": ["山西汾酒"],
+    "Shenzhen": ["深圳马可波罗"],
+    "Sichuan": ["四川锦城"],
+    "Tianjin": ["天津先行者"],
+    "Xinjiang": ["新疆广汇能源"],
+    "Zhejiang Chouzhou": ["浙江稠州金租"],
+    "Zhejiang Guangsha": ["浙江浙商证券"],
 }
 
 

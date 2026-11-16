@@ -13,7 +13,8 @@ No live-provider claim should be inferred from a passing offline suite.
 | ESPN | WNBA | Scoreboard discovery/books, BPI predictions, summaries, event-native halves/quarters, indexed deep history | Public endpoints | Live read-only probes plus hermetic end-to-end league regressions |
 | ESPN | NCAA_M | Division-I men's scoreboard/books, BPI predictions, summaries, two-half/OT results, recent and indexed deep history | Public endpoints | Historical probes and hermetic endpoint/two-half/OT regressions; scheduled smoke still required |
 | ESPN | NCAA_W | Division-I women's scoreboard/books, BPI predictions, summaries, modern quarters and declared legacy halves, recent and indexed deep history | Public endpoints | Live four-quarter final probe plus hermetic quarter/legacy-half and one-time reparse regressions |
-| EuroLeague | EuroLeague | Schedule discovery, game results, quarter/OT reconciliation, standings | Public endpoints | Fixture-based parser regressions; live availability must be checked at run time |
+| EuroLeague | EuroLeague | Schedule discovery, game results, quarter/OT reconciliation, standings | Public endpoints | Schedule/boxscore live captures 2026-11-06; season schedule scores/partials, empty-season trap, and v3 per-round standings live-verified 2026-11-16; upstream reuse terms not reviewed |
+| CBA | CBA | Official league data API: season/day discovery, Beijing-local UTC times, quarter/OT reconciliation via observed period-score POST endpoint | Public endpoints; AES-128-ECB bodies decrypted with the key constant shipped in the site's own bundle | Live-verified 2026-11-16 from a datacenter IP (decryption, statuses, quarter sums, OT shape); unofficial/undocumented API and terms not reviewed — see caveats |
 | iSportsAPI | CBA | Exact Chinese league discovery, UTC schedule/results, four-quarter/OT reconciliation | `ISPORTS_API_KEY` | `DOCUMENTATION_ONLY`; fixture-tested adapter, paid access and live league ID not verified |
 
 Only final, reconciled results enter grading. In-progress scores, inconsistent
@@ -25,8 +26,57 @@ are graded from Q1+Q2/Q3+Q4 without relabelling the official quarters.
 Historical finals without usable linescores
 are stored as final-score-only evidence, not period-reconciled results. See
 [ESPN acquisition and history](ESPN-ACQUISITION.md) for the bounded cursor and
-verified index floors. CBA schedule acquisition uses the provider's documented
-UTC calendar window, while its display and ledger grouping use Asia/Shanghai.
+verified index floors.
+
+### EuroLeague acquisition details (verified 2026-11-16)
+
+- Season history is acquired one whole season per request from the official
+  schedule (`api-live.euroleague.net/v2/competitions/E/seasons/{code}/games`):
+  every played row already carries the official score and per-quarter
+  partials, so a full season of reconcilable finals costs one request and
+  there is no league-wide game cap. Bounded batches walk seasons backwards
+  under a durable `euroleague-history` cursor. The current-season parser is
+  fixture-tested; older-season completeness should be confirmed from the
+  per-season backfill reports rather than inferred from the schedule endpoint's
+  existence.
+- Two silent traps are guarded: a bare-year season code (`2026` not `E2026`)
+  answers HTTP 200 with an **empty** data list (refused outright), and
+  `winner` is `null` for current-season rows (winners are derived from
+  reconciled scores, never from the field).
+- Standings use the v3 per-round `basicstandings` endpoint (the v2
+  `standings` path answers 404; verified live). It answers only completed
+  rounds; the latest completed round is derived from the schedule when not
+  given.
+- Boxscore results (`live.euroleague.net/api/Boxscore`) remain the deeper
+  per-game evidence path for slate results.
+
+### CBA official data API — licensing and terms caveats
+
+`data-server.cbaleague.com` is the data site's own undocumented API. It is
+keyless and publicly served to every visitor's browser; response bodies are
+AES-128-ECB encrypted with a 16-byte constant shipped inside the site's
+front-end bundle (function `TIe`), which the vendored stdlib decryptor in
+`ingestion/providers/_cba_aes.py` removes (copied from SportsDataverse
+`sportsdataverse-py`, MIT; code license is not a data license). No
+credentials, proxies, or access controls are used. This does not establish
+permission to automate, store, or redistribute the returned data: the source's
+terms have not been reviewed, and the scheduled workflow can persist normalized
+facts. Keep data rights unresolved until the CBA site's terms or written
+permission are checked. SportsDataverse has also not ruled on the upstream
+terms. The wrapper's documented "datacenter-IP TCP block" did **not** reproduce
+from this datacenter IP on 2026-11-16 (HTTP 200 in under a second), but it may
+be geographic or conditional: an undecryptable or refused body is surfaced as
+a provider error, never banked as data.
+
+Chinese team display names are season sponsor names (e.g. `长白山恩都里` is
+the Jilin club in 2026-27). Known variants map through the current alias table;
+unknown names remain unchanged and will not safely join across providers. Do
+not assume they are canonical franchise identities for historical modeling;
+add a verified alias/team-ID mapping before using those rows as joined history.
+The captured season list spans 1995–2026, but that list alone does not prove
+daily schedule/results coverage for every season. Checked-in day/result
+fixtures cover 2026 only; depth of successful historical CBA backfill remains
+unverified until older dates are actually acquired and reconciled.
 
 ## Prediction providers
 
@@ -44,7 +94,7 @@ converted into prediction records.
 
 Sportradar discovery requires one unique men's `CBA` competition in category
 `CHN`, then one non-disabled season containing the target date. Its documented
-Season Probabilities feed is paginated. An event joins an iSportsAPI fixture
+Season Probabilities feed is paginated. An event joins an acquired CBA fixture
 only through a unique one-to-one match on both canonical team identities and
 the exact confirmed UTC start time. Missing, duplicate, unconfirmed, live, or
 removed probability evidence remains a gap; it is never replaced with implied
@@ -77,6 +127,7 @@ prices remain missing.
 | Provider | Implemented markets | Periods | League / key |
 | --- | --- | --- | --- |
 | ESPN scoreboard | Moneyline, totals, spreads when explicitly offered | Full game | NBA, WNBA, NCAA_M, NCAA_W; public, independently timestamped canonical snapshots |
+| BetExplorer | Representative average two-way moneyline prices | Full game | EuroLeague and CBA; public HTML pages; observed live 2026-11-16, but source terms/reuse rights are unreviewed; pre-tip rows only, no historical archive or per-book prices in this adapter |
 | TheOddsAPI | h2h, totals, spreads; half markets use native H1/H2 | NBA: full game, Q1–Q4, H1 h2h; NCAA_M/NCAA_W: full game and H1/H2 markets | NBA, NCAA_M, NCAA_W; `THE_ODDS_API_KEY` |
 | iSportsAPI | Moneyline, totals, spreads | Full game, H1 spread/total, Q1–Q4 spread/total | CBA; `ISPORTS_API_KEY`; `DOCUMENTATION_ONLY` |
 | SportsGameOdds | Totals only | Full game and Q1–Q4 | NBA; `SPORTSGAMEODDS_API_KEY` |
@@ -100,8 +151,17 @@ Important restrictions:
 - iSportsAPI prices are Hong Kong odds and are converted to decimal by adding
   one. Spread, total, and European-moneyline bookmaker IDs remain in their
   separate documented namespaces. In-play fields never become pre-match facts.
-- EuroLeague book coverage is not enabled by these adapters. An empty or
-  unsupported book response is not converted into an invented market.
+- BetExplorer's fixture table exposes only a representative average moneyline
+  pair in the observed HTML. This adapter skips rows with missing quotes or a
+  tip time already passed; it does not retain post-tip, opening/closing, or
+  historical prices, nor per-bookmaker, spread, or total markets. CBA future
+  fixtures had no prices in the 2026-11-16 capture, so CBA quote availability
+  has not been demonstrated there.
+- BetExplorer's and the CBA data site's reuse/automation terms have not been
+  reviewed. Public/keyless access does not establish a right to store or
+  redistribute data. Do not treat either source as cleared for unattended
+  production reuse until terms are checked; the `LIVE_VERIFIED` labels describe
+  endpoint/parser observations only, not rights clearance.
 - No current book adapter supplies highest-quarter prices. Highest-quarter
   forecasts therefore remain research-only.
 - Full-game spread observations may be stored from TheOddsAPI, but the

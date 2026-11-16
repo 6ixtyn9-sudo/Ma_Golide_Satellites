@@ -52,7 +52,7 @@ from .predictions import (
     select_prediction,
 )
 from .leagues import native_periods
-from .providers import espn, euroleague, hardwood, isportsapi, sportradar
+from .providers import betexplorer, cbaleague, espn, euroleague, hardwood, isportsapi, sportradar
 
 logger = logging.getLogger(__name__)
 
@@ -64,12 +64,18 @@ DEFAULT_TZ = {
     "NCAA_M": "America/New_York",
     "NCAA_W": "America/New_York",
 }
-# iSportsAPI schedule dates are documented as GMT+0 calendar windows; the
-# other providers use their competition-local slate date.
-ACQUISITION_TZ = {**DEFAULT_TZ, "CBA": "UTC"}
+# CBA acquisition now follows the official league data API's Beijing-local
+# calendar day (schedules/day is keyed by Beijing date); its display and
+# ledger grouping use Asia/Shanghai as before.
+ACQUISITION_TZ = {**DEFAULT_TZ, "CBA": "Asia/Shanghai"}
 BOOK_PROVIDERS = ("therundown", "sportsgameodds", "theoddsapi")
+# EuroLeague and CBA bookmaker prices come from the keyless BetExplorer
+# fixture tables (representative average moneyline odds, LIVE_VERIFIED
+# 2026-11-16). CBA keeps its paid iSportsAPI adapter as an additional
+# source when a key exists; it is never assumed.
 BOOK_PROVIDERS_BY_LEAGUE = {
-    "CBA": ("isportsapi",),
+    "CBA": ("isportsapi", "betexplorer"),
+    "EUROLEAGUE": ("betexplorer",),
     "NCAA_M": ("theoddsapi",),
     "NCAA_W": ("theoddsapi",),
     "WNBA": ("theoddsapi",),
@@ -175,7 +181,10 @@ class Pipeline:
             report["bookmakers"] = self._bookmakers_smoke()
             return report
         if league == "CBA":
-            report = isportsapi.schedule_smoke(
+            report = cbaleague.schedule_smoke(
+                self.config.date_yyyymmdd, self.fetch, self.config.league_enum
+            )
+            report["isportsapi"] = isportsapi.schedule_smoke(
                 self.config.date_yyyymmdd, self.fetch, self.config.league_enum
             )
             try:
@@ -270,7 +279,24 @@ class Pipeline:
         """Acquire reconciled official finals and join frozen pre-tip evidence."""
 
         self._reset_stage()
-        finals = self._fetch_finals()
+        try:
+            finals = self._fetch_finals()
+        except Exception as exc:
+            # A provider outage must not fabricate an empty-but-successful
+            # slate; it becomes an explicit provider_error gap and no finals
+            # are written (same semantics as the backfill paths).
+            logger.warning("result fetch failed: %s", exc)
+            self.gaps.append(
+                CoverageGap(
+                    game_id=None,
+                    required_field="official_results",
+                    reason=CoverageState.PROVIDER_ERROR,
+                    provider=self.config.league.lower(),
+                    detail=str(exc)[:200],
+                    observed_utc=self._now_iso(),
+                )
+            )
+            finals = []
         rows = []
         used_frozen = 0
         quarantined = []
@@ -393,7 +419,11 @@ class Pipeline:
                 observed_utc=self._now_iso(),
             )
         elif league is League.CBA:
-            games = isportsapi.discover_games(self.config.date_yyyymmdd, self.fetch, league)
+            # Official keyless league data (cbaleague data-server). The paid
+            # iSportsAPI adapter remains book-only; one discovery source per
+            # league prevents duplicate canonical games.
+            games = cbaleague.discover_games(self.config.date_yyyymmdd, self.fetch, league)
+            self.gaps.extend(cbaleague.last_gaps())
         elif league is League.EUROLEAGUE:
             games = euroleague.discover_games(_iso(self.config.date_yyyymmdd), self.fetch)
         else:
@@ -1063,6 +1093,260 @@ class Pipeline:
             "cursor": {"season": season, "event_index": event_index},
         }
 
+    def _record_history_cursor(self, provider: str, coverage: Dict[str, Any]) -> None:
+        """Persist a durable non-ESPN history cursor in provider_health."""
+        now = self._now_iso()
+        self.store.upsert_provider_health(
+            ProviderHealth(
+                provider=provider,
+                league=self.config.league_enum,
+                last_attempt_utc=now,
+                last_success_utc=now,
+                state=CoverageState.OK,
+                detail="durable deep-history acquisition cursor",
+                coverage=coverage,
+            )
+        )
+
+    def _history_cursor(self, provider: str) -> Dict[str, Any]:
+        health = self.store.get_provider_health(provider, self.config.league_enum)
+        return dict(health.coverage or {}) if health else {}
+
+    def _ledger_date_for(self, game: Game) -> str:
+        return (
+            parse_utc(game.scheduled_utc)
+            .astimezone(ZoneInfo(self.config.timezone))
+            .strftime("%Y%m%d")
+        )
+
+    def _backfill_euroleague_history(self) -> Dict[str, Any]:
+        """Ingest whole seasons of reconcilable finals, one request per season.
+
+        The official season schedule carries each played game's official
+        score and per-quarter partials (verified 2026-11-16), so one request
+        covers a full season of reconcilable history. Seasons walk backwards
+        under ``history_request_budget``; the cursor advances only on
+        canonical writes, mirroring the ESPN deep-history contract. There is
+        deliberately no league-wide game cap: whole seasons enter the store.
+        """
+        budget = max(0, int(self.config.history_request_budget))
+        base: Dict[str, Any] = {
+            "status": "acquired",
+            "seasons": [],
+            "finals_written": 0,
+            "quarantined_rows": 0,
+            "ledger_dates": [],
+            "learning_or_calibration_claimed": False,
+        }
+        if not budget:
+            return {**base, "status": "disabled"}
+        if not (self.allow_writes and getattr(self.store, "persist", False)):
+            return {
+                **base,
+                "status": "disabled_canonical_write_required",
+                "detail": "dry runs cannot advance a cursor past unpersisted history",
+            }
+
+        cursor = self._history_cursor("euroleague-history")
+        season = int(cursor.get("next_season") or self._default_history_start_season())
+        season = min(season, self._default_history_start_season())
+        ledger_dates: set = set()
+        while budget > 0 and season > 1900:
+            seasoncode = f"E{season}"
+            failures: List[Dict[str, str]] = []
+            try:
+                results = euroleague.season_results(seasoncode, self.fetch, failures)
+            except Exception as exc:
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=None,
+                        required_field="euroleague_season_schedule",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider="euroleague",
+                        detail=f"{seasoncode}: {str(exc)[:180]}",
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                base["status"] = "provider_error_cursor_retained"
+                base["cursor"] = {"next_season": season}
+                return base
+            written = 0
+            for game in results:
+                self.store.upsert_game(game)
+                written += 1
+                ledger_dates.add(self._ledger_date_for(game))
+            for failure in failures:
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=failure.get("game_id"),
+                        required_field="historical_result_integrity",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider="euroleague",
+                        detail=str(failure.get("error", ""))[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+            base["seasons"].append(
+                {
+                    "season": seasoncode,
+                    "finals_written": written,
+                    "quarantined_rows": len(failures),
+                }
+            )
+            base["finals_written"] += written
+            base["quarantined_rows"] += len(failures)
+            budget -= 1
+            season -= 1
+            self._record_history_cursor("euroleague-history", {"next_season": season})
+        base["cursor"] = {"next_season": season}
+        base["ledger_dates"] = sorted(ledger_dates)
+        return base
+
+    def _backfill_cba_history(self) -> Dict[str, Any]:
+        """Walk official CBA days backwards, ingesting reconciled finals.
+
+        Each finished game costs one period-score POST request, bounded by
+        ``deep_history_event_budget``; day scans are bounded separately by
+        ``history_request_budget``. The source's season list sets the oldest
+        day this cursor will scan. A day with an unprocessed final or a result
+        failure is retained for retry; completed days are idempotently written
+        before the cursor moves backwards.
+        """
+        event_budget = max(0, int(self.config.deep_history_event_budget))
+        day_budget = max(0, int(self.config.history_request_budget))
+        base: Dict[str, Any] = {
+            "status": "acquired",
+            "days_scanned": [],
+            "finals_written": 0,
+            "ledger_dates": [],
+            "learning_or_calibration_claimed": False,
+        }
+        if not event_budget or not day_budget:
+            return {**base, "status": "disabled"}
+        if not (self.allow_writes and getattr(self.store, "persist", False)):
+            return {
+                **base,
+                "status": "disabled_canonical_write_required",
+                "detail": "dry runs cannot advance a cursor past unpersisted history",
+            }
+
+        try:
+            seasons = cbaleague.available_seasons(self.fetch)
+        except Exception as exc:
+            self.gaps.append(
+                CoverageGap(
+                    game_id=None,
+                    required_field="cba_season_manifest",
+                    reason=CoverageState.PROVIDER_ERROR,
+                    provider="cbaleague",
+                    detail=str(exc)[:200],
+                    observed_utc=self._now_iso(),
+                )
+            )
+            base.update(status="provider_error_cursor_retained", finals_written=0)
+            return base
+        floor = datetime(min(seasons), 1, 1).date()
+        base["source_floor_day"] = floor.isoformat()
+        cursor = self._history_cursor("cbaleague-history")
+        target = datetime.strptime(self.config.date_yyyymmdd, "%Y%m%d").date()
+        day = datetime.strptime(cursor["next_day"], "%Y-%m-%d").date() if cursor.get("next_day") else target
+        processed_ids = set(cursor.get("processed_schedule_ids") or [])
+        if day < floor:
+            base.update(
+                status="complete_to_source_season_floor",
+                cursor={"next_day": day.isoformat()},
+            )
+            return base
+
+        scanned = 0
+        events = 0
+        status = "acquired"
+        while scanned < day_budget and events < event_budget and day >= floor:
+            day_iso = day.isoformat()
+            try:
+                rows = cbaleague.day_rows(day_iso, self.fetch)
+            except Exception as exc:
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=None,
+                        required_field="cba_schedule_day",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider="cbaleague",
+                        detail=f"{day_iso}: {str(exc)[:180]}",
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                status = "provider_error_cursor_retained"
+                break
+            scanned += 1
+            base["days_scanned"].append(day_iso)
+            event_budget_exhausted = False
+            result_failure = False
+            for row in rows:
+                schedule_id = str(row.get("scheduleId") or "")
+                if row.get("status") != 4 or schedule_id in processed_ids:
+                    continue
+                if events >= event_budget:
+                    event_budget_exhausted = True
+                    break
+                try:
+                    game = cbaleague.result_from_row(row, self.fetch)
+                except Exception as exc:
+                    self.gaps.append(
+                        CoverageGap(
+                            game_id=str(row.get("scheduleId") or "") or None,
+                            required_field="historical_result_integrity",
+                            reason=CoverageState.PROVIDER_ERROR,
+                            provider="cbaleague",
+                            detail=str(exc)[:200],
+                            observed_utc=self._now_iso(),
+                        )
+                    )
+                    result_failure = True
+                    break
+                self.store.upsert_game(game)
+                events += 1
+                processed_ids.add(schedule_id)
+                base["ledger_dates"].append(self._ledger_date_for(game))
+
+            if result_failure:
+                status = "provider_error_cursor_retained"
+                break
+            if event_budget_exhausted:
+                status = "event_budget_exhausted_day_retained"
+                break
+
+            day -= timedelta(days=1)
+            processed_ids = set()
+            if day < floor:
+                status = "complete_to_source_season_floor"
+                break
+
+        if status != "provider_error_cursor_retained" and day >= floor:
+            self._record_history_cursor(
+                "cbaleague-history",
+                {
+                    "next_day": day.isoformat(),
+                    "processed_schedule_ids": sorted(processed_ids),
+                },
+            )
+        elif status != "provider_error_cursor_retained":
+
+            # Keep a terminal cursor just below the discovered source floor so
+            # later runs can stop without walking dates the API never serves.
+            self._record_history_cursor(
+                "cbaleague-history",
+                {
+                    "next_day": (floor - timedelta(days=1)).isoformat(),
+                    "processed_schedule_ids": [],
+                },
+            )
+        base["finals_written"] = events
+        base["cursor"] = {"next_day": day.isoformat()}
+        base["status"] = status
+        base["ledger_dates"] = sorted(set(base["ledger_dates"]))
+        return base
+
     def backfill(self) -> Dict[str, Any]:
         """Acquire recent scoreboards plus a bounded durable deep-history batch.
 
@@ -1173,11 +1457,14 @@ class Pipeline:
                     }
                 )
 
-        deep = (
-            self._backfill_deep_history()
-            if espn_enabled
-            else {"status": "unsupported_league", "ledger_dates": []}
-        )
+        if espn_enabled:
+            deep = self._backfill_deep_history()
+        elif self.config.league_enum is League.EUROLEAGUE:
+            deep = self._backfill_euroleague_history()
+        elif self.config.league_enum is League.CBA:
+            deep = self._backfill_cba_history()
+        else:
+            deep = {"status": "unsupported_league", "ledger_dates": []}
         ledger_dates.update(deep.get("ledger_dates") or [])
         status = (
             "disabled"
@@ -1211,7 +1498,11 @@ class Pipeline:
                 observed_utc=self._now_iso(),
             )
         if league is League.CBA:
-            return isportsapi.fetch_recent_results(self.config.date_yyyymmdd, self.fetch, league)
+            finals = cbaleague.fetch_recent_results(
+                self.config.date_yyyymmdd, self.fetch, league
+            )
+            self.gaps.extend(cbaleague.last_gaps())
+            return finals
         if league is League.EUROLEAGUE:
             return self._euroleague_finals(self._discover_games())
         raise ValueError(f"unsupported league for results: {league.value}")
@@ -1448,6 +1739,7 @@ def _book_module(provider: str):
     from .providers import isportsapi, sportsgameodds, theoddsapi, therundown
 
     return {
+        "betexplorer": betexplorer,
         "therundown": therundown,
         "sportsgameodds": sportsgameodds,
         "theoddsapi": theoddsapi,
