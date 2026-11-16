@@ -8,6 +8,7 @@ import pytest
 from forecasting.operator import (
     _audit_market_selection,
     _forecast_from_row,
+    _load_state,
     _pick_row,
     _render_empty_ticket_scan,
     load_settled_pick_history,
@@ -265,6 +266,45 @@ def seed_historical_success_picks(tmp_path, market, *, wins, losses):
     existing = json.loads(ledger.read_text()) if ledger.exists() else []
     ledger.write_text(json.dumps([*existing, *rows], indent=2) + "\n")
     return games
+
+
+def test_load_state_compacts_duplicate_scan_rows_but_preserves_ticket_locks(tmp_path):
+    state_path = tmp_path / "auto_tickets_state.json"
+    lock = {"decision_id": "immutable-id", "withdrawn": False}
+    state_path.write_text(
+        json.dumps(
+            {
+                "schema_version": "magolide.paper_ticket_state.v1",
+                "frozen_by_date": {DATE: lock},
+                "scans": [
+                    {
+                        "unpriced_audit": {
+                            "count": 1,
+                            "candidate_records": [{"candidate_id": "large-duplicate"}],
+                            "forecast_ids": ["large-duplicate"],
+                        },
+                        "candidate_funnel": {
+                            "scan_rows": 1,
+                            "paper_pick_filter": {
+                                "candidate_pick_count": 1,
+                                "candidate_band_details": {"large-duplicate": {"x": 1}},
+                                "bands": [{"x": 1}],
+                            },
+                        },
+                    }
+                ],
+            }
+        )
+    )
+
+    state = _load_state(tmp_path)
+
+    assert state["frozen_by_date"][DATE] == lock
+    assert state["scans"][0]["unpriced_audit"] == {"count": 1}
+    assert state["scans"][0]["candidate_funnel"]["scan_rows"] == 1
+    assert state["scans"][0]["candidate_funnel"]["paper_pick_filter"] == {
+        "candidate_pick_count": 1
+    }
 
 
 def test_book_side_prices_survive_forecast_serialization_and_row_rehydration():
@@ -730,7 +770,8 @@ def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp
     assert unpriced_scan["count"] == 1
     assert unpriced_scan["grade_counts"] == {"pending": 1}
     assert unpriced_scan["price_evidence_counts"] == {"UNMATCHED": 1}
-    records = unpriced_scan["candidate_records"]
+    assert "candidate_records" not in unpriced_scan
+    records = result["unpriced_audit"]["candidate_records"]
     assert len(records) == 1
     assert records[0]["candidate_id"] == "forecast-3-moneyline-home"
     assert records[0]["market"] == "moneyline"
@@ -831,7 +872,15 @@ def test_roi_qualified_pick_is_published_as_a_paper_single_without_an_acca(tmp_p
     assert result["candidate_funnel"]["paper_single_picks"] == 1
     assert result["candidate_funnel"]["paper_pick_filter"] == paper_filter
     ticket_state = json.loads(Path(result["ticket_state"]).read_text())
-    assert ticket_state["scans"][-1]["candidate_funnel"] == result["candidate_funnel"]
+    saved_funnel = ticket_state["scans"][-1]["candidate_funnel"]
+    assert saved_funnel.keys() == result["candidate_funnel"].keys()
+    assert saved_funnel["paper_single_picks"] == 1
+    expected_filter = {
+        key: value
+        for key, value in paper_filter.items()
+        if key not in {"candidate_band_details", "bands"}
+    }
+    assert saved_funnel["paper_pick_filter"] == expected_filter
     assert ticket_state["scans"][-1]["fresh_single_tickets"] == 1
     assert result["counts"]["published_accas"] == 0
     assert result["counts"]["published_singles"] == 1
@@ -1418,7 +1467,11 @@ def test_unpriced_matched_market_reports_missing_selected_side_quote(tmp_path):
     assert unpriced_scan["price_evidence_counts"] == {
         "MATCHED_BUT_SELECTED_PRICE_MISSING": 1
     }
-    assert unpriced_scan["candidate_records"][0]["price_state"] == "selected_side_quote_missing"
+    assert "candidate_records" not in unpriced_scan
+    assert (
+        result["unpriced_audit"]["candidate_records"][0]["price_state"]
+        == "selected_side_quote_missing"
+    )
     saved = json.loads(Path(result["dated_picks"]).read_text())[0]
     assert saved["book"]["selected_decimal_price"] is None
     assert saved["book"]["side_prices"]["away"] == 1.95
@@ -1488,7 +1541,9 @@ def test_unpriced_audit_rows_do_not_enter_a_frozen_priced_ticket(tmp_path):
     assert "forecast=forecast-4-moneyline-away" in ticket_text
     assert "forecast=forecast-4-total-under" in ticket_text
     state = json.loads(Path(result["ticket_state"]).read_text())
-    records = state["scans"][-1]["unpriced_audit"]["candidate_records"]
+    # Full rows remain in the run result/artifacts, not duplicated into every
+    # durable scan-state snapshot.
+    records = result["unpriced_audit"]["candidate_records"]
     assert {record["candidate_id"] for record in records} == {
         unpriced["forecast_id"],
         unpriced_away["forecast_id"],
@@ -1499,7 +1554,10 @@ def test_unpriced_audit_rows_do_not_enter_a_frozen_priced_ticket(tmp_path):
     assert all(record["historical_success_rate"] == 0.727273 for record in records)
     assert all(record["historical_success_decisions"] == 11 for record in records)
     assert all(record["historical_success_qualifies"] is True for record in records)
-    assert state["scans"][-1]["unpriced_audit"]["historical_success_qualified_count"] == 3
+    scan = state["scans"][-1]
+    assert "candidate_records" not in scan["unpriced_audit"]
+    assert "forecast_ids" not in scan["unpriced_audit"]
+    assert scan["unpriced_audit"]["historical_success_qualified_count"] == 3
     group_policy = state["scans"][-1]["unpriced_audit"]["shadow_group_policy"]
     assert group_policy["display_only"] is True
     assert group_policy["max_picks_per_group"] == 3

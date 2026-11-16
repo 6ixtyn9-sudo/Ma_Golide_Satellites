@@ -180,11 +180,12 @@ cache and uploads run reports/ledgers as artifacts. Disabled canonical writes
 still run live acquisition as a dry run; they do not create or modify canonical
 DuckDB/CSV state. Manual live dry runs use the same acquisition path.
 
-After the league matrix, one publisher merges the allowlisted derived pick and
-paper-ticket files and commits them to `localdata/<league>` on `main`. Existing
-history is retained and conflicting immutable receipts fail closed. Git wins
-over stale cached operator files on the next run. This is the durable operator
-view; artifacts remain bounded recovery evidence.
+After the league matrix, one publisher commits compact pick text cards and
+paper-ticket receipts/state to `localdata/<league>` on `main`. Full daily picks
+JSON and expanded audits remain in the active league cache and bounded Actions
+artifacts, not in permanent Git history. Existing Git-durable history is retained
+and conflicting immutable receipts fail closed. Git wins over stale cached
+ticket state on the next run; cache-only pick evidence remains intact.
 
 A CI cache is an operational optimization, not an archival guarantee. Export
 and retain CSV.GZ/ledger artifacts according to the desired recovery policy.

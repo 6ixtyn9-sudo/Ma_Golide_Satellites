@@ -26,11 +26,9 @@ DATE = r"\d{4}-\d{2}-\d{2}"
 ALLOWED_NAMES = tuple(
     re.compile(pattern)
     for pattern in (
-        r"picks_today\.json",
-        rf"picks_{DATE}\.json",
+        # Full forecast archives and expanded dated audit cards are retained
+        # in the league cache/Actions artifacts, never copied into Git history.
         rf"picks_{DATE}\.txt",
-        r"picks_audit_rolling\.json",
-        rf"picks_audit_{DATE}\.md",
         r"auto_tickets_state\.json",
         r"auto_tickets_performance\.json",
         r"auto_tickets_performance\.txt",

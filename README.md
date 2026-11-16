@@ -225,19 +225,21 @@ writes.
   recovery.
 - `localdata/ledgers/`: immutable, content-addressed stage snapshots.
 - `localdata/reports/`: derived operational and market JSON reports.
-- `localdata/<league>/picks_*`: current/dated categorized pick cards and
-  rolling audits, allowlisted for durable Git publication by the workflow.
+- `localdata/<league>/picks_*`: full JSON scans and expanded audits are kept in
+  the active workflow cache and 14-day artifacts, not Git. Compact human pick
+  cards (`.txt`) remain allowlisted for durable publication.
 - `localdata/<league>/auto_tickets_*`: immutable paper receipts, write-once
   state, and reconstructed grading/performance reports, also allowlisted for
   durable Git publication; see `docs/OPERATOR-REPORTS.md`.
 - `localdata/notification_ledger.json`: bounded notification deduplication
   metadata, not canonical sports evidence.
 
-After each GitHub run, one serialized publisher merges the league artifacts and
-commits the allowlisted operator files to `main`; it never deletes older dated
-history or overwrites a conflicting immutable ticket receipt. This makes picks
-and paper performance visible in the repository like Edge. Canonical DuckDB,
-CSV, acquisition ledgers, and caches remain outside Git.
+After each GitHub run, one serialized publisher commits compact pick cards and
+paper-ticket receipts/state to `main`; it never overwrites a conflicting
+immutable ticket receipt. Large dated pick JSON and expanded audits stay in the
+league cache and bounded Actions artifacts, following Edge Factory's approach
+to raw daily dumps and avoiding unbounded Git-history growth. Canonical DuckDB,
+CSV, acquisition ledgers, and caches also remain outside Git.
 
 ```bash
 python -m ingestion.cli coverage --league NBA

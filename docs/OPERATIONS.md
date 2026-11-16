@@ -86,7 +86,8 @@ It has a schedule (`11 */3 * * *`, UTC) and a manual dispatch with **no
 league/date/mode/write inputs**. A preflight job runs Ruff and the hermetic
 suite, then six fail-independent matrix jobs automatically run `NBA`, `WNBA`,
 `EuroLeague`, `CBA`, `NCAA_M`, and `NCAA_W` together. One serialized publisher
-then merges and commits their allowlisted operator reports to `main`.
+then commits compact human pick cards and ticket state to `main`; raw picks JSON
+and expanded dated audits stay in the cache and bounded workflow artifacts.
 
 Each matrix job has isolated state and artifacts:
 

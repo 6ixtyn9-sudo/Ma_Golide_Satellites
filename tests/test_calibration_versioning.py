@@ -274,6 +274,7 @@ def test_diagnostic_pool_still_serialized_and_never_applied():
             "2026-11-12T20:00:00Z",
             0.7,
             "win",
+            source="team_history_empirical_v1",
             team_history={"sufficient_for_accas": False},
         )
         for i in range(6)
@@ -290,6 +291,7 @@ def test_diagnostic_pool_still_serialized_and_never_applied():
         "2026-11-13T02:00:00Z",
         0.7,
         None,
+        source="team_history_empirical_v1",
         team_history={"sufficient_for_accas": True},
     )
     apply_profiles([forecast], profiles, CalibrationConfig())

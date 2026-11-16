@@ -36,7 +36,13 @@ from typing import Any, Dict, Iterable, List, Mapping, Optional, Tuple
 
 from ingestion.identity import parse_utc
 
-from .harness import CALIBRATION_EPOCH_UTC, CalibrationConfig, _log_loss, config_fingerprint
+from .harness import (
+    CALIBRATION_EPOCH_UTC,
+    CalibrationConfig,
+    _log_loss,
+    _requires_team_history,
+    config_fingerprint,
+)
 from .types import Forecast
 
 CHALLENGER_TAG = "recency_v1"
@@ -165,7 +171,9 @@ def _calibration_epoch(config: CalibrationConfig):
 
 def _eligible_evidence(record: Forecast, epoch) -> bool:
     """Mirror the champion's evidence filters (epoch, team-history pool)."""
-    if (record.team_history or {}).get("sufficient_for_accas") is False:
+    if _requires_team_history(record) and (record.team_history or {}).get(
+        "sufficient_for_accas"
+    ) is False:
         return False
     tip = _tip(record)
     return tip is not None and (epoch is None or tip >= epoch)
