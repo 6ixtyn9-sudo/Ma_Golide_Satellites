@@ -1597,3 +1597,105 @@ def test_push_and_highest_quarter_tie_are_graded_explicitly():
     game.actual.away_quarters[1] = 29  # Q1 and Q2 both total 56.
     game.actual.away_final = sum(game.actual.away_quarters)
     assert grade_forecast(highest, game) == "win"
+
+
+def test_euroleague_priced_paper_filter_requires_positive_ev_and_ten_past_roi_band_picks():
+    as_of = "2026-02-10T00:00:00Z"
+    candidate = _roi_forecast(
+        "el-current",
+        0.65,
+        1.60,
+        "win",
+        scheduled_utc="2026-02-11T20:00:00Z",
+    )
+    candidate.league = League.EUROLEAGUE.value
+    candidate.book = replace(candidate.book, observed_utc="2026-02-09T23:30:00Z")
+    history = [
+        _roi_forecast(f"el-history-{index}", 0.65, 1.60, "win")
+        for index in range(10)
+    ]
+    for row in history:
+        row.league = League.EUROLEAGUE.value
+
+    qualifying, report = filter_paper_candidate_picks(
+        [candidate],
+        history,
+        as_of_utc=as_of,
+        minimum_historical_picks_for_band=10,
+        require_positive_expected_value=True,
+        require_point_in_time_price=True,
+    )
+
+    assert qualifying == [candidate]
+    assert report["minimum_historical_pick_count_for_band"] == 10
+    assert report["require_positive_expected_value"] is True
+    assert report["require_point_in_time_price"] is True
+    assert report["candidate_positive_expected_value_count"] == 1
+    assert report["candidate_band_details"][candidate.forecast_id]["historical_pick_count"] == 10
+    assert report["candidate_band_details"][candidate.forecast_id]["expected_value_per_unit"] == pytest.approx(0.04)
+    assert report["candidate_band_details"][candidate.forecast_id]["qualifies"] is True
+
+    low_edge = replace(candidate, calibrated_probability=0.62)
+    filtered, low_edge_report = filter_paper_candidate_picks(
+        [low_edge],
+        history,
+        as_of_utc=as_of,
+        minimum_historical_picks_for_band=10,
+        require_positive_expected_value=True,
+        require_point_in_time_price=True,
+    )
+    assert filtered == []
+    assert low_edge_report["candidate_pool_pick_count"] == 1
+    assert low_edge_report["candidate_positive_expected_value_count"] == 0
+    assert low_edge_report["status"] == "no_positive_expected_value_candidates"
+
+    insufficient_history, thin_report = filter_paper_candidate_picks(
+        [candidate],
+        history[:9],
+        as_of_utc=as_of,
+        minimum_historical_picks_for_band=10,
+        require_positive_expected_value=True,
+        require_point_in_time_price=True,
+    )
+    assert insufficient_history == []
+    assert thin_report["candidate_band_details"][candidate.forecast_id]["historical_pick_count"] == 9
+    assert thin_report["candidate_band_details"][candidate.forecast_id]["qualifies"] is False
+
+    late_quote = replace(
+        candidate,
+        book=replace(candidate.book, observed_utc="2026-02-10T01:00:00Z"),
+    )
+    for invalid_quote in (
+        late_quote,
+        replace(candidate, book=replace(candidate.book, observed_utc=candidate.scheduled_utc)),
+    ):
+        filtered, late_quote_report = filter_paper_candidate_picks(
+            [invalid_quote],
+            history,
+            as_of_utc=as_of,
+            minimum_historical_picks_for_band=10,
+            require_positive_expected_value=True,
+            require_point_in_time_price=True,
+        )
+        assert filtered == []
+        assert late_quote_report["candidate_pool_pick_count"] == 1
+        assert late_quote_report["candidate_with_point_in_time_price_count"] == 0
+        assert late_quote_report["status"] == "no_point_in_time_priced_candidates"
+
+
+def test_euroleague_service_publishes_a_stricter_priced_paper_lane_without_changing_forecasts():
+    before = MarketForecastService(populated_store(), League.EUROLEAGUE).build_report(
+        as_of_utc=iso(AS_OF)
+    )
+    lane = before["accas"]["paper_lane"]
+    policy = before["accas"]["paper_pick_filter"]
+
+    assert lane["name"] == "EUROLEAGUE_PRICED_VALUE_PAPER_LANE"
+    assert lane["requires_exact_selected_side_pre_tip_price"] is True
+    assert lane["requires_positive_calibrated_expected_value"] is True
+    assert lane["minimum_prior_settled_picks_in_matching_roi_band"] == 10
+    assert policy["minimum_historical_pick_count_for_band"] == 10
+    assert policy["require_positive_expected_value"] is True
+    assert policy["require_point_in_time_price"] is True
+    assert before["execution"]["external_betting_writes"] is False
+    assert before["forecast_count"] == 0

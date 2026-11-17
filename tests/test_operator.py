@@ -2198,3 +2198,32 @@ def test_audit_groups_markets_by_fixture_with_actual_period_scores(tmp_path):
     assert "Actual Full-game total: **205**" in text
     assert "Price: **1.909 · Test Book**" in text
     assert "Price: **No exact bookmaker price**" in text
+
+
+def test_euroleague_ticket_card_identifies_strict_priced_value_paper_lane():
+    card = _render_empty_ticket_scan(
+        league=League.EUROLEAGUE,
+        target_date=DATE,
+        generated_utc=AS_OF,
+        performance={
+            "paper_bank_units": 100.0,
+            "paper_free_units": 100.0,
+            "paper_committed_units": 0.0,
+        },
+        timezone_name="UTC",
+        candidate_funnel={
+            "scan_rows": 1,
+            "paper_candidate_rows": 1,
+            "paper_single_picks": 0,
+            "paper_single_games": 0,
+            "paper_pick_filter": {
+                "candidate_pick_count": 1,
+                "qualifying_pick_count": 0,
+                "status": "no_positive_expected_value_candidates",
+            },
+        },
+    )
+
+    assert "EUROLEAGUE PRICED-VALUE LANE" in card
+    assert "calibrated p × odds > 1.00" in card
+    assert "at least 10 past settled picks" in card

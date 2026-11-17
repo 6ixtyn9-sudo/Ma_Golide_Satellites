@@ -551,12 +551,22 @@ class MarketForecastService:
             if self.paper_pick_history is None
             else "settled_pick_audit"
         )
+        paper_lane_options = (
+            {
+                "minimum_historical_picks_for_band": 10,
+                "require_positive_expected_value": True,
+                "require_point_in_time_price": True,
+            }
+            if self.league is League.EUROLEAGUE
+            else {}
+        )
         paper_candidates, paper_pick_filter = filter_paper_candidate_picks(
             current,
             paper_history,
             as_of_utc=as_of_utc,
             history_source=paper_history_source,
             result_available_after_hours=self.forecast_config.result_available_after_hours,
+            **paper_lane_options,
         )
         if (
             self.paper_pick_history is not None
@@ -574,6 +584,7 @@ class MarketForecastService:
                 as_of_utc=as_of_utc,
                 history_source="prequential_settled_individual_forecasts_cold_start_fallback",
                 result_available_after_hours=self.forecast_config.result_available_after_hours,
+                **paper_lane_options,
             )
             paper_pick_filter["history_fallback"] = {
                 "used": True,
@@ -708,10 +719,47 @@ class MarketForecastService:
                     "qualifying selections remain available as singles, and the operator "
                     "freezes a one-unit paper single only when exactly one selection qualifies; "
                     "combo size falls to available distinct qualifying games"
+                    + (
+                        "; EuroLeague additionally requires an exact pre-tip selected-side quote, "
+                        "positive calibrated expected value, and at least ten prior settled picks "
+                        "in the matching model/market/period/probability/odds band"
+                        if self.league is League.EUROLEAGUE
+                        else ""
+                    )
                 ),
                 "results_policy": "strict",
                 "paper_results_policy": (
                     "strict_plus_sample_only_provisional_and_positive_roi_bands"
+                    + (
+                        "_plus_EUROLEAGUE_exact_pretip_price_positive_EV_and_10_pick_band_gate"
+                        if self.league is League.EUROLEAGUE
+                        else ""
+                    )
+                ),
+                "paper_lane": (
+                    {
+                        "name": "EUROLEAGUE_PRICED_VALUE_PAPER_LANE",
+                        "role": "paper_only; never changes probabilities or strict eligibility",
+                        "requires_exact_selected_side_pre_tip_price": True,
+                        "requires_positive_calibrated_expected_value": True,
+                        "minimum_prior_settled_picks_in_matching_roi_band": 10,
+                        "roi_band_scope": [
+                            "league", "market", "period", "model", "calibrated_probability_band",
+                            "individual_odds_band",
+                        ],
+                        "history_is_past_only_with_result_delay": True,
+                        "status": paper_pick_filter["status"],
+                        "candidate_pool_picks": paper_pick_filter["candidate_pool_pick_count"],
+                        "point_in_time_priced_candidates": paper_pick_filter[
+                            "candidate_with_point_in_time_price_count"
+                        ],
+                        "positive_expected_value_candidates": paper_pick_filter[
+                            "candidate_positive_expected_value_count"
+                        ],
+                        "qualifying_picks": paper_pick_filter["qualifying_pick_count"],
+                    }
+                    if self.league is League.EUROLEAGUE
+                    else None
                 ),
                 "paper_pick_filter": paper_pick_filter,
                 "paper_single_picks": paper_single_picks,

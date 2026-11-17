@@ -102,6 +102,19 @@ create ticket legs, or affect stake/bank/ROI. NCAA_M unpriced forecasts remain
 in the dated and rolling unpriced audit records; they are not substituted into
 this priced-ineligible group.
 
+EuroLeague's paper-ticket lane uses a deliberately stricter **priced-value**
+filter. It retains the ordinary eligibility (including the narrow provisional
+sample-only paper exception), requires a matching exact selected-side decimal
+quote observed before tip, and requires positive expected profit at that quote
+(calibrated probability × decimal odds − 1 > 0). It also requires at least ten
+prior, result-delay-matured settled individual picks in the same league, market,
+period, model, calibrated-probability band, and odds band; both recency-weighted
+and shrinkage-adjusted ROI for that band must be positive. Only these picks may
+enter EuroLeague paper singles/accas. An empty qualifying set fails closed.
+This is a stricter monitoring rule, not evidence that EuroLeague picks are
+predictively superior, and it does not change forecast probabilities, strict
+eligibility, or real-money behavior.
+
 The picks dated ledger and rolling audit remain the grading source of truth;
 all audit-only rows have zero stake, do not enter paper-position performance or
 ROI, and do not create a frozen decision receipt or date lock. Full candidate
