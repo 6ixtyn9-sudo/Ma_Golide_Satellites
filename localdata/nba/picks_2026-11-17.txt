@@ -1,6 +1,6 @@
 Ma Golide Picks — NBA 2026-11-17
 ========================================================================
-Generated at: 2026-11-17 17:54 SAST
+Generated at: 2026-11-17 18:50 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Active sections show the latest pending pre-tip observation per logical pick.
 Started and settled games are retained separately as archive status.
@@ -9,32 +9,32 @@ Started and settled games are retained separately as archive status.
 ELIGIBLE CLEAN PICKS
 ========================================================================
   [team_history_empirical_v1/team_history_empirical_v1] Los Angeles Clippers vs Utah Jazz · KO 2026-11-18 05:30 SAST
-      MONEYLINE full_game -> HOME · p=69.8% (raw 61.0%) @1.420 DraftKings
+      MONEYLINE full_game -> HOME · p=69.9% (raw 63.0%) @1.420 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING
-      calibration=calibrated n=55 · reasons=none · prediction=history
+      calibration=calibrated n=56 · reasons=none · prediction=history
       ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.20-<1.50 · n=0 · recency ROI n/a / adjusted n/a
-      archived_revisions=7 · latest_evidence_utc=2026-11-17T15:54:23Z
-  [team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
-      MONEYLINE full_game -> HOME · p=67.8% (raw 59.0%) @1.769 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING
-      calibration=calibrated n=55 · reasons=none · prediction=history
-      PAPER SINGLE · moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +12.0% / adjusted +3.3%
-      archived_revisions=7 · latest_evidence_utc=2026-11-17T15:54:23Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:01Z
   [team_history_empirical_v1/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
-      MONEYLINE full_game -> HOME · p=67.8% (raw 59.0%) @1.238 DraftKings
+      MONEYLINE full_game -> HOME · p=65.9% (raw 59.0%) @1.238 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING
-      calibration=calibrated n=55 · reasons=none · prediction=history
-      archived_revisions=7 · latest_evidence_utc=2026-11-17T15:54:23Z
+      calibration=calibrated n=56 · reasons=none · prediction=history
+      archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:01Z
   [team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
-      MONEYLINE full_game -> HOME · p=63.8% (raw 55.0%) @1.327 DraftKings
+      MONEYLINE full_game -> HOME · p=63.9% (raw 57.0%) @1.327 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING
-      calibration=calibrated n=55 · reasons=none · prediction=history
-      archived_revisions=7 · latest_evidence_utc=2026-11-17T15:54:23Z
+      calibration=calibrated n=56 · reasons=none · prediction=history
+      archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:01Z
+  [team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
+      MONEYLINE full_game -> HOME · p=63.9% (raw 57.0%) @1.769 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING
+      calibration=calibrated n=56 · reasons=none · prediction=history
+      PAPER SINGLE · moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +12.0% / adjusted +3.3%
+      archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:01Z
   [team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
-      MONEYLINE full_game -> AWAY · p=62.8% (raw 54.0%) @1.676 DraftKings
+      MONEYLINE full_game -> AWAY · p=61.9% (raw 55.0%) @1.704 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING
-      calibration=calibrated n=55 · reasons=none · prediction=history
-      archived_revisions=6 · latest_evidence_utc=2026-11-17T15:54:23Z
+      calibration=calibrated n=56 · reasons=none · prediction=history
+      archived_revisions=7 · latest_evidence_utc=2026-11-17T16:51:01Z
   [team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
       MONEYLINE full_game -> HOME · p=59.1% (raw 51.0%) @2.280 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING
@@ -47,122 +47,162 @@ CAUTION PICKS
       MONEYLINE full_game -> HOME · p=76.9% (raw 76.9%) @1.327 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
   [provider:espn/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
       MONEYLINE full_game -> HOME · p=76.6% (raw 80.1%) @1.327 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
       ROI-BAND BLOCKED · moneyline full_game · p 0.70-<0.80 · odds 1.20-<1.50 · n=4 · recency ROI -31.6% / adjusted -33.6%
-      archived_revisions=7 · latest_evidence_utc=2026-11-17T15:54:25Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:02Z
   [provider:espn/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
       MONEYLINE full_game -> HOME · p=74.8% (raw 78.3%) @1.238 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
       ROI-BAND BLOCKED · moneyline full_game · p 0.70-<0.80 · odds 1.20-<1.50 · n=4 · recency ROI -31.6% / adjusted -33.6%
-      archived_revisions=7 · latest_evidence_utc=2026-11-17T15:54:25Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:02Z
+  [context_availability+team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
+      TOTAL full_game 228.5 -> UNDER · p=70.6% (raw 72.0%) @1.885 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [context_availability+team_history_empirical_v1/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
+      MONEYLINE full_game -> HOME · p=69.9% (raw 71.0%) @1.238 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=7 · reasons=insufficient_walk_forward_samples · prediction=history
   [provider:hardwood/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
       MONEYLINE full_game -> HOME · p=69.4% (raw 69.4%) @1.238 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
+  [team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
+      TOTAL full_game 214.5 -> OVER · p=69.1% (raw 74.0%) @1.885 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
   [team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
       TOTAL full_game 215.5 -> OVER · p=68.0% (raw 73.0%) @1.952 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
       ROI-BAND BLOCKED · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
-  [team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
-      SPREAD full_game +7.5 -> AWAY · p=66.2% (raw 65.0%) @1.952 DraftKings
+  [context_availability+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Clippers vs Utah Jazz · KO 2026-11-18 05:30 SAST
+      SPREAD full_game +6.5 -> AWAY · p=67.6% (raw 70.0%) @1.885 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
       ROI-BAND BLOCKED · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
   [team_history_empirical_v1/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
-      SPREAD full_game +9.5 -> AWAY · p=66.2% (raw 65.0%) @1.909 DraftKings
+      SPREAD full_game +9.5 -> AWAY · p=66.9% (raw 66.0%) @1.909 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
       ROI-BAND BLOCKED · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
+  [provider:hardwood+team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
+      TOTAL full_game 214.5 -> OVER · p=65.0% (raw 65.0%) @1.885 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
+      SPREAD full_game +7.5 -> AWAY · p=63.9% (raw 63.0%) @1.833 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
+  [context_availability+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
+      TOTAL full_game 221.5 -> UNDER · p=63.6% (raw 65.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
   [provider:espn/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
-      MONEYLINE full_game -> AWAY · p=63.3% (raw 66.9%) @1.676 DraftKings
+      MONEYLINE full_game -> AWAY · p=63.3% (raw 66.9%) @1.704 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
       ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -51.8%
-      archived_revisions=7 · latest_evidence_utc=2026-11-17T15:54:25Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:02Z
   [provider:hardwood+team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
       TOTAL full_game 215.5 -> OVER · p=63.0% (raw 63.0%) @1.952 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
   [provider:hardwood/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
-      MONEYLINE full_game -> AWAY · p=62.7% (raw 62.7%) @1.676 DraftKings
+      MONEYLINE full_game -> AWAY · p=62.7% (raw 62.7%) @1.704 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
+  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Clippers vs Utah Jazz · KO 2026-11-18 05:30 SAST
+      SPREAD full_game +6.5 -> AWAY · p=62.5% (raw 61.0%) @1.885 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:02Z
+  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
+      SPREAD full_game -2.5 -> AWAY · p=62.5% (raw 61.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
+      PAPER SINGLE · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=1 · recency ROI +90.9% / adjusted +12.3%
+      archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:02Z
   [provider:hardwood/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
       MONEYLINE full_game -> HOME · p=60.9% (raw 60.9%) @1.769 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
+  [context_availability+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
+      SPREAD full_game +7.5 -> AWAY · p=60.6% (raw 63.0%) @1.833 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Clippers vs Utah Jazz · KO 2026-11-18 05:30 SAST
-      TOTAL full_game 225.5 -> OVER · p=60.1% (raw 62.0%) @1.952 DraftKings
+      TOTAL full_game 225.5 -> OVER · p=60.2% (raw 62.0%) @1.952 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
       ROI-BAND BLOCKED · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=4 · recency ROI -4.8% / adjusted -9.4%
-      archived_revisions=7 · latest_evidence_utc=2026-11-17T15:54:25Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:02Z
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
-      TOTAL full_game 228.5 -> UNDER · p=60.1% (raw 62.0%) @1.917 DraftKings
+      TOTAL full_game 228.5 -> UNDER · p=60.2% (raw 62.0%) @1.885 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=4 · recency ROI -4.8% / adjusted -9.4%
-      archived_revisions=2 · latest_evidence_utc=2026-11-17T15:54:25Z
+      archived_revisions=3 · latest_evidence_utc=2026-11-17T16:51:02Z
+  [provider:hardwood+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
+      TOTAL full_game 221.5 -> UNDER · p=60.0% (raw 60.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
+  [provider:hardwood+team_history_empirical_v1/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
+      SPREAD full_game +9.5 -> AWAY · p=60.0% (raw 60.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
       TOTAL full_game 227.5 -> UNDER · p=59.0% (raw 61.0%) @1.909 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
       ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=4 · recency ROI -4.6% / adjusted -9.3%
-  [provider:hardwood+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
-      TOTAL full_game 221.5 -> UNDER · p=59.0% (raw 59.0%) @1.870 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [provider:hardwood+team_history_empirical_v1/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
-      SPREAD full_game +9.5 -> AWAY · p=59.0% (raw 59.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
       TOTAL full_game 226.5 -> UNDER · p=59.0% (raw 61.0%) @1.909 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
       ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=4 · recency ROI -4.6% / adjusted -9.3%
       archived_revisions=4 · latest_evidence_utc=2026-11-17T09:03:53Z
+  [context_availability+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Clippers vs Utah Jazz · KO 2026-11-18 05:30 SAST
+      TOTAL full_game 225.5 -> UNDER · p=58.6% (raw 60.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
+      SPREAD full_game -7.5 -> HOME · p=58.5% (raw 57.0%) @1.990 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=10 · recency ROI -23.3% / adjusted -20.9%
+      archived_revisions=6 · latest_evidence_utc=2026-11-17T16:51:02Z
+  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
+      TOTAL full_game 221.5 -> UNDER · p=58.2% (raw 60.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:02Z
   [provider:espn/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
       MONEYLINE full_game -> HOME · p=58.1% (raw 61.6%) @1.769 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-17T15:54:25Z
-  [provider:hardwood+team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
-      TOTAL full_game 228.5 -> UNDER · p=58.0% (raw 58.0%) @1.917 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:02Z
   [provider:espn/team_history_empirical_v1] Los Angeles Clippers vs Utah Jazz · KO 2026-11-18 05:30 SAST
       MONEYLINE full_game -> HOME · p=57.7% (raw 61.2%) @1.420 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-17T15:54:25Z
-  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Clippers vs Utah Jazz · KO 2026-11-18 05:30 SAST
-      SPREAD full_game +6.5 -> AWAY · p=57.2% (raw 61.0%) @1.885 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=10 · recency ROI -23.3% / adjusted -20.9%
-      archived_revisions=7 · latest_evidence_utc=2026-11-17T15:54:25Z
-  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
-      SPREAD full_game -2.5 -> AWAY · p=57.2% (raw 61.0%) @1.870 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=10 · recency ROI -23.3% / adjusted -20.9%
-      archived_revisions=7 · latest_evidence_utc=2026-11-17T15:54:25Z
-  [team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
-      SPREAD full_game -1.5 -> HOME · p=57.2% (raw 56.0%) @1.870 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
-  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
-      TOTAL full_game 221.5 -> UNDER · p=57.1% (raw 59.0%) @1.870 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=4 · recency ROI -4.6% / adjusted -9.3%
+      archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:02Z
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
       TOTAL full_game 220.5 -> UNDER · p=57.0% (raw 59.0%) @1.926 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
@@ -175,59 +215,94 @@ CAUTION PICKS
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
       ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=4 · recency ROI -4.6% / adjusted -9.3%
       archived_revisions=6 · latest_evidence_utc=2026-11-17T12:06:48Z
-  [team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
-      TOTAL full_game 221.5 -> OVER · p=57.0% (raw 62.0%) @1.952 DraftKings
+  [team_history_empirical_v1/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
+      TOTAL full_game 222.5 -> OVER · p=56.1% (raw 61.0%) @1.870 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
       ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
+  [context_availability+team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
+      MONEYLINE full_game -> HOME · p=55.9% (raw 57.0%) @1.769 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=7 · reasons=insufficient_walk_forward_samples · prediction=history
+  [provider:hardwood+team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
+      TOTAL full_game 228.5 -> UNDER · p=55.0% (raw 55.0%) @1.885 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
+  [provider:hardwood+team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
+      SPREAD full_game -2.5 -> AWAY · p=55.0% (raw 55.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
   [team_history_empirical_v1/team_history_empirical_v1] Los Angeles Clippers vs Utah Jazz · KO 2026-11-18 05:30 SAST
-      SPREAD full_game +6.5 -> AWAY · p=55.2% (raw 54.0%) @1.885 DraftKings
+      SPREAD full_game +6.5 -> AWAY · p=54.9% (raw 54.0%) @1.885 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
+  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
+      SPREAD full_game -1.5 -> HOME · p=54.5% (raw 53.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=10 · recency ROI -23.3% / adjusted -20.9%
+      archived_revisions=3 · latest_evidence_utc=2026-11-17T16:51:02Z
+  [team_history_empirical_v1/team_history_empirical_v1] Los Angeles Clippers vs Utah Jazz · KO 2026-11-18 05:30 SAST
+      TOTAL full_game 225.5 -> OVER · p=54.1% (raw 59.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
+  [team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
+      TOTAL full_game 221.5 -> OVER · p=54.1% (raw 59.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
   [provider:hardwood+team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
       SPREAD full_game -1.5 -> HOME · p=54.0% (raw 54.0%) @1.870 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
   [provider:hardwood+team_history_empirical_v1/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
       TOTAL full_game 222.5 -> UNDER · p=54.0% (raw 54.0%) @1.943 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [provider:hardwood+team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
-      SPREAD full_game -2.5 -> AWAY · p=54.0% (raw 54.0%) @1.870 DraftKings
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
+  [context_availability+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
+      MONEYLINE full_game -> HOME · p=53.9% (raw 55.0%) @1.327 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [team_history_empirical_v1/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
-      TOTAL full_game 222.5 -> OVER · p=54.0% (raw 59.0%) @1.870 DraftKings
+      calibration=provisional n=7 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
+      SPREAD full_game -1.5 -> HOME · p=53.9% (raw 53.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
+  [team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
+      SPREAD full_game +2.5 -> HOME · p=53.9% (raw 53.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
+  [context_availability+team_history_empirical_v1/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
+      TOTAL full_game 222.5 -> UNDER · p=53.6% (raw 55.0%) @1.943 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
       ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
-      TOTAL full_game 222.5 -> UNDER · p=53.1% (raw 55.0%) @1.943 DraftKings
+      TOTAL full_game 222.5 -> UNDER · p=53.2% (raw 55.0%) @1.943 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=4 · recency ROI -4.6% / adjusted -9.3%
-      archived_revisions=5 · latest_evidence_utc=2026-11-17T15:54:25Z
+      archived_revisions=6 · latest_evidence_utc=2026-11-17T16:51:02Z
   [provider:hardwood+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
-      SPREAD full_game -7.5 -> HOME · p=53.0% (raw 53.0%) @1.870 DraftKings
+      SPREAD full_game -7.5 -> HOME · p=53.0% (raw 53.0%) @1.990 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
       TOTAL full_game 221.5 -> UNDER · p=52.8% (raw 55.0%) @1.952 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
       ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=4 · recency ROI -4.6% / adjusted -9.2%
       archived_revisions=2 · latest_evidence_utc=2026-11-17T07:51:42Z
-  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
-      SPREAD full_game -7.5 -> HOME · p=52.2% (raw 56.0%) @1.870 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=10 · recency ROI -23.3% / adjusted -20.9%
-      archived_revisions=5 · latest_evidence_utc=2026-11-17T15:54:25Z
-  [team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
-      SPREAD full_game +2.5 -> HOME · p=52.2% (raw 51.0%) @1.952 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
       TOTAL full_game 215.5 -> UNDER · p=52.1% (raw 54.0%) @1.862 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
@@ -239,43 +314,48 @@ CAUTION PICKS
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
       ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=4 · recency ROI -4.6% / adjusted -9.3%
       archived_revisions=4 · latest_evidence_utc=2026-11-17T09:03:53Z
-  [team_history_empirical_v1/team_history_empirical_v1] Los Angeles Clippers vs Utah Jazz · KO 2026-11-18 05:30 SAST
-      TOTAL full_game 225.5 -> OVER · p=51.0% (raw 56.0%) @1.952 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
       SPREAD full_game -2.5 -> HOME · p=51.0% (raw 52.0%) @1.962 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
       ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=10 · recency ROI -23.3% / adjusted -20.9%
       archived_revisions=3 · latest_evidence_utc=2026-11-17T11:37:52Z
+  [context_availability+team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
+      SPREAD full_game -1.5 -> HOME · p=50.6% (raw 53.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=history
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
       SPREAD full_game -8.5 -> HOME · p=50.2% (raw 54.0%) @1.971 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
       ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=10 · recency ROI -23.3% / adjusted -20.9%
       archived_revisions=2 · latest_evidence_utc=2026-11-17T12:06:48Z
+  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
+      TOTAL full_game 214.5 -> UNDER · p=50.2% (raw 52.0%) @1.935 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=4 · recency ROI -4.6% / adjusted -9.3%
 
 WATCHLIST — NO MATCHED ODDS
 ========================================================================
   [team_history_empirical_v1/team_history_empirical_v1] Los Angeles Clippers vs Utah Jazz · KO 2026-11-18 05:30 SAST
-      MONEYLINE H1 -> HOME · p=61.5% (raw 56.0%) @n/a no matched book
+      MONEYLINE H1 -> HOME · p=60.6% (raw 56.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
       calibration=calibrated n=58 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
-      MONEYLINE H1 -> HOME · p=61.5% (raw 56.0%) @n/a no matched book
+      MONEYLINE H1 -> HOME · p=60.6% (raw 56.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
       calibration=calibrated n=58 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
-      MONEYLINE H1 -> HOME · p=61.5% (raw 56.0%) @n/a no matched book
+      MONEYLINE H1 -> HOME · p=60.6% (raw 56.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
       calibration=calibrated n=58 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
-      MONEYLINE H1 -> HOME · p=59.5% (raw 54.0%) @n/a no matched book
+      MONEYLINE H1 -> HOME · p=59.6% (raw 55.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
       calibration=calibrated n=58 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
-      MONEYLINE H1 -> AWAY · p=57.5% (raw 52.0%) @n/a no matched book
+      MONEYLINE H1 -> AWAY · p=55.6% (raw 51.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
       calibration=calibrated n=58 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
@@ -283,25 +363,25 @@ WATCHLIST — NO MATCHED ODDS
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
       calibration=calibrated n=58 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Los Angeles Clippers vs Utah Jazz · KO 2026-11-18 05:30 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=46.9% (raw 41.0%) @n/a no matched book
+      HIGHEST QUARTER full_game -> Q3 · p=47.0% (raw 41.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=calibrated n=55 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+      calibration=calibrated n=57 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Los Angeles Lakers vs Charlotte Hornets · KO 2026-11-18 06:00 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=44.9% (raw 39.0%) @n/a no matched book
+      HIGHEST QUARTER full_game -> Q3 · p=45.0% (raw 39.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=calibrated n=55 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+      calibration=calibrated n=57 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Toronto Raptors vs New York Knicks · KO 2026-11-18 02:30 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=42.9% (raw 37.0%) @n/a no matched book
+      HIGHEST QUARTER full_game -> Q3 · p=43.0% (raw 37.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=calibrated n=55 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=40.9% (raw 35.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=calibrated n=55 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+      calibration=calibrated n=57 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=36.9% (raw 31.0%) @n/a no matched book
+      HIGHEST QUARTER full_game -> Q3 · p=42.0% (raw 36.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=calibrated n=55 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+      calibration=calibrated n=57 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=41.0% (raw 35.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
+      calibration=calibrated n=57 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
 
 WATCHLIST — INSUFFICIENT CONTEXT
 ========================================================================
@@ -309,15 +389,11 @@ WATCHLIST — INSUFFICIENT CONTEXT
       SPREAD full_game -9.5 -> HOME · p=50.0% (raw 51.0%) @1.952 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
-  [provider:espn+team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
-      SPREAD full_game -1.5 -> HOME · p=49.2% (raw 53.0%) @1.870 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
-      archived_revisions=2 · latest_evidence_utc=2026-11-17T15:54:25Z
   [team_history_empirical_v1/team_history_empirical_v1] Minnesota Timberwolves vs Portland Trail Blazers · KO 2026-11-18 03:00 SAST
-      TOTAL full_game 228.5 -> UNDER · p=49.0% (raw 54.0%) @1.917 DraftKings
+      TOTAL full_game 228.5 -> UNDER · p=49.1% (raw 54.0%) @1.885 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=8 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:01Z
   [provider:espn+team_history_empirical_v1/team_history_empirical_v1] San Antonio Spurs vs Detroit Pistons · KO 2026-11-18 03:00 SAST
       SPREAD full_game +9.5 -> AWAY · p=48.4% (raw 52.0%) @1.862 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
@@ -336,10 +412,10 @@ SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
   (none)
 
-Active summary: ELIGIBLE_CLEAN=6 CAUTION=42 WATCHLIST_NO_ODDS=11 WATCHLIST_INSUFFICIENT_CONTEXT=4 SKIPPED_INELIGIBLE=0
-ROI-qualified individual paper singles: 1
+Active summary: ELIGIBLE_CLEAN=6 CAUTION=56 WATCHLIST_NO_ODDS=11 WATCHLIST_INSUFFICIENT_CONTEXT=3 SKIPPED_INELIGIBLE=0
+ROI-qualified individual paper singles: 2
 Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=0
-Logical picks shown: 63 · superseded observations: 104
-Total archived pick evidence rows: 167
+Logical picks shown: 76 · superseded observations: 142
+Total archived pick evidence rows: 218
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.
