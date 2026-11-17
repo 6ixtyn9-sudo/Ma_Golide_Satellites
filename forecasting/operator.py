@@ -459,9 +459,9 @@ def load_settled_pick_history(localdata: Path) -> Optional[List[Forecast]]:
     """Read the rolling audit's settled single-pick rows for paper ROI bands.
 
     ``None`` means no audit exists and lets the forecasting service use its
-    own prequential settled individual forecasts. An existing but malformed
-    audit fails closed rather than silently substituting acca outcomes or an
-    empty history.
+    own prequential settled individual forecasts. A valid but empty/unusable
+    audit is returned for the service's explicit cold-start fallback decision.
+    A malformed audit fails closed rather than substituting acca outcomes.
     """
     path = Path(localdata) / "picks_audit_rolling.json"
     if not path.exists():

@@ -238,6 +238,7 @@ def service(
     *,
     result_available_after_hours: int = 4,
     min_calibration_samples: int = 3,
+    paper_pick_history: list[Forecast] | None = None,
 ) -> MarketForecastService:
     return MarketForecastService(
         store,
@@ -255,6 +256,7 @@ def service(
             prior_strength=2,
             calibration_epoch_utc="2026-01-01T00:00:00Z",
         ),
+        paper_pick_history=paper_pick_history,
     )
 
 
@@ -467,6 +469,55 @@ def test_service_routes_sample_only_candidates_to_paper_results():
             band = pick_filter["candidate_band_details"][leg["forecast_id"]]
             assert band["qualifies"] is True
             assert band["historical_pick_count"] >= 1
+
+
+def test_empty_settled_pick_audit_uses_past_only_prequential_roi_history():
+    baseline = service(populated_store()).build_report(
+        as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4
+    )
+    cold_start = service(
+        populated_store(), paper_pick_history=[]
+    ).build_report(as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4)
+
+    filter_report = cold_start["accas"]["paper_pick_filter"]
+    assert filter_report["history_source"] == (
+        "prequential_settled_individual_forecasts_cold_start_fallback"
+    )
+    assert filter_report["history_fallback"] == {
+        "used": True,
+        "from": "settled_pick_audit",
+        "reason": "no_usable_settled_individual_pick_history",
+        "settled_audit_usable_pick_count": 0,
+    }
+    assert filter_report["historical_unique_pick_count"] > 0
+    assert cold_start["forecasts"] == baseline["forecasts"]
+    assert cold_start["accas"]["strict_results"] == baseline["accas"]["strict_results"]
+    assert [row["forecast_id"] for row in cold_start["accas"]["paper_single_picks"]] == [
+        row["forecast_id"] for row in baseline["accas"]["paper_single_picks"]
+    ]
+    assert [
+        tuple(leg["forecast_id"] for leg in ticket["legs"])
+        for ticket in cold_start["accas"]["paper_results"]
+    ] == [
+        tuple(leg["forecast_id"] for leg in ticket["legs"])
+        for ticket in baseline["accas"]["paper_results"]
+    ]
+    assert cold_start["execution"]["external_betting_writes"] is False
+
+    usable_audit_row = _roi_forecast(
+        "settled-audit-row",
+        0.70,
+        1.80,
+        "win",
+        scheduled_utc="2026-01-20T20:00:00Z",
+    )
+    audit_first = service(
+        populated_store(), paper_pick_history=[usable_audit_row]
+    ).build_report(as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4)
+    audit_filter = audit_first["accas"]["paper_pick_filter"]
+    assert audit_filter["history_source"] == "settled_pick_audit"
+    assert audit_filter["historical_unique_pick_count"] == 1
+    assert "history_fallback" not in audit_filter
 
 
 def test_service_falls_back_to_double_when_only_two_qualified_games_exist(monkeypatch):
