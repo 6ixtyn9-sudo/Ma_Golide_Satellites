@@ -1,20 +1,20 @@
 {
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
-  "generated_utc": "2026-11-16T19:31:08Z",
+  "generated_utc": "2026-11-17T07:00:08Z",
   "history": [
     {
       "accas": [],
-      "bank_units": 100.0,
+      "bank_units": 100.32786885245902,
       "date": "2026-11-16",
       "decision_id": "43879102713_ncaa_m_1_attempt_1",
       "frozen_at": "2026-11-16T13:47:54Z",
       "league": "NCAA_M",
       "losses": 0,
       "pending_accas": 0,
-      "pending_positions": 1,
-      "pending_singles": 1,
-      "pending_units": 1.0,
+      "pending_positions": 0,
+      "pending_singles": 0,
+      "pending_units": 0,
       "positions": [
         {
           "bookmakers": [
@@ -24,7 +24,7 @@
           "effective_decimal_odds": 1.3278688524590163,
           "estimated_joint_win_probability": 0.739963,
           "estimated_win_probability": 0.739963,
-          "grade_status": "pending",
+          "grade_status": "win",
           "individual_pick_filter": {
             "as_of_utc": "2026-11-16T13:48:01Z",
             "bands": [
@@ -551,7 +551,7 @@
           },
           "leg_count": 1,
           "leg_outcomes": [
-            null
+            "win"
           ],
           "legs": [
             {
@@ -685,7 +685,7 @@
               },
               "forecast_id": "d6afc580112254da15ea",
               "game_id": "401925864",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Tulsa Golden Hurricane",
               "individual_pick_roi_band": {
                 "adjusted_roi": 0.110909,
@@ -714,7 +714,7 @@
               "market": "moneyline",
               "model": "provider:espn",
               "model_version": "team_history_empirical_v1",
-              "outcome": null,
+              "outcome": "win",
               "paper_only": true,
               "period": "full_game",
               "pick_id": "d6afc580112254da15ea",
@@ -738,7 +738,7 @@
             }
           ],
           "paper_only": true,
-          "profit_units": null,
+          "profit_units": 0.3278688524590163,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 1,
@@ -747,15 +747,15 @@
           "stake_units": 1.0,
           "ticket_id": "fb30465c683905a82186",
           "ticket_type": "single",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         }
       ],
-      "profit_units": null,
+      "profit_units": 0.3278688524590163,
       "pushes": 0,
-      "returned_units": null,
+      "returned_units": 1.3278688524590163,
       "settled_accas": 0,
-      "settled_positions": 0,
-      "settled_singles": 0,
+      "settled_positions": 1,
+      "settled_singles": 1,
       "singles": [
         {
           "bookmakers": [
@@ -765,7 +765,7 @@
           "effective_decimal_odds": 1.3278688524590163,
           "estimated_joint_win_probability": 0.739963,
           "estimated_win_probability": 0.739963,
-          "grade_status": "pending",
+          "grade_status": "win",
           "individual_pick_filter": {
             "as_of_utc": "2026-11-16T13:48:01Z",
             "bands": [
@@ -1292,7 +1292,7 @@
           },
           "leg_count": 1,
           "leg_outcomes": [
-            null
+            "win"
           ],
           "legs": [
             {
@@ -1426,7 +1426,7 @@
               },
               "forecast_id": "d6afc580112254da15ea",
               "game_id": "401925864",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Tulsa Golden Hurricane",
               "individual_pick_roi_band": {
                 "adjusted_roi": 0.110909,
@@ -1455,7 +1455,7 @@
               "market": "moneyline",
               "model": "provider:espn",
               "model_version": "team_history_empirical_v1",
-              "outcome": null,
+              "outcome": "win",
               "paper_only": true,
               "period": "full_game",
               "pick_id": "d6afc580112254da15ea",
@@ -1479,7 +1479,7 @@
             }
           ],
           "paper_only": true,
-          "profit_units": null,
+          "profit_units": 0.3278688524590163,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 1,
@@ -1488,33 +1488,33 @@
           "stake_units": 1.0,
           "ticket_id": "fb30465c683905a82186",
           "ticket_type": "single",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         }
       ],
-      "staked_units": 0,
-      "wins": 0
+      "staked_units": 1.0,
+      "wins": 1
     }
   ],
-  "hit_rate": null,
+  "hit_rate": 1.0,
   "league": "NCAA_M",
   "losses": 0,
-  "paper_bank_units": 100.0,
-  "paper_committed_units": 1.0,
-  "paper_free_units": 99.0,
+  "paper_bank_units": 100.32786885245902,
+  "paper_committed_units": 0,
+  "paper_free_units": 100.32786885245902,
   "paper_only": true,
   "pending_accas": 0,
-  "pending_positions": 1,
-  "pending_singles": 1,
-  "profit_units": 0,
+  "pending_positions": 0,
+  "pending_singles": 0,
+  "profit_units": 0.3278688524590163,
   "pushes": 0,
-  "roi": null,
+  "roi": 0.3278688524590163,
   "schema_version": "magolide.operator.v1",
-  "selected_leg_brier_score": null,
+  "selected_leg_brier_score": 0.06761924136899998,
   "settled_accas": 0,
-  "settled_positions": 0,
-  "settled_singles": 0,
-  "settled_stake_units": 0,
+  "settled_positions": 1,
+  "settled_singles": 1,
+  "settled_stake_units": 1.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 1,
-  "wins": 0
+  "unresolved_result_legs": 0,
+  "wins": 1
 }
