@@ -222,3 +222,137 @@ def test_future_dated_injury_rows_are_not_used_even_in_an_earlier_snapshot():
 
     assert features["injury_snapshot_status"] == "partial_snapshot_no_entries"
     assert features["reported_injury_entries"] == []
+
+
+def test_context_minutes_parser_rejects_seconds_scale_corruption():
+    from forecasting.espn_context import _minutes
+
+    assert _minutes("2052") is None
+    assert _minutes(2052) is None
+    assert _minutes("100:01") is None
+    assert _minutes("99:59") == 99 + 59 / 60
+
+
+def test_injury_status_merge_uses_latest_observation_not_fixed_source_order():
+    def evidence(summary_time, endpoint_time, summary_status, endpoint_status):
+        injury_summary = _summary(
+            summary_time,
+            injuries=[
+                {"team": {"id": "home-id"}, "injuries": [{
+                    "athlete": {"id": "player-1"}, "status": summary_status
+                }]},
+                {"team": {"id": "away-id"}, "injuries": []},
+            ],
+        )
+        espn = injury_summary["espn"]
+        espn["league_injuries"] = {
+            "observed_utc": endpoint_time,
+            "team_coverage_complete": True,
+            "teams": {
+                "home-id": [{"athlete_id": "player-1", "status": endpoint_status}],
+                "away-id": [],
+            },
+        }
+        return injury_summary
+
+    older_endpoint = _game(
+        "current-game",
+        "2026-11-03T00:00:00Z",
+        evidence=evidence(
+            "2026-11-02T11:00:00Z",
+            "2026-11-02T10:00:00Z",
+            "Out",
+            "Questionable",
+        ),
+    )
+    newer_endpoint = _game(
+        "current-game",
+        "2026-11-03T00:00:00Z",
+        evidence=evidence(
+            "2026-11-02T10:00:00Z",
+            "2026-11-02T11:00:00Z",
+            "Questionable",
+            "Out",
+        ),
+    )
+
+    summary_wins = build_espn_player_context(
+        older_endpoint, [], as_of_utc="2026-11-02T12:00:00Z"
+    )["reported_injury_entries"][0]
+    endpoint_wins = build_espn_player_context(
+        newer_endpoint, [], as_of_utc="2026-11-02T12:00:00Z"
+    )["reported_injury_entries"][0]
+
+    assert summary_wins["status"] == "Out"
+    assert summary_wins["status_source"] == "summary"
+    assert summary_wins["status_observed_utc"] == "2026-11-02T11:00:00Z"
+    assert endpoint_wins["status"] == "Out"
+    assert endpoint_wins["status_source"] == "league_endpoint"
+    assert endpoint_wins["status_observed_utc"] == "2026-11-02T11:00:00Z"
+    assert len(endpoint_wins["source_observations"]) == 2
+
+
+def test_normalized_empty_keys_respect_raw_field_presence_flags():
+    current = _game(
+        "current-game",
+        "2026-11-03T00:00:00Z",
+        evidence={
+            "espn": {
+                "summary": {
+                    "observed_utc": "2026-11-02T10:00:00Z",
+                    "field_presence": {
+                        "injuries": False,
+                        "last_five_games": False,
+                        "against_the_spread": False,
+                    },
+                    "injuries": [],
+                    "last_five_games": [],
+                    "against_the_spread": [],
+                }
+            }
+        },
+    )
+
+    features = build_espn_player_context(current, [], as_of_utc="2026-11-02T12:00:00Z")
+
+    assert features["injury_snapshot_status"] == "field_absent"
+    assert features["teams"]["home"]["recent_form_candidate"]["recent_results_status"] == "field_absent"
+    assert features["teams"]["home"]["recent_form_candidate"]["against_the_spread_status"] == "field_absent"
+
+
+def test_same_timestamp_injury_status_conflict_is_reported_without_arbitrary_winner():
+    summary = _summary(
+        "2026-11-02T11:00:00Z",
+        injuries=[
+            {"team": {"id": "home-id"}, "injuries": [{
+                "athlete": {"id": "player-1"}, "status": "Out"
+            }]},
+            {"team": {"id": "away-id"}, "injuries": []},
+        ],
+    )["espn"]["summary"]
+    current = _game(
+        "current-game",
+        "2026-11-03T00:00:00Z",
+        evidence={
+            "espn": {
+                "summary": summary,
+                "league_injuries": {
+                    "observed_utc": "2026-11-02T11:00:00Z",
+                    "team_coverage_complete": True,
+                    "teams": {
+                        "home-id": [{"athlete_id": "player-1", "status": "Questionable"}],
+                        "away-id": [],
+                    },
+                },
+            }
+        },
+    )
+
+    row = build_espn_player_context(
+        current, [], as_of_utc="2026-11-02T12:00:00Z"
+    )["reported_injury_entries"][0]
+
+    assert row["status"] is None
+    assert row["status_conflict"] is True
+    assert row["status_source"] == "same_timestamp_conflict"
+    assert {item["status"] for item in row["source_observations"]} == {"Out", "Questionable"}

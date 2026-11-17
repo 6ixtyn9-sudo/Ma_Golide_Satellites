@@ -93,7 +93,12 @@ The NBA league injury endpoint is captured once per eligible pregame run; it is
 not treated as league-wide coverage unless both teams are present. NCAA summary
 injury coverage remains provider-specific and absent entries are not converted
 to healthy status. The output preserves observation time, source hash, and
-coverage state, and explicitly labels these values candidate-only.
+coverage state, and explicitly labels these values candidate-only. Summary
+snapshots record raw source-field presence separately from normalized empty
+containers, so absent ESPN fields (including NCAA injuries in the audit fixture)
+are not counted as present. Legacy summaries without this metadata are reported
+as presence-unknown when their normalized value is empty; WNBA injury-field
+availability remains unverified.
 
 Forecast reports also contain `feature_use_manifest`, schema
 `magolide.feature_use_manifest.v1`. It separates active inputs from diagnostic
@@ -112,9 +117,10 @@ probabilities, calibration, eligibility, or stakes.
 
 For offline historical research, `scripts/mine_espn_player_minutes.py` reads
 already-stored ESPN summaries from a local DuckDB warehouse and writes a
-provenance-bearing CSV without network requests or canonical writes. It only
-includes reconciled finals and identity-matched teams, preserves raw stat
-labels/values and the summary payload hash, and gives a conservative
+provenance-bearing CSV without network requests or canonical writes. It streams
+rows to disk and accepts optional season/tip-date bounds. It only includes
+reconciled finals and identity-matched teams, preserves raw stat labels/values
+and the summary payload hash, and gives a conservative
 `available_no_earlier_than_utc` bound. This is descriptive history, not a
 same-game feature; EuroLeague and CBA player-level history are not included
 because the inspected repository evidence does not currently retain those

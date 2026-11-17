@@ -28,6 +28,7 @@ from ingestion.models import Game, GameStatus, League  # noqa: E402
 from ingestion.warehouse import DEFAULT_WAREHOUSE  # noqa: E402
 
 ESPN_LEAGUES = ("NBA", "WNBA", "NCAA_M", "NCAA_W")
+MAX_PLAYER_MINUTES = 100.0  # allow multi-OT games while rejecting seconds/unit corruption
 CSV_FIELDS = (
     "league", "game_id", "scheduled_utc", "team_id", "side", "player_id",
     "player_name", "position", "category", "minutes", "points", "rebounds",
@@ -53,9 +54,17 @@ def _minutes(value: Any) -> Optional[float]:
         minutes, seconds = (_number(part) for part in parts)
         if minutes is None or seconds is None or not 0 <= seconds < 60:
             return None
-        return minutes + seconds / 60.0
+        total = minutes + seconds / 60.0
+        return total if 0 <= total <= MAX_PLAYER_MINUTES else None
     parsed = _number(value)
-    return parsed if parsed is not None and parsed >= 0 else None
+    return parsed if parsed is not None and 0 <= parsed <= MAX_PLAYER_MINUTES else None
+
+
+def _position_text(athlete: Dict[str, Any]) -> Optional[str]:
+    position = athlete.get("position") or athlete.get("positionName")
+    if isinstance(position, dict):
+        position = position.get("abbreviation") or position.get("displayName") or position.get("name")
+    return str(position).strip() if position is not None and str(position).strip() else None
 
 
 def player_boxscore_rows(game: Game, *, result_delay_hours: float = 4.0) -> List[Dict[str, Any]]:
@@ -131,7 +140,7 @@ def player_boxscore_rows(game: Game, *, result_delay_hours: float = 4.0) -> List
                         "side": side,
                         "player_id": player_id,
                         "player_name": athlete.get("displayName") or athlete.get("shortName"),
-                        "position": athlete.get("position") or athlete.get("positionName"),
+                        "position": _position_text(athlete),
                         "category": category.get("name"),
                         **parsed,
                         "raw_stats_json": json.dumps(raw, sort_keys=True, separators=(",", ":"), default=str),
@@ -173,6 +182,9 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--warehouse", default=DEFAULT_WAREHOUSE)
     parser.add_argument("--league", choices=ESPN_LEAGUES, default="NBA")
+    parser.add_argument("--season", default=None, help="optional exact canonical season filter")
+    parser.add_argument("--after", default=None, help="optional inclusive aware ISO-8601 tip bound")
+    parser.add_argument("--before", default=None, help="optional exclusive aware ISO-8601 tip bound")
     parser.add_argument("--output", required=True, help="derived CSV output path")
     parser.add_argument("--result-delay-hours", type=float, default=4.0)
     args = parser.parse_args()
@@ -181,22 +193,68 @@ def main() -> int:
         parser.error(f"warehouse does not exist: {warehouse}")
     if args.result_delay_hours < 0:
         parser.error("--result-delay-hours must be non-negative")
+    try:
+        after = parse_utc(args.after) if args.after else None
+        before = parse_utc(args.before) if args.before else None
+    except (TypeError, ValueError) as exc:
+        parser.error(f"date bounds must be timezone-aware ISO-8601: {exc}")
+    if after is not None and before is not None and after >= before:
+        parser.error("--after must be earlier than --before")
 
+    output = Path(args.output)
+    output.parent.mkdir(parents=True, exist_ok=True)
+    counts = {
+        "games_in_warehouse": 0,
+        "games_scanned_after_filters": 0,
+        "reconciled_finals": 0,
+        "games_with_player_rows": 0,
+        "rows_written": 0,
+    }
     store = DuckDBStore(str(warehouse), persist=False)
     try:
         league = League[args.league]
         games = store.list_games(league=league)
-        rows, counts = mine_games(games, result_delay_hours=args.result_delay_hours)
+        counts["games_in_warehouse"] = len(games)
+        with output.open("w", newline="", encoding="utf-8") as handle:
+            writer = csv.DictWriter(handle, fieldnames=CSV_FIELDS, extrasaction="ignore")
+            writer.writeheader()
+            for game in games:
+                tip = parse_utc(game.scheduled_utc)
+                if args.season is not None and str(game.season) != args.season:
+                    continue
+                if after is not None and tip < after:
+                    continue
+                if before is not None and tip >= before:
+                    continue
+                counts["games_scanned_after_filters"] += 1
+                if (
+                    game.status is not GameStatus.FINAL
+                    or game.actual is None
+                    or not game.actual.reconciles()[0]
+                ):
+                    continue
+                counts["reconciled_finals"] += 1
+                rows = player_boxscore_rows(game, result_delay_hours=args.result_delay_hours)
+                if rows:
+                    counts["games_with_player_rows"] += 1
+                    writer.writerows(rows)
+                    counts["rows_written"] += len(rows)
     finally:
         store.close()
 
-    output = Path(args.output)
-    output.parent.mkdir(parents=True, exist_ok=True)
-    with output.open("w", newline="", encoding="utf-8") as handle:
-        writer = csv.DictWriter(handle, fieldnames=CSV_FIELDS, extrasaction="ignore")
-        writer.writeheader()
-        writer.writerows(rows)
-    print(json.dumps({"league": args.league, "rows_written": len(rows), "output": str(output), **counts}, indent=2))
+    print(
+        json.dumps(
+            {
+                "league": args.league,
+                "season_filter": args.season,
+                "after_inclusive": args.after,
+                "before_exclusive": args.before,
+                "output": str(output),
+                **counts,
+            },
+            indent=2,
+        )
+    )
     return 0
 
 

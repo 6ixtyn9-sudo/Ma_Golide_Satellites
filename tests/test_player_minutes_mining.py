@@ -1,4 +1,5 @@
 from ingestion.models import ActualResult, Game, GameStatus, League, PeriodKind
+from scripts.mine_espn_player_minutes import _minutes as _mining_minutes
 from scripts.mine_espn_player_minutes import mine_games, player_boxscore_rows
 
 
@@ -37,7 +38,11 @@ def _final_game():
                                     "labels": ["MIN", "PTS", "REB", "AST"],
                                     "athletes": [
                                         {
-                                            "athlete": {"id": "p1", "displayName": "Player One"},
+                                            "athlete": {
+                                                "id": "p1",
+                                                "displayName": "Player One",
+                                                "position": {"abbreviation": "SF", "displayName": "Small Forward"},
+                                            },
                                             "stats": ["34:30", "24", "8", "6"],
                                         }
                                     ],
@@ -58,6 +63,7 @@ def test_offline_player_minutes_mining_preserves_raw_and_conservative_availabili
     assert rows[0]["player_id"] == "p1"
     assert rows[0]["side"] == "home"
     assert rows[0]["minutes"] == 34.5
+    assert rows[0]["position"] == "SF"
     assert rows[0]["points"] == 24.0
     assert rows[0]["evidence_observed_utc"] == "2025-01-01T04:30:00Z"
     assert rows[0]["evidence_payload_hash"] == "abc123"
@@ -71,3 +77,10 @@ def test_offline_player_minutes_mining_preserves_raw_and_conservative_availabili
         "reconciled_finals": 1,
         "games_with_player_rows": 1,
     }
+
+
+def test_player_minutes_mining_rejects_out_of_range_numeric_and_colon_values():
+    assert _mining_minutes("2052") is None
+    assert _mining_minutes(2052) is None
+    assert _mining_minutes("100:01") is None
+    assert _mining_minutes("99:59") == 99 + 59 / 60

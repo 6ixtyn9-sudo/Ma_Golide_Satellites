@@ -606,8 +606,19 @@ def _summary_context(payload: Dict[str, Any], game: Game, observed_utc: str) -> 
     }
     standings = payload.get("standings") or {}
     standings_groups = standings.get("groups") if isinstance(standings, dict) else []
+    field_presence = {
+        "injuries": "injuries" in payload,
+        "leaders": "leaders" in boxscore or "leaders" in payload,
+        "last_five_games": "lastFiveGames" in payload,
+        "against_the_spread": "againstTheSpread" in payload,
+        "game_info": "gameInfo" in payload,
+        "predictor": "predictor" in payload,
+        "team_boxscore": "teams" in boxscore,
+        "player_boxscore": "players" in boxscore,
+    }
     return {
-        "schema_version": "magolide.espn.summary-context.v1",
+        "schema_version": "magolide.espn.summary-context.v2",
+        "field_presence": field_presence,
         "observed_utc": observed_utc,
         "source_modified_utc": source_modified,
         "source_payload_hash": make_payload_hash(payload),
@@ -1418,6 +1429,8 @@ def fetch_nba_injuries(
     teams: Dict[str, List[Dict[str, Any]]] = {}
     teams_seen = 0
     entries_seen = 0
+    dropped_missing_athlete_id = 0
+    dropped_non_object_entries = 0
     for row in raw_teams:
         if not isinstance(row, dict):
             continue
@@ -1432,10 +1445,12 @@ def fetch_nba_injuries(
         output = teams.setdefault(team_id, [])
         for injury in injuries:
             if not isinstance(injury, dict):
+                dropped_non_object_entries += 1
                 continue
             athlete = injury.get("athlete") if isinstance(injury.get("athlete"), dict) else {}
             athlete_id = str(athlete.get("id") or injury.get("athleteId") or "").strip()
             if not athlete_id:
+                dropped_missing_athlete_id += 1
                 continue
             details = injury.get("details") if isinstance(injury.get("details"), dict) else {}
             output.append(
@@ -1459,6 +1474,8 @@ def fetch_nba_injuries(
         "payload_hash": make_payload_hash(payload),
         "teams_seen": teams_seen,
         "injury_entries_seen": entries_seen,
+        "dropped_missing_athlete_id": dropped_missing_athlete_id,
+        "dropped_non_object_entries": dropped_non_object_entries,
         "teams": teams,
     }
 

@@ -76,3 +76,33 @@ def test_observed_book_movement_fails_closed_on_conflicting_same_time_rows(tmp_p
 
     assert report["slots_with_multiple_timestamped_observations"] == 0
     assert report["slots_with_conflicting_values_at_same_timestamp"] == 1
+
+
+def test_observed_book_movement_does_not_join_main_and_alternate_line_slots(tmp_path):
+    first = _ledger("pregame", "2026-11-20T16:00:00Z", 1.8)
+    later = _ledger("freeze", "2026-11-20T20:00:00Z", 1.9)
+    first["book_snapshots"][0]["main_line"] = True
+    later["book_snapshots"][0]["main_line"] = False
+    paths = []
+    for index, payload in enumerate((first, later)):
+        path = tmp_path / f"line-{index}.json"
+        path.write_text(json.dumps(payload))
+        paths.append(path)
+
+    report = observed_book_movement(paths)
+
+    assert report["slots_with_multiple_timestamped_observations"] == 0
+    assert report["movements"] == []
+
+
+def test_observed_book_movement_counts_invalid_ledgers_as_skipped(tmp_path):
+    bad = tmp_path / "bad.json"
+    bad.write_text("not json")
+    valid = tmp_path / "valid.json"
+    valid.write_text(json.dumps(_ledger("pregame", "2026-11-20T16:00:00Z", 1.8)))
+
+    report = observed_book_movement([bad, valid])
+
+    assert report["ledgers_scanned"] == 2
+    assert report["ledgers_parsed"] == 1
+    assert report["ledgers_skipped"] == 1

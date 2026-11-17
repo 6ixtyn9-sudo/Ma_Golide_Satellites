@@ -22,24 +22,30 @@ PRICE_FIELDS = (
 )
 
 
-def _load_ledgers(paths: Iterable[str | Path]) -> List[Dict[str, Any]]:
+def _load_ledgers(paths: Iterable[str | Path]) -> tuple[List[Dict[str, Any]], int, int]:
     payloads = []
+    scanned = 0
+    skipped = 0
     for path in paths:
+        scanned += 1
         try:
             with Path(path).open(encoding="utf-8") as handle:
                 payload = json.load(handle)
         except (OSError, ValueError):
+            skipped += 1
             continue
         if isinstance(payload, dict) and isinstance(payload.get("book_snapshots"), list):
             payloads.append(payload)
-    return payloads
+        else:
+            skipped += 1
+    return payloads, scanned, skipped
 
 
 def observed_book_movement(
     paths: Iterable[str | Path], *, league: Optional[str] = None, target_date: Optional[str] = None
 ) -> Dict[str, Any]:
     """Compare first/last admissible pre-match observations per market slot."""
-    payloads = _load_ledgers(paths)
+    payloads, ledgers_scanned, ledgers_skipped = _load_ledgers(paths)
     eligible = [
         payload
         for payload in payloads
@@ -47,7 +53,7 @@ def observed_book_movement(
         and (target_date is None or str(payload.get("target_date", "")).replace("-", "") == target_date.replace("-", ""))
         and payload.get("ledger_kind") in {"pregame", "freeze", "results"}
     ]
-    observations: Dict[Tuple[str, str, str, str, str], Dict[str, Dict[str, Any]]] = {}
+    observations: Dict[Tuple[str, str, str, str, str, Optional[bool]], Dict[str, Dict[str, Any]]] = {}
     for payload in eligible:
         games = {
             str(game.get("game_id")): game
@@ -70,7 +76,9 @@ def observed_book_movement(
             book = str(row.get("book") or "")
             market = str(row.get("market") or "")
             period = str(row.get("period") or "")
-            key = (game_id, provider, book, market, period)
+            main_line_value = row.get("main_line")
+            main_line = main_line_value if isinstance(main_line_value, bool) else None
+            key = (game_id, provider, book, market, period, main_line)
             # Identical rows recur across immutable ledgers. Deduplicate by
             # full canonical row, not timestamp: two different prices can
             # share a provider timestamp and must not be silently overwritten.
@@ -82,7 +90,9 @@ def observed_book_movement(
 
     movements = []
     same_timestamp_conflicts = 0
-    for (game_id, provider, book, market, period), by_time in sorted(observations.items()):
+    for (game_id, provider, book, market, period, main_line), by_time in sorted(
+        observations.items(), key=lambda item: tuple(str(value) for value in item[0])
+    ):
         time_counts: Dict[str, int] = {}
         for row in by_time.values():
             stamp = str(row["observed_utc"])
@@ -107,6 +117,7 @@ def observed_book_movement(
                 "book": book,
                 "market": market,
                 "period": period,
+                "main_line": main_line,
                 "first_observed_utc": first["observed_utc"],
                 "last_observed_utc": last["observed_utc"],
                 "observations": len(by_time),
@@ -119,7 +130,9 @@ def observed_book_movement(
         "schema_version": "magolide.observed_book_movement.v1",
         "league": league,
         "target_date": target_date,
-        "ledgers_scanned": len(payloads),
+        "ledgers_scanned": ledgers_scanned,
+        "ledgers_parsed": len(payloads),
+        "ledgers_skipped": ledgers_skipped,
         "ledgers_in_scope": len(eligible),
         "slots_with_multiple_timestamped_observations": len(movements),
         "slots_with_conflicting_values_at_same_timestamp": same_timestamp_conflicts,
