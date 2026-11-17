@@ -43,6 +43,7 @@ class Store:
 def game(
     number: int,
     *,
+    league=League.NBA,
     home_score=None,
     away_score=None,
     total=None,
@@ -64,7 +65,7 @@ def game(
         )
     return Game(
         game_id=game_id or f"game-{number}",
-        league=League.NBA,
+        league=league,
         season="2026-27",
         home_team_id=f"home-{number}",
         away_team_id=f"away-{number}",
@@ -188,14 +189,22 @@ def report(rows, tickets=None):
     return {"forecasts": rows, "accas": {"results": tickets or []}}
 
 
-def publish(tmp_path, store, market_report, run_id="run-1"):
+def publish(
+    tmp_path,
+    store,
+    market_report,
+    run_id="run-1",
+    *,
+    target_date=DATE,
+    generated_utc=AS_OF,
+):
     return publish_operator_reports(
         store,
         League.NBA,
         market_report,
         tmp_path,
-        target_date=DATE,
-        generated_utc=AS_OF,
+        target_date=target_date,
+        generated_utc=generated_utc,
         run_id=run_id,
     )
 
@@ -474,7 +483,8 @@ def test_ticket_is_frozen_empty_scans_do_not_cancel_and_known_leg_loss_settles(t
     assert performance["paper_committed_units"] == 1.0
     assert performance["pending_accas"] == 1
     ticket_text = Path(first["ticket_text"]).read_text()
-    assert "FROZEN AT 20:00 - FINAL" in ticket_text
+    assert "DECISION FROZEN AT 20:00" in ticket_text
+    assert "displayed grades refresh when reconciled results arrive" in ticket_text
     assert "TIP-OFF" in ticket_text
     assert "KICKOFF" not in ticket_text
 
@@ -508,6 +518,150 @@ def test_ticket_is_frozen_empty_scans_do_not_cancel_and_known_leg_loss_settles(t
     receipt_path.unlink()
     with pytest.raises(FileNotFoundError, match="refusing to rotate"):
         publish(tmp_path, store, report(rows), run_id="missing-receipt")
+
+
+def test_later_scan_refreshes_historical_card_grades_without_rewriting_receipt(tmp_path):
+    rows = [forecast(number) for number in (1, 2, 3)]
+    shadow_pick = forecast(
+        4,
+        price=None,
+        eligible=False,
+        reasons=["no_exact_bookmaker_market"],
+    )
+    history_games = seed_historical_success_picks(
+        tmp_path, "moneyline", wins=8, losses=3
+    )
+    store = Store([game(number) for number in (1, 2, 3, 4)] + history_games)
+    first = publish(
+        tmp_path,
+        store,
+        report([*rows, shadow_pick], [acca(rows)]),
+    )
+    receipt_path = Path(first["ticket_receipt"])
+    receipt_bytes = receipt_path.read_bytes()
+    ticket_text_path = Path(first["ticket_text"])
+    initial_card = ticket_text_path.read_text()
+    assert "[PAPER 3-LEG ACCA #1]" in initial_card
+    assert "UNPRICED AUDIT-ONLY SHADOW GROUPS" in initial_card
+    assert "SHADOW GROUP 1 — 1 audit-only pick (1 PENDING)" in initial_card
+
+    settled_games = [
+        game(1, home_score=90, away_score=100),
+        game(2, home_score=110, away_score=90),
+        game(3, home_score=100, away_score=90),
+        game(4, home_score=100, away_score=80),
+        *history_games,
+    ]
+    later = publish(
+        tmp_path,
+        Store(settled_games),
+        report([]),
+        run_id="next-day-result-refresh",
+        target_date="2026-11-12",
+        generated_utc="2026-11-12T18:00:00Z",
+    )
+
+    refreshed_card = ticket_text_path.read_text()
+    assert "[PAPER 3-LEG ACCA #1] @5.832" in refreshed_card
+    assert "· LOSS" in refreshed_card
+    assert "Home 1 vs Away 1" in refreshed_card
+    assert "· ELIGIBLE_CLEAN · LOSS" in refreshed_card
+    assert "SHADOW GROUP 1 — 1 audit-only pick (1 WIN)" in refreshed_card
+    assert "[WIN] Home 4 vs Away 4" in refreshed_card
+    assert receipt_path.read_bytes() == receipt_bytes
+
+    performance = json.loads(Path(later["performance"]).read_text())
+    assert performance["pending_positions"] == 0
+    assert performance["unresolved_result_legs"] == 0
+    assert performance["history"][0]["positions"][0]["grade_status"] == "loss"
+
+
+def test_ncaam_historical_card_refreshes_priced_ineligible_shadow_grades(tmp_path):
+    single = forecast(1)
+    single["league"] = League.NCAA_M.value
+    single["calibrated_probability"] = 0.82
+    band = {
+        "league": League.NCAA_M.value,
+        "market": "moneyline",
+        "period": "full_game",
+        "model": "provider-history",
+        "probability_band": "0.80-<0.90",
+        "individual_odds_band": "1.50-<2.00",
+        "candidate_pick_count": 1,
+        "historical_pick_count": 14,
+        "wins": 12,
+        "losses": 2,
+        "pushes": 0,
+        "observed_roi": 0.16,
+        "recency_weighted_roi": 0.16,
+        "parent_roi": 0.08,
+        "adjusted_roi": 0.11,
+        "qualifies": True,
+    }
+    paper_filter = {
+        "candidate_pick_count": 1,
+        "candidate_band_count": 1,
+        "qualifying_pick_count": 1,
+        "qualifying_band_count": 1,
+        "historical_unique_pick_count": 14,
+        "candidate_band_details": {single["forecast_id"]: band},
+        "bands": [band],
+        "status": "applied",
+    }
+    shadow = forecast(
+        2,
+        price=1.8,
+        eligible=False,
+        reasons=["insufficient_team_specific_history"],
+        calibration_n=10,
+    )
+    shadow["league"] = League.NCAA_M.value
+    shadow["calibrated_probability"] = 0.85
+    market_report = report([single, shadow])
+    market_report["accas"].update(
+        paper_results=[],
+        paper_single_picks=[{**single, "individual_pick_roi_band": band}],
+        paper_pick_filter=paper_filter,
+    )
+
+    first = publish_operator_reports(
+        Store([game(1, league=League.NCAA_M), game(2, league=League.NCAA_M)]),
+        League.NCAA_M,
+        market_report,
+        tmp_path,
+        target_date=DATE,
+        generated_utc=AS_OF,
+        run_id="ncaa-single-and-shadow",
+    )
+    receipt_path = Path(first["ticket_receipt"])
+    receipt_bytes = receipt_path.read_bytes()
+    card_path = Path(first["ticket_text"])
+    initial_card = card_path.read_text()
+    assert "[PAPER SINGLE #1]" in initial_card
+    assert "SHADOW GROUP 1 — 1 priced-ineligible audit-only pick (1 PENDING)" in initial_card
+
+    later = publish_operator_reports(
+        Store(
+            [
+                game(1, league=League.NCAA_M, home_score=100, away_score=90),
+                game(2, league=League.NCAA_M, home_score=100, away_score=90),
+            ]
+        ),
+        League.NCAA_M,
+        report([]),
+        tmp_path,
+        target_date="2026-11-12",
+        generated_utc="2026-11-12T18:00:00Z",
+        run_id="ncaa-results-refresh",
+    )
+
+    refreshed = card_path.read_text()
+    assert "[PAPER SINGLE #1] @1.800" in refreshed
+    assert "· WIN" in refreshed
+    assert "SHADOW GROUP 1 — 1 priced-ineligible audit-only pick (1 WIN)" in refreshed
+    assert "[WIN] Home 2 vs Away 2" in refreshed
+    assert receipt_path.read_bytes() == receipt_bytes
+    assert json.loads(Path(later["performance"]).read_text())["pending_positions"] == 0
 
 
 def test_withdrawn_ticket_survives_old_cache_without_becoming_a_live_position(tmp_path):
