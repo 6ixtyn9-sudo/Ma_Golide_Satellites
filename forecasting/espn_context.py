@@ -15,6 +15,22 @@ from ingestion.identity import parse_utc
 from ingestion.models import Game
 
 SCHEMA_VERSION = "magolide.espn_player_context.v1"
+MAX_PLAYER_MINUTES = 100.0  # permissive for multi-OT games; reject corrupted unit/scale values
+
+
+def _field_presence(summary: Dict[str, Any], field: str) -> Optional[bool]:
+    """Read raw payload presence, not canonical keys materialized as empty lists."""
+    presence = summary.get("field_presence")
+    if isinstance(presence, dict) and isinstance(presence.get(field), bool):
+        return presence[field]
+    if field not in summary:
+        return False
+    value = summary.get(field)
+    if value not in (None, [], {}):
+        return True
+    # Legacy v1 summaries materialized empty containers whether the source
+    # field existed or not; preserve that distinction as unknown.
+    return None
 
 
 def _summary(game: Game) -> Dict[str, Any]:
@@ -41,9 +57,10 @@ def _minutes(value: Any) -> Optional[float]:
         minutes, seconds = (_finite(part) for part in parts)
         if minutes is None or seconds is None or not 0 <= seconds < 60:
             return None
-        return minutes + seconds / 60.0
+        total = minutes + seconds / 60.0
+        return total if 0 <= total <= MAX_PLAYER_MINUTES else None
     parsed = _finite(value)
-    return parsed if parsed is not None and parsed >= 0 else None
+    return parsed if parsed is not None and 0 <= parsed <= MAX_PLAYER_MINUTES else None
 
 
 def _player_rows(game: Game, team_id: str) -> Dict[str, Dict[str, Any]]:
@@ -137,16 +154,21 @@ def _team_form_context(game: Game, team_id: str, *, as_of_utc: str) -> Dict[str,
         ) < parse_utc(game.scheduled_utc)
     except (TypeError, ValueError):
         visible = False
+    form_presence = _field_presence(summary, "last_five_games")
+    ats_presence = _field_presence(summary, "against_the_spread")
     if not visible:
+        unavailable_state = "summary_not_point_in_time" if observed else "summary_unavailable"
         return {
-            "status": "summary_not_point_in_time" if observed else "summary_unavailable",
+            "status": unavailable_state,
             "observed_utc": observed,
+            "recent_results_status": unavailable_state,
             "recent_results": [],
+            "against_the_spread_status": unavailable_state,
             "against_the_spread": None,
         }
 
     raw_form = summary.get("last_five_games")
-    form_present = isinstance(raw_form, list)
+    form_present = form_presence is True and isinstance(raw_form, list)
     recent_results: List[Dict[str, Any]] = []
     if form_present:
         for team in raw_form:
@@ -182,7 +204,7 @@ def _team_form_context(game: Game, team_id: str, *, as_of_utc: str) -> Dict[str,
     recent_results.sort(key=lambda row: (parse_utc(row["game_date_utc"]), row["event_id"]))
 
     ats_value: Optional[List[Dict[str, Any]]] = None
-    if isinstance(summary.get("against_the_spread"), list):
+    if ats_presence is True and isinstance(summary.get("against_the_spread"), list):
         ats_value = []
         for team in summary["against_the_spread"]:
             if not isinstance(team, dict):
@@ -196,13 +218,29 @@ def _team_form_context(game: Game, team_id: str, *, as_of_utc: str) -> Dict[str,
                         for row in records
                         if isinstance(row, dict)
                     )
+    form_status = (
+        "available" if recent_results else
+        "no_entries_reported" if form_presence is True else
+        "field_absent" if form_presence is False else "field_presence_unknown"
+    )
+    ats_status = (
+        "available" if ats_value else
+        "no_entries_reported" if ats_presence is True else
+        "field_absent" if ats_presence is False else "field_presence_unknown"
+    )
+    overall_status = (
+        "available" if "available" in {form_status, ats_status} else
+        "field_absent" if form_status == ats_status == "field_absent" else
+        "field_presence_unknown" if "field_presence_unknown" in {form_status, ats_status} else
+        "no_entries_reported"
+    )
     return {
-        "status": "available" if recent_results or ats_value else "no_entries_reported",
+        "status": overall_status,
         "observed_utc": str(observed),
         "source_payload_hash": summary.get("source_payload_hash"),
-        "recent_results_status": "available" if recent_results else "field_absent" if not form_present else "no_entries_reported",
+        "recent_results_status": form_status,
         "recent_results": recent_results,
-        "against_the_spread_status": "available" if ats_value else "field_absent" if "against_the_spread" not in summary else "no_entries_reported",
+        "against_the_spread_status": ats_status,
         "against_the_spread": ats_value,
     }
 
@@ -234,7 +272,8 @@ def _injury_entries(game: Game, *, as_of_utc: str) -> tuple[str, List[Dict[str, 
         return entry_time <= parse_utc(as_of_utc) and entry_time < parse_utc(game.scheduled_utc)
 
     summary_observed = summary.get("observed_utc")
-    if visible_timestamp(summary_observed) and "injuries" in summary:
+    injury_field_presence = _field_presence(summary, "injuries")
+    if visible_timestamp(summary_observed) and injury_field_presence is True:
         summary_rows: List[Dict[str, Any]] = []
         summary_team_ids = set()
         raw = summary.get("injuries")
@@ -308,16 +347,64 @@ def _injury_entries(game: Game, *, as_of_utc: str) -> tuple[str, List[Dict[str, 
     if not sources:
         if summary_observed and not visible_timestamp(summary_observed):
             return "summary_not_point_in_time", [], str(summary_observed)
-        if summary_observed and "injuries" not in summary:
+        if summary_observed and injury_field_presence is False:
             return "field_absent", [], str(summary_observed)
+        if summary_observed and injury_field_presence is None:
+            return "field_presence_unknown", [], str(summary_observed)
+        if summary_observed:
+            return "no_point_in_time_injury_snapshot", [], str(summary_observed)
         return "no_point_in_time_injury_snapshot", [], None
 
     rows_by_player: Dict[tuple[str, str], Dict[str, Any]] = {}
-    for source, _, rows, _ in sources:
-        for row in rows:
+    for source, source_observed, source_rows, _ in sources:
+        source_time = parse_utc(source_observed)
+        for row in source_rows:
             key = (row["team_id"], row["athlete_id"])
-            existing = rows_by_player.get(key, {})
-            rows_by_player[key] = {**existing, **row, "sources": sorted(set(existing.get("sources", [])) | {source})}
+            existing = rows_by_player.get(key)
+            observation = {
+                "source": source,
+                "observed_utc": source_observed,
+                "status": row.get("status"),
+                "type": row.get("type"),
+                "date": row.get("date"),
+            }
+            if existing is None:
+                rows_by_player[key] = {
+                    **row,
+                    "sources": [source],
+                    "source_observations": [observation],
+                    "status_source": source,
+                    "status_observed_utc": source_observed,
+                }
+                continue
+
+            prior_time = parse_utc(existing["status_observed_utc"])
+            all_sources = sorted(set(existing.get("sources", [])) | {source})
+            all_observations = [*existing.get("source_observations", []), observation]
+            if source_time > prior_time:
+                rows_by_player[key] = {
+                    **existing,
+                    **row,
+                    "sources": all_sources,
+                    "source_observations": all_observations,
+                    "status_source": source,
+                    "status_observed_utc": source_observed,
+                }
+            elif source_time == prior_time and any(
+                row.get(field) != existing.get(field) for field in ("status", "type", "date")
+            ):
+                rows_by_player[key] = {
+                    **existing,
+                    "status": None,
+                    "status_conflict": True,
+                    "status_source": "same_timestamp_conflict",
+                    "sources": all_sources,
+                    "source_observations": all_observations,
+                }
+            else:
+                existing["sources"] = all_sources
+                existing["source_observations"] = all_observations
+                rows_by_player[key] = existing
     rows = sorted(rows_by_player.values(), key=lambda row: (row["team_id"], row["athlete_id"]))
     observed = max((source[1] for source in sources), key=parse_utc)
     complete = any(source[3] for source in sources)

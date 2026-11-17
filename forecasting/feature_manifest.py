@@ -36,7 +36,7 @@ _FEATURE_CATALOG = {
     "historical_player_minutes_and_boxscore": {
         "role": "shadow_candidate_only",
         "source": "ESPN game summaries",
-        "guard": "prior reconciled final, summary observed by cutoff, four-hour result delay",
+        "guard": "prior reconciled final, summary observed by cutoff, configured result-availability delay",
     },
     "recent_form_and_ats_context": {
         "role": "shadow_candidate_only",
@@ -97,6 +97,19 @@ def _book_rows(store, game: Game, cutoff: str) -> list[Any]:
     return rows
 
 
+def _observed_field_presence(summary: Mapping[str, Any], field: str) -> bool | None:
+    presence = summary.get("field_presence")
+    if isinstance(presence, Mapping) and isinstance(presence.get(field), bool):
+        return presence[field]
+    if field not in summary:
+        return False
+    value = summary.get(field)
+    if value not in (None, [], {}):
+        return True
+    # Older canonical summaries materialized empty values for absent fields.
+    return None
+
+
 def _resource_inventory(games: Iterable[Game]) -> Dict[str, Any]:
     providers: Dict[str, Counter] = {}
     summary_families: Counter = Counter()
@@ -108,17 +121,24 @@ def _resource_inventory(games: Iterable[Game]) -> Dict[str, Any]:
         espn = evidence.get("espn") if isinstance(evidence.get("espn"), dict) else {}
         summary = espn.get("summary") if isinstance(espn.get("summary"), dict) else {}
         if summary:
-            for field in ("injuries", "leaders", "last_five_games", "against_the_spread", "game_info", "predictor"):
-                if field in summary:
-                    summary_families[f"{field}_field_present"] += 1
-                    value = summary.get(field)
-                    if field != "injuries":
-                        if isinstance(value, list):
-                            summary_counts[f"{field}_entries"] += len(value)
-                        elif isinstance(value, dict):
-                            summary_counts[f"{field}_entries"] += len(value)
+            summary_fields = (
+                "injuries", "leaders", "last_five_games", "against_the_spread",
+                "game_info", "predictor", "team_boxscore", "player_boxscore",
+            )
+            for field in summary_fields:
+                presence = _observed_field_presence(summary, field)
+                state = "present" if presence is True else "absent" if presence is False else "unknown"
+                summary_families[f"{field}_{state}"] += 1
+                if presence is not True:
+                    continue
+                value = summary.get(field)
+                if field != "injuries":
+                    if isinstance(value, list):
+                        summary_counts[f"{field}_entries"] += len(value)
+                    elif isinstance(value, dict):
+                        summary_counts[f"{field}_entries"] += len(value)
             injuries = summary.get("injuries")
-            if isinstance(injuries, list):
+            if _observed_field_presence(summary, "injuries") is True and isinstance(injuries, list):
                 summary_counts["injury_teams"] += len(injuries)
                 summary_counts["injury_entries"] += sum(
                     len(team.get("injuries"))
@@ -152,9 +172,19 @@ def _resource_inventory(games: Iterable[Game]) -> Dict[str, Any]:
         },
         "espn_summary_context_families": {
             "games_with_field": {
-                field.removesuffix("_field_present"): count
+                field.removesuffix("_present"): count
                 for field, count in sorted(summary_families.items())
-                if field.endswith("_field_present")
+                if field.endswith("_present") and field != "player_boxscore_nonempty_games"
+            },
+            "field_presence_counts": {
+                field: {
+                    state: summary_families[f"{field}_{state}"]
+                    for state in ("present", "absent", "unknown")
+                }
+                for field in (
+                    "injuries", "leaders", "last_five_games", "against_the_spread",
+                    "game_info", "predictor", "team_boxscore", "player_boxscore",
+                )
             },
             "games_with_nonempty_player_boxscore": summary_families[
                 "player_boxscore_nonempty_games"
@@ -264,8 +294,14 @@ def build_feature_use_manifest(
     catalog["standings_recent_form_and_provider_detail"]["standings_support"] = (
         "smoke_coverage_only" if league in {League.NBA, League.EUROLEAGUE} else "not_supported_by_current_adapter"
     )
+    catalog["current_injury_status"]["league_support"] = {
+        League.NBA: "NBA_league_endpoint_and_summary; raw summary field presence measured",
+        League.WNBA: "summary_path_configured_but_injury_field_coverage_unverified",
+        League.NCAA_M: "summary_path_configured; injury field presence measured per payload",
+        League.NCAA_W: "summary_path_configured; injury field presence measured per payload",
+    }.get(league, "not_supported_by_current_ESPN_path")
     catalog["current_injury_status"]["league_endpoint_support"] = (
-        "NBA_only" if league is League.NBA else "ESPN_summary_only" if is_espn_league else "not_supported"
+        "NBA_only" if league is League.NBA else "not_supported"
     )
 
     return {
@@ -280,8 +316,9 @@ def build_feature_use_manifest(
         },
         "historical_team_result_coverage": {
             "reconciled_prior_finals": len(reconciled_prior_finals),
-            "available_after_result_delay": len(available_prior_finals),
+            "available_before_report_cutoff_after_delay": len(available_prior_finals),
             "result_delay_hours": result_delay_hours,
+            "scope_note": "report-cutoff count only; the model applies its history gate separately at each target tip",
         },
         "visible_upcoming_coverage": {
             "predictions": {

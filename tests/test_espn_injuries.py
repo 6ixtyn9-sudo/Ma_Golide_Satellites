@@ -32,6 +32,8 @@ def test_fetch_nba_injuries_normalizes_ids_and_preserves_time_provenance():
     assert urls == [INJURIES_URL]
     assert result["teams_seen"] == 2
     assert result["injury_entries_seen"] == 1
+    assert result["dropped_missing_athlete_id"] == 0
+    assert result["dropped_non_object_entries"] == 0
     assert result["source_modified_utc"] == "2026-11-17T12:00:00Z"
     assert result["teams"]["1"][0] == {
         "athlete_id": "p1",
@@ -50,3 +52,23 @@ def test_fetch_nba_injuries_rejects_unusable_payloads():
 
     with pytest.raises(ValueError, match="no identifiable teams"):
         fetch_nba_injuries(lambda _url: {"injuries": [{"injuries": []}]})
+
+
+def test_fetch_nba_injuries_reports_unusable_entries_instead_of_silently_hiding_them():
+    payload = {
+        "injuries": [
+            {
+                "team": {"id": "1"},
+                "injuries": [
+                    {"athlete": {"displayName": "Missing ID"}, "status": "Out"},
+                    "not-an-object",
+                ],
+            }
+        ]
+    }
+
+    result = fetch_nba_injuries(lambda _url: payload, observed_utc="2026-11-17T12:01:00Z")
+
+    assert result["injury_entries_seen"] == 0
+    assert result["dropped_missing_athlete_id"] == 1
+    assert result["dropped_non_object_entries"] == 1

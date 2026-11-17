@@ -180,6 +180,7 @@ class Pipeline:
         captured: Dict[str, Any] = {}
         observed = self._now_iso()
 
+        standings_round = None
         source_fetch = self.espn_fetch if league is League.NBA else self.fetch
 
         def capture(url: str):
@@ -203,11 +204,15 @@ class Pipeline:
                     report=provider_report,
                 )
                 status = provider_report.get("status", "unavailable")
+                standings_round = provider_report.get("round")
                 provider = "euroleague"
+            if league is League.NBA:
+                standings_round = None
             row_values = [row.__dict__ if hasattr(row, "__dict__") else row for row in rows]
             return {
                 "status": status,
                 "provider": provider,
+                "round": standings_round,
                 "observed_utc": observed,
                 "teams_seen": len(rows),
                 "payload_hash": payload_hash(captured.get("payload")) if "payload" in captured else None,
@@ -656,6 +661,8 @@ class Pipeline:
                     "source_modified_utc": snapshot["source_modified_utc"],
                     "teams_seen": snapshot["teams_seen"],
                     "injury_entries_seen": snapshot["injury_entries_seen"],
+                    "dropped_missing_athlete_id": snapshot["dropped_missing_athlete_id"],
+                    "dropped_non_object_entries": snapshot["dropped_non_object_entries"],
                     "games_attached": attached_games,
                 }
             except Exception as exc:
