@@ -14,7 +14,7 @@
       "receipt_path": "auto_tickets_2026-11-17_decision.json"
     }
   },
-  "last_generated_utc": "2026-11-17T08:30:18Z",
+  "last_generated_utc": "2026-11-17T09:03:47Z",
   "paper_bank_units": 100.32786885245902,
   "scans": [
     {
@@ -3602,6 +3602,259 @@
         },
         "price_evidence_counts": {
           "MATCHED_BUT_SELECTED_PRICE_MISSING": 2,
+          "UNMATCHED": 109
+        },
+        "record_type": "unpriced_shadow_ticket_audit",
+        "recorded_in": [
+          "current_run_artifact",
+          "dated_pick_ledger",
+          "rolling_pick_audit"
+        ],
+        "schema_version": "magolide.unpriced_forecast_audit.v1",
+        "shadow_group_policy": {
+          "display_only": true,
+          "each_qualified_candidate_once": true,
+          "joint_success_rate_calculated": false,
+          "max_picks_per_group": 3,
+          "one_pick_per_game": true,
+          "receipt_created": false,
+          "stake_units": 0.0,
+          "ticket_id": null
+        },
+        "stake_units": 0.0,
+        "ticketable": false
+      }
+    },
+    {
+      "candidate_funnel": {
+        "calibration_sufficient_rows": 67,
+        "effective_paper_legs": 3,
+        "eligibility_blockers": {
+          "below_calibrated_probability_floor": 3,
+          "insufficient_team_specific_history": 229,
+          "insufficient_walk_forward_samples": 241,
+          "missing_selected_decimal_price": 1,
+          "no_exact_bookmaker_market": 109
+        },
+        "eligible_games": 44,
+        "eligible_rows": 44,
+        "exact_priced_rows": 198,
+        "paper_accas": 2,
+        "paper_candidate_games": 45,
+        "paper_candidate_rows": 47,
+        "paper_pick_filter": {
+          "as_of_utc": "2026-11-17T09:04:11Z",
+          "candidate_band_count": 14,
+          "candidate_pick_count": 46,
+          "decision_rule": "at_least_one_settled_pick_and_positive_recency_weighted_band_roi and_positive_shrinkage_adjusted_roi",
+          "half_life_days": 14.0,
+          "historical_unique_pick_count": 83,
+          "history_source": "settled_pick_audit",
+          "individual_odds_bands": [
+            "1.00-<1.20",
+            "1.20-<1.50",
+            "1.50-<2.00",
+            "2.00+"
+          ],
+          "league_recency_weighted_roi": {
+            "NCAA_M": -0.239803
+          },
+          "minimum_historical_pick_count_for_band": 1,
+          "performance_basis": "settled_individual_picks_only_not_acca_outcomes",
+          "policy": "adaptive_recency_weighted_positive_individual_pick_roi_bands",
+          "prior_hierarchy": "model_source_period_then_market_then_league",
+          "prior_strength_effective_picks": 3.0,
+          "probability_bands": [
+            "<0.50",
+            "0.50-<0.60",
+            "0.60-<0.70",
+            "0.70-<0.80",
+            "0.80-<0.90",
+            "0.90-1.00"
+          ],
+          "qualifying_band_count": 2,
+          "qualifying_pick_count": 7,
+          "result_available_after_hours": 4.0,
+          "stake_policy": "flat_one_unit_per_priced_pick_with_pushes_in_roi_denominator",
+          "status": "applied"
+        },
+        "paper_single_games": 7,
+        "paper_single_picks": 7,
+        "priced_and_calibrated_rows": 47,
+        "provisional_sample_only_games": 3,
+        "provisional_sample_only_rows": 3,
+        "required_games": 3,
+        "scan_rows": 308,
+        "strict_accas": 5
+      },
+      "captured_at": "2026-11-17T09:03:47Z",
+      "fresh_accas": 2,
+      "fresh_paper_singles": 7,
+      "fresh_single_tickets": 0,
+      "priced_ineligible_shadow": {
+        "audit_only": true,
+        "minimum_probability": 0.7,
+        "minimum_selected_decimal_odds": 1.3,
+        "priced_ineligible_audited_count": 154,
+        "probability_policy": "calibrated_probability_then_raw_probability_fallback",
+        "qualified_count": 52,
+        "record_type": "priced_ineligible_shadow_audit",
+        "schema_version": "magolide.priced_ineligible_shadow.v1",
+        "shadow_group_policy": {
+          "display_only": true,
+          "max_picks_per_group": 3,
+          "one_pick_per_game": true,
+          "receipt_created": false,
+          "stake_units": 0.0,
+          "ticket_id": null
+        },
+        "shadow_groups": [
+          [
+            "be5ec903265c9ddad89a",
+            "95497f53c691c90f8c20",
+            "a93977355ff31f9da75d"
+          ],
+          [
+            "60a55edd1eb04f3a8542",
+            "daef4ce5fa0cc0574c91",
+            "f71458f0985704b0376f"
+          ],
+          [
+            "78e1951dc0f1a9ee99f9",
+            "5593678cd97a00ab6eba",
+            "5d1442c3ced4474c103d"
+          ],
+          [
+            "d022ed9ecff7d0c8024b",
+            "30252a880a9b27d7c34b",
+            "fcf8bf59ea81807af0cb"
+          ],
+          [
+            "2eac73e107fcc272408c",
+            "72354b359e040121cea4",
+            "cfb64cb985d52240ee53"
+          ],
+          [
+            "26ac2db326da6b2d8eba",
+            "d42e9e8a47ef2677fc82",
+            "0a0325a729f42c7242f1"
+          ],
+          [
+            "4175758c5576f975477b",
+            "a25ac2ab3997c227ac13",
+            "5cfce718356f4d8c7cbc"
+          ],
+          [
+            "599fc43273719899cc93",
+            "768e126a120ac8bf3d73",
+            "b52c0f6dc41357175bdf"
+          ],
+          [
+            "9e23cedd97a7a034c875",
+            "a531e1ab910b87a8c250",
+            "aff9cc92015950e7e128"
+          ],
+          [
+            "7d66fda6952972e3ca7c",
+            "8b7c1ea9d5cea2199c87",
+            "bbd93a99a3cc206e1e31"
+          ],
+          [
+            "c89f2654ca54f500725e",
+            "e6ec6486e1f076adacaf",
+            "471d26d5b73b180fbc29"
+          ],
+          [
+            "167dd589ef2755336923",
+            "1f579faed35b0b8c69cf",
+            "e30efed36d8b1ed6e11e"
+          ],
+          [
+            "8ee3783794449007b7dd",
+            "cf00064d5d1e7b761b9c",
+            "2ae12906b3c163c7b0fc"
+          ],
+          [
+            "c41547374c536f9ff1ae",
+            "2918c370b9dfdb5213b1",
+            "b828e15648dd2dbe8458"
+          ],
+          [
+            "29eef2b79700beb8df5e",
+            "d16bf73c7e48e8e9862c",
+            "50fefe5e2b28fe920046"
+          ],
+          [
+            "7f68caf812c9c4929379",
+            "4b13f3547af0bc71b2fc",
+            "007b7ff99b1997400d5d"
+          ],
+          [
+            "cec4c96d31bc354e5d8c",
+            "9897b81081a2437bb515",
+            "818cdb3a82f0ba956c70"
+          ],
+          [
+            "9ecd53ae6a380c777ff6"
+          ]
+        ],
+        "stake_units": 0.0,
+        "ticketable": false
+      },
+      "receipt_present": true,
+      "run_id": "44051930888_ncaa_m_1_attempt_1",
+      "unpriced_audit": {
+        "audit_only": true,
+        "count": 110,
+        "eligibility_reason_counts": {
+          "insufficient_team_specific_history": 87,
+          "insufficient_walk_forward_samples": 90,
+          "missing_selected_decimal_price": 1,
+          "no_exact_bookmaker_market": 109
+        },
+        "grade_counts": {
+          "pending": 110
+        },
+        "historical_success_excluded_count": 92,
+        "historical_success_policy": {
+          "comparison_keys": [
+            "league",
+            "market",
+            "period",
+            "model",
+            "calibrated_probability_band"
+          ],
+          "excluded_outcomes": [
+            "push",
+            "void",
+            "pending",
+            "unknown"
+          ],
+          "historical_deduplication_key": [
+            "game_id",
+            "market",
+            "period",
+            "selection",
+            "line",
+            "model"
+          ],
+          "history_source": "rolling_pick_audit.settled_ledger",
+          "history_window_days": 30,
+          "metric": "wins / (wins + losses)",
+          "minimum_decisions_exclusive": 10,
+          "odds_required": false,
+          "result_available_after_hours": 4.0,
+          "same_game_history_excluded": true,
+          "threshold_at_least": 0.7
+        },
+        "historical_success_qualified_count": 18,
+        "historical_success_status_counts": {
+          "insufficient_history": 2,
+          "missing_forecast_as_of": 90,
+          "qualified": 18
+        },
+        "price_evidence_counts": {
+          "MATCHED_BUT_SELECTED_PRICE_MISSING": 1,
           "UNMATCHED": 109
         },
         "record_type": "unpriced_shadow_ticket_audit",

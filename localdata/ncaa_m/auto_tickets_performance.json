@@ -1,10 +1,12 @@
 {
+  "awaiting_game_legs": 3,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
-  "generated_utc": "2026-11-17T08:30:18Z",
+  "generated_utc": "2026-11-17T09:03:47Z",
   "history": [
     {
       "accas": [],
+      "awaiting_game_legs": 0,
       "bank_units": 100.32786885245902,
       "date": "2026-11-16",
       "decision_id": "43879102713_ncaa_m_1_attempt_1",
@@ -17,6 +19,7 @@
       "pending_units": 0,
       "positions": [
         {
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -744,6 +747,7 @@
           "publication_index": 1,
           "push_legs": 0,
           "ranking_status": "paper_only_roi_qualified_single",
+          "result_unresolvable_legs": 0,
           "stake_units": 1.0,
           "ticket_id": "fb30465c683905a82186",
           "ticket_type": "single",
@@ -752,12 +756,14 @@
       ],
       "profit_units": 0.3278688524590163,
       "pushes": 0,
+      "result_unresolvable_legs": 0,
       "returned_units": 1.3278688524590163,
       "settled_accas": 0,
       "settled_positions": 1,
       "settled_singles": 1,
       "singles": [
         {
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -1485,6 +1491,7 @@
           "publication_index": 1,
           "push_legs": 0,
           "ranking_status": "paper_only_roi_qualified_single",
+          "result_unresolvable_legs": 0,
           "stake_units": 1.0,
           "ticket_id": "fb30465c683905a82186",
           "ticket_type": "single",
@@ -1492,11 +1499,13 @@
         }
       ],
       "staked_units": 1.0,
+      "unresolved_result_legs": 0,
       "wins": 1
     },
     {
       "accas": [
         {
+          "awaiting_game_legs": 3,
           "bookmakers": [
             "DraftKings"
           ],
@@ -3003,6 +3012,7 @@
               "push_probability": 0.0,
               "raw_probability": 0.7018,
               "residual_games": 0,
+              "result_resolution_status": "awaiting_game",
               "role": "favorite",
               "scheduled_utc": "2026-11-18T00:30:00Z",
               "selection": "home",
@@ -3163,6 +3173,7 @@
               "push_probability": 0.0,
               "raw_probability": 0.6665,
               "residual_games": 0,
+              "result_resolution_status": "awaiting_game",
               "role": "favorite",
               "scheduled_utc": "2026-11-18T00:30:00Z",
               "selection": "home",
@@ -3323,6 +3334,7 @@
               "push_probability": 0.0,
               "raw_probability": 0.6544,
               "residual_games": 0,
+              "result_resolution_status": "awaiting_game",
               "role": "favorite",
               "scheduled_utc": "2026-11-18T00:00:00Z",
               "selection": "home",
@@ -3337,12 +3349,14 @@
           "publication_index": 1,
           "push_legs": 0,
           "ranking_status": "paper_only_strict_gates_passed",
+          "result_unresolvable_legs": 0,
           "stake_units": 1.0,
           "ticket_id": "d9310133bd52028b07c3",
           "ticket_type": "acca",
           "unresolved_legs": 3
         }
       ],
+      "awaiting_game_legs": 3,
       "bank_units": 100.32786885245902,
       "date": "2026-11-17",
       "decision_id": "44041811165_ncaa_m_1_attempt_1",
@@ -3355,6 +3369,7 @@
       "pending_units": 1.0,
       "positions": [
         {
+          "awaiting_game_legs": 3,
           "bookmakers": [
             "DraftKings"
           ],
@@ -4861,6 +4876,7 @@
               "push_probability": 0.0,
               "raw_probability": 0.7018,
               "residual_games": 0,
+              "result_resolution_status": "awaiting_game",
               "role": "favorite",
               "scheduled_utc": "2026-11-18T00:30:00Z",
               "selection": "home",
@@ -5021,6 +5037,7 @@
               "push_probability": 0.0,
               "raw_probability": 0.6665,
               "residual_games": 0,
+              "result_resolution_status": "awaiting_game",
               "role": "favorite",
               "scheduled_utc": "2026-11-18T00:30:00Z",
               "selection": "home",
@@ -5181,6 +5198,7 @@
               "push_probability": 0.0,
               "raw_probability": 0.6544,
               "residual_games": 0,
+              "result_resolution_status": "awaiting_game",
               "role": "favorite",
               "scheduled_utc": "2026-11-18T00:00:00Z",
               "selection": "home",
@@ -5195,6 +5213,7 @@
           "publication_index": 1,
           "push_legs": 0,
           "ranking_status": "paper_only_strict_gates_passed",
+          "result_unresolvable_legs": 0,
           "stake_units": 1.0,
           "ticket_id": "d9310133bd52028b07c3",
           "ticket_type": "acca",
@@ -5203,12 +5222,14 @@
       ],
       "profit_units": null,
       "pushes": 0,
+      "result_unresolvable_legs": 0,
       "returned_units": null,
       "settled_accas": 0,
       "settled_positions": 0,
       "settled_singles": 0,
       "singles": [],
       "staked_units": 0,
+      "unresolved_result_legs": 3,
       "wins": 0
     }
   ],
@@ -5224,6 +5245,7 @@
   "pending_singles": 0,
   "profit_units": 0.3278688524590163,
   "pushes": 0,
+  "result_unresolvable_legs": 0,
   "roi": 0.3278688524590163,
   "schema_version": "magolide.operator.v1",
   "selected_leg_brier_score": 0.06761924136899998,
