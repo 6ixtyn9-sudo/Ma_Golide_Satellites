@@ -454,12 +454,14 @@ def test_betexplorer_cba_rows_with_prices_map_canonical_names():
 # ---------------------------------------------------------------------------
 
 
-def _pregame(league: str, date: str, fetch, text_fetch=None) -> dict:
+def _pregame(league: str, date: str, fetch, text_fetch=None, fixture_now_utc=None) -> dict:
     store = InMemoryStore()
     config = PipelineConfig(
         league=league,
         date_yyyymmdd=date,
-        fixture_now_utc=f"{date[:4]}-{date[4:6]}-{date[6:]}T12:00:00Z",
+        fixture_now_utc=(
+            fixture_now_utc or f"{date[:4]}-{date[4:6]}-{date[6:]}T00:00:00Z"
+        ),
         book=BookConfig(),
     )
     pipeline = Pipeline(config, store, fetch=fetch, fetch_factory=lambda _provider: fetch)
@@ -478,7 +480,13 @@ def _pregame(league: str, date: str, fetch, text_fetch=None) -> dict:
 
 
 def test_euroleague_pregame_reaches_downstream_rows_with_prices():
-    report, store = _pregame("EUROLEAGUE", "20261117", _el_fetch(), _be_text_fetch())
+    report, store = _pregame(
+        "EUROLEAGUE",
+        "20261117",
+        _el_fetch(),
+        _be_text_fetch(),
+        fixture_now_utc=OBSERVED,
+    )
     assert report["fixtures_found"] == 9
     assert not [gap for gap in report["gaps"] if gap.get("required_field") == "book_identity"]
     game_ids = {row["game_id"] for row in report["rows"]}

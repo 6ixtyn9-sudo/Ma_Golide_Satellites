@@ -685,6 +685,17 @@ class Pipeline:
             self.gaps.extend(selection.gaps)
         return selections
 
+    def _book_provider_options(self, provider: str) -> Dict[str, Any]:
+        """Pass deterministic acquisition context to providers when available."""
+        if provider == "theoddsapi":
+            return {"tz_name": self.config.timezone}
+        if provider == "betexplorer" and self.config.fixture_now_utc:
+            # Recorded BetExplorer pages include relative Today/Tomorrow labels.
+            # Pin fixture replays to their configured observation time instead
+            # of the wall clock so results remain stable across calendar days.
+            return {"now_utc": self.config.fixture_now_utc}
+        return {}
+
     def _acquire_book_lines(self, games: List[Game]) -> Dict[str, List[BookSnapshot]]:
         raw_snapshots: List[BookSnapshot] = []
         for provider in _book_providers(self.config.league):
@@ -692,7 +703,7 @@ class Pipeline:
             if module is None or not module.is_enabled():
                 continue
             try:
-                options = {"tz_name": self.config.timezone} if provider == "theoddsapi" else {}
+                options = self._book_provider_options(provider)
                 raw_snapshots.extend(
                     module.fetch_odds(
                         self.config.league.upper(),
@@ -1574,7 +1585,7 @@ class Pipeline:
                 }
                 continue
             try:
-                options = {"tz_name": self.config.timezone} if provider == "theoddsapi" else {}
+                options = self._book_provider_options(provider)
                 output[provider] = module.smoke(
                     self.config.league.upper(), self.fetch_factory, **options
                 )
