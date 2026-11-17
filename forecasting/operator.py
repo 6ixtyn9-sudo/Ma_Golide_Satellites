@@ -71,6 +71,19 @@ BUCKET_LABELS = {
 UTC = timezone.utc
 
 
+def _grade_badge(status: Any) -> str:
+    """Use consistent, accessible text markers for every rendered grade."""
+    normalized = str(status or "unknown").lower()
+    icon, label = {
+        "win": ("✅", "WIN"),
+        "loss": ("❌", "LOSS"),
+        "push": ("➖", "PUSH"),
+        "pending": ("⏳", "PENDING"),
+        "void": ("⚪", "VOID"),
+    }.get(normalized, ("❔", normalized.upper()))
+    return f"{icon} {label}"
+
+
 def _atomic_bytes(path: Path, raw: bytes) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists() and path.read_bytes() == raw:
@@ -671,7 +684,7 @@ def _render_picks(
         lines.append(
             f"      bucket={bucket} · price_evidence={row['price_evidence']} "
             f"· acca_eligible={bool(eligibility.get('acca_eligible'))} "
-            f"· grade={row['grade_status'].upper()}"
+            f"· grade={_grade_badge(row['grade_status'])}"
         )
         lines.append(
             f"      calibration={calibration.get('status', 'unknown')} "
@@ -898,7 +911,8 @@ def _render_pick_audit_markdown(
         f"- dated evidence rows: {report['archived_evidence_rows']} "
         f"({report['superseded_observations']} superseded observations)",
         f"- settled picks: {report['settled_picks']} "
-        f"({wins} wins / {losses} losses / {report['pushes']} pushes)",
+        f"({_grade_badge('win')} {wins} / {_grade_badge('loss')} {losses} / "
+        f"{_grade_badge('push')} {report['pushes']})",
         (
             f"- hit rate: {report['hit_rate']:.1%} ({wins}/{decisions} win/loss decisions)"
             if decisions
@@ -1137,12 +1151,7 @@ def _render_pick_audit_markdown(
         lines.extend([f"### {pick_date}: {home} vs {away} ({final})", ""])
         for row in rows:
             grade = str(row["grade_status"])
-            icon, result = {
-                "win": ("🟢", "WON"),
-                "loss": ("🔴", "LOST"),
-                "push": ("⚪", "PUSH"),
-            }[grade]
-            lines.append(f"- {icon} **{result} — {_audit_market_selection(row)}**")
+            lines.append(f"- **{_grade_badge(grade)} — {_audit_market_selection(row)}**")
             probability = row.get("calibrated_probability")
             if probability is None:
                 probability = row["raw_probability"]
@@ -1171,11 +1180,9 @@ def _render_pick_audit_markdown(
             if opposite_price is None:
                 fade_text = f"not priced ({opposite_reason})"
             else:
-                fade_result = {
-                    "win": "LOST",
-                    "loss": "WON",
-                    "push": "PUSH",
-                }[grade]
+                fade_result = _grade_badge(
+                    {"win": "loss", "loss": "win", "push": "push"}[grade]
+                )
                 fade_side = opposite_side
                 if row.get("market") == "spread" and opposite_side in {"home", "away"}:
                     fade_side = _spread_side_label(row, opposite_side)
@@ -2385,7 +2392,7 @@ def _render_unpriced_candidate_line(
         f"({success_rate['wins']}/{success_rate['decisions']})"
     )
     forecast_id = row.get("forecast_id") or row.get("pick_id") or "unknown"
-    status = str(row.get("grade_status") or "pending").upper()
+    status = _grade_badge(row.get("grade_status"))
     tip = _local_time(str(row["scheduled_utc"]), timezone_name)
     return (
         f"    [{status}] {row['home']} vs {row['away']} · {tip} · "
@@ -2411,7 +2418,7 @@ def _render_priced_ineligible_candidate_line(
     observed = str(book.get("observed_utc") or "time unknown")
     reasons = (row.get("eligibility") or {}).get("reasons") or []
     reason_text = ", ".join(str(reason) for reason in reasons) or "no recorded eligibility reason"
-    status = str(row.get("grade_status") or "pending").upper()
+    status = _grade_badge(row.get("grade_status"))
     tip = _local_time(str(row["scheduled_utc"]), timezone_name)
     forecast_id = row.get("forecast_id") or row.get("pick_id") or "unknown"
     return (
@@ -2448,7 +2455,8 @@ def _render_priced_ineligible_shadow_section(
     qualified = [row for group in groups for row in group]
     grade_counts = Counter(str(row.get("grade_status") or "pending") for row in qualified)
     grade_summary = ", ".join(
-        f"{count} {status.upper()}" for status, count in sorted(grade_counts.items())
+        f"{count} {_grade_badge(status)}"
+        for status, count in sorted(grade_counts.items())
     )
     group_label = "group" if len(groups) == 1 else "groups"
     lines = [
@@ -2463,7 +2471,8 @@ def _render_priced_ineligible_shadow_section(
     for index, group in enumerate(groups, 1):
         group_grades = Counter(str(row.get("grade_status") or "pending") for row in group)
         group_grade_summary = ", ".join(
-            f"{count} {status.upper()}" for status, count in sorted(group_grades.items())
+            f"{count} {_grade_badge(status)}"
+            for status, count in sorted(group_grades.items())
         )
         pick_label = "pick" if len(group) == 1 else "picks"
         lines.append(
@@ -2498,7 +2507,7 @@ def _render_unpriced_audit_section(
     qualified = [row for group in groups for row in group]
     grade_counts = Counter(str(row.get("grade_status") or "pending") for row in qualified)
     grade_summary = ", ".join(
-        f"{count} {status.upper()}"
+        f"{count} {_grade_badge(status)}"
         for status, count in sorted(grade_counts.items())
     )
     group_label = "group" if len(groups) == 1 else "groups"
@@ -2514,7 +2523,7 @@ def _render_unpriced_audit_section(
     for index, group in enumerate(groups, 1):
         group_grades = Counter(str(row.get("grade_status") or "pending") for row in group)
         group_grade_summary = ", ".join(
-            f"{count} {status.upper()}"
+            f"{count} {_grade_badge(status)}"
             for status, count in sorted(group_grades.items())
         )
         pick_label = "pick" if len(group) == 1 else "picks"
@@ -2575,7 +2584,7 @@ def _render_ticket_card(
             f"[{ticket_label}]{provisional_label} "
             f"@{position['combined_decimal_odds']:.3f} "
             f"— {position['stake_units']:.6f} paper units — {books} "
-            f"· {position['grade_status'].upper()}"
+            f"· {_grade_badge(position['grade_status'])}"
         )
         lines.append(
             f"   Published {_local_time(receipt['frozen_at'], timezone_name)} "
@@ -2630,7 +2639,7 @@ def _render_ticket_card(
                     f"   {leg['home']} vs {leg['away']} · "
                     f"TIP-OFF {_local_time(leg['scheduled_utc'], timezone_name)}",
                     f"      {_selection_label(leg)} @{float(price):.3f} "
-                    f"· ML {probability:.1%} · {leg['bucket']} · {leg['grade_status'].upper()}",
+                    f"· ML {probability:.1%} · {leg['bucket']} · {_grade_badge(leg['grade_status'])}",
                 ]
             )
         lines.append("")
@@ -2883,13 +2892,15 @@ def _render_performance(report: Dict[str, Any], timezone_name: str) -> str:
     ]
     if report["wins"] + report["losses"]:
         lines.append(
-            f"RECORD   {report['wins']}W / {report['losses']}L / {report['pushes']}P "
+            f"RECORD   {_grade_badge('win')} {report['wins']}W / "
+            f"{_grade_badge('loss')} {report['losses']}L / "
+            f"{_grade_badge('push')} {report['pushes']}P "
             f"({report['hit_rate']:.1%} hit) · ROI {report['roi']:+.1%}"
         )
     elif settled_positions:
         lines.append(
-            f"RECORD   no win/loss decisions yet · {report['pushes']} pushes · "
-            f"ROI {report['roi']:+.1%}"
+            f"RECORD   no win/loss decisions yet · {_grade_badge('push')} "
+            f"{report['pushes']} pushes · ROI {report['roi']:+.1%}"
         )
     else:
         lines.append("RECORD   no settled paper positions yet")
@@ -2908,7 +2919,9 @@ def _render_performance(report: Dict[str, Any], timezone_name: str) -> str:
         returned = f"{day['returned_units']:.3f}" if day["returned_units"] is not None else "—"
         profit = f"{day['profit_units']:+.3f}" if day["profit_units"] is not None else "—"
         lines.append(
-            f"  {day['date']}  {day['wins']}W/{day['losses']}L/{day['pushes']}P "
+            f"  {day['date']}  {_grade_badge('win')} {day['wins']}W / "
+            f"{_grade_badge('loss')} {day['losses']}L / "
+            f"{_grade_badge('push')} {day['pushes']}P "
             f"staked {day['staked_units']:.3f} returned {returned} net {profit} "
             f"pending {day['pending_units']:.3f} bank* {day['bank_units']:.3f}"
         )
@@ -2936,7 +2949,7 @@ def _render_performance(report: Dict[str, Any], timezone_name: str) -> str:
             for leg in position["legs"]:
                 lines.append(
                     f"      {leg['home']} vs {leg['away']} · {_selection_label(leg)} "
-                    f"· {leg['grade_status'].upper()}"
+                    f"· {_grade_badge(leg['grade_status'])}"
                 )
     if not held:
         lines.append("  None.")
