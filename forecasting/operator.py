@@ -2623,6 +2623,11 @@ def _render_ticket_card(
         "Frozen tickets retain their original decision basis; empty scans do not cancel them.",
         "",
     ]
+    if receipt.get("league") == League.EUROLEAGUE.value:
+        lines[2:2] = [
+            "EUROLEAGUE PRICED-VALUE LANE — exact pre-tip quote; calibrated p × odds > 1.00;",
+            "at least 10 past settled picks and positive ROI in the matching band.",
+        ]
     if not positions:
         lines.extend(["NO PAPER BET — no single or multi-leg paper ticket at publication.", ""])
     type_indexes = Counter()
@@ -2923,6 +2928,12 @@ def _render_empty_ticket_scan(
         "Paper only. No real-money stakes or automatic promotion.",
         "",
     ]
+    if league is League.EUROLEAGUE:
+        lines.insert(
+            3,
+            "EUROLEAGUE PRICED-VALUE LANE — exact pre-tip quote; calibrated p × odds > 1.00; "
+            "at least 10 past settled picks and positive ROI in the matching band.",
+        )
     if priced_ineligible_shadow_picks is None:
         lines.extend(
             _render_unpriced_audit_section(unpriced_audit_picks or [], timezone_name)

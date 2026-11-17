@@ -230,6 +230,9 @@ def filter_paper_candidate_picks(
     half_life_days: float = 14.0,
     prior_strength: float = 3.0,
     result_available_after_hours: float = 4.0,
+    minimum_historical_picks_for_band: int = 1,
+    require_positive_expected_value: bool = False,
+    require_point_in_time_price: bool = False,
 ) -> tuple[List[Forecast], dict]:
     """Route paper picks through adaptive, market-specific positive-ROI bands.
 
@@ -256,9 +259,41 @@ def filter_paper_candidate_picks(
         ):
             qualifier = "non-negative" if allow_zero else "positive"
             raise ValueError(f"{name} must be finite and {qualifier}")
+    if (
+        isinstance(minimum_historical_picks_for_band, bool)
+        or not isinstance(minimum_historical_picks_for_band, int)
+        or minimum_historical_picks_for_band < 1
+    ):
+        raise ValueError("minimum historical picks for band must be a positive integer")
+    if not isinstance(require_positive_expected_value, bool):
+        raise ValueError("require_positive_expected_value must be a boolean")
+    if not isinstance(require_point_in_time_price, bool):
+        raise ValueError("require_point_in_time_price must be a boolean")
     as_of = parse_utc(as_of_utc)
     history_cutoff = as_of - timedelta(hours=float(result_available_after_hours))
-    candidates = _eligible_candidate_picks(forecasts, allow_provisional=True)
+    candidate_pool = _eligible_candidate_picks(forecasts, allow_provisional=True)
+    if require_point_in_time_price:
+        scoped_candidates = []
+        for row in candidate_pool:
+            if not _same_historical_scope(row) or row.book is None:
+                continue
+            try:
+                if parse_utc(row.book.observed_utc) > as_of:
+                    continue
+            except (TypeError, ValueError):
+                continue
+            scoped_candidates.append(row)
+    else:
+        scoped_candidates = candidate_pool
+    candidates = (
+        [
+            row
+            for row in scoped_candidates
+            if float(row.calibrated_probability) * float(row.decimal_price) > 1.0
+        ]
+        if require_positive_expected_value
+        else scoped_candidates
+    )
 
     historical_by_wager: Dict[Tuple[str, str, str, str, str, str], Forecast] = {}
     for forecast in historical_forecasts:
@@ -375,14 +410,22 @@ def filter_paper_candidate_picks(
             else None
         )
         qualifies = (
-            stats["count"] > 0
+            stats["count"] >= minimum_historical_picks_for_band
             and weighted_roi is not None
             and weighted_roi > 0.0
             and adjusted_roi is not None
             and adjusted_roi > 0.0
         )
-        if qualifies:
-            qualifying.extend(rows)
+        qualifying_rows = [
+            row
+            for row in rows
+            if qualifies
+            and (
+                not require_positive_expected_value
+                or float(row.calibrated_probability) * float(row.decimal_price) > 1.0
+            )
+        ]
+        qualifying.extend(qualifying_rows)
         details = {
             "league": league,
             "market": market,
@@ -391,6 +434,11 @@ def filter_paper_candidate_picks(
             "probability_band": probability_band,
             "individual_odds_band": price_band,
             "candidate_pick_count": len(rows),
+            "qualified_candidate_pick_count": sum(
+                not require_positive_expected_value
+                or float(row.calibrated_probability) * float(row.decimal_price) > 1.0
+                for row in rows
+            ) if qualifies else 0,
             "historical_pick_count": stats["count"],
             "wins": stats["wins"],
             "losses": stats["losses"],
@@ -409,13 +457,27 @@ def filter_paper_candidate_picks(
         }
         band_reports.append(details)
         for row in rows:
-            candidate_band_details[row.forecast_id] = dict(details)
+            row_details = dict(details)
+            row_details["expected_value_per_unit"] = round(
+                float(row.calibrated_probability) * float(row.decimal_price) - 1.0, 6
+            )
+            row_details["qualifies"] = row in qualifying_rows
+            candidate_band_details[row.forecast_id] = row_details
 
-    qualifying_band_count = sum(row["qualifies"] for row in band_reports)
+    qualifying_band_count = sum(
+        row["qualified_candidate_pick_count"] > 0 for row in band_reports
+    )
     summary = {
-        "policy": "adaptive_recency_weighted_positive_individual_pick_roi_bands",
+        "policy": (
+            "priced_positive_expected_value_positive_roi_bands"
+            if require_positive_expected_value or require_point_in_time_price
+            else "adaptive_recency_weighted_positive_individual_pick_roi_bands"
+        ),
         "decision_rule": (
-            "at_least_one_settled_pick_and_positive_recency_weighted_band_roi "
+            "minimum_settled_picks_and_positive_recency_weighted_band_roi_and_"
+            "positive_shrinkage_adjusted_roi_and_positive_calibrated_expected_value"
+            if require_positive_expected_value
+            else "minimum_settled_picks_and_positive_recency_weighted_band_roi_"
             "and_positive_shrinkage_adjusted_roi"
         ),
         "history_source": history_source,
@@ -435,7 +497,12 @@ def filter_paper_candidate_picks(
         "half_life_days": float(half_life_days),
         "prior_strength_effective_picks": float(prior_strength),
         "result_available_after_hours": float(result_available_after_hours),
-        "minimum_historical_pick_count_for_band": 1,
+        "minimum_historical_pick_count_for_band": minimum_historical_picks_for_band,
+        "require_positive_expected_value": require_positive_expected_value,
+        "require_point_in_time_price": require_point_in_time_price,
+        "candidate_pool_pick_count": len(candidate_pool),
+        "candidate_with_point_in_time_price_count": len(scoped_candidates),
+        "candidate_positive_expected_value_count": len(candidates),
         "historical_unique_pick_count": historical_count,
         "league_recency_weighted_roi": {
             league: round(roi, 6) if roi is not None else None
@@ -449,6 +516,10 @@ def filter_paper_candidate_picks(
         "candidate_band_details": candidate_band_details,
         "status": (
             "no_eligible_candidate_picks"
+            if not candidate_pool
+            else "no_point_in_time_priced_candidates"
+            if not scoped_candidates
+            else "no_positive_expected_value_candidates"
             if not candidates
             else "no_settled_historical_picks"
             if not historical_count
