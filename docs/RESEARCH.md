@@ -83,17 +83,20 @@ champion probability, and any promotion requires untouched prospective data.
 
 Summary acquisition can retain team/player boxscores, leaders, injuries,
 recent form, predictor context, and coverage counts for play-by-play,
-win-probability, shot-chart, and standings resources. These are evidence
-coverage, not automatically model inputs. A post-game summary can contain the
-game's own player statistics and in-play win probability; using either as a
-pre-tip feature would leak the result.
+win-probability, shot-chart, and standings resources. A post-game summary can
+contain the target game's own player statistics and in-play win probability;
+using either as a pre-tip feature would leak the result.
 
-`MarketForecastService` now emits `espn_player_context_candidates`: rolling
-player minutes/points/rebounds/assists from prior ESPN boxscores that were
-observed by the forecast cutoff, timestamp-valid last-five results filtered to
-pre-target event dates, and timestamped against-the-spread summaries. It also
-includes current-game injury entries only when an injury summary or league
-snapshot was observed before both the cutoff and tip.
+`MarketForecastService` emits `espn_player_context_candidates`: rolling player
+minutes/points/rebounds/assists from prior ESPN boxscores that were observed by
+the forecast cutoff, timestamp-valid last-five results filtered to pre-target
+event dates, and timestamped against-the-spread summaries. It also includes
+current-game injury entries only when an injury summary or league snapshot was
+observed before both the cutoff and tip. Confirmed-out statuses plus prior
+player scoring contributions now feed the separate, bounded
+`context_availability` full-game empirical surface. Other context fields remain
+candidate/diagnostic only; the evidence record and source timestamps are retained
+for audit.
 The NBA league injury endpoint is captured once per eligible pregame run; it is
 not treated as league-wide coverage unless both teams are present. NCAA summary
 injury coverage remains provider-specific and absent entries are not converted
@@ -205,3 +208,18 @@ quality, identify poorly calibrated segments, and rank explicitly eligible
 combinations under stated assumptions. Do not describe output as a lock,
 certainty, guaranteed return, certified maximum, or production-validated
 betting system without separate prospective evidence and execution controls.
+
+## Availability surface (context_availability) — open research questions
+
+The confirmed-out production scale is a transparent, bounded, data-driven
+estimate, not a validated impact model. It overstates true impact because
+replacement production is not modeled; the surface's own calibration segment
+is where the bias shows up. Before any strict lane relies on it: (1) compare
+prequential calibration of ``context_availability`` segments against the base
+empirical segments per league; (2) sweep ``points_coefficient`` and
+``max_scale`` on historical replays instead of tuning on live paper results;
+(3) verify WNBA summary injury field presence on real payloads (coverage is
+unverified); (4) decide whether questionable/day-to-day statuses justify a
+probabilistic extension. Form/ATS and BPI auxiliary metrics stay excluded:
+both re-measure signal already present in reconciled history and provider
+predictions.

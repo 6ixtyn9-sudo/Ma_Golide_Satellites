@@ -1,7 +1,8 @@
-"""Point-in-time ESPN player/availability features for forecast diagnostics.
+"""Point-in-time ESPN player/availability evidence for forecast surfaces.
 
-The returned values are candidate features only: they are not consumed by the
-probability model until a separate walk-forward challenger validates them.
+The evidence record remains fully auditable. Confirmed-out status plus prior
+boxscore production feeds the separate, bounded context_availability surface;
+other context fields remain candidate-only.
 """
 
 from __future__ import annotations
@@ -417,6 +418,19 @@ def _injury_entries(game: Game, *, as_of_utc: str) -> tuple[str, List[Dict[str, 
     return status, rows, observed
 
 
+def has_confirmed_out_injury(game: Game, *, as_of_utc: str) -> bool:
+    """Fast point-in-time gate for the availability model surface.
+
+    Historical walk-forward replay calls the forecast generator once per final.
+    Avoid rebuilding player-history windows when the target has no admissible
+    confirmed-out report; this also centralizes status/time interpretation in
+    the same injury parser used by the published candidate record.
+    """
+    _, entries, _ = _injury_entries(game, as_of_utc=as_of_utc)
+    confirmed_out = {"out", "out for season", "inactive"}
+    return any(str(row.get("status") or "").strip().lower() in confirmed_out for row in entries)
+
+
 def build_espn_player_context(
     game: Game,
     historical_games: Iterable[Game],
@@ -530,7 +544,7 @@ def build_espn_player_context(
         "game_id": game.game_id,
         "league": game.league.value,
         "as_of_utc": as_of_utc,
-        "feature_role": "shadow_candidate_only_not_used_to_change_probability",
+        "feature_role": "context_availability_surface_input; base_and_provider_surfaces_unchanged",
         "injury_snapshot_status": injury_state,
         "injury_snapshot_observed_utc": injury_observed,
         "reported_injury_entries": injuries,

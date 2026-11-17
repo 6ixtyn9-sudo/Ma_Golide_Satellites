@@ -33,7 +33,11 @@ from .accas import (
     filter_paper_candidate_picks,
     is_provisional_sample_only,
 )
-from .espn_context import build_espn_player_context
+from .context_adjustment import (
+    ContextAdjustmentConfig,
+    build_context_adjustment,
+)
+from .espn_context import build_espn_player_context, has_confirmed_out_injury
 from .feature_manifest import build_feature_use_manifest
 from .harness import (
     CalibrationConfig,
@@ -53,6 +57,11 @@ from .types import Forecast, MODEL_VERSION, grade_forecast
 
 
 class MarketForecastService:
+    # Leagues whose ESPN evidence path can support the availability surface.
+    _ESPN_CONTEXT_LEAGUES = frozenset(
+        {League.NBA, League.WNBA, League.NCAA_M, League.NCAA_W}
+    )
+
     def __init__(
         self,
         store,
@@ -63,6 +72,7 @@ class MarketForecastService:
         book_config: BookConfig | None = None,
         provider_order: Sequence[str] = DEFAULT_PROVIDER_ORDER,
         paper_pick_history: Iterable[Forecast] | None = None,
+        context_config: ContextAdjustmentConfig | None = None,
     ) -> None:
         self.store = store
         self.league = league
@@ -73,7 +83,8 @@ class MarketForecastService:
         self.paper_pick_history = (
             None if paper_pick_history is None else list(paper_pick_history)
         )
-        self.model = HistoryModel(self.forecast_config)
+        self.context_config = context_config or ContextAdjustmentConfig()
+        self.model = HistoryModel(self.forecast_config, self.context_config)
         self.shadow_config = RecencyConfig(
             result_delay_hours=self.forecast_config.result_available_after_hours
         )
@@ -162,6 +173,28 @@ class MarketForecastService:
             ),
         )
 
+    def _context_adjustment(
+        self, game: Game, finals: Sequence[Game], *, as_of_utc: str
+    ):
+        """Availability adjustment for one game, or None when evidence is absent.
+
+        Built from the same candidate record the report publishes, so forecast
+        metadata and the report's evidence block can never disagree. The
+        candidate record itself stays report-only; only its bounded scale
+        reaches the model, and only on the separate context surface.
+        """
+        if self.league not in self._ESPN_CONTEXT_LEAGUES:
+            return None
+        if not has_confirmed_out_injury(game, as_of_utc=as_of_utc):
+            return None
+        record = build_espn_player_context(
+            game,
+            finals,
+            as_of_utc=as_of_utc,
+            result_delay_hours=self.forecast_config.result_available_after_hours,
+        )
+        return build_context_adjustment(record, config=self.context_config)
+
     def _generate(
         self,
         game: Game,
@@ -175,6 +208,7 @@ class MarketForecastService:
         )
         predictions = self._predictions(game, as_of_utc=as_of_utc, historical=historical)
         snapshots = self._books(game, as_of_utc=as_of_utc, historical=historical)
+        context = self._context_adjustment(game, finals, as_of_utc=as_of_utc)
         frozen_books = {
             (
                 f"{snapshot.provider}|{snapshot.book}|{snapshot.market.value}|"
@@ -237,6 +271,33 @@ class MarketForecastService:
                 frozen_books,
             )
         )
+        if context is not None:
+            # Availability surface: full-game moneyline and lines only,
+            # empirical history only, its own source and calibration segment.
+            # It never modifies base or provider forecasts.
+            forecasts.extend(
+                self.model.period_winner(
+                    game,
+                    history,
+                    full_game_moneyline_books,
+                    frozen_books,
+                    period=Period.FULL_GAME,
+                    context=context,
+                )
+            )
+            full_game_line_snapshots = [
+                snapshot for snapshot in line_snapshots if snapshot.period is Period.FULL_GAME
+            ]
+            if full_game_line_snapshots:
+                forecasts.extend(
+                    self.model.lines(
+                        game,
+                        history,
+                        full_game_line_snapshots,
+                        frozen_books,
+                        context=context,
+                    )
+                )
         for prediction, prediction_frozen in predictions:
             if not any(
                 value is not None
@@ -431,7 +492,7 @@ class MarketForecastService:
             current.extend(generated)
         current = apply_profiles(current, current_profiles, self.calibration_config)
         espn_player_context_candidates: Dict[str, Dict[str, Any]] = {}
-        if self.league in {League.NBA, League.WNBA, League.NCAA_M, League.NCAA_W}:
+        if self.league in self._ESPN_CONTEXT_LEAGUES:
             for game in upcoming:
                 espn_player_context_candidates[game.game_id] = build_espn_player_context(
                     game,
@@ -745,8 +806,17 @@ class MarketForecastService:
                     "provider expected scores/margin/total as separate hybrid line forecasts",
                 ],
                 "espn_player_context": (
-                    "candidate evidence is emitted below; not yet applied to "
-                    "probabilities or eligibility"
+                    "confirmed-out availability drives the separate "
+                    "context_availability surface (bounded multiplicative scale "
+                    "on the empirical surface only); the full candidate record "
+                    "is preserved below for audit"
+                ),
+                "context_availability_surface": (
+                    "full-game moneyline and line forecasts scaled by "
+                    "confirmed-out player scoring contribution; requires a "
+                    "point-in-time injury snapshot and window evidence for both "
+                    "teams; own calibration segment; never blended into base "
+                    "or provider surfaces; zero adjustment emits no forecasts"
                 ),
                 "espn_bpi_auxiliary_metrics": (
                     "finite numeric non-core BPI values are retained for audit; "
