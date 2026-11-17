@@ -9,7 +9,7 @@ Operator evidence files live beneath one league's localdata directory:
   files are full forecast evidence kept in the active cache and workflow artifacts.
 - ``picks_YYYY-MM-DD.txt`` is the compact human card retained in Git.
 - ``auto_tickets_YYYY-MM-DD_decision.json`` is an immutable paper receipt.
-- ``auto_tickets_YYYY-MM-DD.txt`` renders a receipt with current leg grades.
+- ``auto_tickets_YYYY-MM-DD.txt`` is a mutable card rendering of the frozen decision and latest available grades.
 - ``auto_tickets_state.json`` stores write-once date locks and bounded scan telemetry.
 - ``auto_tickets_performance.json`` / ``.txt`` reconstruct paper performance.
 
@@ -2648,8 +2648,8 @@ def _render_ticket_card(
         )
     lines.extend(
         [
-            f"FROZEN AT {_local_time(receipt['frozen_at'], timezone_name)[11:16]} - FINAL",
-            "Existing tickets are unchanged by later scans or corrected forecasts.",
+            f"DECISION FROZEN AT {_local_time(receipt['frozen_at'], timezone_name)[11:16]}",
+            "Selections, prices, and stakes stay frozen; displayed grades refresh when reconciled results arrive.",
             "Paper only. No real-money stakes or automatic promotion.",
             "",
         ]
@@ -2956,6 +2956,85 @@ def _render_performance(report: Dict[str, Any], timezone_name: str) -> str:
     return "\n".join(lines)
 
 
+def _ticket_card_audit_kwargs(
+    localdata: Path,
+    *,
+    target_date: str,
+    league: League,
+    settled_history: List[Dict[str, Any]],
+) -> Optional[Dict[str, Any]]:
+    """Build the audit-only card sections from a date's regraded pick ledger."""
+    path = Path(localdata) / f"picks_{target_date}.json"
+    if not path.exists():
+        return None
+    rows = _read_json(path, [])
+    if not isinstance(rows, list):
+        raise ValueError(f"dated pick ledger must be a list: {path}")
+    if not rows:
+        return None
+    logical_rows = _latest_logical_rows(rows)
+    unpriced = [row for row in logical_rows if not _has_exact_selected_price(row)]
+    if league == League.NCAA_M:
+        priced_ineligible = _priced_ineligible_rows(logical_rows)
+        return {
+            "unpriced_audit_picks": None,
+            "priced_ineligible_shadow_picks": _priced_ineligible_shadow_candidates(
+                priced_ineligible
+            ),
+            "priced_ineligible_audited_count": len(priced_ineligible),
+        }
+    return {
+        "unpriced_audit_picks": _annotate_unpriced_audit_rows(
+            unpriced, settled_history
+        ),
+        "priced_ineligible_shadow_picks": None,
+        "priced_ineligible_audited_count": 0,
+    }
+
+
+def _preserve_ticket_audit_section(rendered: str, existing_path: Path) -> str:
+    """Keep the original audit-only section if its dated pick artifact is absent."""
+    try:
+        old_lines = existing_path.read_text().splitlines()
+    except OSError:
+        return rendered
+    start = next(
+        (
+            index
+            for index, line in enumerate(old_lines)
+            if line.startswith(
+                (
+                    "UNPRICED AUDIT-ONLY SHADOW GROUPS",
+                    "PRICED-INELIGIBLE AUDIT-ONLY SHADOW GROUPS",
+                )
+            )
+        ),
+        None,
+    )
+    if start is None:
+        return rendered
+    end = next(
+        (
+            index
+            for index in range(start + 1, len(old_lines))
+            if old_lines[index].startswith(("FROZEN AT ", "DECISION FROZEN AT "))
+        ),
+        len(old_lines),
+    )
+    audit_lines = old_lines[start:end]
+    new_lines = rendered.splitlines()
+    footer = next(
+        (
+            index
+            for index, line in enumerate(new_lines)
+            if line.startswith("DECISION FROZEN AT ")
+        ),
+        len(new_lines),
+    )
+    new_lines[footer:footer] = ["", *audit_lines]
+    return "\n".join(new_lines)
+
+
 def publish_operator_reports(
     store,
     league: League,
@@ -3126,33 +3205,41 @@ def publish_operator_reports(
         localdata / "auto_tickets_performance.txt",
         _render_performance(performance, timezone_name),
     )
-    ticket_path = None
-    if receipt is not None:
-        graded_receipt = next(
-            row
-            for row in performance["history"]
-            if (row["date"], row["decision_id"]) == (receipt["date"], receipt["decision_id"])
+    performance_by_receipt = {
+        (str(row["date"]), str(row["decision_id"])): row
+        for row in performance["history"]
+    }
+    # Decision JSON stays immutable; refresh each active receipt's dated card
+    # from its graded copy so old PENDING labels do not outlive result scans.
+    for frozen_receipt in receipts:
+        receipt_key = (
+            str(frozen_receipt["date"]),
+            str(frozen_receipt["decision_id"]),
         )
-        ticket_path = _write_text(
-            localdata / f"auto_tickets_{target_date}.txt",
-            _render_ticket_card(
-                graded_receipt,
-                performance,
-                timezone_name,
-                unpriced_audit_picks=dated_unpriced_audit,
-                priced_ineligible_shadow_picks=(
-                    dated_priced_ineligible_shadow
-                    if league == League.NCAA_M
-                    else None
-                ),
-                priced_ineligible_audited_count=(
-                    len(dated_priced_ineligible)
-                    if league == League.NCAA_M
-                    else 0
-                ),
-            ),
+        graded_receipt = performance_by_receipt.get(receipt_key)
+        if graded_receipt is None:
+            raise ValueError(f"graded performance missing frozen receipt {receipt_key}")
+        card_path = localdata / f"auto_tickets_{receipt_key[0]}.txt"
+        audit_kwargs = _ticket_card_audit_kwargs(
+            localdata,
+            target_date=receipt_key[0],
+            league=league,
+            settled_history=settled_history,
         )
-    else:
+        if audit_kwargs is None:
+            audit_kwargs = {"unpriced_audit_picks": []}
+        rendered_card = _render_ticket_card(
+            graded_receipt,
+            performance,
+            timezone_name,
+            **audit_kwargs,
+        )
+        if "priced_ineligible_shadow_picks" not in audit_kwargs:
+            rendered_card = _preserve_ticket_audit_section(rendered_card, card_path)
+        _write_text(card_path, rendered_card)
+
+    ticket_path = str(localdata / f"auto_tickets_{target_date}.txt")
+    if receipt is None:
         ticket_path = _write_text(
             localdata / f"auto_tickets_{target_date}.txt",
             _render_empty_ticket_scan(

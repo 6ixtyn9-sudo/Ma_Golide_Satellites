@@ -44,7 +44,7 @@ profitability.
 | `picks_audit_rolling.json` | Thirty-day logical and settled ledgers; cache/artifact only, not Git |
 | `picks_audit_YYYY-MM-DD.md` | Expanded rolling summary; cache/artifact only, not Git |
 | `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper singles and accas |
-| `auto_tickets_YYYY-MM-DD.txt` | Frozen receipt with leg grades, or an explicit unfrozen no-bet card; audit-only shadow display (unpriced generally, priced-ineligible for NCAA_M) |
+| `auto_tickets_YYYY-MM-DD.txt` | Mutable card showing the immutable decision and latest available ticket/shadow grades, or the latest unfrozen no-bet scan |
 | `auto_tickets_state.json` | Write-once date locks and bounded scan telemetry |
 | `auto_tickets_performance.json` | Complete reconstructed paper-position performance state and history |
 | `auto_tickets_performance.txt` | Bank, settled record, bet-days, held positions, and grading notes |
@@ -197,11 +197,14 @@ or multi-leg acca) for a league/date writes a decision receipt and a write-once
 state lock. This includes a provisional paper position when the existing
 sample-size-only exception applies. New receipts store singles separately from
 accas and preserve the settled-pick ROI-band snapshot and provisional status/sample
-counts. Subsequent scans reprint the receipt even if the new candidate set
-differs. A missing locked receipt is an error; the engine never silently
-rebuilds or rotates a published card. A receipt recovered without its state lock
-adopts a lock from the immutable receipt itself. Existing frozen receipts are
-never rebalanced or rewritten by selection-policy changes.
+counts. Subsequent scans re-render each dated text card from the immutable
+receipt, current reconciled leg results, and the dated pick ledger (when
+available), even if the new candidate set differs. Ticket and audit-shadow grade
+labels therefore refresh, while selections, prices, stakes, and receipt bytes
+remain frozen. A missing locked receipt is an error; the engine never silently
+rebuilds or rotates a published decision. A receipt recovered without its state
+lock adopts a lock from the immutable receipt itself. Existing frozen receipts
+are never rebalanced or rewritten by selection-policy changes.
 
 A withdrawal is a deliberate exception recorded in `auto_tickets_state.json`:
 its decision ID is excluded from performance, its date cannot receive a
