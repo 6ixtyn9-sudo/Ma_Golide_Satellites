@@ -496,6 +496,12 @@ def test_ticket_is_frozen_empty_scans_do_not_cancel_and_known_leg_loss_settles(t
         leg["result_resolution_status"] == "awaiting_game"
         for leg in position["legs"]
     )
+    performance_text = Path(first["performance_text"]).read_text()
+    pending_day_line = next(
+        line for line in performance_text.splitlines() if line.startswith("  2026-11-07")
+    )
+    assert "pending 1.000" in pending_day_line
+    assert not any(icon in pending_day_line for icon in ("✅", "❌", "➖"))
     ticket_text = Path(first["ticket_text"]).read_text()
     assert "DECISION FROZEN AT 20:00" in ticket_text
     assert "displayed grades refresh when reconciled results arrive" in ticket_text
@@ -813,9 +819,17 @@ def test_acca_is_a_loss_as_soon_as_any_leg_loses_while_other_legs_are_pending(tm
     assert performance["settled_accas"] == 1
     assert performance["pending_accas"] == 0
     assert "· ❌ LOSS" in Path(result["ticket_text"]).read_text()
-    assert "✅ WIN 0W / ❌ LOSS 1L / ➖ PUSH 0P" in Path(
-        result["performance_text"]
-    ).read_text()
+    performance_text = Path(result["performance_text"]).read_text()
+    record_line = next(line for line in performance_text.splitlines() if line.startswith("RECORD"))
+    bet_day_line = next(
+        line for line in performance_text.splitlines() if line.startswith("  2026-11-07")
+    )
+    assert "❌ LOSS 1L" in record_line
+    assert "✅ WIN" not in record_line
+    assert "➖ PUSH" not in record_line
+    assert "❌ LOSS 1L" in bet_day_line
+    assert "✅ WIN" not in bet_day_line
+    assert "➖ PUSH" not in bet_day_line
 
 
 @pytest.mark.parametrize("result_case", ["missing_game", "unreconciled_final"])
@@ -1279,6 +1293,15 @@ def test_paper_single_settles_at_single_odds_and_keeps_write_once_receipt(tmp_pa
     assert "[PAPER SINGLE #1]" in ticket_text
     assert "· ✅ WIN" in ticket_text
     assert "Home 1 vs Away 1" in ticket_text
+    performance_text = Path(settled["performance_text"]).read_text()
+    record_line = next(line for line in performance_text.splitlines() if line.startswith("RECORD"))
+    bet_day_line = next(
+        line for line in performance_text.splitlines() if line.startswith("  2026-11-07")
+    )
+    assert "✅ WIN 1W" in record_line and "❌ LOSS" not in record_line
+    assert "➖ PUSH" not in record_line
+    assert "✅ WIN 1W" in bet_day_line and "❌ LOSS" not in bet_day_line
+    assert "➖ PUSH" not in bet_day_line
 
 
 def test_provisional_sample_only_acca_is_frozen_as_labeled_paper_evidence(tmp_path):
@@ -2043,6 +2066,10 @@ def test_prior_dated_picks_are_graded_without_changing_frozen_evidence(tmp_path)
     assert audit["profit_units"] == pytest.approx(0.8)
     assert len(audit["settled_ledger"]) == 1
     audit_text = Path(first["dated_audit"]).read_text()
+    overall = audit_text.split("## Overall", 1)[1].split("## ", 1)[0]
+    assert "- settled picks: 1 (✅ WIN 1)" in overall
+    assert "❌ LOSS" not in overall
+    assert "➖ PUSH" not in overall
     assert "## Settled picks — official-final audit" in audit_text
     assert "### 2026-11-07: Home 1 vs Away 1 (Final: **105–100**)" in audit_text
     assert "**✅ WIN — Full-game moneyline: Home 1 (home)**" in audit_text
