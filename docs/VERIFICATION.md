@@ -157,8 +157,11 @@ prediction and correctly reported zero reconciled finals.
   inspection for WNBA cache restoration, deep cursor creation, and ledgers.
 - Highest-quarter book prices are not supplied by a current adapter, so HQ
   forecasts cannot enter accas.
-- EuroLeague book coverage remains unenabled; full-game spread observations
-  can be stored but are not a current full-game spread forecast family.
+- EuroLeague bookmaker coverage currently uses BetExplorer's representative
+  average full-game moneyline when quotes are posted. Coverage is sparse, source
+  reuse terms remain unreviewed, and no spread/total book family is enabled;
+  full-game spread observations can be stored but are not a current full-game
+  spread forecast family.
 - Derived markets require 20 baseline history games plus 20 eligible residual
   simulations by default; strict acca eligibility separately requires 30 graded
   non-push samples. The paper-only exploratory path may bypass only that sample

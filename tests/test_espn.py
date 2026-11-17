@@ -132,6 +132,10 @@ def test_golden_bpi_401909938_maps_exact_prediction_facts(load_fixture, fixture_
     assert prediction.expected_margin == pytest.approx(-9.506)
     assert prediction.source_modified_utc == "2026-11-06T21:51:00Z"
     assert prediction.source_revision == "2026-11-06T21:51Z"
+    assert prediction.auxiliary_metrics == {
+        "stats_side": "away",
+        "metrics": {"matchupQuality": 29.629},
+    }
     assert prediction.pre_tip is True
 
 
@@ -265,6 +269,19 @@ def test_bpi_missing_expected_scores_keeps_probabilities_and_gaps(load_fixture, 
 def test_dual_sided_ncaa_bpi_maps_both_team_probabilities(load_fixture, fixture_fetch):
     event_id = "401909760"
     payload = load_fixture("espn/predictor_ncaa_dual_401909760.json")
+    for side in ("homeTeam", "awayTeam"):
+        payload[side]["statistics"].extend(
+            {"name": name, "value": value}
+            for name, value in (
+                ("teampredwinpct", 0.61),
+                ("teampredmov", 4.2),
+                ("opponentpredwinpct", 0.39),
+                ("rawgamescore", 71.5),
+                ("debugText", "not numeric"),
+                ("invalidNumber", "NaN"),
+                ("booleanFlag", True),
+            )
+        )
     prediction = fetch_bpi(
         event_id,
         fixture_fetch({f"competitions/{event_id}/predictor": payload}),
@@ -279,6 +296,18 @@ def test_dual_sided_ncaa_bpi_maps_both_team_probabilities(load_fixture, fixture_
     assert prediction.expected_away_score is None
     assert prediction.expected_total is None
     assert prediction.expected_margin is None
+    expected_auxiliary = {
+        "matchupquality": 69.9721,
+        "teamChanceTie": 0.0,
+        "teampredwinpct": 0.61,
+        "teampredmov": 4.2,
+        "opponentpredwinpct": 0.39,
+        "rawgamescore": 71.5,
+    }
+    assert prediction.auxiliary_metrics == {
+        "home": expected_auxiliary,
+        "away": expected_auxiliary,
+    }
 
 
 def test_dual_sided_bpi_cross_validates_expected_scores(load_fixture, fixture_fetch):

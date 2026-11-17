@@ -319,6 +319,9 @@ class Prediction:
     expected_total: Optional[float] = None
     expected_margin: Optional[float] = None  # home minus away
     source_revision: Optional[str] = None  # artifact hash / commit / lastModified
+    # Additional provider-supplied, validated scalar fields retained for
+    # diagnostics/research; never used as model features implicitly.
+    auxiliary_metrics: Dict[str, Any] = field(default_factory=dict)
     pre_tip: bool = True
 
     def __post_init__(self) -> None:

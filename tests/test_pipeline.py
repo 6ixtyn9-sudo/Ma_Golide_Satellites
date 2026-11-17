@@ -34,6 +34,7 @@ def _nba_fetch(
         "scoreboard": scoreboard,
         "competitions/401909938/predictor": predictor,
         "summary?event=401909938": "espn/summary_401909938_context.json",
+        "nba/injuries": "espn/injuries_sample.json",
         "game_forecasts": hardwood_path,
     }
 
@@ -104,6 +105,10 @@ def test_pregame_dry_run_returns_canonical_prediction_and_book_gaps():
     assert row["book_evidence"]["full_game"] is None
     assert any(gap["required_field"].startswith("book_") for gap in report["gaps"])
     assert len(store.get_predictions("401909938")) == 1
+    assert report["espn_context"]["nba_injuries"]["status"] == "ok"
+    attached = store.get_game("401909938").evidence["espn"]["league_injuries"]
+    assert attached["team_coverage_complete"] is True
+    assert attached["teams"]["11"][0]["athlete_id"] == "player-1"
 
 
 def test_pregame_uses_only_fresh_exact_book_evidence():

@@ -33,6 +33,8 @@ from .accas import (
     filter_paper_candidate_picks,
     is_provisional_sample_only,
 )
+from .espn_context import build_espn_player_context
+from .feature_manifest import build_feature_use_manifest
 from .harness import (
     CalibrationConfig,
     apply_profiles,
@@ -379,6 +381,15 @@ class MarketForecastService:
                 )
             current.extend(generated)
         current = apply_profiles(current, current_profiles, self.calibration_config)
+        espn_player_context_candidates: Dict[str, Dict[str, Any]] = {}
+        if self.league in {League.NBA, League.WNBA, League.NCAA_M, League.NCAA_W}:
+            for game in upcoming:
+                espn_player_context_candidates[game.game_id] = build_espn_player_context(
+                    game,
+                    finals,
+                    as_of_utc=as_of_utc,
+                    result_delay_hours=self.forecast_config.result_available_after_hours,
+                )
         if shadow_profiles is not None:
             previous_shadow = [dict(forecast.shadow_calibration) for forecast in current]
             try:
@@ -606,6 +617,15 @@ class MarketForecastService:
         provisional_games = {forecast.game_id for forecast in provisional_rows}
         paper_candidate_games = eligible_games | provisional_games
         paper_quality_candidate_games = {forecast.game_id for forecast in paper_candidates}
+        feature_use_manifest = build_feature_use_manifest(
+            league=self.league,
+            games=games,
+            upcoming=upcoming,
+            store=self.store,
+            as_of_utc=as_of_utc,
+            candidate_contexts=espn_player_context_candidates,
+            result_delay_hours=self.forecast_config.result_available_after_hours,
+        )
         return {
             "schema_version": "magolide.market_forecasts.v1",
             "status": "decision_support_only",
@@ -654,6 +674,28 @@ class MarketForecastService:
             "forecast_count": len(current),
             "forecasts_by_market": dict(sorted(market_counts.items())),
             "uncovered_games": uncovered,
+            "feature_use_audit": {
+                "team_history_empirical_v1": [
+                    "reconciled pre-tip historical team scores and period scores",
+                    "team/league scoring baselines and historical score residuals",
+                    "current posted market line",
+                ],
+                "provider_prediction": [
+                    "selected pre-tip provider probabilities",
+                    "provider expected scores/margin/total when supplied",
+                ],
+                "espn_player_context": (
+                    "candidate evidence is emitted below; not yet applied to "
+                    "probabilities or eligibility"
+                ),
+                "espn_bpi_auxiliary_metrics": (
+                    "finite numeric non-core BPI values are retained for audit; "
+                    "not applied to probabilities, calibration, or eligibility"
+                ),
+                "source_coverage": "see feature_use_manifest for observed counts and league-specific support",
+            },
+            "feature_use_manifest": feature_use_manifest,
+            "espn_player_context_candidates": espn_player_context_candidates,
             "forecasts": [forecast.to_dict() for forecast in current],
             "accas": {
                 "mode": "paper_only",

@@ -70,6 +70,7 @@ SUMMARY_URL = (
     "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/summary?event={event_id}"
 )
 STANDINGS_URL = "https://site.api.espn.com/apis/v2/sports/basketball/nba/standings"
+INJURIES_URL = "https://site.api.espn.com/apis/site/v2/sports/basketball/nba/injuries"
 BPI_URL = (
     "https://sports.core.api.espn.com/v2/sports/basketball/leagues/nba/"
     "events/{event_id}/competitions/{event_id}/predictor"
@@ -903,6 +904,33 @@ def _stats_by_name(statistics: List[Dict[str, Any]]) -> Dict[str, Any]:
     return {s.get("name"): s.get("value") for s in statistics or []}
 
 
+def _auxiliary_bpi_metrics(stats: Dict[str, Any]) -> Dict[str, float]:
+    """Retain finite numeric BPI diagnostics without promoting them to inputs."""
+    core_fields = {
+        "gameProjection",
+        "teamChanceLoss",
+        "teamExpectedPts",
+        "oppExpectedPts",
+        "teamPredPtDiff",
+    }
+    metrics: Dict[str, float] = {}
+    for name, value in stats.items():
+        if (
+            not isinstance(name, str)
+            or name in core_fields
+            or value is None
+            or isinstance(value, bool)
+        ):
+            continue
+        try:
+            number = float(value)
+        except (TypeError, ValueError, OverflowError):
+            continue
+        if math.isfinite(number):
+            metrics[name] = number
+    return metrics
+
+
 def _dual_sided_bpi_prediction(
     event_id: str,
     payload: Dict[str, Any],
@@ -1025,6 +1053,14 @@ def _dual_sided_bpi_prediction(
             else None
         ),
         expected_margin=margins[0] if margins else None,
+        auxiliary_metrics={
+            side: metrics
+            for side, metrics in (
+                ("home", _auxiliary_bpi_metrics(home_stats)),
+                ("away", _auxiliary_bpi_metrics(away_stats)),
+            )
+            if metrics
+        },
     )
     prediction.validate_orientation(tolerance=MARGIN_TOLERANCE)
     return prediction
@@ -1152,6 +1188,7 @@ def fetch_bpi(
     )
 
     last_modified = payload.get("lastModified")
+    auxiliary_metrics = _auxiliary_bpi_metrics(stats)
     prediction = Prediction(
         game_id=str(event_id),
         provider="espn",
@@ -1167,6 +1204,14 @@ def fetch_bpi(
         expected_away_score=expected_away,
         expected_total=expected_total,
         expected_margin=expected_margin,
+        auxiliary_metrics=(
+            {
+                "stats_side": "home" if stats_is_home else "away",
+                "metrics": auxiliary_metrics,
+            }
+            if auxiliary_metrics
+            else {}
+        ),
     )
     # Belt-and-braces: the canonical validator re-checks orientation
     # (score-vs-margin and score-vs-total consistency) before release.
@@ -1345,6 +1390,77 @@ def fetch_recent_results(
         }
         results.append(replace(game, actual=actual))
     return results
+
+
+def fetch_nba_injuries(
+    fetch: FetchFn,
+    *,
+    observed_utc: Optional[str] = None,
+) -> Dict[str, Any]:
+    """Fetch a compact NBA injury snapshot with explicit time provenance.
+
+    This endpoint is NBA-only. The returned snapshot is evidence, not a model
+    probability adjustment; consumers must check ``observed_utc`` against the
+    forecast cutoff and must treat a missing player entry as unknown.
+    """
+    payload = fetch(INJURIES_URL)
+    if not isinstance(payload, dict):
+        raise ValueError("NBA injuries endpoint returned a non-object payload")
+    raw_teams = payload.get("injuries") or payload.get("teams")
+    if not isinstance(raw_teams, list):
+        raise ValueError("NBA injuries payload has no team injury list")
+    observed = to_utc_iso(parse_utc(observed_utc)) if observed_utc else now_utc_iso()
+    source_timestamp = payload.get("timestamp")
+    try:
+        source_modified = to_utc_iso(parse_utc(str(source_timestamp))) if source_timestamp else None
+    except (TypeError, ValueError):
+        source_modified = None
+    teams: Dict[str, List[Dict[str, Any]]] = {}
+    teams_seen = 0
+    entries_seen = 0
+    for row in raw_teams:
+        if not isinstance(row, dict):
+            continue
+        team_obj = row.get("team") if isinstance(row.get("team"), dict) else row
+        team_id = str(team_obj.get("id") or row.get("teamId") or "").strip()
+        if not team_id:
+            continue
+        teams_seen += 1
+        injuries = row.get("injuries") or []
+        if not isinstance(injuries, list):
+            continue
+        output = teams.setdefault(team_id, [])
+        for injury in injuries:
+            if not isinstance(injury, dict):
+                continue
+            athlete = injury.get("athlete") if isinstance(injury.get("athlete"), dict) else {}
+            athlete_id = str(athlete.get("id") or injury.get("athleteId") or "").strip()
+            if not athlete_id:
+                continue
+            details = injury.get("details") if isinstance(injury.get("details"), dict) else {}
+            output.append(
+                {
+                    "athlete_id": athlete_id,
+                    "name": athlete.get("displayName") or athlete.get("shortName"),
+                    "status": injury.get("status"),
+                    "type": details.get("type") or injury.get("type"),
+                    "detail": details.get("detail") or injury.get("description"),
+                    "date": injury.get("date"),
+                }
+            )
+            entries_seen += 1
+    if not teams_seen:
+        raise ValueError("NBA injuries payload contained no identifiable teams")
+    return {
+        "schema_version": "magolide.espn.nba-injuries.v1",
+        "provider": "espn",
+        "observed_utc": observed,
+        "source_modified_utc": source_modified,
+        "payload_hash": make_payload_hash(payload),
+        "teams_seen": teams_seen,
+        "injury_entries_seen": entries_seen,
+        "teams": teams,
+    }
 
 
 def fetch_standings(fetch: FetchFn) -> List[StandingsRow]:
