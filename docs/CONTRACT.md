@@ -47,18 +47,21 @@ name-only match. Schedule rediscovery cannot erase an already reconciled final.
 
 ### Full-game moneyline and price role
 
-Two independent model surfaces can emit full-game moneyline forecasts:
+Full-game moneyline forecasts are emitted independently from every valid
+provider prediction visible at the forecast cutoff, plus the empirical history
+model's full-game margin distribution. Provider priority controls stable output
+ordering only; one provider no longer suppresses other valid providers. Each
+provider/model retains its own source identity and calibration profile; the
+service does not average provider probabilities. Providers with only score,
+total, or margin expectations can contribute to the corresponding hybrid line
+forecasts, but not to moneyline forecasts without a coherent home/away pair.
+The empirical surface requires no provider prediction and can be reconstructed
+at each historical tip for walk-forward calibration.
 
-- the selected provider's validated home/away probabilities, using configured
-  provider priority without averaging providers;
-- the empirical history model's full-game margin distribution, which requires
-  no provider prediction and can therefore be reconstructed at every historical
-  tip for walk-forward calibration.
-
-Their sources and calibration profiles remain separate. Neither surface inherits
-the other's samples or probabilities, and exact ties within a surface produce no
-selection from that surface. Full-game selections are two-way (`home` or `away`);
-an empirical simulated draw is not mapped to a two-way book selection.
+Sources and calibration profiles remain separate. No surface inherits another's
+samples or probabilities, and exact ties within a surface produce no selection
+from that surface. Full-game selections are two-way (`home` or `away`); an
+empirical simulated draw is not mapped to a two-way book selection.
 
 If an exact full-game moneyline book has both prices, the provider forecast also
 reports whether the selected side is the `favorite` or `underdog` by decimal

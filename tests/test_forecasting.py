@@ -1699,3 +1699,58 @@ def test_euroleague_service_publishes_a_stricter_priced_paper_lane_without_chang
     assert policy["require_point_in_time_price"] is True
     assert before["execution"]["external_betting_writes"] is False
     assert before["forecast_count"] == 0
+
+
+def test_service_generates_separate_forecasts_from_every_visible_provider_prediction():
+    store = populated_store(finals=12, upcoming=1)
+    store.upsert_prediction(
+        Prediction(
+            game_id="g12",
+            provider="alternate-provider",
+            observed_utc=iso(AS_OF - timedelta(minutes=30)),
+            model="alternate-model",
+            model_version="alternate-v1",
+            prob_home=0.42,
+            prob_away=0.58,
+            expected_total=204.0,
+            expected_margin=-3.0,
+        )
+    )
+    store.upsert_prediction(
+        Prediction(
+            game_id="g12",
+            provider="score-only-provider",
+            observed_utc=iso(AS_OF - timedelta(minutes=20)),
+            model="score-only-model",
+            model_version="score-only-v1",
+            expected_total=198.5,
+        )
+    )
+
+    report = service(store).build_report(as_of_utc=iso(AS_OF))
+    current = [row for row in report["forecasts"] if row["game_id"] == "g12"]
+
+    provider_sources = {
+        row["model"] for row in current if row["market"] == "moneyline"
+    }
+    assert "provider:espn" in provider_sources
+    assert "provider:alternate-provider" in provider_sources
+    assert "provider:score-only-provider" not in provider_sources
+    alternate_hybrid_rows = [
+        row for row in current if row["model"].startswith("provider:alternate-provider+")
+    ]
+    assert alternate_hybrid_rows
+    assert all(
+        row["prediction"]["model"] == "alternate-model"
+        and row["prediction"]["model_version"] == "alternate-v1"
+        for row in alternate_hybrid_rows
+    )
+    score_only_hybrids = [
+        row for row in current if row["model"].startswith("provider:score-only-provider+")
+    ]
+    assert score_only_hybrids
+    assert all(
+        row["prediction"]["model"] == "score-only-model"
+        for row in score_only_hybrids
+    )
+    assert report["execution"]["external_betting_writes"] is False

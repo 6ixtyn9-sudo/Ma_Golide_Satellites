@@ -58,8 +58,13 @@ certificates. Pushes are reported separately and excluded from win/loss
 calibration.
 
 History-model calibration segments include a stable fingerprint of the model
-revision and prediction-affecting `ForecastConfig`. Provider-prediction segments
-fingerprint provider/model identity and `model_version`; payload-derived
+revision and prediction-affecting `ForecastConfig`. Every valid latest-per-provider
+record visible at a target cutoff now emits its own provider forecast stream;
+provider order no longer suppresses other sources, and provider probabilities
+are not naively averaged. Provider score/total/margin expectations create
+separate hybrid line forecasts where those values are supplied. Provider-
+prediction segments fingerprint provider/model identity and `model_version`;
+payload-derived
 `produced_by` labels remain provenance but arbitrary values are excluded
 because they may vary row by row. A closed normalization preserves only the
 recognized Predixsport `earlyseason` and `mature` model phases. ESPN BPI and

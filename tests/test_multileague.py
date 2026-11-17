@@ -278,7 +278,7 @@ def test_forecast_generation_uses_ncaa_halves_and_skips_highest_quarter():
     store = SimpleNamespace(is_book_snapshot_frozen=lambda *args: True)
     service = MarketForecastService(store, League.NCAA_W)
     service.model.available_history = lambda *args, **kwargs: []
-    service._prediction = lambda *args, **kwargs: (None, False)
+    service._predictions = lambda *args, **kwargs: []
     service._books = lambda *args, **kwargs: books
     service.model.period_winner = lambda *args, **kwargs: []
     service.model.lines = lambda _game, _history, snapshots, *args: captured.extend(snapshots) or []
