@@ -128,6 +128,9 @@ class Forecast:
     eligibility: Dict[str, Any] = field(default_factory=dict)
     calibration_version: Optional[str] = None
     shadow_calibration: Dict[str, Any] = field(default_factory=dict)
+    # Availability-adjustment metadata; populated only on the separate
+    # context_availability surface, always None on base and provider surfaces.
+    context: Optional[Dict[str, Any]] = None
 
     def __post_init__(self) -> None:
         if self.calibration_version is not None and (
@@ -325,6 +328,7 @@ class Forecast:
             },
             "expected_margin": self.expected_margin,
             "expected_total": self.expected_total,
+            "context": self.context,
             "model": self.source,
             "model_version": MODEL_VERSION,
             "calibration_version": self.calibration_version,

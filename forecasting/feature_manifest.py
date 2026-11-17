@@ -1,8 +1,8 @@
 """Auditable source/feature use and point-in-time coverage manifest.
 
-Coverage is descriptive. Candidate evidence is deliberately kept separate from
-active model inputs, and raw evidence inventory is not itself a claim of
-point-in-time admissibility or predictive value.
+Coverage is descriptive. Features promoted to a separately calibrated surface
+are distinguished from remaining candidate evidence, and raw evidence inventory
+is not itself a claim of point-in-time admissibility or predictive value.
 """
 
 from __future__ import annotations
@@ -37,19 +37,42 @@ _FEATURE_CATALOG = {
         "guard": "pre-match snapshot observed by cutoff and before scheduled tip",
     },
     "historical_player_minutes_and_boxscore": {
-        "role": "shadow_candidate_only",
+        "role": "active_model_input_when_available",
         "source": "ESPN game summaries",
-        "guard": "prior reconciled final, summary observed by cutoff, configured result-availability delay",
+        "guard": (
+            "prior reconciled final, summary observed by cutoff, configured "
+            "result-availability delay; window contribution of confirmed-out "
+            "players drives the bounded context_availability surface scale; "
+            "never blended into base or provider surfaces"
+        ),
     },
     "recent_form_and_ats_context": {
         "role": "shadow_candidate_only",
         "source": "timestamped ESPN summary last-five and against-the-spread context",
-        "guard": "summary observed by cutoff and before tip; last-five event dates strictly before target tip",
+        "guard": (
+            "summary observed by cutoff and before tip; last-five event dates "
+            "strictly before target tip; kept out of the model because recent "
+            "results and market-relative records are already reflected in the "
+            "reconciled history and book lines — adding them would double-count"
+        ),
     },
     "current_injury_status": {
-        "role": "shadow_candidate_only",
+        "role": "active_model_input_when_available",
         "source": "timestamped ESPN summary or NBA league injury endpoint",
-        "guard": "snapshot observed by cutoff and before tip; absent entry is unknown",
+        "guard": (
+            "snapshot observed by cutoff and before tip; confirmed-out statuses "
+            "(out / out for season / inactive) only; absent entry is unknown and "
+            "never read as healthy; drives the context_availability surface scale"
+        ),
+    },
+    "context_availability_surface": {
+        "role": "active_model_input_when_available",
+        "source": "bounded multiplicative scale from confirmed-out player scoring contribution",
+        "guard": (
+            "point-in-time injury snapshot and sufficient window evidence required "
+            "for BOTH teams; full-game markets only; empirical surface only; own "
+            "source and calibration segment; zero adjustment emits no forecast"
+        ),
     },
     "espn_bpi_auxiliary_metrics": {
         "role": "retained_diagnostic_candidate_only",
@@ -289,6 +312,7 @@ def build_feature_use_manifest(
         "historical_player_minutes_and_boxscore",
         "recent_form_and_ats_context",
         "current_injury_status",
+        "context_availability_surface",
         "espn_bpi_auxiliary_metrics",
     ):
         catalog[key]["league_support"] = (
@@ -360,7 +384,16 @@ def build_feature_use_manifest(
         "safety": {
             "manifest_changes_predictions": False,
             "manifest_changes_eligibility_or_stakes": False,
-            "candidate_features_used_by_probability_model": False,
+            "candidate_features_used_by_probability_model": True,
+            "active_candidate_surface": "context_availability",
+            "active_candidate_features": [
+                "historical_player_minutes_and_boxscore",
+                "current_injury_status",
+            ],
+            "remaining_candidate_features": [
+                "recent_form_and_ats_context",
+                "espn_bpi_auxiliary_metrics",
+            ],
             "coverage_counts_are_not_predictive_validation": True,
         },
     }

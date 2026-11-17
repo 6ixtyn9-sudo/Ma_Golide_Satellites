@@ -88,7 +88,9 @@ def test_player_context_uses_only_observed_prior_boxscores_and_pretip_injuries()
         as_of_utc="2026-11-02T12:00:00Z",
     )
 
-    assert features["feature_role"] == "shadow_candidate_only_not_used_to_change_probability"
+    assert features["feature_role"] == (
+        "context_availability_surface_input; base_and_provider_surfaces_unchanged"
+    )
     assert features["injury_snapshot_status"] == "snapshot_present"
     assert features["teams"]["home"]["historical_boxscore_games"] == 1
     assert features["teams"]["home"]["recent_players"][0]["mean_minutes"] == 30.5

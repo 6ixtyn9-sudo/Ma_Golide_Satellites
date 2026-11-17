@@ -105,7 +105,10 @@ def test_feature_manifest_reports_visible_coverage_and_excludes_late_records():
     assert coverage["espn_player_and_injury_candidates"][
         "games_with_point_in_time_injury_observation"
     ] == 1
-    assert manifest["safety"]["candidate_features_used_by_probability_model"] is False
+    assert manifest["safety"]["candidate_features_used_by_probability_model"] is True
+    assert manifest["safety"]["active_candidate_surface"] == "context_availability"
+    assert "current_injury_status" in manifest["safety"]["active_candidate_features"]
+    assert "recent_form_and_ats_context" in manifest["safety"]["remaining_candidate_features"]
     inventory = manifest["evidence_resource_inventory"]
     assert inventory["provider_resources"]["espn"]["summary"]["games_with_resource"] == 1
     assert inventory["espn_summary_context_families"]["games_with_field"]["injuries"] == 1

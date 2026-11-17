@@ -16,6 +16,12 @@ from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 from ingestion.identity import canonical_team_key, parse_utc
 from ingestion.models import BookSnapshot, Game, Market, Period, Prediction
 
+from .context_adjustment import (
+    CONTEXT_SOURCE,
+    ContextAdjustment,
+    ContextAdjustmentConfig,
+    context_calibration_components,
+)
 from .harness import config_fingerprint
 from .types import BookEvidence, Forecast, MODEL_VERSION, _period_scores
 
@@ -231,16 +237,39 @@ class _HistoryView(Sequence[Game]):
 
 
 class HistoryModel:
-    def __init__(self, config: ForecastConfig | None = None) -> None:
+    def __init__(
+        self,
+        config: ForecastConfig | None = None,
+        context_config: ContextAdjustmentConfig | None = None,
+    ) -> None:
         self.config = config or ForecastConfig()
+        self.context_config = context_config or ContextAdjustmentConfig()
         self._cached_source: Optional[Iterable[Game]] = None
         self._cached_source_size: Optional[int] = None
         self._cached_index: Optional[_IndexedHistory] = None
+        self._context_calibration_version_cache: Optional[str] = None
         # Every setting in ForecastConfig can change the available evidence or
         # empirical probabilities. Source identity remains a separate segment
         # dimension; this tag isolates the algorithm/configuration itself.
         components = {"model_version": MODEL_VERSION, **asdict(self.config)}
         self.calibration_version = f"{MODEL_VERSION}-{config_fingerprint(components)}"
+
+    @property
+    def context_calibration_version(self) -> str:
+        """Version tag for the availability-adjusted surface only.
+
+        Deliberately excludes the context knobs from the base version above:
+        they cannot change base or provider probabilities, so base segments
+        must keep their accumulated calibration identity.
+        """
+        if self._context_calibration_version_cache is None:
+            components = context_calibration_components(
+                self.context_config, base_config_asdict=asdict(self.config)
+            )
+            self._context_calibration_version_cache = (
+                f"{MODEL_VERSION}-context-{config_fingerprint(components)}"
+            )
+        return self._context_calibration_version_cache
 
     @staticmethod
     def _stable_prediction_model_phase(prediction: Prediction) -> Optional[str]:
@@ -536,7 +565,15 @@ class HistoryModel:
         history: Sequence[Game],
         period: Period,
         prediction: Optional[Prediction] = None,
+        context: Optional[ContextAdjustment] = None,
     ) -> Optional[Distribution]:
+        if context is not None and period is not Period.FULL_GAME:
+            raise ValueError("context adjustment is limited to full-game forecasts")
+        if context is not None and prediction is not None:
+            # Provider expectations may already internalize availability
+            # information; scaling them again would double-count. The context
+            # surface is strictly the empirical-history surface.
+            raise ValueError("context adjustment applies only to the empirical surface")
         baseline = self.baseline(game, history, period)
         if baseline is None:
             return None
@@ -565,6 +602,19 @@ class HistoryModel:
             baseline = Baseline(
                 home,
                 away,
+                baseline.games,
+                home_team_effective_games=baseline.home_team_effective_games,
+                away_team_effective_games=baseline.away_team_effective_games,
+            )
+        if context is not None:
+            # Availability scaling moves the current-game mean only. Historical
+            # residuals stay untouched: they describe how real outcomes
+            # scattered around unadjusted baselines, and the empirical surface
+            # is self-centering (unlike the provider hybrid, which replaces the
+            # mean with an external expectation).
+            baseline = Baseline(
+                baseline.home * context.home_scale,
+                baseline.away * context.away_scale,
                 baseline.games,
                 home_team_effective_games=baseline.home_team_effective_games,
                 away_team_effective_games=baseline.away_team_effective_games,
@@ -680,8 +730,10 @@ class HistoryModel:
         books: Sequence[BookSnapshot],
         frozen_books: Dict[str, bool],
         period: Period = Period.H1,
+        context: Optional[ContextAdjustment] = None,
     ) -> List[Forecast]:
-        distribution = self.distribution(game, history, period)
+        effective_context = context if period is Period.FULL_GAME else None
+        distribution = self.distribution(game, history, period, context=effective_context)
         if distribution is None:
             return []
         probabilities = self._winner_probabilities(distribution.margins)
@@ -705,8 +757,13 @@ class HistoryModel:
                 selection=selection,
                 raw_probability=probabilities[selection],
                 alternative_probabilities=probabilities,
-                source=MODEL_VERSION,
-                calibration_version=self.calibration_version,
+                source=CONTEXT_SOURCE if effective_context is not None else MODEL_VERSION,
+                calibration_version=(
+                    self.context_calibration_version
+                    if effective_context is not None
+                    else self.calibration_version
+                ),
+                context=effective_context.to_metadata() if effective_context is not None else None,
                 expected_margin=distribution.baseline.margin,
                 expected_total=distribution.baseline.total,
                 training_games=distribution.baseline.games,
@@ -731,7 +788,10 @@ class HistoryModel:
         frozen_books: Dict[str, bool],
         prediction: Optional[Prediction] = None,
         prediction_frozen: bool = False,
+        context: Optional[ContextAdjustment] = None,
     ) -> List[Forecast]:
+        if context is not None and prediction is not None:
+            raise ValueError("context adjustment applies only to the empirical surface")
         forecasts: List[Forecast] = []
         distributions: Dict[Period, Optional[Distribution]] = {}
         for snapshot in snapshots:
@@ -740,9 +800,13 @@ class HistoryModel:
                 Market.SPREAD,
             }:
                 continue
+            # Availability scaling is defined for full-game expectations only;
+            # period scoring shares of benched players are not observed, so
+            # period lines stay unadjusted under a context call.
+            effective_context = context if snapshot.period is Period.FULL_GAME else None
             if snapshot.period not in distributions:
                 distributions[snapshot.period] = self.distribution(
-                    game, history, snapshot.period, prediction
+                    game, history, snapshot.period, prediction, effective_context
                 )
             distribution = distributions[snapshot.period]
             if distribution is None:
@@ -769,7 +833,9 @@ class HistoryModel:
             if selection is None:
                 continue
             source = MODEL_VERSION
-            if (
+            if effective_context is not None:
+                source = CONTEXT_SOURCE
+            elif (
                 snapshot.period is Period.FULL_GAME
                 and prediction is not None
                 and (
@@ -800,9 +866,18 @@ class HistoryModel:
                     team_history=self._team_history([distribution.baseline]),
                     source=source,
                     calibration_version=(
-                        self._prediction_calibration_version(prediction, hybrid=True)
-                        if source.startswith("provider:") and prediction is not None
-                        else self.calibration_version
+                        self.context_calibration_version
+                        if effective_context is not None
+                        else (
+                            self._prediction_calibration_version(prediction, hybrid=True)
+                            if source.startswith("provider:") and prediction is not None
+                            else self.calibration_version
+                        )
+                    ),
+                    context=(
+                        effective_context.to_metadata()
+                        if effective_context is not None
+                        else None
                     ),
                     book=BookEvidence.from_snapshot(
                         snapshot, frozen=frozen_books.get(_book_key(snapshot), False)

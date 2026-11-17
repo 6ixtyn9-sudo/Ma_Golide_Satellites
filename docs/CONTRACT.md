@@ -121,6 +121,33 @@ scenarios, not claims from a fitted sportsbook or a certified probability
 model. Exact probability ties are not broken arbitrarily. Totals and spreads
 report push probability separately.
 
+### Availability-adjusted empirical surface (context_availability)
+
+ESPN injury and prior-minutes evidence drives one additional independent
+surface on ESPN-covered leagues. For each team, the window-average scoring
+contribution of every player is estimated from prior ESPN boxscores as
+appearance rate times per-appearance points. Players a point-in-time injury
+snapshot reports as Out / Out For Season / Inactive are confirmed out, so
+their window-average contribution is the estimated scoring loss; expected
+points are scaled by ``1 - lost_share``, bounded by
+``ContextAdjustmentConfig.max_scale``. The scale applies only to full-game
+moneyline, total, and spread forecasts reconstructed from the empirical
+history surface, under the source
+``context_availability+team_history_empirical_v1`` with its own calibration
+version. It is never blended into the base or provider surfaces, and provider
+expectations — which may already internalize availability — are never scaled
+again.
+
+The surface emits forecasts only when a point-in-time injury snapshot exists,
+both teams carry sufficient window evidence (asymmetric evidence is rejected,
+never half-applied), and at least one scale is below 1.0; a zero adjustment
+emits nothing rather than duplicating the base surface. Missing injury entries
+remain unknown and are never read as healthy. The full candidate record stays
+published in the report for audit. Recent form/ATS context, BPI auxiliary
+metrics, standings, and book movement remain non-inputs: the first two would
+double-count information already reflected in reconciled history and posted
+lines, and the last two have no pre-tip snapshot semantics.
+
 Full-game moneyline has both the provider-probability surface described above
 and a historical/residual surface. The other market families are
 historical/residual forecasts; full-game totals may combine a provider baseline

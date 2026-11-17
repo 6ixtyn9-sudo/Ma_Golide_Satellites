@@ -151,7 +151,9 @@ def test_serialization_is_stable():
 def test_to_dict_key_surface_stays_backward_compatible():
     forecast = _priced_forecast()
     keys = set(forecast.to_dict())
-    assert keys == LEGACY_TO_DICT_KEYS | {"calibration_version", "explanation"}
+    # "context" is a deliberate additive key: availability-adjustment metadata,
+    # populated only on the context_availability surface (None elsewhere).
+    assert keys == LEGACY_TO_DICT_KEYS | {"calibration_version", "explanation", "context"}
     assert forecast.to_dict()["calibration_version"] is None
 
 
