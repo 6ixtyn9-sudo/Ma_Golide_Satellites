@@ -482,6 +482,20 @@ def test_ticket_is_frozen_empty_scans_do_not_cancel_and_known_leg_loss_settles(t
     assert performance["paper_bank_units"] == 100.0
     assert performance["paper_committed_units"] == 1.0
     assert performance["pending_accas"] == 1
+    assert performance["awaiting_game_legs"] == 3
+    assert performance["result_unresolvable_legs"] == 0
+    assert performance["unresolved_result_legs"] == 3
+    day = performance["history"][0]
+    position = day["positions"][0]
+    assert day["awaiting_game_legs"] == 3
+    assert day["result_unresolvable_legs"] == 0
+    assert day["unresolved_result_legs"] == 3
+    assert position["awaiting_game_legs"] == 3
+    assert position["result_unresolvable_legs"] == 0
+    assert all(
+        leg["result_resolution_status"] == "awaiting_game"
+        for leg in position["legs"]
+    )
     ticket_text = Path(first["ticket_text"]).read_text()
     assert "DECISION FROZEN AT 20:00" in ticket_text
     assert "displayed grades refresh when reconciled results arrive" in ticket_text
@@ -506,6 +520,8 @@ def test_ticket_is_frozen_empty_scans_do_not_cancel_and_known_leg_loss_settles(t
     performance = json.loads(Path(first["performance"]).read_text())
     assert performance["losses"] == 1
     assert performance["pending_accas"] == 0
+    assert performance["awaiting_game_legs"] == 2
+    assert performance["result_unresolvable_legs"] == 0
     assert performance["unresolved_result_legs"] == 2
     assert performance["profit_units"] == -1.0
     assert performance["paper_bank_units"] == 99.0
@@ -798,6 +814,36 @@ def test_acca_is_a_loss_as_soon_as_any_leg_loses_while_other_legs_are_pending(tm
     assert performance["pending_accas"] == 0
     assert "· ❌ LOSS" in Path(result["ticket_text"]).read_text()
     assert "✅ WIN 0W / ❌ LOSS 1L / ➖ PUSH 0P" in Path(
+        result["performance_text"]
+    ).read_text()
+
+
+@pytest.mark.parametrize("result_case", ["missing_game", "unreconciled_final"])
+def test_unresolvable_leg_results_are_distinguished_from_waiting_games(
+    tmp_path, result_case
+):
+    row = forecast(1)
+    if result_case == "missing_game":
+        store = Store([])
+    else:
+        unreconciled = game(1, home_score=90, away_score=100)
+        unreconciled.actual.home_quarters[0] += 1.0
+        store = Store([unreconciled])
+
+    result = publish(tmp_path, store, report([row], [acca([row])]))
+
+    performance = json.loads(Path(result["performance"]).read_text())
+    position = performance["history"][0]["positions"][0]
+    leg = position["legs"][0]
+    assert position["grade_status"] == "pending"
+    assert position["unresolved_legs"] == 1
+    assert position["awaiting_game_legs"] == 0
+    assert position["result_unresolvable_legs"] == 1
+    assert leg["result_resolution_status"] == "result_unresolvable"
+    assert performance["awaiting_game_legs"] == 0
+    assert performance["result_unresolvable_legs"] == 1
+    assert performance["unresolved_result_legs"] == 1
+    assert "0 awaiting games · 1 result unresolvable" in Path(
         result["performance_text"]
     ).read_text()
 

@@ -1688,6 +1688,20 @@ def _receipt_positions(
     return positions
 
 
+def _pending_result_status(leg: Dict[str, Any], games: Dict[str, Game]) -> str:
+    """Explain whether an ungraded leg awaits play or lacks a resolvable result."""
+    game = games.get(str(leg["game_id"]))
+    if game is not None and game.status in {
+        GameStatus.SCHEDULED,
+        GameStatus.LIVE,
+        GameStatus.POSTPONED,
+    }:
+        return "awaiting_game"
+    # A missing identity, non-playable status, or unreconciled FINAL must not be
+    # reported as ordinary wait time; it needs result/identity review.
+    return "result_unresolvable"
+
+
 def _grade_receipt(receipt: Dict[str, Any], games: Dict[str, Game]) -> Dict[str, Any]:
     graded = deepcopy(receipt)
     for ticket_type, position in _receipt_positions(graded):
@@ -1695,10 +1709,22 @@ def _grade_receipt(receipt: Dict[str, Any], games: Dict[str, Game]) -> Dict[str,
         outcomes: List[Optional[str]] = []
         for leg in position["legs"]:
             _set_grade(leg, games)
+            if leg["outcome"] is None:
+                leg["result_resolution_status"] = _pending_result_status(leg, games)
+            else:
+                leg.pop("result_resolution_status", None)
             outcomes.append(leg["outcome"])
         position["leg_outcomes"] = outcomes
         position["push_legs"] = sum(outcome == "push" for outcome in outcomes)
         position["unresolved_legs"] = sum(outcome is None for outcome in outcomes)
+        position["awaiting_game_legs"] = sum(
+            leg.get("result_resolution_status") == "awaiting_game"
+            for leg in position["legs"]
+        )
+        position["result_unresolvable_legs"] = sum(
+            leg.get("result_resolution_status") == "result_unresolvable"
+            for leg in position["legs"]
+        )
         stake = float(position["stake_units"])
         effective_odds = math.prod(
             float((leg.get("book") or {})["selected_decimal_price"])
@@ -1779,6 +1805,15 @@ def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict
                 "pushes": sum(position["grade_status"] == "push" for position in daily_settled),
                 "settled_positions": len(daily_settled),
                 "pending_positions": len(daily_pending),
+                "unresolved_result_legs": sum(
+                    position["unresolved_legs"] for position in daily
+                ),
+                "awaiting_game_legs": sum(
+                    position["awaiting_game_legs"] for position in daily
+                ),
+                "result_unresolvable_legs": sum(
+                    position["result_unresolvable_legs"] for position in daily
+                ),
                 "settled_accas": sum(position["profit_units"] is not None for position in daily_accas),
                 "pending_accas": sum(position["profit_units"] is None for position in daily_accas),
                 "settled_singles": sum(position["profit_units"] is not None for position in daily_singles),
@@ -1812,6 +1847,10 @@ def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict
         "pending_accas": len(pending_accas),
         "pending_singles": len(pending_singles),
         "unresolved_result_legs": unresolved_legs,
+        "awaiting_game_legs": sum(position["awaiting_game_legs"] for position in positions),
+        "result_unresolvable_legs": sum(
+            position["result_unresolvable_legs"] for position in positions
+        ),
         "profit_units": profit,
         "roi": profit / staked if staked else None,
         "selected_leg_brier_score": sum(brier) / len(brier) if brier else None,
@@ -2907,7 +2946,8 @@ def _render_performance(report: Dict[str, Any], timezone_name: str) -> str:
     lines.extend(
         [
             f"OPEN     {pending_positions} held paper positions · "
-            f"{report['unresolved_result_legs']} unresolved leg results",
+            f"{report['awaiting_game_legs']} awaiting games · "
+            f"{report['result_unresolvable_legs']} result unresolvable",
             f"LEGS     Brier {report['selected_leg_brier_score']:.4f}"
             if report["selected_leg_brier_score"] is not None
             else "LEGS     Brier n/a",
