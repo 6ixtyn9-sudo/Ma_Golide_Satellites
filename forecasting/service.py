@@ -547,6 +547,29 @@ class MarketForecastService:
             history_source=paper_history_source,
             result_available_after_hours=self.forecast_config.result_available_after_hours,
         )
+        if (
+            self.paper_pick_history is not None
+            and paper_pick_filter["historical_unique_pick_count"] == 0
+        ):
+            # A valid but empty/unusable rolling audit can occur after a cold
+            # cache start. Reuse the same past-only prequential forecasts that
+            # calibration already replayed, rather than deadlocking the paper
+            # ROI gate on an empty audit. The ROI filter still requires
+            # settled outcomes and exact pre-tip prices, and current forecasts
+            # retain all normal eligibility gates.
+            paper_candidates, paper_pick_filter = filter_paper_candidate_picks(
+                current,
+                available_records,
+                as_of_utc=as_of_utc,
+                history_source="prequential_settled_individual_forecasts_cold_start_fallback",
+                result_available_after_hours=self.forecast_config.result_available_after_hours,
+            )
+            paper_pick_filter["history_fallback"] = {
+                "used": True,
+                "from": "settled_pick_audit",
+                "reason": "no_usable_settled_individual_pick_history",
+                "settled_audit_usable_pick_count": 0,
+            }
         band_details_by_id = paper_pick_filter["candidate_band_details"]
         paper_single_picks = []
         for candidate in paper_candidates:

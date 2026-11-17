@@ -240,8 +240,12 @@ probability band, and individual-decimal-odds band. Probability bands are
 `0.90-1.00`; odds bands are `1.00-<1.20`, `1.20-<1.50`, `1.50-<2.00`, and
 `2.00+`.
 
-The historical source is the rolling audit's `settled_ledger` when available,
-otherwise past-only prequential settled individual forecasts. Pending rows,
+The historical source is the rolling audit's `settled_ledger` when it contains
+at least one usable settled individual pick; otherwise the service falls back
+to its past-only prequential settled individual forecasts. The fallback also
+covers a valid-but-empty or unusable audit after a cold-cache start and is
+explicitly identified in `paper_pick_filter.history_fallback`. It does not
+relax current forecast eligibility or calibration requirements. Pending rows,
 future results, missing calibrated probabilities, and rows without an exact
 pre-tip price do not count. Flat one-unit profit is `price - 1` for a win, `-1`
 for a loss, and `0` for a push; pushes remain in the one-unit ROI denominator.

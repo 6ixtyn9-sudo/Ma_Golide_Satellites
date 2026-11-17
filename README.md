@@ -133,8 +133,10 @@ For current fixtures, `--as-of` must be before scheduled tip. For historical
 backtests, only reconciled finals available at each simulated cutoff are used.
 The default result-availability delay is four hours. The report reads a
 settled single-pick audit from `localdata/<league-lowercase>` (or the path passed
-with `--localdata`) when present; this is read-only. If no audit exists, it
-falls back to past-only prequential settled individual forecasts.
+with `--localdata`) when it contains usable settled individual picks; this is
+read-only. If the audit is absent, empty, or has no usable priced rows, it falls
+back to past-only prequential settled individual forecasts and reports that
+cold-start fallback explicitly.
 
 The walk-forward harness fits separate reliability profiles by league, market,
 period, model source, and calibration-version fingerprint. Each profile uses
@@ -179,11 +181,13 @@ tickets are assembled, each unique eligible wager selection must match a
 positive historical individual-pick performance band. Every passing selection
 is also published as a single in `accas.paper_single_picks` and flagged in the
 picks JSON/text. The rolling `picks_audit_rolling.json` settled ledger is used
-when present; otherwise the service uses its own past-only prequential settled
-forecasts. Only settled single picks with calibrated probabilities and exact
-pre-tip prices count. Bands are separated by league, market, period, model
-source, calibrated-probability range, and individual-odds range (`<50%`,
-50–60%, 60–70%, 70–80%, 80–90%, 90%+; odds below 1.20, 1.20–1.50, 1.50–2.00,
+when it contains usable settled picks; otherwise the service uses its own
+past-only prequential settled forecasts and marks the cold-start fallback in
+`paper_pick_filter.history_fallback`. Only settled single picks with calibrated
+probabilities and exact pre-tip prices count. Bands are separated by league,
+market, period, model source, calibrated-probability range, and individual-odds
+range (`<50%`, 50–60%, 60–70%, 70–80%, 80–90%, 90%+; odds below 1.20,
+1.20–1.50, 1.50–2.00,
 2.00+).
 
 Band ROI uses flat one-unit stakes (win: decimal price minus one; loss: minus

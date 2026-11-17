@@ -150,12 +150,14 @@ candidate surface; `accas.results` remains the strict surface. Older reports
 without `paper_results` retain their prior behavior. For current
 `MarketForecastService` reports, each unique paper-eligible wager selection
 must match a positive settled individual-pick ROI band before ticket assembly.
-The rolling audit's `settled_ledger` is used when available; otherwise the
-service uses its own past-only prequential settled forecasts. Pending/future
-rows, acca outcomes, missing calibrated probabilities, and picks without an
-exact pre-tip price are excluded. Bands are split by league, market, period,
-model source, calibrated-probability range, and individual-odds range. Flat
-one-unit ROI uses win profit `price - 1`, loss profit `-1`, and push profit `0`;
+The rolling audit's `settled_ledger` is used when it yields at least one usable
+settled individual pick; if the audit is absent, empty, or has no usable priced
+rows, the service uses its own past-only prequential settled forecasts. A
+cold-start fallback is explicitly marked in `paper_pick_filter.history_fallback`.
+Pending/future rows, acca outcomes, missing calibrated probabilities, and picks
+without an exact pre-tip price are excluded. Bands are split by league, market,
+period, model source, calibrated-probability range, and individual-odds range.
+Flat one-unit ROI uses win profit `price - 1`, loss profit `-1`, and push profit `0`;
 pushes remain in the ROI denominator. A 14-day recency half-life and three-
 pick hierarchical shrinkage are applied, but no long minimum-sample waiting
 period is imposed: a band can start after one settled pick. The candidate band
