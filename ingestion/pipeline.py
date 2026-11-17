@@ -42,6 +42,7 @@ from .models import (
     Period,
     Prediction,
     ProviderHealth,
+    payload_hash,
 )
 from .predictions import (
     DEFAULT_PROVIDER_ORDER,
@@ -167,6 +168,61 @@ class Pipeline:
         self.quota = {}
         self.context_report = {}
 
+    def _standings_smoke(self) -> Dict[str, Any]:
+        """Measure standings endpoint coverage without persisting/model use."""
+        league = self.config.league_enum
+        if league not in {League.NBA, League.EUROLEAGUE}:
+            return {
+                "status": "not_supported_by_current_adapter",
+                "league": league.value,
+                "role": "evidence_coverage_only",
+            }
+        captured: Dict[str, Any] = {}
+        observed = self._now_iso()
+
+        source_fetch = self.espn_fetch if league is League.NBA else self.fetch
+
+        def capture(url: str):
+            payload = source_fetch(url)
+            captured["payload"] = payload
+            return payload
+
+        try:
+            if league is League.NBA:
+                rows = espn.fetch_standings(capture)
+                status = "ok" if rows else "empty"
+                provider = "espn"
+            else:
+                year = int(self.config.date_yyyymmdd[:4])
+                if int(self.config.date_yyyymmdd[4:6]) < 7:
+                    year -= 1
+                provider_report: Dict[str, str] = {}
+                rows = euroleague.fetch_standings(
+                    capture,
+                    seasoncode=f"E{year}",
+                    report=provider_report,
+                )
+                status = provider_report.get("status", "unavailable")
+                provider = "euroleague"
+            row_values = [row.__dict__ if hasattr(row, "__dict__") else row for row in rows]
+            return {
+                "status": status,
+                "provider": provider,
+                "observed_utc": observed,
+                "teams_seen": len(rows),
+                "payload_hash": payload_hash(captured.get("payload")) if "payload" in captured else None,
+                "normalized_rows_hash": payload_hash(row_values),
+                "role": "evidence_coverage_only_not_a_model_input",
+            }
+        except Exception as exc:
+            return {
+                "status": "provider_error",
+                "provider": "espn" if league is League.NBA else "euroleague",
+                "observed_utc": observed,
+                "error_type": type(exc).__name__,
+                "role": "evidence_coverage_only_not_a_model_input",
+            }
+
     # -- commands ------------------------------------------------------------
 
     def smoke(self) -> Dict[str, Any]:
@@ -178,6 +234,7 @@ class Pipeline:
             report = espn.smoke(self.config.date_yyyymmdd, self.espn_fetch, self.config.league_enum)
             if league == "NBA":
                 report["hardwood"] = self._hardwood_smoke()
+            report["standings"] = self._standings_smoke()
             report["bookmakers"] = self._bookmakers_smoke()
             return report
         if league == "CBA":
@@ -195,6 +252,7 @@ class Pipeline:
             return report
         if league == "EUROLEAGUE":
             report = euroleague.smoke(self.fetch)
+            report["standings"] = self._standings_smoke()
             report["predixsport"] = self._predixsport_smoke()
             report["bookmakers"] = self._bookmakers_smoke()
             return report
@@ -560,12 +618,65 @@ class Pipeline:
                     observed_utc=self._now_iso(),
                 )
             )
+        injury_report: Dict[str, Any] = {"status": "not_applicable"}
+        if self.config.league_enum is League.NBA and eligible:
+            injury_observed = self._now_iso()
+            try:
+                snapshot = espn.fetch_nba_injuries(
+                    self.espn_fetch,
+                    observed_utc=injury_observed,
+                )
+                covered_teams = set(snapshot["teams"])
+                attached_games = 0
+                for game in games:
+                    if (
+                        game.status is not GameStatus.SCHEDULED
+                        or parse_utc(game.scheduled_utc) <= parse_utc(injury_observed)
+                    ):
+                        continue
+                    team_ids = {str(game.home_team_id), str(game.away_team_id)}
+                    espn_evidence = dict(game.evidence.get("espn") or {})
+                    espn_evidence["league_injuries"] = {
+                        "schema_version": snapshot["schema_version"],
+                        "observed_utc": snapshot["observed_utc"],
+                        "source_modified_utc": snapshot["source_modified_utc"],
+                        "payload_hash": snapshot["payload_hash"],
+                        "teams": {
+                            team_id: snapshot["teams"].get(team_id, [])
+                            for team_id in team_ids
+                        },
+                        "team_coverage_complete": team_ids <= covered_teams,
+                    }
+                    game.evidence = {**game.evidence, "espn": espn_evidence}
+                    self.store.upsert_game(game)
+                    attached_games += 1
+                injury_report = {
+                    "status": "ok",
+                    "observed_utc": snapshot["observed_utc"],
+                    "source_modified_utc": snapshot["source_modified_utc"],
+                    "teams_seen": snapshot["teams_seen"],
+                    "injury_entries_seen": snapshot["injury_entries_seen"],
+                    "games_attached": attached_games,
+                }
+            except Exception as exc:
+                injury_report = {"status": "provider_error", "error_type": type(exc).__name__}
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=None,
+                        required_field="espn_nba_injuries",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider="espn",
+                        detail=f"NBA injury snapshot unavailable: {type(exc).__name__}",
+                        observed_utc=injury_observed,
+                    )
+                )
         self.context_report = {
             "eligible_upcoming_games": len(eligible),
             "attempted": attempted,
             "enriched": enriched,
             "budget": self.config.context_request_budget,
             "budget_skipped": skipped,
+            "nba_injuries": injury_report,
         }
         return games
 
@@ -1650,6 +1761,7 @@ def _prediction_facts(pred: Optional[Prediction]) -> Optional[Dict[str, Any]]:
         "expected_away_score": pred.expected_away_score,
         "expected_total": pred.expected_total,
         "expected_margin": pred.expected_margin,
+        "auxiliary_metrics": pred.auxiliary_metrics,
     }
 
 

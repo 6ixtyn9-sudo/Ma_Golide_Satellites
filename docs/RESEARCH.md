@@ -83,15 +83,63 @@ coverage, not automatically model inputs. A post-game summary can contain the
 game's own player statistics and in-play win probability; using either as a
 pre-tip feature would leak the result.
 
-A future context feature therefore needs an identity-checked observation that
-was available before the simulated tip, an immutable/frozen acquisition time,
-and a walk-forward comparison against the existing baseline. Current rich
-context does not relax the exact-book/period rules, the strict 30-sample
-calibration gate, same-game acca exclusion, or paper-only operation. The
-exploratory paper lane may bypass only the sample gate once a segment has at
-least one graded non-push sample; it never promotes a row to strict eligibility.
-Untimestamped core odds open/close objects and post-game predictor updates do
-not create pre-tip history.
+`MarketForecastService` now emits `espn_player_context_candidates`: rolling
+player minutes/points/rebounds/assists from prior ESPN boxscores that were
+observed by the forecast cutoff, timestamp-valid last-five results filtered to
+pre-target event dates, and timestamped against-the-spread summaries. It also
+includes current-game injury entries only when an injury summary or league
+snapshot was observed before both the cutoff and tip.
+The NBA league injury endpoint is captured once per eligible pregame run; it is
+not treated as league-wide coverage unless both teams are present. NCAA summary
+injury coverage remains provider-specific and absent entries are not converted
+to healthy status. The output preserves observation time, source hash, and
+coverage state, and explicitly labels these values candidate-only.
+
+Forecast reports also contain `feature_use_manifest`, schema
+`magolide.feature_use_manifest.v1`. It separates active inputs from diagnostic
+and shadow-only candidates, provides per-league support distinctions, and
+counts point-in-time-visible prediction/book fields on upcoming games. It also
+counts stored ESPN summary families and historical results available after the
+configured delay. Its raw evidence-resource inventory is descriptive only and
+is explicitly not a claim of temporal admissibility or predictive value. NBA
+and EuroLeague `smoke` reports now sample their implemented standings adapters
+with fetch-time observation and payload hashes; standings remain coverage-only
+and are not persisted or used by the model. The current standings adapter path
+does not cover WNBA, NCAA, or CBA. ESPN BPI finite numeric
+non-core fields are now retained as diagnostic auxiliary metrics (including
+NBA matchup quality and dual-sided NCAA metrics), but are not applied to
+probabilities, calibration, eligibility, or stakes.
+
+For offline historical research, `scripts/mine_espn_player_minutes.py` reads
+already-stored ESPN summaries from a local DuckDB warehouse and writes a
+provenance-bearing CSV without network requests or canonical writes. It only
+includes reconciled finals and identity-matched teams, preserves raw stat
+labels/values and the summary payload hash, and gives a conservative
+`available_no_earlier_than_utc` bound. This is descriptive history, not a
+same-game feature; EuroLeague and CBA player-level history are not included
+because the inspected repository evidence does not currently retain those
+sources' athlete boxscores.
+
+`scripts/report_book_movement.py` compares repeated, timestamped, pre-match
+`BookSnapshot` rows in immutable slate ledgers for a requested league/date. It
+deduplicates identical ledger observations and excludes post-match snapshots
+and untimestamped scoreboard open/close context. The result is observed price
+movement only—not CLV, a feature, or a value claim. It will report no movement
+when fewer than two distinct observations were archived.
+
+These changes instrument coverage and capture leakage-safe candidate evidence;
+they do not establish predictive value or improve the model. Missing injury
+entries remain unknown, not proof of a healthy squad.
+
+Any future feature promotion still requires an identity-checked observation
+available before the simulated tip, an immutable/frozen acquisition time, and
+a walk-forward comparison against the existing baseline. Current rich context
+does not relax the exact-book/period rules, the strict 30-sample calibration
+gate, same-game acca exclusion, or paper-only operation. The exploratory paper
+lane may bypass only the sample gate once a segment has at least one graded
+non-push sample; it never promotes a row to strict eligibility. Untimestamped
+core odds open/close objects and post-game predictor updates do not create
+pre-tip history.
 
 ## Probability adjustment
 
