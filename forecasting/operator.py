@@ -84,6 +84,33 @@ def _grade_badge(status: Any) -> str:
     return f"{icon} {label}"
 
 
+def _grade_count_summary(
+    counts: Dict[str, int],
+    *,
+    count_first: bool = False,
+    suffixes: Optional[Dict[str, str]] = None,
+    separator: str = " / ",
+) -> str:
+    """Render only grade categories with positive counts, in stable grade order."""
+    normalized_counts: Counter = Counter()
+    for status, count in counts.items():
+        normalized_counts[str(status or "unknown").lower()] += int(count)
+    order = ["win", "loss", "push", "pending", "void"]
+    order.extend(sorted(status for status in normalized_counts if status not in order))
+    parts = []
+    for status in order:
+        count = normalized_counts[status]
+        if count <= 0:
+            continue
+        badge = _grade_badge(status)
+        if count_first:
+            parts.append(f"{count} {badge}")
+        else:
+            suffix = (suffixes or {}).get(status, "")
+            parts.append(f"{badge} {count}{suffix}")
+    return separator.join(parts)
+
+
 def _atomic_bytes(path: Path, raw: bytes) -> str:
     path.parent.mkdir(parents=True, exist_ok=True)
     if path.exists() and path.read_bytes() == raw:
@@ -899,6 +926,9 @@ def _render_pick_audit_markdown(
     losses = int(report["losses"])
     decisions = wins + losses
     priced_sample = int(report["priced_sample"])
+    grade_summary = _grade_count_summary(
+        {"win": wins, "loss": losses, "push": int(report["pushes"])}
+    ) or "none"
     lines = [
         f"# Ma Golide — Recent picks audit ({report['window']['start']} to {report['window']['end']})",
         "",
@@ -910,9 +940,7 @@ def _render_pick_audit_markdown(
         f"- archived logical picks: {report['archived_pick_rows']}",
         f"- dated evidence rows: {report['archived_evidence_rows']} "
         f"({report['superseded_observations']} superseded observations)",
-        f"- settled picks: {report['settled_picks']} "
-        f"({_grade_badge('win')} {wins} / {_grade_badge('loss')} {losses} / "
-        f"{_grade_badge('push')} {report['pushes']})",
+        f"- settled picks: {report['settled_picks']} ({grade_summary})",
         (
             f"- hit rate: {report['hit_rate']:.1%} ({wins}/{decisions} win/loss decisions)"
             if decisions
@@ -2493,10 +2521,7 @@ def _render_priced_ineligible_shadow_section(
 
     qualified = [row for group in groups for row in group]
     grade_counts = Counter(str(row.get("grade_status") or "pending") for row in qualified)
-    grade_summary = ", ".join(
-        f"{count} {_grade_badge(status)}"
-        for status, count in sorted(grade_counts.items())
-    )
+    grade_summary = _grade_count_summary(grade_counts, count_first=True, separator=", ")
     group_label = "group" if len(groups) == 1 else "groups"
     lines = [
         "",
@@ -2509,9 +2534,8 @@ def _render_priced_ineligible_shadow_section(
     ]
     for index, group in enumerate(groups, 1):
         group_grades = Counter(str(row.get("grade_status") or "pending") for row in group)
-        group_grade_summary = ", ".join(
-            f"{count} {_grade_badge(status)}"
-            for status, count in sorted(group_grades.items())
+        group_grade_summary = _grade_count_summary(
+            group_grades, count_first=True, separator=", "
         )
         pick_label = "pick" if len(group) == 1 else "picks"
         lines.append(
@@ -2545,10 +2569,7 @@ def _render_unpriced_audit_section(
 
     qualified = [row for group in groups for row in group]
     grade_counts = Counter(str(row.get("grade_status") or "pending") for row in qualified)
-    grade_summary = ", ".join(
-        f"{count} {_grade_badge(status)}"
-        for status, count in sorted(grade_counts.items())
-    )
+    grade_summary = _grade_count_summary(grade_counts, count_first=True, separator=", ")
     group_label = "group" if len(groups) == 1 else "groups"
     lines = [
         "",
@@ -2561,9 +2582,8 @@ def _render_unpriced_audit_section(
     ]
     for index, group in enumerate(groups, 1):
         group_grades = Counter(str(row.get("grade_status") or "pending") for row in group)
-        group_grade_summary = ", ".join(
-            f"{count} {_grade_badge(status)}"
-            for status, count in sorted(group_grades.items())
+        group_grade_summary = _grade_count_summary(
+            group_grades, count_first=True, separator=", "
         )
         pick_label = "pick" if len(group) == 1 else "picks"
         lines.append(
@@ -2929,17 +2949,23 @@ def _render_performance(report: Dict[str, Any], timezone_name: str) -> str:
         f"CAPITAL  {report['paper_free_units']:.3f} free / "
         f"{report['paper_committed_units']:.3f} reserved paper units",
     ]
+    record_grades = _grade_count_summary(
+        {"win": report["wins"], "loss": report["losses"], "push": report["pushes"]},
+        suffixes={"win": "W", "loss": "L", "push": "P"},
+    )
     if report["wins"] + report["losses"]:
         lines.append(
-            f"RECORD   {_grade_badge('win')} {report['wins']}W / "
-            f"{_grade_badge('loss')} {report['losses']}L / "
-            f"{_grade_badge('push')} {report['pushes']}P "
+            f"RECORD   {record_grades} "
             f"({report['hit_rate']:.1%} hit) · ROI {report['roi']:+.1%}"
         )
     elif settled_positions:
+        push_summary = (
+            f"{_grade_badge('push')} {report['pushes']} pushes · "
+            if report["pushes"]
+            else ""
+        )
         lines.append(
-            f"RECORD   no win/loss decisions yet · {_grade_badge('push')} "
-            f"{report['pushes']} pushes · ROI {report['roi']:+.1%}"
+            f"RECORD   no win/loss decisions yet · {push_summary}ROI {report['roi']:+.1%}"
         )
     else:
         lines.append("RECORD   no settled paper positions yet")
@@ -2958,10 +2984,13 @@ def _render_performance(report: Dict[str, Any], timezone_name: str) -> str:
     for day in report["history"]:
         returned = f"{day['returned_units']:.3f}" if day["returned_units"] is not None else "—"
         profit = f"{day['profit_units']:+.3f}" if day["profit_units"] is not None else "—"
+        day_grades = _grade_count_summary(
+            {"win": day["wins"], "loss": day["losses"], "push": day["pushes"]},
+            suffixes={"win": "W", "loss": "L", "push": "P"},
+        )
+        grade_prefix = f"{day_grades} " if day_grades else ""
         lines.append(
-            f"  {day['date']}  {_grade_badge('win')} {day['wins']}W / "
-            f"{_grade_badge('loss')} {day['losses']}L / "
-            f"{_grade_badge('push')} {day['pushes']}P "
+            f"  {day['date']}  {grade_prefix}"
             f"staked {day['staked_units']:.3f} returned {returned} net {profit} "
             f"pending {day['pending_units']:.3f} bank* {day['bank_units']:.3f}"
         )
