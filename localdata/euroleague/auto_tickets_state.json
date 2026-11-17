@@ -1,7 +1,7 @@
 {
   "base_paper_units": 100.0,
   "frozen_by_date": {},
-  "last_generated_utc": "2026-11-17T07:51:36Z",
+  "last_generated_utc": "2026-11-17T08:30:10Z",
   "paper_bank_units": 100.0,
   "scans": [
     {
@@ -2588,6 +2588,147 @@
       "fresh_single_tickets": 0,
       "receipt_present": false,
       "run_id": "44041811165_euroleague_1_attempt_1",
+      "unpriced_audit": {
+        "audit_only": true,
+        "count": 18,
+        "eligibility_reason_counts": {
+          "below_calibrated_probability_floor": 9,
+          "insufficient_walk_forward_samples": 18,
+          "no_exact_bookmaker_market": 18
+        },
+        "grade_counts": {
+          "pending": 18
+        },
+        "historical_success_excluded_count": 18,
+        "historical_success_policy": {
+          "comparison_keys": [
+            "league",
+            "market",
+            "period",
+            "model",
+            "calibrated_probability_band"
+          ],
+          "excluded_outcomes": [
+            "push",
+            "void",
+            "pending",
+            "unknown"
+          ],
+          "historical_deduplication_key": [
+            "game_id",
+            "market",
+            "period",
+            "selection",
+            "line",
+            "model"
+          ],
+          "history_source": "rolling_pick_audit.settled_ledger",
+          "history_window_days": 30,
+          "metric": "wins / (wins + losses)",
+          "minimum_decisions_exclusive": 10,
+          "odds_required": false,
+          "result_available_after_hours": 4.0,
+          "same_game_history_excluded": true,
+          "threshold_at_least": 0.7
+        },
+        "historical_success_qualified_count": 0,
+        "historical_success_status_counts": {
+          "missing_forecast_as_of": 18
+        },
+        "price_evidence_counts": {
+          "UNMATCHED": 18
+        },
+        "record_type": "unpriced_shadow_ticket_audit",
+        "recorded_in": [
+          "current_run_artifact",
+          "dated_pick_ledger",
+          "rolling_pick_audit"
+        ],
+        "schema_version": "magolide.unpriced_forecast_audit.v1",
+        "shadow_group_policy": {
+          "display_only": true,
+          "each_qualified_candidate_once": true,
+          "joint_success_rate_calculated": false,
+          "max_picks_per_group": 3,
+          "one_pick_per_game": true,
+          "receipt_created": false,
+          "stake_units": 0.0,
+          "ticket_id": null
+        },
+        "stake_units": 0.0,
+        "ticketable": false
+      }
+    },
+    {
+      "candidate_funnel": {
+        "calibration_sufficient_rows": 0,
+        "effective_paper_legs": null,
+        "eligibility_blockers": {
+          "below_calibrated_probability_floor": 9,
+          "insufficient_walk_forward_samples": 27,
+          "no_exact_bookmaker_market": 18
+        },
+        "eligible_games": 0,
+        "eligible_rows": 0,
+        "exact_priced_rows": 9,
+        "paper_accas": 0,
+        "paper_candidate_games": 9,
+        "paper_candidate_rows": 9,
+        "paper_pick_filter": {
+          "as_of_utc": "2026-11-17T08:30:12Z",
+          "candidate_band_count": 4,
+          "candidate_pick_count": 9,
+          "decision_rule": "at_least_one_settled_pick_and_positive_recency_weighted_band_roi and_positive_shrinkage_adjusted_roi",
+          "half_life_days": 14.0,
+          "historical_unique_pick_count": 0,
+          "history_fallback": {
+            "from": "settled_pick_audit",
+            "reason": "no_usable_settled_individual_pick_history",
+            "settled_audit_usable_pick_count": 0,
+            "used": true
+          },
+          "history_source": "prequential_settled_individual_forecasts_cold_start_fallback",
+          "individual_odds_bands": [
+            "1.00-<1.20",
+            "1.20-<1.50",
+            "1.50-<2.00",
+            "2.00+"
+          ],
+          "league_recency_weighted_roi": {},
+          "minimum_historical_pick_count_for_band": 1,
+          "performance_basis": "settled_individual_picks_only_not_acca_outcomes",
+          "policy": "adaptive_recency_weighted_positive_individual_pick_roi_bands",
+          "prior_hierarchy": "model_source_period_then_market_then_league",
+          "prior_strength_effective_picks": 3.0,
+          "probability_bands": [
+            "<0.50",
+            "0.50-<0.60",
+            "0.60-<0.70",
+            "0.70-<0.80",
+            "0.80-<0.90",
+            "0.90-1.00"
+          ],
+          "qualifying_band_count": 0,
+          "qualifying_pick_count": 0,
+          "result_available_after_hours": 4.0,
+          "stake_policy": "flat_one_unit_per_priced_pick_with_pushes_in_roi_denominator",
+          "status": "no_settled_historical_picks"
+        },
+        "paper_single_games": 0,
+        "paper_single_picks": 0,
+        "priced_and_calibrated_rows": 0,
+        "provisional_sample_only_games": 9,
+        "provisional_sample_only_rows": 9,
+        "required_games": 3,
+        "scan_rows": 27,
+        "strict_accas": 0
+      },
+      "captured_at": "2026-11-17T08:30:10Z",
+      "fresh_accas": 0,
+      "fresh_paper_singles": 0,
+      "fresh_single_tickets": 0,
+      "receipt_present": false,
+      "run_id": "44047148213_euroleague_1_attempt_1",
       "unpriced_audit": {
         "audit_only": true,
         "count": 18,
