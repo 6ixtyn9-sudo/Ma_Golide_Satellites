@@ -543,7 +543,7 @@ def test_later_scan_refreshes_historical_card_grades_without_rewriting_receipt(t
     initial_card = ticket_text_path.read_text()
     assert "[PAPER 3-LEG ACCA #1]" in initial_card
     assert "UNPRICED AUDIT-ONLY SHADOW GROUPS" in initial_card
-    assert "SHADOW GROUP 1 — 1 audit-only pick (1 PENDING)" in initial_card
+    assert "SHADOW GROUP 1 — 1 audit-only pick (1 ⏳ PENDING)" in initial_card
 
     settled_games = [
         game(1, home_score=90, away_score=100),
@@ -563,11 +563,11 @@ def test_later_scan_refreshes_historical_card_grades_without_rewriting_receipt(t
 
     refreshed_card = ticket_text_path.read_text()
     assert "[PAPER 3-LEG ACCA #1] @5.832" in refreshed_card
-    assert "· LOSS" in refreshed_card
+    assert "· ❌ LOSS" in refreshed_card
     assert "Home 1 vs Away 1" in refreshed_card
-    assert "· ELIGIBLE_CLEAN · LOSS" in refreshed_card
-    assert "SHADOW GROUP 1 — 1 audit-only pick (1 WIN)" in refreshed_card
-    assert "[WIN] Home 4 vs Away 4" in refreshed_card
+    assert "· ELIGIBLE_CLEAN · ❌ LOSS" in refreshed_card
+    assert "SHADOW GROUP 1 — 1 audit-only pick (1 ✅ WIN)" in refreshed_card
+    assert "[✅ WIN] Home 4 vs Away 4" in refreshed_card
     assert receipt_path.read_bytes() == receipt_bytes
 
     performance = json.loads(Path(later["performance"]).read_text())
@@ -638,7 +638,7 @@ def test_ncaam_historical_card_refreshes_priced_ineligible_shadow_grades(tmp_pat
     card_path = Path(first["ticket_text"])
     initial_card = card_path.read_text()
     assert "[PAPER SINGLE #1]" in initial_card
-    assert "SHADOW GROUP 1 — 1 priced-ineligible audit-only pick (1 PENDING)" in initial_card
+    assert "SHADOW GROUP 1 — 1 priced-ineligible audit-only pick (1 ⏳ PENDING)" in initial_card
 
     later = publish_operator_reports(
         Store(
@@ -657,9 +657,9 @@ def test_ncaam_historical_card_refreshes_priced_ineligible_shadow_grades(tmp_pat
 
     refreshed = card_path.read_text()
     assert "[PAPER SINGLE #1] @1.800" in refreshed
-    assert "· WIN" in refreshed
-    assert "SHADOW GROUP 1 — 1 priced-ineligible audit-only pick (1 WIN)" in refreshed
-    assert "[WIN] Home 2 vs Away 2" in refreshed
+    assert "· ✅ WIN" in refreshed
+    assert "SHADOW GROUP 1 — 1 priced-ineligible audit-only pick (1 ✅ WIN)" in refreshed
+    assert "[✅ WIN] Home 2 vs Away 2" in refreshed
     assert receipt_path.read_bytes() == receipt_bytes
     assert json.loads(Path(later["performance"]).read_text())["pending_positions"] == 0
 
@@ -778,6 +778,28 @@ def test_push_leg_is_removed_from_effective_acca_price(tmp_path):
     assert settled["profit_units"] == pytest.approx(1.0)
     picks = json.loads(Path(first["dated_picks"]).read_text())
     assert [row["grade_status"] for row in picks] == ["win", "push"]
+
+
+def test_acca_is_a_loss_as_soon_as_any_leg_loses_while_other_legs_are_pending(tmp_path):
+    rows = [forecast(1), forecast(2)]
+    result = publish(
+        tmp_path,
+        Store([game(1, home_score=90, away_score=100), game(2)]),
+        report(rows, [acca(rows)]),
+    )
+
+    performance = json.loads(Path(result["performance"]).read_text())
+    position = performance["history"][0]["accas"][0]
+    assert position["leg_outcomes"] == ["loss", None]
+    assert position["grade_status"] == "loss"
+    assert position["unresolved_legs"] == 1
+    assert position["profit_units"] == -position["stake_units"]
+    assert performance["settled_accas"] == 1
+    assert performance["pending_accas"] == 0
+    assert "· ❌ LOSS" in Path(result["ticket_text"]).read_text()
+    assert "✅ WIN 0W / ❌ LOSS 1L / ➖ PUSH 0P" in Path(
+        result["performance_text"]
+    ).read_text()
 
 
 def test_all_push_acca_returns_stake_without_a_win_loss_decision(tmp_path):
@@ -1209,7 +1231,7 @@ def test_paper_single_settles_at_single_odds_and_keeps_write_once_receipt(tmp_pa
     assert daily["accas"] == []
     ticket_text = Path(settled["ticket_text"]).read_text()
     assert "[PAPER SINGLE #1]" in ticket_text
-    assert "· WIN" in ticket_text
+    assert "· ✅ WIN" in ticket_text
     assert "Home 1 vs Away 1" in ticket_text
 
 
@@ -1452,7 +1474,7 @@ def test_paper_fade_audit_uses_exact_opposite_quotes_only(tmp_path):
     markdown = Path(result["dated_audit"]).read_text()
     assert "## Paper-only opposite-side fade audit" in markdown
     assert "settled rows with exact opposite quotes: 3/4" in markdown
-    assert "Counterfactual fade: **LOST @ 2.100 away · Test Book**" in markdown
+    assert "Counterfactual fade: **❌ LOSS @ 2.100 away · Test Book**" in markdown
     assert "Counterfactual fade: **not priced (opposite_quote_not_preserved)**" in markdown
     assert "No quote is inferred or historically backfilled" in markdown
 
@@ -1484,8 +1506,8 @@ def test_spread_displays_use_selected_side_handicap_everywhere(tmp_path):
         report([row]),
     )
     markdown = Path(result["dated_audit"]).read_text()
-    assert "LOST — Full-game spread +27.5: Away 1 (away)" in markdown
-    assert "Counterfactual fade: **WON @ 1.909 Home 1 -27.5 (home) · Test Book**" in markdown
+    assert "❌ LOSS — Full-game spread +27.5: Away 1 (away)" in markdown
+    assert "Counterfactual fade: **✅ WIN @ 1.909 Home 1 -27.5 (home) · Test Book**" in markdown
 
 
 def test_started_and_settled_games_leave_the_active_pick_sections(tmp_path):
@@ -1520,7 +1542,7 @@ def test_started_and_settled_games_leave_the_active_pick_sections(tmp_path):
     settled_heading = "SETTLED PICKS — ARCHIVE ONLY"
     assert "Home 1 vs Away 1" not in text.split(settled_heading)[0]
     assert "Home 1 vs Away 1" in text.split(settled_heading)[1]
-    assert "grade=WIN" in text.split(settled_heading)[1]
+    assert "grade=✅ WIN" in text.split(settled_heading)[1]
     assert "IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=1" in text
 
 
@@ -1685,12 +1707,12 @@ def test_unpriced_audit_rows_do_not_enter_a_frozen_priced_ticket(tmp_path):
     assert "[PAPER 3-LEG ACCA #1]" in ticket_text
     assert (
         "UNPRICED AUDIT-ONLY SHADOW GROUPS (≥70% HISTORICAL SUCCESS, n>10) — "
-        "3 picks in 3 groups (3 PENDING; 3 audited)"
+        "3 picks in 3 groups (3 ⏳ PENDING; 3 audited)"
     ) in ticket_text
     assert "historical success=72.7% (8/11)" in ticket_text
-    assert "SHADOW GROUP 1 — 1 audit-only pick (1 PENDING)" in ticket_text
-    assert "SHADOW GROUP 2 — 1 audit-only pick (1 PENDING)" in ticket_text
-    assert "SHADOW GROUP 3 — 1 audit-only pick (1 PENDING)" in ticket_text
+    assert "SHADOW GROUP 1 — 1 audit-only pick (1 ⏳ PENDING)" in ticket_text
+    assert "SHADOW GROUP 2 — 1 audit-only pick (1 ⏳ PENDING)" in ticket_text
+    assert "SHADOW GROUP 3 — 1 audit-only pick (1 ⏳ PENDING)" in ticket_text
     assert "forecast=forecast-4-moneyline-home" in ticket_text
     assert "forecast=forecast-4-moneyline-away" in ticket_text
     assert "forecast=forecast-4-total-under" in ticket_text
@@ -1817,7 +1839,7 @@ def test_ncaam_shadow_uses_priced_ineligible_picks_with_odds_and_probability_flo
     assert (
         "PRICED-INELIGIBLE AUDIT-ONLY SHADOW GROUPS "
         "(decimal odds ≥1.30; p ≥70%) — 3 picks in 1 group "
-        "(3 PENDING; 5 exact-priced ineligible audited)"
+        "(3 ⏳ PENDING; 5 exact-priced ineligible audited)"
     ) in card
     assert "selected decimal odds=1.300 Test Book" in card
     assert "p=70.0% (calibrated_probability)" in card
@@ -1888,9 +1910,9 @@ def test_qualified_no_price_picks_are_grouped_without_creating_a_ticket(tmp_path
     card = Path(result["ticket_text"]).read_text()
     assert (
         "UNPRICED AUDIT-ONLY SHADOW GROUPS (≥70% HISTORICAL SUCCESS, n>10) — "
-        "3 picks in 1 group (3 PENDING; 3 audited)"
+        "3 picks in 1 group (3 ⏳ PENDING; 3 audited)"
     ) in card
-    assert "SHADOW GROUP 1 — 3 audit-only picks (3 PENDING)" in card
+    assert "SHADOW GROUP 1 — 3 audit-only picks (3 ⏳ PENDING)" in card
     assert card.count("  SHADOW GROUP ") == 1
     assert "Display grouping only: no odds, combined success rate, ticket ID, receipt, or stake" in card
     for row in rows:
@@ -1977,7 +1999,7 @@ def test_prior_dated_picks_are_graded_without_changing_frozen_evidence(tmp_path)
     audit_text = Path(first["dated_audit"]).read_text()
     assert "## Settled picks — official-final audit" in audit_text
     assert "### 2026-11-07: Home 1 vs Away 1 (Final: **105–100**)" in audit_text
-    assert "🟢 **WON — Full-game moneyline: Home 1 (home)**" in audit_text
+    assert "**✅ WIN — Full-game moneyline: Home 1 (home)**" in audit_text
     assert "Expected: **62.0%**" in audit_text
     assert "Price: **1.800 · Test Book**" in audit_text
     assert "Calibration: **n=40**" in audit_text
@@ -2023,7 +2045,7 @@ def test_audit_uses_local_day_cutoff_for_previous_slate_pending_rows(tmp_path):
     assert len(next_day["settled_ledger"]) == 1
     assert len(json.loads(Path(first["dated_picks"]).read_text())) == 2
     audit_text = Path(first["dated_audit"]).read_text()
-    assert "🟢 **WON — Full-game moneyline: Home 1 (home)**" in audit_text
+    assert "**✅ WIN — Full-game moneyline: Home 1 (home)**" in audit_text
     settled_section = audit_text.split("## Settled picks — official-final audit", 1)[1]
     assert "Home 2 vs Away 2" not in settled_section
 
@@ -2077,11 +2099,11 @@ def test_audit_groups_markets_by_fixture_with_actual_period_scores(tmp_path):
     text = Path(first["dated_audit"]).read_text()
     assert text.count("### 2026-11-07: Home 1 vs Away 1") == 1
     assert "(Final: **105–100**)" in text
-    assert "🟢 **WON — Full-game moneyline: Home 1 (home)**" in text
-    assert "🔴 **LOST — First-half moneyline: Away 1 (away)**" in text
+    assert "**✅ WIN — Full-game moneyline: Home 1 (home)**" in text
+    assert "**❌ LOSS — First-half moneyline: Away 1 (away)**" in text
     assert "Actual First-half score: **52.5–50**" in text
     assert "31.0%** calibrated (raw 28.0%)" in text
-    assert "🔴 **LOST — Full-game total 200: Under**" in text
+    assert "**❌ LOSS — Full-game total 200: Under**" in text
     assert "Actual Full-game total: **205**" in text
     assert "Price: **1.909 · Test Book**" in text
     assert "Price: **No exact bookmaker price**" in text
