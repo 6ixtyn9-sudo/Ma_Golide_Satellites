@@ -26,7 +26,10 @@ _FEATURE_CATALOG = {
     "provider_prediction": {
         "role": "active_model_input_when_available",
         "source": "league/provider prediction records",
-        "guard": "pre-tip record observed by report cutoff; provider/model provenance retained",
+        "guard": (
+            "latest valid pre-tip record per provider observed by report cutoff; "
+            "separate forecast/calibration sources; no provider suppressed or averaged"
+        ),
     },
     "book_market_price": {
         "role": "active_model_input_when_available",

@@ -78,21 +78,42 @@ class MarketForecastService:
             result_delay_hours=self.forecast_config.result_available_after_hours
         )
 
-    def _prediction(
+    def _predictions(
         self, game: Game, *, as_of_utc: str, historical: bool
-    ) -> tuple[Optional[Prediction], bool]:
+    ) -> List[tuple[Prediction, bool]]:
+        """Return each provider's latest admissible record, in stable order.
+
+        Provider order controls display/ranking stability only; it must not
+        suppress otherwise valid provider evidence from forecast generation.
+        """
         tip = parse_utc(game.scheduled_utc)
         as_of = parse_utc(as_of_utc)
-        by_provider: Dict[str, Prediction] = {}
+        by_provider: Dict[str, tuple[Prediction, bool]] = {}
         for prediction in self.store.get_predictions(game.game_id):
             if not prediction.pre_tip:
                 continue
-            # Moneyline needs only a coherent probability pair. Expected
-            # scores remain optional for NCAA BPI and Sportradar CBA
-            # probabilities; history supplies score distributions.
-            if prediction.prob_home is None or prediction.prob_away is None:
+            # A provider contributes if it has a coherent moneyline pair or
+            # at least one usable full-game expectation. Some feeds publish
+            # only score/total/margin forecasts, which remain useful to line
+            # markets even without a moneyline probability.
+            has_moneyline_probabilities = (
+                prediction.prob_home is not None and prediction.prob_away is not None
+            )
+            has_score_expectation = any(
+                value is not None
+                for value in (
+                    prediction.expected_home_score,
+                    prediction.expected_away_score,
+                    prediction.expected_total,
+                    prediction.expected_margin,
+                )
+            )
+            if not has_moneyline_probabilities and not has_score_expectation:
                 continue
-            observed = parse_utc(prediction.observed_utc)
+            try:
+                observed = parse_utc(prediction.observed_utc)
+            except (TypeError, ValueError):
+                continue
             if observed >= tip or observed > as_of:
                 continue
             frozen = self.store.is_prediction_frozen(game.game_id, prediction.provider)
@@ -103,15 +124,17 @@ class MarketForecastService:
             except ValueError:
                 continue
             previous = by_provider.get(prediction.provider)
-            if previous is None or observed > parse_utc(previous.observed_utc):
-                by_provider[prediction.provider] = prediction
-        ordered = [*self.provider_order, *sorted(by_provider)]
-        for provider in ordered:
-            if provider in by_provider:
-                return by_provider[provider], self.store.is_prediction_frozen(
-                    game.game_id, provider
-                )
-        return None, False
+            if previous is None or observed > parse_utc(previous[0].observed_utc):
+                by_provider[prediction.provider] = (prediction, frozen)
+        ordered = list(dict.fromkeys([*self.provider_order, *sorted(by_provider)]))
+        return [by_provider[provider] for provider in ordered if provider in by_provider]
+
+    def _prediction(
+        self, game: Game, *, as_of_utc: str, historical: bool
+    ) -> tuple[Optional[Prediction], bool]:
+        """Backward-compatible highest-priority prediction accessor."""
+        predictions = self._predictions(game, as_of_utc=as_of_utc, historical=historical)
+        return predictions[0] if predictions else (None, False)
 
     def _books(self, game: Game, *, as_of_utc: str, historical: bool) -> List[BookSnapshot]:
         tip = parse_utc(game.scheduled_utc)
@@ -150,9 +173,7 @@ class MarketForecastService:
         history = self.model.available_history(
             finals, scheduled_utc=game.scheduled_utc, as_of_utc=as_of_utc
         )
-        prediction, prediction_frozen = self._prediction(
-            game, as_of_utc=as_of_utc, historical=historical
-        )
+        predictions = self._predictions(game, as_of_utc=as_of_utc, historical=historical)
         snapshots = self._books(game, as_of_utc=as_of_utc, historical=historical)
         frozen_books = {
             (
@@ -165,7 +186,9 @@ class MarketForecastService:
         full_game_moneyline_books = select_moneyline_snapshots(
             snapshots, self.book_config, Period.FULL_GAME
         )
-        if prediction is not None:
+        for prediction, prediction_frozen in predictions:
+            if prediction.prob_home is None or prediction.prob_away is None:
+                continue
             forecasts.extend(
                 self.model.moneyline(
                     game,
@@ -202,16 +225,42 @@ class MarketForecastService:
         for period in line_periods(game.league):
             line_snapshots.extend(select_total_snapshots(snapshots, self.book_config, period))
             line_snapshots.extend(select_spread_snapshots(snapshots, self.book_config, period))
+        # Keep an empirical line forecast and add a provider-hybrid forecast for
+        # every source that supplies score/margin/total expectations. Provider
+        # evidence is evaluated in its own source/calibration segment; no
+        # provider wins merely because it appears first in provider_order.
         forecasts.extend(
             self.model.lines(
                 game,
                 history,
                 line_snapshots,
                 frozen_books,
-                prediction,
-                prediction_frozen,
             )
         )
+        for prediction, prediction_frozen in predictions:
+            if not any(
+                value is not None
+                for value in (
+                    prediction.expected_total,
+                    prediction.expected_margin,
+                    (
+                        prediction.expected_home_score
+                        if prediction.expected_away_score is not None
+                        else None
+                    ),
+                )
+            ):
+                continue
+            forecasts.extend(
+                self.model.lines(
+                    game,
+                    history,
+                    line_snapshots,
+                    frozen_books,
+                    prediction,
+                    prediction_frozen,
+                )
+            )
         if supports_highest_quarter(game.league):
             forecasts.extend(self.model.highest_quarter(game, history))
         return sorted(
@@ -692,8 +741,8 @@ class MarketForecastService:
                     "current posted market line",
                 ],
                 "provider_prediction": [
-                    "selected pre-tip provider probabilities",
-                    "provider expected scores/margin/total when supplied",
+                    "all valid latest-per-provider pre-tip probabilities as separate forecasts",
+                    "provider expected scores/margin/total as separate hybrid line forecasts",
                 ],
                 "espn_player_context": (
                     "candidate evidence is emitted below; not yet applied to "
