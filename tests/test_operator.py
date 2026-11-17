@@ -49,6 +49,7 @@ def game(
     total=None,
     game_id=None,
     scheduled_utc=None,
+    status=None,
 ):
     if total is not None:
         home_score = total / 2
@@ -72,7 +73,7 @@ def game(
         home_name=f"Home {number}",
         away_name=f"Away {number}",
         scheduled_utc=scheduled_utc or f"2026-11-{6 + number:02d}T20:00:00Z",
-        status=GameStatus.SCHEDULED if scheduled else GameStatus.FINAL,
+        status=status or (GameStatus.SCHEDULED if scheduled else GameStatus.FINAL),
         actual=actual,
     )
 
@@ -832,34 +833,51 @@ def test_acca_is_a_loss_as_soon_as_any_leg_loses_while_other_legs_are_pending(tm
     assert "➖ PUSH" not in bet_day_line
 
 
-@pytest.mark.parametrize("result_case", ["missing_game", "unreconciled_final"])
+@pytest.mark.parametrize(
+    ("result_case", "expected_resolution"),
+    [
+        ("missing_game", "result_unresolvable"),
+        ("unreconciled_final", "result_unresolvable"),
+        (GameStatus.SCHEDULED, "awaiting_game"),
+        (GameStatus.LIVE, "awaiting_game"),
+        (GameStatus.POSTPONED, "awaiting_game"),
+        (GameStatus.CANCELLED, "result_unresolvable"),
+        (GameStatus.ABANDONED, "result_unresolvable"),
+        (GameStatus.UNKNOWN, "result_unresolvable"),
+    ],
+)
 def test_unresolvable_leg_results_are_distinguished_from_waiting_games(
-    tmp_path, result_case
+    tmp_path, result_case, expected_resolution
 ):
     row = forecast(1)
     if result_case == "missing_game":
         store = Store([])
-    else:
+    elif result_case == "unreconciled_final":
         unreconciled = game(1, home_score=90, away_score=100)
         unreconciled.actual.home_quarters[0] += 1.0
         store = Store([unreconciled])
+    else:
+        store = Store([game(1, status=result_case)])
 
     result = publish(tmp_path, store, report([row], [acca([row])]))
 
     performance = json.loads(Path(result["performance"]).read_text())
     position = performance["history"][0]["positions"][0]
     leg = position["legs"][0]
+    expected_awaiting = int(expected_resolution == "awaiting_game")
+    expected_unresolvable = int(expected_resolution == "result_unresolvable")
     assert position["grade_status"] == "pending"
     assert position["unresolved_legs"] == 1
-    assert position["awaiting_game_legs"] == 0
-    assert position["result_unresolvable_legs"] == 1
-    assert leg["result_resolution_status"] == "result_unresolvable"
-    assert performance["awaiting_game_legs"] == 0
-    assert performance["result_unresolvable_legs"] == 1
+    assert position["awaiting_game_legs"] == expected_awaiting
+    assert position["result_unresolvable_legs"] == expected_unresolvable
+    assert leg["result_resolution_status"] == expected_resolution
+    assert performance["awaiting_game_legs"] == expected_awaiting
+    assert performance["result_unresolvable_legs"] == expected_unresolvable
     assert performance["unresolved_result_legs"] == 1
-    assert "0 awaiting games · 1 result unresolvable" in Path(
-        result["performance_text"]
-    ).read_text()
+    assert (
+        f"{expected_awaiting} awaiting games · "
+        f"{expected_unresolvable} result unresolvable"
+    ) in Path(result["performance_text"]).read_text()
 
 
 def test_all_push_acca_returns_stake_without_a_win_loss_decision(tmp_path):

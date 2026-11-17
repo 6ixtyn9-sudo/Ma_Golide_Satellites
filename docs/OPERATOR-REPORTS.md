@@ -311,12 +311,13 @@ The rolling performance report counts settled and pending positions separately.
 In `auto_tickets_performance.json`, `awaiting_game_legs` counts ungraded legs
 whose game is scheduled, live, or postponed; `result_unresolvable_legs` counts
 legs with no matching game, a non-playable/unknown game status, or a final whose
-result cannot be reconciled/graded. Their sum is retained as
-`unresolved_result_legs` for compatibility. The same three counts appear in each
-history day and on each position; pending legs carry a
-`result_resolution_status` of `awaiting_game` or `result_unresolvable` in the
-graded performance copy. This diagnostic split does not change pending grades,
-stakes, or settlement decisions.
+result cannot be reconciled/graded. At the overall and history-day levels,
+the unresolved total remains `unresolved_result_legs`; each also has the two
+category counts. On each position, the total is named `unresolved_legs`, with
+`awaiting_game_legs` and `result_unresolvable_legs` alongside it. Pending legs
+carry a `result_resolution_status` of `awaiting_game` or `result_unresolvable`
+in the graded performance copy. This diagnostic split does not change pending
+grades, stakes, or settlement decisions.
 
 The report gives flat-stake ROI only when settled priced observations exist. It
 never invents a return for an unresolved ticket. `bank*` is a latest-known-result
