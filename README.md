@@ -138,6 +138,24 @@ read-only. If the audit is absent, empty, or has no usable priced rows, it falls
 back to past-only prequential settled individual forecasts and reports that
 cold-start fallback explicitly.
 
+### Point-in-time model-versus-market evaluation
+
+Run the separate research-only moneyline comparison against the existing
+read-only warehouse:
+
+```bash
+python scripts/market_eval.py --league NBA --book Pinnacle \
+  --as-of 2026-11-17T00:00:00Z --output /tmp/market-eval.json
+```
+
+The lane requires a frozen pre-tip prediction, keeps each provider/model
+version and named-book lane separate, accepts only reconciled official finals,
+and uses a quote recorded no later than that forecast's decision timestamp. Missing,
+stale, ambiguous, and post-decision evidence is reported as an explicit
+exclusion. Paper return/Kelly fields are diagnostics only: observed prices do
+not guarantee execution and the report makes no profitability claim. EuroLeague
+can be selected as `EUROLEAGUE` (or `EuroLeague`).
+
 The walk-forward harness fits separate reliability profiles by league, market,
 period, model source, and calibration-version fingerprint. Each profile uses
 only earlier graded outcomes. Its shrunken observed-minus-claimed adjustment
