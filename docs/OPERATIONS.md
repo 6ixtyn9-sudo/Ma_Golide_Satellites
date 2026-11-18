@@ -147,10 +147,16 @@ into "no work." NBA, WNBA, NCAA men, and NCAA women use one ESPN scoreboard
 request for their current acquisition day; CBA uses one official Beijing-day
 schedule request. FIBA EuroLeague Women uses its official GDAP competition
 schedule (`209127`) and filters the canonical `gameDateTimeUTC` rows to the
-Europe/Paris slate date. Men's EuroLeague currently has only the verified
-whole-season schedule endpoint, not a verified date-bounded alternative, so it
-deliberately fails open rather than disguising a season download as a
-lightweight gate.
+Europe/Paris slate date. GDAP publishes future bracket placeholders with no
+assigned teams: the gate ignores those non-fixtures and the full pipeline emits
+bounded coverage telemetry for them. The gate and provider share the same FIBA
+status contract; cancelled, abandoned, postponed, malformed, and unknown rows
+make the gate fail open rather than becoming a `no_work` decision. FIBA APIM
+header authentication uses a shared public fallback and retries after one
+public-page key refresh; a refresh failure also fails open. Men's EuroLeague
+currently has only the verified whole-season schedule endpoint, not a verified
+date-bounded alternative, so it deliberately fails open rather than disguising
+a season download as a lightweight gate.
 
 `workflow_dispatch` remains deliberately different: it forces the existing
 all-league read-only rehearsal, even if the adaptive gate would otherwise skip
@@ -183,6 +189,31 @@ date. A delayed run that misses the first tip also fails closed to that no-bet
 decision. Before the cutoff, the text card explicitly identifies the pending
 decision time and later scans may update candidate prices; after either decision,
 selections/prices/stakes—or the no-bet result—cannot change.
+
+### EuroLeague Women history, result, and market boundaries
+
+FIBA ELW deep history currently covers **only the GDAP edition exposed by
+competition `209127`**; it is not a historical competition catalogue. A FIBA
+backfill cursor advances only after at least one reconciled game-page detail is
+written. An all-failed detail batch therefore reports
+`provider_error_cursor_retained` and retries instead of claiming progress. Each
+fresh GDAP pass compares stored schedule-score provenance with the current
+index; a changed official score causes a game-page re-verification before the
+old final remains canonical.
+
+Result rechecks are bounded by `history_days`. If a pending final ages out, the
+results report emits a `pending_final_expired` / `result_unresolvable` coverage
+gap rather than silently treating the game as settled or dropping it from
+operational visibility. Resolve or explicitly quarantine such a game before
+using it as history.
+
+ELW has no validated named bookmaker or point-in-time price source. Market and
+operator reports carry `pricing_evidence_status=unpriced_no_validated_named_book_lane`;
+any paper singles/acca counts are
+unpriced decision-support counts, **not** price, positive-EV, or betting
+recommendations. The standalone `scripts/build_markets.py` defaults `--tz` to
+the selected league's acquisition timezone (Europe/Paris for ELW), not UTC;
+pass `--tz` explicitly only when deliberately inspecting another local slate.
 
 ### Optional odds-provider credentials
 

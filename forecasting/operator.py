@@ -3473,6 +3473,9 @@ def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, 
         "effective_paper_legs": effective_paper_legs,
         "eligibility_blockers": dict(sorted(blockers.items())),
     }
+    pricing_status = acca_report.get("pricing_evidence_status")
+    if isinstance(pricing_status, str) and pricing_status:
+        funnel["pricing_evidence_status"] = pricing_status
     pick_filter = acca_report.get("paper_pick_filter")
     if isinstance(pick_filter, dict):
         funnel["paper_pick_filter"] = deepcopy(pick_filter)
@@ -3603,6 +3606,12 @@ def _render_empty_ticket_scan(
             3,
             "EUROLEAGUE PRICED-VALUE LANE — exact pre-tip quote; calibrated p × odds > 1.00; "
             "at least 10 past settled picks and positive ROI in the matching band.",
+        )
+    elif league is League.EUROLEAGUE_W:
+        lines.insert(
+            3,
+            "EUROLEAGUE WOMEN UNPRICED LANE — no validated named-book source or point-in-time "
+            "price evidence; paper counts are not value, EV, or betting recommendations.",
         )
     if priced_ineligible_shadow_picks is None:
         lines.extend(

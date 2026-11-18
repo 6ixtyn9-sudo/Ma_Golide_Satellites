@@ -523,14 +523,18 @@ class Pipeline:
         """Fetch official FIBA GDAP JSON, preserving fixture injection."""
 
         if self._fiba_client is not None:
-            return self._fiba_client.get_json(url)
+            payload = self._fiba_client.get_json(url)
+            self.quota["fiba"] = self._fiba_client.last_quota()
+            return payload
         return self.fetch(url)
 
     def _fiba_detail_fetch(self, url: str) -> Dict[str, Any]:
         """Fetch one official FIBA game page detail, preserving fixture injection."""
 
         if self._fiba_client is not None:
-            return self._fiba_client.game_detail(url)
+            detail = self._fiba_client.game_detail(url)
+            self.quota["fiba"] = self._fiba_client.last_quota()
+            return detail
         return self.fetch(url)
 
     def _discover_games(self) -> List[Game]:
@@ -555,6 +559,10 @@ class Pipeline:
             games = fiba_euroleague_w.discover_games(
                 _iso(self.config.date_yyyymmdd), self._fiba_schedule_fetch
             )
+            # Future FIBA bracket placeholders are intentionally skipped as
+            # non-canonical fixtures, but their bounded coverage telemetry is
+            # part of this stage's report rather than a hidden empty-slate.
+            self.gaps.extend(fiba_euroleague_w.last_gaps())
         else:
             raise ValueError(f"unsupported league for discovery: {league.value}")
         for game in games:
@@ -1513,43 +1521,65 @@ class Pipeline:
                 )
             )
             return {**base, "status": "provider_error"}
+        self.gaps.extend(fiba_euroleague_w.last_gaps())
         now = parse_utc(self._now_iso())
         existing = {
             game.game_id: game
             for game in self.store.list_games(league=League.EUROLEAGUE_W)
         }
-        missing_finals = [
-            game
-            for game in games
-            if game.status is GameStatus.FINAL
-            and parse_utc(game.scheduled_utc) < now
-            and (
-                game.game_id not in existing
-                or existing[game.game_id].actual is None
-                or not existing[game.game_id].actual.reconciles()[0]
+
+        def schedule_score_changed(stored: Game, fresh: Game) -> bool:
+            """Whether GDAP now disagrees with stored schedule-index provenance."""
+
+            fresh_scores = (
+                fresh.provider_ids.get("fiba_elw_schedule_team_a_score"),
+                fresh.provider_ids.get("fiba_elw_schedule_team_b_score"),
             )
-        ]
+            stored_scores = (
+                stored.provider_ids.get("fiba_elw_schedule_team_a_score"),
+                stored.provider_ids.get("fiba_elw_schedule_team_b_score"),
+            )
+            return fresh_scores != (None, None) and fresh_scores != stored_scores
+
+        missing_finals: List[Game] = []
+        corrected_finals: List[Game] = []
+        for game in games:
+            if game.status is not GameStatus.FINAL or parse_utc(game.scheduled_utc) >= now:
+                continue
+            stored = existing.get(game.game_id)
+            if stored is None or stored.actual is None or not stored.actual.reconciles()[0]:
+                missing_finals.append(game)
+            elif schedule_score_changed(stored, game):
+                # A current GDAP score correction invalidates the old detail
+                # provenance. Re-fetch and reconcile it before retaining the
+                # canonical final; do not silently count it as already done.
+                corrected_finals.append(game)
+        candidates = {game.game_id: game for game in [*missing_finals, *corrected_finals]}
         # A durable circular cursor prevents one permanently malformed game
         # detail from consuming the first slot forever once a season grows past
         # the per-run budget. It still wraps, so transient detail failures are
         # retried on a later write-enabled run.
-        ordered_missing = sorted(missing_finals, key=lambda game: (game.scheduled_utc, game.game_id))
+        ordered_candidates = sorted(candidates.values(), key=lambda game: (game.scheduled_utc, game.game_id))
         cursor = self._history_cursor("fiba-elw-history")
         after = (str(cursor.get("scheduled_utc") or ""), str(cursor.get("game_id") or ""))
         remaining = [
             game
-            for game in ordered_missing
+            for game in ordered_candidates
             if (game.scheduled_utc, game.game_id) > after
         ]
-        final_rows = (remaining or ordered_missing)[:budget]
-        missing_ids = {item.game_id for item in missing_finals}
+        final_rows = (remaining or ordered_candidates)[:budget]
+        candidate_ids = set(candidates)
         base["already_reconciled"] = sum(
             game.status is GameStatus.FINAL
             and parse_utc(game.scheduled_utc) < now
-            and game.game_id not in missing_ids
+            and game.game_id not in candidate_ids
             for game in games
         )
+        base["score_corrections_detected"] = len(corrected_finals)
+        base["score_corrections_written"] = 0
         failures = 0
+        written_rows: List[Game] = []
+        corrected_ids = {game.game_id for game in corrected_finals}
         for game in final_rows:
             try:
                 result = fiba_euroleague_w.fetch_game_result(game, self._fiba_detail_fetch)
@@ -1567,18 +1597,30 @@ class Pipeline:
                 )
                 continue
             self.store.upsert_game(result)
+            written_rows.append(game)
             base["events_acquired"] += 1
             base["final_scores_written"] += 1
+            base["score_corrections_written"] += int(game.game_id in corrected_ids)
             base["ledger_dates"].append(self._ledger_date_for(result))
-        if final_rows:
-            last = final_rows[-1]
+        # Cursor advancement means a canonical detail was actually written.
+        # In particular an all-failed batch keeps the old cursor and retries
+        # on the next write-enabled run instead of declaring false progress.
+        if written_rows:
+            last = written_rows[-1]
             self._record_history_cursor(
                 "fiba-elw-history",
                 {"scheduled_utc": last.scheduled_utc, "game_id": last.game_id},
             )
+        status = (
+            "acquired"
+            if not failures
+            else "provider_error_cursor_retained"
+            if not written_rows
+            else "partial_provider_error"
+        )
         return {
             **base,
-            "status": "acquired" if not failures else "partial_provider_error",
+            "status": status,
             "quarantined_rows": failures,
             "cursor": self._history_cursor("fiba-elw-history"),
             "ledger_dates": sorted(set(base["ledger_dates"])),
@@ -1956,18 +1998,52 @@ class Pipeline:
         if not days:
             return []
         target = datetime.strptime(self.config.date_yyyymmdd, "%Y%m%d").date()
+        window_start_utc = f"{target - timedelta(days=days + 1)}T00:00:00Z"
+
+        def is_pending(game: Game) -> bool:
+            return (
+                game.game_id not in already
+                and game.status not in _CLOSED_STATUSES
+                and (game.status is not GameStatus.FINAL or game.actual is None)
+                and self._ledger_date_for(game) < self.config.date_yyyymmdd
+            )
+
         pending = {
             game.game_id: game
             for game in self.store.list_games(
                 league=self.config.league_enum,
-                on_or_after_utc=f"{target - timedelta(days=days + 1)}T00:00:00Z",
+                on_or_after_utc=window_start_utc,
                 before_utc=self._now_iso(),
             )
-            if game.game_id not in already
-            and game.status not in _CLOSED_STATUSES
-            and (game.status is not GameStatus.FINAL or game.actual is None)
-            and self._ledger_date_for(game) < self.config.date_yyyymmdd
+            if is_pending(game)
         }
+        # Do not silently make an old pending final disappear merely because
+        # it aged out of the bounded network recheck window. It is deliberately
+        # not retried forever here (that would defeat the budget); surface one
+        # explicit result-unresolvable marker for operator remediation.
+        expired = [
+            game
+            for game in self.store.list_games(
+                league=self.config.league_enum,
+                before_utc=window_start_utc,
+            )
+            if is_pending(game)
+        ]
+        if expired:
+            oldest = min(expired, key=lambda game: game.scheduled_utc)
+            self.gaps.append(
+                CoverageGap(
+                    game_id=None,
+                    required_field="pending_final_expired",
+                    reason=CoverageState.MISSING,
+                    provider=self.config.league.lower(),
+                    detail=(
+                        f"result_unresolvable: {len(expired)} pending final(s) aged beyond "
+                        f"the {days}-day recheck window; oldest={oldest.game_id}"
+                    ),
+                    observed_utc=self._now_iso(),
+                )
+            )
         if not pending:
             return []
         league = self.config.league_enum
@@ -1985,14 +2061,12 @@ class Pipeline:
                         [g for g in euroleague.discover_games(None, self.fetch) if g.game_id in pending]
                     )
                 elif league is League.EUROLEAGUE_W:
+                    season_games = fiba_euroleague_w.discover_games(
+                        None, self._fiba_schedule_fetch
+                    )
+                    self.gaps.extend(fiba_euroleague_w.last_gaps())
                     day = self._fiba_euroleague_w_finals(
-                        [
-                            g
-                            for g in fiba_euroleague_w.discover_games(
-                                None, self._fiba_schedule_fetch
-                            )
-                            if g.game_id in pending
-                        ]
+                        [g for g in season_games if g.game_id in pending]
                     )
                 elif league in ESPN_LEAGUES:
                     day = espn.fetch_recent_results(

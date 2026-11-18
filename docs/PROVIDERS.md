@@ -14,7 +14,7 @@ No live-provider claim should be inferred from a passing offline suite.
 | ESPN | NCAA_M | Division-I men's scoreboard/books, BPI predictions, summaries, two-half/OT results, recent and indexed deep history | Public endpoints | Historical probes and hermetic endpoint/two-half/OT regressions; external-trigger smoke still required |
 | ESPN | NCAA_W | Division-I women's scoreboard/books, BPI predictions, summaries, modern quarters and declared legacy halves, recent and indexed deep history | Public endpoints | Live four-quarter final probe plus hermetic quarter/legacy-half and one-time reparse regressions |
 | EuroLeague | EuroLeague | Schedule discovery, game results, quarter/OT reconciliation, standings | Public endpoints | Schedule/boxscore live captures 2026-11-06; season schedule scores/partials, empty-season trap, and v3 per-round standings live-verified 2026-11-16; upstream reuse terms not reviewed |
-| FIBA GDAP + game page | EuroLeague Women (`EUROLEAGUE_W`) | Competition schedule, canonical UTC fixtures/status/results, official game-page play-by-play/period scores, player/team detail | Public APIM key shipped in FIBA's web client | GDAP competition `209127` directly validated 2026-11-18; bounded schedule and completed OT game detail fixtures; independent namespace, no men's EuroLeague reuse |
+| FIBA GDAP + game page | EuroLeague Women (`EUROLEAGUE_W`) | Competition schedule, canonical UTC fixtures/status/results, official game-page play-by-play/period scores, player/team detail | Public APIM key shipped in FIBA's web client | Live facts and fixture-only cases are separated below; independent namespace, no men's EuroLeague reuse. Automation/reuse rights and future route/status vocabulary remain unresolved. |
 | CBA | CBA | Official league data API: season/day discovery, Beijing-local UTC times, quarter/OT reconciliation via observed period-score POST endpoint | Public endpoints; AES-128-ECB bodies decrypted with the key constant shipped in the site's own bundle | Live-verified 2026-11-16 from a datacenter IP (decryption, statuses, quarter sums, OT shape); unofficial/undocumented API and terms not reviewed — see caveats |
 | iSportsAPI | CBA | Exact Chinese league discovery, UTC schedule/results, four-quarter/OT reconciliation | `ISPORTS_API_KEY` | `DOCUMENTATION_ONLY`; fixture-tested adapter, paid access and live league ID not verified |
 
@@ -51,29 +51,58 @@ verified index floors.
 - Boxscore results (`live.euroleague.net/api/Boxscore`) remain the deeper
   per-game evidence path for slate results.
 
-### FIBA EuroLeague Women acquisition details (validated 2026-11-18)
+### FIBA EuroLeague Women acquisition details (observations checked 2026-11-18)
+
+**Live-confirmed transport/schema facts — not an availability or rights
+promise.**
 
 - The canonical fixture/result index is the official GDAP route
   `GET https://digital-api.fiba.basketball/hapi/getgdapgamesbycompetitionid`
-  with `gdapCompetitionId=209127`.  It supplies `gameDateTimeUTC`, an IANA
-  venue timezone, FIBA game/team IDs, official final scores, and independent
-  result/statistic/play-by-play status flags.  Acquisition accepts only the
-  UTC field; neither game-page display time nor venue-local text is converted
-  into a canonical tip.
-- FIBA's browser application ships a public APIM subscription key. The live
-  adapter refreshes it from the public page and sends it as an APIM header;
-  the dependency-free scheduler gate makes the same bounded schedule read with
-  the public query-key form. This is not a Ma Golide secret and no key value is
-  placed in reports or durable state.
+  with `gdapCompetitionId=209127`. The reviewed response held 110 rows for the
+  2026–27 edition, with 54 future second-round/playoff slots carrying
+  `teamA: null` and `teamB: null`. Those rows are now skipped as *unassigned
+  bracket-slot coverage telemetry*, never mapped to a made-up canonical game.
+  A team-bearing, date-relevant row remains strict: malformed identity or UTC
+  time is a provider error rather than an empty slate.
+- GDAP supplies `gameDateTimeUTC`, an IANA venue timezone, FIBA game/team IDs,
+  official scores, and independent result/statistic/play-by-play status flags.
+  Acquisition accepts only the UTC field; neither game-page display time nor
+  venue-local text is converted into a canonical tip. The observed final
+  signature was `gameResultStatusCode=VALID`, `liveGameStatus=999`, and two
+  numeric scores. `liveGameStatus=1` was also observed on future games, so it
+  is not used as an in-play shortcut.
+- FIBA's browser application ships a public APIM subscription key. The provider
+  and dependency-free gate share one contract, send it in the APIM header (not
+  the URL), and retry once with a page-refreshed public value on failure. This
+  is not a Ma Golide secret and no key value is placed in reports or durable
+  state. Key rotation cadence, quotas, and terms remain unverified.
 - A final enters the canonical store only after the official game-page
   play-by-play supplies complete Q1–Q4 (and, when present, OT) cumulative
-  scores that reconcile to FIBA's official final. Team IDs use the dedicated
+  scores that reconcile to FIBA's final. The PBP object must explicitly bind
+  `gameTechnicalName` (or `gameTechnicalNameOrGameId`) to the requested GDAP
+  game ID; a shape-valid decoy PBP is rejected. Team IDs use the dedicated
   `fiba-elw:<competition>:<team>` namespace and game IDs use
   `fiba-elw-<competition>-<game>`; they cannot collide with men’s EuroLeague.
-- No independent pre-tip prediction provider or named-book market source has
-  yet been validated for ELW. The forecast service therefore uses only its
-  normal empirical-history surface when sufficient reconciled results exist,
-  and the men’s EuroLeague priced-value paper lane is explicitly excluded.
+- The event-page slug is derived from the GDAP edition ending year (for example
+  `2027` → `euroleague-women-26-27`) rather than a frozen source literal. A
+  future event-route change still fails visibly; playoff/Final Four route
+  continuity has not been live-confirmed.
+
+**Hermetic regression coverage — parser behavior only.** The committed FIBA
+fixtures cover a completed OT final, a future team-less bracket row, terminal
+GDAP statuses, explicit PBP game binding/decoys, failed-detail cursor retention,
+and a late GDAP score-correction re-fetch. They do **not** establish that FIBA
+will publish cancelled/abandoned rows, multi-OT detail, future slugs, or score
+corrections in the same shapes.
+
+**Operational and market limits.** The FIBA API's automation, storage, and
+redistribution rights, quotas, and key-rotation policy have not been reviewed.
+`teamA` is used as FIBA's schedule-side A/home orientation within this adapter,
+but neutral-site/all-round semantic confirmation remains outstanding; do not
+interpret this as independently verified venue-home proof. No independent
+pre-tip prediction provider or named-book market source has been validated for
+ELW. Its paper/operator lane is explicitly labelled **unpriced** and never
+makes price, value, or EV claims or inherits men’s EuroLeague pricing.
 
 ### CBA official data API — licensing and terms caveats
 
