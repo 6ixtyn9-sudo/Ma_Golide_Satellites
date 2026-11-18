@@ -46,7 +46,7 @@ from .harness import (
     calibration_population_diagnostics,
     probability_metrics,
 )
-from .model import ForecastConfig, HistoryModel, QUARTERS
+from .model import ForecastConfig, HistoryModel, QUARTERS, league_forecast_config
 from .shadow import (
     RecencyConfig,
     annotate_recency_profiles,
@@ -76,7 +76,7 @@ class MarketForecastService:
     ) -> None:
         self.store = store
         self.league = league
-        self.forecast_config = forecast_config or ForecastConfig()
+        self.forecast_config = forecast_config or league_forecast_config(league)
         self.calibration_config = calibration_config or CalibrationConfig()
         self.book_config = book_config or BookConfig()
         self.provider_order = tuple(provider_order)

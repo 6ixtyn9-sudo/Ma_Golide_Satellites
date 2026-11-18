@@ -17,7 +17,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from forecasting.harness import CalibrationConfig  # noqa: E402
-from forecasting.model import ForecastConfig  # noqa: E402
+from forecasting.model import league_forecast_config  # noqa: E402
 from forecasting.operator import load_settled_pick_history  # noqa: E402
 from forecasting.service import MarketForecastService, write_market_report  # noqa: E402
 from ingestion.books import BookConfig  # noqa: E402
@@ -63,7 +63,8 @@ def main() -> int:
         parser.error("--output cannot overwrite the warehouse")
 
     provider = None if args.book_provider in (None, "", "none") else args.book_provider
-    forecast_config = ForecastConfig(
+    forecast_config = league_forecast_config(
+        League[args.league],
         min_history_games=args.min_history_games,
         min_residual_games=args.min_residual_games,
     )

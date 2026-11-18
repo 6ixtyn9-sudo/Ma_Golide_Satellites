@@ -14,7 +14,7 @@ from datetime import timedelta
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from ingestion.identity import canonical_team_key, parse_utc
-from ingestion.models import BookSnapshot, Game, Market, Period, Prediction
+from ingestion.models import BookSnapshot, Game, League, Market, Period, Prediction
 
 from .context_adjustment import (
     CONTEXT_SOURCE,
@@ -26,6 +26,14 @@ from .harness import config_fingerprint
 from .types import BookEvidence, Forecast, MODEL_VERSION, _period_scores, id_spelling
 
 QUARTERS = (Period.Q1, Period.Q2, Period.Q3, Period.Q4)
+RECALIBRATION_MAX_SLOPE = 6.0
+# Settings added after calibration identities were established. At their
+# defaults they are omitted from the fingerprint so leagues that keep the
+# original behaviour keep their accumulated calibration version.
+_FINGERPRINT_OPTIONAL_DEFAULTS: Dict[str, Any] = {
+    "recalibrate_expectations": False,
+    "posted_line_model_weight": None,
+}
 
 
 @dataclass(frozen=True)
@@ -39,6 +47,17 @@ class ForecastConfig:
     training_window: Optional[int] = None
     residual_window: int = 100
     result_available_after_hours: int = 4
+    # Walk-forward linear recalibration of the empirical expected margin and
+    # total. The raw baseline averages team for/against rates, which halves
+    # rating differences, and early-season shrinkage compresses them further;
+    # an OLS fit of actual outcomes on prior baselines (same residual window,
+    # no look-ahead) restores the scale. Off by default for leagues whose
+    # paper pipeline is frozen pending review.
+    recalibrate_expectations: bool = False
+    # Weight of the model mean against a posted bookmaker spread/total line.
+    # ``None`` keeps pure-model line probabilities. With a weight w, the line
+    # distribution is centred at w * model + (1 - w) * posted line.
+    posted_line_model_weight: Optional[float] = None
 
     def __post_init__(self) -> None:
         if self.min_history_games < 1 or self.min_residual_games < 1:
@@ -51,6 +70,30 @@ class ForecastConfig:
             raise ValueError("residual window is smaller than minimum residual count")
         if self.result_available_after_hours < 0:
             raise ValueError("result availability lag cannot be negative")
+        if self.posted_line_model_weight is not None and not (
+            0.0 <= self.posted_line_model_weight <= 1.0
+        ):
+            raise ValueError("posted line model weight must be within [0, 1]")
+
+
+# Per-league model settings validated by walk-forward backtests on the
+# 2025-26 college seasons (ESPN finals, DraftKings closing lines):
+#   NCAA_W (796 lined games): winner Brier 0.179 -> 0.148, margin MAE
+#     15.1 -> 11.6; spread Brier 0.303 -> 0.250 with the line weight.
+#   NCAA_M (1,139 lined games): winner Brier 0.216 -> 0.202, margin MAE
+#     11.3 -> 9.8; spread Brier 0.278 -> 0.251 with the line weight.
+# Pure-model spread probabilities were badly overconfident (claimed >=70%
+# picks won 55% / 49%). Other leagues keep the original behaviour until
+# they are backtested and their paper pipelines are open to change.
+LEAGUE_FORECAST_OVERRIDES: Dict[League, Dict[str, Any]] = {
+    League.NCAA_W: {"recalibrate_expectations": True, "posted_line_model_weight": 0.2},
+    League.NCAA_M: {"recalibrate_expectations": True, "posted_line_model_weight": 0.2},
+}
+
+
+def league_forecast_config(league: League, **overrides: Any) -> ForecastConfig:
+    """Default ``ForecastConfig`` for ``league``; explicit overrides win."""
+    return ForecastConfig(**{**LEAGUE_FORECAST_OVERRIDES.get(league, {}), **overrides})
 
 
 @dataclass(frozen=True)
@@ -214,7 +257,7 @@ class _HistoryView(Sequence[Game]):
         self.index = index
         self.start = start
         self.end = end
-        self.residual_cache: Dict[Period, tuple[List[float], List[float]]] = {}
+        self.residual_cache: Dict[Period, List[Tuple[float, float, float, float]]] = {}
 
     def __len__(self) -> int:
         return self.end - self.start
@@ -236,6 +279,15 @@ class _HistoryView(Sequence[Game]):
         return (self.index.games[i] for i in range(self.end - 1, self.start - 1, -1))
 
 
+def _config_components(config: ForecastConfig) -> Dict[str, Any]:
+    """Prediction-relevant config, omitting optional settings at defaults."""
+    components = asdict(config)
+    for key, default in _FINGERPRINT_OPTIONAL_DEFAULTS.items():
+        if components.get(key) == default:
+            components.pop(key, None)
+    return components
+
+
 class HistoryModel:
     def __init__(
         self,
@@ -251,7 +303,7 @@ class HistoryModel:
         # Every setting in ForecastConfig can change the available evidence or
         # empirical probabilities. Source identity remains a separate segment
         # dimension; this tag isolates the algorithm/configuration itself.
-        components = {"model_version": id_spelling(MODEL_VERSION), **asdict(self.config)}
+        components = {"model_version": id_spelling(MODEL_VERSION), **_config_components(self.config)}
         self.calibration_version = f"{MODEL_VERSION}-{config_fingerprint(components)}"
 
     @property
@@ -264,7 +316,7 @@ class HistoryModel:
         """
         if self._context_calibration_version_cache is None:
             components = context_calibration_components(
-                self.context_config, base_config_asdict=asdict(self.config)
+                self.context_config, base_config_asdict=_config_components(self.config)
             )
             self._context_calibration_version_cache = (
                 f"{MODEL_VERSION}-context-{config_fingerprint(components)}"
@@ -516,9 +568,11 @@ class HistoryModel:
             "sufficient_for_accas": home >= required and away >= required,
         }
 
-    def _residuals(
+    def _residual_samples(
         self, history: Sequence[Game], period: Period
-    ) -> tuple[List[float], List[float]]:
+    ) -> List[Tuple[float, float, float, float]]:
+        """Walk-forward ``(baseline margin, baseline total, actual margin,
+        actual total)`` samples, oldest first, for the configured window."""
         if isinstance(history, _HistoryView):
             cached = history.residual_cache.get(period)
             if cached is not None:
@@ -527,8 +581,7 @@ class HistoryModel:
         else:
             index = _IndexedHistory(history, self.config.recent_half_life_games)
             start, end = 0, len(index)
-        margins: List[float] = []
-        totals: List[float] = []
+        samples: List[Tuple[float, float, float, float]] = []
         # Ensure period prefix statistics are ready for indexed baselines.
         index.period(period)
         # Residual distributions only use the most recent configured samples.
@@ -550,16 +603,53 @@ class HistoryModel:
             )
             if baseline is None:
                 continue
-            margins.append(actual[0] - actual[1] - baseline.margin)
-            totals.append(actual[0] + actual[1] - baseline.total)
-            if len(margins) >= self.config.residual_window:
+            samples.append(
+                (
+                    baseline.margin,
+                    baseline.total,
+                    actual[0] - actual[1],
+                    actual[0] + actual[1],
+                )
+            )
+            if len(samples) >= self.config.residual_window:
                 break
-        margins.reverse()
-        totals.reverse()
-        result = (margins, totals)
+        samples.reverse()
         if isinstance(history, _HistoryView):
-            history.residual_cache[period] = result
-        return result
+            history.residual_cache[period] = samples
+        return samples
+
+    def _residuals(
+        self, history: Sequence[Game], period: Period
+    ) -> tuple[List[float], List[float]]:
+        samples = self._residual_samples(history, period)
+        return (
+            [actual_margin - margin for margin, _, actual_margin, _ in samples],
+            [actual_total - total for _, total, _, actual_total in samples],
+        )
+
+    @staticmethod
+    def _linear_recalibration(
+        predicted: Sequence[float], actual: Sequence[float]
+    ) -> Tuple[float, float]:
+        """OLS ``actual ~ intercept + slope * predicted`` with safe fallbacks.
+
+        A degenerate predictor (no spread, e.g. every team still at the league
+        prior) keeps the identity slope; the slope is bounded to
+        ``[0, RECALIBRATION_MAX_SLOPE]`` so a noisy window cannot invert or
+        explode the rating scale.
+        """
+        n = len(predicted)
+        mean_x = sum(predicted) / n
+        mean_y = sum(actual) / n
+        var_x = sum((x - mean_x) ** 2 for x in predicted)
+        if var_x <= 1e-9 * n:
+            slope = 1.0
+        else:
+            covariance = sum(
+                (x - mean_x) * (y - mean_y) for x, y in zip(predicted, actual)
+            )
+            slope = min(RECALIBRATION_MAX_SLOPE, max(0.0, covariance / var_x))
+        return mean_y - slope * mean_x, slope
 
     def distribution(
         self,
@@ -579,6 +669,36 @@ class HistoryModel:
         baseline = self.baseline(game, history, period)
         if baseline is None:
             return None
+        samples = self._residual_samples(history, period)
+        if len(samples) < self.config.min_residual_games:
+            return None
+        if self.config.recalibrate_expectations:
+            margin_fit = self._linear_recalibration(
+                [row[0] for row in samples], [row[2] for row in samples]
+            )
+            total_fit = self._linear_recalibration(
+                [row[1] for row in samples], [row[3] for row in samples]
+            )
+            margin_residuals = [
+                actual - (margin_fit[0] + margin_fit[1] * predicted)
+                for predicted, _, actual, _ in samples
+            ]
+            total_residuals = [
+                actual - (total_fit[0] + total_fit[1] * predicted)
+                for _, predicted, _, actual in samples
+            ]
+            margin = margin_fit[0] + margin_fit[1] * baseline.margin
+            total = total_fit[0] + total_fit[1] * baseline.total
+            baseline = Baseline(
+                (total + margin) / 2,
+                (total - margin) / 2,
+                baseline.games,
+                home_team_effective_games=baseline.home_team_effective_games,
+                away_team_effective_games=baseline.away_team_effective_games,
+            )
+        else:
+            margin_residuals = [actual - predicted for predicted, _, actual, _ in samples]
+            total_residuals = [actual - predicted for _, predicted, _, actual in samples]
         if period is Period.FULL_GAME and prediction is not None:
             prediction.validate_orientation()
             home = baseline.home
@@ -621,8 +741,7 @@ class HistoryModel:
                 home_team_effective_games=baseline.home_team_effective_games,
                 away_team_effective_games=baseline.away_team_effective_games,
             )
-        margin_residuals, total_residuals = self._residuals(history, period)
-        if len(margin_residuals) < self.config.min_residual_games:
+        if len(samples) < self.config.min_residual_games:
             return None
         # Hybrid path: baseline mean replaced by BPI, but raw residuals carry -2.34 mean → drag ~0.10 prob. Center them.
         if period is Period.FULL_GAME and prediction is not None:
@@ -813,19 +932,30 @@ class HistoryModel:
             distribution = distributions[snapshot.period]
             if distribution is None:
                 continue
+            weight = self.config.posted_line_model_weight
             if snapshot.market is Market.TOTAL:
                 line = snapshot.line
+                totals = distribution.totals
+                if weight is not None:
+                    # Centre between the model total and the posted total.
+                    shift = (1.0 - weight) * (line - distribution.baseline.total)
+                    totals = tuple(value + shift for value in totals)
                 probabilities = {
-                    "over": sum(value > line for value in distribution.totals)
+                    "over": sum(value > line for value in totals)
                     / distribution.residuals,
-                    "under": sum(value < line for value in distribution.totals)
+                    "under": sum(value < line for value in totals)
                     / distribution.residuals,
                 }
-                push = sum(value == line for value in distribution.totals) / (
+                push = sum(value == line for value in totals) / (
                     distribution.residuals
                 )
             else:
-                adjusted = [value + snapshot.line for value in distribution.margins]
+                margins = distribution.margins
+                if weight is not None:
+                    # A home-oriented line L implies a posted margin of -L.
+                    shift = (1.0 - weight) * (-snapshot.line - distribution.baseline.margin)
+                    margins = tuple(value + shift for value in margins)
+                adjusted = [value + snapshot.line for value in margins]
                 probabilities = {
                     "home": sum(value > 0 for value in adjusted) / distribution.residuals,
                     "away": sum(value < 0 for value in adjusted) / distribution.residuals,
