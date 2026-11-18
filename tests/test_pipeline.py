@@ -313,3 +313,60 @@ def test_coverage_counts_only_reconciled_finals_and_real_quarter_lines():
     assert report["games_with_full_game_line"] == 0
     assert report["quarter_lines"] == {"Q1": 1, "Q2": 0, "Q3": 0, "Q4": 0}
     assert report["finals_reconciled"] == 1
+
+
+def _scoreboard_with_live_game():
+    with open(os.path.join(FIXTURES, "espn/scoreboard_20261105.json")) as handle:
+        final = json.load(handle)
+    live = json.loads(json.dumps(final))
+    status = live["events"][-1]["competitions"][0]["status"]
+    status["type"] = {**status.get("type", {}), "state": "in", "completed": False}
+    return live, final
+
+
+def test_backfill_does_not_cache_yesterdays_scoreboard_while_a_game_is_live(tmp_path):
+    """A late game still live at the first next-day run must settle on the next run."""
+    from ingestion.providers.espn import scoreboard_is_settled
+
+    live, final = _scoreboard_with_live_game()
+    assert not scoreboard_is_settled(live)
+    assert scoreboard_is_settled(final)
+    served = [live, final]
+    calls = []
+
+    def fetch(url):
+        assert "dates=20261106" in url
+        calls.append(url)
+        return served[min(len(calls), len(served)) - 1]
+
+    def run(now_utc):
+        store = InMemoryStore()
+        pipeline = Pipeline(
+            _config(
+                history_days=1,
+                history_request_budget=1,
+                deep_history_event_budget=0,
+                fixture_now_utc=now_utc,
+            ),
+            store,
+            fetch=fetch,
+        )
+        # Production enables the durable cache only for warehouse-backed live
+        # runs; point it at a temp dir to reproduce the cross-run behaviour.
+        pipeline.acquisition.cache_dir = tmp_path / "http-cache" / "espn"
+        report = pipeline.backfill()
+        return store, report
+
+    store, report = run("2026-11-07T06:11:00Z")
+    assert report["backfill"]["dates"][0]["finals_found"] == 1
+    assert report["acquisition"]["unsettled_cache_skips"] == 1
+    assert not list((tmp_path / "http-cache" / "espn").glob("*.json"))
+
+    store, report = run("2026-11-07T09:11:00Z")
+    assert len(calls) == 2, "second run must re-read the scoreboard, not a cached live copy"
+    assert report["backfill"]["dates"][0]["finals_found"] == 2
+    assert all(game.status is GameStatus.FINAL for game in store.list_games())
+
+    _, report = run("2026-11-07T12:11:00Z")
+    assert len(calls) == 2, "a fully-final scoreboard is cached as before"
+    assert report["acquisition"]["cache_hits"] == 1

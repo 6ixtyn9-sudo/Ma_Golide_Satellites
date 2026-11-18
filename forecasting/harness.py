@@ -12,7 +12,7 @@ from ingestion.identity import parse_utc
 
 from assayer.assayer_engine import wilson_lower_bound
 
-from .types import LEGACY_VERSION_TAG, MODEL_VERSION, Forecast
+from .types import LEGACY_VERSION_TAG, MODEL_VERSION, Forecast, current_spelling
 
 # Hard-reset: calibration must not borrow from pre-feature-freeze history.
 # Any downward threshold change would be a CRITICAL regime violation; this
@@ -28,7 +28,8 @@ DIAG_POOL_TAG = "team_history_insufficient"
 
 def _requires_team_history(forecast: Forecast) -> bool:
     """Only the history model (and history-based hybrids) need team evidence."""
-    return forecast.source == MODEL_VERSION or forecast.source.endswith(f"+{MODEL_VERSION}")
+    source = current_spelling(forecast.source)  # history stored before the rename
+    return source == MODEL_VERSION or source.endswith(f"+{MODEL_VERSION}")
 
 
 def config_fingerprint(components: Mapping[str, Any]) -> str:

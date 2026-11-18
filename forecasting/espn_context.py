@@ -15,7 +15,7 @@ from typing import Any, Dict, Iterable, List, Optional
 from ingestion.identity import parse_utc
 from ingestion.models import Game
 
-SCHEMA_VERSION = "magolide.espn_player_context.v1"
+SCHEMA_VERSION = "magolide.espn_player_context"
 MAX_PLAYER_MINUTES = 100.0  # permissive for multi-OT games; reject corrupted unit/scale values
 
 
@@ -29,7 +29,7 @@ def _field_presence(summary: Dict[str, Any], field: str) -> Optional[bool]:
     value = summary.get(field)
     if value not in (None, [], {}):
         return True
-    # Legacy v1 summaries materialized empty containers whether the source
+    # Older summaries materialized empty containers whether the source
     # field existed or not; preserve that distinction as unknown.
     return None
 

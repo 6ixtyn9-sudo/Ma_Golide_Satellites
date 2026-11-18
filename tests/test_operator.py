@@ -124,7 +124,7 @@ def forecast(
         "expected_margin": 4.0 if market == "moneyline" else None,
         "expected_total": None if market == "moneyline" else 200.0,
         "model": "provider-history",
-        "model_version": "test-v1",
+        "model_version": "test-model",
         "training_games": 30,
         "residual_games": 30,
         "book": book,
@@ -133,7 +133,7 @@ def forecast(
             "observed_utc": AS_OF,
             "frozen": False,
             "model": "provider-history",
-            "model_version": "test-v1",
+            "model_version": "test-model",
         },
         "role": "basketball_native",
         "outcome": None,
@@ -284,7 +284,7 @@ def test_load_state_compacts_duplicate_scan_rows_but_preserves_ticket_locks(tmp_
     state_path.write_text(
         json.dumps(
             {
-                "schema_version": "magolide.paper_ticket_state.v1",
+                "schema_version": "magolide.paper_ticket_state",
                 "frozen_by_date": {DATE: lock},
                 "scans": [
                     {
@@ -349,7 +349,7 @@ def test_book_side_prices_survive_forecast_serialization_and_row_rehydration():
         prediction_model_version="bpi-42",
         prediction_produced_by="ESPN BPI",
         shadow_calibration={
-            "challenger_version": "recency_v1-test",
+            "challenger_version": "recency-test",
             "status": "provisional",
             "n": 12,
             "weighted_n": 8.5,
@@ -384,11 +384,11 @@ def test_book_side_prices_survive_forecast_serialization_and_row_rehydration():
     assert rehydrated.prediction_model == "bpi-model"
     assert rehydrated.prediction_model_version == "bpi-42"
     assert rehydrated.prediction_produced_by == "ESPN BPI"
-    assert rehydrated.shadow_calibration["challenger_version"] == "recency_v1-test"
+    assert rehydrated.shadow_calibration["challenger_version"] == "recency-test"
     assert rehydrated.shadow_calibration["ess"] == 10.0
     assert rehydrated.shadow_calibration["champion_probability"] == 0.61
     assert rehydrated.shadow_calibration == {
-        "challenger_version": "recency_v1-test",
+        "challenger_version": "recency-test",
         "status": "provisional",
         "n": 12,
         "weighted_n": 8.5,
@@ -1527,7 +1527,7 @@ def test_paper_fade_audit_uses_exact_opposite_quotes_only(tmp_path):
     audit = json.loads(Path(result["rolling_audit"]).read_text())
     fade = audit["fade_audit"]
 
-    assert fade["schema_version"] == "magolide.paper_fade_audit.v1"
+    assert fade["schema_version"] == "magolide.paper_fade_audit"
     assert fade["paper_only"] is True
     assert fade["selected_price_required"] is False
     assert fade["candidate_sample"] == 4
@@ -2154,7 +2154,7 @@ def test_audit_groups_markets_by_fixture_with_actual_period_scores(tmp_path):
         {
             "forecast_id": "forecast-1-moneyline-away-H1",
             "period": "H1",
-            "model": "team_history_empirical_v1",
+            "model": "team_history_empirical",
             "raw_probability": 0.28,
             "calibrated_probability": 0.31,
         }
@@ -2227,3 +2227,29 @@ def test_euroleague_ticket_card_identifies_strict_priced_value_paper_lane():
     assert "EUROLEAGUE PRICED-VALUE LANE" in card
     assert "calibrated p × odds > 1.00" in card
     assert "at least 10 past settled picks" in card
+
+
+def test_retired_schema_tags_still_load_and_state_adopts_current_tag(tmp_path):
+    from forecasting.operator import STATE_SCHEMA, TICKET_SCHEMA, _read_json
+    from ingestion.models import schema_matches
+
+    retired = ".v" + "1"  # spelling used by files written before the rename
+    assert schema_matches(TICKET_SCHEMA + retired, TICKET_SCHEMA)
+    assert schema_matches(TICKET_SCHEMA, TICKET_SCHEMA)
+    assert not schema_matches(TICKET_SCHEMA + ".extra", TICKET_SCHEMA)
+    assert not schema_matches(None, TICKET_SCHEMA)
+
+    (tmp_path / "auto_tickets_state.json").write_text(
+        json.dumps({"schema_version": STATE_SCHEMA + retired, "frozen_by_date": {}, "scans": []})
+    )
+    assert _load_state(tmp_path)["schema_version"] == STATE_SCHEMA
+
+    # Pick history written before the rename is read back under current names.
+    picks = tmp_path / "picks_2026-11-17.json"
+    old_model = "provider:espn+team_history_empirical" + "_v" + "1"
+    picks.write_text(json.dumps([{"model": old_model, "calibration_version": "provider_prediction"
+                                  + "_v" + "2-7fb3e30d878d"}]))
+    assert _read_json(picks, []) == [
+        {"model": "provider:espn+team_history_empirical",
+         "calibration_version": "provider_prediction-7fb3e30d878d"}
+    ]

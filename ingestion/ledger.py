@@ -96,7 +96,7 @@ def canonical_snapshot(
         key=lambda row: (row["game_id"], row["slot"]),
     )
     return {
-        "schema_version": "magolide.canonical.v1",
+        "schema_version": "magolide.canonical",
         "league": league.value,
         "games": [
             json.loads(row["payload_json"])

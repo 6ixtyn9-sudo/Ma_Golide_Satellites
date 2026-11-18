@@ -403,7 +403,7 @@ def test_context_and_provider_prediction_are_mutually_exclusive():
         provider="espn",
         observed_utc=iso(AS_OF - timedelta(hours=2)),
         model="espn-bpi",
-        model_version="adapter:espn-bpi-v1",
+        model_version="adapter:espn-bpi",
         produced_by="ESPN BPI",
         prob_home=0.6,
         prob_away=0.4,
@@ -437,7 +437,7 @@ def test_period_winner_context_surface_identity_and_metadata():
     assert len(forecasts) == 1
     forecast = forecasts[0]
     assert forecast.source == CONTEXT_SOURCE
-    assert forecast.source == "context_availability+team_history_empirical_v1"
+    assert forecast.source == "context_availability+team_history_empirical"
     assert forecast.calibration_version == model.context_calibration_version
     assert forecast.context == adjustment.to_metadata()
     # Base empirical surface stays untouched.

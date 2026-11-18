@@ -92,7 +92,7 @@ def test_provider_shadow_rows_are_not_filtered_by_internal_team_history():
         "2026-11-11T12:00:00Z",
         0.7,
         "win",
-        source="team_history_empirical_v1",
+        source="team_history_empirical",
         team_history={"sufficient_for_accas": False},
     )
     assert build_recency_profiles(
@@ -229,7 +229,7 @@ def test_challenger_config_version_is_complete_and_part_of_profile_key():
     )
     assert set(default_profiles).isdisjoint(stricter_profiles)
     (profile,) = default_profiles.values()
-    assert profile.to_dict()["challenger"] == "recency_v1"
+    assert profile.to_dict()["challenger"] == "recency"
     assert profile.to_dict()["challenger_version"] == default.version_tag
 
 

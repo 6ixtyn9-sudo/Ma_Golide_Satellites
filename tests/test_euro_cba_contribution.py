@@ -206,7 +206,7 @@ def test_euroleague_standings_v3_parses_and_derives_latest_completed_round():
     fetch = _mapping_fetch(
         {
             "seasons/E2026/games": lambda: _fixture_json("euroleague/schedule_scores.json"),
-            "basicstandings": lambda: _fixture_json("euroleague/standings_v3.json"),
+            "basicstandings": lambda: _fixture_json("euroleague/standings_per_round.json"),
         }
     )
     report: Dict[str, str] = {}

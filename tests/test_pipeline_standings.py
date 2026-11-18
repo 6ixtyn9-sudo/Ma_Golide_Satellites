@@ -38,7 +38,7 @@ def test_nba_standings_smoke_reports_hash_and_does_not_persist_or_change_model_r
 
 def test_euroleague_standings_smoke_uses_prefixed_season_and_reports_coverage():
     schedule = _fixture(ROOT / "euroleague" / "schedule.json")
-    standings = _fixture(ROOT / "euroleague" / "standings_v3.json")
+    standings = _fixture(ROOT / "euroleague" / "standings_per_round.json")
     seen = []
 
     def fetch(url):

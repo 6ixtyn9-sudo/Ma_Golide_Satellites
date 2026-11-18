@@ -87,10 +87,10 @@ converted into prediction records.
 
 | Provider | League | Prediction fields | Key / freshness |
 | --- | --- | --- | --- |
-| ESPN BPI | NBA, WNBA, NCAA_M, NCAA_W | Home/away probabilities; expected scores, total, and margin when present | Public; per-prediction source modification time; adapter version `adapter:espn-bpi-v1` |
+| ESPN BPI | NBA, WNBA, NCAA_M, NCAA_W | Home/away probabilities; expected scores, total, and margin when present | Public; per-prediction source modification time; adapter version `adapter:espn-bpi` |
 | Hardwood | NBA | One artifact's probabilities, expected scores, total, margin, model provenance | Public artifact; artifact-declared model version, generated-at freshness, and team/time/ID join |
-| Predixsport | NBA and EuroLeague | Probabilities; detail endpoint can add expected total/margin and derived scores | `PREDIXSPORT_API_KEY`; disabled without a key; adapter version `adapter:predixsport-v1`; documentation-only endpoint schema |
-| Sportradar Global Basketball | CBA | Independent pre-match 2-way home/away probabilities; no expected scores or totals | `SPORTRADAR_API_KEY`, optional `SPORTRADAR_ACCESS_LEVEL=trial|production`; declared adapter model tag `global-basketball-v2`; `DOCUMENTATION_ONLY` |
+| Predixsport | NBA and EuroLeague | Probabilities; detail endpoint can add expected total/margin and derived scores | `PREDIXSPORT_API_KEY`; disabled without a key; adapter version `adapter:predixsport`; documentation-only endpoint schema |
+| Sportradar Global Basketball | CBA | Independent pre-match 2-way home/away probabilities; no expected scores or totals | `SPORTRADAR_API_KEY`, optional `SPORTRADAR_ACCESS_LEVEL=trial|production`; declared adapter model tag `global-basketball`; `DOCUMENTATION_ONLY` |
 
 Sportradar discovery requires one unique men's `CBA` competition in category
 `CHN`, then one non-disabled season containing the target date. Its documented

@@ -14,7 +14,7 @@ from typing import Any, Dict, Iterable, Mapping
 from ingestion.identity import parse_utc
 from ingestion.models import Game, League
 
-SCHEMA_VERSION = "magolide.feature_use_manifest.v1"
+SCHEMA_VERSION = "magolide.feature_use_manifest"
 
 _ESPN_LEAGUES = {League.NBA, League.WNBA, League.NCAA_M, League.NCAA_W}
 _FEATURE_CATALOG = {

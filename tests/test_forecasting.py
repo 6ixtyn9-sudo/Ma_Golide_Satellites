@@ -156,7 +156,7 @@ def populated_store(*, finals: int = 12, upcoming: int = 3) -> InMemoryStore:
                 provider="espn",
                 observed_utc=iso(observed),
                 model="espn-bpi",
-                model_version="adapter:espn-bpi-v1",
+                model_version="adapter:espn-bpi",
                 produced_by="ESPN BPI",
                 prob_home=0.65,
                 prob_away=0.35,
@@ -278,7 +278,7 @@ def test_all_old_markets_are_forecast_and_accas_use_calibrated_probabilities():
     }
     assert full_game_moneyline_sources == {
         "provider:espn",
-        "team_history_empirical_v1",
+        "team_history_empirical",
     }
     for period in ("Q1", "Q2", "Q3", "Q4"):
         assert (period, "total") in markets
@@ -652,10 +652,10 @@ def test_service_stamps_model_config_and_runs_shadow_at_configured_delay():
     assert shadow["status"] == "ok"
     assert shadow["result_delay_hours"] == 8
     assert shadow["rows_evaluated"] > 0
-    assert shadow["challenger_version"].startswith("recency_v1-")
+    assert shadow["challenger_version"].startswith("recency-")
 
     current = report["forecasts"]
-    model_row = next(row for row in current if row["model"] == "team_history_empirical_v1")
+    model_row = next(row for row in current if row["model"] == "team_history_empirical")
     assert model_row["calibration_version"] == forecast_service.model.calibration_version
     assert model_row["calibration"]["calibration_version"] == forecast_service.model.calibration_version
     shadow_explanation = model_row["explanation"]["shadow_calibration"]
@@ -665,18 +665,18 @@ def test_service_stamps_model_config_and_runs_shadow_at_configured_delay():
 
     assert all(row["calibration_version"] for row in current)
     provider_row = next(row for row in current if row["model"] == "provider:espn")
-    assert provider_row["calibration_version"].startswith("provider_prediction_v2-")
+    assert provider_row["calibration_version"].startswith("provider_prediction-")
     assert (
         provider_row["explanation"]["segment"]["calibration_version"]
         == provider_row["calibration_version"]
     )
     assert provider_row["prediction"]["model"] == "espn-bpi"
-    assert provider_row["prediction"]["model_version"] == "adapter:espn-bpi-v1"
+    assert provider_row["prediction"]["model_version"] == "adapter:espn-bpi"
     assert provider_row["prediction"]["produced_by"] == "ESPN BPI"
     hybrid_row = next(
         row for row in current if row["model"].startswith("provider:espn+")
     )
-    assert hybrid_row["calibration_version"].startswith("history_provider_hybrid_v2-")
+    assert hybrid_row["calibration_version"].startswith("history_provider_hybrid-")
 
     forecasts_by_id = {row["forecast_id"]: row for row in current}
     for acca in report["accas"]["results"]:
@@ -778,7 +778,7 @@ def test_full_game_history_moneyline_earns_calibration_without_provider_history(
         for row in report["forecasts"]
         if row["market"] == "moneyline"
         and row["period"] == "full_game"
-        and row["model"] == "team_history_empirical_v1"
+        and row["model"] == "team_history_empirical"
     ]
     assert len(rows) == 3
     for row in rows:
@@ -798,7 +798,7 @@ def test_full_game_history_moneyline_earns_calibration_without_provider_history(
         if row["league"] == "NBA"
         and row["market"] == "moneyline"
         and row["period"] == "full_game"
-        and row["source"] == "team_history_empirical_v1"
+        and row["source"] == "team_history_empirical"
     )
     assert segment["n"] >= 3
     assert report["accas"]["results"]
@@ -807,7 +807,7 @@ def test_full_game_history_moneyline_earns_calibration_without_provider_history(
         for leg in acca["legs"]:
             assert leg["market"] == "moneyline"
             assert leg["period"] == "full_game"
-            assert leg["model"] == "team_history_empirical_v1"
+            assert leg["model"] == "team_history_empirical"
 
 
 def test_league_prior_dominated_history_moneyline_cannot_supply_accas():
@@ -841,7 +841,7 @@ def test_league_prior_dominated_history_moneyline_cannot_supply_accas():
         for row in report["forecasts"]
         if row["market"] == "moneyline"
         and row["period"] == "full_game"
-        and row["model"] == "team_history_empirical_v1"
+        and row["model"] == "team_history_empirical"
     ]
     assert len(rows) == 3
     for row in rows:
@@ -999,7 +999,7 @@ def test_provider_only_forecasts_do_not_need_internal_team_history():
     assert "insufficient_team_specific_history" not in target.eligibility["reasons"]
 
     history_model_target = _forecast("history-target", 0.8)
-    history_model_target.source = "team_history_empirical_v1"
+    history_model_target.source = "team_history_empirical"
     apply_profiles([history_model_target], provider_profile, config)
     assert history_model_target.eligibility["acca_eligible"] is False
     assert "insufficient_team_specific_history" in history_model_target.eligibility[
@@ -1077,8 +1077,8 @@ def test_calibration_population_diagnostics_match_profile_admission_rules():
     )
     for record, scheduled_utc in zip(records, dates):
         record.scheduled_utc = scheduled_utc
-        record.calibration_version = "test-model-v1"
-    records[4].source = "team_history_empirical_v1"
+        record.calibration_version = "test-model"
+    records[4].source = "team_history_empirical"
     records[4].team_history = {"sufficient_for_accas": False}
 
     diagnostics = calibration_population_diagnostics(records, config)
@@ -1099,7 +1099,7 @@ def test_calibration_population_diagnostics_match_profile_admission_rules():
     assert profiles[key].n == diagnostics["profile_pool_samples"]
     assert profiles[key].pushes == diagnostics["profile_pool_pushes"]
     diagnostic_segment = diagnostics["segments"][0]
-    assert diagnostic_segment["calibration_version"] == "test-model-v1"
+    assert diagnostic_segment["calibration_version"] == "test-model"
     assert diagnostic_segment["profile_pool_samples"] == profiles[key].n
 
 
@@ -1709,7 +1709,7 @@ def test_service_generates_separate_forecasts_from_every_visible_provider_predic
             provider="alternate-provider",
             observed_utc=iso(AS_OF - timedelta(minutes=30)),
             model="alternate-model",
-            model_version="alternate-v1",
+            model_version="alternate",
             prob_home=0.42,
             prob_away=0.58,
             expected_total=204.0,
@@ -1722,7 +1722,7 @@ def test_service_generates_separate_forecasts_from_every_visible_provider_predic
             provider="score-only-provider",
             observed_utc=iso(AS_OF - timedelta(minutes=20)),
             model="score-only-model",
-            model_version="score-only-v1",
+            model_version="score-only",
             expected_total=198.5,
         )
     )
@@ -1742,7 +1742,7 @@ def test_service_generates_separate_forecasts_from_every_visible_provider_predic
     assert alternate_hybrid_rows
     assert all(
         row["prediction"]["model"] == "alternate-model"
-        and row["prediction"]["model_version"] == "alternate-v1"
+        and row["prediction"]["model_version"] == "alternate"
         for row in alternate_hybrid_rows
     )
     score_only_hybrids = [

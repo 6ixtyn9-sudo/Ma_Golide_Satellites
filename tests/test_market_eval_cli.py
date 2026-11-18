@@ -52,9 +52,9 @@ def test_cli_uses_frozen_forecasts_separate_models_books_and_reconciled_finals(
         store.upsert_game(_game("valid"))
         store.upsert_game(_game("bad-result", reconciled=False))
         for provider, version, frozen in (
-            ("feed-a", "v1", True),
-            ("feed-b", "v2", True),
-            ("feed-unfrozen", "v3", False),
+            ("feed-a", "model-a", True),
+            ("feed-b", "model-b", True),
+            ("feed-unfrozen", "model-c", False),
         ):
             store.upsert_prediction(
                 Prediction(
@@ -112,8 +112,8 @@ def test_cli_uses_frozen_forecasts_separate_models_books_and_reconciled_finals(
     assert report["data_audit"]["unfrozen_pre_tip_prediction_rows"] == 1
     assert report["game_model_pairs_considered"] == 2
     assert set(report["model_results"]) == {
-        "feed-a::forecast-feed-a::v1",
-        "feed-b::forecast-feed-b::v2",
+        "feed-a::forecast-feed-a::model-a",
+        "feed-b::forecast-feed-b::model-b",
     }
     for model_result in report["model_results"].values():
         assert set(model_result["by_book"]) == {"Pinnacle", "OtherBook"}

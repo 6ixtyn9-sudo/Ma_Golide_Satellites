@@ -149,7 +149,7 @@ version-aware segment profiles, prequential shadow-challenger metrics, current
 shadow diagnostics, all generated market forecasts, uncovered games,
 eligibility reasons, and ranked accas. Challenger probabilities and effective
 sample sizes are labeled separately and never enter acca selection. The report
-uses schema `magolide.market_forecasts.v1` and explicitly disclaims
+uses schema `magolide.market_forecasts` and explicitly disclaims
 guaranteed/certified outcomes and external betting writes.
 
 `write_market_report` writes a temporary sibling and atomically replaces the

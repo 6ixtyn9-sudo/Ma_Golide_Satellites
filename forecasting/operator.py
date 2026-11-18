@@ -34,15 +34,22 @@ from typing import Any, Dict, List, Optional
 from zoneinfo import ZoneInfo
 
 from ingestion.identity import parse_utc
-from ingestion.models import Game, GameStatus, League, Period
+from ingestion.models import Game, GameStatus, League, Period, schema_matches
 
-from .types import BookEvidence, Forecast, _period_scores, grade_forecast, opposite_selection
+from .types import (
+    BookEvidence,
+    Forecast,
+    _period_scores,
+    current_spelling,
+    grade_forecast,
+    opposite_selection,
+)
 
-OPERATOR_SCHEMA = "magolide.operator.v1"
-FADE_AUDIT_SCHEMA = "magolide.paper_fade_audit.v1"
-TICKET_SCHEMA = "magolide.paper_ticket_receipt.v1"
-STATE_SCHEMA = "magolide.paper_ticket_state.v1"
-UNPRICED_AUDIT_SCHEMA = "magolide.unpriced_forecast_audit.v1"
+OPERATOR_SCHEMA = "magolide.operator"
+FADE_AUDIT_SCHEMA = "magolide.paper_fade_audit"
+TICKET_SCHEMA = "magolide.paper_ticket_receipt"
+STATE_SCHEMA = "magolide.paper_ticket_state"
+UNPRICED_AUDIT_SCHEMA = "magolide.unpriced_forecast_audit"
 UNPRICED_SUCCESS_RATE_THRESHOLD = 0.70
 UNPRICED_SUCCESS_RATE_MIN_DECISIONS_EXCLUSIVE = 10
 UNPRICED_SUCCESS_RATE_HISTORY_DAYS = 30
@@ -51,7 +58,7 @@ SHADOW_GROUP_MAX_PICKS = 3
 UNPRICED_SHADOW_GROUP_MAX_PICKS = SHADOW_GROUP_MAX_PICKS
 PRICED_INELIGIBLE_SHADOW_MIN_DECIMAL_ODDS = 1.30
 PRICED_INELIGIBLE_SHADOW_MIN_PROBABILITY = 0.70
-PRICED_INELIGIBLE_SHADOW_SCHEMA = "magolide.priced_ineligible_shadow.v1"
+PRICED_INELIGIBLE_SHADOW_SCHEMA = "magolide.priced_ineligible_shadow"
 BASE_PAPER_UNITS = 100.0
 STAKE_UNITS_PER_ACCA = 1.0
 BUCKET_ORDER = [
@@ -151,7 +158,7 @@ def _read_json(path: Path, default: Any) -> Any:
     if not path.exists():
         return deepcopy(default)
     try:
-        return json.loads(path.read_text())
+        return current_spelling(json.loads(path.read_text()))
     except (OSError, ValueError) as exc:
         # Financial/evidence state must never silently reset to a fresh bank or
         # an empty card. Corruption is an operator-visible failure.
@@ -1471,8 +1478,11 @@ def _load_state(localdata: Path) -> Dict[str, Any]:
             "scans": [],
         },
     )
-    if not isinstance(state, dict) or state.get("schema_version") != STATE_SCHEMA:
+    if not isinstance(state, dict) or not schema_matches(
+        state.get("schema_version"), STATE_SCHEMA
+    ):
         raise ValueError("unsupported or corrupt auto ticket state; refusing to reset it")
+    state["schema_version"] = STATE_SCHEMA  # mutable state adopts the current tag
     state.setdefault("frozen_by_date", {})
     state.setdefault("scans", [])
     if isinstance(state["scans"], list):
@@ -1653,7 +1663,7 @@ def _ticket_receipt(
                 f"frozen ticket receipt is missing: {locked_path}; refusing to rotate the card"
             )
         receipt = _read_json(locked_path, {})
-        if receipt.get("schema_version") != TICKET_SCHEMA:
+        if not schema_matches(receipt.get("schema_version"), TICKET_SCHEMA):
             raise ValueError(f"invalid frozen ticket receipt: {locked_path}")
         return receipt
     if path.exists():
@@ -1669,7 +1679,7 @@ def _ticket_receipt(
         # A receipt is itself immutable evidence. Adopt its lock rather than
         # rebuilding a potentially different card after a state-cache loss.
         receipt = _read_json(path, {})
-        if receipt.get("schema_version") != TICKET_SCHEMA:
+        if not schema_matches(receipt.get("schema_version"), TICKET_SCHEMA):
             raise ValueError(f"invalid frozen ticket receipt: {path}")
         state["frozen_by_date"][target_date] = {
             "frozen_at": receipt["frozen_at"],
@@ -3285,7 +3295,7 @@ def publish_operator_reports(
     receipts = []
     for path in sorted(localdata.glob("auto_tickets_????-??-??_decision.json")):
         candidate = _read_json(path, {})
-        if candidate.get("schema_version") != TICKET_SCHEMA:
+        if not schema_matches(candidate.get("schema_version"), TICKET_SCHEMA):
             raise ValueError(f"invalid paper ticket receipt: {path}")
         if str(candidate.get("decision_id")) in withdrawn_decision_ids:
             continue

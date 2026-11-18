@@ -109,7 +109,7 @@ Each write-enabled league run performs two independent jobs:
    canonical evidence rather than retained indefinitely as large raw cache
    files. The durable cursor prevents normal refetching; an already-persisted
    event with both summary and history evidence is skipped. NCAAW rows must
-   also carry the current result-period parser version: pre-v2 rows are
+   also carry the current result-period parser version: rows from an older parser are
    reacquired once so four quarters cannot remain mislabeled as two halves
    plus overtime, then become ordinary skippable history.
 

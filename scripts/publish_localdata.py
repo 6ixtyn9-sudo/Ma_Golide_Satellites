@@ -124,7 +124,7 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                 raise ValueError("operator artifact batch exceeds the 100 MiB publication limit")
             destination = repo / "localdata" / state / source.name
             relative = destination.relative_to(repo).as_posix()
-            # Hard-reset: never re-publish pre-epoch dated files (even from warm v3 cache).
+            # Hard-reset: never re-publish pre-epoch dated files (even from a warm older cache).
             m = re.search(r"(\d{4}-\d{2}-\d{2})", source.name)
             if m and m.group(1) < CALIBRATION_EPOCH:
                 withdrawn_skipped.append(relative)

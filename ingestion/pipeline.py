@@ -1514,7 +1514,14 @@ class Pipeline:
                 date = day.strftime("%Y%m%d")
 
                 def cached_fetch(url: str):
-                    return self.acquisition.get_json(url, use_cache=True, ttl_seconds=86400)
+                    # Only fully-final scoreboards are cached: a late game that
+                    # was live at fetch time must be re-read on the next run.
+                    return self.acquisition.get_json(
+                        url,
+                        use_cache=True,
+                        ttl_seconds=86400,
+                        cacheable=espn.scoreboard_is_settled,
+                    )
 
                 found = 0
                 written = 0

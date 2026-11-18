@@ -99,7 +99,7 @@ def test_history_model_version_fingerprints_all_prediction_config():
         ForecastConfig(recent_half_life_games=21.0)
     ).calibration_version
     assert default == equivalent
-    assert default.startswith("team_history_empirical_v1-")
+    assert default.startswith("team_history_empirical-")
     assert changed != default
 
 
@@ -134,10 +134,10 @@ def test_provider_versions_use_model_metadata_not_per_event_revisions():
         replace(prediction, produced_by="ESPN BPI revised model")
     )
     adapter_versioned = model._prediction_calibration_version(
-        replace(prediction, model_version="adapter:espn-bpi-v1")
+        replace(prediction, model_version="adapter:espn-bpi")
     )
     assert original == changed_event
-    assert original.startswith("provider_prediction_v2-")
+    assert original.startswith("provider_prediction-")
     assert changed_model != original
     # Payload producer labels remain provenance, not segmentation keys: a
     # per-row editor/name change must not fragment a model's calibration n.
@@ -148,7 +148,7 @@ def test_provider_versions_use_model_metadata_not_per_event_revisions():
     changed_history_config = HistoryModel(
         ForecastConfig(recent_half_life_games=21.0)
     )._prediction_calibration_version(prediction, hybrid=True)
-    assert hybrid.startswith("history_provider_hybrid_v2-")
+    assert hybrid.startswith("history_provider_hybrid-")
     assert changed_history_config != hybrid
 
 
@@ -159,7 +159,7 @@ def test_predixsport_producer_labels_use_only_closed_model_phase_tags():
         provider="predixsport",
         observed_utc="2026-11-12T10:00:00Z",
         model="predixsport-nba",
-        model_version="adapter:predixsport-v1",
+        model_version="adapter:predixsport",
         produced_by="predixsport-nba-earlyseason",
         prob_home=0.7,
         prob_away=0.3,
@@ -274,7 +274,7 @@ def test_diagnostic_pool_still_serialized_and_never_applied():
             "2026-11-12T20:00:00Z",
             0.7,
             "win",
-            source="team_history_empirical_v1",
+            source="team_history_empirical",
             team_history={"sufficient_for_accas": False},
         )
         for i in range(6)
@@ -291,7 +291,7 @@ def test_diagnostic_pool_still_serialized_and_never_applied():
         "2026-11-13T02:00:00Z",
         0.7,
         None,
-        source="team_history_empirical_v1",
+        source="team_history_empirical",
         team_history={"sufficient_for_accas": True},
     )
     apply_profiles([forecast], profiles, CalibrationConfig())
@@ -306,3 +306,76 @@ def test_profile_serialization_is_deterministic():
     first = [p.to_dict() for _, p in sorted(build_profiles(rows).items())]
     second = [p.to_dict() for _, p in sorted(build_profiles(rows).items())]
     assert first == second
+
+
+def test_renamed_identifiers_keep_every_id_and_fingerprint_hash():
+    """Golden values computed before version suffixes were dropped from names.
+
+    Only the visible prefixes changed; hashes are identical, and stored
+    predictions carrying the old adapter spelling join the same segment.
+    """
+    from forecasting.context_adjustment import CONTEXT_SOURCE
+    from forecasting.types import MODEL_VERSION
+
+    model = HistoryModel(ForecastConfig())
+    assert model.calibration_version == "team_history_empirical-cb419eb48826"
+    assert model.context_calibration_version == "team_history_empirical-context-c24131a6b8d8"
+
+    def prediction(model_version, provider="espn", name="espn-bpi", produced_by=None):
+        return Prediction(
+            game_id="g1", provider=provider, observed_utc="2026-11-12T10:00:00Z",
+            model=name, model_version=model_version, produced_by=produced_by,
+            prob_home=0.7, prob_away=0.3,
+        )
+
+    cases = [
+        (prediction("adapter:espn-bpi"), "7fb3e30d878d", "130e3a2255cf"),
+        (
+            prediction("adapter:predixsport", "predixsport", "predixsport-nba",
+                       "predixsport-nba-mature-model"),
+            "b6a8758a1aa9", "4d1ffde26c22",
+        ),
+        (
+            prediction("global-basketball", "sportradar", "sportradar-global-basketball"),
+            "dd662d34a519", "1c66d1979908",
+        ),
+    ]
+    for pred, provider_hash, hybrid_hash in cases:
+        old_spelling = replace(pred, model_version=pred.model_version + {
+            "espn": "-v1", "predixsport": "-v1", "sportradar": "-v2"}[pred.provider])
+        for candidate in (pred, old_spelling):
+            assert model._prediction_calibration_version(candidate) == (
+                f"provider_prediction-{provider_hash}"
+            )
+            assert model._prediction_calibration_version(candidate, hybrid=True) == (
+                f"history_provider_hybrid-{hybrid_hash}"
+            )
+
+    def forecast_id(source, version):
+        return _record("g1", "2026-11-12T20:00:00Z", 0.7, None, source=source,
+                       version=version).forecast_id
+
+    assert forecast_id(MODEL_VERSION, model.calibration_version) == "1f6d13a7e4d7f24797cb"
+    assert forecast_id(CONTEXT_SOURCE, model.context_calibration_version) == (
+        "826ef6f84cb6056402f3"
+    )
+    assert forecast_id(
+        f"provider:espn+{MODEL_VERSION}", "history_provider_hybrid-130e3a2255cf"
+    ) == "7c3aedc84d23510f837d"
+    assert forecast_id("provider:espn", "provider_prediction-7fb3e30d878d") == (
+        "3a4ad7d8398b43afd4b0"
+    )
+    assert forecast_id(MODEL_VERSION, None) == "7d034a43957e15a55292"
+
+
+def test_history_stored_under_the_old_model_name_still_needs_team_evidence():
+    from forecasting.harness import _requires_team_history
+
+    old = "team_history_empirical" + "_v" + "1"
+    assert _requires_team_history(_record("g1", "2026-11-12T20:00:00Z", 0.7, 1, source=old))
+    assert _requires_team_history(
+        _record("g2", "2026-11-12T20:00:00Z", 0.7, 1, source=f"provider:espn+{old}")
+    )
+    assert not _requires_team_history(
+        _record("g3", "2026-11-12T20:00:00Z", 0.7, 1, source="provider:espn")
+    )

@@ -28,6 +28,9 @@ from urllib.parse import urlsplit
 
 from .http import redact
 from .identity import now_utc_iso, parse_utc, to_utc_iso
+from .models import schema_matches
+
+CACHE_SCHEMA = "magolide.http-cache"
 
 
 class AcquisitionBudgetExceeded(RuntimeError):
@@ -73,6 +76,7 @@ class AcquisitionClient:
         self.cache_hits = 0
         self.cache_writes = 0
         self.negative_cache_hits = 0
+        self.unsettled_cache_skips = 0
         self.last_observed_utc: Optional[str] = None
         self.attempts = []
 
@@ -87,8 +91,15 @@ class AcquisitionClient:
         *,
         use_cache: bool = True,
         ttl_seconds: int = 86400,
+        cacheable: Optional[Callable[[Any], bool]] = None,
     ) -> Any:
-        """Return JSON, optionally using a bounded durable positive/negative cache."""
+        """Return JSON, optionally using a bounded durable positive/negative cache.
+
+        ``cacheable`` lets a caller refuse to persist a payload that is still
+        changing (e.g. a scoreboard with games in progress). It is checked on
+        write *and* on read, so a stale entry written before the predicate
+        existed is ignored rather than served until its TTL expires.
+        """
 
         now = parse_utc(self.now_fn())
         key = hashlib.sha256(url.encode("utf-8")).hexdigest()
@@ -96,7 +107,14 @@ class AcquisitionClient:
             cached = self._read(key)
             if cached:
                 expires = parse_utc(cached["expires_utc"])
-                if expires > now:
+                stale_unsettled = (
+                    cached["kind"] == "payload"
+                    and cacheable is not None
+                    and not cacheable(cached["payload"])
+                )
+                if stale_unsettled:
+                    self.unsettled_cache_skips += 1
+                elif expires > now:
                     if cached["kind"] == "payload":
                         self.cache_hits += 1
                         self.last_observed_utc = cached["observed_utc"]
@@ -147,6 +165,11 @@ class AcquisitionClient:
                 )
             raise
 
+        if use_cache and cacheable is not None and not cacheable(payload):
+            # Still-changing payloads are served once but never persisted.
+            self.unsettled_cache_skips += 1
+            self._attempt(url, "network_success_not_cached", observed)
+            return payload
         self._attempt(url, "network_success", observed)
         if use_cache:
             self._write(
@@ -164,13 +187,14 @@ class AcquisitionClient:
         """Return bounded, secret-free counters and at most 100 recent attempts."""
 
         return {
-            "schema_version": "magolide.acquisition.v1",
+            "schema_version": "magolide.acquisition",
             "network_requests": self.network_requests,
             "fixture_requests": self.fixture_requests,
             "request_budget": self.request_budget,
             "cache_hits": self.cache_hits,
             "cache_writes": self.cache_writes,
             "negative_cache_hits": self.negative_cache_hits,
+            "unsettled_cache_skips": self.unsettled_cache_skips,
             "cache_configured": self.cache_dir is not None,
             "attempts_retained": min(len(self.attempts), 100),
             "attempts_total": len(self.attempts),
@@ -197,7 +221,7 @@ class AcquisitionClient:
         try:
             value = json.loads(path.read_text())
             if (
-                value.get("schema_version") == "magolide.http-cache.v1"
+                schema_matches(value.get("schema_version"), CACHE_SCHEMA)
                 and value.get("url_sha256") == key
                 and value.get("kind") in {"payload", "error"}
             ):
@@ -213,7 +237,7 @@ class AcquisitionClient:
         if path is None:
             return
         document = {
-            "schema_version": "magolide.http-cache.v1",
+            "schema_version": CACHE_SCHEMA,
             "url_sha256": key,
             **value,
         }

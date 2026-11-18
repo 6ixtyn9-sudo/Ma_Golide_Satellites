@@ -87,7 +87,7 @@ real test book lines exist. This validates mechanics, not real-world accuracy.
 ### Persistence and orchestration
 
 - DuckDB canonical round trips and immutable pre/post slots;
-- schema-v2 first-half draw column migration and backfill from complete row
+- first-half draw column schema migration and backfill from complete row
   payloads;
 - six-table CSV.GZ export and recovery;
 - dry-run file immutability and guarded fixture isolation;
