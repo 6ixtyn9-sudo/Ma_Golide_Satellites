@@ -230,7 +230,7 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
         exports = store.export_csv(str(localdata / "csv")) if args.write else {}
 
         summary = {
-            "schema_version": "magolide.daily.v1",
+            "schema_version": "magolide.daily",
             "run_id": run_id,
             "target_date": args.date,
             "league": args.league,

@@ -28,6 +28,9 @@ from urllib.parse import urlsplit
 
 from .http import redact
 from .identity import now_utc_iso, parse_utc, to_utc_iso
+from .models import schema_matches
+
+CACHE_SCHEMA = "magolide.http-cache"
 
 
 class AcquisitionBudgetExceeded(RuntimeError):
@@ -184,7 +187,7 @@ class AcquisitionClient:
         """Return bounded, secret-free counters and at most 100 recent attempts."""
 
         return {
-            "schema_version": "magolide.acquisition.v1",
+            "schema_version": "magolide.acquisition",
             "network_requests": self.network_requests,
             "fixture_requests": self.fixture_requests,
             "request_budget": self.request_budget,
@@ -218,7 +221,7 @@ class AcquisitionClient:
         try:
             value = json.loads(path.read_text())
             if (
-                value.get("schema_version") == "magolide.http-cache.v1"
+                schema_matches(value.get("schema_version"), CACHE_SCHEMA)
                 and value.get("url_sha256") == key
                 and value.get("kind") in {"payload", "error"}
             ):
@@ -234,7 +237,7 @@ class AcquisitionClient:
         if path is None:
             return
         document = {
-            "schema_version": "magolide.http-cache.v1",
+            "schema_version": CACHE_SCHEMA,
             "url_sha256": key,
             **value,
         }

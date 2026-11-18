@@ -167,3 +167,25 @@ def test_legacy_unsettled_cache_entry_is_ignored_when_predicate_given(tmp_path):
     assert fixed.get_json(url, cacheable=settled) == {"state": "post"}
     assert len(calls) == 2
     assert fixed.cache_hits == 0
+
+
+def test_cache_entries_with_the_retired_schema_tag_are_still_served(tmp_path):
+    from ingestion.acquisition import CACHE_SCHEMA
+
+    calls = []
+
+    def fetch(_url):
+        calls.append(1)
+        return {"events": []}
+
+    url = "https://site.api.espn.com/scoreboard?dates=20261117"
+    AcquisitionClient(fetch, cache_dir=str(tmp_path)).get_json(url)
+    entry = next(tmp_path.glob("*.json"))
+    document = json.loads(entry.read_text())
+    assert document["schema_version"] == CACHE_SCHEMA
+    document["schema_version"] = CACHE_SCHEMA + ".v" + "1"
+    entry.write_text(json.dumps(document))
+
+    client = AcquisitionClient(fetch, cache_dir=str(tmp_path))
+    assert client.get_json(url) == {"events": []}
+    assert client.cache_hits == 1 and len(calls) == 1

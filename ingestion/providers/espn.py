@@ -89,7 +89,7 @@ LEAGUE_SLUGS = {
 ESPN_BPI_MODEL_VERSION = "adapter:espn-bpi-v1"
 
 # Increment when stored period interpretation changes. NCAAW history written
-# before v2 could label four quarters as two halves plus two overtime periods.
+# by parser version 1 could label four quarters as two halves plus two overtime periods.
 RESULT_PERIOD_PARSER_VERSION = 2
 
 # Earliest non-empty core event-index years verified live on 2026-11-07.
@@ -558,7 +558,7 @@ def _scoreboard_context(
             }
         )
     return {
-        "schema_version": "magolide.espn.scoreboard-context.v1",
+        "schema_version": "magolide.espn.scoreboard-context",
         "observed_utc": observed_utc,
         "source_payload_hash": make_payload_hash(event),
         "event_status": _public_context(comp.get("status") or event.get("status") or {}),
@@ -617,7 +617,7 @@ def _summary_context(payload: Dict[str, Any], game: Game, observed_utc: str) -> 
         "player_boxscore": "players" in boxscore,
     }
     return {
-        "schema_version": "magolide.espn.summary-context.v2",
+        "schema_version": "magolide.espn.summary-context",
         "field_presence": field_presence,
         "observed_utc": observed_utc,
         "source_modified_utc": source_modified,
@@ -692,7 +692,7 @@ def season_event_index(season: int, fetch: FetchFn, league: League) -> Dict[str,
     if count and not event_ids:
         raise IdentityError(f"season {season}: event index has no resolvable event refs")
     return {
-        "schema_version": "magolide.espn.season-index.v1",
+        "schema_version": "magolide.espn.season-index",
         "index_year": int(season),
         "count": count,
         "page_count": page_count,
@@ -1343,7 +1343,7 @@ def fetch_historical_event(
     espn_evidence = {
         "summary": _summary_context(payload, game, observed),
         "history": {
-            "schema_version": "magolide.espn.history-event.v1",
+            "schema_version": "magolide.espn.history-event",
             "result_period_parser_version": RESULT_PERIOD_PARSER_VERSION,
             "index_year": index_year,
             "coverage": coverage,
@@ -1490,7 +1490,7 @@ def fetch_nba_injuries(
     if not teams_seen:
         raise ValueError("NBA injuries payload contained no identifiable teams")
     return {
-        "schema_version": "magolide.espn.nba-injuries.v1",
+        "schema_version": "magolide.espn.nba-injuries",
         "provider": "espn",
         "observed_utc": observed,
         "source_modified_utc": source_modified,

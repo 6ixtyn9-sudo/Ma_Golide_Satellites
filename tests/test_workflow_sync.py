@@ -69,3 +69,17 @@ def test_workflow_uses_inline_keyless_configuration_without_secrets_or_variables
             "(github.event_name == 'schedule' || "
             "github.event_name == 'workflow_dispatch')"
         ) in text, "both scheduled and manual runs must persist canonical state when enabled"
+
+
+def test_renamed_cache_key_falls_back_to_the_pre_rename_snapshot():
+    # Source workflow only: the installed copy is synced by a manual
+    # workflows-permission step and must keep its key until then.
+    repo = Path(__file__).resolve().parents[1]
+    for path in (repo / "workflows" / "ingestion.yml",):
+        text = path.read_text()
+        restore = text.split("restore-keys: |", 1)[1].splitlines()[1:3]
+        assert [line.strip() for line in restore] == [
+            "magolide-localdata-${{ matrix.state_key }}-",
+            "magolide-localdata-v" + "4-${{ matrix.state_key }}-",
+        ]
+        assert text.count("key: magolide-localdata-${{ matrix.state_key }}-${{ github.run_id }}") == 2

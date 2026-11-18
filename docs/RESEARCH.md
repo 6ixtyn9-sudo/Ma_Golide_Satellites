@@ -109,7 +109,7 @@ as presence-unknown when their normalized value is empty; WNBA injury-field
 availability remains unverified.
 
 Forecast reports also contain `feature_use_manifest`, schema
-`magolide.feature_use_manifest.v1`. It separates active inputs from diagnostic
+`magolide.feature_use_manifest`. It separates active inputs from diagnostic
 and shadow-only candidates, provides per-league support distinctions, and
 counts point-in-time-visible prediction/book fields on upcoming games. It also
 counts stored ESPN summary families and historical results available after the

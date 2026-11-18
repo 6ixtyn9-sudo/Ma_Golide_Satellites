@@ -235,7 +235,7 @@ acca tickets. Different selections from one game can appear on separate tickets,
 but no acca includes two legs from one game. Existing frozen receipts are not
 rewritten by later policy changes.
 
-Reports have schema `magolide.market_forecasts.v1` and status
+Reports have schema `magolide.market_forecasts` and status
 `decision_support_only`. They cannot place bets or trigger external betting
 writes.
 

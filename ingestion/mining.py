@@ -71,7 +71,7 @@ def mine_prediction_assay(store: DuckDBStore, league: League) -> Dict[str, Any]:
         edge["certification_reason"] = "walk_forward_validation_required"
     outcomes = Counter(row["outcome"] for row in outcome_rows)
     return {
-        "schema_version": "magolide.research_assay.v2",
+        "schema_version": "magolide.research_assay",
         "league": league.value,
         "status": "research_only",
         "certified_picks": 0,

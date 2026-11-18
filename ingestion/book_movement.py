@@ -127,7 +127,7 @@ def observed_book_movement(
             }
         )
     return {
-        "schema_version": "magolide.observed_book_movement.v1",
+        "schema_version": "magolide.observed_book_movement",
         "league": league,
         "target_date": target_date,
         "ledgers_scanned": ledgers_scanned,

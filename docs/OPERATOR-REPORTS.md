@@ -273,7 +273,7 @@ immediately.
 ## Prospective paper-only fade audit
 
 The rolling JSON includes a nested `fade_audit` with schema
-`magolide.paper_fade_audit.v1`. It is a counterfactual audit, not a new market,
+`magolide.paper_fade_audit`. It is a counterfactual audit, not a new market,
 pick, ticket, or strategy. A settled model win is recorded as a fade loss, a
 model loss as a fade win, and a push remains a push. Each hypothetical fade has
 a one-unit stake; a win earns the exact opposite decimal quote minus one, a loss

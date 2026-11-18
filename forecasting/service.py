@@ -748,7 +748,7 @@ class MarketForecastService:
             result_delay_hours=self.forecast_config.result_available_after_hours,
         )
         return {
-            "schema_version": "magolide.market_forecasts.v1",
+            "schema_version": "magolide.market_forecasts",
             "status": "decision_support_only",
             "league": self.league.value,
             "generated_utc": as_of_utc,

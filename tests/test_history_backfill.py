@@ -66,7 +66,7 @@ def test_deep_backfill_persists_1947_final_only_and_advances_cursor(tmp_path):
     assert game.actual.reconciles()[0] is False
     assert game.final_status() is None
     assert game.evidence["espn"]["history"] == {
-        "schema_version": "magolide.espn.history-event.v1",
+        "schema_version": "magolide.espn.history-event",
         "result_period_parser_version": 2,
         "index_year": 1947,
         "coverage": "final_score_only",

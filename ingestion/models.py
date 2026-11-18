@@ -110,6 +110,18 @@ class PeriodKind(str, Enum):
 # ---------------------------------------------------------------------------
 
 
+_RETIRED_SCHEMA_SUFFIX = re.compile(r"\.v[0-9]+$")
+
+
+def schema_matches(value: Any, expected: str) -> bool:
+    """Match a schema tag, also accepting its retired version-suffixed form.
+
+    Tags used to end in a version suffix. Immutable files written before the
+    suffix was dropped (ticket receipts, cache entries) must remain readable.
+    """
+    return isinstance(value, str) and _RETIRED_SCHEMA_SUFFIX.sub("", value) == expected
+
+
 def payload_hash(obj: Any) -> str:
     """Stable short hash of a JSON-serialisable payload (for provenance)."""
     canonical = json.dumps(obj, sort_keys=True, separators=(",", ":"), default=str)

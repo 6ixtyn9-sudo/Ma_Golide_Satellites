@@ -25,7 +25,7 @@ def _final_game():
         evidence={
             "espn": {
                 "summary": {
-                    "schema_version": "summary-v1",
+                    "schema_version": "summary-test",
                     "observed_utc": "2025-01-01T04:30:00Z",
                     "source_modified_utc": None,
                     "source_payload_hash": "abc123",

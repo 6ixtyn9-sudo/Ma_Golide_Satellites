@@ -1077,7 +1077,7 @@ def test_calibration_population_diagnostics_match_profile_admission_rules():
     )
     for record, scheduled_utc in zip(records, dates):
         record.scheduled_utc = scheduled_utc
-        record.calibration_version = "test-model-v1"
+        record.calibration_version = "test-model"
     records[4].source = "team_history_empirical_v1"
     records[4].team_history = {"sufficient_for_accas": False}
 
@@ -1099,7 +1099,7 @@ def test_calibration_population_diagnostics_match_profile_admission_rules():
     assert profiles[key].n == diagnostics["profile_pool_samples"]
     assert profiles[key].pushes == diagnostics["profile_pool_pushes"]
     diagnostic_segment = diagnostics["segments"][0]
-    assert diagnostic_segment["calibration_version"] == "test-model-v1"
+    assert diagnostic_segment["calibration_version"] == "test-model"
     assert diagnostic_segment["profile_pool_samples"] == profiles[key].n
 
 
@@ -1709,7 +1709,7 @@ def test_service_generates_separate_forecasts_from_every_visible_provider_predic
             provider="alternate-provider",
             observed_utc=iso(AS_OF - timedelta(minutes=30)),
             model="alternate-model",
-            model_version="alternate-v1",
+            model_version="alternate",
             prob_home=0.42,
             prob_away=0.58,
             expected_total=204.0,
@@ -1722,7 +1722,7 @@ def test_service_generates_separate_forecasts_from_every_visible_provider_predic
             provider="score-only-provider",
             observed_utc=iso(AS_OF - timedelta(minutes=20)),
             model="score-only-model",
-            model_version="score-only-v1",
+            model_version="score-only",
             expected_total=198.5,
         )
     )
@@ -1742,7 +1742,7 @@ def test_service_generates_separate_forecasts_from_every_visible_provider_predic
     assert alternate_hybrid_rows
     assert all(
         row["prediction"]["model"] == "alternate-model"
-        and row["prediction"]["model_version"] == "alternate-v1"
+        and row["prediction"]["model_version"] == "alternate"
         for row in alternate_hybrid_rows
     )
     score_only_hybrids = [

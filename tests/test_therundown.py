@@ -57,7 +57,7 @@ EVENTS_URL = (
     "?market_ids=1,2,3&affiliate_ids=23"
 )
 
-_V2_SPORTS = {
+_SPORTS_PAYLOAD = {
     "sports": [
         {"id": 1, "abbreviation": "NFL"},
         {"id": SPORT_ID, "abbreviation": "NBA"},
@@ -146,7 +146,7 @@ def _nba_mapping(
     events_payload: Any, headers: Dict[str, str] = None, sports: Any = None
 ) -> Dict[str, Any]:
     events_value = (events_payload, headers) if headers else events_payload
-    return {"/sports": sports if sports is not None else _V2_SPORTS, "/events/": events_value}
+    return {"/sports": sports if sports is not None else _SPORTS_PAYLOAD, "/events/": events_value}
 
 
 @pytest.fixture(autouse=True)
