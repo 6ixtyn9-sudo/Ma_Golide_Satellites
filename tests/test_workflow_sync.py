@@ -70,7 +70,12 @@ def test_workflow_keeps_keyless_fallback_and_wires_optional_provider_secrets():
             assert f"{secret}: ${{{{ secrets.{secret} }}}}" in text
         assert "${{ vars." not in text
         assert "required_secret" not in text
-        assert text.count("state_key:") == 6
+        # The static six-row matrix is emitted by the read-only adaptive gate,
+        # so idle external ticks do not start a full league job.
+        assert "matrix: ${{ fromJSON(needs.gate.outputs.matrix) }}" in text
+        assert "python scripts/adaptive_gate.py" in text
+        assert "TARGET_DATE: ${{ matrix.target_date }}" in text
+        assert "steps.target.outputs.date" not in text
         assert "schedule:" not in text
         assert "cron:" not in text
         assert "available=true" in text
@@ -88,6 +93,28 @@ def test_workflow_keeps_keyless_fallback_and_wires_optional_provider_secrets():
         assert "github.event.action == 'magolide-scheduled-tick'" in cache
 
 
+def test_adaptive_gate_skips_idle_external_ticks_but_keeps_manual_rehearsals_full():
+    repo = Path(__file__).resolve().parents[1]
+    for path in (
+        repo / "workflows" / "ingestion.yml",
+        repo / ".github" / "workflows" / "ingestion.yml",
+    ):
+        text = path.read_text()
+        gate = text.split("  gate:\n", 1)[1].split("\n  preflight:", 1)[0]
+        assert "Adaptive schedule and operator-state gate" in gate
+        assert "git restore --source=refs/remotes/origin/main --worktree -- localdata" in gate
+        assert "latest_main_operator_state_unavailable" in gate
+        assert "manual_read_only_rehearsal" in gate
+        assert "python scripts/adaptive_gate.py" in gate
+        preflight = text.split("  preflight:\n", 1)[1].split("\n  league:", 1)[0]
+        assert "needs: gate" in preflight
+        assert "if: needs.gate.outputs.run_any == 'true'" in preflight
+        league = text.split("  league:\n", 1)[1].split("\n  publish-localdata:", 1)[0]
+        assert "needs: [gate, preflight]" in league
+        assert "needs.gate.outputs.run_any == 'true'" in league
+        assert "matrix: ${{ fromJSON(needs.gate.outputs.matrix) }}" in league
+
+
 def test_only_named_automated_triggers_can_publish_a_durable_operator_decision():
     repo = Path(__file__).resolve().parents[1]
     for path in (
@@ -99,6 +126,7 @@ def test_only_named_automated_triggers_can_publish_a_durable_operator_decision()
         assert "github.event_name == 'schedule'" not in publish
         assert "github.event_name == 'repository_dispatch'" in publish
         assert "github.event.action == 'magolide-scheduled-tick'" in publish
+        assert "needs.gate.outputs.run_any == 'true'" in publish
         assert "workflow_dispatch" not in publish
         assert "Manual dispatch uploads artifacts but cannot publish." in publish
 

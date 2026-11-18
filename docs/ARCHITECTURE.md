@@ -176,12 +176,18 @@ an explicit conflict rather than overwriting history.
 ## Deployment state
 
 A trusted external scheduler invokes GitHub's named repository-dispatch event
-every 30 minutes; there is deliberately no GitHub Actions cron trigger. The
-workflow restores/saves `localdata/` as a cache and uploads run reports/ledgers
-as artifacts. That cadence supports the operator's 60-minute pre-tip ticket
-decision window. Disabled canonical writes still run live acquisition as a dry
-run; they do not create or modify canonical DuckDB/CSV state. Manual live dry
-runs use the same acquisition path.
+every 30 minutes; there is deliberately no GitHub Actions cron trigger. A
+small, read-only adaptive gate first restores the latest compact `localdata`
+operator state and checks a bounded current-day schedule. It starts the full
+pipeline only for a due ticket window, pending settlement/result reconciliation,
+or any uncertain state/schedule result. Uncertainty deliberately fails open;
+EuroLeague also fails open until a verified date-bounded schedule source exists,
+rather than polling its whole-season feed in the gate. The workflow restores/
+saves `localdata/` as a cache and uploads run reports/ledgers as artifacts. That
+cadence supports the operator's 60-minute pre-tip ticket decision window.
+Disabled canonical writes still run live acquisition as a dry run; they do not
+create or modify canonical DuckDB/CSV state. Manual live dry runs force the
+full all-league rehearsal path.
 
 After the league matrix, one publisher commits immutable ticket/no-bet decisions,
 compact state, and settlement summaries to `localdata/<league>` on `main`. Full
