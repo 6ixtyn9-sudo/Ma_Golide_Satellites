@@ -116,9 +116,9 @@ ALLOW_MAGOLIDE_WRITES=true python scripts/daily.py \
   --auto-once --date 2026-11-07 --write
 ```
 
-The scheduled GitHub Actions workflow defaults `ALLOW_MAGOLIDE_WRITES` to
-`true`; set that repository variable to `false` to opt out of canonical writes.
-Manual workflow dispatch remains a dry run.
+The named external-trigger GitHub Actions workflow defaults
+`ALLOW_MAGOLIDE_WRITES` to `true`; set that repository variable to `false` to
+opt out of canonical writes. Manual workflow dispatch remains a dry run.
 
 ## Forecast and acca reports
 
@@ -263,11 +263,11 @@ writes.
 - `localdata/notification_ledger.json`: bounded notification deduplication
   metadata, not canonical sports evidence.
 
-After each scheduled GitHub run, one serialized publisher commits only compact
-paper-ticket decisions, durable locks, and settlement summaries to `main`; it
-never overwrites a conflicting immutable decision. Pick cards—including `.txt`
-cards—remain in the league cache and bounded Actions artifacts, so hourly price
-movement cannot create unbounded Git-history growth. Canonical DuckDB, CSV,
+After each named external-trigger GitHub run, one serialized publisher commits
+only compact paper-ticket decisions, durable locks, and settlement summaries to
+`main`; it never overwrites a conflicting immutable decision. Pick cards—including
+`.txt` cards—remain in the league cache and bounded Actions artifacts, so frequent
+price movement cannot create unbounded Git-history growth. Canonical DuckDB, CSV,
 acquisition ledgers, and caches also remain outside Git.
 
 ```bash

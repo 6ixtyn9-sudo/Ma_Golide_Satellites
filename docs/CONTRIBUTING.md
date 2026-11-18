@@ -99,8 +99,9 @@ protection.
 
 Do not reintroduce spreadsheet stores, worksheet registries, Apps Script,
 Flask, Supabase, or JSON-file persistence. Derived JSON reports are allowed;
-they are not canonical state. Do not add a second scheduler alongside
-`scripts/daily.py`.
+they are not canonical state. Do not add a second orchestration path alongside
+`scripts/daily.py`; use the documented named external repository-dispatch
+trigger.
 
 Avoid claims of live coverage, accuracy, profitability, or certification
 unless the corresponding evidence actually exists. Record verification

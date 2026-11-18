@@ -71,13 +71,14 @@ def test_workflow_keeps_keyless_fallback_and_wires_optional_provider_secrets():
         assert "${{ vars." not in text
         assert "required_secret" not in text
         assert text.count("state_key:") == 6
-        assert '- cron: "11 * * * *"' in text
-        assert "11 */3 * * *" not in text
+        assert "schedule:" not in text
+        assert "cron:" not in text
         assert "available=true" in text
         assert "repository_dispatch:" in text
         assert "types: [magolide-scheduled-tick]" in text
         assert 'case "$EVENT_NAME:$EVENT_ACTION" in' in text
-        assert "schedule:*|repository_dispatch:magolide-scheduled-tick)" in text
+        assert "repository_dispatch:magolide-scheduled-tick)" in text
+        assert "schedule:*" not in text
         assert '[ "$AUTOMATED_TICK" = "true" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]' in text
         cache = text.split("name: Persist league-isolated acquisition and canonical state", 1)[1].split(
             "uses: actions/cache/save@v4", 1
@@ -95,7 +96,7 @@ def test_only_named_automated_triggers_can_publish_a_durable_operator_decision()
     ):
         text = path.read_text()
         publish = text.split("publish-localdata:", 1)[1].split("runs-on:", 1)[0]
-        assert "github.event_name == 'schedule'" in publish
+        assert "github.event_name == 'schedule'" not in publish
         assert "github.event_name == 'repository_dispatch'" in publish
         assert "github.event.action == 'magolide-scheduled-tick'" in publish
         assert "workflow_dispatch" not in publish

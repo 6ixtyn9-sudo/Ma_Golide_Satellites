@@ -120,10 +120,10 @@ advances only after `DuckDBStore.upsert_game` succeeds, or when that exact
 historical summary is already persisted. A provider/identity error leaves the
 cursor on the failed event. A dry run never advances the deep cursor.
 
-The workflow needs no new league/date/mode/write inputs. Its ordinary
-hourly league matrix runs this same bounded backfill. Scheduled cache saves
-preserve public acquisition caches even on dry runs, but dry runs still
-cannot create canonical sports state or advance deep history.
+The workflow needs no new league/date/mode/write inputs. Its external-trigger
+league matrix runs this same bounded backfill. Cache saves preserve public
+acquisition caches even on dry runs, but dry runs still cannot create canonical
+sports state or advance deep history.
 
 Inspect a persisted cursor read-only with:
 
