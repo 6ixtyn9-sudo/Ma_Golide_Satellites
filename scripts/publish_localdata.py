@@ -42,6 +42,7 @@ IMMUTABLE_NAMES = re.compile(
 )
 DECISION_RECEIPT_NAME = re.compile(rf"auto_tickets_({DATE})_decision\.json")
 NO_BET_DECISION_NAME = re.compile(rf"auto_tickets_({DATE})_no_bet\.json")
+TICKET_CARD_NAME = re.compile(rf"auto_tickets_({DATE})\.txt")
 CALIBRATION_EPOCH = "2026-11-10"
 MAX_FILE_BYTES = 25 * 1024 * 1024
 MAX_TOTAL_BYTES = 100 * 1024 * 1024
@@ -142,6 +143,15 @@ def _no_bet_decision_dates(localdata: Path) -> frozenset[str]:
     return frozenset(dates)
 
 
+def _decision_receipt_dates(paths: Iterable[Path]) -> frozenset[str]:
+    """Return dates with an immutable ticket receipt, never a live scan card."""
+    return frozenset(
+        match.group(1)
+        for path in paths
+        if (match := DECISION_RECEIPT_NAME.fullmatch(path.name)) is not None
+    )
+
+
 def _artifact_league_dirs(artifacts: Path) -> Iterable[tuple[str, Path]]:
     """Yield each recovered ``artifact/localdata/<state>`` directory once."""
     if not artifacts.exists():
@@ -170,11 +180,29 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
     seen_destinations = set()
     for state, source_dir in _artifact_league_dirs(artifacts):
         destination_dir = repo / "localdata" / state
+        sources = sorted(source_dir.iterdir())
         withdrawn_decision_ids = _withdrawn_decision_ids(destination_dir)
-        no_bet_dates = _no_bet_decision_dates(destination_dir)
-        for source in sorted(source_dir.iterdir()):
+        no_bet_dates = _no_bet_decision_dates(destination_dir) | _no_bet_decision_dates(
+            source_dir
+        )
+        receipt_dates = _decision_receipt_dates(
+            destination_dir.glob("auto_tickets_*_decision.json")
+        ) | _decision_receipt_dates(sources)
+        for source in sources:
             if not allowed_operator_file(source.name):
                 continue
+            ticket_card_match = TICKET_CARD_NAME.fullmatch(source.name)
+            if ticket_card_match:
+                if (
+                    ticket_card_match.group(1) not in receipt_dates
+                    or ticket_card_match.group(1) in no_bet_dates
+                    or (destination_dir / source.name).exists()
+                ):
+                    # Candidate/no-bet cards contain a latest-scan timestamp
+                    # and price movement. Receipt cards are an initial human
+                    # snapshot only; settlement progress belongs in the compact
+                    # performance report, not an hourly Git card rewrite.
+                    continue
             if source.is_symlink() or not source.is_file():
                 raise ValueError(f"operator publication requires a regular file: {source}")
             size = source.stat().st_size

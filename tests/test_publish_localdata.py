@@ -25,6 +25,34 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
         "auto_tickets_2026-11-12_decision.json",
         b"receipt\n",
     )
+    artifact_file(
+        tmp_path,
+        "nba-artifact",
+        "nba",
+        "auto_tickets_2026-11-12.txt",
+        b"frozen-ticket-card\n",
+    )
+    artifact_file(
+        tmp_path,
+        "nba-artifact",
+        "nba",
+        "auto_tickets_2026-11-13.txt",
+        b"hourly-candidate-card\n",
+    )
+    artifact_file(
+        tmp_path,
+        "nba-artifact",
+        "nba",
+        "auto_tickets_2026-11-14_no_bet.json",
+        b"no-bet-decision\n",
+    )
+    artifact_file(
+        tmp_path,
+        "nba-artifact",
+        "nba",
+        "auto_tickets_2026-11-14.txt",
+        b"hourly-no-bet-card\n",
+    )
     artifact_file(tmp_path, "nba-artifact", "nba", "warehouse.duckdb", b"canonical")
     artifact_file(tmp_path, "nba-artifact", "nba", "picks_unapproved.json", b"unexpected")
     artifact_file(tmp_path, "cba-artifact", "cba", "picks_today.json", b"cba\n")
@@ -39,9 +67,22 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
 
     report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
 
-    assert report["copied_count"] == 1
+    assert report["copied_count"] == 3
     assert not (repo / "localdata" / "nba" / "picks_2026-11-12.txt").exists()
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12_decision.json").read_bytes() == b"receipt\n"
+    assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12.txt").read_bytes() == b"frozen-ticket-card\n"
+    assert not (repo / "localdata" / "nba" / "auto_tickets_2026-11-13.txt").exists()
+    assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-14_no_bet.json").read_bytes() == b"no-bet-decision\n"
+    assert not (repo / "localdata" / "nba" / "auto_tickets_2026-11-14.txt").exists()
+    artifact_file(
+        tmp_path,
+        "nba-artifact",
+        "nba",
+        "auto_tickets_2026-11-12.txt",
+        b"later-settlement-rewrite\n",
+    )
+    assert merge_downloaded_localdata(tmp_path / "artifacts", repo)["status"] == "no_changes"
+    assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12.txt").read_bytes() == b"frozen-ticket-card\n"
     for state in ("nba", "cba", "wnba"):
         assert not (repo / "localdata" / state / "picks_today.json").exists()
     assert historical.read_text() == "retain me"
