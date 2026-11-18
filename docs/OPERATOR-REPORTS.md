@@ -135,15 +135,19 @@ Repeated scans can produce distinct forecast IDs because book and prediction
 observation times are part of those IDs. The dated JSON retains every evidence
 row. The text card and rolling audit select the latest observation for the same
 logical game/market/period/selection/line/model/book pick, and report the number
-of superseded observations. Only pending pre-tip logical picks appear in the
-active bucket sections; started games awaiting an official final and settled
-picks appear in separate archive-only sections. Rolling hit rate, ROI, and
-profit therefore count one paper pick per logical selection rather than one
-paper pick per scan. Different selections, lines, models, or books remain
-separate logical picks. The rolling JSON retains the complete logical ledger
-and a dedicated `settled_ledger`; the readable audit lists every settled
-logical pick in its 30-day window, including unpriced grades that do not enter
-ROI.
+of superseded observations. A later exact selected-side quote additionally
+supersedes an earlier **unpriced** observation of that same
+`game/market/period/selection/line/model`, so an old `no matched book` row is
+not left active beside its now-priced successor. This is a display/audit
+selection only: it never deletes the earlier evidence or invents a quote.
+Different selections, lines, models, or named books remain separate logical
+picks. Only pending pre-tip logical picks appear in the active bucket sections;
+started games awaiting an official final and settled picks appear in separate
+archive-only sections. Rolling hit rate, ROI, and profit therefore count one
+paper pick per logical selection rather than one paper pick per scan. The
+rolling JSON retains the complete logical ledger and a dedicated
+`settled_ledger`; the readable audit lists every settled logical pick in its
+30-day window, including unpriced grades that do not enter ROI.
 
 The Markdown audit uses proper `Overall`, `Settlement policy`, `Bucket
 performance`, and `Settled picks` sections. Settled markets are grouped under

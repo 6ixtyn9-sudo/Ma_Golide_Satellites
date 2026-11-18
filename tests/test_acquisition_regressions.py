@@ -105,6 +105,40 @@ def test_book_lines_from_multiple_provider_ids_are_combined(monkeypatch):
     }
     assert game.provider_ids["one"] == "event-one"
     assert game.provider_ids["two"] == "event-two"
+    assert pipeline.book_provider_status == {
+        "one": {
+            "enabled": True,
+            "status": "fetched",
+            "snapshots_fetched": 1,
+            "snapshots_mapped": 1,
+            "identity_rejections": 0,
+        },
+        "two": {
+            "enabled": True,
+            "status": "fetched",
+            "snapshots_fetched": 1,
+            "snapshots_mapped": 1,
+            "identity_rejections": 0,
+        },
+    }
+
+
+def test_disabled_book_provider_is_reported_not_silently_skipped(monkeypatch):
+    import ingestion.pipeline as module
+
+    pipeline = _pipeline(InMemoryStore())
+    provider = SimpleNamespace(is_enabled=lambda: False)
+    monkeypatch.setattr(module, "BOOK_PROVIDERS", ("optional-books",))
+    monkeypatch.setattr(module, "_book_module", lambda _provider: provider)
+
+    assert pipeline._acquire_book_lines([_game()]) == {}
+    assert pipeline.book_provider_status == {
+        "optional-books": {
+            "enabled": False,
+            "status": "disabled",
+            "detail": "optional provider credential is not configured",
+        }
+    }
 
 
 def test_contradictory_known_provider_id_is_quarantined(monkeypatch):
@@ -123,6 +157,13 @@ def test_contradictory_known_provider_id_is_quarantined(monkeypatch):
     assert store.get_book_snapshots(game.game_id) == []
     assert pipeline.gaps[-1].required_field == "book_identity"
     assert "contradicts" in pipeline.gaps[-1].detail
+    assert pipeline.book_provider_status["one"] == {
+        "enabled": True,
+        "status": "identity_unmatched",
+        "snapshots_fetched": 1,
+        "snapshots_mapped": 0,
+        "identity_rejections": 1,
+    }
 
 
 def test_new_provider_event_cannot_replace_existing_provider_mapping(monkeypatch):

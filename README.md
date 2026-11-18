@@ -102,7 +102,12 @@ Live CBA acquisition requires `ISPORTS_API_KEY` for fixtures/results/books and
 `SPORTRADAR_API_KEY` for independent probabilities. Set
 `SPORTRADAR_ACCESS_LEVEL=production` only for a production Sportradar key.
 NCAA book acquisition uses `THE_ODDS_API_KEY`; a missing key disables that
-provider rather than inventing book evidence.
+provider rather than inventing book evidence. In GitHub Actions, optional
+provider credentials are supplied as Actions secrets (including
+`THE_ODDS_API_KEY`, `THERUNDOWN_API_KEY`, `SPORTSGAMEODDS_API_KEY`, and
+`ISPORTS_API_KEY`); without them the report explicitly marks the adapter as
+disabled. See [Operations: optional odds-provider credentials](docs/OPERATIONS.md#optional-odds-provider-credentials)
+for league/market coverage and safe rollout steps.
 
 Direct CLI persistence requires both the CLI flag and environment opt-in:
 

@@ -606,10 +606,17 @@ def _canonical_book_for_key(book_name: str | None) -> str | None:
         return book_name
 
 
-def _logical_pick_key(row: Dict[str, Any]) -> tuple:
-    """Identify repeated observations of one displayed pick, not its evidence ID."""
+def _market_pick_key(row: Dict[str, Any]) -> tuple:
+    """Return the wager identity without its bookmaker observation.
 
-    book = row.get("book") or {}
+    A no-price forecast is emitted with ``book=None``.  When a later scan
+    finds an exact quote for the same game, market, period, side, line, and
+    model, the old no-price evidence must not remain visible as a separate
+    current pick merely because its book fields are empty.  The raw evidence
+    is still retained in the dated ledger; this key is used only to recognise
+    that a valid quote now exists for the same forecasted selection.
+    """
+
     line = row.get("line")
     return (
         row.get("game_id"),
@@ -618,9 +625,14 @@ def _logical_pick_key(row: Dict[str, Any]) -> tuple:
         row.get("selection"),
         float(line) if line is not None else None,
         row.get("model"),
-        book.get("provider"),
-        _canonical_book_for_key(book.get("book")),
     )
+
+
+def _logical_pick_key(row: Dict[str, Any]) -> tuple:
+    """Identify repeated observations of one displayed pick, not its evidence ID."""
+
+    book = row.get("book") or {}
+    return (*_market_pick_key(row), book.get("provider"), _canonical_book_for_key(book.get("book")))
 
 
 def _evidence_time(row: Dict[str, Any]) -> datetime:
@@ -645,7 +657,17 @@ def _latest_evidence_utc(row: Dict[str, Any]) -> Optional[str]:
 
 
 def _latest_logical_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Select the latest observation per logical pick without deleting evidence."""
+    """Select displayable current observations without deleting raw evidence.
+
+    Book-attributed observations remain separate logical picks because their
+    prices are independently auditable.  A no-price observation is different:
+    it is a temporary absence of book evidence, not a bookmaker lane.  Once
+    any exact selected-side quote exists for the same modelled selection, omit
+    that no-price duplicate from the current/card/audit view.  This prevents a
+    later successful odds refresh from still rendering ``no matched book`` for
+    a pick that is in fact priced, while preserving every source row in the
+    dated JSON ledger.
+    """
 
     groups: Dict[tuple, List[Dict[str, Any]]] = defaultdict(list)
     for row in rows:
@@ -654,8 +676,17 @@ def _latest_logical_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         max(group, key=lambda row: (_evidence_time(row), str(row["pick_id"])))
         for group in groups.values()
     ]
+    exact_price_market_keys = {
+        _market_pick_key(row) for row in selected if _has_exact_selected_price(row)
+    }
+    displayable = [
+        row
+        for row in selected
+        if _has_exact_selected_price(row)
+        or _market_pick_key(row) not in exact_price_market_keys
+    ]
     return sorted(
-        selected,
+        displayable,
         key=lambda row: (
             row["scheduled_utc"],
             row["game_id"],

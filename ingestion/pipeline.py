@@ -158,6 +158,10 @@ class Pipeline:
         self.gaps: List[CoverageGap] = []
         self.quota: Dict[str, Any] = {}
         self.context_report: Dict[str, Any] = {}
+        # Per-stage source telemetry. This distinguishes a true no-market
+        # response from a provider that was intentionally unavailable because
+        # its optional credential was not configured.
+        self.book_provider_status: Dict[str, Dict[str, Any]] = {}
 
     def _now_iso(self) -> str:
         if self.config.fixture_now_utc:
@@ -170,6 +174,7 @@ class Pipeline:
         self.gaps = []
         self.quota = {}
         self.context_report = {}
+        self.book_provider_status = {}
 
     def _standings_smoke(self) -> Dict[str, Any]:
         """Measure standings endpoint coverage without persisting/model use."""
@@ -318,6 +323,7 @@ class Pipeline:
                 "predictions_selected": _count_by(
                     [s.provider for s in selections.values() if s.provider]
                 ),
+                "book_provider_status": self.book_provider_status,
                 "espn_context": self.context_report,
             },
         )
@@ -503,6 +509,24 @@ class Pipeline:
             raise ValueError(f"unsupported league for discovery: {league.value}")
         for game in games:
             self.store.upsert_game(game)
+        if league in ESPN_LEAGUES:
+            scoreboard_snapshots = [snapshot for snapshots in espn_books.values() for snapshot in snapshots]
+            pre_match_games = {
+                snapshot.game_id for snapshot in scoreboard_snapshots if snapshot.pre_match
+            }
+            self.book_provider_status["espn"] = {
+                "enabled": True,
+                "status": (
+                    "observed_pre_match_markets"
+                    if pre_match_games
+                    else "no_pre_match_markets_in_scoreboard"
+                ),
+                "snapshots_observed": len(scoreboard_snapshots),
+                "pre_match_snapshots": sum(
+                    snapshot.pre_match for snapshot in scoreboard_snapshots
+                ),
+                "games_with_pre_match_snapshots": len(pre_match_games),
+            }
         for game_id, snapshots in espn_books.items():
             for snapshot in snapshots:
                 try:
@@ -579,6 +603,9 @@ class Pipeline:
         self.context_report["odds_catchup_attempts"] = 1
         self.context_report["odds_catchup_hits"] = hits
         self.context_report["odds_catchup_games_without_books"] = len(need)
+        if "espn" in self.book_provider_status:
+            self.book_provider_status["espn"]["catchup_snapshots_stored"] = hits
+            self.book_provider_status["espn"]["catchup_games_requested"] = len(need)
 
     def _acquire_context(self, games: List[Game]) -> List[Game]:
         """Enrich upcoming ESPN games with bounded summary/form/injury evidence."""
@@ -825,24 +852,55 @@ class Pipeline:
         return {}
 
     def _acquire_book_lines(self, games: List[Game]) -> Dict[str, List[BookSnapshot]]:
+        """Acquire and reconcile configured book sources with explicit health states.
+
+        Missing optional credentials, an empty provider response, an identity
+        rejection, and a successful mapped response are materially different
+        causes of "no matched odds".  Preserve that distinction in the
+        pregame report rather than making an intentionally-disabled source
+        look like an empty slate.
+        """
+
         raw_snapshots: List[BookSnapshot] = []
         for provider in _book_providers(self.config.league):
             module = _book_module(provider)
-            if module is None or not module.is_enabled():
+            if module is None:
+                self.book_provider_status[provider] = {
+                    "enabled": False,
+                    "status": "adapter_unavailable",
+                }
+                continue
+            if not module.is_enabled():
+                self.book_provider_status[provider] = {
+                    "enabled": False,
+                    "status": "disabled",
+                    "detail": "optional provider credential is not configured",
+                }
                 continue
             try:
                 options = self._book_provider_options(provider)
-                raw_snapshots.extend(
-                    module.fetch_odds(
-                        self.config.league.upper(),
-                        self.config.date_yyyymmdd,
-                        self.fetch_factory,
-                        **options,
-                    )
+                provider_snapshots = module.fetch_odds(
+                    self.config.league.upper(),
+                    self.config.date_yyyymmdd,
+                    self.fetch_factory,
+                    **options,
                 )
+                raw_snapshots.extend(provider_snapshots)
                 self.quota[provider] = module.last_quota() if hasattr(module, "last_quota") else {}
+                self.book_provider_status[provider] = {
+                    "enabled": True,
+                    "status": "fetched" if provider_snapshots else "fetched_no_snapshots",
+                    "snapshots_fetched": len(provider_snapshots),
+                    "snapshots_mapped": 0,
+                    "identity_rejections": 0,
+                }
             except Exception as exc:
                 logger.warning("%s fetch failed: %s", provider, exc)
+                self.book_provider_status[provider] = {
+                    "enabled": True,
+                    "status": "provider_error",
+                    "error_type": type(exc).__name__,
+                }
                 self.gaps.append(
                     CoverageGap(
                         game_id=None,
@@ -858,6 +916,9 @@ class Pipeline:
         for raw in raw_snapshots:
             game, reason = _resolve_book_game(raw, games)
             if game is None:
+                status = self.book_provider_status.get(raw.provider)
+                if status is not None:
+                    status["identity_rejections"] = int(status["identity_rejections"]) + 1
                 self.gaps.append(
                     CoverageGap(
                         game_id=str(raw.game_id),
@@ -872,6 +933,9 @@ class Pipeline:
             provider_event_id = str(raw.provider_event_id or raw.game_id)
             known_event_id = game.provider_ids.get(raw.provider)
             if known_event_id and str(known_event_id) != provider_event_id:
+                status = self.book_provider_status.get(raw.provider)
+                if status is not None:
+                    status["identity_rejections"] = int(status["identity_rejections"]) + 1
                 self.gaps.append(
                     CoverageGap(
                         game_id=game.game_id,
@@ -893,10 +957,19 @@ class Pipeline:
             per_game = mapped.setdefault(game.game_id, [])
             if snapshot not in per_game:
                 per_game.append(snapshot)
+                status = self.book_provider_status.get(raw.provider)
+                if status is not None:
+                    status["snapshots_mapped"] = int(status["snapshots_mapped"]) + 1
             try:
                 self.store.upsert_book_snapshot(snapshot)
             except Exception as exc:
                 logger.warning("book store failed: %s", exc)
+
+        for status in self.book_provider_status.values():
+            if status.get("status") != "fetched":
+                continue
+            if not status.get("snapshots_mapped"):
+                status["status"] = "identity_unmatched"
         return mapped
 
     def _visible_pregame_books(self, game: Game) -> List[BookSnapshot]:

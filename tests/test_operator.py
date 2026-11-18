@@ -1597,6 +1597,44 @@ def test_spread_displays_use_selected_side_handicap_everywhere(tmp_path):
     assert "Counterfactual fade: **✅ WIN @ 1.909 Home 1 -27.5 (home) · Test Book**" in markdown
 
 
+def test_later_exact_quote_hides_stale_unpriced_logical_pick_but_keeps_evidence(tmp_path):
+    unpriced = forecast(
+        1,
+        price=None,
+        eligible=False,
+        reasons=["no_exact_bookmaker_market", "insufficient_walk_forward_samples"],
+        calibration_n=4,
+    )
+    unpriced["forecast_id"] = "forecast-1-before-quote"
+    first = publish(tmp_path, Store([game(1)]), report([unpriced]), run_id="before-quote")
+    assert first["unpriced_audit"]["count"] == 1
+
+    priced = forecast(
+        1,
+        price=1.91,
+        eligible=False,
+        reasons=["insufficient_walk_forward_samples"],
+        calibration_n=4,
+    )
+    priced["forecast_id"] = "forecast-1-after-quote"
+    result = publish(tmp_path, Store([game(1)]), report([priced]), run_id="after-quote")
+
+    # The original no-price evidence remains immutable in the dated ledger,
+    # but the card/audit reflects the later exact quote for the same selection.
+    archived = json.loads((tmp_path / f"picks_{DATE}.json").read_text())
+    assert {row["forecast_id"] for row in archived} == {
+        "forecast-1-before-quote",
+        "forecast-1-after-quote",
+    }
+    text = Path(result["picks_text"]).read_text()
+    assert "WATCHLIST — NO MATCHED ODDS\n========================================================================\n  (none)" in text
+    assert "@1.910 Test Book" in text
+    assert "Logical picks shown: 1 · superseded observations: 1" in text
+    assert result["unpriced_audit"]["count"] == 0
+    state = json.loads(Path(result["ticket_state"]).read_text())
+    assert state["scans"][-1]["unpriced_audit"]["count"] == 0
+
+
 def test_started_and_settled_games_leave_the_active_pick_sections(tmp_path):
     first = publish(tmp_path, Store([game(1)]), report([forecast(1)]))
     text_path = Path(first["picks_text"])

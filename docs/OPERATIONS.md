@@ -97,6 +97,32 @@ Each matrix job has isolated state and artifacts:
 - an acquisition date derived automatically in that league's acquisition
   timezone, never a dispatch-selected date.
 
+### Optional odds-provider credentials
+
+The public feeds remain useful without credentials, but they do **not** provide
+uniform odds coverage: ESPN's public scoreboard is full-game-only when it
+includes a book at all, BetExplorer is full-game moneyline-only, and NCAA_W
+moneyline coverage is known to be absent from the ESPN free surface. To enable
+the already-implemented supplemental adapters in GitHub Actions, set the
+corresponding **Actions secrets** (never repository variables or checked-in
+files):
+
+| Secret | Implemented adapter coverage (verify live) | Use it for |
+| --- | --- | --- |
+| `THE_ODDS_API_KEY` | NBA/WNBA/NCAA_M/NCAA_W full-game markets; NBA quarters and H1; NCAA H1/H2 where the provider offers them | The first supplemental source to validate, especially for NCAA_W |
+| `THERUNDOWN_API_KEY` | NBA full-game moneyline and totals | A second named NBA source |
+| `SPORTSGAMEODDS_API_KEY` | NBA full-game and Q1–Q4 totals | NBA quarter-total coverage |
+| `ISPORTS_API_KEY` | CBA moneyline, totals, spreads, halves, and quarters | CBA market coverage; adapter remains documentation-only until an authenticated smoke succeeds |
+| `SPORTRADAR_API_KEY` / `PREDIXSPORT_API_KEY` | Independent CBA / EuroLeague prediction paths | Prediction redundancy, not bookmaker prices |
+
+The workflow injects these only as process environment variables. A missing
+secret is safe: its adapter remains disabled and the pregame report records
+`book_provider_status: disabled` rather than presenting that state as an empty
+market response. The GitHub job summary also includes selected-side price
+coverage by market/period and the redacted source status, so a no-price result
+can be separated into a provider-capability gap, a disabled credential, an
+identity rejection, or a true empty response.
+
 Safety behavior is deliberate:
 
 - Manual dispatch is a live all-league canonical **dry run**. It may consume
