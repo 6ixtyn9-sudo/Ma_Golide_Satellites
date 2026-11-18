@@ -314,13 +314,15 @@ def main() -> int:
     parser.add_argument(
         "--league",
         default="NBA",
-        choices=["NBA", "EuroLeague", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
+        choices=["NBA", "EuroLeague", "EUROLEAGUE_W", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
     )
     parser.add_argument("--tz", default=None)
+    parser.add_argument("--warehouse", default=None)
     parser.add_argument(
-        "--warehouse", default=os.environ.get("MAGOLIDE_WAREHOUSE", DEFAULT_WAREHOUSE)
+        "--localdata",
+        default=None,
+        help="operator state directory (ELW defaults to localdata/euroleague_w)",
     )
-    parser.add_argument("--localdata", default="localdata")
     parser.add_argument(
         "--keep-days",
         type=int,
@@ -374,6 +376,16 @@ def main() -> int:
         help="send the heartbeat through configured WhatsApp credentials",
     )
     args = parser.parse_args()
+    if args.localdata is None:
+        args.localdata = (
+            "localdata/euroleague_w" if args.league.upper() == "EUROLEAGUE_W" else "localdata"
+        )
+    if args.warehouse is None:
+        args.warehouse = os.environ.get("MAGOLIDE_WAREHOUSE") or (
+            str(Path(args.localdata) / "warehouse.duckdb")
+            if args.league.upper() == "EUROLEAGUE_W"
+            else DEFAULT_WAREHOUSE
+        )
     if args.date is None:
         args.date = datetime.now(ZoneInfo(ACQUISITION_TZ[args.league.upper()])).strftime("%Y-%m-%d")
     try:

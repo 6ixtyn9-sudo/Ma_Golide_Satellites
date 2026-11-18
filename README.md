@@ -16,7 +16,8 @@ receipts, and audit state; DuckDB remains the canonical sports system of record.
 | --- | --- | --- | --- | --- |
 | NBA | Q1–Q4 | ESPN | ESPN BPI, Hardwood, Predixsport | ESPN scoreboard, TheRundown, SportsGameOdds, TheOddsAPI* |
 | WNBA | Event-declared H1/H2 or Q1–Q4 | ESPN | ESPN BPI | ESPN scoreboard* |
-| EuroLeague | Q1–Q4 | EuroLeague | Predixsport | No supported EuroLeague book adapter |
+| EuroLeague | Q1–Q4 | Euroleague Basketball | Predixsport | No supported EuroLeague book adapter |
+| EuroLeague Women (`EUROLEAGUE_W`) | Q1–Q4 + official OT | FIBA GDAP schedule + FIBA game-page detail | No independently validated pre-tip provider yet | No validated named-book adapter; intentionally unpriced |
 | CBA | Q1–Q4 | iSportsAPI | Sportradar Global Basketball | iSportsAPI |
 | NCAA_M | H1/H2 | ESPN men's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI* |
 | NCAA_W | Q1–Q4; event-declared legacy H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI* |
@@ -31,7 +32,11 @@ Quarter/highest-quarter products remain disabled for both NCAA leagues. Early
 WNBA two-half games likewise remain halves; current event-declared four-quarter
 games remain quarters. CBA predictions and books deliberately come from
 independent providers; book-implied probabilities are not stored as model
-predictions. CBA and NCAA live provider coverage remains
+predictions. EuroLeague Women is a separate FIBA competition with isolated
+`EUROLEAGUE_W` IDs and `localdata/euroleague_w` state: it never reuses the
+men's EuroLeague schedule, receipts, mappings, price lane, or model claims.
+FIBA's canonical tip field is `gameDateTimeUTC`; visible game-page local/display
+times are never used to derive it. CBA and NCAA live provider coverage remains
 `DOCUMENTATION_ONLY` until authenticated smoke tests verify it. Offline tests
 prove parsing, reconciliation, routing, and forecast behavior only.
 
@@ -86,6 +91,7 @@ present:
 ```bash
 python scripts/daily.py --auto-once --date 2026-11-07 --league NBA
 python scripts/daily.py --auto-once --date 2026-11-07 --league WNBA
+python scripts/daily.py --auto-once --date 2026-11-07 --league EUROLEAGUE_W
 python scripts/daily.py --auto-once --date 2026-11-07 --league CBA
 python scripts/daily.py --auto-once --date 2026-11-07 --league NCAA_W
 ```
@@ -162,8 +168,9 @@ version and named-book lane separate, accepts only reconciled official finals,
 and uses a quote recorded no later than that forecast's decision timestamp. Missing,
 stale, ambiguous, and post-decision evidence is reported as an explicit
 exclusion. Paper return/Kelly fields are diagnostics only: observed prices do
-not guarantee execution and the report makes no profitability claim. EuroLeague
-can be selected as `EUROLEAGUE` (or `EuroLeague`).
+not guarantee execution and the report makes no profitability claim. Men's EuroLeague
+can be selected as `EUROLEAGUE` (or `EuroLeague`); FIBA EuroLeague Women is the
+separate `EUROLEAGUE_W` value.
 
 The walk-forward harness fits separate reliability profiles by league, market,
 period, model source, and calibration-version fingerprint. Each profile uses

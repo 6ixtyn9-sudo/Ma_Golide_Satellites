@@ -42,6 +42,13 @@ DECISION_LEAD_MINUTES = 60
 HTTP_TIMEOUT_SECONDS = 15
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 
+# FIBA publishes this APIM key in its public web client.  The full FIBA
+# adapter refreshes it from the page at runtime; the dependency-free gate uses
+# the current public value solely for this bounded schedule read.  It is not a
+# Ma Golide credential and is never emitted in a gate report.
+_FIBA_PUBLIC_SUBSCRIPTION_KEY = "898cd5e7389140028ecb42943c47eb74"
+_FIBA_ELW_COMPETITION_ID = 209127
+
 # This is kept in the same order as the workflow matrix so its JSON ``include``
 # rows can be consumed directly by GitHub Actions.
 @dataclass(frozen=True)
@@ -57,6 +64,9 @@ LEAGUES: tuple[LeagueGateConfig, ...] = (
     LeagueGateConfig("NBA", "NBA", "nba", "America/New_York", "espn"),
     LeagueGateConfig("WNBA", "WNBA", "wnba", "America/New_York", "espn"),
     LeagueGateConfig("EuroLeague", "EuroLeague", "euroleague", "Europe/Paris", "euroleague"),
+    LeagueGateConfig(
+        "EuroLeague Women", "EUROLEAGUE_W", "euroleague_w", "Europe/Paris", "fiba_elw"
+    ),
     LeagueGateConfig("Chinese CBA", "CBA", "cba", "Asia/Shanghai", "cba"),
     LeagueGateConfig("NCAA men", "NCAA_M", "ncaa_m", "America/New_York", "espn"),
     LeagueGateConfig("NCAA women", "NCAA_W", "ncaa_w", "America/New_York", "espn"),
@@ -335,7 +345,7 @@ def evaluate_gate(
     schedule_fetcher: ScheduleFetcher | None = None,
     force_all_reason: str | None = None,
 ) -> list[GateDecision]:
-    """Evaluate the fixed six-league matrix, with an explicit force-open mode."""
+    """Evaluate the fixed seven-league matrix, with an explicit force-open mode."""
 
     current = now or utc_now()
     if current.tzinfo is None:
@@ -477,6 +487,53 @@ def _cba_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGa
     return games
 
 
+def _fiba_elw_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGame]:
+    """Read and date-bound the official FIBA GDAP EuroLeague Women schedule."""
+
+    del config
+    url = (
+        "https://digital-api.fiba.basketball/hapi/getgdapgamesbycompetitionid?"
+        f"gdapCompetitionId={_FIBA_ELW_COMPETITION_ID}&"
+        f"subscription-key={_FIBA_PUBLIC_SUBSCRIPTION_KEY}"
+    )
+    payload = _read_json_response(url)
+    if not isinstance(payload, list) or not payload:
+        raise GateUncertain("FIBA EuroLeague Women schedule lacks a non-empty game list")
+    wanted = datetime.strptime(target_date, "%Y-%m-%d").date()
+    games: list[ScheduleGame] = []
+    for row in payload:
+        if not isinstance(row, dict):
+            raise GateUncertain("FIBA EuroLeague Women schedule has an invalid row")
+        competition = row.get("competition")
+        if not isinstance(competition, dict) or competition.get("competitionId") != _FIBA_ELW_COMPETITION_ID:
+            raise GateUncertain("FIBA EuroLeague Women schedule row is outside competition 209127")
+        raw_tip = row.get("gameDateTimeUTC")
+        # GDAP's explicitly UTC-named field is serialized without an offset.
+        # Attach UTC here only; local/display fields are never considered.
+        if isinstance(raw_tip, str) and not raw_tip.rstrip().endswith(("Z", "z")):
+            raw_tip = f"{raw_tip}Z"
+        tip = _parse_utc(raw_tip, context="FIBA EuroLeague Women game")
+        if tip.astimezone(ZoneInfo("Europe/Paris")).date() != wanted:
+            continue
+        if row.get("isPostponed") is True:
+            status = "scheduled"
+        elif row.get("isLive") is True:
+            status = "live"
+        elif (
+            str(row.get("gameResultStatusCode") or "").upper() == "VALID"
+            and row.get("liveGameStatus") == 999
+            and isinstance(row.get("teamAScore"), (int, float))
+            and not isinstance(row.get("teamAScore"), bool)
+            and isinstance(row.get("teamBScore"), (int, float))
+            and not isinstance(row.get("teamBScore"), bool)
+        ):
+            status = "final"
+        else:
+            status = "scheduled"
+        games.append(ScheduleGame(tip, status))
+    return games
+
+
 def fetch_schedule(config: LeagueGateConfig, target_date: str) -> Iterable[ScheduleGame]:
     """Read one bounded league-day schedule, or fail open when none exists."""
 
@@ -484,6 +541,8 @@ def fetch_schedule(config: LeagueGateConfig, target_date: str) -> Iterable[Sched
         return _espn_schedule(config, target_date)
     if config.schedule_source == "cba":
         return _cba_schedule(config, target_date)
+    if config.schedule_source == "fiba_elw":
+        return _fiba_elw_schedule(config, target_date)
     if config.schedule_source == "euroleague":
         # The adapter's only verified endpoint is a whole-season feed.  Do not
         # call it from a half-hour gate and claim this job is lightweight.

@@ -181,14 +181,24 @@ def test_default_config_keeps_its_calibration_identity():
 
 
 def test_league_defaults_apply_only_to_backtested_college_leagues():
-    assert set(LEAGUE_FORECAST_OVERRIDES) == {League.NCAA_W, League.NCAA_M}
+    assert set(LEAGUE_FORECAST_OVERRIDES) == {
+        League.NCAA_W,
+        League.NCAA_M,
+        League.EUROLEAGUE_W,
+    }
     for league in (League.NCAA_W, League.NCAA_M):
         config = league_forecast_config(league)
         assert config.recalibrate_expectations is True
         assert config.posted_line_model_weight == 0.2
         service = MarketForecastService(InMemoryStore(), league)
         assert service.forecast_config == config
-    for league in (League.NBA, League.WNBA, League.EUROLEAGUE, League.CBA):
+    for league in (
+        League.NBA,
+        League.WNBA,
+        League.EUROLEAGUE,
+        League.EUROLEAGUE_W,
+        League.CBA,
+    ):
         assert league_forecast_config(league) == ForecastConfig()
         assert MarketForecastService(InMemoryStore(), league).forecast_config == ForecastConfig()
     # Explicit settings still win over league defaults.

@@ -58,9 +58,9 @@ python scripts/daily.py --auto-once --date 2026-11-07 --league NBA
 Useful options:
 
 - `--timezone Africa/Johannesburg` controls local reporting dates. League
-  defaults are America/New_York (NBA/WNBA/NCAA), Europe/Paris (EuroLeague), and
-  Asia/Shanghai (CBA). CBA schedule acquisition itself uses iSportsAPI's
-  documented UTC calendar window.
+  defaults are America/New_York (NBA/WNBA/NCAA), Europe/Paris (men's
+  EuroLeague and FIBA EuroLeague Women), and Asia/Shanghai (CBA). CBA schedule
+  acquisition itself uses iSportsAPI's documented UTC calendar window.
 - An omitted `--date` is derived in the selected league's acquisition timezone.
 - `--skip-results` performs pregame/freeze/markets only.
 - `--skip-markets` skips the derived forecast report.
@@ -80,7 +80,7 @@ external scheduler must invoke the workflow at least every 30 minutes. That
 cadence gives each slate a pre-tip opportunity to make its 60-minute ticket
 decision without letting the first partial-price scan freeze the date.
 
-## Automatic six-league workflow
+## Automatic seven-league workflow
 
 `workflows/ingestion.yml` is the reviewed workflow source. Install its **entire
 file** unchanged as `.github/workflows/ingestion.yml` with a GitHub credential
@@ -93,8 +93,8 @@ league/date/mode/write inputs**; it deliberately has no GitHub Actions cron
 trigger. An adaptive, read-only gate runs first. It reads the latest
 Git-authoritative compact operator state and a bounded current-day schedule,
 then starts preflight and only the league matrix rows that have work due. The
-selected rows remain fail-independent across `NBA`, `WNBA`, `EuroLeague`,
-`CBA`, `NCAA_M`, and `NCAA_W`. One serialized publisher then commits compact
+selected rows remain fail-independent across `NBA`, `WNBA`, men's `EuroLeague`,
+FIBA `EUROLEAGUE_W`, `CBA`, `NCAA_M`, and `NCAA_W`. One serialized publisher then commits compact
 ticket decisions and state to `main`; all pick cards and expanded audits stay in
 the cache and bounded workflow artifacts so frequent price movement does not
 create permanent Git history.
@@ -145,9 +145,12 @@ latest-`main` restore, provider errors, and unknown schedule statuses all
 **fail open** to the normal full league job; the gate never turns uncertainty
 into "no work." NBA, WNBA, NCAA men, and NCAA women use one ESPN scoreboard
 request for their current acquisition day; CBA uses one official Beijing-day
-schedule request. EuroLeague currently has only the verified whole-season
-schedule endpoint, not a verified date-bounded alternative, so it deliberately
-fails open rather than disguising a season download as a lightweight gate.
+schedule request. FIBA EuroLeague Women uses its official GDAP competition
+schedule (`209127`) and filters the canonical `gameDateTimeUTC` rows to the
+Europe/Paris slate date. Men's EuroLeague currently has only the verified
+whole-season schedule endpoint, not a verified date-bounded alternative, so it
+deliberately fails open rather than disguising a season download as a
+lightweight gate.
 
 `workflow_dispatch` remains deliberately different: it forces the existing
 all-league read-only rehearsal, even if the adaptive gate would otherwise skip
@@ -156,8 +159,9 @@ job, therefore cannot write or publish anything.
 
 Each matrix job has isolated state and artifacts:
 
-- `localdata/nba`, `localdata/wnba`, `localdata/euroleague`, `localdata/cba`,
-  `localdata/ncaa_m`, and `localdata/ncaa_w`;
+- `localdata/nba`, `localdata/wnba`, `localdata/euroleague`,
+  `localdata/euroleague_w`, `localdata/cba`, `localdata/ncaa_m`, and
+  `localdata/ncaa_w`;
 - a league-specific DuckDB path, cache prefix, run ID, and artifact name;
 - an acquisition date derived automatically in that league's acquisition
   timezone, never a dispatch-selected date.

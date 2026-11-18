@@ -44,7 +44,7 @@ from forecasting.market_eval import (  # noqa: E402
 from ingestion.models import ActualResult, PeriodKind  # noqa: E402
 from ingestion.warehouse import DEFAULT_WAREHOUSE, connect  # noqa: E402
 
-LEAGUES = ["NBA", "EUROLEAGUE", "EuroLeague", "CBA", "WNBA", "NCAA_M", "NCAA_W"]
+LEAGUES = ["NBA", "EUROLEAGUE", "EuroLeague", "EUROLEAGUE_W", "CBA", "WNBA", "NCAA_M", "NCAA_W"]
 
 
 def _json_safe(value):
@@ -124,7 +124,7 @@ def _settled_outcomes(rows):
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--warehouse", default=DEFAULT_WAREHOUSE)
+    parser.add_argument("--warehouse", default=None)
     parser.add_argument("--league", default="NBA", choices=LEAGUES)
     parser.add_argument("--book", default=None, help="restrict quotes to one named book")
     parser.add_argument(
@@ -135,6 +135,12 @@ def main() -> int:
     parser.add_argument("--seed", type=int, default=20261117)
     parser.add_argument("--max-quote-age-hours", type=float, default=72.0)
     args = parser.parse_args()
+    if args.warehouse is None:
+        args.warehouse = (
+            "localdata/euroleague_w/warehouse.duckdb"
+            if args.league == "EUROLEAGUE_W"
+            else DEFAULT_WAREHOUSE
+        )
     # The canonical enum is EUROLEAGUE; keep the familiar display spelling as
     # a CLI alias without querying an impossible warehouse league value.
     if args.league == "EuroLeague":

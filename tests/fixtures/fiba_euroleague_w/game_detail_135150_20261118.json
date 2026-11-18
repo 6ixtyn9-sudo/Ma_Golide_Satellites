@@ -1,0 +1,48 @@
+{
+  "game": {
+    "gameId": 135150,
+    "teamA": {
+      "teamId": 285048,
+      "code": "ZARAG",
+      "officialName": "Casademont Zaragoza"
+    },
+    "teamB": {
+      "teamId": 285044,
+      "code": "BLA",
+      "officialName": "Basket Landes"
+    },
+    "teamAScore": 76,
+    "teamBScore": 75,
+    "isLive": false,
+    "currentPeriod": "OT1",
+    "currentPeriodStatus": "E",
+    "liveGameStatus": 999,
+    "competition": {
+      "competitionId": 209127,
+      "competitionCode": "ELW"
+    },
+    "gameStatisticStatusCode": "VALID",
+    "gamePlayByPlayStatusCode": "VALID",
+    "gameResultStatusCode": "VALID"
+  },
+  "playByPlay": {
+    "items": {
+      "Q1": {"name": "Q1", "scoreA": 25, "scoreB": 14, "items": []},
+      "Q2": {"name": "Q2", "scoreA": 38, "scoreB": 34, "items": []},
+      "Q3": {"name": "Q3", "scoreA": 57, "scoreB": 54, "items": []},
+      "Q4": {"name": "Q4", "scoreA": 68, "scoreB": 68, "items": []},
+      "OT1": {"name": "OT1", "scoreA": 76, "scoreB": 75, "items": []}
+    }
+  },
+  "gameDetails": {
+    "quartersScores": [
+      {"period": "Q1", "teamA": 25, "teamB": 14},
+      {"period": "Q2", "teamA": 13, "teamB": 20},
+      {"period": "Q3", "teamA": 19, "teamB": 20},
+      {"period": "Q4", "teamA": 11, "teamB": 14},
+      {"period": "OT1", "teamA": 8, "teamB": 7}
+    ]
+  },
+  "playersTeamA": [],
+  "playersTeamB": []
+}

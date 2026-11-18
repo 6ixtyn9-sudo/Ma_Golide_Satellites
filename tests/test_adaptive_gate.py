@@ -9,6 +9,7 @@ from ingestion.adaptive_gate import (
     ScheduleGame,
     evaluate_gate,
     evaluate_league,
+    fetch_schedule,
     report_for,
 )
 
@@ -177,6 +178,32 @@ def test_gate_fails_open_when_a_state_lock_lacks_its_immutable_receipt(tmp_path:
 
     assert decision.should_run
     assert decision.reasons[0].startswith("state_uncertain: missing frozen decision")
+
+
+def test_fiba_elw_gate_uses_official_competition_schedule_and_canonical_utc(monkeypatch, tmp_path: Path):
+    elw = next(config for config in LEAGUES if config.league == "EUROLEAGUE_W")
+    _operator_state(tmp_path, elw, date="2026-10-14")
+    fixture = json.loads(
+        (
+            Path(__file__).parent
+            / "fixtures"
+            / "fiba_euroleague_w"
+            / "schedule_209127_20261118.json"
+        ).read_text()
+    )
+    urls: list[str] = []
+
+    def read(url, **_kwargs):
+        urls.append(url)
+        return fixture
+
+    monkeypatch.setattr("ingestion.adaptive_gate._read_json_response", read)
+    games = list(fetch_schedule(elw, "2026-10-14"))
+
+    assert "gdapCompetitionId=209127" in urls[0]
+    assert len(games) == 1
+    assert games[0].scheduled_utc == datetime(2026, 10, 14, 17, 0, tzinfo=timezone.utc)
+    assert games[0].status == "final"
 
 
 def test_euroleague_unbounded_schedule_path_is_explicitly_fail_open(tmp_path: Path):

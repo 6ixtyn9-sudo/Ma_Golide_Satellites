@@ -29,7 +29,7 @@ from ingestion.warehouse import DEFAULT_WAREHOUSE  # noqa: E402
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--warehouse", default=DEFAULT_WAREHOUSE)
+    parser.add_argument("--warehouse", default=None)
     parser.add_argument(
         "--localdata",
         default=os.environ.get("LOCALDATA"),
@@ -38,7 +38,7 @@ def main() -> int:
     parser.add_argument(
         "--league",
         default="NBA",
-        choices=["NBA", "EUROLEAGUE", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
+        choices=["NBA", "EUROLEAGUE", "EUROLEAGUE_W", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
     )
     parser.add_argument("--date", default=None, help="optional local YYYYMMDD slate")
     parser.add_argument("--tz", default="UTC", help="IANA timezone for --date")
@@ -53,10 +53,18 @@ def main() -> int:
     parser.add_argument("--calibration-prior", type=float, default=30.0)
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
+    localdata = Path(args.localdata) if args.localdata else Path("localdata") / args.league.lower()
+    if args.warehouse is None:
+        args.warehouse = os.environ.get("MAGOLIDE_WAREHOUSE") or (
+            str(localdata / "warehouse.duckdb")
+            if args.league == "EUROLEAGUE_W"
+            else DEFAULT_WAREHOUSE
+        )
     warehouse = Path(args.warehouse)
     if not warehouse.exists():
         parser.error(f"warehouse does not exist: {warehouse}")
-    output = Path(args.output or f"localdata/markets_{args.league}_{args.date or 'upcoming'}.json")
+    output_root = localdata if args.league == "EUROLEAGUE_W" else Path("localdata")
+    output = Path(args.output or output_root / f"markets_{args.league}_{args.date or 'upcoming'}.json")
     if output.suffix.lower() != ".json":
         parser.error("--output must be a .json report")
     if output.resolve() == warehouse.resolve():
@@ -73,7 +81,6 @@ def main() -> int:
         min_samples=args.min_calibration_samples,
     )
     store = DuckDBStore(str(warehouse), persist=False)
-    localdata = Path(args.localdata) if args.localdata else Path("localdata") / args.league.lower()
     try:
         report = MarketForecastService(
             store,
