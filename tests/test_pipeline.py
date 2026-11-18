@@ -370,3 +370,142 @@ def test_backfill_does_not_cache_yesterdays_scoreboard_while_a_game_is_live(tmp_
     _, report = run("2026-11-07T12:11:00Z")
     assert len(calls) == 2, "a fully-final scoreboard is cached as before"
     assert report["acquisition"]["cache_hits"] == 1
+
+
+# -- late finals for earlier days (every league) ------------------------------
+
+
+def _late_game(league, game_id, tip_utc, status=GameStatus.SCHEDULED, final=False):
+    return Game(
+        game_id=game_id,
+        league=league,
+        season="2026",
+        home_team_id=f"{game_id}-h",
+        away_team_id=f"{game_id}-a",
+        home_name=f"Home {game_id}",
+        away_name=f"Away {game_id}",
+        scheduled_utc=tip_utc,
+        status=GameStatus.FINAL if final else status,
+        actual=(
+            ActualResult(
+                period_kind=PeriodKind.QUARTERS,
+                home_quarters=[18.0, 18.0, 18.0, 28.0],
+                away_quarters=[28.0, 21.0, 12.0, 21.0],
+                home_overtime=13.0,
+                away_overtime=15.0,
+                home_final=95.0,
+                away_final=97.0,
+                overtime_periods=1,
+                source="official",
+            )
+            if final
+            else None
+        ),
+    )
+
+
+def _settle(game):
+    return _late_game(game.league, game.game_id, game.scheduled_utc, final=True)
+
+
+@pytest.mark.parametrize(
+    "league, run_date, now_utc, late_tip_utc, local_date",
+    [
+        # EuroLeague (Paris day): tipped 19:30Z, still live at the last run of the day.
+        ("EUROLEAGUE", "20261118", "2026-11-18T06:00:00Z", "2026-11-17T19:30:00Z", "20261117"),
+        # NBA (US Eastern day): a 22:30 ET tip is 03:30Z the next UTC day.
+        ("NBA", "20261118", "2026-11-18T16:00:00Z", "2026-11-18T03:30:00Z", "20261117"),
+        # CBA (Beijing day).
+        ("CBA", "20261118", "2026-11-18T06:00:00Z", "2026-11-17T11:35:00Z", "20261117"),
+    ],
+)
+def test_results_settle_earlier_day_games_left_pending_for_every_league(
+    monkeypatch, league, run_date, now_utc, late_tip_utc, local_date
+):
+    """A game not final at the last run of its day settles on a later run."""
+    from ingestion.providers import cbaleague, espn, euroleague
+
+    enum = League(league)
+    store = InMemoryStore()
+    late = _late_game(enum, "late-1", late_tip_utc)
+    already_final = _late_game(enum, "done-1", late_tip_utc, final=True)
+    store.upsert_game(late)
+    store.upsert_game(already_final)
+    calls = []
+
+    def by_date(date, *args, **kwargs):
+        calls.append(str(date))
+        return [] if str(date) == run_date else [_settle(late), _settle(already_final)]
+
+    def el_discover(date_iso, fetch, *args, **kwargs):
+        calls.append(date_iso)
+        if date_iso is not None:
+            return []
+        return [_late_game(enum, g.game_id, g.scheduled_utc, GameStatus.FINAL) for g in (late,)]
+
+    monkeypatch.setattr(espn, "fetch_recent_results", by_date)
+    monkeypatch.setattr(cbaleague, "fetch_recent_results", by_date)
+    monkeypatch.setattr(euroleague, "discover_games", el_discover)
+    monkeypatch.setattr(euroleague, "fetch_game_result", lambda game, fetch: _settle(game))
+
+    config = _config(league=league, date_yyyymmdd=run_date, fixture_now_utc=now_utc)
+    report = Pipeline(config, store, fetch=lambda url: {}).results()
+
+    stored = store.get_game("late-1")
+    assert stored.status is GameStatus.FINAL and stored.actual.home_final == 95.0
+    assert [row["game_id"] for row in report["rows"]] == ["late-1"]
+    iso = f"{local_date[:4]}-{local_date[4:6]}-{local_date[6:]}"
+    assert report["rechecked_dates"] == [iso]
+    if league == "EUROLEAGUE":
+        assert calls == ["2026-11-18", None]  # today's slate, then one season request
+    else:
+        assert calls == [run_date, local_date]  # only the day with a pending game
+
+
+def test_pending_recheck_skips_settled_closed_and_out_of_window_games(monkeypatch):
+    from ingestion.providers import espn
+
+    store = InMemoryStore()
+    store.upsert_game(_late_game(League.NBA, "final", "2026-11-17T00:00:00Z", final=True))
+    store.upsert_game(
+        _late_game(League.NBA, "postponed", "2026-11-16T00:30:00Z", GameStatus.POSTPONED)
+    )
+    store.upsert_game(_late_game(League.NBA, "ancient", "2026-10-01T00:00:00Z"))
+    store.upsert_game(_late_game(League.NBA, "not-yet", "2026-11-19T00:00:00Z"))
+    calls = []
+    monkeypatch.setattr(
+        espn, "fetch_recent_results", lambda date, *a, **k: calls.append(date) or []
+    )
+    config = _config(date_yyyymmdd="20261118", fixture_now_utc="2026-11-18T16:00:00Z")
+    report = Pipeline(config, store, fetch=lambda url: {}).results()
+    assert calls == ["20261118"]
+    assert report["rechecked_dates"] == []
+
+    # A pending game is ignored entirely when the lookback is disabled.
+    store.upsert_game(_late_game(League.NBA, "late", "2026-11-17T01:00:00Z"))
+    calls.clear()
+    Pipeline(_config(**{**config.__dict__, "history_days": 0}), store).results()
+    assert calls == ["20261118"]
+
+
+def test_pending_recheck_failure_on_one_day_does_not_block_other_days(monkeypatch):
+    from ingestion.providers import espn
+
+    store = InMemoryStore()
+    early = _late_game(League.NBA, "early", "2026-11-16T01:00:00Z")  # ET 2026-11-15
+    late = _late_game(League.NBA, "late", "2026-11-17T01:00:00Z")  # ET 2026-11-16
+    store.upsert_game(early)
+    store.upsert_game(late)
+
+    def fetch_recent_results(date, *args, **kwargs):
+        if date == "20261115":
+            raise RuntimeError("provider down")
+        return [_settle(late)] if date == "20261116" else []
+
+    monkeypatch.setattr(espn, "fetch_recent_results", fetch_recent_results)
+    config = _config(date_yyyymmdd="20261118", fixture_now_utc="2026-11-18T16:00:00Z")
+    report = Pipeline(config, store, fetch=lambda url: {}).results()
+    assert [row["game_id"] for row in report["rows"]] == ["late"]
+    assert report["rechecked_dates"] == ["2026-11-16"]
+    assert store.get_game("early").status is GameStatus.SCHEDULED
+    assert any(gap["required_field"] == "pending_results_recheck" for gap in report["gaps"])
