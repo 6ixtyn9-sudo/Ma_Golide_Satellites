@@ -74,17 +74,20 @@ def test_workflow_keeps_keyless_fallback_and_wires_optional_provider_secrets():
         assert '- cron: "11 * * * *"' in text
         assert "11 */3 * * *" not in text
         assert "available=true" in text
-        assert (
-            'if [ "${{ github.event_name }}" = "schedule" ] && '
-            '[ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then'
-        ) in text
-        assert (
-            "(github.event_name == 'schedule' || "
-            "github.event_name == 'workflow_dispatch')"
-        ) in text, "both scheduled and manual runs must retain their isolated cache"
+        assert "repository_dispatch:" in text
+        assert "types: [magolide-scheduled-tick]" in text
+        assert 'case "$EVENT_NAME:$EVENT_ACTION" in' in text
+        assert "schedule:*|repository_dispatch:magolide-scheduled-tick)" in text
+        assert '[ "$AUTOMATED_TICK" = "true" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]' in text
+        cache = text.split("name: Persist league-isolated acquisition and canonical state", 1)[1].split(
+            "uses: actions/cache/save@v4", 1
+        )[0]
+        assert "github.event_name == 'workflow_dispatch'" in cache
+        assert "github.event_name == 'repository_dispatch'" in cache
+        assert "github.event.action == 'magolide-scheduled-tick'" in cache
 
 
-def test_manual_dispatch_cannot_publish_a_durable_operator_decision():
+def test_only_named_automated_triggers_can_publish_a_durable_operator_decision():
     repo = Path(__file__).resolve().parents[1]
     for path in (
         repo / "workflows" / "ingestion.yml",
@@ -93,8 +96,10 @@ def test_manual_dispatch_cannot_publish_a_durable_operator_decision():
         text = path.read_text()
         publish = text.split("publish-localdata:", 1)[1].split("runs-on:", 1)[0]
         assert "github.event_name == 'schedule'" in publish
+        assert "github.event_name == 'repository_dispatch'" in publish
+        assert "github.event.action == 'magolide-scheduled-tick'" in publish
         assert "workflow_dispatch" not in publish
-        assert "cannot freeze or publish canonical operator decisions" in publish
+        assert "Manual dispatch uploads artifacts but cannot publish." in publish
 
 
 def test_renamed_cache_key_falls_back_to_the_pre_rename_snapshot():

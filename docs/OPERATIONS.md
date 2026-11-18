@@ -87,13 +87,39 @@ that has the `workflows` permission; merely editing the local source does not
 activate it. The hermetic suite requires the two files to be byte-identical, so
 manual installation must replace the full YAML rather than applying a partial
 snippet.
-It has an hourly schedule (`11 * * * *`, UTC) and a manual dispatch with **no
-league/date/mode/write inputs**. A preflight job runs Ruff and the hermetic
-suite, then six fail-independent matrix jobs automatically run `NBA`, `WNBA`,
-`EuroLeague`, `CBA`, `NCAA_M`, and `NCAA_W` together. One serialized publisher
-then commits compact ticket decisions and state to `main`; all pick cards and
-expanded audits stay in the cache and bounded workflow artifacts so hourly price
-movement does not create permanent Git history.
+It has an hourly GitHub schedule (`11 * * * *`, UTC), a durable named
+external trigger, and a manual dispatch with **no league/date/mode/write
+inputs**. A preflight job runs Ruff and the hermetic suite, then six
+fail-independent matrix jobs automatically run `NBA`, `WNBA`, `EuroLeague`,
+`CBA`, `NCAA_M`, and `NCAA_W` together. One serialized publisher then commits
+compact ticket decisions and state to `main`; all pick cards and expanded audits
+stay in the cache and bounded workflow artifacts so hourly price movement does
+not create permanent Git history.
+
+### Reliable external trigger
+
+GitHub cron is best-effort and may delay or drop scheduled events. Keep it as a
+fallback, but configure an external scheduler with retries to invoke GitHub's
+repository-dispatch endpoint every 15–30 minutes. The scheduler must keep its
+GitHub App installation token or fine-grained token outside this repository and
+send the exact `magolide-scheduled-tick` event type:
+
+```bash
+curl --fail --retry 3 --retry-all-errors --request POST \
+  --url https://api.github.com/repos/6ixtyn9-sudo/Ma_Golide_Satellites/dispatches \
+  --header "Accept: application/vnd.github+json" \
+  --header "Authorization: Bearer $GITHUB_APP_INSTALLATION_TOKEN" \
+  --header "X-GitHub-Api-Version: 2022-11-28" \
+  --data '{"event_type":"magolide-scheduled-tick","client_payload":{"source":"external-scheduler"}}'
+```
+
+That named event follows the same write/publish path as `schedule`: it passes
+`--write` when `ALLOW_MAGOLIDE_WRITES=true`, saves cache state, and may publish
+immutable decisions plus compact settlement data. It is intentionally distinct
+from `workflow_dispatch`, which remains a live read-only rehearsal. Configure
+the external token with only the repository access needed to create a repository
+dispatch; never place it in workflow YAML, repository files, artifacts, or job
+logs.
 
 Each matrix job has isolated state and artifacts:
 
@@ -152,22 +178,23 @@ Safety behavior is deliberate:
 - Manual dispatch is a live all-league canonical **dry run**. It may consume
   provider quota but never adds `--write` and never sends notifications, even
   when `ALLOW_MAGOLIDE_WRITES` is true.
-- Scheduled runs default to `--write`: the workflow falls back to
-  `ALLOW_MAGOLIDE_WRITES=true` when the repository variable is unset. Set the
-  variable to `false` to disable canonical persistence; runs still acquire
-  available providers and report missing credentials.
-- Scheduled runs save league state. When canonical writes are disabled, this
-  preserves public acquisition caches and receipts but does not persist
-  DuckDB/CSV sports state or advance deep-history cursors. Reports and
-  immutable ledgers are uploaded on every outcome when present. Git is
-  authoritative for operator files after cache recovery.
+- Scheduled and named external-trigger runs default to `--write`: the workflow
+  falls back to `ALLOW_MAGOLIDE_WRITES=true` when the repository variable is
+  unset. Set the variable to `false` to disable canonical persistence; runs
+  still acquire available providers and report missing credentials.
+- Scheduled and named external-trigger runs save league state. When canonical
+  writes are disabled, this preserves public acquisition caches and receipts but
+  does not persist DuckDB/CSV sports state or advance deep-history cursors.
+  Reports and immutable ledgers are uploaded on every outcome when present. Git
+  is authoritative for operator files after cache recovery.
 - Manual runs upload derived `picks_*` and `auto_tickets_*` files only as
-  inspection artifacts. **Scheduled runs alone** may publish those files to
-  `localdata/<league>` on `main`, so a manual rehearsal cannot create a durable
-  ticket or no-bet decision. Git publication never includes warehouses, CSV
-  exports, acquisition ledgers, or credentials.
+  inspection artifacts. **Scheduled and named external-trigger runs only** may
+  publish durable operator files to `localdata/<league>` on `main`, so a manual
+  rehearsal cannot create a durable ticket or no-bet decision. Git publication
+  never includes warehouses, CSV exports, acquisition ledgers, or credentials.
 - Notifications additionally require `ALLOW_NOTIFICATION_WRITES=true` and the
-  WhatsApp secrets; they are sent only on write-enabled scheduled runs.
+  WhatsApp secrets; they are sent only on write-enabled scheduled or named
+  external-trigger runs.
 
 Every ESPN league run also attempts seven recent result dates and, when
 canonical writes are enabled, 50 deep indexed events. Deep cursors, historical
