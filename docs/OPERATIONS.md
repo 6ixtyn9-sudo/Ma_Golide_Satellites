@@ -81,9 +81,12 @@ decision without letting the first partial-price scan freeze the date.
 
 ## Automatic six-league workflow
 
-`workflows/ingestion.yml` is the reviewed workflow source. Install it as
-`.github/workflows/ingestion.yml` with a GitHub credential that has the
-`workflows` permission; merely editing the local source does not activate it.
+`workflows/ingestion.yml` is the reviewed workflow source. Install its **entire
+file** unchanged as `.github/workflows/ingestion.yml` with a GitHub credential
+that has the `workflows` permission; merely editing the local source does not
+activate it. The hermetic suite requires the two files to be byte-identical, so
+manual installation must replace the full YAML rather than applying a partial
+snippet.
 It has an hourly schedule (`11 * * * *`, UTC) and a manual dispatch with **no
 league/date/mode/write inputs**. A preflight job runs Ruff and the hermetic
 suite, then six fail-independent matrix jobs automatically run `NBA`, `WNBA`,
