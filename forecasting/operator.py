@@ -7,9 +7,11 @@ winner, alter a probability, or place a bet. Current forecasts come from
 Operator evidence files live beneath one league's localdata directory:
 - ``picks_YYYY-MM-DD.json``, ``picks_today.json``, and rolling/dated audit
   files are full forecast evidence kept in the active cache and workflow artifacts.
-- ``picks_YYYY-MM-DD.txt`` is the compact human card retained in Git.
+- ``picks_YYYY-MM-DD.txt`` is a compact human card retained in cache/artifacts.
 - ``auto_tickets_YYYY-MM-DD_decision.json`` is an immutable paper receipt.
-- ``auto_tickets_YYYY-MM-DD.txt`` is a mutable card rendering of the frozen decision and latest available grades.
+- ``auto_tickets_YYYY-MM-DD.txt`` is a mutable cache/artifact card rendering
+  a frozen decision and latest available grades; its receipt-backed initial
+  snapshot is the only version eligible for Git publication.
 - ``auto_tickets_state.json`` stores write-once date locks and bounded scan telemetry.
 - ``auto_tickets_performance.json`` / ``.txt`` reconstruct paper performance.
 
