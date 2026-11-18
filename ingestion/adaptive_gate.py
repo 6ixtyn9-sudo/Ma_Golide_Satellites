@@ -44,6 +44,7 @@ from ingestion.providers.fiba_euroleague_w_contract import (
     KEY_PAGE_URL,
     PUBLIC_FALLBACK_SUBSCRIPTION_KEY,
     SCHEDULE_ENDPOINT,
+    game_datetime_utc,
     has_complete_team_identity,
     has_unassigned_team_slot,
     page_subscription_key,
@@ -534,17 +535,16 @@ def _fiba_elw_schedule(config: LeagueGateConfig, target_date: str) -> list[Sched
             or competition.get("competitionCode") not in {None, COMPETITION_CODE}
         ):
             raise GateUncertain("FIBA EuroLeague Women schedule row is outside competition 209127")
-        raw_tip = row.get("gameDateTimeUTC")
-        # GDAP's explicitly UTC-named field is serialized without an offset.
-        # Attach UTC here only; local/display fields are never considered.
-        if isinstance(raw_tip, str) and not raw_tip.rstrip().endswith(("Z", "z")):
-            raw_tip = f"{raw_tip}Z"
-        tip = _parse_utc(raw_tip, context="FIBA EuroLeague Women game")
-        if tip.astimezone(ZoneInfo("Europe/Paris")).date() != wanted:
-            continue
         if has_unassigned_team_slot(row):
             # Future bracket placeholders cannot create a ticket or canonical
-            # fixture. The full provider reports them as coverage telemetry.
+            # fixture. Do not require their still-unassigned timestamp before
+            # skipping them; the full provider emits the coverage telemetry.
+            continue
+        try:
+            tip = game_datetime_utc(row.get("gameDateTimeUTC"))
+        except ValueError as exc:
+            raise GateUncertain("FIBA EuroLeague Women game timestamp is invalid") from exc
+        if tip.astimezone(ZoneInfo("Europe/Paris")).date() != wanted:
             continue
         if not has_complete_team_identity(row):
             raise GateUncertain("FIBA EuroLeague Women row has incomplete assigned team identity")

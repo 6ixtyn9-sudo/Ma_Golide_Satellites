@@ -48,6 +48,7 @@ from .fiba_euroleague_w_contract import (
     KEY_PAGE_URL,
     PUBLIC_FALLBACK_SUBSCRIPTION_KEY,
     SCHEDULE_ENDPOINT,
+    game_datetime_utc,
     has_complete_team_identity,
     has_unassigned_team_slot,
     page_subscription_key,
@@ -83,7 +84,9 @@ def _reset_gaps() -> None:
     _LAST_GAPS.clear()
 
 
-def _unassigned_slots_gap(total: int, date_relevant: int, date_iso: Optional[str]) -> None:
+def _unassigned_slots_gap(
+    total: int, date_relevant: int, date_unknown: int, date_iso: Optional[str]
+) -> None:
     """Expose benign, team-less future bracket slots as bounded telemetry."""
 
     if not total:
@@ -93,6 +96,8 @@ def _unassigned_slots_gap(total: int, date_relevant: int, date_iso: Optional[str
         if date_iso is not None
         else ""
     )
+    if date_unknown:
+        relevance += f"; {date_unknown} had no parseable timestamp for date placement"
     _LAST_GAPS.append(
         CoverageGap(
             game_id=None,
@@ -107,18 +112,31 @@ def _unassigned_slots_gap(total: int, date_relevant: int, date_iso: Optional[str
     )
 
 
-def schedule_url(competition_id: int = COMPETITION_ID, *, query_key: bool = False) -> str:
-    """Return the official GDAP schedule route for one FIBA competition.
+def _unparseable_timestamp_gap(game_ids: List[str], date_iso: Optional[str]) -> None:
+    """Record bounded partial-coverage telemetry without wedging a whole slate."""
 
-    Normal acquisition sends the public browser APIM value in a header.  The
-    query-key option remains only for compatibility with controlled fixture
-    callers; no production caller should use it because URLs can be logged.
-    """
+    if not game_ids:
+        return
+    examples = ", ".join(game_ids[:5])
+    suffix = "; target relevance could not be determined" if date_iso is not None else ""
+    _LAST_GAPS.append(
+        CoverageGap(
+            game_id=None,
+            required_field="fiba_elw_schedule_timestamp",
+            reason=CoverageState.PROVIDER_ERROR,
+            provider=PROVIDER,
+            detail=(
+                f"skipped {len(game_ids)} non-placeholder GDAP row(s) with invalid gameDateTimeUTC"
+                f" (examples: {examples}){suffix}; no canonical game was emitted"
+            ),
+        )
+    )
 
-    params: Dict[str, Any] = {"gdapCompetitionId": int(competition_id)}
-    if query_key:
-        params["subscription-key"] = PUBLIC_FALLBACK_SUBSCRIPTION_KEY
-    return f"{GDAP_BASE_URL}/{SCHEDULE_ENDPOINT}?{urlencode(params)}"
+
+def schedule_url(competition_id: int = COMPETITION_ID) -> str:
+    """Return the official GDAP route without ever placing APIM auth in a URL."""
+
+    return f"{GDAP_BASE_URL}/{SCHEDULE_ENDPOINT}?{urlencode({'gdapCompetitionId': int(competition_id)})}"
 
 
 def _event_slug(season: Any) -> str:
@@ -178,16 +196,9 @@ def _required_competition(row: Dict[str, Any], competition_id: int) -> Dict[str,
 
 
 def _scheduled_utc(row: Dict[str, Any], game_id: str) -> str:
-    raw = row.get("gameDateTimeUTC")
-    if not isinstance(raw, str) or not raw.strip():
-        raise VerificationError(f"FIBA game {game_id} lacks canonical gameDateTimeUTC")
     try:
-        # GDAP marks UTC in the field name but serializes it without an offset
-        # (for example ``2026-10-14T17:00:00``).  Attach UTC only for this
-        # explicitly named official field; never make that assumption for
-        # venue-local ``gameDateTime`` or rendered page text.
-        return to_utc_iso(parse_utc(raw if raw.rstrip().endswith(("Z", "z")) else f"{raw}Z"))
-    except (TypeError, ValueError) as exc:
+        return to_utc_iso(game_datetime_utc(row.get("gameDateTimeUTC")))
+    except ValueError as exc:
         raise VerificationError(f"FIBA game {game_id} has invalid gameDateTimeUTC") from exc
 
 
@@ -294,26 +305,48 @@ def discover_games(
     games: List[Game] = []
     unassigned_total = 0
     unassigned_relevant = 0
+    unassigned_date_unknown = 0
+    unparseable_team_rows: List[str] = []
     for row in _schedule_rows(fetch, competition_id):
-        # Parse the canonical UTC field before deciding relevance. A bad time
-        # cannot safely be placed outside the requested slate and must fail.
-        game_id = str(row.get("gameId") or "")
-        row_utc = _scheduled_utc(row, game_id)
-        is_relevant = target is None or parse_utc(row_utc).astimezone(zone).date() == target
+        game_id = str(row.get("gameId") or "<unknown>")
         if has_unassigned_team_slot(row):
+            # Future bracket placeholders cannot become canonical fixtures.
+            # Their timestamp may be absent while FIBA is still constructing a
+            # round; skip/report them before time parsing so one placeholder
+            # cannot revive the whole-schedule outage.
             unassigned_total += 1
-            unassigned_relevant += int(is_relevant)
+            try:
+                row_utc = _scheduled_utc(row, game_id)
+            except VerificationError:
+                unassigned_date_unknown += 1
+                continue
+            unassigned_relevant += int(
+                target is None or parse_utc(row_utc).astimezone(zone).date() == target
+            )
             continue
+        try:
+            row_utc = _scheduled_utc(row, game_id)
+        except VerificationError:
+            # The row cannot be safely placed on a requested league day. Keep
+            # it out of canonical state but expose explicit provider-error
+            # coverage instead of allowing one malformed season-index row to
+            # block every date and the history cursor.
+            unparseable_team_rows.append(game_id)
+            continue
+        is_relevant = target is None or parse_utc(row_utc).astimezone(zone).date() == target
         if not is_relevant:
             # Do not turn a malformed team identity on a different league day
             # into an outage for the requested slate.
             continue
         if not has_complete_team_identity(row):
             raise VerificationError(
-                f"FIBA game {game_id or '<unknown>'} has incomplete assigned team identity"
+                f"FIBA game {game_id} has incomplete assigned team identity"
             )
         games.append(game_from_schedule_row(row, competition_id))
-    _unassigned_slots_gap(unassigned_total, unassigned_relevant, date_iso)
+    _unassigned_slots_gap(
+        unassigned_total, unassigned_relevant, unassigned_date_unknown, date_iso
+    )
+    _unparseable_timestamp_gap(unparseable_team_rows, date_iso)
     return games
 
 
@@ -653,7 +686,12 @@ def smoke(fetch: FetchFn, *, verification: str = "FIXTURE_VERIFIED") -> Dict[str
         "schedule_route": SCHEDULE_ENDPOINT,
         "fixtures_found": len(games),
         "official_finals_indexed": finals,
-        "unassigned_schedule_slot_gaps": len(_LAST_GAPS),
+        "unassigned_schedule_slot_gaps": sum(
+            gap.required_field == "fiba_elw_unassigned_schedule_slots" for gap in _LAST_GAPS
+        ),
+        "schedule_timestamp_gaps": sum(
+            gap.required_field == "fiba_elw_schedule_timestamp" for gap in _LAST_GAPS
+        ),
         "gaps": [
             {"required_field": gap.required_field, "reason": gap.reason.value, "detail": gap.detail}
             for gap in _LAST_GAPS
