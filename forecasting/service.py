@@ -661,15 +661,18 @@ class MarketForecastService:
             if self.paper_pick_history is None
             else "settled_pick_audit"
         )
-        paper_lane_options = (
-            {
+        if self.league is League.EUROLEAGUE:
+            paper_lane_options = {
                 "minimum_historical_picks_for_band": 10,
                 "require_positive_expected_value": True,
                 "require_point_in_time_price": True,
             }
-            if self.league is League.EUROLEAGUE
-            else {}
-        )
+        elif self.league is League.EUROLEAGUE_W:
+            # Independent FIBA ELW policy: no named-book feed is validated yet,
+            # so it must never inherit the men's priced-value paper lane.
+            paper_lane_options = {}
+        else:
+            paper_lane_options = {}
         paper_candidates, paper_pick_filter = filter_paper_candidate_picks(
             current,
             paper_history,
@@ -760,6 +763,11 @@ class MarketForecastService:
                 "certification": "none",
             },
             "capabilities": {
+                "league_operator_policy": (
+                    "fiba_elw_empirical_history_only_no_validated_named_book_lane"
+                    if self.league is League.EUROLEAGUE_W
+                    else "standard_policy"
+                ),
                 "full_game_moneyline": [
                     "favorite_or_underdog_provider_probability",
                     "independent_empirical_history_distribution",

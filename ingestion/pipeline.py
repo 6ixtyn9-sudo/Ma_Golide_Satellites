@@ -53,7 +53,16 @@ from .predictions import (
     select_prediction,
 )
 from .leagues import native_periods
-from .providers import betexplorer, cbaleague, espn, euroleague, hardwood, isportsapi, sportradar
+from .providers import (
+    betexplorer,
+    cbaleague,
+    espn,
+    euroleague,
+    fiba_euroleague_w,
+    hardwood,
+    isportsapi,
+    sportradar,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -63,6 +72,10 @@ _CLOSED_STATUSES = frozenset({GameStatus.POSTPONED, GameStatus.CANCELLED, GameSt
 DEFAULT_TZ = {
     "NBA": "America/New_York",
     "EUROLEAGUE": "Europe/Paris",
+    # EuroLeague Women uses FIBA fixtures across venue timezones.  The slate
+    # day is deliberately normalized in Europe/Paris, independently of the
+    # men's Euroleague Basketball adapter.
+    "EUROLEAGUE_W": "Europe/Paris",
     "CBA": "Asia/Shanghai",
     "WNBA": "America/New_York",
     "NCAA_M": "America/New_York",
@@ -80,6 +93,10 @@ BOOK_PROVIDERS = ("therundown", "sportsgameodds", "theoddsapi")
 BOOK_PROVIDERS_BY_LEAGUE = {
     "CBA": ("isportsapi", "betexplorer"),
     "EUROLEAGUE": ("betexplorer",),
+    # No FIBA Women market source has been validated as canonical named-book
+    # evidence.  Keep the lane explicitly unpriced rather than accidentally
+    # reusing the men's EuroLeague/BetExplorer mapping.
+    "EUROLEAGUE_W": (),
     "NCAA_M": ("theoddsapi",),
     "NCAA_W": ("theoddsapi",),
     "WNBA": ("theoddsapi",),
@@ -137,6 +154,10 @@ class Pipeline:
     ) -> None:
         self.config = config
         self.store = store
+        # Fixture tests provide a one-argument fetcher.  Live FIBA acquisition
+        # needs its public APIM header and RSC text transport, so it owns a
+        # small official client only when no fixture fetcher was supplied.
+        self._fiba_client = None if fetch is not None else fiba_euroleague_w.FibaClient()
         self.fetch = fetch or HttpClient().get_json
         cache_dir = None
         store_path = getattr(store, "path", None)
@@ -267,6 +288,17 @@ class Pipeline:
             report = euroleague.smoke(self.fetch)
             report["standings"] = self._standings_smoke()
             report["predixsport"] = self._predixsport_smoke()
+            report["bookmakers"] = self._bookmakers_smoke()
+            return report
+        if league == "EUROLEAGUE_W":
+            report = fiba_euroleague_w.smoke(
+                self._fiba_schedule_fetch,
+                verification="LIVE_VERIFIED" if self._fiba_client is not None else "FIXTURE_VERIFIED",
+            )
+            report["predictions"] = {
+                "status": "not_available_from_official_fiba_fixture_result_detail_path",
+                "policy": "empirical_history_only_until_a_separately_validated_pre_tip_provider_exists",
+            }
             report["bookmakers"] = self._bookmakers_smoke()
             return report
         raise ValueError(f"unsupported league for smoke: {league}")
@@ -487,6 +519,20 @@ class Pipeline:
 
     # -- acquisition helpers -------------------------------------------------
 
+    def _fiba_schedule_fetch(self, url: str) -> Any:
+        """Fetch official FIBA GDAP JSON, preserving fixture injection."""
+
+        if self._fiba_client is not None:
+            return self._fiba_client.get_json(url)
+        return self.fetch(url)
+
+    def _fiba_detail_fetch(self, url: str) -> Dict[str, Any]:
+        """Fetch one official FIBA game page detail, preserving fixture injection."""
+
+        if self._fiba_client is not None:
+            return self._fiba_client.game_detail(url)
+        return self.fetch(url)
+
     def _discover_games(self) -> List[Game]:
         league = self.config.league_enum
         espn_books: Dict[str, List[BookSnapshot]] = {}
@@ -505,6 +551,10 @@ class Pipeline:
             self.gaps.extend(cbaleague.last_gaps())
         elif league is League.EUROLEAGUE:
             games = euroleague.discover_games(_iso(self.config.date_yyyymmdd), self.fetch)
+        elif league is League.EUROLEAGUE_W:
+            games = fiba_euroleague_w.discover_games(
+                _iso(self.config.date_yyyymmdd), self._fiba_schedule_fetch
+            )
         else:
             raise ValueError(f"unsupported league for discovery: {league.value}")
         for game in games:
@@ -862,7 +912,17 @@ class Pipeline:
         """
 
         raw_snapshots: List[BookSnapshot] = []
-        for provider in _book_providers(self.config.league):
+        providers = _book_providers(self.config.league)
+        if not providers:
+            self.book_provider_status["policy"] = {
+                "enabled": False,
+                "status": "not_configured_for_league",
+                "detail": (
+                    "no validated named-book source for FIBA EuroLeague Women; "
+                    "men's EuroLeague market mappings are intentionally not reused"
+                ),
+            }
+        for provider in providers:
             module = _book_module(provider)
             if module is None:
                 self.book_provider_status[provider] = {
@@ -1414,6 +1474,116 @@ class Pipeline:
         base["ledger_dates"] = sorted(ledger_dates)
         return base
 
+    def _backfill_fiba_euroleague_w_history(self) -> Dict[str, Any]:
+        """Ingest bounded, reconciled FIBA ELW finals from the current GDAP edition.
+
+        GDAP's competition schedule is one official request; individual game
+        pages are then bounded by ``deep_history_event_budget`` because period
+        scores must come from usable official game detail, never inferred from
+        a final score alone.
+        """
+
+        budget = max(0, int(self.config.deep_history_event_budget))
+        base: Dict[str, Any] = {
+            "event_budget": budget,
+            "events_acquired": 0,
+            "final_scores_written": 0,
+            "ledger_dates": [],
+            "learning_or_calibration_claimed": False,
+        }
+        if not budget:
+            return {**base, "status": "disabled"}
+        if not (self.allow_writes and getattr(self.store, "persist", False)):
+            return {
+                **base,
+                "status": "disabled_canonical_write_required",
+                "detail": "dry runs do not claim a durable FIBA history backfill",
+            }
+        try:
+            games = fiba_euroleague_w.discover_games(None, self._fiba_schedule_fetch)
+        except Exception as exc:
+            self.gaps.append(
+                CoverageGap(
+                    game_id=None,
+                    required_field="fiba_elw_schedule",
+                    reason=CoverageState.PROVIDER_ERROR,
+                    provider="fiba",
+                    detail=str(exc)[:200],
+                    observed_utc=self._now_iso(),
+                )
+            )
+            return {**base, "status": "provider_error"}
+        now = parse_utc(self._now_iso())
+        existing = {
+            game.game_id: game
+            for game in self.store.list_games(league=League.EUROLEAGUE_W)
+        }
+        missing_finals = [
+            game
+            for game in games
+            if game.status is GameStatus.FINAL
+            and parse_utc(game.scheduled_utc) < now
+            and (
+                game.game_id not in existing
+                or existing[game.game_id].actual is None
+                or not existing[game.game_id].actual.reconciles()[0]
+            )
+        ]
+        # A durable circular cursor prevents one permanently malformed game
+        # detail from consuming the first slot forever once a season grows past
+        # the per-run budget. It still wraps, so transient detail failures are
+        # retried on a later write-enabled run.
+        ordered_missing = sorted(missing_finals, key=lambda game: (game.scheduled_utc, game.game_id))
+        cursor = self._history_cursor("fiba-elw-history")
+        after = (str(cursor.get("scheduled_utc") or ""), str(cursor.get("game_id") or ""))
+        remaining = [
+            game
+            for game in ordered_missing
+            if (game.scheduled_utc, game.game_id) > after
+        ]
+        final_rows = (remaining or ordered_missing)[:budget]
+        missing_ids = {item.game_id for item in missing_finals}
+        base["already_reconciled"] = sum(
+            game.status is GameStatus.FINAL
+            and parse_utc(game.scheduled_utc) < now
+            and game.game_id not in missing_ids
+            for game in games
+        )
+        failures = 0
+        for game in final_rows:
+            try:
+                result = fiba_euroleague_w.fetch_game_result(game, self._fiba_detail_fetch)
+            except Exception as exc:
+                failures += 1
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="historical_fiba_game_detail",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider="fiba",
+                        detail=str(exc)[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            self.store.upsert_game(result)
+            base["events_acquired"] += 1
+            base["final_scores_written"] += 1
+            base["ledger_dates"].append(self._ledger_date_for(result))
+        if final_rows:
+            last = final_rows[-1]
+            self._record_history_cursor(
+                "fiba-elw-history",
+                {"scheduled_utc": last.scheduled_utc, "game_id": last.game_id},
+            )
+        return {
+            **base,
+            "status": "acquired" if not failures else "partial_provider_error",
+            "quarantined_rows": failures,
+            "cursor": self._history_cursor("fiba-elw-history"),
+            "ledger_dates": sorted(set(base["ledger_dates"])),
+        }
+
     def _backfill_cba_history(self) -> Dict[str, Any]:
         """Walk official CBA days backwards, ingesting reconciled finals.
 
@@ -1680,6 +1850,8 @@ class Pipeline:
             deep = self._backfill_deep_history()
         elif self.config.league_enum is League.EUROLEAGUE:
             deep = self._backfill_euroleague_history()
+        elif self.config.league_enum is League.EUROLEAGUE_W:
+            deep = self._backfill_fiba_euroleague_w_history()
         elif self.config.league_enum is League.CBA:
             deep = self._backfill_cba_history()
         else:
@@ -1724,6 +1896,8 @@ class Pipeline:
             return finals
         if league is League.EUROLEAGUE:
             return self._euroleague_finals(self._discover_games())
+        if league is League.EUROLEAGUE_W:
+            return self._fiba_euroleague_w_finals(self._discover_games())
         raise ValueError(f"unsupported league for results: {league.value}")
 
     def _euroleague_finals(self, games: List[Game]) -> List[Game]:
@@ -1744,6 +1918,29 @@ class Pipeline:
                             observed_utc=self._now_iso(),
                         )
                     )
+        return finals
+
+    def _fiba_euroleague_w_finals(self, games: List[Game]) -> List[Game]:
+        """Fetch period-complete official FIBA finals; leave unusable detail pending."""
+
+        finals = []
+        for game in games:
+            if game.status is not GameStatus.FINAL:
+                continue
+            try:
+                finals.append(fiba_euroleague_w.fetch_game_result(game, self._fiba_detail_fetch))
+            except Exception as exc:
+                logger.warning("FIBA EuroLeague Women result failed for %s: %s", game.game_id, exc)
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="official_fiba_game_detail",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider="fiba",
+                        detail=str(exc)[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
         return finals
 
     def _recheck_pending_finals(self, already: set) -> List[Game]:
@@ -1774,8 +1971,9 @@ class Pipeline:
         if not pending:
             return []
         league = self.config.league_enum
-        if league is League.EUROLEAGUE:
-            # One season-schedule request covers every pending game.
+        if league in {League.EUROLEAGUE, League.EUROLEAGUE_W}:
+            # Each official European source exposes a competition-wide schedule;
+            # a single request covers all pending FIBA ELW games as well.
             batches = [None]
         else:
             batches = sorted({self._ledger_date_for(g) for g in pending.values()})
@@ -1785,6 +1983,16 @@ class Pipeline:
                 if league is League.EUROLEAGUE:
                     day = self._euroleague_finals(
                         [g for g in euroleague.discover_games(None, self.fetch) if g.game_id in pending]
+                    )
+                elif league is League.EUROLEAGUE_W:
+                    day = self._fiba_euroleague_w_finals(
+                        [
+                            g
+                            for g in fiba_euroleague_w.discover_games(
+                                None, self._fiba_schedule_fetch
+                            )
+                            if g.game_id in pending
+                        ]
                     )
                 elif league in ESPN_LEAGUES:
                     day = espn.fetch_recent_results(

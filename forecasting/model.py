@@ -88,6 +88,9 @@ class ForecastConfig:
 LEAGUE_FORECAST_OVERRIDES: Dict[League, Dict[str, Any]] = {
     League.NCAA_W: {"recalibrate_expectations": True, "posted_line_model_weight": 0.2},
     League.NCAA_M: {"recalibrate_expectations": True, "posted_line_model_weight": 0.2},
+    # FIBA ELW starts on the transparent empirical/default surface.  It does
+    # not inherit men's EuroLeague backtests, model weights, or price lane.
+    League.EUROLEAGUE_W: {},
 }
 
 

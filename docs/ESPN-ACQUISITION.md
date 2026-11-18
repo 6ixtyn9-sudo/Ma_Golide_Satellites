@@ -7,7 +7,7 @@ verification. Passing fixtures do not prove a provider's current availability.
 ## Scope
 
 ESPN now supplies acquisition for **NBA, WNBA, NCAA_M, and NCAA_W**. WNBA is
-an independent sixth Ma Golide league with isolated `localdata/wnba` state;
+an independent Ma Golide league with isolated `localdata/wnba` state;
 it is not aliased to NBA. EuroLeague and CBA retain their existing providers.
 
 The acquisition layer provides bounded requests, retries/backoff, a bounded

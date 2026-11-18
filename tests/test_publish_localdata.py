@@ -90,6 +90,20 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
     assert not (repo / "localdata" / "nba" / "picks_unapproved.json").exists()
 
 
+def test_publisher_accepts_isolated_euroleague_w_operator_state(tmp_path):
+    artifact_file(
+        tmp_path,
+        "elw-artifact",
+        "euroleague_w",
+        "auto_tickets_2026-11-18_no_bet.json",
+        b"frozen-no-bet\n",
+    )
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", tmp_path / "repo")
+
+    assert report["copied"] == ["localdata/euroleague_w/auto_tickets_2026-11-18_no_bet.json"]
+
+
 def test_publisher_strips_hourly_telemetry_before_git_publication(tmp_path):
     state = artifact_file(
         tmp_path,

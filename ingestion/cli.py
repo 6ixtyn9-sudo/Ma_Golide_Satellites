@@ -28,11 +28,14 @@ from .write_guards import assert_fixture_write_isolation
 
 
 def _warehouse(args) -> str:
-    return (
-        getattr(args, "warehouse", None)
-        or os.environ.get("MAGOLIDE_WAREHOUSE")
-        or DEFAULT_WAREHOUSE
-    )
+    explicit = getattr(args, "warehouse", None) or os.environ.get("MAGOLIDE_WAREHOUSE")
+    if explicit:
+        return explicit
+    # A direct ELW CLI run must not silently land in the men's/shared default
+    # warehouse. Workflow runs already pass this same isolated path explicitly.
+    if str(getattr(args, "league", "")).upper() == "EUROLEAGUE_W":
+        return "localdata/euroleague_w/warehouse.duckdb"
+    return DEFAULT_WAREHOUSE
 
 
 def _book_config(args) -> BookConfig:
@@ -74,7 +77,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         command_parser.add_argument(
             "--league",
             default="NBA",
-            choices=["NBA", "EuroLeague", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
+            choices=["NBA", "EuroLeague", "EUROLEAGUE_W", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
         )
         command_parser.add_argument("--date", default=None, help="league-local slate date YYYYMMDD")
         command_parser.add_argument("--tz", default=None, help="league-local timezone (IANA)")
@@ -111,7 +114,7 @@ def main(argv: Optional[List[str]] = None) -> int:
     coverage_parser.add_argument(
         "--league",
         default="NBA",
-        choices=["NBA", "EuroLeague", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
+        choices=["NBA", "EuroLeague", "EUROLEAGUE_W", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
     )
     coverage_parser.add_argument("--warehouse", default=None)
 
@@ -181,6 +184,8 @@ def _offline_fixture_fetch():
         "summary?event=401909938": "espn/summary_401909938_context.json",
         "seasons/E2026/games": "euroleague/schedule.json",
         "Boxscore": "euroleague/boxscore_97.json",
+        "getgdapgamesbycompetitionid": "fiba_euroleague_w/schedule_209127_20261118.json",
+        "games/135150-ZARAG-BLA": "fiba_euroleague_w/game_detail_135150_20261118.json",
         "standings": "espn/standings.json",
     }
 

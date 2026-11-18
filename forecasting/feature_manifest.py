@@ -319,7 +319,11 @@ def build_feature_use_manifest(
             "provider_path_available" if is_espn_league else "not_supported_by_current_ESPN_path"
         )
     catalog["standings_recent_form_and_provider_detail"]["standings_support"] = (
-        "smoke_coverage_only" if league in {League.NBA, League.EUROLEAGUE} else "not_supported_by_current_adapter"
+        "smoke_coverage_only"
+        if league in {League.NBA, League.EUROLEAGUE}
+        else "official_fiba_game_detail_inventory_only"
+        if league is League.EUROLEAGUE_W
+        else "not_supported_by_current_adapter"
     )
     catalog["current_injury_status"]["league_support"] = {
         League.NBA: "NBA_league_endpoint_and_summary; raw summary field presence measured",

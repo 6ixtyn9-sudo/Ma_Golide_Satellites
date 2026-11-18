@@ -14,6 +14,7 @@ No live-provider claim should be inferred from a passing offline suite.
 | ESPN | NCAA_M | Division-I men's scoreboard/books, BPI predictions, summaries, two-half/OT results, recent and indexed deep history | Public endpoints | Historical probes and hermetic endpoint/two-half/OT regressions; external-trigger smoke still required |
 | ESPN | NCAA_W | Division-I women's scoreboard/books, BPI predictions, summaries, modern quarters and declared legacy halves, recent and indexed deep history | Public endpoints | Live four-quarter final probe plus hermetic quarter/legacy-half and one-time reparse regressions |
 | EuroLeague | EuroLeague | Schedule discovery, game results, quarter/OT reconciliation, standings | Public endpoints | Schedule/boxscore live captures 2026-11-06; season schedule scores/partials, empty-season trap, and v3 per-round standings live-verified 2026-11-16; upstream reuse terms not reviewed |
+| FIBA GDAP + game page | EuroLeague Women (`EUROLEAGUE_W`) | Competition schedule, canonical UTC fixtures/status/results, official game-page play-by-play/period scores, player/team detail | Public APIM key shipped in FIBA's web client | GDAP competition `209127` directly validated 2026-11-18; bounded schedule and completed OT game detail fixtures; independent namespace, no men's EuroLeague reuse |
 | CBA | CBA | Official league data API: season/day discovery, Beijing-local UTC times, quarter/OT reconciliation via observed period-score POST endpoint | Public endpoints; AES-128-ECB bodies decrypted with the key constant shipped in the site's own bundle | Live-verified 2026-11-16 from a datacenter IP (decryption, statuses, quarter sums, OT shape); unofficial/undocumented API and terms not reviewed — see caveats |
 | iSportsAPI | CBA | Exact Chinese league discovery, UTC schedule/results, four-quarter/OT reconciliation | `ISPORTS_API_KEY` | `DOCUMENTATION_ONLY`; fixture-tested adapter, paid access and live league ID not verified |
 
@@ -49,6 +50,30 @@ verified index floors.
   given.
 - Boxscore results (`live.euroleague.net/api/Boxscore`) remain the deeper
   per-game evidence path for slate results.
+
+### FIBA EuroLeague Women acquisition details (validated 2026-11-18)
+
+- The canonical fixture/result index is the official GDAP route
+  `GET https://digital-api.fiba.basketball/hapi/getgdapgamesbycompetitionid`
+  with `gdapCompetitionId=209127`.  It supplies `gameDateTimeUTC`, an IANA
+  venue timezone, FIBA game/team IDs, official final scores, and independent
+  result/statistic/play-by-play status flags.  Acquisition accepts only the
+  UTC field; neither game-page display time nor venue-local text is converted
+  into a canonical tip.
+- FIBA's browser application ships a public APIM subscription key. The live
+  adapter refreshes it from the public page and sends it as an APIM header;
+  the dependency-free scheduler gate makes the same bounded schedule read with
+  the public query-key form. This is not a Ma Golide secret and no key value is
+  placed in reports or durable state.
+- A final enters the canonical store only after the official game-page
+  play-by-play supplies complete Q1–Q4 (and, when present, OT) cumulative
+  scores that reconcile to FIBA's official final. Team IDs use the dedicated
+  `fiba-elw:<competition>:<team>` namespace and game IDs use
+  `fiba-elw-<competition>-<game>`; they cannot collide with men’s EuroLeague.
+- No independent pre-tip prediction provider or named-book market source has
+  yet been validated for ELW. The forecast service therefore uses only its
+  normal empirical-history surface when sufficient reconciled results exist,
+  and the men’s EuroLeague priced-value paper lane is explicitly excluded.
 
 ### CBA official data API — licensing and terms caveats
 
@@ -195,6 +220,7 @@ slots and cannot replace frozen pre-tip facts.
 python -m ingestion.cli smoke --league NBA --date 2026-11-07
 python -m ingestion.cli smoke --league WNBA --date 2026-11-07
 python -m ingestion.cli smoke --league EuroLeague --date 2026-11-07
+python -m ingestion.cli smoke --league EUROLEAGUE_W --date 2026-11-07
 python -m ingestion.cli smoke --league CBA --date 2026-11-07
 python -m ingestion.cli smoke --league NCAA_M --date 2026-11-07
 python -m ingestion.cli smoke --league NCAA_W --date 2026-11-07

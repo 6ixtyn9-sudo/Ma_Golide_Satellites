@@ -70,7 +70,7 @@ def test_workflow_keeps_keyless_fallback_and_wires_optional_provider_secrets():
             assert f"{secret}: ${{{{ secrets.{secret} }}}}" in text
         assert "${{ vars." not in text
         assert "required_secret" not in text
-        # The static six-row matrix is emitted by the read-only adaptive gate,
+        # The static seven-row matrix is emitted by the read-only adaptive gate,
         # so idle external ticks do not start a full league job.
         assert "matrix: ${{ fromJSON(needs.gate.outputs.matrix) }}" in text
         assert "python scripts/adaptive_gate.py" in text

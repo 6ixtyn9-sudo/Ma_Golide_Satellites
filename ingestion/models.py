@@ -33,7 +33,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 class League(str, Enum):
     NBA = "NBA"
-    EUROLEAGUE = "EUROLEAGUE"
+    EUROLEAGUE = "EUROLEAGUE"  # Euroleague Basketball (men)
+    EUROLEAGUE_W = "EUROLEAGUE_W"  # FIBA EuroLeague Women
     CBA = "CBA"  # Chinese Basketball Association
     WNBA = "WNBA"
     NCAA_M = "NCAA_M"

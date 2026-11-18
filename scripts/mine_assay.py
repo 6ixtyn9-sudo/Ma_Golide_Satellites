@@ -19,11 +19,11 @@ from ingestion.warehouse import DEFAULT_WAREHOUSE  # noqa: E402
 
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--warehouse", default=DEFAULT_WAREHOUSE)
+    parser.add_argument("--warehouse", default=None)
     parser.add_argument(
         "--league",
         default="NBA",
-        choices=["NBA", "EuroLeague", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
+        choices=["NBA", "EuroLeague", "EUROLEAGUE_W", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
     )
     parser.add_argument(
         "--output",
@@ -31,6 +31,12 @@ def main() -> int:
         help="optional derived JSON artifact; stdout is always available",
     )
     args = parser.parse_args()
+    if args.warehouse is None:
+        args.warehouse = (
+            "localdata/euroleague_w/warehouse.duckdb"
+            if args.league.upper() == "EUROLEAGUE_W"
+            else DEFAULT_WAREHOUSE
+        )
     if not Path(args.warehouse).exists():
         parser.error(f"warehouse does not exist: {args.warehouse}")
     league = League[args.league.upper()]
