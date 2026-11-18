@@ -609,6 +609,27 @@ def test_terminal_no_bet_at_cutoff_blocks_later_ticket_candidates(tmp_path):
     assert "closed by an immutable no-bet decision" in Path(later["ticket_text"]).read_text()
 
 
+def test_persisted_performance_is_compact_and_points_to_immutable_receipt(tmp_path):
+    rows = [forecast(number) for number in (1, 2, 3)]
+    rows[0]["team_history"] = {"large_debug_payload": "x" * 100_000}
+    result = publish(
+        tmp_path,
+        Store([game(number) for number in (1, 2, 3)]),
+        report(rows, [acca(rows)]),
+    )
+
+    stored = Path(result["performance"]).read_bytes()
+    performance = json.loads(stored)
+    day = performance["history"][0]
+    leg = day["positions"][0]["legs"][0]
+    assert "compact_settlement_summary" in performance["history_detail"]
+    assert day["receipt_path"] == f"auto_tickets_{DATE}_decision.json"
+    assert "accas" not in day and "singles" not in day
+    assert "team_history" not in leg
+    assert "prediction" not in leg
+    assert len(stored) < 10_000
+
+
 def test_later_scan_refreshes_historical_card_grades_without_rewriting_receipt(tmp_path):
     rows = [forecast(number) for number in (1, 2, 3)]
     shadow_pick = forecast(
@@ -860,7 +881,7 @@ def test_push_leg_is_removed_from_effective_acca_price(tmp_path):
     ]
     first = publish(tmp_path, Store(games), report(rows, [ticket]))
     performance = json.loads(Path(first["performance"]).read_text())
-    settled = performance["history"][0]["accas"][0]
+    settled = performance["history"][0]["positions"][0]
     assert settled["leg_outcomes"] == ["win", "push"]
     assert settled["grade_status"] == "win"
     assert settled["effective_decimal_odds"] == 2.0
@@ -878,7 +899,7 @@ def test_acca_is_a_loss_as_soon_as_any_leg_loses_while_other_legs_are_pending(tm
     )
 
     performance = json.loads(Path(result["performance"]).read_text())
-    position = performance["history"][0]["accas"][0]
+    position = performance["history"][0]["positions"][0]
     assert position["leg_outcomes"] == ["loss", None]
     assert position["grade_status"] == "loss"
     assert position["unresolved_legs"] == 1
@@ -1370,9 +1391,9 @@ def test_paper_single_settles_at_single_odds_and_keeps_write_once_receipt(tmp_pa
     assert performance["paper_committed_units"] == 0.0
     assert performance["selected_leg_brier_score"] == pytest.approx((0.62 - 1) ** 2)
     daily = performance["history"][0]
-    assert daily["singles"][0]["grade_status"] == "win"
-    assert daily["singles"][0]["profit_units"] == pytest.approx(0.8)
-    assert daily["accas"] == []
+    assert [position["ticket_type"] for position in daily["positions"]] == ["single"]
+    assert daily["positions"][0]["grade_status"] == "win"
+    assert daily["positions"][0]["profit_units"] == pytest.approx(0.8)
     ticket_text = Path(settled["ticket_text"]).read_text()
     assert "[PAPER SINGLE #1]" in ticket_text
     assert "· ✅ WIN" in ticket_text

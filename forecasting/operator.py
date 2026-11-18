@@ -2130,6 +2130,116 @@ def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict
     }
 
 
+def _compact_performance_report(report: Dict[str, Any]) -> Dict[str, Any]:
+    """Persist settlement summaries without cloning full receipt evidence.
+
+    Receipts are already immutable per-date sources for every full leg,
+    prediction, calibration, and bookmaker payload. Repeating those large
+    payloads in a rolling Git-tracked performance report made the file grow by
+    hundreds of kilobytes for a handful of positions. The renderer keeps the
+    rich in-memory report; this serializer keeps only fields needed to inspect
+    financial settlement and points readers to the receipt for full evidence.
+    """
+    compact = {key: value for key, value in report.items() if key != "history"}
+    compact["history_detail"] = (
+        "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json "
+        "receipts retain complete leg evidence"
+    )
+    compact_history = []
+    day_fields = (
+        "date",
+        "league",
+        "decision_id",
+        "frozen_at",
+        "wins",
+        "losses",
+        "pushes",
+        "settled_positions",
+        "pending_positions",
+        "unresolved_result_legs",
+        "awaiting_game_legs",
+        "result_unresolvable_legs",
+        "settled_accas",
+        "pending_accas",
+        "settled_singles",
+        "pending_singles",
+        "staked_units",
+        "returned_units",
+        "profit_units",
+        "pending_units",
+        "bank_units",
+    )
+    position_fields = (
+        "ticket_id",
+        "ticket_type",
+        "publication_index",
+        "leg_count",
+        "combined_decimal_odds",
+        "effective_decimal_odds",
+        "stake_units",
+        "estimated_joint_win_probability",
+        "estimated_win_probability",
+        "paper_only",
+        "provisional_sample_gate_bypassed",
+        "provisional_leg_count",
+        "ranking_status",
+        "bookmakers",
+        "leg_outcomes",
+        "push_legs",
+        "unresolved_legs",
+        "awaiting_game_legs",
+        "result_unresolvable_legs",
+        "grade_status",
+        "profit_units",
+    )
+    leg_fields = (
+        "game_id",
+        "pick_id",
+        "forecast_id",
+        "home",
+        "away",
+        "scheduled_utc",
+        "market",
+        "period",
+        "selection",
+        "line",
+        "grade_status",
+        "outcome",
+        "result_resolution_status",
+    )
+    for day in report.get("history") or []:
+        compact_day = {field: day.get(field) for field in day_fields}
+        compact_day["receipt_path"] = f"auto_tickets_{day['date']}_decision.json"
+        compact_positions = []
+        for position in day.get("positions") or []:
+            compact_position = {
+                field: position.get(field)
+                for field in position_fields
+                if position.get(field) is not None
+            }
+            compact_legs = []
+            for leg in position.get("legs") or []:
+                compact_leg = {field: leg.get(field) for field in leg_fields if leg.get(field) is not None}
+                book = leg.get("book") or {}
+                if isinstance(book, dict):
+                    price = book.get("selected_decimal_price")
+                    bookmaker = book.get("book")
+                    provider = book.get("provider")
+                    if price is not None:
+                        compact_leg["selected_decimal_price"] = price
+                    if bookmaker:
+                        compact_leg["book"] = bookmaker
+                    if provider:
+                        compact_leg["book_provider"] = provider
+                compact_legs.append(compact_leg)
+            compact_position["legs"] = compact_legs
+            compact_positions.append(compact_position)
+        compact_day["positions"] = compact_positions
+        compact_history.append(compact_day)
+    compact["history"] = compact_history
+    return compact
+
+
 def _calibrated_probability_band(row: Dict[str, Any]) -> Optional[str]:
     """Return the historical-comparison band without falling back to raw p."""
     value = row.get("calibrated_probability")
@@ -3899,7 +4009,10 @@ def publish_operator_reports(
     performance = _performance(receipts, games)
     performance["generated_utc"] = generated_utc
     performance["league"] = league.value
-    _write_json(localdata / "auto_tickets_performance.json", performance)
+    _write_json(
+        localdata / "auto_tickets_performance.json",
+        _compact_performance_report(performance),
+    )
     _write_text(
         localdata / "auto_tickets_performance.txt",
         _render_performance(performance, timezone_name),

@@ -47,10 +47,16 @@ profitability.
 | `auto_tickets_YYYY-MM-DD_no_bet.json` | Immutable terminal decision that the 60-minute pre-tip window closed without a qualifying pre-tip position |
 | `auto_tickets_YYYY-MM-DD.txt` | Mutable card showing the immutable ticket/no-bet decision and latest available ticket/shadow grades, or the latest pre-cutoff candidate scan |
 | `auto_tickets_state.json` | Write-once date locks and bounded scan telemetry |
-| `auto_tickets_performance.json` | Complete reconstructed paper-position performance state and history |
+| `auto_tickets_performance.json` | Compact rolling settlement/financial summary; each history day points to its immutable receipt for full leg evidence |
 | `auto_tickets_performance.txt` | Bank, settled record, bet-days, held positions, and grading notes |
 
 The daily summary's `operator` object lists the generated paths and counts.
+
+To keep Git history bounded, the rolling performance JSON contains only compact
+financial/settlement fields and minimal leg identifiers, outcome, selected price,
+and bookmaker. It does not duplicate prediction, calibration, team-history, or
+full book evidence from each immutable receipt. Read the receipt named by a
+history row's `receipt_path` for complete provenance.
 
 ## Pick categories
 
