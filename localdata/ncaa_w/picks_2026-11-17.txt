@@ -1,6 +1,6 @@
 Ma Golide Picks — NCAA_W 2026-11-17
 ========================================================================
-Generated at: 2026-11-18 02:55 SAST
+Generated at: 2026-11-18 06:22 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Active sections show the latest pending pre-tip observation per logical pick.
 Started and settled games are retained separately as archive status.
@@ -8,12 +8,7 @@ Started and settled games are retained separately as archive status.
 
 ELIGIBLE CLEAN PICKS
 ========================================================================
-  [provider:espn/team_history_empirical_v1] Washington State Cougars vs Washington Huskies · KO 2026-11-18 05:30 SAST
-      MONEYLINE full_game -> AWAY · p=89.8% (raw 90.5%) @1.148 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING
-      calibration=calibrated n=35 · reasons=none · prediction=espn
-      ROI-BAND BLOCKED · moneyline full_game · p 0.80-<0.90 · odds 1.00-<1.20 · n=0 · recency ROI n/a / adjusted n/a
-      archived_revisions=4 · latest_evidence_utc=2026-11-18T00:56:12Z
+  (none)
 
 CAUTION PICKS
 ========================================================================
@@ -21,90 +16,49 @@ CAUTION PICKS
 
 WATCHLIST — NO MATCHED ODDS
 ========================================================================
-  [provider:espn/team_history_empirical_v1] Oklahoma Sooners vs Texas Southern Tigers · KO 2026-11-18 04:00 SAST
-      MONEYLINE full_game -> HOME · p=99.0% (raw 100.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=calibrated n=35 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=10 · latest_evidence_utc=2026-11-18T00:56:12Z
-  [provider:espn/team_history_empirical_v1] UC Santa Barbara Gauchos vs Cal Lutheran Kingsmen · KO 2026-11-18 04:00 SAST
-      MONEYLINE full_game -> HOME · p=99.0% (raw 100.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=calibrated n=35 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=10 · latest_evidence_utc=2026-11-18T00:56:12Z
-  [provider:espn/team_history_empirical_v1] Arizona State Sun Devils vs San Diego Toreros · KO 2026-11-18 03:30 SAST
-      MONEYLINE full_game -> HOME · p=98.2% (raw 98.9%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=calibrated n=35 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=10 · latest_evidence_utc=2026-11-18T00:56:11Z
-  [provider:espn/team_history_empirical_v1] Houston Cougars vs Texas A&M-Corpus Christi Islanders · KO 2026-11-18 03:00 SAST
-      MONEYLINE full_game -> HOME · p=96.5% (raw 97.2%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=calibrated n=35 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=10 · latest_evidence_utc=2026-11-18T00:56:11Z
-  [team_history_empirical_v1/team_history_empirical_v1] Oklahoma Sooners vs Texas Southern Tigers · KO 2026-11-18 04:00 SAST
-      MONEYLINE full_game -> HOME · p=92.4% (raw 90.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [provider:espn/team_history_empirical_v1] Arkansas State Red Wolves vs Jackson State Lady Tigers · KO 2026-11-18 03:00 SAST
-      MONEYLINE full_game -> HOME · p=92.4% (raw 93.1%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=calibrated n=35 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=10 · latest_evidence_utc=2026-11-18T00:56:11Z
+  (none)
+
+WATCHLIST — INSUFFICIENT CONTEXT
+========================================================================
+  (none)
+
+SKIPPED — INELIGIBLE
+========================================================================
+  (none)
+
+IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
+========================================================================
+  [provider:espn/team_history_empirical_v1] Washington State Cougars vs Washington Huskies · KO 2026-11-18 05:30 SAST
+      MONEYLINE full_game -> AWAY · p=89.8% (raw 90.5%) @1.148 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING
+      calibration=calibrated n=35 · reasons=none · prediction=espn
+      ROI-BAND BLOCKED · moneyline full_game · p 0.80-<0.90 · odds 1.00-<1.20 · n=0 · recency ROI n/a / adjusted n/a
+      archived_revisions=4 · latest_evidence_utc=2026-11-18T00:56:12Z
+  [team_history_empirical_v1/team_history_empirical_v1] Washington State Cougars vs Washington Huskies · KO 2026-11-18 05:30 SAST
+      SPREAD full_game +14.5 -> HOME · p=89.0% (raw 89.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Washington State Cougars vs Washington Huskies · KO 2026-11-18 05:30 SAST
+      SPREAD full_game +12.5 -> HOME · p=89.0% (raw 89.0%) @1.952 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-18T00:56:10Z
   [provider:espn/team_history_empirical_v1] Washington State Cougars vs Washington Huskies · KO 2026-11-18 05:30 SAST
       MONEYLINE full_game -> AWAY · p=88.5% (raw 90.5%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=28 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
       archived_revisions=6 · latest_evidence_utc=2026-11-17T12:07:08Z
-  [team_history_empirical_v1/team_history_empirical_v1] UC Santa Barbara Gauchos vs Cal Lutheran Kingsmen · KO 2026-11-18 04:00 SAST
-      MONEYLINE full_game -> HOME · p=85.4% (raw 83.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Oklahoma Sooners vs Texas Southern Tigers · KO 2026-11-18 04:00 SAST
-      MONEYLINE H1 -> HOME · p=85.1% (raw 85.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Arizona State Sun Devils vs San Diego Toreros · KO 2026-11-18 03:30 SAST
-      MONEYLINE full_game -> HOME · p=80.4% (raw 78.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Arkansas State Red Wolves vs Jackson State Lady Tigers · KO 2026-11-18 03:00 SAST
-      MONEYLINE full_game -> HOME · p=80.4% (raw 78.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Houston Cougars vs Texas A&M-Corpus Christi Islanders · KO 2026-11-18 03:00 SAST
-      MONEYLINE full_game -> HOME · p=80.4% (raw 78.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Santa Clara Broncos vs Grand Canyon Lopes · KO 2026-11-18 05:00 SAST
       MONEYLINE full_game -> HOME · p=79.4% (raw 77.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Oral Roberts Golden Eagles vs Wichita State Shockers · KO 2026-11-18 03:00 SAST
-      MONEYLINE full_game -> HOME · p=78.4% (raw 76.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Washington State Cougars vs Washington Huskies · KO 2026-11-18 05:30 SAST
+      MONEYLINE full_game -> HOME · p=78.4% (raw 76.0%) @5.900 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=provisional n=6 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      archived_revisions=4 · latest_evidence_utc=2026-11-18T00:56:10Z
   [team_history_empirical_v1/team_history_empirical_v1] Washington State Cougars vs Washington Huskies · KO 2026-11-18 05:30 SAST
       MONEYLINE full_game -> HOME · p=76.4% (raw 74.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] UC Santa Barbara Gauchos vs Cal Lutheran Kingsmen · KO 2026-11-18 04:00 SAST
-      MONEYLINE H1 -> HOME · p=76.1% (raw 76.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Arkansas State Red Wolves vs Jackson State Lady Tigers · KO 2026-11-18 03:00 SAST
-      MONEYLINE H1 -> HOME · p=75.1% (raw 75.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Arizona State Sun Devils vs San Diego Toreros · KO 2026-11-18 03:30 SAST
-      MONEYLINE H1 -> HOME · p=73.1% (raw 73.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Houston Cougars vs Texas A&M-Corpus Christi Islanders · KO 2026-11-18 03:00 SAST
-      MONEYLINE H1 -> HOME · p=73.1% (raw 73.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Oral Roberts Golden Eagles vs Wichita State Shockers · KO 2026-11-18 03:00 SAST
-      MONEYLINE H1 -> HOME · p=73.1% (raw 73.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Washington State Cougars vs Washington Huskies · KO 2026-11-18 05:30 SAST
@@ -128,365 +82,50 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE H1 -> HOME · p=65.1% (raw 65.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [provider:espn/team_history_empirical_v1] Oral Roberts Golden Eagles vs Wichita State Shockers · KO 2026-11-18 03:00 SAST
-      MONEYLINE full_game -> HOME · p=60.1% (raw 60.9%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=calibrated n=35 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=10 · latest_evidence_utc=2026-11-18T00:56:11Z
+  [team_history_empirical_v1/team_history_empirical_v1] Washington State Cougars vs Washington Huskies · KO 2026-11-18 05:30 SAST
+      TOTAL full_game 132.5 -> UNDER · p=58.0% (raw 58.0%) @1.870 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      archived_revisions=4 · latest_evidence_utc=2026-11-18T00:56:10Z
   [provider:espn/team_history_empirical_v1] UNLV Lady Rebels vs Rice Owls · KO 2026-11-18 04:30 SAST
       MONEYLINE full_game -> HOME · p=55.9% (raw 56.7%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
       calibration=calibrated n=35 · reasons=no_exact_bookmaker_market · prediction=espn
       archived_revisions=10 · latest_evidence_utc=2026-11-18T00:56:12Z
 
-WATCHLIST — INSUFFICIENT CONTEXT
+SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
-  (none)
-
-SKIPPED — INELIGIBLE
-========================================================================
-  [team_history_empirical_v1/team_history_empirical_v1] Oklahoma Sooners vs Texas Southern Tigers · KO 2026-11-18 04:00 SAST
-      SPREAD full_game +59.5 -> AWAY · p=92.0% (raw 92.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-      archived_revisions=3 · latest_evidence_utc=2026-11-17T20:28:38Z
-  [team_history_empirical_v1/team_history_empirical_v1] Oklahoma Sooners vs Texas Southern Tigers · KO 2026-11-18 04:00 SAST
-      SPREAD full_game +61.5 -> AWAY · p=92.0% (raw 92.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Oklahoma Sooners vs Texas Southern Tigers · KO 2026-11-18 04:00 SAST
-      TOTAL full_game 158.5 -> UNDER · p=89.0% (raw 89.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:05Z
-  [team_history_empirical_v1/team_history_empirical_v1] Washington State Cougars vs Washington Huskies · KO 2026-11-18 05:30 SAST
-      SPREAD full_game +14.5 -> HOME · p=89.0% (raw 89.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Washington State Cougars vs Washington Huskies · KO 2026-11-18 05:30 SAST
-      SPREAD full_game +12.5 -> HOME · p=89.0% (raw 89.0%) @1.952 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-      archived_revisions=3 · latest_evidence_utc=2026-11-18T00:56:10Z
-  [team_history_empirical_v1/team_history_empirical_v1] Oklahoma Sooners vs Texas Southern Tigers · KO 2026-11-18 04:00 SAST
-      TOTAL full_game 156.5 -> UNDER · p=86.0% (raw 86.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-      archived_revisions=2 · latest_evidence_utc=2026-11-18T00:56:10Z
-  [team_history_empirical_v1/team_history_empirical_v1] Washington State Cougars vs Washington Huskies · KO 2026-11-18 05:30 SAST
-      MONEYLINE full_game -> HOME · p=78.4% (raw 76.0%) @5.900 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-      archived_revisions=4 · latest_evidence_utc=2026-11-18T00:56:10Z
-  [team_history_empirical_v1/team_history_empirical_v1] Washington State Cougars vs Washington Huskies · KO 2026-11-18 05:30 SAST
-      TOTAL full_game 132.5 -> UNDER · p=58.0% (raw 58.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-      archived_revisions=4 · latest_evidence_utc=2026-11-18T00:56:10Z
-
-IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
-========================================================================
+  [provider:espn/team_history_empirical_v1] Oklahoma Sooners vs Texas Southern Tigers · KO 2026-11-18 04:00 SAST
+      MONEYLINE full_game -> HOME · p=99.0% (raw 100.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=calibrated n=35 · reasons=no_exact_bookmaker_market · prediction=espn
+      archived_revisions=10 · latest_evidence_utc=2026-11-18T00:56:12Z
+  [provider:espn/team_history_empirical_v1] UC Santa Barbara Gauchos vs Cal Lutheran Kingsmen · KO 2026-11-18 04:00 SAST
+      MONEYLINE full_game -> HOME · p=99.0% (raw 100.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=calibrated n=35 · reasons=no_exact_bookmaker_market · prediction=espn
+      archived_revisions=10 · latest_evidence_utc=2026-11-18T00:56:12Z
+  [provider:espn/team_history_empirical_v1] Arizona State Sun Devils vs San Diego Toreros · KO 2026-11-18 03:30 SAST
+      MONEYLINE full_game -> HOME · p=98.2% (raw 98.9%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=calibrated n=35 · reasons=no_exact_bookmaker_market · prediction=espn
+      archived_revisions=10 · latest_evidence_utc=2026-11-18T00:56:11Z
+  [provider:espn/team_history_empirical_v1] Rhode Island Rams vs Emmanuel (MA) Lions · KO 2026-11-18 01:00 SAST
+      MONEYLINE full_game -> HOME · p=98.0% (raw 100.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
   [provider:espn/team_history_empirical_v1] Southern Indiana Screaming Eagles vs IU Southeast Grenadiers · KO 2026-11-18 02:00 SAST
       MONEYLINE full_game -> HOME · p=98.0% (raw 100.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
       archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
   [provider:espn/team_history_empirical_v1] Stephen F. Austin Ladyjacks vs Texas A&M-Texarkana Eagles · KO 2026-11-18 02:30 SAST
       MONEYLINE full_game -> HOME · p=98.0% (raw 100.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
       archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
   [provider:espn/team_history_empirical_v1] Nebraska Cornhuskers vs Mount St. Mary's Mountaineers · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=98.0% (raw 100.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
-  [provider:espn/team_history_empirical_v1] South Carolina Gamecocks vs Florida Gulf Coast Eagles · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=97.6% (raw 99.5%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
-  [provider:espn/team_history_empirical_v1] Southeast Missouri State Redhawks vs Hannibal LaGrange HANNIBAL LAGRANGE · KO 2026-11-18 02:30 SAST
-      MONEYLINE full_game -> HOME · p=97.2% (raw 99.2%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
-  [provider:espn/team_history_empirical_v1] Prairie View A&M Lady Panthers vs Texas College Steers · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=95.2% (raw 97.1%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
-  [provider:espn/team_history_empirical_v1] Belmont Bruins vs Tennessee Lady Volunteers · KO 2026-11-18 02:30 SAST
-      MONEYLINE full_game -> AWAY · p=93.6% (raw 95.6%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
-  [provider:espn/team_history_empirical_v1] Monmouth Hawks vs Marist Red Foxes · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=92.7% (raw 94.6%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
-  [team_history_empirical_v1/team_history_empirical_v1] Nebraska Cornhuskers vs Mount St. Mary's Mountaineers · KO 2026-11-18 02:00 SAST
-      SPREAD full_game +51.5 -> AWAY · p=90.0% (raw 90.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-      archived_revisions=3 · latest_evidence_utc=2026-11-17T20:28:38Z
-  [provider:espn/team_history_empirical_v1] Fairleigh Dickinson Knights vs Rider Broncs · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=89.9% (raw 91.8%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
-  [provider:espn/team_history_empirical_v1] Indiana State Sycamores vs Bellarmine Knights · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=89.3% (raw 91.2%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
-  [provider:espn/team_history_empirical_v1] Kansas State Wildcats vs SMU Mustangs · KO 2026-11-18 02:30 SAST
-      MONEYLINE full_game -> HOME · p=87.4% (raw 89.4%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
-  [team_history_empirical_v1/team_history_empirical_v1] Monmouth Hawks vs Marist Red Foxes · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=86.4% (raw 84.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Nebraska Cornhuskers vs Mount St. Mary's Mountaineers · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=86.4% (raw 84.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [provider:espn/team_history_empirical_v1] North Carolina A&T Aggies vs Liberty Flames · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> AWAY · p=86.4% (raw 88.4%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
-  [team_history_empirical_v1/team_history_empirical_v1] Stephen F. Austin Ladyjacks vs Texas A&M-Texarkana Eagles · KO 2026-11-18 02:30 SAST
-      MONEYLINE full_game -> HOME · p=85.4% (raw 83.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [provider:espn/team_history_empirical_v1] Incarnate Word Cardinals vs Texas State Bobcats · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> AWAY · p=85.1% (raw 87.1%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
-  [team_history_empirical_v1/team_history_empirical_v1] Southern Indiana Screaming Eagles vs IU Southeast Grenadiers · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=82.4% (raw 80.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Indiana State Sycamores vs Bellarmine Knights · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=81.4% (raw 79.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Kansas State Wildcats vs SMU Mustangs · KO 2026-11-18 02:30 SAST
-      MONEYLINE full_game -> HOME · p=81.4% (raw 79.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] South Carolina Gamecocks vs Florida Gulf Coast Eagles · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=81.4% (raw 79.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] South Carolina Gamecocks vs Florida Gulf Coast Eagles · KO 2026-11-18 02:00 SAST
-      SPREAD full_game +40.5 -> AWAY · p=81.0% (raw 81.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-      archived_revisions=3 · latest_evidence_utc=2026-11-17T20:28:38Z
-  [team_history_empirical_v1/team_history_empirical_v1] George Washington Revolutionaries vs Temple Owls · KO 2026-11-18 01:00 SAST
-      MONEYLINE full_game -> HOME · p=79.4% (raw 77.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Nebraska Cornhuskers vs Mount St. Mary's Mountaineers · KO 2026-11-18 02:00 SAST
-      MONEYLINE H1 -> HOME · p=79.1% (raw 79.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [provider:espn/team_history_empirical_v1] Drake Bulldogs vs St. Thomas Tommies · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=78.5% (raw 80.4%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
-  [provider:espn/team_history_empirical_v1] Providence Friars vs Northeastern Huskies · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=77.7% (raw 79.6%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
-  [team_history_empirical_v1/team_history_empirical_v1] Southern Illinois Salukis vs Eastern Illinois Panthers · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=77.4% (raw 75.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [provider:espn/team_history_empirical_v1] Auburn Tigers vs Seton Hall Pirates · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=77.0% (raw 79.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
-  [team_history_empirical_v1/team_history_empirical_v1] Auburn Tigers vs Seton Hall Pirates · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=76.4% (raw 74.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Fairleigh Dickinson Knights vs Rider Broncs · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=76.4% (raw 74.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Wisconsin Badgers vs Marquette Golden Eagles · KO 2026-11-18 02:30 SAST
-      MONEYLINE full_game -> HOME · p=76.4% (raw 74.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Monmouth Hawks vs Marist Red Foxes · KO 2026-11-18 02:00 SAST
-      MONEYLINE H1 -> HOME · p=76.1% (raw 76.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Stephen F. Austin Ladyjacks vs Texas A&M-Texarkana Eagles · KO 2026-11-18 02:30 SAST
-      MONEYLINE H1 -> HOME · p=76.1% (raw 76.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Nebraska Cornhuskers vs Mount St. Mary's Mountaineers · KO 2026-11-18 02:00 SAST
-      TOTAL full_game 144.5 -> UNDER · p=76.0% (raw 76.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:05Z
-  [team_history_empirical_v1/team_history_empirical_v1] North Carolina A&T Aggies vs Liberty Flames · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=75.4% (raw 73.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Drake Bulldogs vs St. Thomas Tommies · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=74.4% (raw 72.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Kansas State Wildcats vs SMU Mustangs · KO 2026-11-18 02:30 SAST
-      MONEYLINE H1 -> HOME · p=74.1% (raw 74.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Southern Indiana Screaming Eagles vs IU Southeast Grenadiers · KO 2026-11-18 02:00 SAST
-      MONEYLINE H1 -> HOME · p=74.1% (raw 74.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Indiana State Sycamores vs Bellarmine Knights · KO 2026-11-18 02:00 SAST
-      MONEYLINE H1 -> HOME · p=73.1% (raw 73.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] South Carolina Gamecocks vs Florida Gulf Coast Eagles · KO 2026-11-18 02:00 SAST
-      MONEYLINE H1 -> HOME · p=73.1% (raw 73.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Prairie View A&M Lady Panthers vs Texas College Steers · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=72.4% (raw 70.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Providence Friars vs Northeastern Huskies · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=72.4% (raw 70.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] George Washington Revolutionaries vs Temple Owls · KO 2026-11-18 01:00 SAST
-      MONEYLINE H1 -> HOME · p=72.1% (raw 72.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Nebraska Cornhuskers vs Mount St. Mary's Mountaineers · KO 2026-11-18 02:00 SAST
-      TOTAL full_game 142.5 -> UNDER · p=72.0% (raw 72.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Belmont Bruins vs Tennessee Lady Volunteers · KO 2026-11-18 02:30 SAST
-      MONEYLINE full_game -> HOME · p=71.4% (raw 69.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] North Carolina A&T Aggies vs Liberty Flames · KO 2026-11-18 02:00 SAST
-      MONEYLINE H1 -> HOME · p=70.1% (raw 70.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Southern Illinois Salukis vs Eastern Illinois Panthers · KO 2026-11-18 02:00 SAST
-      MONEYLINE H1 -> HOME · p=70.1% (raw 70.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Wisconsin Badgers vs Marquette Golden Eagles · KO 2026-11-18 02:30 SAST
-      MONEYLINE H1 -> HOME · p=70.1% (raw 70.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [provider:espn/team_history_empirical_v1] Wisconsin Badgers vs Marquette Golden Eagles · KO 2026-11-18 02:30 SAST
-      MONEYLINE full_game -> HOME · p=68.1% (raw 70.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
-  [team_history_empirical_v1/team_history_empirical_v1] Auburn Tigers vs Seton Hall Pirates · KO 2026-11-18 02:00 SAST
-      MONEYLINE H1 -> HOME · p=67.1% (raw 67.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Fairleigh Dickinson Knights vs Rider Broncs · KO 2026-11-18 02:00 SAST
-      MONEYLINE H1 -> HOME · p=67.1% (raw 67.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Prairie View A&M Lady Panthers vs Texas College Steers · KO 2026-11-18 02:00 SAST
-      MONEYLINE H1 -> HOME · p=67.1% (raw 67.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Drake Bulldogs vs St. Thomas Tommies · KO 2026-11-18 02:00 SAST
-      MONEYLINE H1 -> HOME · p=66.1% (raw 66.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Providence Friars vs Northeastern Huskies · KO 2026-11-18 02:00 SAST
-      MONEYLINE H1 -> HOME · p=66.1% (raw 66.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Campbell Fighting Camels vs Fordham Rams · KO 2026-11-18 01:00 SAST
-      MONEYLINE full_game -> HOME · p=65.4% (raw 63.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Incarnate Word Cardinals vs Texas State Bobcats · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=65.4% (raw 63.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Southeast Missouri State Redhawks vs Hannibal LaGrange HANNIBAL LAGRANGE · KO 2026-11-18 02:30 SAST
-      MONEYLINE full_game -> HOME · p=65.4% (raw 63.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Northern Illinois Huskies vs SIU Edwardsville Cougars · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=64.4% (raw 62.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Belmont Bruins vs Tennessee Lady Volunteers · KO 2026-11-18 02:30 SAST
-      MONEYLINE H1 -> HOME · p=64.1% (raw 64.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Incarnate Word Cardinals vs Texas State Bobcats · KO 2026-11-18 02:00 SAST
-      MONEYLINE H1 -> HOME · p=64.1% (raw 64.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] South Carolina Gamecocks vs Florida Gulf Coast Eagles · KO 2026-11-18 02:00 SAST
-      TOTAL full_game 139.5 -> UNDER · p=64.0% (raw 64.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-      archived_revisions=3 · latest_evidence_utc=2026-11-17T20:28:38Z
-  [team_history_empirical_v1/team_history_empirical_v1] Campbell Fighting Camels vs Fordham Rams · KO 2026-11-18 01:00 SAST
-      MONEYLINE H1 -> HOME · p=62.1% (raw 62.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Northern Illinois Huskies vs SIU Edwardsville Cougars · KO 2026-11-18 02:00 SAST
-      MONEYLINE H1 -> HOME · p=62.1% (raw 62.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical_v1/team_history_empirical_v1] Southeast Missouri State Redhawks vs Hannibal LaGrange HANNIBAL LAGRANGE · KO 2026-11-18 02:30 SAST
-      MONEYLINE H1 -> HOME · p=62.1% (raw 62.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [provider:espn/team_history_empirical_v1] George Washington Revolutionaries vs Temple Owls · KO 2026-11-18 01:00 SAST
-      MONEYLINE full_game -> HOME · p=61.0% (raw 62.9%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
-  [provider:espn/team_history_empirical_v1] Southern Illinois Salukis vs Eastern Illinois Panthers · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> AWAY · p=57.3% (raw 59.3%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
-  [provider:espn/team_history_empirical_v1] Campbell Fighting Camels vs Fordham Rams · KO 2026-11-18 01:00 SAST
-      MONEYLINE full_game -> AWAY · p=50.8% (raw 52.8%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
-  [provider:espn/team_history_empirical_v1] Northern Illinois Huskies vs SIU Edwardsville Cougars · KO 2026-11-18 02:00 SAST
-      MONEYLINE full_game -> HOME · p=48.7% (raw 50.6%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
-      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
-
-SETTLED PICKS — ARCHIVE ONLY
-========================================================================
-  [provider:espn/team_history_empirical_v1] Rhode Island Rams vs Emmanuel (MA) Lions · KO 2026-11-18 01:00 SAST
       MONEYLINE full_game -> HOME · p=98.0% (raw 100.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
@@ -516,39 +155,147 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
       archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
+  [provider:espn/team_history_empirical_v1] South Carolina Gamecocks vs Florida Gulf Coast Eagles · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=97.6% (raw 99.5%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
+  [provider:espn/team_history_empirical_v1] Southeast Missouri State Redhawks vs Hannibal LaGrange HANNIBAL LAGRANGE · KO 2026-11-18 02:30 SAST
+      MONEYLINE full_game -> HOME · p=97.2% (raw 99.2%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
   [provider:espn/team_history_empirical_v1] West Virginia Mountaineers vs Akron Zips · KO 2026-11-17 17:30 SAST
       MONEYLINE full_game -> HOME · p=97.0% (raw 99.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=28 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
       archived_revisions=6 · latest_evidence_utc=2026-11-17T12:07:06Z
+  [provider:espn/team_history_empirical_v1] Houston Cougars vs Texas A&M-Corpus Christi Islanders · KO 2026-11-18 03:00 SAST
+      MONEYLINE full_game -> HOME · p=96.5% (raw 97.2%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=calibrated n=35 · reasons=no_exact_bookmaker_market · prediction=espn
+      archived_revisions=10 · latest_evidence_utc=2026-11-18T00:56:11Z
+  [provider:espn/team_history_empirical_v1] Prairie View A&M Lady Panthers vs Texas College Steers · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=95.2% (raw 97.1%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
+  [provider:espn/team_history_empirical_v1] Belmont Bruins vs Tennessee Lady Volunteers · KO 2026-11-18 02:30 SAST
+      MONEYLINE full_game -> AWAY · p=93.6% (raw 95.6%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
+  [provider:espn/team_history_empirical_v1] Monmouth Hawks vs Marist Red Foxes · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=92.7% (raw 94.6%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
+  [team_history_empirical_v1/team_history_empirical_v1] Oklahoma Sooners vs Texas Southern Tigers · KO 2026-11-18 04:00 SAST
+      MONEYLINE full_game -> HOME · p=92.4% (raw 90.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [provider:espn/team_history_empirical_v1] Illinois State Redbirds vs Loyola Chicago Ramblers · KO 2026-11-17 19:00 SAST
       MONEYLINE full_game -> HOME · p=92.4% (raw 94.4%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=28 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
       archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:12Z
+  [provider:espn/team_history_empirical_v1] Arkansas State Red Wolves vs Jackson State Lady Tigers · KO 2026-11-18 03:00 SAST
+      MONEYLINE full_game -> HOME · p=92.4% (raw 93.1%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=calibrated n=35 · reasons=no_exact_bookmaker_market · prediction=espn
+      archived_revisions=10 · latest_evidence_utc=2026-11-18T00:56:11Z
   [team_history_empirical_v1/team_history_empirical_v1] Louisville Cardinals vs Tennessee State Lady Tigers · KO 2026-11-18 01:00 SAST
       SPREAD full_game +49.5 -> AWAY · p=92.0% (raw 92.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
       archived_revisions=3 · latest_evidence_utc=2026-11-17T20:28:38Z
+  [team_history_empirical_v1/team_history_empirical_v1] Oklahoma Sooners vs Texas Southern Tigers · KO 2026-11-18 04:00 SAST
+      SPREAD full_game +59.5 -> AWAY · p=92.0% (raw 92.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-17T20:28:38Z
+  [team_history_empirical_v1/team_history_empirical_v1] Oklahoma Sooners vs Texas Southern Tigers · KO 2026-11-18 04:00 SAST
+      SPREAD full_game +61.5 -> AWAY · p=92.0% (raw 92.0%) @1.870 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Nebraska Cornhuskers vs Mount St. Mary's Mountaineers · KO 2026-11-18 02:00 SAST
+      SPREAD full_game +51.5 -> AWAY · p=90.0% (raw 90.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-17T20:28:38Z
+  [provider:espn/team_history_empirical_v1] Fairleigh Dickinson Knights vs Rider Broncs · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=89.9% (raw 91.8%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
   [provider:espn/team_history_empirical_v1] Boston College Eagles vs Merrimack Warriors · KO 2026-11-18 01:00 SAST
       MONEYLINE full_game -> HOME · p=89.9% (raw 91.8%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
       archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
+  [provider:espn/team_history_empirical_v1] Indiana State Sycamores vs Bellarmine Knights · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=89.3% (raw 91.2%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
+  [team_history_empirical_v1/team_history_empirical_v1] Oklahoma Sooners vs Texas Southern Tigers · KO 2026-11-18 04:00 SAST
+      TOTAL full_game 158.5 -> UNDER · p=89.0% (raw 89.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:05Z
+  [provider:espn/team_history_empirical_v1] Kansas State Wildcats vs SMU Mustangs · KO 2026-11-18 02:30 SAST
+      MONEYLINE full_game -> HOME · p=87.4% (raw 89.4%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
   [provider:espn/team_history_empirical_v1] Eastern Kentucky Colonels vs Northern Kentucky Norse · KO 2026-11-18 01:00 SAST
       MONEYLINE full_game -> HOME · p=87.0% (raw 89.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
       archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
+  [team_history_empirical_v1/team_history_empirical_v1] Monmouth Hawks vs Marist Red Foxes · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=86.4% (raw 84.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Nebraska Cornhuskers vs Mount St. Mary's Mountaineers · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=86.4% (raw 84.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [provider:espn/team_history_empirical_v1] North Carolina A&T Aggies vs Liberty Flames · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> AWAY · p=86.4% (raw 88.4%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
   [team_history_empirical_v1/team_history_empirical_v1] West Virginia Mountaineers vs Akron Zips · KO 2026-11-17 17:30 SAST
       MONEYLINE full_game -> HOME · p=86.4% (raw 84.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Oklahoma Sooners vs Texas Southern Tigers · KO 2026-11-18 04:00 SAST
+      TOTAL full_game 156.5 -> UNDER · p=86.0% (raw 86.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      archived_revisions=2 · latest_evidence_utc=2026-11-18T00:56:10Z
   [team_history_empirical_v1/team_history_empirical_v1] Illinois State Redbirds vs Loyola Chicago Ramblers · KO 2026-11-17 19:00 SAST
       MONEYLINE full_game -> HOME · p=85.4% (raw 83.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Stephen F. Austin Ladyjacks vs Texas A&M-Texarkana Eagles · KO 2026-11-18 02:30 SAST
+      MONEYLINE full_game -> HOME · p=85.4% (raw 83.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] UC Santa Barbara Gauchos vs Cal Lutheran Kingsmen · KO 2026-11-18 04:00 SAST
+      MONEYLINE full_game -> HOME · p=85.4% (raw 83.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Oklahoma Sooners vs Texas Southern Tigers · KO 2026-11-18 04:00 SAST
+      MONEYLINE H1 -> HOME · p=85.1% (raw 85.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [provider:espn/team_history_empirical_v1] Incarnate Word Cardinals vs Texas State Bobcats · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> AWAY · p=85.1% (raw 87.1%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
   [team_history_empirical_v1/team_history_empirical_v1] Boston College Eagles vs Merrimack Warriors · KO 2026-11-18 01:00 SAST
       MONEYLINE full_game -> HOME · p=84.4% (raw 82.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
@@ -579,7 +326,19 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=28 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
       archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:12Z
+  [team_history_empirical_v1/team_history_empirical_v1] Southern Indiana Screaming Eagles vs IU Southeast Grenadiers · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=82.4% (raw 80.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Georgia Southern Eagles vs Coastal Georgia Mariner · KO 2026-11-18 00:00 SAST
+      MONEYLINE full_game -> HOME · p=81.4% (raw 79.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Indiana State Sycamores vs Bellarmine Knights · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=81.4% (raw 79.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Kansas State Wildcats vs SMU Mustangs · KO 2026-11-18 02:30 SAST
       MONEYLINE full_game -> HOME · p=81.4% (raw 79.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
@@ -587,9 +346,47 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE full_game -> HOME · p=81.4% (raw 79.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] South Carolina Gamecocks vs Florida Gulf Coast Eagles · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=81.4% (raw 79.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Winthrop Eagles vs South Carolina State Lady Bulldogs · KO 2026-11-17 18:00 SAST
       MONEYLINE full_game -> HOME · p=81.4% (raw 79.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] South Carolina Gamecocks vs Florida Gulf Coast Eagles · KO 2026-11-18 02:00 SAST
+      SPREAD full_game +40.5 -> AWAY · p=81.0% (raw 81.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-17T20:28:38Z
+  [team_history_empirical_v1/team_history_empirical_v1] Arizona State Sun Devils vs San Diego Toreros · KO 2026-11-18 03:30 SAST
+      MONEYLINE full_game -> HOME · p=80.4% (raw 78.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Arkansas State Red Wolves vs Jackson State Lady Tigers · KO 2026-11-18 03:00 SAST
+      MONEYLINE full_game -> HOME · p=80.4% (raw 78.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Houston Cougars vs Texas A&M-Corpus Christi Islanders · KO 2026-11-18 03:00 SAST
+      MONEYLINE full_game -> HOME · p=80.4% (raw 78.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] George Washington Revolutionaries vs Temple Owls · KO 2026-11-18 01:00 SAST
+      MONEYLINE full_game -> HOME · p=79.4% (raw 77.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Nebraska Cornhuskers vs Mount St. Mary's Mountaineers · KO 2026-11-18 02:00 SAST
+      MONEYLINE H1 -> HOME · p=79.1% (raw 79.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [provider:espn/team_history_empirical_v1] Drake Bulldogs vs St. Thomas Tommies · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=78.5% (raw 80.4%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
+  [team_history_empirical_v1/team_history_empirical_v1] Oral Roberts Golden Eagles vs Wichita State Shockers · KO 2026-11-18 03:00 SAST
+      MONEYLINE full_game -> HOME · p=78.4% (raw 76.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Oregon Ducks vs Murray State Racers · KO 2026-11-17 21:00 SAST
       MONEYLINE full_game -> HOME · p=78.4% (raw 76.0%) @n/a no matched book
@@ -608,6 +405,15 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
       archived_revisions=2 · latest_evidence_utc=2026-11-17T20:28:38Z
+  [provider:espn/team_history_empirical_v1] Providence Friars vs Northeastern Huskies · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=77.7% (raw 79.6%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
+  [team_history_empirical_v1/team_history_empirical_v1] Southern Illinois Salukis vs Eastern Illinois Panthers · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=77.4% (raw 75.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Western Illinois Leathernecks vs Purdue Fort Wayne Mastodons · KO 2026-11-17 19:00 SAST
       MONEYLINE full_game -> HOME · p=77.4% (raw 75.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
@@ -616,14 +422,31 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE H1 -> HOME · p=77.2% (raw 77.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [provider:espn/team_history_empirical_v1] Auburn Tigers vs Seton Hall Pirates · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=77.0% (raw 79.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
   [provider:espn/team_history_empirical_v1] UCF Knights vs North Florida Ospreys · KO 2026-11-17 18:00 SAST
       MONEYLINE full_game -> HOME · p=76.8% (raw 78.8%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=28 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
       archived_revisions=7 · latest_evidence_utc=2026-11-17T15:54:28Z
+  [team_history_empirical_v1/team_history_empirical_v1] Auburn Tigers vs Seton Hall Pirates · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=76.4% (raw 74.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Fairleigh Dickinson Knights vs Rider Broncs · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=76.4% (raw 74.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Nevada Wolf Pack vs Pepperdine Waves · KO 2026-11-17 21:00 SAST
       MONEYLINE full_game -> HOME · p=76.4% (raw 74.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Wisconsin Badgers vs Marquette Golden Eagles · KO 2026-11-18 02:30 SAST
+      MONEYLINE full_game -> HOME · p=76.4% (raw 74.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Eastern Kentucky Colonels vs Northern Kentucky Norse · KO 2026-11-18 01:00 SAST
       MONEYLINE H1 -> HOME · p=76.1% (raw 76.0%) @n/a no matched book
@@ -633,11 +456,48 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE H1 -> HOME · p=76.1% (raw 76.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Monmouth Hawks vs Marist Red Foxes · KO 2026-11-18 02:00 SAST
+      MONEYLINE H1 -> HOME · p=76.1% (raw 76.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Stephen F. Austin Ladyjacks vs Texas A&M-Texarkana Eagles · KO 2026-11-18 02:30 SAST
+      MONEYLINE H1 -> HOME · p=76.1% (raw 76.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] UC Santa Barbara Gauchos vs Cal Lutheran Kingsmen · KO 2026-11-18 04:00 SAST
+      MONEYLINE H1 -> HOME · p=76.1% (raw 76.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Nebraska Cornhuskers vs Mount St. Mary's Mountaineers · KO 2026-11-18 02:00 SAST
+      TOTAL full_game 144.5 -> UNDER · p=76.0% (raw 76.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      archived_revisions=2 · latest_evidence_utc=2026-11-17T16:51:05Z
   [team_history_empirical_v1/team_history_empirical_v1] Massachusetts Minutewomen vs Army Black Knights · KO 2026-11-18 00:00 SAST
       MONEYLINE full_game -> HOME · p=75.4% (raw 73.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] North Carolina A&T Aggies vs Liberty Flames · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=75.4% (raw 73.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Arkansas State Red Wolves vs Jackson State Lady Tigers · KO 2026-11-18 03:00 SAST
+      MONEYLINE H1 -> HOME · p=75.1% (raw 75.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Drake Bulldogs vs St. Thomas Tommies · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=74.4% (raw 72.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Boston College Eagles vs Merrimack Warriors · KO 2026-11-18 01:00 SAST
+      MONEYLINE H1 -> HOME · p=74.1% (raw 74.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Kansas State Wildcats vs SMU Mustangs · KO 2026-11-18 02:30 SAST
+      MONEYLINE H1 -> HOME · p=74.1% (raw 74.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Southern Indiana Screaming Eagles vs IU Southeast Grenadiers · KO 2026-11-18 02:00 SAST
       MONEYLINE H1 -> HOME · p=74.1% (raw 74.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
@@ -645,11 +505,31 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE full_game -> HOME · p=73.4% (raw 71.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Arizona State Sun Devils vs San Diego Toreros · KO 2026-11-18 03:30 SAST
+      MONEYLINE H1 -> HOME · p=73.1% (raw 73.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Georgia Southern Eagles vs Coastal Georgia Mariner · KO 2026-11-18 00:00 SAST
       MONEYLINE H1 -> HOME · p=73.1% (raw 73.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Houston Cougars vs Texas A&M-Corpus Christi Islanders · KO 2026-11-18 03:00 SAST
+      MONEYLINE H1 -> HOME · p=73.1% (raw 73.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Indiana State Sycamores vs Bellarmine Knights · KO 2026-11-18 02:00 SAST
+      MONEYLINE H1 -> HOME · p=73.1% (raw 73.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Mississippi State Bulldogs vs Alabama State Lady Hornets · KO 2026-11-17 19:00 SAST
+      MONEYLINE H1 -> HOME · p=73.1% (raw 73.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Oral Roberts Golden Eagles vs Wichita State Shockers · KO 2026-11-18 03:00 SAST
+      MONEYLINE H1 -> HOME · p=73.1% (raw 73.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] South Carolina Gamecocks vs Florida Gulf Coast Eagles · KO 2026-11-18 02:00 SAST
       MONEYLINE H1 -> HOME · p=73.1% (raw 73.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
@@ -662,9 +542,29 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=28 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
       archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:12Z
+  [team_history_empirical_v1/team_history_empirical_v1] Prairie View A&M Lady Panthers vs Texas College Steers · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=72.4% (raw 70.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Providence Friars vs Northeastern Huskies · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=72.4% (raw 70.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] George Washington Revolutionaries vs Temple Owls · KO 2026-11-18 01:00 SAST
+      MONEYLINE H1 -> HOME · p=72.1% (raw 72.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Youngstown State Penguins vs Heidelberg Student Princes · KO 2026-11-17 18:00 SAST
       MONEYLINE H1 -> HOME · p=72.1% (raw 72.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Nebraska Cornhuskers vs Mount St. Mary's Mountaineers · KO 2026-11-18 02:00 SAST
+      TOTAL full_game 142.5 -> UNDER · p=72.0% (raw 72.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Belmont Bruins vs Tennessee Lady Volunteers · KO 2026-11-18 02:30 SAST
+      MONEYLINE full_game -> HOME · p=71.4% (raw 69.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] UCF Knights vs North Florida Ospreys · KO 2026-11-17 18:00 SAST
       MONEYLINE full_game -> HOME · p=71.4% (raw 69.0%) @n/a no matched book
@@ -674,12 +574,61 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE H1 -> HOME · p=71.1% (raw 71.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] North Carolina A&T Aggies vs Liberty Flames · KO 2026-11-18 02:00 SAST
+      MONEYLINE H1 -> HOME · p=70.1% (raw 70.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Southern Illinois Salukis vs Eastern Illinois Panthers · KO 2026-11-18 02:00 SAST
+      MONEYLINE H1 -> HOME · p=70.1% (raw 70.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Western Illinois Leathernecks vs Purdue Fort Wayne Mastodons · KO 2026-11-17 19:00 SAST
       MONEYLINE H1 -> HOME · p=70.1% (raw 70.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Wisconsin Badgers vs Marquette Golden Eagles · KO 2026-11-18 02:30 SAST
+      MONEYLINE H1 -> HOME · p=70.1% (raw 70.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [provider:espn/team_history_empirical_v1] Wisconsin Badgers vs Marquette Golden Eagles · KO 2026-11-18 02:30 SAST
+      MONEYLINE full_game -> HOME · p=68.1% (raw 70.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:42Z
+  [team_history_empirical_v1/team_history_empirical_v1] Auburn Tigers vs Seton Hall Pirates · KO 2026-11-18 02:00 SAST
+      MONEYLINE H1 -> HOME · p=67.1% (raw 67.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Fairleigh Dickinson Knights vs Rider Broncs · KO 2026-11-18 02:00 SAST
+      MONEYLINE H1 -> HOME · p=67.1% (raw 67.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Prairie View A&M Lady Panthers vs Texas College Steers · KO 2026-11-18 02:00 SAST
+      MONEYLINE H1 -> HOME · p=67.1% (raw 67.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Drake Bulldogs vs St. Thomas Tommies · KO 2026-11-18 02:00 SAST
+      MONEYLINE H1 -> HOME · p=66.1% (raw 66.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Norfolk State Spartans vs Bluefield State Big Blue · KO 2026-11-18 01:00 SAST
       MONEYLINE H1 -> HOME · p=66.1% (raw 66.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Providence Friars vs Northeastern Huskies · KO 2026-11-18 02:00 SAST
+      MONEYLINE H1 -> HOME · p=66.1% (raw 66.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Campbell Fighting Camels vs Fordham Rams · KO 2026-11-18 01:00 SAST
+      MONEYLINE full_game -> HOME · p=65.4% (raw 63.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Incarnate Word Cardinals vs Texas State Bobcats · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=65.4% (raw 63.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Southeast Missouri State Redhawks vs Hannibal LaGrange HANNIBAL LAGRANGE · KO 2026-11-18 02:30 SAST
+      MONEYLINE full_game -> HOME · p=65.4% (raw 63.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Nevada Wolf Pack vs Pepperdine Waves · KO 2026-11-17 21:00 SAST
@@ -699,19 +648,73 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=28 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
       archived_revisions=8 · latest_evidence_utc=2026-11-17T16:51:12Z
+  [team_history_empirical_v1/team_history_empirical_v1] Northern Illinois Huskies vs SIU Edwardsville Cougars · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=64.4% (raw 62.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Belmont Bruins vs Tennessee Lady Volunteers · KO 2026-11-18 02:30 SAST
+      MONEYLINE H1 -> HOME · p=64.1% (raw 64.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Incarnate Word Cardinals vs Texas State Bobcats · KO 2026-11-18 02:00 SAST
+      MONEYLINE H1 -> HOME · p=64.1% (raw 64.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical_v1/team_history_empirical_v1] Massachusetts Minutewomen vs Army Black Knights · KO 2026-11-18 00:00 SAST
       MONEYLINE H1 -> HOME · p=64.1% (raw 64.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] South Carolina Gamecocks vs Florida Gulf Coast Eagles · KO 2026-11-18 02:00 SAST
+      TOTAL full_game 139.5 -> UNDER · p=64.0% (raw 64.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-17T20:28:38Z
+  [team_history_empirical_v1/team_history_empirical_v1] Campbell Fighting Camels vs Fordham Rams · KO 2026-11-18 01:00 SAST
+      MONEYLINE H1 -> HOME · p=62.1% (raw 62.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Northern Illinois Huskies vs SIU Edwardsville Cougars · KO 2026-11-18 02:00 SAST
+      MONEYLINE H1 -> HOME · p=62.1% (raw 62.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical_v1/team_history_empirical_v1] Southeast Missouri State Redhawks vs Hannibal LaGrange HANNIBAL LAGRANGE · KO 2026-11-18 02:30 SAST
+      MONEYLINE H1 -> HOME · p=62.1% (raw 62.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=6 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [provider:espn/team_history_empirical_v1] George Washington Revolutionaries vs Temple Owls · KO 2026-11-18 01:00 SAST
+      MONEYLINE full_game -> HOME · p=61.0% (raw 62.9%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
+  [provider:espn/team_history_empirical_v1] Oral Roberts Golden Eagles vs Wichita State Shockers · KO 2026-11-18 03:00 SAST
+      MONEYLINE full_game -> HOME · p=60.1% (raw 60.9%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=calibrated n=35 · reasons=no_exact_bookmaker_market · prediction=espn
+      archived_revisions=10 · latest_evidence_utc=2026-11-18T00:56:11Z
+  [provider:espn/team_history_empirical_v1] Southern Illinois Salukis vs Eastern Illinois Panthers · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> AWAY · p=57.3% (raw 59.3%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
   [provider:espn/team_history_empirical_v1] Massachusetts Minutewomen vs Army Black Knights · KO 2026-11-18 00:00 SAST
       MONEYLINE full_game -> HOME · p=57.1% (raw 59.1%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
       calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
       archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
+  [provider:espn/team_history_empirical_v1] Campbell Fighting Camels vs Fordham Rams · KO 2026-11-18 01:00 SAST
+      MONEYLINE full_game -> AWAY · p=50.8% (raw 52.8%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
+  [provider:espn/team_history_empirical_v1] Northern Illinois Huskies vs SIU Edwardsville Cougars · KO 2026-11-18 02:00 SAST
+      MONEYLINE full_game -> HOME · p=48.7% (raw 50.6%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+      archived_revisions=9 · latest_evidence_utc=2026-11-17T20:28:41Z
 
-Active summary: ELIGIBLE_CLEAN=1 CAUTION=0 WATCHLIST_NO_ODDS=27 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=8
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 WATCHLIST_NO_ODDS=0 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=68 SETTLED=51
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=14 SETTLED=141
 Logical picks shown: 155 · superseded observations: 384
 Total archived pick evidence rows: 539
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.

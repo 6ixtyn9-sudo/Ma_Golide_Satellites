@@ -1,8 +1,8 @@
 {
-  "awaiting_game_legs": 1,
+  "awaiting_game_legs": 0,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
-  "generated_utc": "2026-11-18T00:57:22Z",
+  "generated_utc": "2026-11-18T04:22:55Z",
   "history": [
     {
       "accas": [],
@@ -6654,20 +6654,20 @@
     },
     {
       "accas": [],
-      "awaiting_game_legs": 1,
-      "bank_units": 99.72161172161172,
+      "awaiting_game_legs": 0,
+      "bank_units": 100.46235246235247,
       "date": "2026-11-17",
       "decision_id": "44041811165_nba_1_attempt_1",
       "frozen_at": "2026-11-17T07:51:36Z",
       "league": "NBA",
       "losses": 0,
       "pending_accas": 0,
-      "pending_positions": 1,
-      "pending_singles": 1,
-      "pending_units": 1.0,
+      "pending_positions": 0,
+      "pending_singles": 0,
+      "pending_units": 0,
       "positions": [
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -6675,7 +6675,7 @@
           "effective_decimal_odds": 1.7407407407407407,
           "estimated_joint_win_probability": 0.607326,
           "estimated_win_probability": 0.607326,
-          "grade_status": "pending",
+          "grade_status": "win",
           "individual_pick_filter": {
             "as_of_utc": "2026-11-17T07:51:42Z",
             "bands": [
@@ -7158,7 +7158,7 @@
           },
           "leg_count": 1,
           "leg_outcomes": [
-            null
+            "win"
           ],
           "legs": [
             {
@@ -7286,7 +7286,7 @@
               },
               "forecast_id": "c74d56cef4f59afa78b6",
               "game_id": "401910003",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Minnesota Timberwolves",
               "individual_pick_roi_band": {
                 "adjusted_roi": 0.034344,
@@ -7315,7 +7315,7 @@
               "market": "moneyline",
               "model": "team_history_empirical_v1",
               "model_version": "team_history_empirical_v1",
-              "outcome": null,
+              "outcome": "win",
               "paper_only": true,
               "period": "full_game",
               "pick_id": "c74d56cef4f59afa78b6",
@@ -7324,7 +7324,6 @@
               "push_probability": 0.0,
               "raw_probability": 0.56,
               "residual_games": 100,
-              "result_resolution_status": "awaiting_game",
               "role": null,
               "scheduled_utc": "2026-11-18T01:00:00Z",
               "selection": "home",
@@ -7338,7 +7337,7 @@
             }
           ],
           "paper_only": true,
-          "profit_units": null,
+          "profit_units": 0.7407407407407407,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 1,
@@ -7348,19 +7347,19 @@
           "stake_units": 1.0,
           "ticket_id": "390c0664177de5b4e75a",
           "ticket_type": "single",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         }
       ],
-      "profit_units": null,
+      "profit_units": 0.7407407407407407,
       "pushes": 0,
       "result_unresolvable_legs": 0,
-      "returned_units": null,
+      "returned_units": 1.7407407407407407,
       "settled_accas": 0,
-      "settled_positions": 0,
-      "settled_singles": 0,
+      "settled_positions": 1,
+      "settled_singles": 1,
       "singles": [
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -7368,7 +7367,7 @@
           "effective_decimal_odds": 1.7407407407407407,
           "estimated_joint_win_probability": 0.607326,
           "estimated_win_probability": 0.607326,
-          "grade_status": "pending",
+          "grade_status": "win",
           "individual_pick_filter": {
             "as_of_utc": "2026-11-17T07:51:42Z",
             "bands": [
@@ -7851,7 +7850,7 @@
           },
           "leg_count": 1,
           "leg_outcomes": [
-            null
+            "win"
           ],
           "legs": [
             {
@@ -7979,7 +7978,7 @@
               },
               "forecast_id": "c74d56cef4f59afa78b6",
               "game_id": "401910003",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Minnesota Timberwolves",
               "individual_pick_roi_band": {
                 "adjusted_roi": 0.034344,
@@ -8008,7 +8007,7 @@
               "market": "moneyline",
               "model": "team_history_empirical_v1",
               "model_version": "team_history_empirical_v1",
-              "outcome": null,
+              "outcome": "win",
               "paper_only": true,
               "period": "full_game",
               "pick_id": "c74d56cef4f59afa78b6",
@@ -8017,7 +8016,6 @@
               "push_probability": 0.0,
               "raw_probability": 0.56,
               "residual_games": 100,
-              "result_resolution_status": "awaiting_game",
               "role": null,
               "scheduled_utc": "2026-11-18T01:00:00Z",
               "selection": "home",
@@ -8031,7 +8029,7 @@
             }
           ],
           "paper_only": true,
-          "profit_units": null,
+          "profit_units": 0.7407407407407407,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 1,
@@ -8041,35 +8039,35 @@
           "stake_units": 1.0,
           "ticket_id": "390c0664177de5b4e75a",
           "ticket_type": "single",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         }
       ],
-      "staked_units": 0,
-      "unresolved_result_legs": 1,
-      "wins": 0
+      "staked_units": 1.0,
+      "unresolved_result_legs": 0,
+      "wins": 1
     }
   ],
-  "hit_rate": 0.5,
+  "hit_rate": 0.6,
   "league": "NBA",
   "losses": 2,
-  "paper_bank_units": 99.72161172161172,
-  "paper_committed_units": 1.0,
-  "paper_free_units": 98.72161172161172,
+  "paper_bank_units": 100.46235246235246,
+  "paper_committed_units": 0,
+  "paper_free_units": 100.46235246235246,
   "paper_only": true,
   "pending_accas": 0,
-  "pending_positions": 1,
-  "pending_singles": 1,
-  "profit_units": -0.2783882783882785,
+  "pending_positions": 0,
+  "pending_singles": 0,
+  "profit_units": 0.4623524623524622,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": -0.06959706959706963,
+  "roi": 0.09247049247049244,
   "schema_version": "magolide.operator.v1",
-  "selected_leg_brier_score": 0.205140592381375,
+  "selected_leg_brier_score": 0.19947973436966668,
   "settled_accas": 2,
-  "settled_positions": 4,
-  "settled_singles": 2,
-  "settled_stake_units": 4.0,
+  "settled_positions": 5,
+  "settled_singles": 3,
+  "settled_stake_units": 5.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 1,
-  "wins": 2
+  "unresolved_result_legs": 0,
+  "wins": 3
 }
