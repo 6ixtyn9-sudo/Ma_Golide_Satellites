@@ -837,6 +837,11 @@ class MarketForecastService:
             "forecasts": [forecast.to_dict() for forecast in current],
             "accas": {
                 "mode": "paper_only",
+                "pricing_evidence_status": (
+                    "unpriced_no_validated_named_book_lane"
+                    if self.league is League.EUROLEAGUE_W
+                    else "priced_lane_policy_applies"
+                ),
                 "paper_policy": (
                     "admits a provisional segment only with at least one graded non-push "
                     "sample when insufficient samples are the sole blocker; exact price, "
@@ -851,6 +856,9 @@ class MarketForecastService:
                         "positive calibrated expected value, and at least ten prior settled picks "
                         "in the matching model/market/period/probability/odds band"
                         if self.league is League.EUROLEAGUE
+                        else "; EuroLeague Women has no validated named-book lane: paper counts are unpriced "
+                        "decision-support candidates, never value/EV claims"
+                        if self.league is League.EUROLEAGUE_W
                         else ""
                     )
                 ),

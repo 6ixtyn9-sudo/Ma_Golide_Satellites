@@ -1,8 +1,30 @@
 # Verification and known limitations
 
-Verification date: **2026-11-09**. All results below come from local offline
-commands in the cleaned checkout. No authenticated provider validation,
-production migration, notification delivery, or betting write was performed.
+Base verification date: **2026-11-09**. The historical cleanup results below
+come from local offline commands in the cleaned checkout. No authenticated
+provider validation, production migration, notification delivery, or betting
+write was performed.
+
+## EuroLeague Women FIBA follow-up (2026-11-18)
+
+This section records the narrower, later FIBA ELW remediation separately from
+the 2026-11-09 baseline. `LIVE_CONFIRMED` means a read-only observation on that
+date; it is **not** a service-level, licensing, quota, or ongoing-schema
+commitment. `FIXTURE_COVERED` means hermetic parser/control-flow coverage only.
+
+| Category | Status | Evidence / boundary |
+| --- | --- | --- |
+| GDAP competition schedule | `LIVE_CONFIRMED` | Competition `209127` returned 110 ELW rows; 54 future bracket rows had `teamA`/`teamB` null. The adapter skips/report-aggregates those unassignable slots so they cannot abort a valid Paris-day slate or become games. |
+| Canonical schedule/final shape | `LIVE_CONFIRMED` | `gameDateTimeUTC` was offset-less UTC; completed rows used `gameResultStatusCode=VALID`, `liveGameStatus=999`, and numeric scores. Future rows also used `liveGameStatus=1`, so no live-state inference relies on that value. |
+| Game-page extraction | `LIVE_CONFIRMED` | Read-only RSC probes of three completed regular-season games produced game-bound PBP and reconciled quarter/OT detail; a future page had no usable PBP and failed closed. |
+| Team-less slots, terminal statuses, PBP decoys, cursor retention, correction trigger | `FIXTURE_COVERED` | Tests cover a mixed/all-placeholder schedule, CANCELLED/CANCELED/ABANDONED/VOID fail-open gate handling, wrong/missing PBP game binding, all-failed FIBA history detail batch retaining its cursor, and a changed GDAP score forcing re-verification. |
+| Cancelled/postponed/abandoned live vocabulary, multi-OT, future playoff slug | `UNRESOLVED` | No real row/page for these cases was observed. Synthetic cases only protect the documented conservative behavior. |
+| TeamA home semantics across neutral-site rounds | `UNRESOLVED` | FIBA schedule-side A is the adapter orientation, not independently validated home/host evidence. |
+| Automated use, quota, key rotation, storage/redistribution rights | `UNRESOLVED` | A public browser-delivered key and successful read-only calls do not establish these permissions or operational guarantees. |
+
+The full live-vs-fixture distinction and current operational constraints are in
+[PROVIDERS.md](PROVIDERS.md). In particular, ELW has no validated named-book
+lane: any empirical paper counts are explicitly unpriced, not EV/value claims.
 
 ## Clean dependency and test verification
 

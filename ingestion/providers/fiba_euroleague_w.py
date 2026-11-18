@@ -25,38 +25,94 @@ from datetime import datetime
 import json
 import re
 from typing import Any, Callable, Dict, List, Optional
-from urllib.parse import urlencode
+from urllib.parse import parse_qs, urlencode, urlparse
 from zoneinfo import ZoneInfo
 
-from ..http import HttpClient
+from ..http import HttpClient, HttpError
 from ..identity import parse_utc, to_utc_iso
-from ..models import ActualResult, Game, GameStatus, League, PeriodKind
+from ..models import (
+    ActualResult,
+    CoverageGap,
+    CoverageState,
+    Game,
+    GameStatus,
+    League,
+    PeriodKind,
+)
 from . import FetchFn, IdentityError
+from .fiba_euroleague_w_contract import (
+    COMPETITION_CODE,
+    COMPETITION_ID,
+    GDAP_BASE_URL,
+    KEY_HEADER,
+    KEY_PAGE_URL,
+    PUBLIC_FALLBACK_SUBSCRIPTION_KEY,
+    SCHEDULE_ENDPOINT,
+    has_complete_team_identity,
+    has_unassigned_team_slot,
+    page_subscription_key,
+    schedule_status,
+)
 
-COMPETITION_ID = 209127
-COMPETITION_SEASON = "2026-27"
+# The observed competition payload uses the edition's ending year (2027), not
+# the display season string previously frozen in this adapter.
+COMPETITION_SEASON = "2027"
 LEAGUE_TIMEZONE = "Europe/Paris"
-GDAP_BASE_URL = "https://digital-api.fiba.basketball/hapi"
-SCHEDULE_ENDPOINT = "getgdapgamesbycompetitionid"
-KEY_PAGE_URL = "https://www.fiba.basketball/en"
-KEY_HEADER = "Ocp-Apim-Subscription-Key"
-# Public key published in FIBA's client application (validated against the
-# 209127 GDAP schedule on 2026-11-18). It is not a Ma Golide secret.
-PUBLIC_FALLBACK_SUBSCRIPTION_KEY = "898cd5e7389140028ecb42943c47eb74"
 GAME_PAGE_TEMPLATE = (
-    "https://www.fiba.basketball/en/events/euroleague-women-26-27/games/"
+    "https://www.fiba.basketball/en/events/{event_slug}/games/"
     "{game_id}-{team_a_code}-{team_b_code}"
 )
 
 VerificationError = ValueError
+PROVIDER = "fiba"
+
+# The official competition schedule includes future bracket slots before teams
+# are drawn. They are valid schedule rows but cannot become canonical games.
+# Preserve every skip as telemetry instead of allowing one placeholder to abort
+# the entire current/future slate.
+_LAST_GAPS: List[CoverageGap] = []
 
 
-def schedule_url(competition_id: int = COMPETITION_ID, *, query_key: bool = True) -> str:
+def last_gaps() -> List[CoverageGap]:
+    """Return non-fatal schedule rows skipped during the most recent discovery."""
+
+    return list(_LAST_GAPS)
+
+
+def _reset_gaps() -> None:
+    _LAST_GAPS.clear()
+
+
+def _unassigned_slots_gap(total: int, date_relevant: int, date_iso: Optional[str]) -> None:
+    """Expose benign, team-less future bracket slots as bounded telemetry."""
+
+    if not total:
+        return
+    relevance = (
+        f"; {date_relevant} fall on requested Europe/Paris slate {date_iso}"
+        if date_iso is not None
+        else ""
+    )
+    _LAST_GAPS.append(
+        CoverageGap(
+            game_id=None,
+            required_field="fiba_elw_unassigned_schedule_slots",
+            reason=CoverageState.NOT_APPLICABLE,
+            provider=PROVIDER,
+            detail=(
+                f"skipped {total} GDAP future bracket slot(s) without assigned teamA/teamB"
+                f"{relevance}; they cannot become canonical fixtures"
+            ),
+        )
+    )
+
+
+def schedule_url(competition_id: int = COMPETITION_ID, *, query_key: bool = False) -> str:
     """Return the official GDAP schedule route for one FIBA competition.
 
-    ``query_key`` exists for the zero-dependency adaptive gate, where an HTTP
-    header cannot be threaded through its tiny URL-only reader.  Normal live
-    acquisition uses the header through :class:`FibaClient` instead.
+    Normal acquisition sends the public browser APIM value in a header.  The
+    query-key option remains only for compatibility with controlled fixture
+    callers; no production caller should use it because URLs can be logged.
     """
 
     params: Dict[str, Any] = {"gdapCompetitionId": int(competition_id)}
@@ -65,15 +121,38 @@ def schedule_url(competition_id: int = COMPETITION_ID, *, query_key: bool = True
     return f"{GDAP_BASE_URL}/{SCHEDULE_ENDPOINT}?{urlencode(params)}"
 
 
-def game_page_url(game_id: str, team_a_code: str, team_b_code: str) -> str:
-    """Build the official current-event FIBA game page URL from GDAP fields."""
+def _event_slug(season: Any) -> str:
+    """Derive FIBA's observed event slug from the GDAP edition-ending year."""
+
+    text = str(season or "").strip()
+    match = re.fullmatch(r"(?:20)?(\d{2})", text)
+    if not match:
+        # The live GDAP value is an integer ending year (2027). Accept a
+        # display ``2026-27`` fallback only when it contains the same end year.
+        match = re.fullmatch(r"20\d{2}-(\d{2})", text)
+    if not match:
+        return ""
+    end_year = int(match.group(1))
+    return f"euroleague-women-{(end_year - 1) % 100:02}-{end_year:02}"
+
+
+def game_page_url(
+    game_id: str, team_a_code: str, team_b_code: str, *, event_slug: str = ""
+) -> str:
+    """Build a season-derived official FIBA game page URL from GDAP fields."""
 
     if not str(game_id).isdigit():
         raise VerificationError("FIBA game id is invalid")
     codes = (str(team_a_code or "").upper(), str(team_b_code or "").upper())
     if not all(re.fullmatch(r"[A-Z0-9_-]+", code) for code in codes):
         raise VerificationError("FIBA game page requires both official team codes")
-    return GAME_PAGE_TEMPLATE.format(game_id=game_id, team_a_code=codes[0], team_b_code=codes[1])
+    if not re.fullmatch(r"euroleague-women-\d{2}-\d{2}", str(event_slug)):
+        raise VerificationError(
+            "FIBA event slug unavailable from GDAP season; check the game-page event route"
+        )
+    return GAME_PAGE_TEMPLATE.format(
+        event_slug=event_slug, game_id=game_id, team_a_code=codes[0], team_b_code=codes[1]
+    )
 
 
 def _clean_name(team: Any, *, side: str, game_id: str) -> tuple[str, str, str]:
@@ -93,7 +172,7 @@ def _required_competition(row: Dict[str, Any], competition_id: int) -> Dict[str,
     competition = row.get("competition")
     if not isinstance(competition, dict) or competition.get("competitionId") != competition_id:
         raise VerificationError("FIBA schedule row is outside the requested EuroLeague Women competition")
-    if competition.get("competitionCode") not in {None, "ELW"}:
+    if competition.get("competitionCode") not in {None, COMPETITION_CODE}:
         raise VerificationError("FIBA competition code is not EuroLeague Women")
     return competition
 
@@ -113,26 +192,17 @@ def _scheduled_utc(row: Dict[str, Any], game_id: str) -> str:
 
 
 def _game_status(row: Dict[str, Any]) -> GameStatus:
-    if row.get("isPostponed") is True:
-        return GameStatus.POSTPONED
-    status = str(row.get("statusCode") or "").upper()
-    if status in {"CANCELLED", "CANCELED"}:
-        return GameStatus.CANCELLED
-    if row.get("isLive") is True:
-        return GameStatus.LIVE
-    result_status = str(row.get("gameResultStatusCode") or "").upper()
-    live_status = row.get("liveGameStatus")
-    scores_present = (
-        isinstance(row.get("teamAScore"), (int, float))
-        and not isinstance(row.get("teamAScore"), bool)
-        and isinstance(row.get("teamBScore"), (int, float))
-        and not isinstance(row.get("teamBScore"), bool)
-    )
-    if result_status == "VALID" and live_status == 999 and scores_present:
-        return GameStatus.FINAL
-    if status in {"ABANDONED", "VOID"}:
-        return GameStatus.ABANDONED
-    return GameStatus.SCHEDULED
+    """Map GDAP status through the contract shared with the adaptive gate."""
+
+    return {
+        "scheduled": GameStatus.SCHEDULED,
+        "live": GameStatus.LIVE,
+        "final": GameStatus.FINAL,
+        "postponed": GameStatus.POSTPONED,
+        "cancelled": GameStatus.CANCELLED,
+        "abandoned": GameStatus.ABANDONED,
+        "unknown": GameStatus.UNKNOWN,
+    }[schedule_status(row)]
 
 
 def game_from_schedule_row(
@@ -161,6 +231,7 @@ def game_from_schedule_row(
         "fiba_elw_team_b": away_id,
         "fiba_elw_team_a_code": home_code,
         "fiba_elw_team_b_code": away_code,
+        "fiba_elw_event_slug": _event_slug(competition.get("season")),
         "fiba_elw_timezone": str(row.get("ianaTimeZone") or ""),
     }
     if _game_status(row) is GameStatus.FINAL:
@@ -203,19 +274,47 @@ def _schedule_rows(
 def discover_games(
     date_iso: Optional[str], fetch: FetchFn, competition_id: int = COMPETITION_ID
 ) -> List[Game]:
-    """Read the official GDAP schedule and filter by the league-local slate day."""
+    """Read GDAP, date-filter before mapping, and skip unassigned bracket slots.
 
+    FIBA publishes future playoff rows with ``teamA``/``teamB`` set to null.
+    They are a truthful schedule fact but have no canonical fixture identity;
+    mapping them must not prevent a valid earlier Paris slate from being read.
+    In contrast, a date-relevant row with malformed *assigned* teams remains a
+    hard contract failure rather than becoming a guessed fixture.
+    """
+
+    _reset_gaps()
     target = None
     if date_iso is not None:
         try:
             target = datetime.strptime(date_iso, "%Y-%m-%d").date()
         except ValueError as exc:
             raise ValueError("FIBA EuroLeague Women date must be YYYY-MM-DD") from exc
-    games = [game_from_schedule_row(row, competition_id) for row in _schedule_rows(fetch, competition_id)]
-    if target is None:
-        return games
     zone = ZoneInfo(LEAGUE_TIMEZONE)
-    return [game for game in games if parse_utc(game.scheduled_utc).astimezone(zone).date() == target]
+    games: List[Game] = []
+    unassigned_total = 0
+    unassigned_relevant = 0
+    for row in _schedule_rows(fetch, competition_id):
+        # Parse the canonical UTC field before deciding relevance. A bad time
+        # cannot safely be placed outside the requested slate and must fail.
+        game_id = str(row.get("gameId") or "")
+        row_utc = _scheduled_utc(row, game_id)
+        is_relevant = target is None or parse_utc(row_utc).astimezone(zone).date() == target
+        if has_unassigned_team_slot(row):
+            unassigned_total += 1
+            unassigned_relevant += int(is_relevant)
+            continue
+        if not is_relevant:
+            # Do not turn a malformed team identity on a different league day
+            # into an outage for the requested slate.
+            continue
+        if not has_complete_team_identity(row):
+            raise VerificationError(
+                f"FIBA game {game_id or '<unknown>'} has incomplete assigned team identity"
+            )
+        games.append(game_from_schedule_row(row, competition_id))
+    _unassigned_slots_gap(unassigned_total, unassigned_relevant, date_iso)
+    return games
 
 
 def _number(value: Any, *, field: str) -> int:
@@ -233,6 +332,29 @@ def _period_order(label: str) -> tuple[int, int]:
     if match:
         return (1, int(match.group(1)))
     raise VerificationError(f"FIBA detail has unsupported period {label!r}")
+
+
+def _play_by_play_game_id(play_by_play: Any) -> str:
+    """Return the explicit game binding carried by FIBA's PBP object."""
+
+    if not isinstance(play_by_play, dict):
+        return ""
+    # Live RSC currently uses gameTechnicalName; the alternate spelling is
+    # retained only as an observed-compatible fallback, never inferred from
+    # scores, team names, or occurrence position.
+    for field in ("gameTechnicalName", "gameTechnicalNameOrGameId"):
+        value = play_by_play.get(field)
+        if value is not None and str(value).strip():
+            return str(value).strip()
+    return ""
+
+
+def _require_play_by_play_binding(play_by_play: Any, expected_game_id: Any) -> None:
+    actual_game_id = _play_by_play_game_id(play_by_play)
+    if not actual_game_id:
+        raise VerificationError("FIBA play-by-play lacks an explicit game binding")
+    if actual_game_id != str(expected_game_id):
+        raise VerificationError("FIBA play-by-play belongs to another game")
 
 
 def _period_scores(detail: Dict[str, Any]) -> tuple[List[int], List[int], int, int, int]:
@@ -293,6 +415,7 @@ def result_from_game_detail(game: Game, detail: Dict[str, Any]) -> Game:
     expected_competition = game.provider_ids.get("fiba_elw_competition")
     if str(header.get("gameId")) != str(expected_id):
         raise VerificationError("FIBA game detail belongs to another game")
+    _require_play_by_play_binding(detail.get("playByPlay"), expected_id)
     competition = header.get("competition") or {}
     if str(competition.get("competitionId")) != str(expected_competition):
         raise VerificationError("FIBA game detail belongs to another competition")
@@ -368,6 +491,7 @@ def fetch_game_result(game: Game, fetch_detail: Callable[[str], Dict[str, Any]])
             game.provider_ids.get("fiba_elw_game", ""),
             game.provider_ids.get("fiba_elw_team_a_code", ""),
             game.provider_ids.get("fiba_elw_team_b_code", ""),
+            event_slug=game.provider_ids.get("fiba_elw_event_slug", ""),
         )
     )
     return result_from_game_detail(game, detail)
@@ -392,31 +516,50 @@ def extract_game_page(text: str, game_id: str) -> Dict[str, Any]:
     if not isinstance(text, str) or not text:
         raise VerificationError("empty FIBA game-page response")
     extracted: Dict[str, Any] = {}
+    # Flight can carry the same fragment once directly and once inside an
+    # escaped ``self.__next_f.push`` string.  Inspect both forms; JSON decoding
+    # below still rejects incomplete/invalid fragments.
+    candidates = [text]
+    normalized = text
+    for _ in range(2):
+        decoded = normalized.replace(r'\"', '"')
+        if decoded == normalized:
+            break
+        candidates.append(decoded)
+        normalized = decoded
     for key in ("game", "playByPlay", "gameDetails", "playersTeamA", "playersTeamB"):
         # Flight includes UI configuration objects such as
         # ``playByPlay: {timeout: ...}`` before the actual game payload. Walk
-        # every occurrence and accept only the expected shape.
-        for match in re.finditer(rf'"{re.escape(key)}"\s*:\s*([{{[])', text):
-            try:
-                value = _balanced_json(text, match.start(1))
-            except (ValueError, json.JSONDecodeError):
-                continue
-            valid = (
-                isinstance(value, dict) and str(value.get("gameId")) == str(game_id)
-                if key == "game"
-                else isinstance(value, dict) and isinstance(value.get("items"), dict)
-                if key == "playByPlay"
-                else isinstance(value, dict)
-                if key == "gameDetails"
-                else isinstance(value, list)
-            )
-            if valid:
-                extracted[key] = value
+        # every occurrence and accept only the expected shape *and binding*.
+        for candidate in candidates:
+            for match in re.finditer(rf'"{re.escape(key)}"\s*:\s*([{{[])', candidate):
+                try:
+                    value = _balanced_json(candidate, match.start(1))
+                except (ValueError, json.JSONDecodeError):
+                    continue
+                valid = (
+                    isinstance(value, dict) and str(value.get("gameId")) == str(game_id)
+                    if key == "game"
+                    else (
+                        isinstance(value, dict)
+                        and isinstance(value.get("items"), dict)
+                        and _play_by_play_game_id(value) == str(game_id)
+                    )
+                    if key == "playByPlay"
+                    else isinstance(value, dict)
+                    if key == "gameDetails"
+                    else isinstance(value, list)
+                )
+                if valid:
+                    extracted[key] = value
+                    break
+            if key in extracted:
                 break
     if not isinstance(extracted.get("game"), dict) or str(extracted["game"].get("gameId")) != str(game_id):
         raise VerificationError("FIBA game page did not expose the requested game header")
     if not isinstance(extracted.get("playByPlay"), dict):
-        raise VerificationError("FIBA game page did not expose play-by-play")
+        raise VerificationError("FIBA game page did not expose requested-game play-by-play")
+    _require_play_by_play_binding(extracted["playByPlay"], game_id)
     return extracted
 
 
@@ -439,43 +582,69 @@ class FibaClient:
             return self._key
         try:
             page = self.http.get_text(KEY_PAGE_URL)
-            match = re.search(
-                r"NEXT_CLIENT_APIM_SUBSCRIPTION_KEY\\?\"\s*:\s*\\?\"([0-9a-f]{32})",
-                page,
-                flags=re.IGNORECASE,
-            )
-            self._key = match.group(1) if match else PUBLIC_FALLBACK_SUBSCRIPTION_KEY
+            self._key = page_subscription_key(page) or PUBLIC_FALLBACK_SUBSCRIPTION_KEY
         except Exception:
             self._key = PUBLIC_FALLBACK_SUBSCRIPTION_KEY
         return self._key
 
     def get_json(self, url: str) -> Any:
-        # The adapter only invokes this for its fixed public GDAP route. Do not
-        # let a generic fetcher turn the subscription key into a query value.
+        """Read only this adapter's fixed GDAP competition through header auth."""
+
+        parsed = urlparse(url)
+        expected_path = f"/{SCHEDULE_ENDPOINT}"
+        competition_ids = parse_qs(parsed.query).get("gdapCompetitionId", [])
+        if (
+            parsed.scheme != "https"
+            or parsed.netloc != urlparse(GDAP_BASE_URL).netloc
+            or parsed.path != f"/hapi{expected_path}"
+            or competition_ids != [str(COMPETITION_ID)]
+        ):
+            raise VerificationError("FIBA client refused a non-ELW GDAP schedule URL")
+        safe_url = (
+            f"{GDAP_BASE_URL}/{SCHEDULE_ENDPOINT}?"
+            + urlencode({"gdapCompetitionId": COMPETITION_ID})
+        )
+        # Do not retain query-key authentication in request URLs/logs. A 401
+        # or other transient failure gets one retry after a public-page key
+        # refresh; errors still propagate as explicit provider failures.
         for attempt in range(2):
             try:
                 return self.http.get_json(
-                    url.split("?", 1)[0] + "?" + urlencode({"gdapCompetitionId": COMPETITION_ID}),
-                    headers={KEY_HEADER: self._subscription_key(refresh=bool(attempt)), "Accept": "application/json"},
+                    safe_url,
+                    headers={
+                        KEY_HEADER: self._subscription_key(refresh=bool(attempt)),
+                        "Accept": "application/json",
+                    },
                 )
             except Exception as exc:
                 if attempt:
                     raise exc
         raise AssertionError("unreachable")  # pragma: no cover
 
+    def last_quota(self) -> Dict[str, Any]:
+        """Return any quota/rate-limit headers captured by the shared HTTP client."""
+
+        return dict(getattr(self.http, "last_quota", {}) or {})
+
     def game_detail(self, url: str) -> Dict[str, Any]:
         game_id = re.search(r"/games/(\d+)-", url)
         if not game_id:
             raise VerificationError("FIBA game-page URL has no game id")
-        text = self.http.get_text(url, headers={"RSC": "1", "Accept": "text/x-component"})
+        try:
+            text = self.http.get_text(url, headers={"RSC": "1", "Accept": "text/x-component"})
+        except HttpError as exc:
+            if exc.status == 404:
+                raise VerificationError(
+                    "FIBA event game page returned 404; event slug not found — check the event route"
+                ) from exc
+            raise
         return extract_game_page(text, game_id.group(1))
 
 
 def smoke(fetch: FetchFn, *, verification: str = "FIXTURE_VERIFIED") -> Dict[str, Any]:
-    """Read and validate official FIBA schedule coverage without persistence."""
+    """Read official FIBA schedule coverage without persistence or false success."""
 
-    rows = _schedule_rows(fetch)
-    games = [game_from_schedule_row(row) for row in rows]
+    games = discover_games(None, fetch)
     finals = sum(game.status is GameStatus.FINAL for game in games)
     return {
         "verification": verification,
@@ -484,6 +653,11 @@ def smoke(fetch: FetchFn, *, verification: str = "FIXTURE_VERIFIED") -> Dict[str
         "schedule_route": SCHEDULE_ENDPOINT,
         "fixtures_found": len(games),
         "official_finals_indexed": finals,
+        "unassigned_schedule_slot_gaps": len(_LAST_GAPS),
+        "gaps": [
+            {"required_field": gap.required_field, "reason": gap.reason.value, "detail": gap.detail}
+            for gap in _LAST_GAPS
+        ],
         "game_detail": "official_fiba_game_page_play_by_play_period_scores",
         "canonical_tip_time": "gameDateTimeUTC",
     }
@@ -502,6 +676,7 @@ __all__ = [
     "fetch_game_result",
     "game_from_schedule_row",
     "game_page_url",
+    "last_gaps",
     "result_from_game_detail",
     "schedule_url",
     "smoke",

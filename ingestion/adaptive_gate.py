@@ -36,18 +36,28 @@ from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
 from ingestion.providers._cba_aes import Undecryptable, decrypt_body
+from ingestion.providers.fiba_euroleague_w_contract import (
+    COMPETITION_CODE,
+    COMPETITION_ID,
+    GDAP_BASE_URL,
+    KEY_HEADER,
+    KEY_PAGE_URL,
+    PUBLIC_FALLBACK_SUBSCRIPTION_KEY,
+    SCHEDULE_ENDPOINT,
+    has_complete_team_identity,
+    has_unassigned_team_slot,
+    page_subscription_key,
+    schedule_status,
+)
 
 SCHEMA_VERSION = "magolide.adaptive-gate"
 DECISION_LEAD_MINUTES = 60
 HTTP_TIMEOUT_SECONDS = 15
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 
-# FIBA publishes this APIM key in its public web client.  The full FIBA
-# adapter refreshes it from the page at runtime; the dependency-free gate uses
-# the current public value solely for this bounded schedule read.  It is not a
-# Ma Golide credential and is never emitted in a gate report.
-_FIBA_PUBLIC_SUBSCRIPTION_KEY = "898cd5e7389140028ecb42943c47eb74"
-_FIBA_ELW_COMPETITION_ID = 209127
+# The FIBA wire contract (including public-key fallback and status mapping) is
+# shared with the full provider above.  This gate imports only its stdlib-only
+# contract module, preserving its dependency-free early-workflow role.
 
 # This is kept in the same order as the workflow matrix so its JSON ``include``
 # rows can be consumed directly by GitHub Actions.
@@ -487,16 +497,29 @@ def _cba_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGa
     return games
 
 
+def _fiba_schedule_payload(url: str) -> Any:
+    """Read GDAP via header auth, refreshing the public page key only on need."""
+
+    headers = {KEY_HEADER: PUBLIC_FALLBACK_SUBSCRIPTION_KEY, "Accept": "application/json"}
+    try:
+        return _read_json_response(url, headers=headers)
+    except GateUncertain as first_error:
+        # A rotated public browser key is operational uncertainty, not a reason
+        # to silently skip a league. Refresh once without ever placing it in a
+        # URL, then let any failure become the gate's normal fail-open path.
+        page = _read_limited_response(KEY_PAGE_URL)
+        refreshed = page_subscription_key(page)
+        if not refreshed:
+            raise GateUncertain("FIBA public key refresh did not expose a valid key") from first_error
+        return _read_json_response(url, headers={KEY_HEADER: refreshed, "Accept": "application/json"})
+
+
 def _fiba_elw_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGame]:
-    """Read and date-bound the official FIBA GDAP EuroLeague Women schedule."""
+    """Read assigned FIBA ELW fixtures and fail open on status/schema drift."""
 
     del config
-    url = (
-        "https://digital-api.fiba.basketball/hapi/getgdapgamesbycompetitionid?"
-        f"gdapCompetitionId={_FIBA_ELW_COMPETITION_ID}&"
-        f"subscription-key={_FIBA_PUBLIC_SUBSCRIPTION_KEY}"
-    )
-    payload = _read_json_response(url)
+    url = f"{GDAP_BASE_URL}/{SCHEDULE_ENDPOINT}?gdapCompetitionId={COMPETITION_ID}"
+    payload = _fiba_schedule_payload(url)
     if not isinstance(payload, list) or not payload:
         raise GateUncertain("FIBA EuroLeague Women schedule lacks a non-empty game list")
     wanted = datetime.strptime(target_date, "%Y-%m-%d").date()
@@ -505,7 +528,11 @@ def _fiba_elw_schedule(config: LeagueGateConfig, target_date: str) -> list[Sched
         if not isinstance(row, dict):
             raise GateUncertain("FIBA EuroLeague Women schedule has an invalid row")
         competition = row.get("competition")
-        if not isinstance(competition, dict) or competition.get("competitionId") != _FIBA_ELW_COMPETITION_ID:
+        if (
+            not isinstance(competition, dict)
+            or competition.get("competitionId") != COMPETITION_ID
+            or competition.get("competitionCode") not in {None, COMPETITION_CODE}
+        ):
             raise GateUncertain("FIBA EuroLeague Women schedule row is outside competition 209127")
         raw_tip = row.get("gameDateTimeUTC")
         # GDAP's explicitly UTC-named field is serialized without an offset.
@@ -515,21 +542,15 @@ def _fiba_elw_schedule(config: LeagueGateConfig, target_date: str) -> list[Sched
         tip = _parse_utc(raw_tip, context="FIBA EuroLeague Women game")
         if tip.astimezone(ZoneInfo("Europe/Paris")).date() != wanted:
             continue
-        if row.get("isPostponed") is True:
-            status = "scheduled"
-        elif row.get("isLive") is True:
-            status = "live"
-        elif (
-            str(row.get("gameResultStatusCode") or "").upper() == "VALID"
-            and row.get("liveGameStatus") == 999
-            and isinstance(row.get("teamAScore"), (int, float))
-            and not isinstance(row.get("teamAScore"), bool)
-            and isinstance(row.get("teamBScore"), (int, float))
-            and not isinstance(row.get("teamBScore"), bool)
-        ):
-            status = "final"
-        else:
-            status = "scheduled"
+        if has_unassigned_team_slot(row):
+            # Future bracket placeholders cannot create a ticket or canonical
+            # fixture. The full provider reports them as coverage telemetry.
+            continue
+        if not has_complete_team_identity(row):
+            raise GateUncertain("FIBA EuroLeague Women row has incomplete assigned team identity")
+        status = schedule_status(row)
+        if status not in {"scheduled", "live", "final"}:
+            raise GateUncertain(f"FIBA EuroLeague Women row has {status} status")
         games.append(ScheduleGame(tip, status))
     return games
 

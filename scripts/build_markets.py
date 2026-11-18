@@ -24,6 +24,7 @@ from ingestion.books import BookConfig  # noqa: E402
 from ingestion.duckdb_store import DuckDBStore  # noqa: E402
 from ingestion.identity import now_utc_iso  # noqa: E402
 from ingestion.models import League  # noqa: E402
+from ingestion.pipeline import ACQUISITION_TZ  # noqa: E402
 from ingestion.warehouse import DEFAULT_WAREHOUSE  # noqa: E402
 
 
@@ -41,7 +42,11 @@ def main() -> int:
         choices=["NBA", "EUROLEAGUE", "EUROLEAGUE_W", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
     )
     parser.add_argument("--date", default=None, help="optional local YYYYMMDD slate")
-    parser.add_argument("--tz", default="UTC", help="IANA timezone for --date")
+    parser.add_argument(
+        "--tz",
+        default=None,
+        help="IANA timezone for --date (defaults to the league acquisition timezone)",
+    )
     parser.add_argument("--as-of", default=None, help="forecast cutoff ISO timestamp")
     parser.add_argument("--book-provider", default=None)
     parser.add_argument("--book", default=None)
@@ -53,6 +58,7 @@ def main() -> int:
     parser.add_argument("--calibration-prior", type=float, default=30.0)
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
+    args.tz = args.tz or ACQUISITION_TZ[args.league]
     localdata = Path(args.localdata) if args.localdata else Path("localdata") / args.league.lower()
     if args.warehouse is None:
         args.warehouse = os.environ.get("MAGOLIDE_WAREHOUSE") or (
@@ -112,6 +118,7 @@ def main() -> int:
                 "paper_accas": len(report["accas"].get("paper_results") or []),
                 "paper_single_picks": len(report["accas"].get("paper_single_picks") or []),
                 "paper_effective_legs": report["accas"].get("effective_paper_legs"),
+                "pricing_evidence_status": report["accas"].get("pricing_evidence_status"),
                 "external_writes": False,
             },
             indent=2,
