@@ -223,14 +223,19 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
         # canonical writes being enabled.
         pruned_reports = _prune_report_files(localdata, cutoff_utc)
 
+        # Live acquisition and forecasting can take minutes. Use the actual
+        # publication time for the pre-tip ticket decision rather than process
+        # start, while fixtures retain their fixed replay timestamp.
+        operator_generated_utc = args.started_utc if args.offline_fixture else _utc_now()
         operator = publish_operator_reports(
             store,
             config.league_enum,
             market_report,
             localdata,
             target_date=args.date,
-            generated_utc=args.started_utc,
+            generated_utc=operator_generated_utc,
             run_id=run_id,
+            slate_timezone_name=config.timezone,
         )
 
         assay = mine_prediction_assay(store, config.league_enum)

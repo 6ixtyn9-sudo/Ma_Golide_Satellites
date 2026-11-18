@@ -44,7 +44,8 @@ profitability.
 | `picks_audit_rolling.json` | Thirty-day logical and settled ledgers; cache/artifact only, not Git |
 | `picks_audit_YYYY-MM-DD.md` | Expanded rolling summary; cache/artifact only, not Git |
 | `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper singles and accas |
-| `auto_tickets_YYYY-MM-DD.txt` | Mutable card showing the immutable decision and latest available ticket/shadow grades, or the latest unfrozen no-bet scan |
+| `auto_tickets_YYYY-MM-DD_no_bet.json` | Immutable terminal decision that the 60-minute pre-tip window closed without a qualifying pre-tip position |
+| `auto_tickets_YYYY-MM-DD.txt` | Mutable card showing the immutable ticket/no-bet decision and latest available ticket/shadow grades, or the latest pre-cutoff candidate scan |
 | `auto_tickets_state.json` | Write-once date locks and bounded scan telemetry |
 | `auto_tickets_performance.json` | Complete reconstructed paper-position performance state and history |
 | `auto_tickets_performance.txt` | Bank, settled record, bet-days, held positions, and grading notes |
@@ -116,9 +117,11 @@ predictively superior, and it does not change forecast probabilities, strict
 eligibility, or real-money behavior.
 
 The picks dated ledger and rolling audit remain the grading source of truth;
-all audit-only rows have zero stake, do not enter paper-position performance or
-ROI, and do not create a frozen decision receipt or date lock. Full candidate
-rows and per-pick history diagnostics remain in the cache-only picks JSON and
+all audit-only rows have zero stake and do not enter paper-position performance
+or ROI. They can never create a ticket receipt or ticket leg; when no priced
+candidate qualifies at the scheduled cutoff, the date instead receives the
+separate terminal no-bet lock. Full candidate rows and per-pick history
+diagnostics remain in the cache-only picks JSON and
 run artifacts. To avoid storing the same large row set in every Git-persisted
 scan, `auto_tickets_state.json` retains compact counts, blocker/status
 histograms, and policy summaries, while dropping duplicate `candidate_records`,
@@ -209,19 +212,33 @@ line) across separate acca tickets. A different selection from the same game may
 appear on another ticket, while same-game legs are still prohibited within an
 acca. This is a no-repeated-leg rule, not mathematical outcome exclusivity:
 separate tickets may still win simultaneously. Strict `accas.results` rankings
-are unchanged and may overlap. The first non-empty paper ticket report (single
-or multi-leg acca) for a league/date writes a decision receipt and a write-once
-state lock. This includes a provisional paper position when the existing
-sample-size-only exception applies. New receipts store singles separately from
-accas and preserve the settled-pick ROI-band snapshot and provisional status/sample
-counts. Subsequent scans re-render each dated text card from the immutable
-receipt, current reconciled leg results, and the dated pick ledger (when
-available), even if the new candidate set differs. Ticket and audit-shadow grade
-labels therefore refresh, while selections, prices, stakes, and receipt bytes
-remain frozen. A missing locked receipt is an error; the engine never silently
-rebuilds or rotates a published decision. A receipt recovered without its state
-lock adopts a lock from the immutable receipt itself. Existing frozen receipts
-are never rebalanced or rewritten by selection-policy changes.
+are unchanged and may overlap.
+
+A scan does **not** freeze the first non-empty ticket it sees. It remains
+candidate evidence until the first scheduled game on the league's acquisition-
+timezone slate is 60 minutes away. The first successful scan from that cutoff
+until the first tip freezes all currently valid candidates whose every leg is
+still pre-tip. It records the planned cutoff, source timezone, actual scan, and
+candidate counts in the receipt. This includes a provisional paper position when
+the existing sample-size-only exception applies. Candidates can therefore gain a
+later exact price before the decision point without an early partial market
+locking the date.
+
+If there is no qualifying pre-tip candidate at that decision point—or if the
+scheduler missed the first tip—the operator writes an immutable
+`auto_tickets_YYYY-MM-DD_no_bet.json` sidecar and date lock. This fail-closed
+no-bet decision prevents a later price or an old cache from publishing a
+replacement ticket. New ticket receipts store singles separately from accas and
+preserve the settled-pick ROI-band snapshot and provisional status/sample counts.
+Subsequent scans re-render each dated text card from the immutable ticket receipt
+(or the immutable no-bet decision), current reconciled leg results, and the dated
+pick ledger when available. Ticket and audit-shadow grade labels therefore
+refresh, while selections, prices, stakes, receipt bytes, and terminal no-bet
+outcomes remain frozen. A missing locked receipt or no-bet sidecar is an error;
+the engine never silently rebuilds or rotates a published decision. A receipt
+recovered without its state lock adopts a lock from the immutable receipt itself.
+Existing frozen receipts are never rebalanced or rewritten by selection-policy
+changes.
 
 A withdrawal is a deliberate exception recorded in `auto_tickets_state.json`:
 its decision ID is excluded from performance, its date cannot receive a
@@ -238,7 +255,9 @@ not money or a recommended bankroll. Empty scans are logged but do not cancel
 earlier positions or consume ticket identities.
 
 The human-readable empty latest-scan card is intentionally concise: it leads
-with **NO PAPER BET** or **NO MULTI-LEG PAPER ACCA** and a brief reason. It omits
+with **NO PAPER BET** or **NO MULTI-LEG PAPER ACCA** and a brief reason. Before
+the cutoff it also shows the pending decision time; after a terminal no-bet it
+states that later price evidence remains audit-only. It omits
 the full funnel, per-band ROI breakdown, and blocker list. Those diagnostics
 remain structured under `candidate_funnel` in the bounded scan-state entry and
 operator result, including current/exact-priced/calibrated rows, eligibility

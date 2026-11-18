@@ -122,9 +122,11 @@ Manual workflow dispatch remains a dry run.
 
 ## Forecast and acca reports
 
-The three-hour orchestrator runs pregame acquisition, current market
-generation, immutable pre-tip freezing, and (unless skipped) result
-reconciliation.
+The hourly orchestrator runs pregame acquisition, current market generation,
+immutable pre-tip freezing, and (unless skipped) result reconciliation. Paper
+positions are not selected on the first usable scan: ticket candidates remain
+mutable until 60 minutes before the first local-slate tip, then either a
+pre-tip ticket or an immutable no-bet decision is recorded.
 Generate a report directly from an existing warehouse with:
 
 ```bash

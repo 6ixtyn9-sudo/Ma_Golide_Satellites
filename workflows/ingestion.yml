@@ -13,8 +13,9 @@ name: "Ma Golide"
 
 on:
   schedule:
-    # Every three hours at minute 11 UTC. GitHub may delay scheduled runs.
-    - cron: "11 */3 * * *"
+    # Hourly at minute 11 UTC so the 60-minute pre-tip ticket decision
+    # has a scheduled opportunity before the first slate tip. GitHub may delay runs.
+    - cron: "11 * * * *"
   # Deliberately no league/date/mode/write inputs: one click runs everything.
   workflow_dispatch: {}
 
@@ -159,6 +160,7 @@ jobs:
                   r"auto_tickets_performance\.txt",
                   rf"auto_tickets_{date}\.txt",
                   rf"auto_tickets_{date}_decision\.json",
+                  rf"auto_tickets_{date}_no_bet\.json",
                   rf"auto_tickets_{date}_withdrawn\.json",
               )
           )
@@ -317,12 +319,12 @@ jobs:
   publish-localdata:
     name: Publish localdata to repository
     needs: league
-    # Publish partial recovery evidence even if one matrix league fails. This is
-    # derived operator state, independent of canonical ALLOW_MAGOLIDE_WRITES.
+    # Only scheduled jobs may make live operator evidence durable. Manual dispatch
+    # uploads artifacts but cannot freeze or publish canonical operator decisions.
     if: >-
       always() &&
       github.ref == 'refs/heads/main' &&
-      (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+      github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

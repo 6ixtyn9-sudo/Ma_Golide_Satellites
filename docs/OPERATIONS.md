@@ -75,14 +75,16 @@ Useful options:
 - `--keep-days 30` bounds operational runs and daily/market reports.
 
 There is no in-repository daemon. The workflow schedule triggers this command
-every three hours; local cron or another scheduler can do the same.
+hourly; local cron or another scheduler should run at least hourly as well. The
+cadence gives each slate a pre-tip opportunity to make its 60-minute ticket
+decision without letting the first partial-price scan freeze the date.
 
 ## Automatic six-league workflow
 
 `workflows/ingestion.yml` is the reviewed workflow source. Install it as
 `.github/workflows/ingestion.yml` with a GitHub credential that has the
 `workflows` permission; merely editing the local source does not activate it.
-It has a schedule (`11 */3 * * *`, UTC) and a manual dispatch with **no
+It has an hourly schedule (`11 * * * *`, UTC) and a manual dispatch with **no
 league/date/mode/write inputs**. A preflight job runs Ruff and the hermetic
 suite, then six fail-independent matrix jobs automatically run `NBA`, `WNBA`,
 `EuroLeague`, `CBA`, `NCAA_M`, and `NCAA_W` together. One serialized publisher
@@ -96,6 +98,24 @@ Each matrix job has isolated state and artifacts:
 - a league-specific DuckDB path, cache prefix, run ID, and artifact name;
 - an acquisition date derived automatically in that league's acquisition
   timezone, never a dispatch-selected date.
+
+### Paper-ticket decision cutoff
+
+A current scan is candidate evidence, not a ticket publication. For each
+league/date, the operator uses the **acquisition timezone** to find the first
+slate tip and waits until 60 minutes before that tip. The first successful scan
+in that pre-tip window freezes all currently valid, exact-priced paper
+candidates into one immutable receipt. Every leg must still be strictly before
+its own tip. The actual receipt records both the planned cutoff and the scan
+that made the decision.
+
+If no qualifying pre-tip candidate exists at the cutoff, the operator writes an
+immutable `auto_tickets_YYYY-MM-DD_no_bet.json` decision instead. It prevents a
+later price, an old Actions cache, or a later-game candidate from reopening the
+date. A delayed run that misses the first tip also fails closed to that no-bet
+decision. Before the cutoff, the text card explicitly identifies the pending
+decision time and later scans may update candidate prices; after either decision,
+selections/prices/stakes—or the no-bet result—cannot change.
 
 ### Optional odds-provider credentials
 
@@ -137,10 +157,11 @@ Safety behavior is deliberate:
   DuckDB/CSV sports state or advance deep-history cursors. Reports and
   immutable ledgers are uploaded on every outcome when present. Git is
   authoritative for operator files after cache recovery.
-- Manual and scheduled runs both publish derived `picks_*` and `auto_tickets_*`
-  files to `localdata/<league>` on `main`. This Git publication does not relax
-  the canonical-write or notification gates, and it never includes warehouses,
-  CSV exports, acquisition ledgers, or credentials.
+- Manual runs upload derived `picks_*` and `auto_tickets_*` files only as
+  inspection artifacts. **Scheduled runs alone** may publish those files to
+  `localdata/<league>` on `main`, so a manual rehearsal cannot create a durable
+  ticket or no-bet decision. Git publication never includes warehouses, CSV
+  exports, acquisition ledgers, or credentials.
 - Notifications additionally require `ALLOW_NOTIFICATION_WRITES=true` and the
   WhatsApp secrets; they are sent only on write-enabled scheduled runs.
 

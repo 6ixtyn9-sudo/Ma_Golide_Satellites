@@ -49,6 +49,29 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
     assert not (repo / "localdata" / "nba" / "picks_unapproved.json").exists()
 
 
+def test_git_no_bet_decision_blocks_a_stale_cached_ticket_receipt(tmp_path):
+    artifact_file(
+        tmp_path,
+        "nba-artifact",
+        "nba",
+        "auto_tickets_2026-11-12_decision.json",
+        b"stale-ticket\n",
+    )
+    destination = tmp_path / "repo" / "localdata" / "nba"
+    destination.mkdir(parents=True)
+    (destination / "auto_tickets_2026-11-12_no_bet.json").write_text(
+        json.dumps({"status": "frozen_no_bet", "decision_id": "no-bet"}) + "\n"
+    )
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", tmp_path / "repo")
+
+    assert report["status"] == "no_changes"
+    assert report["no_bet_receipts_skipped"] == [
+        "localdata/nba/auto_tickets_2026-11-12_decision.json"
+    ]
+    assert not (destination / "auto_tickets_2026-11-12_decision.json").exists()
+
+
 def test_immutable_receipt_conflict_aborts_without_overwriting(tmp_path):
     source = artifact_file(
         tmp_path,
@@ -125,6 +148,7 @@ def test_allowlist_is_narrow_and_missing_artifact_directory_is_a_noop(tmp_path):
         "auto_tickets_performance.txt",
         "auto_tickets_2026-11-12.txt",
         "auto_tickets_2026-11-12_decision.json",
+        "auto_tickets_2026-11-12_no_bet.json",
     }
     assert all(allowed_operator_file(name) for name in expected)
     assert not allowed_operator_file("picks_today.json")
