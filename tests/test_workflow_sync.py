@@ -6,9 +6,8 @@ from pathlib import Path
 # F1/R5-2: Guard against source vs installed workflow drift.
 # The installed workflow (.github/workflows/ingestion.yml) requires
 # `workflows` permission to update, so source (workflows/ingestion.yml)
-# is the PR-reviewable copy. The cache-recovery allowlist must stay
-# byte-identical in both files, otherwise a withdrawn sidecar survives
-# incorrectly (fail-closed) or is deleted prematurely.
+# is the PR-reviewable copy. The complete files must remain byte-identical:
+# a partial manual edit can otherwise make preflight or runtime semantics diverge.
 
 
 def _extract_allowlist_blocks(text: str) -> list[str]:
@@ -17,23 +16,22 @@ def _extract_allowlist_blocks(text: str) -> list[str]:
     return blocks
 
 
-def test_workflow_allowlist_sync():
+def test_workflow_mirror_sync():
     repo = Path(__file__).resolve().parents[1]
     source = repo / "workflows" / "ingestion.yml"
     installed = repo / ".github" / "workflows" / "ingestion.yml"
     assert source.exists(), f"missing {source}"
     assert installed.exists(), f"missing {installed}"
-    src_blocks = _extract_allowlist_blocks(source.read_text())
-    inst_blocks = _extract_allowlist_blocks(installed.read_text())
-    assert src_blocks == inst_blocks, (
-        "workflows/ingestion.yml and .github/workflows/ingestion.yml allowlist blocks diverged — "
-        "sync the source to installed via manual workflows-permission step"
+    source_text = source.read_text()
+    installed_text = installed.read_text()
+    assert source_text == installed_text, (
+        "workflows/ingestion.yml and .github/workflows/ingestion.yml diverged — "
+        "replace both files with the same complete workflow YAML"
     )
-    # Pin the withdrawn sidecar is present in every block
-    assert all("withdrawn" in b for b in src_blocks)
-    assert all("withdrawn" in b for b in inst_blocks)
-    assert all("no_bet" in b for b in src_blocks)
-    assert all("no_bet" in b for b in inst_blocks)
+    blocks = _extract_allowlist_blocks(source_text)
+    # Pin the withdrawn/no-bet sidecars in every cache-recovery allowlist.
+    assert all("withdrawn" in block for block in blocks)
+    assert all("no_bet" in block for block in blocks)
 
 
 def test_operator_state_restore_uses_latest_main_not_event_sha():
