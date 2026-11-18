@@ -75,7 +75,7 @@ from . import FetchFn
 BASE_URL = "https://api.predixsport.com"
 ENV_KEY = "PREDIXSPORT_API_KEY"
 PROVIDER = "predixsport"
-PREDICTION_MODEL_VERSION = "adapter:predixsport-v1"
+PREDICTION_MODEL_VERSION = "adapter:predixsport"
 VALID_LEAGUES = ("nba", "euroleague")
 
 EVIDENCE = "DOCUMENTATION_ONLY"

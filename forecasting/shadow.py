@@ -45,7 +45,7 @@ from .harness import (
 )
 from .types import Forecast
 
-CHALLENGER_TAG = "recency_v1"
+CHALLENGER_TAG = "recency"
 
 _DAY_SECONDS = 86400.0
 

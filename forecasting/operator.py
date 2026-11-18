@@ -26,7 +26,6 @@ from collections import Counter, defaultdict
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 import hashlib
-import re
 import json
 import math
 import os
@@ -37,7 +36,14 @@ from zoneinfo import ZoneInfo
 from ingestion.identity import parse_utc
 from ingestion.models import Game, GameStatus, League, Period, schema_matches
 
-from .types import BookEvidence, Forecast, _period_scores, grade_forecast, opposite_selection
+from .types import (
+    BookEvidence,
+    Forecast,
+    _period_scores,
+    current_spelling,
+    grade_forecast,
+    opposite_selection,
+)
 
 OPERATOR_SCHEMA = "magolide.operator"
 FADE_AUDIT_SCHEMA = "magolide.paper_fade_audit"
@@ -148,22 +154,11 @@ def _withdrawn_ids_from_sidecars(localdata: Path) -> set[str]:
     return ids
 
 
-_VERSION_SUFFIX = re.compile(r"(?<=[a-z])_v[0-9]+\b")
-
-
-def _display_name(value: Any) -> Any:
-    """Report label without the internal version suffix (display only).
-
-    Stored and hashed identifiers are unchanged; only rendered text drops it.
-    """
-    return _VERSION_SUFFIX.sub("", value) if isinstance(value, str) else value
-
-
 def _read_json(path: Path, default: Any) -> Any:
     if not path.exists():
         return deepcopy(default)
     try:
-        return json.loads(path.read_text())
+        return current_spelling(json.loads(path.read_text()))
     except (OSError, ValueError) as exc:
         # Financial/evidence state must never silently reset to a fresh bank or
         # an empty card. Corruption is an operator-visible failure.
@@ -708,9 +703,8 @@ def _render_picks(
         book_name = (
             _canonical_book_for_key((row.get("book") or {}).get("book")) or "no matched book"
         )
-        model_label = f"{_display_name(row.get('model'))}/{_display_name(row.get('model_version'))}"
         lines.append(
-            f"  [{model_label}] "
+            f"  [{row.get('model')}/{row.get('model_version')}] "
             f"{row['home']} vs {row['away']} · "
             f"KO {_local_time(row['scheduled_utc'], timezone_name)}"
         )
@@ -1238,7 +1232,7 @@ def _render_pick_audit_markdown(
                 f"  - Calibration: **n={calibration.get('n', 0)}** · "
                 f"{str(calibration.get('status', 'unknown')).replace('_', ' ')} · "
                 f"Bucket: `{row['bucket']}` · "
-                f"Model: `{_display_name(row.get('model')) or 'unknown'}`"
+                f"Model: `{row.get('model') or 'unknown'}`"
             )
         lines.append("")
 

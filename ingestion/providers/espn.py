@@ -84,9 +84,9 @@ LEAGUE_SLUGS = {
 }
 
 # ESPN does not expose a stable BPI model release. This adapter-owned tag is
-# the calibration boundary; bump it when the BPI source contract or normalized
-# prediction semantics change.
-ESPN_BPI_MODEL_VERSION = "adapter:espn-bpi-v1"
+# the calibration boundary; give it a new name when the BPI source contract or
+# normalized prediction semantics change (a new name starts a new segment).
+ESPN_BPI_MODEL_VERSION = "adapter:espn-bpi"
 
 # Increment when stored period interpretation changes. NCAAW history written
 # by parser version 1 could label four quarters as two halves plus two overtime periods.

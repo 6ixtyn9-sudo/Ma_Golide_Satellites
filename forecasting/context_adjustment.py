@@ -27,7 +27,7 @@ from dataclasses import asdict, dataclass
 import math
 from typing import Any, Dict, Optional
 
-from .types import MODEL_VERSION
+from .types import MODEL_VERSION, id_spelling
 
 CONTEXT_SURFACE = "context_availability"
 CONTEXT_SOURCE = f"{CONTEXT_SURFACE}+{MODEL_VERSION}"
@@ -197,7 +197,7 @@ def context_calibration_components(
     host data must never enter version identity.
     """
     return {
-        "model_version": MODEL_VERSION,
+        "model_version": id_spelling(MODEL_VERSION),
         "surface": CONTEXT_SURFACE,
         **base_config_asdict,
         **asdict(config),

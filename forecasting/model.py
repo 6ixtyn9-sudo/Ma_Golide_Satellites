@@ -23,7 +23,7 @@ from .context_adjustment import (
     context_calibration_components,
 )
 from .harness import config_fingerprint
-from .types import BookEvidence, Forecast, MODEL_VERSION, _period_scores
+from .types import BookEvidence, Forecast, MODEL_VERSION, _period_scores, id_spelling
 
 QUARTERS = (Period.Q1, Period.Q2, Period.Q3, Period.Q4)
 
@@ -251,7 +251,7 @@ class HistoryModel:
         # Every setting in ForecastConfig can change the available evidence or
         # empirical probabilities. Source identity remains a separate segment
         # dimension; this tag isolates the algorithm/configuration itself.
-        components = {"model_version": MODEL_VERSION, **asdict(self.config)}
+        components = {"model_version": id_spelling(MODEL_VERSION), **asdict(self.config)}
         self.calibration_version = f"{MODEL_VERSION}-{config_fingerprint(components)}"
 
     @property
@@ -310,15 +310,17 @@ class HistoryModel:
         components = {
             "provider": prediction.provider,
             "model": prediction.model,
-            "model_version": prediction.model_version,
+            "model_version": id_spelling(prediction.model_version),
         }
         model_phase = self._stable_prediction_model_phase(prediction)
         if model_phase is not None:
             components["model_phase"] = model_phase
-        prefix = "provider_prediction_v2"
+        prefix = "provider_prediction"
         if hybrid:
-            components["history_model_calibration_version"] = self.calibration_version
-            prefix = "history_provider_hybrid_v2"
+            components["history_model_calibration_version"] = id_spelling(
+                self.calibration_version
+            )
+            prefix = "history_provider_hybrid"
         return f"{prefix}-{config_fingerprint(components)}"
 
     def available_history(

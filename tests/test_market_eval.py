@@ -242,13 +242,13 @@ def test_unfrozen_forecast_is_rejected_by_default():
 
 def test_distinct_provider_models_are_kept_as_separate_pairs():
     result = join(
-        [forecast(model="provider-a::v1"), forecast(model="provider-b::v2", p_home=0.58)],
+        [forecast(model="provider-a::model-a"), forecast(model="provider-b::model-b", p_home=0.58)],
         [quote()],
         [outcome()],
     )
     assert {(pair.game_id, pair.model) for pair in result.pairs} == {
-        ("g1", "provider-a::v1"),
-        ("g1", "provider-b::v2"),
+        ("g1", "provider-a::model-a"),
+        ("g1", "provider-b::model-b"),
     }
 
 

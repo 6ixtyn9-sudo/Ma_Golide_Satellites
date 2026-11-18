@@ -215,7 +215,7 @@ def _parse_probability(
             observed_utc=observed_utc,
             source_modified_utc=source_modified,
             model="sportradar-pre-match-2way",
-            model_version="global-basketball-v2",
+            model_version="global-basketball",
             produced_by="Sportradar",
             prob_home=outcomes["home_team_winner"],
             prob_away=outcomes["away_team_winner"],

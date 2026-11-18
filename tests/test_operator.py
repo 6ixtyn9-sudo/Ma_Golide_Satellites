@@ -349,7 +349,7 @@ def test_book_side_prices_survive_forecast_serialization_and_row_rehydration():
         prediction_model_version="bpi-42",
         prediction_produced_by="ESPN BPI",
         shadow_calibration={
-            "challenger_version": "recency_v1-test",
+            "challenger_version": "recency-test",
             "status": "provisional",
             "n": 12,
             "weighted_n": 8.5,
@@ -384,11 +384,11 @@ def test_book_side_prices_survive_forecast_serialization_and_row_rehydration():
     assert rehydrated.prediction_model == "bpi-model"
     assert rehydrated.prediction_model_version == "bpi-42"
     assert rehydrated.prediction_produced_by == "ESPN BPI"
-    assert rehydrated.shadow_calibration["challenger_version"] == "recency_v1-test"
+    assert rehydrated.shadow_calibration["challenger_version"] == "recency-test"
     assert rehydrated.shadow_calibration["ess"] == 10.0
     assert rehydrated.shadow_calibration["champion_probability"] == 0.61
     assert rehydrated.shadow_calibration == {
-        "challenger_version": "recency_v1-test",
+        "challenger_version": "recency-test",
         "status": "provisional",
         "n": 12,
         "weighted_n": 8.5,
@@ -2154,7 +2154,7 @@ def test_audit_groups_markets_by_fixture_with_actual_period_scores(tmp_path):
         {
             "forecast_id": "forecast-1-moneyline-away-H1",
             "period": "H1",
-            "model": "team_history_empirical_v1",
+            "model": "team_history_empirical",
             "raw_probability": 0.28,
             "calibrated_probability": 0.31,
         }
@@ -2230,7 +2230,7 @@ def test_euroleague_ticket_card_identifies_strict_priced_value_paper_lane():
 
 
 def test_retired_schema_tags_still_load_and_state_adopts_current_tag(tmp_path):
-    from forecasting.operator import STATE_SCHEMA, TICKET_SCHEMA, _display_name
+    from forecasting.operator import STATE_SCHEMA, TICKET_SCHEMA, _read_json
     from ingestion.models import schema_matches
 
     retired = ".v" + "1"  # spelling used by files written before the rename
@@ -2244,6 +2244,12 @@ def test_retired_schema_tags_still_load_and_state_adopts_current_tag(tmp_path):
     )
     assert _load_state(tmp_path)["schema_version"] == STATE_SCHEMA
 
-    legacy_model = "provider:espn+team_history_empirical" + "_v" + "1"
-    assert _display_name(legacy_model) == "provider:espn+team_history_empirical"
-    assert _display_name(None) is None
+    # Pick history written before the rename is read back under current names.
+    picks = tmp_path / "picks_2026-11-17.json"
+    old_model = "provider:espn+team_history_empirical" + "_v" + "1"
+    picks.write_text(json.dumps([{"model": old_model, "calibration_version": "provider_prediction"
+                                  + "_v" + "2-7fb3e30d878d"}]))
+    assert _read_json(picks, []) == [
+        {"model": "provider:espn+team_history_empirical",
+         "calibration_version": "provider_prediction-7fb3e30d878d"}
+    ]

@@ -5,11 +5,56 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 import hashlib
 import math
+import re
 from typing import Any, Dict, Optional
 
 from ingestion.models import BookSnapshot, Game, Market, Period, PeriodKind
 
-MODEL_VERSION = "team_history_empirical_v1"
+MODEL_VERSION = "team_history_empirical"
+
+# Names that used to end in a version suffix, with the suffix they carried.
+# Forecast/pick/ticket IDs and calibration fingerprints were always derived
+# from the suffixed spellings, so hash inputs keep using them (``id_spelling``)
+# and every existing ID stays identical. Persisted rows written before the
+# rename are read back under the current names (``current_spelling``).
+_ORIGINAL_SUFFIXES = (
+    ("team_history_empirical", "_v1"),
+    ("provider_prediction", "_v2"),
+    ("history_provider_hybrid", "_v2"),
+    ("adapter:espn-bpi", "-v1"),
+    ("adapter:predixsport", "-v1"),
+    ("global-basketball", "-v2"),
+    ("recency", "_v1"),  # display tag only; never hashed
+)
+_TO_ORIGINAL = [
+    (re.compile(rf"(?<![\w]){re.escape(name)}(?![\w])(?!{re.escape(suffix)})"), name + suffix)
+    for name, suffix in _ORIGINAL_SUFFIXES[:-1]
+]
+_TO_CURRENT = [
+    (re.compile(rf"(?<![\w]){re.escape(name + suffix)}(?![\w])"), name)
+    for name, suffix in _ORIGINAL_SUFFIXES
+]
+
+
+def id_spelling(value: Optional[str]) -> Optional[str]:
+    """Spelling used as a hash input (idempotent for already-original text)."""
+    if isinstance(value, str):
+        for pattern, original in _TO_ORIGINAL:
+            value = pattern.sub(original, value)
+    return value
+
+
+def current_spelling(value: Any) -> Any:
+    """Recursively map pre-rename names in persisted JSON to current names."""
+    if isinstance(value, str):
+        for pattern, current in _TO_CURRENT:
+            value = pattern.sub(current, value)
+        return value
+    if isinstance(value, list):
+        return [current_spelling(item) for item in value]
+    if isinstance(value, dict):
+        return {current_spelling(key): current_spelling(item) for key, item in value.items()}
+    return value
 
 # Reserved tag for calibration evidence produced before version stamping
 # existed. Legacy rows are readable and explicit, and never merge with
@@ -177,16 +222,16 @@ class Forecast:
             self.period,
             self.selection,
             "" if self.line is None else f"{self.line:g}",
-            self.source,
+            id_spelling(self.source),
             self.prediction_observed_utc or "",
             self.book.key if self.book else "no_book",
             self.book.observed_utc if self.book else "",
-            MODEL_VERSION,
+            id_spelling(MODEL_VERSION),
         ]
         # Preserve legacy IDs, but distinguish forecasts whose calibration
         # segment is explicitly stamped with a model/config fingerprint.
         if self.calibration_version is not None:
-            identity.append(self.calibration_version)
+            identity.append(id_spelling(self.calibration_version))
         return hashlib.sha256("|".join(identity).encode()).hexdigest()[:20]
 
     @property
@@ -444,6 +489,8 @@ __all__ = [
     "Forecast",
     "LEGACY_VERSION_TAG",
     "MODEL_VERSION",
+    "current_spelling",
     "grade_forecast",
+    "id_spelling",
     "opposite_selection",
 ]

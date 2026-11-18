@@ -796,7 +796,7 @@ class MarketForecastService:
             "forecasts_by_market": dict(sorted(market_counts.items())),
             "uncovered_games": uncovered,
             "feature_use_audit": {
-                "team_history_empirical_v1": [
+                "team_history_empirical": [
                     "reconciled pre-tip historical team scores and period scores",
                     "team/league scoring baselines and historical score residuals",
                     "current posted market line",

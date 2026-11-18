@@ -133,7 +133,7 @@ points are scaled by ``1 - lost_share``, bounded by
 ``ContextAdjustmentConfig.max_scale``. The scale applies only to full-game
 moneyline, total, and spread forecasts reconstructed from the empirical
 history surface, under the source
-``context_availability+team_history_empirical_v1`` with its own calibration
+``context_availability+team_history_empirical`` with its own calibration
 version. It is never blended into the base or provider surfaces, and provider
 expectations — which may already internalize availability — are never scaled
 again.
