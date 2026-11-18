@@ -2253,3 +2253,97 @@ def test_retired_schema_tags_still_load_and_state_adopts_current_tag(tmp_path):
         {"model": "provider:espn+team_history_empirical",
          "calibration_version": "provider_prediction-7fb3e30d878d"}
     ]
+
+
+def _unpriced_moneyline(number, probability):
+    row = forecast(
+        number,
+        price=None,
+        eligible=False,
+        reasons=["no_exact_bookmaker_market"],
+        calibration_n=40,
+    )
+    row["raw_probability"] = probability
+    row["calibrated_probability"] = probability
+    return row
+
+
+def _posted_spread(number, *, home_line, model_selection, side_prices):
+    row = forecast(
+        number,
+        market="spread",
+        selection=model_selection,
+        price=side_prices[model_selection],
+        eligible=False,
+        reasons=["insufficient_team_specific_history"],
+    )
+    row["line"] = home_line
+    row["calibrated_probability"] = 0.95
+    return with_quote_evidence(row, side_prices)
+
+
+def test_unpriced_moneyline_picks_are_shadow_tracked_against_posted_spreads(tmp_path):
+    # Game 1: no moneyline price, but the book posts home -10.5. The model's own
+    # spread pick is the underdog (+10.5); the shadow takes the moneyline side.
+    rows = [
+        _unpriced_moneyline(1, 0.97),
+        _posted_spread(
+            1,
+            home_line=-10.5,
+            model_selection="away",
+            side_prices={"home": 1.909, "away": 1.952},
+        ),
+        # Game 2: strong no-price moneyline pick but no posted spread at all.
+        _unpriced_moneyline(2, 0.90),
+        # Game 3: below the probability floor, never re-expressed.
+        _unpriced_moneyline(3, 0.65),
+    ]
+    first = publish(tmp_path, Store([game(1), game(2), game(3)]), report(rows))
+
+    shadow = first["unpriced_spread_shadow"]
+    assert shadow["audit_only"] is True and shadow["stake_units"] == 0.0
+    assert shadow["policy"]["model_derived_lines"] is False
+    assert shadow["today"]["tracked"] == 1
+    assert shadow["today"]["untracked_no_posted_spread"] == 1
+    tracked = next(r for r in shadow["candidate_records"] if r["posted_spread"])
+    assert tracked["game_id"] == "game-1"
+    assert tracked["selection"] == "home"
+    assert tracked["selected_line"] == -10.5
+    assert tracked["price"] == 1.909
+    assert tracked["grade_status"] == "pending"
+    untracked = next(r for r in shadow["candidate_records"] if not r["posted_spread"])
+    assert untracked["game_id"] == "game-2"
+    assert untracked["grade_status"] == "untracked_no_posted_spread"
+    assert not any(r["game_id"] == "game-3" for r in shadow["candidate_records"])
+    card = Path(first["ticket_text"]).read_text()
+    assert "UNPRICED → POSTED-SPREAD SHADOW" in card
+    assert "SPREAD full_game -10.5 -> HOME @1.909" in card
+    assert "1 qualifying no-price moneyline pick had no posted spread to track." in card
+    state = json.loads(Path(first["ticket_state"]).read_text())
+    assert "candidate_records" not in state["scans"][-1]["unpriced_spread_shadow"]
+    assert json.loads(Path(first["performance"]).read_text())["paper_bank_units"] == 100.0
+
+    # Home wins by 20: the model's +10.5 underdog spread pick loses, so the
+    # moneyline side at -10.5 covers and settles at the posted 1.909.
+    settled = publish(
+        tmp_path,
+        Store([
+            game(1, home_score=120, away_score=100),
+            game(2, home_score=90, away_score=80),
+            game(3),
+        ]),
+        report([]),
+        run_id="results",
+        generated_utc="2026-11-09T03:00:00Z",
+    )
+    shadow = settled["unpriced_spread_shadow"]
+    tracked = next(r for r in shadow["candidate_records"] if r["posted_spread"])
+    assert tracked["grade_status"] == "win"
+    assert shadow["rolling"]["wins"] == 1
+    assert shadow["rolling"]["losses"] == 0
+    assert shadow["rolling"]["untracked_no_posted_spread"] == 1
+    assert shadow["rolling"]["units_at_posted_price"] == pytest.approx(0.909)
+    card = Path(settled["ticket_text"]).read_text()
+    assert "1W-0L-0P (100.0% cover) · +0.91u at posted prices over 1 priced" in card
+    assert "SPREAD full_game -10.5 -> HOME @1.909 Test Book · ML p 97.0% · ✅ WIN" in card
+    assert json.loads(Path(settled["performance"]).read_text())["paper_bank_units"] == 100.0

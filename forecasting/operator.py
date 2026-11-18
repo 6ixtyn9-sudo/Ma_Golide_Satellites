@@ -59,6 +59,10 @@ UNPRICED_SHADOW_GROUP_MAX_PICKS = SHADOW_GROUP_MAX_PICKS
 PRICED_INELIGIBLE_SHADOW_MIN_DECIMAL_ODDS = 1.30
 PRICED_INELIGIBLE_SHADOW_MIN_PROBABILITY = 0.70
 PRICED_INELIGIBLE_SHADOW_SCHEMA = "magolide.priced_ineligible_shadow"
+UNPRICED_SPREAD_SHADOW_SCHEMA = "magolide.unpriced_spread_shadow"
+# No-price full-game moneyline picks at or above this model probability are
+# re-expressed as the same side against the bookmaker's posted full-game spread.
+UNPRICED_SPREAD_SHADOW_MIN_PROBABILITY = 0.70
 BASE_PAPER_UNITS = 100.0
 STAKE_UNITS_PER_ACCA = 1.0
 BUCKET_ORDER = [
@@ -1453,7 +1457,7 @@ def _compact_scan_record(record: Dict[str, Any]) -> Dict[str, Any]:
     file grow to multiple megabytes per league.
     """
     compact = deepcopy(record)
-    for key in ("unpriced_audit", "priced_ineligible_shadow"):
+    for key in ("unpriced_audit", "priced_ineligible_shadow", "unpriced_spread_shadow"):
         summary = compact.get(key)
         if isinstance(summary, dict):
             summary.pop("candidate_records", None)
@@ -2290,6 +2294,227 @@ def _group_unpriced_shadow_candidates(
     return [group["rows"] for group in groups]
 
 
+def _finite_float(value: Any) -> Optional[float]:
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    try:
+        number = float(value)
+    except (OverflowError, TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def _row_probability(row: Dict[str, Any]) -> Optional[float]:
+    probability = _finite_float(row.get("calibrated_probability"))
+    if probability is None:
+        probability = _finite_float(row.get("raw_probability"))
+    return probability
+
+
+def _is_unpriced_spread_shadow_source(row: Dict[str, Any]) -> bool:
+    """A no-price full-game moneyline pick strong enough to re-express ATS."""
+    if _has_exact_selected_price(row):
+        return False
+    if str(row.get("market") or "").lower() != "moneyline":
+        return False
+    if str(row.get("period") or "").lower() != "full_game":
+        return False
+    if str(row.get("selection") or "").lower() not in {"home", "away"}:
+        return False
+    probability = _row_probability(row)
+    return probability is not None and probability >= UNPRICED_SPREAD_SHADOW_MIN_PROBABILITY
+
+
+def _is_posted_spread_row(row: Dict[str, Any]) -> bool:
+    """A full-game spread forecast carrying a real pre-match bookmaker line."""
+    if str(row.get("market") or "").lower() != "spread":
+        return False
+    if str(row.get("period") or "").lower() != "full_game":
+        return False
+    if str(row.get("selection") or "").lower() not in {"home", "away"}:
+        return False
+    if _finite_float(row.get("line")) is None:
+        return False
+    book = row.get("book")
+    if not isinstance(book, dict) or not book.get("provider"):
+        return False
+    return book.get("pre_match") is not False
+
+
+def _translated_spread_grade(spread_row: Dict[str, Any], selection: str) -> str:
+    """Grade ``selection`` at the spread row's line from the spread row's grade."""
+    grade = str(spread_row.get("grade_status") or "pending").lower()
+    if grade not in {"win", "loss", "push"}:
+        return "pending"
+    if str(spread_row.get("selection") or "").lower() == selection or grade == "push":
+        return grade
+    return "loss" if grade == "win" else "win"
+
+
+def _unpriced_spread_shadow_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Re-express strong no-price moneyline picks against the posted spread.
+
+    One record per game: the strongest qualifying moneyline pick picks the
+    side; the latest pre-match posted full-game spread on that game supplies
+    the line and that side's quoted price. No line is ever model-derived:
+    games without a posted spread are returned with ``posted_spread=None`` and
+    are not graded. These records are audit-only and never stake units.
+    """
+    by_game: Dict[str, Dict[str, Any]] = {}
+    spreads: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        game_key = f"{row.get('date') or ''}|{row.get('game_id') or ''}"
+        if not row.get("game_id"):
+            continue
+        if _is_posted_spread_row(row):
+            spreads[game_key].append(row)
+        elif _is_unpriced_spread_shadow_source(row):
+            current = by_game.get(game_key)
+            if current is None or (
+                _row_probability(row),
+                str(row.get("forecast_id") or row.get("pick_id") or ""),
+            ) > (
+                _row_probability(current),
+                str(current.get("forecast_id") or current.get("pick_id") or ""),
+            ):
+                by_game[game_key] = row
+
+    records = []
+    for game_key, source in by_game.items():
+        selection = str(source["selection"]).lower()
+        candidates = spreads.get(game_key) or []
+        posted = (
+            max(
+                candidates,
+                key=lambda row: (
+                    str((row.get("book") or {}).get("observed_utc") or ""),
+                    str(row.get("forecast_id") or row.get("pick_id") or ""),
+                ),
+            )
+            if candidates
+            else None
+        )
+        record: Dict[str, Any] = {
+            "record_type": "unpriced_spread_shadow_candidate",
+            "date": str(source.get("date") or "")[:10] or None,
+            "game_id": source.get("game_id"),
+            "home": source.get("home"),
+            "away": source.get("away"),
+            "scheduled_utc": source.get("scheduled_utc"),
+            "moneyline_forecast_id": source.get("forecast_id") or source.get("pick_id"),
+            "moneyline_model": source.get("model"),
+            "moneyline_probability": _row_probability(source),
+            "moneyline_grade_status": str(source.get("grade_status") or "pending"),
+            "selection": selection,
+            "posted_spread": None,
+            "selected_line": None,
+            "price": None,
+            "book_provider": None,
+            "book": None,
+            "grade_status": "untracked_no_posted_spread",
+            "audit_only": True,
+            "ticketable": False,
+            "stake_units": 0.0,
+        }
+        if posted is not None:
+            book = posted.get("book") or {}
+            side_prices = book.get("side_prices") if isinstance(book.get("side_prices"), dict) else {}
+            price = _finite_float(side_prices.get(selection))
+            if price is None and str(posted.get("selection") or "").lower() == selection:
+                price = _finite_float(book.get("selected_decimal_price"))
+            record.update(
+                {
+                    "posted_spread": {
+                        "forecast_id": posted.get("forecast_id") or posted.get("pick_id"),
+                        "home_line": float(posted["line"]),
+                        "model_selection": str(posted.get("selection") or "").lower(),
+                        "model_probability": _row_probability(posted),
+                        "observed_utc": book.get("observed_utc"),
+                    },
+                    "selected_line": _spread_line_for_selection(posted, selection),
+                    "price": price if price is not None and price > 1.0 else None,
+                    "book_provider": book.get("provider"),
+                    "book": _canonical_book_for_key(book.get("book")),
+                    "grade_status": _translated_spread_grade(posted, selection),
+                }
+            )
+        records.append(record)
+    records.sort(
+        key=lambda item: (
+            str(item.get("scheduled_utc") or ""),
+            str(item.get("game_id") or ""),
+        )
+    )
+    return records
+
+
+def _unpriced_spread_shadow_record(records: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Win/loss/push and flat-stake units at posted prices for tracked records."""
+    tracked = [record for record in records if record.get("posted_spread")]
+    wins = sum(record["grade_status"] == "win" for record in tracked)
+    losses = sum(record["grade_status"] == "loss" for record in tracked)
+    pushes = sum(record["grade_status"] == "push" for record in tracked)
+    pending = sum(record["grade_status"] == "pending" for record in tracked)
+    priced = [
+        record
+        for record in tracked
+        if record["grade_status"] in {"win", "loss", "push"} and record.get("price")
+    ]
+    units = sum(
+        (float(record["price"]) - 1.0)
+        if record["grade_status"] == "win"
+        else -1.0
+        if record["grade_status"] == "loss"
+        else 0.0
+        for record in priced
+    )
+    decisions = wins + losses
+    return {
+        "tracked": len(tracked),
+        "untracked_no_posted_spread": len(records) - len(tracked),
+        "wins": wins,
+        "losses": losses,
+        "pushes": pushes,
+        "pending": pending,
+        "decisions": decisions,
+        "cover_rate": round(wins / decisions, 6) if decisions else None,
+        "priced_settled": len(priced),
+        "units_at_posted_price": round(units, 6),
+        "roi_at_posted_price": round(units / len(priced), 6) if priced else None,
+    }
+
+
+def _unpriced_spread_shadow(
+    day_rows: List[Dict[str, Any]], settled_history: List[Dict[str, Any]]
+) -> Dict[str, Any]:
+    """Today's ATS re-expressions plus the rolling settled record."""
+    today = _unpriced_spread_shadow_rows(day_rows)
+    history = _unpriced_spread_shadow_rows(settled_history)
+    return {
+        "schema_version": UNPRICED_SPREAD_SHADOW_SCHEMA,
+        "record_type": "unpriced_spread_shadow_audit",
+        "audit_only": True,
+        "ticketable": False,
+        "stake_units": 0.0,
+        "policy": {
+            "source_market": "moneyline",
+            "source_period": "full_game",
+            "source_requires_no_exact_price": True,
+            "source_min_probability": UNPRICED_SPREAD_SHADOW_MIN_PROBABILITY,
+            "one_record_per_game": "highest-probability moneyline side",
+            "line_source": "latest pre-match posted full-game bookmaker spread",
+            "model_derived_lines": False,
+            "history_source": "rolling_pick_audit.settled_ledger",
+            "history_window_days": UNPRICED_SUCCESS_RATE_HISTORY_DAYS,
+        },
+        "today": _unpriced_spread_shadow_record(today),
+        "rolling": _unpriced_spread_shadow_record(history),
+        "candidate_records": today,
+    }
+
+
 def _priced_ineligible_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Return exact-priced forecasts whose existing eligibility gate failed."""
     return [
@@ -2604,6 +2829,71 @@ def _render_unpriced_audit_section(
     return lines
 
 
+def _render_unpriced_spread_shadow_section(
+    shadow: Optional[Dict[str, Any]], timezone_name: str
+) -> List[str]:
+    """Render no-price moneyline picks re-expressed against posted spreads."""
+    if not shadow:
+        return []
+    records = list(shadow.get("candidate_records") or [])
+    rolling = shadow.get("rolling") or {}
+    today = shadow.get("today") or {}
+    threshold_text = f"{UNPRICED_SPREAD_SHADOW_MIN_PROBABILITY:.0%}"
+
+    def record_text(summary: Dict[str, Any]) -> str:
+        text = (
+            f"{int(summary.get('wins') or 0)}W-{int(summary.get('losses') or 0)}L-"
+            f"{int(summary.get('pushes') or 0)}P"
+        )
+        rate = summary.get("cover_rate")
+        if rate is not None:
+            text += f" ({float(rate):.1%} cover)"
+        priced = int(summary.get("priced_settled") or 0)
+        if priced:
+            text += (
+                f" · {float(summary.get('units_at_posted_price') or 0.0):+.2f}u at posted "
+                f"prices over {priced} priced"
+            )
+        return text
+
+    lines = [
+        "",
+        f"UNPRICED → POSTED-SPREAD SHADOW (≥{threshold_text} NO-PRICE MONEYLINE PICKS) — "
+        f"{int(today.get('tracked') or 0)} tracked, "
+        f"{int(today.get('untracked_no_posted_spread') or 0)} without a posted spread",
+        "Audit only: same side re-expressed against the bookmaker's posted full-game spread; "
+        "no ticket, receipt, or stake; no bank/ROI impact.",
+        "Lines come only from posted pre-match bookmaker spreads; no model-made lines. "
+        "Games without a posted spread are not graded.",
+        f"Rolling {UNPRICED_SUCCESS_RATE_HISTORY_DAYS}-day settled record: {record_text(rolling)}",
+    ]
+    tracked = [record for record in records if record.get("posted_spread")]
+    for record in tracked:
+        price = record.get("price")
+        price_text = f"@{float(price):.3f}" if price else "@n/a"
+        book = record.get("book") or record.get("book_provider") or "book"
+        probability = record.get("moneyline_probability")
+        probability_text = f"{float(probability):.1%}" if probability is not None else "n/a"
+        selected_line = record.get("selected_line")
+        line_text = f" {float(selected_line):+g}" if selected_line is not None else ""
+        lines.extend(
+            [
+                f"   {record.get('home')} vs {record.get('away')} · "
+                f"TIP-OFF {_local_time(str(record.get('scheduled_utc')), timezone_name)}",
+                f"      SPREAD full_game{line_text} -> {str(record.get('selection')).upper()} "
+                f"{price_text} {book} · ML p {probability_text} · "
+                f"{_grade_badge(record.get('grade_status'))}",
+            ]
+        )
+    untracked = len(records) - len(tracked)
+    if untracked:
+        lines.append(
+            f"   {untracked} qualifying no-price moneyline pick"
+            f"{'' if untracked == 1 else 's'} had no posted spread to track."
+        )
+    return lines
+
+
 def _render_ticket_card(
     receipt: Dict[str, Any],
     performance: Dict[str, Any],
@@ -2612,6 +2902,7 @@ def _render_ticket_card(
     unpriced_audit_picks: Optional[List[Dict[str, Any]]] = None,
     priced_ineligible_shadow_picks: Optional[List[Dict[str, Any]]] = None,
     priced_ineligible_audited_count: int = 0,
+    unpriced_spread_shadow: Optional[Dict[str, Any]] = None,
 ) -> str:
     positions = _receipt_positions(receipt)
     acca_count = sum(ticket_type == "acca" for ticket_type, _ in positions)
@@ -2720,6 +3011,9 @@ def _render_ticket_card(
     if priced_ineligible_shadow_picks is None:
         lines.extend(
             _render_unpriced_audit_section(unpriced_audit_picks or [], timezone_name)
+        )
+        lines.extend(
+            _render_unpriced_spread_shadow_section(unpriced_spread_shadow, timezone_name)
         )
     else:
         lines.extend(
@@ -2857,6 +3151,7 @@ def _render_empty_ticket_scan(
     unpriced_audit_picks: Optional[List[Dict[str, Any]]] = None,
     priced_ineligible_shadow_picks: Optional[List[Dict[str, Any]]] = None,
     priced_ineligible_audited_count: int = 0,
+    unpriced_spread_shadow: Optional[Dict[str, Any]] = None,
 ) -> str:
     """A concise mutable latest-scan view, never a frozen no-bet receipt."""
     paper_single_count = int(candidate_funnel.get("paper_single_picks") or 0)
@@ -2947,6 +3242,9 @@ def _render_empty_ticket_scan(
     if priced_ineligible_shadow_picks is None:
         lines.extend(
             _render_unpriced_audit_section(unpriced_audit_picks or [], timezone_name)
+        )
+        lines.extend(
+            _render_unpriced_spread_shadow_section(unpriced_spread_shadow, timezone_name)
         )
     else:
         lines.extend(
@@ -3092,6 +3390,7 @@ def _ticket_card_audit_kwargs(
         ),
         "priced_ineligible_shadow_picks": None,
         "priced_ineligible_audited_count": 0,
+        "unpriced_spread_shadow": _unpriced_spread_shadow(logical_rows, settled_history),
     }
 
 
@@ -3233,6 +3532,13 @@ def publish_operator_reports(
     dated_unpriced_audit = _annotate_unpriced_audit_rows(
         dated_unpriced_audit, settled_history
     )
+    current_spread_shadow: Optional[Dict[str, Any]] = None
+    dated_spread_shadow: Optional[Dict[str, Any]] = None
+    if league != League.NCAA_M:
+        current_spread_shadow = _unpriced_spread_shadow(
+            _latest_logical_rows(current), settled_history
+        )
+        dated_spread_shadow = _unpriced_spread_shadow(dated_logical_rows, settled_history)
 
     state = _load_state(localdata)
     acca_report = (market_report or {}).get("accas") or {}
@@ -3265,6 +3571,8 @@ def publish_operator_reports(
         "candidate_funnel": deepcopy(candidate_funnel),
         "unpriced_audit": _unpriced_audit_summary(current_unpriced_audit),
     }
+    if current_spread_shadow is not None:
+        scan_record["unpriced_spread_shadow"] = current_spread_shadow
     if league == League.NCAA_M:
         scan_record["priced_ineligible_shadow"] = _priced_ineligible_shadow_summary(
             current_priced_ineligible,
@@ -3364,6 +3672,7 @@ def publish_operator_reports(
                     if league == League.NCAA_M
                     else 0
                 ),
+                unpriced_spread_shadow=dated_spread_shadow,
             ),
         )
     state["last_generated_utc"] = generated_utc
@@ -3387,6 +3696,7 @@ def publish_operator_reports(
         "performance_text": str(localdata / "auto_tickets_performance.txt"),
         "candidate_funnel": candidate_funnel,
         "unpriced_audit": _unpriced_audit_summary(dated_unpriced_audit),
+        "unpriced_spread_shadow": dated_spread_shadow,
         "priced_ineligible_shadow": (
             _priced_ineligible_shadow_summary(
                 dated_priced_ineligible,
