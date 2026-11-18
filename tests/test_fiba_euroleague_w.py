@@ -88,14 +88,61 @@ def test_fiba_elw_teamless_rows_outside_a_slate_never_block_discovery():
     assert [game.game_id for game in games] == ["fiba-elw-209127-135150"]
 
 
-def test_fiba_elw_gate_ignores_teamless_bracket_slots_for_the_requested_slate(monkeypatch):
+def test_fiba_elw_skips_teamless_slots_with_missing_timestamps_and_reports_them():
+    schedule = deepcopy(SCHEDULE)
+    schedule[1]["gameDateTimeUTC"] = None
+
+    games = fiba.discover_games("2026-10-14", lambda _url: schedule)
+
+    assert [game.game_id for game in games] == ["fiba-elw-209127-135150"]
+    assert "no parseable timestamp" in fiba.last_gaps()[0].detail
+
+
+def test_fiba_elw_skips_bad_team_bearing_timestamps_without_blocking_slate_or_history():
+    schedule = deepcopy(SCHEDULE)
+    malformed = deepcopy(SCHEDULE[0])
+    malformed["gameId"] = 135212
+    malformed["gameDateTimeUTC"] = "not-an-iso-timestamp"
+    schedule.append(malformed)
+
+    slate = fiba.discover_games("2026-10-14", lambda _url: schedule)
+    history = fiba.discover_games(None, lambda _url: schedule)
+
+    assert [game.game_id for game in slate] == ["fiba-elw-209127-135150"]
+    assert [game.game_id for game in history] == ["fiba-elw-209127-135150"]
+    assert any(gap.required_field == "fiba_elw_schedule_timestamp" for gap in fiba.last_gaps())
+
+    report = fiba.smoke(lambda _url: schedule)
+    assert report["unassigned_schedule_slot_gaps"] == 1
+    assert report["schedule_timestamp_gaps"] == 1
+
+
+def test_fiba_elw_parses_explicit_offsets_once_in_provider_and_gate(monkeypatch):
+    row = deepcopy(SCHEDULE[0])
+    row["gameDateTimeUTC"] = "2026-10-14T19:00:00+02:00"
+
+    game = fiba.discover_games("2026-10-14", lambda _url: [row])[0]
+    assert game.scheduled_utc == "2026-10-14T17:00:00Z"
+
+    monkeypatch.setattr(adaptive_gate, "_fiba_schedule_payload", lambda _url: [row])
+    config = next(config for config in adaptive_gate.LEAGUES if config.league == "EUROLEAGUE_W")
+    gate_games = adaptive_gate._fiba_elw_schedule(config, "2026-10-14")
+    assert gate_games[0].scheduled_utc.isoformat() == "2026-10-14T17:00:00+00:00"
+
+
+def test_fiba_elw_gate_ignores_teamless_bracket_slots_before_timestamp_parsing(monkeypatch):
     row = deepcopy(SCHEDULE[0])
     row["teamA"] = None
     row["teamB"] = None
+    row["gameDateTimeUTC"] = None
     monkeypatch.setattr(adaptive_gate, "_fiba_schedule_payload", lambda _url: [row])
     config = next(config for config in adaptive_gate.LEAGUES if config.league == "EUROLEAGUE_W")
 
     assert adaptive_gate._fiba_elw_schedule(config, "2026-10-14") == []
+
+
+def test_fiba_schedule_url_never_exposes_the_apim_key():
+    assert "subscription-key" not in fiba.schedule_url()
 
 
 def test_live_fiba_client_refreshes_page_shipped_key_and_keeps_it_out_of_schedule_url():
@@ -249,6 +296,67 @@ def test_fiba_terminal_status_contract_is_shared_with_the_fail_open_gate(
     monkeypatch.setattr(adaptive_gate, "_fiba_schedule_payload", lambda _url: [row])
     config = next(config for config in adaptive_gate.LEAGUES if config.league == "EUROLEAGUE_W")
     with pytest.raises(adaptive_gate.GateUncertain, match=expected.value.lower()):
+        adaptive_gate._fiba_elw_schedule(config, "2026-10-14")
+
+
+@pytest.mark.parametrize(
+    ("overrides", "expected", "gate_accepts"),
+    [
+        (
+            {"isPostponed": True, "statusCode": "CANCELLED", "isLive": True},
+            GameStatus.POSTPONED,
+            False,
+        ),
+        (
+            {"isPostponed": False, "statusCode": "CANCELLED", "isLive": True},
+            GameStatus.CANCELLED,
+            False,
+        ),
+        (
+            {"isPostponed": False, "statusCode": "VALID", "isLive": True},
+            GameStatus.LIVE,
+            True,
+        ),
+    ],
+)
+def test_fiba_status_precedence_is_shared_with_the_gate(monkeypatch, overrides, expected, gate_accepts):
+    row = deepcopy(SCHEDULE[0])
+    row.update(overrides)
+
+    assert fiba.game_from_schedule_row(row).status is expected
+    monkeypatch.setattr(adaptive_gate, "_fiba_schedule_payload", lambda _url: [row])
+    config = next(config for config in adaptive_gate.LEAGUES if config.league == "EUROLEAGUE_W")
+    if gate_accepts:
+        assert [game.status for game in adaptive_gate._fiba_elw_schedule(config, "2026-10-14")] == [
+            expected.value.lower()
+        ]
+    else:
+        with pytest.raises(adaptive_gate.GateUncertain, match=expected.value.lower()):
+            adaptive_gate._fiba_elw_schedule(config, "2026-10-14")
+
+
+@pytest.mark.parametrize(
+    ("result_status", "scores"),
+    [
+        ("VALID", (None, None)),
+        ("VALID", (True, 75)),
+        ("EMPTY", (76, 75)),
+    ],
+)
+def test_fiba_final_like_status_without_a_complete_valid_signature_fails_open(
+    monkeypatch, result_status, scores
+):
+    row = deepcopy(SCHEDULE[0])
+    row["statusCode"] = "VALID"
+    row["gameResultStatusCode"] = result_status
+    row["liveGameStatus"] = 999
+    row["teamAScore"], row["teamBScore"] = scores
+    row["isLive"] = False
+
+    assert fiba.game_from_schedule_row(row).status is GameStatus.UNKNOWN
+    monkeypatch.setattr(adaptive_gate, "_fiba_schedule_payload", lambda _url: [row])
+    config = next(config for config in adaptive_gate.LEAGUES if config.league == "EUROLEAGUE_W")
+    with pytest.raises(adaptive_gate.GateUncertain, match="unknown status"):
         adaptive_gate._fiba_elw_schedule(config, "2026-10-14")
 
 

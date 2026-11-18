@@ -9,6 +9,7 @@ paths.
 
 from __future__ import annotations
 
+from datetime import datetime, timezone
 import re
 from typing import Any, Mapping
 
@@ -40,6 +41,33 @@ def scores_present(row: Mapping[str, Any]) -> bool:
     )
 
 
+def game_datetime_utc(value: Any) -> datetime:
+    """Parse GDAP's UTC-named timestamp without corrupting an ISO offset.
+
+    Live GDAP rows were observed without an offset, despite the UTC field
+    name. Those values are explicitly treated as UTC. A future source may send
+    an ordinary ISO ``Z`` or ``+/-HH:MM`` timestamp instead; parse it once and
+    normalize rather than appending a second ``Z``.
+    """
+
+    if not isinstance(value, str) or not value.strip():
+        raise ValueError("missing gameDateTimeUTC")
+    text = value.strip()
+    if "T" not in text.upper():
+        raise ValueError("gameDateTimeUTC must include a time")
+    if text.endswith(("Z", "z")):
+        text = text[:-1] + "+00:00"
+    try:
+        parsed = datetime.fromisoformat(text)
+    except ValueError as exc:
+        raise ValueError("invalid gameDateTimeUTC") from exc
+    if parsed.tzinfo is None:
+        # This exact field is FIBA's canonical UTC field; attach UTC only for
+        # this documented offset-less wire shape.
+        parsed = parsed.replace(tzinfo=timezone.utc)
+    return parsed.astimezone(timezone.utc)
+
+
 def schedule_status(row: Mapping[str, Any]) -> str:
     """Return the shared conservative GDAP status vocabulary.
 
@@ -57,12 +85,12 @@ def schedule_status(row: Mapping[str, Any]) -> str:
         return "abandoned"
     if row.get("isLive") is True:
         return "live"
-    if (
-        str(row.get("gameResultStatusCode") or "").upper() == "VALID"
-        and row.get("liveGameStatus") == 999
-        and scores_present(row)
-    ):
-        return "final"
+    result_status = str(row.get("gameResultStatusCode") or "").upper()
+    if row.get("liveGameStatus") == 999:
+        # ``999`` is part of the observed completed-game signature. Do not
+        # downgrade a malformed terminal row to an ordinary scheduled game:
+        # the gate must fail open and acquisition must expose a coverage gap.
+        return "final" if result_status == "VALID" and scores_present(row) else "unknown"
     if status_code in _RECOGNISED_OPEN_STATUS_CODES:
         return "scheduled"
     return "unknown"
@@ -125,6 +153,7 @@ __all__ = [
     "KEY_PAGE_URL",
     "PUBLIC_FALLBACK_SUBSCRIPTION_KEY",
     "SCHEDULE_ENDPOINT",
+    "game_datetime_utc",
     "has_complete_team_identity",
     "has_unassigned_team_slot",
     "page_subscription_key",
