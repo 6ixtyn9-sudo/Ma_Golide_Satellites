@@ -29,7 +29,72 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  gate:
+    name: Adaptive schedule and operator-state gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run_any: ${{ steps.decide.outputs.run_any }}
+      matrix: ${{ steps.decide.outputs.matrix }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up lightweight gate Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Recover latest Git-authoritative compact operator state
+        id: state
+        run: |
+          set -euo pipefail
+          # An event SHA can predate a serialized publisher commit. The gate
+          # must inspect the same latest-main receipts/performance summaries
+          # that the eventual matrix jobs restore after cache recovery.
+          if git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main \
+            && git restore --source=refs/remotes/origin/main --worktree -- localdata; then
+            echo "force_reason=" >> "$GITHUB_OUTPUT"
+          else
+            # Never turn a fetch/restore failure into a false no-work result.
+            echo "::warning::Could not recover latest main operator state; running every league."
+            echo "force_reason=latest_main_operator_state_unavailable" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Decide the adaptive league matrix
+        id: decide
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          STATE_FORCE_REASON: ${{ steps.state.outputs.force_reason }}
+        run: |
+          set -euo pipefail
+          FORCE_REASON="$STATE_FORCE_REASON"
+          # Manual dispatch deliberately remains the existing all-league,
+          # read-only rehearsal. The adaptive skip applies to external ticks.
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            FORCE_REASON="manual_read_only_rehearsal"
+          fi
+          ARGS=(--state-root localdata --github-output "$GITHUB_OUTPUT")
+          if [ -n "$FORCE_REASON" ]; then
+            ARGS+=(--force-all-reason "$FORCE_REASON")
+          fi
+          python scripts/adaptive_gate.py "${ARGS[@]}" > gate-report.json
+
+      - name: Publish gate decision summary
+        if: always()
+        run: |
+          if [ -f gate-report.json ]; then
+            echo "## Adaptive scheduler gate" >> "$GITHUB_STEP_SUMMARY"
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat gate-report.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "The gate did not produce a report; its fail-open output should run all leagues." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
   preflight:
+    needs: gate
+    if: needs.gate.outputs.run_any == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -49,33 +114,16 @@ jobs:
         run: python -m pytest -q
 
   league:
-    needs: preflight
+    needs: [gate, preflight]
+    if: needs.gate.outputs.run_any == 'true' && needs.preflight.result == 'success'
     runs-on: ubuntu-latest
     timeout-minutes: 45
     strategy:
-      # One unavailable/failed league never cancels the other five.
+      # The gate emits only leagues with due work. One unavailable/failed
+      # league never cancels any other selected league.
       fail-fast: false
       max-parallel: 6
-      matrix:
-        include:
-          - label: NBA
-            league: NBA
-            state_key: nba
-          - label: WNBA
-            league: WNBA
-            state_key: wnba
-          - label: EuroLeague
-            league: EuroLeague
-            state_key: euroleague
-          - label: Chinese CBA
-            league: CBA
-            state_key: cba
-          - label: NCAA men
-            league: NCAA_M
-            state_key: ncaa_m
-          - label: NCAA women
-            league: NCAA_W
-            state_key: ncaa_w
+      matrix: ${{ fromJSON(needs.gate.outputs.matrix) }}
     name: ${{ matrix.label }}
     env:
       LOCALDATA: localdata/${{ matrix.state_key }}
@@ -177,29 +225,11 @@ jobs:
             git restore --source="$MAIN_REF" --worktree -- "$STATE_DIR"
           fi
 
-      - name: Resolve league acquisition date automatically
-        if: steps.capability.outputs.available == 'true'
-        id: target
-        env:
-          LEAGUE: ${{ matrix.league }}
-        run: |
-          set -euo pipefail
-          DATE="$(python - <<'PY'
-          from datetime import datetime
-          import os
-          from zoneinfo import ZoneInfo
-          from ingestion.pipeline import ACQUISITION_TZ
-          league = os.environ["LEAGUE"].upper()
-          print(datetime.now(ZoneInfo(ACQUISITION_TZ[league])).strftime("%Y-%m-%d"))
-          PY
-          )"
-          echo "date=$DATE" >> "$GITHUB_OUTPUT"
-
       - name: Execute every available stage automatically
         if: steps.capability.outputs.available == 'true'
         env:
           LEAGUE: ${{ matrix.league }}
-          TARGET_DATE: ${{ steps.target.outputs.date }}
+          TARGET_DATE: ${{ matrix.target_date }}
           EVENT_NAME: ${{ github.event_name }}
           EVENT_ACTION: ${{ github.event.action }}
         run: |
@@ -326,11 +356,12 @@ jobs:
 
   publish-localdata:
     name: Publish localdata to repository
-    needs: league
+    needs: [gate, league]
     # Only the strictly named external tick may make live operator evidence
     # durable. Manual dispatch uploads artifacts but cannot publish.
     if: >-
       always() &&
+      needs.gate.outputs.run_any == 'true' &&
       github.ref == 'refs/heads/main' &&
       github.event_name == 'repository_dispatch' &&
       github.event.action == 'magolide-scheduled-tick'
