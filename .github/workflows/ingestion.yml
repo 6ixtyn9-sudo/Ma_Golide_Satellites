@@ -2,10 +2,11 @@
 # - All six leagues retain their public/keyless paths by default.
 # - Optional provider secrets are passed only to the adapters that already
 #   support them; an absent secret leaves that adapter explicitly disabled.
-# - Scheduled runs persist canonical state; manual dispatch remains a live
-#   read-only rehearsal so it cannot advance canonical state by accident.
-# Compact pick cards and paper-ticket state are committed to localdata/<league>;
-# raw forecast JSON stays in cache/artifacts, not permanent Git history.
+# - Scheduled and named external-dispatch runs persist canonical state; manual
+#   dispatch remains a live read-only rehearsal so it cannot advance state.
+# Immutable decisions, compact ticket state, and settlement summaries may be
+# committed to localdata/<league>; pick cards and raw forecast JSON stay in
+# cache/artifacts, not permanent Git history.
 # Install as .github/workflows/ingestion.yml (editing that path requires the
 # GitHub `workflows` permission).
 
@@ -18,6 +19,10 @@ on:
     - cron: "11 * * * *"
   # Deliberately no league/date/mode/write inputs: one click runs everything.
   workflow_dispatch: {}
+  # A trusted external scheduler calls the repository dispatch API with this
+  # exact event type. It is a durable automated tick, not a manual rehearsal.
+  repository_dispatch:
+    types: [magolide-scheduled-tick]
 
 permissions:
   contents: read
@@ -198,6 +203,8 @@ jobs:
         env:
           LEAGUE: ${{ matrix.league }}
           TARGET_DATE: ${{ steps.target.outputs.date }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
         run: |
           set -euo pipefail
           ARGS=(
@@ -209,11 +216,16 @@ jobs:
             --run-id "${GITHUB_RUN_ID}_${LEAGUE,,}_${GITHUB_RUN_ATTEMPT}"
           )
 
-          # Scheduled runs may persist canonical state. Manual dispatch is a
-          # deliberately live, all-league read-only rehearsal even when the
-          # write switch is enabled; it can validate optional odds credentials
-          # without advancing cursors or publishing canonical mutations.
-          if [ "${{ github.event_name }}" = "schedule" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
+          # Scheduled runs and the strictly named external dispatch may persist
+          # canonical state. Manual dispatch stays a live, all-league read-only
+          # rehearsal even when the write switch is enabled.
+          AUTOMATED_TICK=false
+          case "$EVENT_NAME:$EVENT_ACTION" in
+            schedule:*|repository_dispatch:magolide-scheduled-tick)
+              AUTOMATED_TICK=true
+              ;;
+          esac
+          if [ "$AUTOMATED_TICK" = "true" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
             ARGS+=(--write)
             if [ "$ALLOW_NOTIFICATION_WRITES" = "true" ]; then
               ARGS+=(--notify --send-notifications)
@@ -289,7 +301,10 @@ jobs:
         if: >-
           success() &&
           steps.capability.outputs.available == 'true' &&
-          (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch')
+          (github.event_name == 'schedule' ||
+           github.event_name == 'workflow_dispatch' ||
+           (github.event_name == 'repository_dispatch' &&
+            github.event.action == 'magolide-scheduled-tick'))
         uses: actions/cache/save@v4
         with:
           path: ${{ env.LOCALDATA }}
@@ -317,12 +332,14 @@ jobs:
   publish-localdata:
     name: Publish localdata to repository
     needs: league
-    # Only scheduled jobs may make live operator evidence durable. Manual dispatch
-    # uploads artifacts but cannot freeze or publish canonical operator decisions.
+    # Only a scheduled or strictly named external tick may make live operator
+    # evidence durable. Manual dispatch uploads artifacts but cannot publish.
     if: >-
       always() &&
       github.ref == 'refs/heads/main' &&
-      github.event_name == 'schedule'
+      (github.event_name == 'schedule' ||
+       (github.event_name == 'repository_dispatch' &&
+        github.event.action == 'magolide-scheduled-tick'))
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:
