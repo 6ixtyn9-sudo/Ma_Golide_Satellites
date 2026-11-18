@@ -26,9 +26,8 @@ DATE = r"\d{4}-\d{2}-\d{2}"
 ALLOWED_NAMES = tuple(
     re.compile(pattern)
     for pattern in (
-        # Full forecast archives and expanded dated audit cards are retained
-        # in the league cache/Actions artifacts, never copied into Git history.
-        rf"picks_{DATE}\.txt",
+        # All pick cards/archives and expanded audits are cache/artifact-only.
+        # Hourly price scans must not create a new Git blob for each card update.
         r"auto_tickets_state\.json",
         r"auto_tickets_performance\.json",
         r"auto_tickets_performance\.txt",
@@ -58,6 +57,36 @@ def _atomic_write(path: Path, raw: bytes) -> None:
     temporary = path.with_name(path.name + ".publish-tmp")
     temporary.write_bytes(raw)
     os.replace(temporary, path)
+
+
+def _git_durable_bytes(source: Path) -> bytes:
+    """Return the compact, durable form of one publishable operator file.
+
+    Live pick cards are intentionally artifact-only: their timestamped price
+    scans change hourly. The two mutable JSON summaries below are Git durable,
+    but their scan log and generation timestamp are operational telemetry, not
+    evidence needed to reconstruct tickets. Removing only those volatile fields
+    prevents no-op hourly runs from producing new Git blobs while receipts and
+    date locks remain complete.
+    """
+    raw = source.read_bytes()
+    if source.name not in {
+        "auto_tickets_state.json",
+        "auto_tickets_performance.json",
+    }:
+        return raw
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid operator JSON: {source}") from exc
+    if not isinstance(data, dict):
+        raise ValueError(f"operator JSON must be an object: {source}")
+    if source.name == "auto_tickets_state.json":
+        data.pop("scans", None)
+        data.pop("last_generated_utc", None)
+    else:
+        data.pop("generated_utc", None)
+    return (json.dumps(data, indent=2, sort_keys=True, default=str) + "\n").encode()
 
 
 def _withdrawn_decision_ids(localdata: Path) -> frozenset[str]:
@@ -176,7 +205,7 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
             if relative in seen_destinations:
                 raise ValueError(f"duplicate recovered operator destination: {relative}")
             seen_destinations.add(relative)
-            raw = source.read_bytes()
+            raw = _git_durable_bytes(source)
             if IMMUTABLE_NAMES.fullmatch(source.name) and withdrawn_decision_ids:
                 try:
                     candidate = json.loads(raw)

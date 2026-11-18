@@ -88,8 +88,9 @@ It has an hourly schedule (`11 * * * *`, UTC) and a manual dispatch with **no
 league/date/mode/write inputs**. A preflight job runs Ruff and the hermetic
 suite, then six fail-independent matrix jobs automatically run `NBA`, `WNBA`,
 `EuroLeague`, `CBA`, `NCAA_M`, and `NCAA_W` together. One serialized publisher
-then commits compact human pick cards and ticket state to `main`; raw picks JSON
-and expanded dated audits stay in the cache and bounded workflow artifacts.
+then commits compact ticket decisions and state to `main`; all pick cards and
+expanded audits stay in the cache and bounded workflow artifacts so hourly price
+movement does not create permanent Git history.
 
 Each matrix job has isolated state and artifacts:
 

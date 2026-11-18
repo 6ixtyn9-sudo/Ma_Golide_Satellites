@@ -254,21 +254,21 @@ writes.
   recovery.
 - `localdata/ledgers/`: immutable, content-addressed stage snapshots.
 - `localdata/reports/`: derived operational and market JSON reports.
-- `localdata/<league>/picks_*`: full JSON scans and expanded audits are kept in
-  the active workflow cache and 14-day artifacts, not Git. Compact human pick
-  cards (`.txt`) remain allowlisted for durable publication.
-- `localdata/<league>/auto_tickets_*`: immutable paper receipts, write-once
-  state, and reconstructed grading/performance reports, also allowlisted for
-  durable Git publication; see `docs/OPERATOR-REPORTS.md`.
+- `localdata/<league>/picks_*`: all current/dated pick cards, JSON scans, and
+  expanded audits stay in the active workflow cache and 14-day artifacts, not
+  Git; hourly price movement must not create permanent repository history.
+- `localdata/<league>/auto_tickets_*`: immutable paper receipts/no-bet
+  decisions, compact durable locks, and compact grading/performance summaries
+  are allowlisted for Git publication; see `docs/OPERATOR-REPORTS.md`.
 - `localdata/notification_ledger.json`: bounded notification deduplication
   metadata, not canonical sports evidence.
 
-After each GitHub run, one serialized publisher commits compact pick cards and
-paper-ticket receipts/state to `main`; it never overwrites a conflicting
-immutable ticket receipt. Large dated pick JSON and expanded audits stay in the
-league cache and bounded Actions artifacts, following Edge Factory's approach
-to raw daily dumps and avoiding unbounded Git-history growth. Canonical DuckDB,
-CSV, acquisition ledgers, and caches also remain outside Git.
+After each scheduled GitHub run, one serialized publisher commits only compact
+paper-ticket decisions, durable locks, and settlement summaries to `main`; it
+never overwrites a conflicting immutable decision. Pick cards—including `.txt`
+cards—remain in the league cache and bounded Actions artifacts, so hourly price
+movement cannot create unbounded Git-history growth. Canonical DuckDB, CSV,
+acquisition ledgers, and caches also remain outside Git.
 
 ```bash
 python -m ingestion.cli coverage --league NBA

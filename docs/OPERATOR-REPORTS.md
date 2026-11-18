@@ -10,12 +10,12 @@ raw-dump storage approach:
 - the league Actions cache retains working forecast archives and audit inputs
   across active runs; downloaded Actions artifacts retain the raw picks JSON,
   dated Markdown, operational reports, and recovery evidence for 14 days;
-- Git tracks the compact human-readable picks/ticket cards and the paper-ticket
-  receipts, write-once locks, and performance state needed to preserve operator
-  decisions;
-- large `picks_*.json` scan/history dumps and expanded dated Markdown audits
-  are deliberately not committed, preventing every full forecast payload from
-  becoming permanent Git history.
+- Git tracks immutable ticket/no-bet decisions, their human-readable ticket
+  cards, compact date locks, and compact performance state needed to preserve
+  operator decisions;
+- all `picks_*` cards and scan/history/audit payloads are deliberately kept in
+  cache/artifacts rather than committed, preventing hourly price movement and
+  full forecast payloads from becoming permanent Git history.
 
 The publisher overlays Git-durable files without deleting older history and
 aborts if a recovered immutable decision receipt differs from the repository
@@ -24,9 +24,9 @@ cache-only pick evidence is preserved across scheduled runs. If the rolling pick
 audit is absent after a cold-cache recovery, the forecaster uses its documented
 past-only prequential fallback rather than inventing or importing stale picks.
 DuckDB, CSV, acquisition ledgers, raw pick JSON, and credentials are never
-committed by this publisher. Derived Git publication runs for both manual and
-scheduled executions; it is independent of the canonical `ALLOW_MAGOLIDE_WRITES`
-gate.
+committed by this publisher. Only scheduled executions publish derived state to Git; manual runs retain
+inspection artifacts only. This boundary is independent of the canonical
+`ALLOW_MAGOLIDE_WRITES` gate.
 
 This is a presentation and paper-settlement layer. It does not change forecast
 selection, alter calibrated probabilities, place bets, write to a bookmaker, or
@@ -40,13 +40,13 @@ profitability.
 | --- | --- |
 | `picks_today.json` | Current scan of every forecast; cache/artifact only, not Git |
 | `picks_YYYY-MM-DD.json` | Cumulative dated pick evidence; cache/artifact only, not Git |
-| `picks_YYYY-MM-DD.txt` | Compact human-readable latest picks and started/settled sections; Git durable |
+| `picks_YYYY-MM-DD.txt` | Compact human-readable latest picks and started/settled sections; cache/artifact only, not Git |
 | `picks_audit_rolling.json` | Thirty-day logical and settled ledgers; cache/artifact only, not Git |
 | `picks_audit_YYYY-MM-DD.md` | Expanded rolling summary; cache/artifact only, not Git |
 | `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper singles and accas |
 | `auto_tickets_YYYY-MM-DD_no_bet.json` | Immutable terminal decision that the 60-minute pre-tip window closed without a qualifying pre-tip position |
 | `auto_tickets_YYYY-MM-DD.txt` | Mutable card showing the immutable ticket/no-bet decision and latest available ticket/shadow grades, or the latest pre-cutoff candidate scan |
-| `auto_tickets_state.json` | Write-once date locks and bounded scan telemetry |
+| `auto_tickets_state.json` | Git-durable write-once date locks; bounded scan telemetry stays cache/artifact-only |
 | `auto_tickets_performance.json` | Compact rolling settlement/financial summary; each history day points to its immutable receipt for full leg evidence |
 | `auto_tickets_performance.txt` | Bank, settled record, bet-days, held positions, and grading notes |
 
@@ -56,7 +56,11 @@ To keep Git history bounded, the rolling performance JSON contains only compact
 financial/settlement fields and minimal leg identifiers, outcome, selected price,
 and bookmaker. It does not duplicate prediction, calibration, team-history, or
 full book evidence from each immutable receipt. Read the receipt named by a
-history row's `receipt_path` for complete provenance.
+history row's `receipt_path` for complete provenance. Before Git publication,
+the publisher also removes bounded scan telemetry and generation timestamps
+from the mutable state/performance JSON. Those fields remain available in the
+cache and 14-day artifacts, but an otherwise unchanged hourly run produces no
+new Git blob.
 
 ## Pick categories
 
