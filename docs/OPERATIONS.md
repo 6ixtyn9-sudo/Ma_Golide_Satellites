@@ -90,12 +90,14 @@ manual installation must replace the full YAML rather than applying a partial
 snippet.
 It has a durable named external trigger and a manual dispatch with **no
 league/date/mode/write inputs**; it deliberately has no GitHub Actions cron
-trigger. A preflight job runs Ruff and the hermetic suite, then six
-fail-independent matrix jobs automatically run `NBA`, `WNBA`, `EuroLeague`,
-`CBA`, `NCAA_M`, and `NCAA_W` together. One serialized publisher then commits
-compact ticket decisions and state to `main`; all pick cards and expanded audits
-stay in the cache and bounded workflow artifacts so hourly price movement does
-not create permanent Git history.
+trigger. An adaptive, read-only gate runs first. It reads the latest
+Git-authoritative compact operator state and a bounded current-day schedule,
+then starts preflight and only the league matrix rows that have work due. The
+selected rows remain fail-independent across `NBA`, `WNBA`, `EuroLeague`,
+`CBA`, `NCAA_M`, and `NCAA_W`. One serialized publisher then commits compact
+ticket decisions and state to `main`; all pick cards and expanded audits stay in
+the cache and bounded workflow artifacts so frequent price movement does not
+create permanent Git history.
 
 ### Reliable external trigger
 
@@ -121,6 +123,36 @@ decisions plus compact settlement data. It is intentionally distinct from
 external token with only the repository access needed to create a repository
 dispatch; never place it in workflow YAML, repository files, artifacts, or job
 logs.
+
+### Adaptive tick gate
+
+The 30-minute external event does **not** automatically run every expensive
+pipeline. Before dependency installation, the gate restores `localdata` from
+the latest `main` and checks each league's compact state/performance summary
+and current acquisition-day schedule. It starts a league job when any of these
+conditions holds:
+
+- a ticket decision is due: an unfrozen scheduled/live game is at or inside the
+  60-minute decision lead;
+- the compact performance report has a pending position, awaiting game leg, or
+  unresolved-result leg needing reconciliation or settlement; or
+- state/receipt validation or schedule retrieval is unavailable, malformed, or
+  otherwise uncertain.
+
+A valid frozen ticket or no-bet sidecar is required before the gate can regard a
+reached decision window as complete. Missing/contradictory state, a failed
+latest-`main` restore, provider errors, and unknown schedule statuses all
+**fail open** to the normal full league job; the gate never turns uncertainty
+into "no work." NBA, WNBA, NCAA men, and NCAA women use one ESPN scoreboard
+request for their current acquisition day; CBA uses one official Beijing-day
+schedule request. EuroLeague currently has only the verified whole-season
+schedule endpoint, not a verified date-bounded alternative, so it deliberately
+fails open rather than disguising a season download as a lightweight gate.
+
+`workflow_dispatch` remains deliberately different: it forces the existing
+all-league read-only rehearsal, even if the adaptive gate would otherwise skip
+idle leagues. A skipped external tick has no matrix artifacts and no publisher
+job, therefore cannot write or publish anything.
 
 Each matrix job has isolated state and artifacts:
 
