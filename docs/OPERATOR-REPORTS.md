@@ -20,13 +20,13 @@ raw-dump storage approach:
 The publisher overlays Git-durable files without deleting older history and
 aborts if a recovered immutable decision receipt differs from the repository
 receipt. Git-tracked ticket state takes precedence over stale cached copies;
-cache-only pick evidence is preserved across scheduled runs. If the rolling pick
-audit is absent after a cold-cache recovery, the forecaster uses its documented
-past-only prequential fallback rather than inventing or importing stale picks.
-DuckDB, CSV, acquisition ledgers, raw pick JSON, and credentials are never
-committed by this publisher. Only scheduled executions publish derived state to Git; manual runs retain
-inspection artifacts only. This boundary is independent of the canonical
-`ALLOW_MAGOLIDE_WRITES` gate.
+cache-only pick evidence is preserved across named external-trigger runs. If the
+rolling pick audit is absent after a cold-cache recovery, the forecaster uses its
+documented past-only prequential fallback rather than inventing or importing
+stale picks. DuckDB, CSV, acquisition ledgers, raw pick JSON, and credentials
+are never committed by this publisher. Only named external-trigger executions
+publish derived state to Git; manual runs retain inspection artifacts only. This
+boundary is independent of the canonical `ALLOW_MAGOLIDE_WRITES` gate.
 
 This is a presentation and paper-settlement layer. It does not change forecast
 selection, alter calibrated probabilities, place bets, write to a bookmaker, or

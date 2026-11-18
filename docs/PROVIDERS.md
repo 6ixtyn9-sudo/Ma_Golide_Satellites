@@ -11,7 +11,7 @@ No live-provider claim should be inferred from a passing offline suite.
 | --- | --- | --- | --- | --- |
 | ESPN | NBA | Scoreboard discovery/books, BPI predictions, summaries, recent and indexed deep history | Public endpoints | Live read-only probes plus committed fixtures and offline regressions |
 | ESPN | WNBA | Scoreboard discovery/books, BPI predictions, summaries, event-native halves/quarters, indexed deep history | Public endpoints | Live read-only probes plus hermetic end-to-end league regressions |
-| ESPN | NCAA_M | Division-I men's scoreboard/books, BPI predictions, summaries, two-half/OT results, recent and indexed deep history | Public endpoints | Historical probes and hermetic endpoint/two-half/OT regressions; scheduled smoke still required |
+| ESPN | NCAA_M | Division-I men's scoreboard/books, BPI predictions, summaries, two-half/OT results, recent and indexed deep history | Public endpoints | Historical probes and hermetic endpoint/two-half/OT regressions; external-trigger smoke still required |
 | ESPN | NCAA_W | Division-I women's scoreboard/books, BPI predictions, summaries, modern quarters and declared legacy halves, recent and indexed deep history | Public endpoints | Live four-quarter final probe plus hermetic quarter/legacy-half and one-time reparse regressions |
 | EuroLeague | EuroLeague | Schedule discovery, game results, quarter/OT reconciliation, standings | Public endpoints | Schedule/boxscore live captures 2026-11-06; season schedule scores/partials, empty-season trap, and v3 per-round standings live-verified 2026-11-16; upstream reuse terms not reviewed |
 | CBA | CBA | Official league data API: season/day discovery, Beijing-local UTC times, quarter/OT reconciliation via observed period-score POST endpoint | Public endpoints; AES-128-ECB bodies decrypted with the key constant shipped in the site's own bundle | Live-verified 2026-11-16 from a datacenter IP (decryption, statuses, quarter sums, OT shape); unofficial/undocumented API and terms not reviewed — see caveats |
@@ -60,10 +60,10 @@ front-end bundle (function `TIe`), which the vendored stdlib decryptor in
 `sportsdataverse-py`, MIT; code license is not a data license). No
 credentials, proxies, or access controls are used. This does not establish
 permission to automate, store, or redistribute the returned data: the source's
-terms have not been reviewed, and the scheduled workflow can persist normalized
-facts. Keep data rights unresolved until the CBA site's terms or written
-permission are checked. SportsDataverse has also not ruled on the upstream
-terms. The wrapper's documented "datacenter-IP TCP block" did **not** reproduce
+terms have not been reviewed, and the named external-trigger workflow can
+persist normalized facts. Keep data rights unresolved until the CBA site's
+terms or written permission are checked. SportsDataverse has also not ruled on
+the upstream terms. The wrapper's documented "datacenter-IP TCP block" did **not** reproduce
 from this datacenter IP on 2026-11-16 (HTTP 200 in under a second), but it may
 be geographic or conditional: an undecryptable or refused body is surfaced as
 a provider error, never banked as data.

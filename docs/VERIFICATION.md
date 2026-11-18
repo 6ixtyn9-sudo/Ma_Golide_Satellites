@@ -153,8 +153,9 @@ prediction and correctly reported zero reconciled finals.
   or schema stability.
 - The historical index floors are observed nonempty/empty query boundaries,
   not proof of exhaustive coverage. See `docs/ESPN-ACQUISITION.md`.
-- The scheduled GitHub Actions workflow still requires post-change run
-  inspection for WNBA cache restoration, deep cursor creation, and ledgers.
+- The installed external-trigger GitHub Actions workflow still requires
+  post-change run inspection for WNBA cache restoration, deep cursor creation,
+  and ledgers.
 - Highest-quarter book prices are not supplied by a current adapter, so HQ
   forecasts cannot enter accas.
 - EuroLeague bookmaker coverage currently uses BetExplorer's representative

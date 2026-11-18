@@ -70,7 +70,7 @@ immutable audit ledgers.
   shadow reports, and atomic derived JSON writes.
 - `assayer/`: descriptive prediction-outcome statistics; it does not create or
   certify wagers.
-- `scripts/daily.py`: the only scheduled orchestrator.
+- `scripts/daily.py`: the only workflow orchestrator.
 
 ## DuckDB schema
 
@@ -175,18 +175,21 @@ an explicit conflict rather than overwriting history.
 
 ## Deployment state
 
-GitHub Actions has one hourly schedule. It restores/saves `localdata/` as a
-cache and uploads run reports/ledgers as artifacts. The hourly cadence supports
-the operator's 60-minute pre-tip ticket decision window. Disabled canonical writes
-still run live acquisition as a dry run; they do not create or modify canonical
-DuckDB/CSV state. Manual live dry runs use the same acquisition path.
+A trusted external scheduler invokes GitHub's named repository-dispatch event
+every 30 minutes; there is deliberately no GitHub Actions cron trigger. The
+workflow restores/saves `localdata/` as a cache and uploads run reports/ledgers
+as artifacts. That cadence supports the operator's 60-minute pre-tip ticket
+decision window. Disabled canonical writes still run live acquisition as a dry
+run; they do not create or modify canonical DuckDB/CSV state. Manual live dry
+runs use the same acquisition path.
 
-After the league matrix, one publisher commits compact pick text cards and
-paper-ticket receipts/state to `localdata/<league>` on `main`. Full daily picks
-JSON and expanded audits remain in the active league cache and bounded Actions
-artifacts, not in permanent Git history. Existing Git-durable history is retained
-and conflicting immutable receipts fail closed. Git wins over stale cached
-ticket state on the next run; cache-only pick evidence remains intact.
+After the league matrix, one publisher commits immutable ticket/no-bet decisions,
+compact state, and settlement summaries to `localdata/<league>` on `main`. Full
+daily picks JSON, pick cards, and expanded audits remain in the active league
+cache and bounded Actions artifacts, not in permanent Git history. Existing
+Git-durable history is retained and conflicting immutable receipts fail closed.
+Git wins over stale cached ticket state on the next run; cache-only pick evidence
+remains intact.
 
 A CI cache is an operational optimization, not an archival guarantee. Export
 and retain CSV.GZ/ledger artifacts according to the desired recovery policy.
