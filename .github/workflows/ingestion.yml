@@ -1,5 +1,5 @@
 # Ma Golide automatic multi-league acquisition, with no dispatch selections.
-# - All six leagues retain their public/keyless paths by default.
+# - All seven leagues retain their public/keyless paths by default.
 # - Optional provider secrets are passed only to the adapters that already
 #   support them; an absent secret leaves that adapter explicitly disabled.
 # - Named external-dispatch runs persist canonical state; manual dispatch
@@ -122,7 +122,7 @@ jobs:
       # The gate emits only leagues with due work. One unavailable/failed
       # league never cancels any other selected league.
       fail-fast: false
-      max-parallel: 6
+      max-parallel: 7
       matrix: ${{ fromJSON(needs.gate.outputs.matrix) }}
     name: ${{ matrix.label }}
     env:
