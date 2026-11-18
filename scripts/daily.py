@@ -183,6 +183,16 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
                     str(localdata / "ledgers"),
                     config.timezone,
                 )
+                # Late finals for earlier days belong in those days' ledgers.
+                for date in report.get("rechecked_dates") or []:
+                    ledgers[f"{command}:{date}"] = write_canonical_ledger(
+                        store,
+                        config.league_enum,
+                        date,
+                        command,
+                        str(localdata / "ledgers"),
+                        config.timezone,
+                    )
             # Current markets use visible pre-tip evidence. The following
             # freeze stage preserves tip-passed rows for later grading.
             if command == "pregame" and not getattr(args, "skip_markets", False):

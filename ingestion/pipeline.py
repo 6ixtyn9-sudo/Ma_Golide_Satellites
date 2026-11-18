@@ -57,6 +57,9 @@ from .providers import betexplorer, cbaleague, espn, euroleague, hardwood, ispor
 
 logger = logging.getLogger(__name__)
 
+# Games in these states will never produce an official final to wait for.
+_CLOSED_STATUSES = frozenset({GameStatus.POSTPONED, GameStatus.CANCELLED, GameStatus.ABANDONED})
+
 DEFAULT_TZ = {
     "NBA": "America/New_York",
     "EUROLEAGUE": "Europe/Paris",
@@ -360,6 +363,8 @@ class Pipeline:
                 )
             )
             finals = []
+        rechecked = self._recheck_pending_finals({game.game_id for game in finals})
+        finals += rechecked
         rows = []
         used_frozen = 0
         quarantined = []
@@ -409,6 +414,7 @@ class Pipeline:
                 }
             )
 
+        written = {row["game_id"] for row in rows}
         return self._report(
             mode="write" if self.allow_writes else "dry_run",
             fixtures_found=len(finals),
@@ -417,6 +423,10 @@ class Pipeline:
                 "finals_written": len(rows),
                 "frozen_predictions_used": used_frozen,
                 "quarantined": quarantined,
+                # Earlier league-local days that gained late finals this run.
+                "rechecked_dates": sorted(
+                    {_iso(self._ledger_date_for(g)) for g in rechecked if g.game_id in written}
+                ),
             },
         )
 
@@ -1661,6 +1671,69 @@ class Pipeline:
                             observed_utc=self._now_iso(),
                         )
                     )
+        return finals
+
+    def _recheck_pending_finals(self, already: set) -> List[Game]:
+        """Finals for earlier-day games that tipped but never got a result.
+
+        Result fetches are keyed by the run's league-local date, so a game
+        still live (or not yet officially closed) at the last run of its day
+        would otherwise stay pending forever. Every league re-checks only the
+        earlier days in the ``history_days`` window that still hold such a
+        game; days with nothing pending cost no requests.
+        """
+        days = max(0, int(self.config.history_days))
+        if not days:
+            return []
+        target = datetime.strptime(self.config.date_yyyymmdd, "%Y%m%d").date()
+        pending = {
+            game.game_id: game
+            for game in self.store.list_games(
+                league=self.config.league_enum,
+                on_or_after_utc=f"{target - timedelta(days=days + 1)}T00:00:00Z",
+                before_utc=self._now_iso(),
+            )
+            if game.game_id not in already
+            and game.status not in _CLOSED_STATUSES
+            and (game.status is not GameStatus.FINAL or game.actual is None)
+            and self._ledger_date_for(game) < self.config.date_yyyymmdd
+        }
+        if not pending:
+            return []
+        league = self.config.league_enum
+        if league is League.EUROLEAGUE:
+            # One season-schedule request covers every pending game.
+            batches = [None]
+        else:
+            batches = sorted({self._ledger_date_for(g) for g in pending.values()})
+        finals: List[Game] = []
+        for date in batches:
+            try:
+                if league is League.EUROLEAGUE:
+                    day = self._euroleague_finals(
+                        [g for g in euroleague.discover_games(None, self.fetch) if g.game_id in pending]
+                    )
+                elif league in ESPN_LEAGUES:
+                    day = espn.fetch_recent_results(
+                        date, self.espn_fetch, league, observed_utc=self._now_iso()
+                    )
+                else:
+                    day = cbaleague.fetch_recent_results(date, self.fetch, league)
+                    self.gaps.extend(cbaleague.last_gaps())
+            except Exception as exc:  # one bad day never blocks the others
+                logger.warning("pending result re-check failed for %s: %s", date, exc)
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=None,
+                        required_field="pending_results_recheck",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider=league.value.lower(),
+                        detail=f"{date or 'season'}: {str(exc)[:180]}",
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            finals.extend(g for g in day if g.game_id in pending)
         return finals
 
     # -- smoke helpers -------------------------------------------------------
