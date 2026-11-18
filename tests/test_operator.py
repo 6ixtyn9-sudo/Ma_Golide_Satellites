@@ -30,6 +30,9 @@ from ingestion.models import (
 
 DATE = "2026-11-07"
 AS_OF = "2026-11-07T18:00:00Z"
+# The first test fixture tips at 20:00Z, so this is the configured 60-minute
+# pre-tip paper-ticket decision point. Prediction evidence remains at AS_OF.
+TICKET_DECISION_AS_OF = "2026-11-07T19:00:00Z"
 
 
 class Store:
@@ -197,7 +200,7 @@ def publish(
     run_id="run-1",
     *,
     target_date=DATE,
-    generated_utc=AS_OF,
+    generated_utc=TICKET_DECISION_AS_OF,
 ):
     return publish_operator_reports(
         store,
@@ -504,7 +507,7 @@ def test_ticket_is_frozen_empty_scans_do_not_cancel_and_known_leg_loss_settles(t
     assert "pending 1.000" in pending_day_line
     assert not any(icon in pending_day_line for icon in ("✅", "❌", "➖"))
     ticket_text = Path(first["ticket_text"]).read_text()
-    assert "DECISION FROZEN AT 20:00" in ticket_text
+    assert "DECISION FROZEN AT 21:00" in ticket_text
     assert "displayed grades refresh when reconciled results arrive" in ticket_text
     assert "TIP-OFF" in ticket_text
     assert "KICKOFF" not in ticket_text
@@ -541,6 +544,90 @@ def test_ticket_is_frozen_empty_scans_do_not_cancel_and_known_leg_loss_settles(t
     receipt_path.unlink()
     with pytest.raises(FileNotFoundError, match="refusing to rotate"):
         publish(tmp_path, store, report(rows), run_id="missing-receipt")
+
+
+def test_ticket_waits_for_the_pre_tip_decision_window_and_uses_later_price(tmp_path):
+    early_rows = [forecast(number) for number in (1, 2, 3)]
+    early = publish(
+        tmp_path,
+        Store([game(number) for number in (1, 2, 3)]),
+        report(early_rows, [acca(early_rows)]),
+        run_id="before-decision-window",
+        generated_utc="2026-11-07T18:30:00Z",
+    )
+
+    assert early["ticket_receipt"] is None
+    assert early["ticket_decision"]["status"] == "pending_cutoff"
+    assert early["ticket_decision"]["planned_cutoff_utc"] == "2026-11-07T19:00:00Z"
+    assert json.loads(Path(early["ticket_state"]).read_text())["frozen_by_date"] == {}
+    assert "Ticket decision pending" in Path(early["ticket_text"]).read_text()
+
+    later_rows = [forecast(number, price=1.95) for number in (1, 2, 3)]
+    frozen = publish(
+        tmp_path,
+        Store([game(number) for number in (1, 2, 3)]),
+        report(later_rows, [acca(later_rows, acca_id="later-priced-candidate")]),
+        run_id="at-decision-window",
+        generated_utc=TICKET_DECISION_AS_OF,
+    )
+
+    receipt = json.loads(Path(frozen["ticket_receipt"]).read_text())
+    assert receipt["decision_id"] == "at-decision-window"
+    assert receipt["ticket_decision"]["status"] == "due"
+    assert receipt["ticket_decision"]["candidate_tickets_pre_tip"] == 1
+    assert receipt["accas"][0]["legs"][0]["book"]["selected_decimal_price"] == 1.95
+
+
+def test_terminal_no_bet_at_cutoff_blocks_later_ticket_candidates(tmp_path):
+    rows = [forecast(number) for number in (1, 2, 3)]
+    games = Store([game(number) for number in (1, 2, 3)])
+    no_bet = publish(
+        tmp_path,
+        games,
+        report(rows),
+        run_id="no-qualifying-ticket-at-cutoff",
+        generated_utc=TICKET_DECISION_AS_OF,
+    )
+
+    no_bet_path = Path(no_bet["no_bet_decision"])
+    frozen_no_bet = no_bet_path.read_bytes()
+    assert no_bet["ticket_receipt"] is None
+    assert json.loads(frozen_no_bet)["reason"] == "no_qualifying_pre_tip_ticket_at_decision_cutoff"
+    state = json.loads(Path(no_bet["ticket_state"]).read_text())
+    assert state["frozen_by_date"][DATE]["no_bet"] is True
+
+    later = publish(
+        tmp_path,
+        games,
+        report(rows, [acca(rows, acca_id="late-candidate-must-not-publish")]),
+        run_id="later-price-cannot-reopen-date",
+        generated_utc="2026-11-07T19:20:00Z",
+    )
+
+    assert later["ticket_receipt"] is None
+    assert no_bet_path.read_bytes() == frozen_no_bet
+    assert "closed by an immutable no-bet decision" in Path(later["ticket_text"]).read_text()
+
+
+def test_persisted_performance_is_compact_and_points_to_immutable_receipt(tmp_path):
+    rows = [forecast(number) for number in (1, 2, 3)]
+    rows[0]["team_history"] = {"large_debug_payload": "x" * 100_000}
+    result = publish(
+        tmp_path,
+        Store([game(number) for number in (1, 2, 3)]),
+        report(rows, [acca(rows)]),
+    )
+
+    stored = Path(result["performance"]).read_bytes()
+    performance = json.loads(stored)
+    day = performance["history"][0]
+    leg = day["positions"][0]["legs"][0]
+    assert "compact_settlement_summary" in performance["history_detail"]
+    assert day["receipt_path"] == f"auto_tickets_{DATE}_decision.json"
+    assert "accas" not in day and "singles" not in day
+    assert "team_history" not in leg
+    assert "prediction" not in leg
+    assert len(stored) < 10_000
 
 
 def test_later_scan_refreshes_historical_card_grades_without_rewriting_receipt(tmp_path):
@@ -653,7 +740,7 @@ def test_ncaam_historical_card_refreshes_priced_ineligible_shadow_grades(tmp_pat
         market_report,
         tmp_path,
         target_date=DATE,
-        generated_utc=AS_OF,
+        generated_utc=TICKET_DECISION_AS_OF,
         run_id="ncaa-single-and-shadow",
     )
     receipt_path = Path(first["ticket_receipt"])
@@ -794,7 +881,7 @@ def test_push_leg_is_removed_from_effective_acca_price(tmp_path):
     ]
     first = publish(tmp_path, Store(games), report(rows, [ticket]))
     performance = json.loads(Path(first["performance"]).read_text())
-    settled = performance["history"][0]["accas"][0]
+    settled = performance["history"][0]["positions"][0]
     assert settled["leg_outcomes"] == ["win", "push"]
     assert settled["grade_status"] == "win"
     assert settled["effective_decimal_odds"] == 2.0
@@ -812,7 +899,7 @@ def test_acca_is_a_loss_as_soon_as_any_leg_loses_while_other_legs_are_pending(tm
     )
 
     performance = json.loads(Path(result["performance"]).read_text())
-    position = performance["history"][0]["accas"][0]
+    position = performance["history"][0]["positions"][0]
     assert position["leg_outcomes"] == ["loss", None]
     assert position["grade_status"] == "loss"
     assert position["unresolved_legs"] == 1
@@ -1304,9 +1391,9 @@ def test_paper_single_settles_at_single_odds_and_keeps_write_once_receipt(tmp_pa
     assert performance["paper_committed_units"] == 0.0
     assert performance["selected_leg_brier_score"] == pytest.approx((0.62 - 1) ** 2)
     daily = performance["history"][0]
-    assert daily["singles"][0]["grade_status"] == "win"
-    assert daily["singles"][0]["profit_units"] == pytest.approx(0.8)
-    assert daily["accas"] == []
+    assert [position["ticket_type"] for position in daily["positions"]] == ["single"]
+    assert daily["positions"][0]["grade_status"] == "win"
+    assert daily["positions"][0]["profit_units"] == pytest.approx(0.8)
     ticket_text = Path(settled["ticket_text"]).read_text()
     assert "[PAPER SINGLE #1]" in ticket_text
     assert "· ✅ WIN" in ticket_text
@@ -1597,6 +1684,44 @@ def test_spread_displays_use_selected_side_handicap_everywhere(tmp_path):
     assert "Counterfactual fade: **✅ WIN @ 1.909 Home 1 -27.5 (home) · Test Book**" in markdown
 
 
+def test_later_exact_quote_hides_stale_unpriced_logical_pick_but_keeps_evidence(tmp_path):
+    unpriced = forecast(
+        1,
+        price=None,
+        eligible=False,
+        reasons=["no_exact_bookmaker_market", "insufficient_walk_forward_samples"],
+        calibration_n=4,
+    )
+    unpriced["forecast_id"] = "forecast-1-before-quote"
+    first = publish(tmp_path, Store([game(1)]), report([unpriced]), run_id="before-quote")
+    assert first["unpriced_audit"]["count"] == 1
+
+    priced = forecast(
+        1,
+        price=1.91,
+        eligible=False,
+        reasons=["insufficient_walk_forward_samples"],
+        calibration_n=4,
+    )
+    priced["forecast_id"] = "forecast-1-after-quote"
+    result = publish(tmp_path, Store([game(1)]), report([priced]), run_id="after-quote")
+
+    # The original no-price evidence remains immutable in the dated ledger,
+    # but the card/audit reflects the later exact quote for the same selection.
+    archived = json.loads((tmp_path / f"picks_{DATE}.json").read_text())
+    assert {row["forecast_id"] for row in archived} == {
+        "forecast-1-before-quote",
+        "forecast-1-after-quote",
+    }
+    text = Path(result["picks_text"]).read_text()
+    assert "WATCHLIST — NO MATCHED ODDS\n========================================================================\n  (none)" in text
+    assert "@1.910 Test Book" in text
+    assert "Logical picks shown: 1 · superseded observations: 1" in text
+    assert result["unpriced_audit"]["count"] == 0
+    state = json.loads(Path(result["ticket_state"]).read_text())
+    assert state["scans"][-1]["unpriced_audit"]["count"] == 0
+
+
 def test_started_and_settled_games_leave_the_active_pick_sections(tmp_path):
     first = publish(tmp_path, Store([game(1)]), report([forecast(1)]))
     text_path = Path(first["picks_text"])
@@ -1647,7 +1772,8 @@ def test_unpriced_forecasts_are_audit_only_and_settle_without_paper_stake(tmp_pa
 
     assert first["ticket_receipt"] is None
     state = json.loads(Path(first["ticket_state"]).read_text())
-    assert state["frozen_by_date"] == {}
+    assert state["frozen_by_date"][DATE]["no_bet"] is True
+    assert first["no_bet_decision"] is not None
     card = Path(first["ticket_text"]).read_text()
     assert "UNPRICED AUDIT-ONLY SHADOW GROUPS — 0 QUALIFY" in card
     assert "forecast=forecast-1-moneyline-home" not in card
@@ -1695,7 +1821,7 @@ def test_unpriced_forecasts_are_audit_only_and_settle_without_paper_stake(tmp_pa
     performance = json.loads(Path(settled["performance"]).read_text())
     assert performance["settled_positions"] == 0
     assert performance["paper_bank_units"] == 100.0
-    assert json.loads(Path(settled["ticket_state"]).read_text())["frozen_by_date"] == {}
+    assert json.loads(Path(settled["ticket_state"]).read_text())["frozen_by_date"][DATE]["no_bet"] is True
 
 
 def test_unpriced_matched_market_reports_missing_selected_side_quote(tmp_path):
@@ -1738,7 +1864,8 @@ def test_unpriced_matched_market_reports_missing_selected_side_quote(tmp_path):
     saved = json.loads(Path(result["dated_picks"]).read_text())[0]
     assert saved["book"]["selected_decimal_price"] is None
     assert saved["book"]["side_prices"]["away"] == 1.95
-    assert state["frozen_by_date"] == {}
+    assert state["frozen_by_date"][DATE]["no_bet"] is True
+    assert result["no_bet_decision"] is not None
 
 
 def test_unpriced_audit_rows_do_not_enter_a_frozen_priced_ticket(tmp_path):

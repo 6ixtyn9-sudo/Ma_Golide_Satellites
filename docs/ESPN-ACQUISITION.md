@@ -52,7 +52,7 @@ IDs are examples, not permanent coverage guarantees:
 | Resource | Live observation | Production decision |
 | --- | --- | --- |
 | Site summary, NBA `401909938` and NCAAW `401918841` | Modern team/player boxscores; NCAAW also supplied plays and win-probability data | Team/player boxscores and leaders are sanitized into existing bounded summary enrichment. Raw in-play arrays are not pre-tip model features. |
-| Site scoreboard `dates={year}&limit=1`, team `teams/{id}/schedule?season={year}` | Season calendars, event linescores, team statistics, and large team schedules are available | Possible future backfill optimisation only. No unbounded season/team crawl was added to the three-hour run. |
+| Site scoreboard `dates={year}&limit=1`, team `teams/{id}/schedule?season={year}` | Season calendars, event linescores, team statistics, and large team schedules are available | Possible future backfill optimisation only. No unbounded season/team crawl was added to the hourly run. |
 | Core competition `odds`, NBA `401909938` and NCAAW `401918841` | Provider `100` is DraftKings; open/current/close full-game prices are present, but those objects have no observation timestamps | Current timestamped scoreboard books remain canonical. Untimestamped open/close fields cannot backfill pre-tip history or CLV. |
 | Core `odds/100/history/0/movement?limit=100` | `count: 0` for both sampled events | No movement-history ingestion or fabricated historical calibration. |
 | Core team `odds/100/past-performances` | `count: 0` for sampled Denver team `7` | No team ATS-history backfill from this resource. |
@@ -121,8 +121,8 @@ historical summary is already persisted. A provider/identity error leaves the
 cursor on the failed event. A dry run never advances the deep cursor.
 
 The workflow needs no new league/date/mode/write inputs. Its ordinary
-three-hour league matrix runs this same bounded backfill. Scheduled cache
-saves preserve public acquisition caches even on dry runs, but dry runs still
+hourly league matrix runs this same bounded backfill. Scheduled cache saves
+preserve public acquisition caches even on dry runs, but dry runs still
 cannot create canonical sports state or advance deep history.
 
 Inspect a persisted cursor read-only with:

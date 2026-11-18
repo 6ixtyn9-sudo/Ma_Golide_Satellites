@@ -7,9 +7,11 @@ winner, alter a probability, or place a bet. Current forecasts come from
 Operator evidence files live beneath one league's localdata directory:
 - ``picks_YYYY-MM-DD.json``, ``picks_today.json``, and rolling/dated audit
   files are full forecast evidence kept in the active cache and workflow artifacts.
-- ``picks_YYYY-MM-DD.txt`` is the compact human card retained in Git.
+- ``picks_YYYY-MM-DD.txt`` is a compact human card retained in cache/artifacts.
 - ``auto_tickets_YYYY-MM-DD_decision.json`` is an immutable paper receipt.
-- ``auto_tickets_YYYY-MM-DD.txt`` is a mutable card rendering of the frozen decision and latest available grades.
+- ``auto_tickets_YYYY-MM-DD.txt`` is a mutable cache/artifact card rendering
+  a frozen decision and latest available grades; its receipt-backed initial
+  snapshot is the only version eligible for Git publication.
 - ``auto_tickets_state.json`` stores write-once date locks and bounded scan telemetry.
 - ``auto_tickets_performance.json`` / ``.txt`` reconstruct paper performance.
 
@@ -48,6 +50,7 @@ from .types import (
 OPERATOR_SCHEMA = "magolide.operator"
 FADE_AUDIT_SCHEMA = "magolide.paper_fade_audit"
 TICKET_SCHEMA = "magolide.paper_ticket_receipt"
+NO_BET_DECISION_SCHEMA = "magolide.paper_ticket_no_bet"
 STATE_SCHEMA = "magolide.paper_ticket_state"
 UNPRICED_AUDIT_SCHEMA = "magolide.unpriced_forecast_audit"
 UNPRICED_SUCCESS_RATE_THRESHOLD = 0.70
@@ -65,6 +68,10 @@ UNPRICED_SPREAD_SHADOW_SCHEMA = "magolide.unpriced_spread_shadow"
 UNPRICED_SPREAD_SHADOW_MIN_PROBABILITY = 0.70
 BASE_PAPER_UNITS = 100.0
 STAKE_UNITS_PER_ACCA = 1.0
+# Ticket selection remains mutable until this pre-tip slate decision point. A
+# receipt (or terminal no-bet decision) is then immutable, so an early partial
+# book snapshot cannot lock the entire date.
+TICKET_DECISION_LEAD_TIME = timedelta(hours=1)
 BUCKET_ORDER = [
     "ELIGIBLE_CLEAN",
     "CAUTION",
@@ -145,6 +152,29 @@ def _withdrawn_sidecar_path(localdata: Path, target_date: str) -> Path:
     return localdata / f"auto_tickets_{target_date}_withdrawn.json"
 
 
+def _no_bet_sidecar_path(localdata: Path, target_date: str) -> Path:
+    """Return the durable terminal no-bet decision for one slate date."""
+    return localdata / f"auto_tickets_{target_date}_no_bet.json"
+
+
+def _read_no_bet_decision(localdata: Path, target_date: str) -> Optional[Dict[str, Any]]:
+    path = _no_bet_sidecar_path(localdata, target_date)
+    if not path.exists():
+        return None
+    decision = _read_json(path, {})
+    if (
+        not isinstance(decision, dict)
+        or not schema_matches(decision.get("schema_version"), NO_BET_DECISION_SCHEMA)
+        or decision.get("status") != "frozen_no_bet"
+    ):
+        raise ValueError(f"invalid frozen no-bet decision: {path}")
+    if str(decision.get("target_date") or "") != target_date:
+        raise ValueError(f"frozen no-bet decision date mismatch: {path}")
+    if not decision.get("decision_id"):
+        raise ValueError(f"frozen no-bet decision lacks decision_id: {path}")
+    return decision
+
+
 def _withdrawn_ids_from_sidecars(localdata: Path) -> set[str]:
     ids: set[str] = set()
     for path in localdata.glob("auto_tickets_*_withdrawn.json"):
@@ -171,6 +201,96 @@ def _read_json(path: Path, default: Any) -> Any:
 
 def _local_time(value: str, timezone_name: str) -> str:
     return parse_utc(value).astimezone(ZoneInfo(timezone_name)).strftime("%Y-%m-%d %H:%M %Z")
+
+
+def _utc_iso(value: datetime) -> str:
+    return value.astimezone(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def _ticket_decision_window(
+    games: Dict[str, Game],
+    *,
+    forecast_rows: List[Dict[str, Any]],
+    target_date: str,
+    generated_utc: str,
+    slate_timezone_name: str,
+) -> Dict[str, Any]:
+    """Describe the single immutable decision point for a local-date slate.
+
+    The forecast service already scopes its current rows to the acquisition
+    timezone's local date. Use that same timezone here rather than the
+    Johannesburg presentation timezone; otherwise a cross-midnight US or CBA
+    slate could freeze against the wrong day. A terminal decision is permitted
+    only once the planned pre-tip cutoff has arrived.
+    """
+    try:
+        target_day = datetime.strptime(target_date, "%Y-%m-%d").date()
+        generated = parse_utc(generated_utc)
+        slate_zone = ZoneInfo(slate_timezone_name)
+    except (TypeError, ValueError) as exc:
+        raise ValueError("invalid ticket decision date, time, or slate timezone") from exc
+
+    slate_tips = []
+    for game in games.values():
+        try:
+            tip = parse_utc(game.scheduled_utc)
+        except (AttributeError, TypeError, ValueError):
+            continue
+        if tip.astimezone(slate_zone).date() == target_day:
+            slate_tips.append(tip)
+    slate_source = "games"
+    if not slate_tips:
+        # A candidate may survive a transient game-store lookup failure. Its
+        # preserved scheduled time is still enough to fail closed at the same
+        # cutoff; do not let a missing store row postpone publication forever.
+        slate_source = "forecast_rows"
+        for row in forecast_rows:
+            try:
+                tip = parse_utc(str(row["scheduled_utc"]))
+            except (KeyError, TypeError, ValueError):
+                continue
+            if tip.astimezone(slate_zone).date() == target_day:
+                slate_tips.append(tip)
+    if not slate_tips:
+        return {
+            "status": "no_slate_game",
+            "policy": "first_slate_tip_minus_60_minutes",
+            "lead_minutes": int(TICKET_DECISION_LEAD_TIME.total_seconds() // 60),
+            "slate_timezone": slate_timezone_name,
+        }
+
+    earliest_tip = min(slate_tips)
+    cutoff = earliest_tip - TICKET_DECISION_LEAD_TIME
+    if generated < cutoff:
+        status = "pending_cutoff"
+    elif generated < earliest_tip:
+        status = "due"
+    else:
+        # Do not create a fresh position after the earliest slate game has
+        # tipped merely because a later scan has a new price/candidate.
+        status = "missed_pre_tip_window"
+    return {
+        "status": status,
+        "policy": "first_slate_tip_minus_60_minutes",
+        "lead_minutes": int(TICKET_DECISION_LEAD_TIME.total_seconds() // 60),
+        "slate_timezone": slate_timezone_name,
+        "slate_time_source": slate_source,
+        "earliest_slate_tip_utc": _utc_iso(earliest_tip),
+        "planned_cutoff_utc": _utc_iso(cutoff),
+        "generated_utc": _utc_iso(generated),
+    }
+
+
+def _ticket_candidate_is_pre_tip(candidate: Dict[str, Any], generated_utc: str) -> bool:
+    """Require every proposed leg to remain strictly pre-tip at publication."""
+    legs = candidate.get("legs")
+    if not isinstance(legs, list) or not legs:
+        return False
+    generated = parse_utc(generated_utc)
+    try:
+        return all(parse_utc(str(leg["scheduled_utc"])) > generated for leg in legs)
+    except (KeyError, TypeError, ValueError):
+        return False
 
 
 def _bucket(forecast: Dict[str, Any]) -> str:
@@ -606,10 +726,17 @@ def _canonical_book_for_key(book_name: str | None) -> str | None:
         return book_name
 
 
-def _logical_pick_key(row: Dict[str, Any]) -> tuple:
-    """Identify repeated observations of one displayed pick, not its evidence ID."""
+def _market_pick_key(row: Dict[str, Any]) -> tuple:
+    """Return the wager identity without its bookmaker observation.
 
-    book = row.get("book") or {}
+    A no-price forecast is emitted with ``book=None``.  When a later scan
+    finds an exact quote for the same game, market, period, side, line, and
+    model, the old no-price evidence must not remain visible as a separate
+    current pick merely because its book fields are empty.  The raw evidence
+    is still retained in the dated ledger; this key is used only to recognise
+    that a valid quote now exists for the same forecasted selection.
+    """
+
     line = row.get("line")
     return (
         row.get("game_id"),
@@ -618,9 +745,14 @@ def _logical_pick_key(row: Dict[str, Any]) -> tuple:
         row.get("selection"),
         float(line) if line is not None else None,
         row.get("model"),
-        book.get("provider"),
-        _canonical_book_for_key(book.get("book")),
     )
+
+
+def _logical_pick_key(row: Dict[str, Any]) -> tuple:
+    """Identify repeated observations of one displayed pick, not its evidence ID."""
+
+    book = row.get("book") or {}
+    return (*_market_pick_key(row), book.get("provider"), _canonical_book_for_key(book.get("book")))
 
 
 def _evidence_time(row: Dict[str, Any]) -> datetime:
@@ -645,7 +777,17 @@ def _latest_evidence_utc(row: Dict[str, Any]) -> Optional[str]:
 
 
 def _latest_logical_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    """Select the latest observation per logical pick without deleting evidence."""
+    """Select displayable current observations without deleting raw evidence.
+
+    Book-attributed observations remain separate logical picks because their
+    prices are independently auditable.  A no-price observation is different:
+    it is a temporary absence of book evidence, not a bookmaker lane.  Once
+    any exact selected-side quote exists for the same modelled selection, omit
+    that no-price duplicate from the current/card/audit view.  This prevents a
+    later successful odds refresh from still rendering ``no matched book`` for
+    a pick that is in fact priced, while preserving every source row in the
+    dated JSON ledger.
+    """
 
     groups: Dict[tuple, List[Dict[str, Any]]] = defaultdict(list)
     for row in rows:
@@ -654,8 +796,17 @@ def _latest_logical_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
         max(group, key=lambda row: (_evidence_time(row), str(row["pick_id"])))
         for group in groups.values()
     ]
+    exact_price_market_keys = {
+        _market_pick_key(row) for row in selected if _has_exact_selected_price(row)
+    }
+    displayable = [
+        row
+        for row in selected
+        if _has_exact_selected_price(row)
+        or _market_pick_key(row) not in exact_price_market_keys
+    ]
     return sorted(
-        selected,
+        displayable,
         key=lambda row: (
             row["scheduled_utc"],
             row["game_id"],
@@ -1580,6 +1731,7 @@ def _new_receipt(
     captured_utc: str,
     run_id: str,
     accas: List[Dict[str, Any]],
+    ticket_decision: Dict[str, Any],
 ) -> Dict[str, Any]:
     ticket_rows: Dict[str, List[Dict[str, Any]]] = {"acca": [], "single": []}
     for index, acca in enumerate(accas, 1):
@@ -1620,11 +1772,55 @@ def _new_receipt(
         "paper_only": True,
         "captured_at": captured_utc,
         "frozen_at": captured_utc,
+        "ticket_decision": deepcopy(ticket_decision),
         "stake_units_per_acca": STAKE_UNITS_PER_ACCA,
         "stake_units_per_position": STAKE_UNITS_PER_ACCA,
         "accas": ticket_rows["acca"],
         "singles": ticket_rows["single"],
     }
+
+
+def _freeze_no_bet_decision(
+    localdata: Path,
+    *,
+    state: Dict[str, Any],
+    league: League,
+    target_date: str,
+    captured_utc: str,
+    run_id: str,
+    ticket_decision: Dict[str, Any],
+) -> Dict[str, Any]:
+    """Write the immutable terminal no-bet decision for a reached cutoff."""
+    path = _no_bet_sidecar_path(localdata, target_date)
+    existing = _read_no_bet_decision(localdata, target_date)
+    if existing is not None:
+        return existing
+    reason = (
+        "decision_window_missed_before_publication"
+        if ticket_decision.get("status") == "missed_pre_tip_window"
+        else "no_qualifying_pre_tip_ticket_at_decision_cutoff"
+    )
+    decision = {
+        "schema_version": NO_BET_DECISION_SCHEMA,
+        "status": "frozen_no_bet",
+        "league": league.value,
+        "target_date": target_date,
+        "decision_id": run_id,
+        "frozen_at": captured_utc,
+        "reason": reason,
+        "ticket_decision": deepcopy(ticket_decision),
+    }
+    _write_json(path, decision)
+    state["frozen_by_date"][target_date] = {
+        "decision_id": run_id,
+        "frozen_at": captured_utc,
+        "final": True,
+        "no_bet": True,
+        "lock_source": "no_bet_sidecar",
+        "no_bet_path": path.name,
+        "decision_cutoff_utc": ticket_decision.get("planned_cutoff_utc"),
+    }
+    return decision
 
 
 def _ticket_receipt(
@@ -1636,11 +1832,28 @@ def _ticket_receipt(
     captured_utc: str,
     run_id: str,
     accas: List[Dict[str, Any]],
+    ticket_decision: Dict[str, Any],
+    allow_new_decision: bool,
 ) -> Optional[Dict[str, Any]]:
+    """Load a prior receipt or make exactly one post-cutoff decision.
+
+    Before the cutoff a scan is only candidate evidence. At/after the cutoff,
+    the first scan either freezes its pre-tip ticket candidates or writes a
+    durable no-bet decision. Neither decision can later be upgraded by a newly
+    arriving bookmaker price.
+    """
     path = localdata / f"auto_tickets_{target_date}_decision.json"
     # Sidecar is authoritative even if state cache rolls back.
     if _withdrawn_sidecar_path(localdata, target_date).exists():
         return None
+    no_bet = _read_no_bet_decision(localdata, target_date)
+    if no_bet is not None:
+        if path.exists():
+            raise ValueError(
+                f"conflicting frozen ticket receipt and no-bet decision for {target_date}"
+            )
+        return None
+
     lock = state["frozen_by_date"].get(target_date)
     if isinstance(lock, dict) and lock.get("withdrawn") is True:
         # Keep immutable receipt bytes for evidence, but never adopt, rotate,
@@ -1660,6 +1873,10 @@ def _ticket_receipt(
                 },
             )
         return None
+    if isinstance(lock, dict) and lock.get("no_bet") is True:
+        raise FileNotFoundError(
+            f"frozen no-bet decision is missing: {_no_bet_sidecar_path(localdata, target_date)}"
+        )
     if lock is not None:
         locked_path = localdata / str(lock.get("receipt_path") or path.name)
         if not locked_path.exists():
@@ -1692,7 +1909,18 @@ def _ticket_receipt(
             "receipt_path": path.name,
         }
         return receipt
+    if not allow_new_decision:
+        return None
     if not accas:
+        _freeze_no_bet_decision(
+            localdata,
+            state=state,
+            league=league,
+            target_date=target_date,
+            captured_utc=captured_utc,
+            run_id=run_id,
+            ticket_decision=ticket_decision,
+        )
         return None
     receipt = _new_receipt(
         league=league,
@@ -1700,6 +1928,7 @@ def _ticket_receipt(
         captured_utc=captured_utc,
         run_id=run_id,
         accas=accas,
+        ticket_decision=ticket_decision,
     )
     _write_json(path, receipt)
     state["frozen_by_date"][target_date] = {
@@ -1707,6 +1936,7 @@ def _ticket_receipt(
         "final": True,
         "lock_source": "state",
         "receipt_path": path.name,
+        "decision_cutoff_utc": ticket_decision.get("planned_cutoff_utc"),
     }
     return receipt
 
@@ -1900,6 +2130,116 @@ def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict
         "drawdown_basis": "not_a_settlement_time_equity_curve",
         "history": days,
     }
+
+
+def _compact_performance_report(report: Dict[str, Any]) -> Dict[str, Any]:
+    """Persist settlement summaries without cloning full receipt evidence.
+
+    Receipts are already immutable per-date sources for every full leg,
+    prediction, calibration, and bookmaker payload. Repeating those large
+    payloads in a rolling Git-tracked performance report made the file grow by
+    hundreds of kilobytes for a handful of positions. The renderer keeps the
+    rich in-memory report; this serializer keeps only fields needed to inspect
+    financial settlement and points readers to the receipt for full evidence.
+    """
+    compact = {key: value for key, value in report.items() if key != "history"}
+    compact["history_detail"] = (
+        "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json "
+        "receipts retain complete leg evidence"
+    )
+    compact_history = []
+    day_fields = (
+        "date",
+        "league",
+        "decision_id",
+        "frozen_at",
+        "wins",
+        "losses",
+        "pushes",
+        "settled_positions",
+        "pending_positions",
+        "unresolved_result_legs",
+        "awaiting_game_legs",
+        "result_unresolvable_legs",
+        "settled_accas",
+        "pending_accas",
+        "settled_singles",
+        "pending_singles",
+        "staked_units",
+        "returned_units",
+        "profit_units",
+        "pending_units",
+        "bank_units",
+    )
+    position_fields = (
+        "ticket_id",
+        "ticket_type",
+        "publication_index",
+        "leg_count",
+        "combined_decimal_odds",
+        "effective_decimal_odds",
+        "stake_units",
+        "estimated_joint_win_probability",
+        "estimated_win_probability",
+        "paper_only",
+        "provisional_sample_gate_bypassed",
+        "provisional_leg_count",
+        "ranking_status",
+        "bookmakers",
+        "leg_outcomes",
+        "push_legs",
+        "unresolved_legs",
+        "awaiting_game_legs",
+        "result_unresolvable_legs",
+        "grade_status",
+        "profit_units",
+    )
+    leg_fields = (
+        "game_id",
+        "pick_id",
+        "forecast_id",
+        "home",
+        "away",
+        "scheduled_utc",
+        "market",
+        "period",
+        "selection",
+        "line",
+        "grade_status",
+        "outcome",
+        "result_resolution_status",
+    )
+    for day in report.get("history") or []:
+        compact_day = {field: day.get(field) for field in day_fields}
+        compact_day["receipt_path"] = f"auto_tickets_{day['date']}_decision.json"
+        compact_positions = []
+        for position in day.get("positions") or []:
+            compact_position = {
+                field: position.get(field)
+                for field in position_fields
+                if position.get(field) is not None
+            }
+            compact_legs = []
+            for leg in position.get("legs") or []:
+                compact_leg = {field: leg.get(field) for field in leg_fields if leg.get(field) is not None}
+                book = leg.get("book") or {}
+                if isinstance(book, dict):
+                    price = book.get("selected_decimal_price")
+                    bookmaker = book.get("book")
+                    provider = book.get("provider")
+                    if price is not None:
+                        compact_leg["selected_decimal_price"] = price
+                    if bookmaker:
+                        compact_leg["book"] = bookmaker
+                    if provider:
+                        compact_leg["book_provider"] = provider
+                compact_legs.append(compact_leg)
+            compact_position["legs"] = compact_legs
+            compact_positions.append(compact_position)
+        compact_day["positions"] = compact_positions
+        compact_history.append(compact_day)
+    compact["history"] = compact_history
+    return compact
 
 
 def _calibrated_probability_band(row: Dict[str, Any]) -> Optional[str]:
@@ -3148,6 +3488,8 @@ def _render_empty_ticket_scan(
     timezone_name: str,
     candidate_funnel: Dict[str, Any],
     withdrawal: Optional[Dict[str, Any]] = None,
+    no_bet_decision: Optional[Dict[str, Any]] = None,
+    ticket_decision: Optional[Dict[str, Any]] = None,
     unpriced_audit_picks: Optional[List[Dict[str, Any]]] = None,
     priced_ineligible_shadow_picks: Optional[List[Dict[str, Any]]] = None,
     priced_ineligible_audited_count: int = 0,
@@ -3223,16 +3565,39 @@ def _render_empty_ticket_scan(
         (
             "This date is closed to replacement ticket publication after the withdrawal."
             if withdrawal
+            else "This date is closed by an immutable no-bet decision; later prices remain audit evidence only."
+            if no_bet_decision
             else "This scan card is not a frozen receipt; a later qualifying scan may publish tickets."
         ),
         (
             "The withdrawn receipt is excluded from performance and retained unchanged as evidence."
             if withdrawal
+            else "No-bet decision: "
+            f"{_local_time(str(no_bet_decision.get('frozen_at')), timezone_name)} · "
+            f"{no_bet_decision.get('reason', 'unknown')}"
+            if no_bet_decision
             else "Empty scans never cancel or resize earlier frozen positions."
         ),
         "Paper only. No real-money stakes or automatic promotion.",
         "",
     ]
+    if ticket_decision and not withdrawal and not no_bet_decision:
+        decision_status = ticket_decision.get("status")
+        if decision_status == "pending_cutoff":
+            cutoff = ticket_decision.get("planned_cutoff_utc")
+            earliest = ticket_decision.get("earliest_slate_tip_utc")
+            if cutoff and earliest:
+                lines[7:7] = [
+                    "Ticket decision pending — candidates and exact prices remain mutable until "
+                    f"{_local_time(str(cutoff), timezone_name)} (60 minutes before first tip: "
+                    f"{_local_time(str(earliest), timezone_name)}).",
+                    "",
+                ]
+        elif decision_status == "no_slate_game":
+            lines[7:7] = [
+                "Ticket decision deferred — no scheduled game for this slate date is available yet.",
+                "",
+            ]
     if league is League.EUROLEAGUE:
         lines.insert(
             3,
@@ -3447,14 +3812,23 @@ def publish_operator_reports(
     generated_utc: str,
     run_id: str,
     timezone_name: str = "Africa/Johannesburg",
+    slate_timezone_name: Optional[str] = None,
 ) -> Dict[str, Any]:
     """Publish current picks and grade every retained pick/ticket in localdata."""
     localdata.mkdir(parents=True, exist_ok=True)
     games = {game.game_id: game for game in store.list_games(league=league)}
+    slate_timezone_name = slate_timezone_name or timezone_name
     current = [
         _pick_row(row, target_date)
         for row in deepcopy((market_report or {}).get("forecasts") or [])
     ]
+    ticket_decision = _ticket_decision_window(
+        games,
+        forecast_rows=current,
+        target_date=target_date,
+        generated_utc=generated_utc,
+        slate_timezone_name=slate_timezone_name,
+    )
     acca_report = (market_report or {}).get("accas") or {}
     candidate_funnel = _ticket_candidate_funnel(market_report)
     paper_filter = acca_report.get("paper_pick_filter") or {}
@@ -3550,6 +3924,27 @@ def publish_operator_reports(
         single_ticket = _single_ticket_candidate(single_rows[0], paper_filter)
         if single_ticket is not None:
             ticket_candidates.append(single_ticket)
+    pre_tip_ticket_candidates = [
+        candidate
+        for candidate in ticket_candidates
+        if isinstance(candidate, dict) and _ticket_candidate_is_pre_tip(candidate, generated_utc)
+    ]
+    ticket_decision["candidate_tickets_seen"] = len(ticket_candidates)
+    ticket_decision["candidate_tickets_pre_tip"] = len(pre_tip_ticket_candidates)
+    ticket_decision["market_report_available"] = market_report is not None
+    decision_status = ticket_decision["status"]
+    allow_new_decision = market_report is not None and decision_status in {
+        "due",
+        "missed_pre_tip_window",
+    }
+    if decision_status == "due":
+        decision_candidates = pre_tip_ticket_candidates
+    elif decision_status == "missed_pre_tip_window":
+        # A daily decision missed before the earliest tip must fail closed; it
+        # may not turn a late-arriving later-game price into a fresh ticket.
+        decision_candidates = []
+    else:
+        decision_candidates = []
     receipt = _ticket_receipt(
         localdata,
         state=state,
@@ -3557,8 +3952,11 @@ def publish_operator_reports(
         target_date=target_date,
         captured_utc=generated_utc,
         run_id=run_id,
-        accas=ticket_candidates,
+        accas=decision_candidates,
+        ticket_decision=ticket_decision,
+        allow_new_decision=allow_new_decision,
     )
+    no_bet_decision = _read_no_bet_decision(localdata, target_date)
     scan_record = {
         "run_id": run_id,
         "captured_at": generated_utc,
@@ -3568,6 +3966,8 @@ def publish_operator_reports(
         ),
         "fresh_paper_singles": candidate_funnel.get("paper_single_picks", 0),
         "receipt_present": receipt is not None,
+        "ticket_decision": deepcopy(ticket_decision),
+        "no_bet_decision_present": no_bet_decision is not None,
         "candidate_funnel": deepcopy(candidate_funnel),
         "unpriced_audit": _unpriced_audit_summary(current_unpriced_audit),
     }
@@ -3611,7 +4011,10 @@ def publish_operator_reports(
     performance = _performance(receipts, games)
     performance["generated_utc"] = generated_utc
     performance["league"] = league.value
-    _write_json(localdata / "auto_tickets_performance.json", performance)
+    _write_json(
+        localdata / "auto_tickets_performance.json",
+        _compact_performance_report(performance),
+    )
     _write_text(
         localdata / "auto_tickets_performance.txt",
         _render_performance(performance, timezone_name),
@@ -3661,6 +4064,8 @@ def publish_operator_reports(
                 timezone_name=timezone_name,
                 candidate_funnel=candidate_funnel,
                 withdrawal=withdrawal,
+                no_bet_decision=no_bet_decision,
+                ticket_decision=ticket_decision,
                 unpriced_audit_picks=dated_unpriced_audit,
                 priced_ineligible_shadow_picks=(
                     dated_priced_ineligible_shadow
@@ -3695,6 +4100,12 @@ def publish_operator_reports(
         "performance": str(localdata / "auto_tickets_performance.json"),
         "performance_text": str(localdata / "auto_tickets_performance.txt"),
         "candidate_funnel": candidate_funnel,
+        "ticket_decision": ticket_decision,
+        "no_bet_decision": (
+            str(_no_bet_sidecar_path(localdata, target_date))
+            if no_bet_decision is not None
+            else None
+        ),
         "unpriced_audit": _unpriced_audit_summary(dated_unpriced_audit),
         "unpriced_spread_shadow": dated_spread_shadow,
         "priced_ineligible_shadow": (

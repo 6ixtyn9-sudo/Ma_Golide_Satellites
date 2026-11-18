@@ -7,9 +7,9 @@ commit/push. Only derived pick and paper-ticket files are eligible. Canonical
 DuckDB/CSV state, acquisition ledgers, caches, and credentials are never copied.
 
 Existing repository files not present in the latest artifact are retained. A
-conflicting immutable decision receipt aborts publication instead of rotating
-or rewriting a previously frozen ticket. Git-state withdrawal IDs are rejected
-when stale caches attempt to return a deliberately withdrawn receipt.
+conflicting immutable ticket or no-bet decision aborts publication instead of
+rotating/reopening a previously frozen date. Git-state withdrawal IDs are
+rejected when stale caches attempt to return a deliberately withdrawn receipt.
 """
 
 from __future__ import annotations
@@ -26,18 +26,23 @@ DATE = r"\d{4}-\d{2}-\d{2}"
 ALLOWED_NAMES = tuple(
     re.compile(pattern)
     for pattern in (
-        # Full forecast archives and expanded dated audit cards are retained
-        # in the league cache/Actions artifacts, never copied into Git history.
-        rf"picks_{DATE}\.txt",
+        # All pick cards/archives and expanded audits are cache/artifact-only.
+        # Hourly price scans must not create a new Git blob for each card update.
         r"auto_tickets_state\.json",
         r"auto_tickets_performance\.json",
         r"auto_tickets_performance\.txt",
         rf"auto_tickets_{DATE}\.txt",
         rf"auto_tickets_{DATE}_decision\.json",
+        rf"auto_tickets_{DATE}_no_bet\.json",
         rf"auto_tickets_{DATE}_withdrawn\.json",
     )
 )
-IMMUTABLE_NAMES = re.compile(rf"auto_tickets_{DATE}_decision\.json")
+IMMUTABLE_NAMES = re.compile(
+    rf"auto_tickets_{DATE}_(?:decision|no_bet)\.json"
+)
+DECISION_RECEIPT_NAME = re.compile(rf"auto_tickets_({DATE})_decision\.json")
+NO_BET_DECISION_NAME = re.compile(rf"auto_tickets_({DATE})_no_bet\.json")
+TICKET_CARD_NAME = re.compile(rf"auto_tickets_({DATE})\.txt")
 CALIBRATION_EPOCH = "2026-11-10"
 MAX_FILE_BYTES = 25 * 1024 * 1024
 MAX_TOTAL_BYTES = 100 * 1024 * 1024
@@ -53,6 +58,36 @@ def _atomic_write(path: Path, raw: bytes) -> None:
     temporary = path.with_name(path.name + ".publish-tmp")
     temporary.write_bytes(raw)
     os.replace(temporary, path)
+
+
+def _git_durable_bytes(source: Path) -> bytes:
+    """Return the compact, durable form of one publishable operator file.
+
+    Live pick cards are intentionally artifact-only: their timestamped price
+    scans change hourly. The two mutable JSON summaries below are Git durable,
+    but their scan log and generation timestamp are operational telemetry, not
+    evidence needed to reconstruct tickets. Removing only those volatile fields
+    prevents no-op hourly runs from producing new Git blobs while receipts and
+    date locks remain complete.
+    """
+    raw = source.read_bytes()
+    if source.name not in {
+        "auto_tickets_state.json",
+        "auto_tickets_performance.json",
+    }:
+        return raw
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid operator JSON: {source}") from exc
+    if not isinstance(data, dict):
+        raise ValueError(f"operator JSON must be an object: {source}")
+    if source.name == "auto_tickets_state.json":
+        data.pop("scans", None)
+        data.pop("last_generated_utc", None)
+    else:
+        data.pop("generated_utc", None)
+    return (json.dumps(data, indent=2, sort_keys=True, default=str) + "\n").encode()
 
 
 def _withdrawn_decision_ids(localdata: Path) -> frozenset[str]:
@@ -84,6 +119,39 @@ def _withdrawn_decision_ids(localdata: Path) -> frozenset[str]:
     return frozenset(ids)
 
 
+def _no_bet_decision_dates(localdata: Path) -> frozenset[str]:
+    """Load Git-authoritative terminal no-bet decisions before cache merge."""
+    dates: set[str] = set()
+    path = localdata / "auto_tickets_state.json"
+    if path.is_file():
+        try:
+            state = json.loads(path.read_text())
+        except (OSError, json.JSONDecodeError) as exc:
+            raise ValueError(f"invalid paper-ticket state: {path}") from exc
+        locks = state.get("frozen_by_date", {})
+        if not isinstance(locks, dict):
+            raise ValueError(f"invalid paper-ticket locks: {path}")
+        dates.update(
+            str(date)
+            for date, lock in locks.items()
+            if isinstance(lock, dict) and lock.get("no_bet") is True
+        )
+    for sidecar in localdata.glob("auto_tickets_*_no_bet.json"):
+        match = NO_BET_DECISION_NAME.fullmatch(sidecar.name)
+        if match:
+            dates.add(match.group(1))
+    return frozenset(dates)
+
+
+def _decision_receipt_dates(paths: Iterable[Path]) -> frozenset[str]:
+    """Return dates with an immutable ticket receipt, never a live scan card."""
+    return frozenset(
+        match.group(1)
+        for path in paths
+        if (match := DECISION_RECEIPT_NAME.fullmatch(path.name)) is not None
+    )
+
+
 def _artifact_league_dirs(artifacts: Path) -> Iterable[tuple[str, Path]]:
     """Yield each recovered ``artifact/localdata/<state>`` directory once."""
     if not artifacts.exists():
@@ -107,13 +175,34 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
     unchanged = []
     immutable_verified = []
     withdrawn_skipped = []
+    no_bet_receipts_skipped = []
     total_bytes = 0
     seen_destinations = set()
     for state, source_dir in _artifact_league_dirs(artifacts):
-        withdrawn_decision_ids = _withdrawn_decision_ids(repo / "localdata" / state)
-        for source in sorted(source_dir.iterdir()):
+        destination_dir = repo / "localdata" / state
+        sources = sorted(source_dir.iterdir())
+        withdrawn_decision_ids = _withdrawn_decision_ids(destination_dir)
+        no_bet_dates = _no_bet_decision_dates(destination_dir) | _no_bet_decision_dates(
+            source_dir
+        )
+        receipt_dates = _decision_receipt_dates(
+            destination_dir.glob("auto_tickets_*_decision.json")
+        ) | _decision_receipt_dates(sources)
+        for source in sources:
             if not allowed_operator_file(source.name):
                 continue
+            ticket_card_match = TICKET_CARD_NAME.fullmatch(source.name)
+            if ticket_card_match:
+                if (
+                    ticket_card_match.group(1) not in receipt_dates
+                    or ticket_card_match.group(1) in no_bet_dates
+                    or (destination_dir / source.name).exists()
+                ):
+                    # Candidate/no-bet cards contain a latest-scan timestamp
+                    # and price movement. Receipt cards are an initial human
+                    # snapshot only; settlement progress belongs in the compact
+                    # performance report, not an hourly Git card rewrite.
+                    continue
             if source.is_symlink() or not source.is_file():
                 raise ValueError(f"operator publication requires a regular file: {source}")
             size = source.stat().st_size
@@ -122,8 +211,20 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
             total_bytes += size
             if total_bytes > MAX_TOTAL_BYTES:
                 raise ValueError("operator artifact batch exceeds the 100 MiB publication limit")
-            destination = repo / "localdata" / state / source.name
+            destination = destination_dir / source.name
             relative = destination.relative_to(repo).as_posix()
+            receipt_match = DECISION_RECEIPT_NAME.fullmatch(source.name)
+            no_bet_match = NO_BET_DECISION_NAME.fullmatch(source.name)
+            if receipt_match and receipt_match.group(1) in no_bet_dates:
+                # An older cache must never resurrect a ticket after this date
+                # was deliberately closed at its immutable cutoff with no bet.
+                no_bet_receipts_skipped.append(relative)
+                continue
+            if no_bet_match and (destination_dir / f"auto_tickets_{no_bet_match.group(1)}_decision.json").exists():
+                raise ValueError(
+                    "cannot publish a no-bet decision beside an existing immutable "
+                    f"ticket receipt: {relative}"
+                )
             # Hard-reset: never re-publish pre-epoch dated files (even from a warm older cache).
             m = re.search(r"(\d{4}-\d{2}-\d{2})", source.name)
             if m and m.group(1) < CALIBRATION_EPOCH:
@@ -132,7 +233,7 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
             if relative in seen_destinations:
                 raise ValueError(f"duplicate recovered operator destination: {relative}")
             seen_destinations.add(relative)
-            raw = source.read_bytes()
+            raw = _git_durable_bytes(source)
             if IMMUTABLE_NAMES.fullmatch(source.name) and withdrawn_decision_ids:
                 try:
                     candidate = json.loads(raw)
@@ -160,6 +261,7 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
         "unchanged": unchanged,
         "immutable_receipts_verified": immutable_verified,
         "withdrawn_receipts_skipped": withdrawn_skipped,
+        "no_bet_receipts_skipped": no_bet_receipts_skipped,
         "copied_count": len(copied),
         "unchanged_count": len(unchanged),
         "source_bytes_checked": total_bytes,

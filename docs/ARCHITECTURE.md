@@ -175,8 +175,9 @@ an explicit conflict rather than overwriting history.
 
 ## Deployment state
 
-GitHub Actions has one three-hour schedule. It restores/saves `localdata/` as a
-cache and uploads run reports/ledgers as artifacts. Disabled canonical writes
+GitHub Actions has one hourly schedule. It restores/saves `localdata/` as a
+cache and uploads run reports/ledgers as artifacts. The hourly cadence supports
+the operator's 60-minute pre-tip ticket decision window. Disabled canonical writes
 still run live acquisition as a dry run; they do not create or modify canonical
 DuckDB/CSV state. Manual live dry runs use the same acquisition path.
 

@@ -1,9 +1,9 @@
 # Ma Golide automatic multi-league acquisition, with no dispatch selections.
-# - All six leagues use keyless public data and price providers by default.
-#   Paid API integrations and external notifications are intentionally disabled.
-# - No GitHub Actions secrets or repository variables are required.
-# - Scheduled and manually dispatched runs persist canonical state by default.
-#   Change ALLOW_MAGOLIDE_WRITES below to "false" to disable persistence only.
+# - All six leagues retain their public/keyless paths by default.
+# - Optional provider secrets are passed only to the adapters that already
+#   support them; an absent secret leaves that adapter explicitly disabled.
+# - Scheduled runs persist canonical state; manual dispatch remains a live
+#   read-only rehearsal so it cannot advance canonical state by accident.
 # Compact pick cards and paper-ticket state are committed to localdata/<league>;
 # raw forecast JSON stays in cache/artifacts, not permanent Git history.
 # Install as .github/workflows/ingestion.yml (editing that path requires the
@@ -13,8 +13,9 @@ name: "Ma Golide"
 
 on:
   schedule:
-    # Every three hours at minute 11 UTC. GitHub may delay scheduled runs.
-    - cron: "11 */3 * * *"
+    # Hourly at minute 11 UTC so the 60-minute pre-tip ticket decision
+    # has a scheduled opportunity before the first slate tip. GitHub may delay runs.
+    - cron: "11 * * * *"
   # Deliberately no league/date/mode/write inputs: one click runs everything.
   workflow_dispatch: {}
 
@@ -78,6 +79,15 @@ jobs:
       LOCALDATA: localdata/${{ matrix.state_key }}
       MAGOLIDE_WAREHOUSE: localdata/${{ matrix.state_key }}/warehouse.duckdb
       SPORTRADAR_ACCESS_LEVEL: "trial"
+      # Optional credentials. Empty GitHub secrets stay empty and the adapter
+      # records a disabled status in the pregame report; values are never
+      # printed by the workflow or stored in localdata.
+      THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+      THERUNDOWN_API_KEY: ${{ secrets.THERUNDOWN_API_KEY }}
+      SPORTSGAMEODDS_API_KEY: ${{ secrets.SPORTSGAMEODDS_API_KEY }}
+      ISPORTS_API_KEY: ${{ secrets.ISPORTS_API_KEY }}
+      SPORTRADAR_API_KEY: ${{ secrets.SPORTRADAR_API_KEY }}
+      PREDIXSPORT_API_KEY: ${{ secrets.PREDIXSPORT_API_KEY }}
       ALLOW_MAGOLIDE_WRITES: "true"
       ALLOW_NOTIFICATION_WRITES: "false"
 
@@ -150,6 +160,7 @@ jobs:
                   r"auto_tickets_performance\.txt",
                   rf"auto_tickets_{date}\.txt",
                   rf"auto_tickets_{date}_decision\.json",
+                  rf"auto_tickets_{date}_no_bet\.json",
                   rf"auto_tickets_{date}_withdrawn\.json",
               )
           )
@@ -200,14 +211,17 @@ jobs:
             --run-id "${GITHUB_RUN_ID}_${LEAGUE,,}_${GITHUB_RUN_ATTEMPT}"
           )
 
-          # Canonical writes are controlled entirely by the YAML literal above.
-          if [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
+          # Scheduled runs may persist canonical state. Manual dispatch is a
+          # deliberately live, all-league read-only rehearsal even when the
+          # write switch is enabled; it can validate optional odds credentials
+          # without advancing cursors or publishing canonical mutations.
+          if [ "${{ github.event_name }}" = "schedule" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
             ARGS+=(--write)
             if [ "$ALLOW_NOTIFICATION_WRITES" = "true" ]; then
               ARGS+=(--notify --send-notifications)
             fi
           else
-            echo "Automatic live dry run for $LEAGUE; canonical writes are disabled."
+            echo "Live dry run for $LEAGUE; canonical writes are disabled for this dispatch."
           fi
 
           python scripts/daily.py "${ARGS[@]}" | tee daily-output.json
@@ -231,6 +245,26 @@ jobs:
               markets = data.get("markets") or {}
               walk_forward = markets.get("walk_forward") or {}
               accas = markets.get("accas") or {}
+              price_coverage = {}
+              for forecast in markets.get("forecasts") or []:
+                  book = forecast.get("book") or {}
+                  price = book.get("selected_decimal_price")
+                  exact_price = (
+                      isinstance(price, (int, float))
+                      and not isinstance(price, bool)
+                      and price > 1.0
+                  )
+                  state = (
+                      "exact_selected_price"
+                      if exact_price
+                      else "matched_selected_price_missing"
+                      if book
+                      else "unmatched_market"
+                  )
+                  market_key = f"{forecast.get('market')}/{forecast.get('period')}"
+                  price_coverage.setdefault(market_key, {}).setdefault(state, 0)
+                  price_coverage[market_key][state] += 1
+              pregame = (data.get("commands") or {}).get("pregame") or {}
               summary = {
                   key: data.get(key)
                   for key in (
@@ -245,6 +279,8 @@ jobs:
                   "forecast_count": markets.get("forecast_count"),
                   "graded_walk_forward_forecasts": walk_forward.get("graded_forecasts"),
                   "acca_count": len(accas.get("results") or []),
+                  "price_coverage_by_market_period": price_coverage,
+                  "book_provider_status": pregame.get("book_provider_status") or {},
               }
               print("```json")
               print(json.dumps(summary, indent=2, default=str))
@@ -283,12 +319,12 @@ jobs:
   publish-localdata:
     name: Publish localdata to repository
     needs: league
-    # Publish partial recovery evidence even if one matrix league fails. This is
-    # derived operator state, independent of canonical ALLOW_MAGOLIDE_WRITES.
+    # Only scheduled jobs may make live operator evidence durable. Manual dispatch
+    # uploads artifacts but cannot freeze or publish canonical operator decisions.
     if: >-
       always() &&
       github.ref == 'refs/heads/main' &&
-      (github.event_name == 'workflow_dispatch' || github.event_name == 'schedule')
+      github.event_name == 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     permissions:

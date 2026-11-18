@@ -75,19 +75,22 @@ Useful options:
 - `--keep-days 30` bounds operational runs and daily/market reports.
 
 There is no in-repository daemon. The workflow schedule triggers this command
-every three hours; local cron or another scheduler can do the same.
+hourly; local cron or another scheduler should run at least hourly as well. The
+cadence gives each slate a pre-tip opportunity to make its 60-minute ticket
+decision without letting the first partial-price scan freeze the date.
 
 ## Automatic six-league workflow
 
 `workflows/ingestion.yml` is the reviewed workflow source. Install it as
 `.github/workflows/ingestion.yml` with a GitHub credential that has the
 `workflows` permission; merely editing the local source does not activate it.
-It has a schedule (`11 */3 * * *`, UTC) and a manual dispatch with **no
+It has an hourly schedule (`11 * * * *`, UTC) and a manual dispatch with **no
 league/date/mode/write inputs**. A preflight job runs Ruff and the hermetic
 suite, then six fail-independent matrix jobs automatically run `NBA`, `WNBA`,
 `EuroLeague`, `CBA`, `NCAA_M`, and `NCAA_W` together. One serialized publisher
-then commits compact human pick cards and ticket state to `main`; raw picks JSON
-and expanded dated audits stay in the cache and bounded workflow artifacts.
+then commits compact ticket decisions and state to `main`; all pick cards and
+expanded audits stay in the cache and bounded workflow artifacts so hourly price
+movement does not create permanent Git history.
 
 Each matrix job has isolated state and artifacts:
 
@@ -96,6 +99,50 @@ Each matrix job has isolated state and artifacts:
 - a league-specific DuckDB path, cache prefix, run ID, and artifact name;
 - an acquisition date derived automatically in that league's acquisition
   timezone, never a dispatch-selected date.
+
+### Paper-ticket decision cutoff
+
+A current scan is candidate evidence, not a ticket publication. For each
+league/date, the operator uses the **acquisition timezone** to find the first
+slate tip and waits until 60 minutes before that tip. The first successful scan
+in that pre-tip window freezes all currently valid, exact-priced paper
+candidates into one immutable receipt. Every leg must still be strictly before
+its own tip. The actual receipt records both the planned cutoff and the scan
+that made the decision.
+
+If no qualifying pre-tip candidate exists at the cutoff, the operator writes an
+immutable `auto_tickets_YYYY-MM-DD_no_bet.json` decision instead. It prevents a
+later price, an old Actions cache, or a later-game candidate from reopening the
+date. A delayed run that misses the first tip also fails closed to that no-bet
+decision. Before the cutoff, the text card explicitly identifies the pending
+decision time and later scans may update candidate prices; after either decision,
+selections/prices/stakes—or the no-bet result—cannot change.
+
+### Optional odds-provider credentials
+
+The public feeds remain useful without credentials, but they do **not** provide
+uniform odds coverage: ESPN's public scoreboard is full-game-only when it
+includes a book at all, BetExplorer is full-game moneyline-only, and NCAA_W
+moneyline coverage is known to be absent from the ESPN free surface. To enable
+the already-implemented supplemental adapters in GitHub Actions, set the
+corresponding **Actions secrets** (never repository variables or checked-in
+files):
+
+| Secret | Implemented adapter coverage (verify live) | Use it for |
+| --- | --- | --- |
+| `THE_ODDS_API_KEY` | NBA/WNBA/NCAA_M/NCAA_W full-game markets; NBA quarters and H1; NCAA H1/H2 where the provider offers them | The first supplemental source to validate, especially for NCAA_W |
+| `THERUNDOWN_API_KEY` | NBA full-game moneyline and totals | A second named NBA source |
+| `SPORTSGAMEODDS_API_KEY` | NBA full-game and Q1–Q4 totals | NBA quarter-total coverage |
+| `ISPORTS_API_KEY` | CBA moneyline, totals, spreads, halves, and quarters | CBA market coverage; adapter remains documentation-only until an authenticated smoke succeeds |
+| `SPORTRADAR_API_KEY` / `PREDIXSPORT_API_KEY` | Independent CBA / EuroLeague prediction paths | Prediction redundancy, not bookmaker prices |
+
+The workflow injects these only as process environment variables. A missing
+secret is safe: its adapter remains disabled and the pregame report records
+`book_provider_status: disabled` rather than presenting that state as an empty
+market response. The GitHub job summary also includes selected-side price
+coverage by market/period and the redacted source status, so a no-price result
+can be separated into a provider-capability gap, a disabled credential, an
+identity rejection, or a true empty response.
 
 Safety behavior is deliberate:
 
@@ -111,10 +158,11 @@ Safety behavior is deliberate:
   DuckDB/CSV sports state or advance deep-history cursors. Reports and
   immutable ledgers are uploaded on every outcome when present. Git is
   authoritative for operator files after cache recovery.
-- Manual and scheduled runs both publish derived `picks_*` and `auto_tickets_*`
-  files to `localdata/<league>` on `main`. This Git publication does not relax
-  the canonical-write or notification gates, and it never includes warehouses,
-  CSV exports, acquisition ledgers, or credentials.
+- Manual runs upload derived `picks_*` and `auto_tickets_*` files only as
+  inspection artifacts. **Scheduled runs alone** may publish those files to
+  `localdata/<league>` on `main`, so a manual rehearsal cannot create a durable
+  ticket or no-bet decision. Git publication never includes warehouses, CSV
+  exports, acquisition ledgers, or credentials.
 - Notifications additionally require `ALLOW_NOTIFICATION_WRITES=true` and the
   WhatsApp secrets; they are sent only on write-enabled scheduled runs.
 

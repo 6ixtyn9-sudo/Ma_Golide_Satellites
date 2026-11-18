@@ -10,12 +10,12 @@ raw-dump storage approach:
 - the league Actions cache retains working forecast archives and audit inputs
   across active runs; downloaded Actions artifacts retain the raw picks JSON,
   dated Markdown, operational reports, and recovery evidence for 14 days;
-- Git tracks the compact human-readable picks/ticket cards and the paper-ticket
-  receipts, write-once locks, and performance state needed to preserve operator
-  decisions;
-- large `picks_*.json` scan/history dumps and expanded dated Markdown audits
-  are deliberately not committed, preventing every full forecast payload from
-  becoming permanent Git history.
+- Git tracks immutable ticket/no-bet decisions, human-readable cards for
+  receipt-backed tickets, compact date locks, and compact performance state
+  needed to preserve operator decisions;
+- all `picks_*` cards and scan/history/audit payloads are deliberately kept in
+  cache/artifacts rather than committed, preventing hourly price movement and
+  full forecast payloads from becoming permanent Git history.
 
 The publisher overlays Git-durable files without deleting older history and
 aborts if a recovered immutable decision receipt differs from the repository
@@ -24,9 +24,9 @@ cache-only pick evidence is preserved across scheduled runs. If the rolling pick
 audit is absent after a cold-cache recovery, the forecaster uses its documented
 past-only prequential fallback rather than inventing or importing stale picks.
 DuckDB, CSV, acquisition ledgers, raw pick JSON, and credentials are never
-committed by this publisher. Derived Git publication runs for both manual and
-scheduled executions; it is independent of the canonical `ALLOW_MAGOLIDE_WRITES`
-gate.
+committed by this publisher. Only scheduled executions publish derived state to Git; manual runs retain
+inspection artifacts only. This boundary is independent of the canonical
+`ALLOW_MAGOLIDE_WRITES` gate.
 
 This is a presentation and paper-settlement layer. It does not change forecast
 selection, alter calibrated probabilities, place bets, write to a bookmaker, or
@@ -40,16 +40,30 @@ profitability.
 | --- | --- |
 | `picks_today.json` | Current scan of every forecast; cache/artifact only, not Git |
 | `picks_YYYY-MM-DD.json` | Cumulative dated pick evidence; cache/artifact only, not Git |
-| `picks_YYYY-MM-DD.txt` | Compact human-readable latest picks and started/settled sections; Git durable |
+| `picks_YYYY-MM-DD.txt` | Compact human-readable latest picks and started/settled sections; cache/artifact only, not Git |
 | `picks_audit_rolling.json` | Thirty-day logical and settled ledgers; cache/artifact only, not Git |
 | `picks_audit_YYYY-MM-DD.md` | Expanded rolling summary; cache/artifact only, not Git |
 | `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper singles and accas |
-| `auto_tickets_YYYY-MM-DD.txt` | Mutable card showing the immutable decision and latest available ticket/shadow grades, or the latest unfrozen no-bet scan |
-| `auto_tickets_state.json` | Write-once date locks and bounded scan telemetry |
-| `auto_tickets_performance.json` | Complete reconstructed paper-position performance state and history |
+| `auto_tickets_YYYY-MM-DD_no_bet.json` | Immutable terminal decision that the 60-minute pre-tip window closed without a qualifying pre-tip position |
+| `auto_tickets_YYYY-MM-DD.txt` | Mutable card; a receipt-backed ticket card is published to Git once as an initial snapshot, while later, pre-cutoff, and no-bet cards stay cache/artifact-only to avoid hourly churn |
+| `auto_tickets_state.json` | Git-durable write-once date locks; bounded scan telemetry stays cache/artifact-only |
+| `auto_tickets_performance.json` | Compact rolling settlement/financial summary; each history day points to its immutable receipt for full leg evidence |
 | `auto_tickets_performance.txt` | Bank, settled record, bet-days, held positions, and grading notes |
 
 The daily summary's `operator` object lists the generated paths and counts.
+
+To keep Git history bounded, the rolling performance JSON contains only compact
+financial/settlement fields and minimal leg identifiers, outcome, selected price,
+and bookmaker. It does not duplicate prediction, calibration, team-history, or
+full book evidence from each immutable receipt. Read the receipt named by a
+history row's `receipt_path` for complete provenance. Before Git publication,
+the publisher also removes bounded scan telemetry and generation timestamps
+from the mutable state/performance JSON. Those fields remain available in the
+cache and 14-day artifacts, but an otherwise unchanged hourly run produces no
+new Git blob. A mutable `auto_tickets_YYYY-MM-DD.txt` is likewise published
+once only when its matching immutable ticket receipt exists; later card updates,
+as well as no-bet and pre-cutoff cards, remain in artifacts because their
+latest-scan text is not durable financial evidence.
 
 ## Pick categories
 
@@ -116,9 +130,11 @@ predictively superior, and it does not change forecast probabilities, strict
 eligibility, or real-money behavior.
 
 The picks dated ledger and rolling audit remain the grading source of truth;
-all audit-only rows have zero stake, do not enter paper-position performance or
-ROI, and do not create a frozen decision receipt or date lock. Full candidate
-rows and per-pick history diagnostics remain in the cache-only picks JSON and
+all audit-only rows have zero stake and do not enter paper-position performance
+or ROI. They can never create a ticket receipt or ticket leg; when no priced
+candidate qualifies at the scheduled cutoff, the date instead receives the
+separate terminal no-bet lock. Full candidate rows and per-pick history
+diagnostics remain in the cache-only picks JSON and
 run artifacts. To avoid storing the same large row set in every Git-persisted
 scan, `auto_tickets_state.json` retains compact counts, blocker/status
 histograms, and policy summaries, while dropping duplicate `candidate_records`,
@@ -135,15 +151,19 @@ Repeated scans can produce distinct forecast IDs because book and prediction
 observation times are part of those IDs. The dated JSON retains every evidence
 row. The text card and rolling audit select the latest observation for the same
 logical game/market/period/selection/line/model/book pick, and report the number
-of superseded observations. Only pending pre-tip logical picks appear in the
-active bucket sections; started games awaiting an official final and settled
-picks appear in separate archive-only sections. Rolling hit rate, ROI, and
-profit therefore count one paper pick per logical selection rather than one
-paper pick per scan. Different selections, lines, models, or books remain
-separate logical picks. The rolling JSON retains the complete logical ledger
-and a dedicated `settled_ledger`; the readable audit lists every settled
-logical pick in its 30-day window, including unpriced grades that do not enter
-ROI.
+of superseded observations. A later exact selected-side quote additionally
+supersedes an earlier **unpriced** observation of that same
+`game/market/period/selection/line/model`, so an old `no matched book` row is
+not left active beside its now-priced successor. This is a display/audit
+selection only: it never deletes the earlier evidence or invents a quote.
+Different selections, lines, models, or named books remain separate logical
+picks. Only pending pre-tip logical picks appear in the active bucket sections;
+started games awaiting an official final and settled picks appear in separate
+archive-only sections. Rolling hit rate, ROI, and profit therefore count one
+paper pick per logical selection rather than one paper pick per scan. The
+rolling JSON retains the complete logical ledger and a dedicated
+`settled_ledger`; the readable audit lists every settled logical pick in its
+30-day window, including unpriced grades that do not enter ROI.
 
 The Markdown audit uses proper `Overall`, `Settlement policy`, `Bucket
 performance`, and `Settled picks` sections. Settled markets are grouped under
@@ -205,19 +225,33 @@ line) across separate acca tickets. A different selection from the same game may
 appear on another ticket, while same-game legs are still prohibited within an
 acca. This is a no-repeated-leg rule, not mathematical outcome exclusivity:
 separate tickets may still win simultaneously. Strict `accas.results` rankings
-are unchanged and may overlap. The first non-empty paper ticket report (single
-or multi-leg acca) for a league/date writes a decision receipt and a write-once
-state lock. This includes a provisional paper position when the existing
-sample-size-only exception applies. New receipts store singles separately from
-accas and preserve the settled-pick ROI-band snapshot and provisional status/sample
-counts. Subsequent scans re-render each dated text card from the immutable
-receipt, current reconciled leg results, and the dated pick ledger (when
-available), even if the new candidate set differs. Ticket and audit-shadow grade
-labels therefore refresh, while selections, prices, stakes, and receipt bytes
-remain frozen. A missing locked receipt is an error; the engine never silently
-rebuilds or rotates a published decision. A receipt recovered without its state
-lock adopts a lock from the immutable receipt itself. Existing frozen receipts
-are never rebalanced or rewritten by selection-policy changes.
+are unchanged and may overlap.
+
+A scan does **not** freeze the first non-empty ticket it sees. It remains
+candidate evidence until the first scheduled game on the league's acquisition-
+timezone slate is 60 minutes away. The first successful scan from that cutoff
+until the first tip freezes all currently valid candidates whose every leg is
+still pre-tip. It records the planned cutoff, source timezone, actual scan, and
+candidate counts in the receipt. This includes a provisional paper position when
+the existing sample-size-only exception applies. Candidates can therefore gain a
+later exact price before the decision point without an early partial market
+locking the date.
+
+If there is no qualifying pre-tip candidate at that decision point—or if the
+scheduler missed the first tip—the operator writes an immutable
+`auto_tickets_YYYY-MM-DD_no_bet.json` sidecar and date lock. This fail-closed
+no-bet decision prevents a later price or an old cache from publishing a
+replacement ticket. New ticket receipts store singles separately from accas and
+preserve the settled-pick ROI-band snapshot and provisional status/sample counts.
+Subsequent scans re-render each dated text card from the immutable ticket receipt
+(or the immutable no-bet decision), current reconciled leg results, and the dated
+pick ledger when available. Ticket and audit-shadow grade labels therefore
+refresh, while selections, prices, stakes, receipt bytes, and terminal no-bet
+outcomes remain frozen. A missing locked receipt or no-bet sidecar is an error;
+the engine never silently rebuilds or rotates a published decision. A receipt
+recovered without its state lock adopts a lock from the immutable receipt itself.
+Existing frozen receipts are never rebalanced or rewritten by selection-policy
+changes.
 
 A withdrawal is a deliberate exception recorded in `auto_tickets_state.json`:
 its decision ID is excluded from performance, its date cannot receive a
@@ -234,7 +268,9 @@ not money or a recommended bankroll. Empty scans are logged but do not cancel
 earlier positions or consume ticket identities.
 
 The human-readable empty latest-scan card is intentionally concise: it leads
-with **NO PAPER BET** or **NO MULTI-LEG PAPER ACCA** and a brief reason. It omits
+with **NO PAPER BET** or **NO MULTI-LEG PAPER ACCA** and a brief reason. Before
+the cutoff it also shows the pending decision time; after a terminal no-bet it
+states that later price evidence remains audit-only. It omits
 the full funnel, per-band ROI breakdown, and blocker list. Those diagnostics
 remain structured under `candidate_funnel` in the bounded scan-state entry and
 operator result, including current/exact-priced/calibrated rows, eligibility

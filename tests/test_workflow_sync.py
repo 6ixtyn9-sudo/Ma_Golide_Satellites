@@ -32,6 +32,8 @@ def test_workflow_allowlist_sync():
     # Pin the withdrawn sidecar is present in every block
     assert all("withdrawn" in b for b in src_blocks)
     assert all("withdrawn" in b for b in inst_blocks)
+    assert all("no_bet" in b for b in src_blocks)
+    assert all("no_bet" in b for b in inst_blocks)
 
 
 def test_operator_state_restore_uses_latest_main_not_event_sha():
@@ -50,7 +52,7 @@ def test_operator_state_restore_uses_latest_main_not_event_sha():
         assert 'git cat-file -e "HEAD:${STATE_DIR}"' not in text
 
 
-def test_workflow_uses_inline_keyless_configuration_without_secrets_or_variables():
+def test_workflow_keeps_keyless_fallback_and_wires_optional_provider_secrets():
     repo = Path(__file__).resolve().parents[1]
     source = repo / "workflows" / "ingestion.yml"
     installed = repo / ".github" / "workflows" / "ingestion.yml"
@@ -59,16 +61,42 @@ def test_workflow_uses_inline_keyless_configuration_without_secrets_or_variables
         assert 'ALLOW_MAGOLIDE_WRITES: "true"' in text
         assert 'SPORTRADAR_ACCESS_LEVEL: "trial"' in text
         assert 'ALLOW_NOTIFICATION_WRITES: "false"' in text
-        assert "${{ secrets." not in text
+        for secret in (
+            "THE_ODDS_API_KEY",
+            "THERUNDOWN_API_KEY",
+            "SPORTSGAMEODDS_API_KEY",
+            "ISPORTS_API_KEY",
+            "SPORTRADAR_API_KEY",
+            "PREDIXSPORT_API_KEY",
+        ):
+            assert f"{secret}: ${{{{ secrets.{secret} }}}}" in text
         assert "${{ vars." not in text
         assert "required_secret" not in text
         assert text.count("state_key:") == 6
+        assert '- cron: "11 * * * *"' in text
+        assert "11 */3 * * *" not in text
         assert "available=true" in text
-        assert 'if [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then' in text
+        assert (
+            'if [ "${{ github.event_name }}" = "schedule" ] && '
+            '[ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then'
+        ) in text
         assert (
             "(github.event_name == 'schedule' || "
             "github.event_name == 'workflow_dispatch')"
-        ) in text, "both scheduled and manual runs must persist canonical state when enabled"
+        ) in text, "both scheduled and manual runs must retain their isolated cache"
+
+
+def test_manual_dispatch_cannot_publish_a_durable_operator_decision():
+    repo = Path(__file__).resolve().parents[1]
+    for path in (
+        repo / "workflows" / "ingestion.yml",
+        repo / ".github" / "workflows" / "ingestion.yml",
+    ):
+        text = path.read_text()
+        publish = text.split("publish-localdata:", 1)[1].split("runs-on:", 1)[0]
+        assert "github.event_name == 'schedule'" in publish
+        assert "workflow_dispatch" not in publish
+        assert "cannot freeze or publish canonical operator decisions" in publish
 
 
 def test_renamed_cache_key_falls_back_to_the_pre_rename_snapshot():
