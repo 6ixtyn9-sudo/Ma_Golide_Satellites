@@ -1356,6 +1356,29 @@ def fetch_historical_event(
     return game
 
 
+def scoreboard_is_settled(payload: Any) -> bool:
+    """True only when every event on a scoreboard is final (state 'post').
+
+    Past-date scoreboards are cached durably; caching one while a game is
+    still 'pre'/'in' would hide that game's final until the cache expired.
+    Malformed payloads are never considered settled.
+    """
+    if not isinstance(payload, dict):
+        return False
+    events = payload.get("events")
+    if not isinstance(events, list):
+        return False
+    for event in events:
+        if not isinstance(event, dict):
+            return False
+        competitions = event.get("competitions") or []
+        if not competitions or not isinstance(competitions[0], dict):
+            return False
+        if _state(competitions[0]) != "post":
+            return False
+    return True
+
+
 def fetch_recent_results(
     date_yyyymmdd: str,
     fetch: FetchFn,

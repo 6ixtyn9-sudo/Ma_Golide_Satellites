@@ -118,3 +118,52 @@ def test_fixture_reads_do_not_consume_network_budget_or_claim_live_requests():
         "fixture_success",
         "fixture_success",
     ]
+
+
+def test_uncacheable_payload_is_served_but_never_persisted_or_reused(tmp_path):
+    now = [datetime(2026, 11, 18, 6, 11, tzinfo=timezone.utc)]
+    payloads = [{"state": "in"}, {"state": "post"}, {"state": "post"}]
+    calls = []
+
+    def fetch(_url):
+        calls.append(1)
+        return payloads[len(calls) - 1]
+
+    client = AcquisitionClient(
+        fetch,
+        cache_dir=str(tmp_path),
+        now_fn=lambda: now[0].strftime("%Y-%m-%dT%H:%M:%SZ"),
+    )
+    settled = lambda payload: payload.get("state") == "post"  # noqa: E731
+    url = "https://site.api.espn.com/scoreboard?dates=20261117"
+
+    assert client.get_json(url, cacheable=settled) == {"state": "in"}
+    assert list(tmp_path.glob("*.json")) == []
+    assert client.telemetry()["recent_attempts"][-1]["outcome"] == "network_success_not_cached"
+
+    now[0] += timedelta(hours=3)
+    assert client.get_json(url, cacheable=settled) == {"state": "post"}
+    assert len(calls) == 2
+    now[0] += timedelta(hours=3)
+    assert client.get_json(url, cacheable=settled) == {"state": "post"}
+    assert len(calls) == 2  # settled payload now served from cache
+    assert client.unsettled_cache_skips == 1
+
+
+def test_legacy_unsettled_cache_entry_is_ignored_when_predicate_given(tmp_path):
+    calls = []
+
+    def fetch(_url):
+        calls.append(1)
+        return {"state": "in"} if len(calls) == 1 else {"state": "post"}
+
+    url = "https://site.api.espn.com/scoreboard?dates=20261117"
+    legacy = AcquisitionClient(fetch, cache_dir=str(tmp_path))
+    legacy.get_json(url)  # pre-fix behaviour: live payload cached for 24h
+    assert len(list(tmp_path.glob("*.json"))) == 1
+
+    fixed = AcquisitionClient(fetch, cache_dir=str(tmp_path))
+    settled = lambda payload: payload.get("state") == "post"  # noqa: E731
+    assert fixed.get_json(url, cacheable=settled) == {"state": "post"}
+    assert len(calls) == 2
+    assert fixed.cache_hits == 0
