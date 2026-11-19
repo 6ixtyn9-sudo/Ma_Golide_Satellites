@@ -100,8 +100,6 @@ EUROLEAGUE_CONSENSUS_MIN_MODEL_EDGE = 0.03
 EUROLEAGUE_CONSENSUS_ALLOWED_BLOCKERS = frozenset(
     {
         "price_not_named_bookmaker_quote",
-        "price_source_permission_unresolved",
-        "price_operational_validation_incomplete",
         "insufficient_walk_forward_samples",
     }
 )
@@ -414,11 +412,7 @@ def _euroleague_consensus_paper_candidates(
         if not reasons or not reasons.issubset(EUROLEAGUE_CONSENSUS_ALLOWED_BLOCKERS):
             continue
         # An aggregate row must remain blocked from the strict execution lane.
-        if not {
-            "price_not_named_bookmaker_quote",
-            "price_source_permission_unresolved",
-            "price_operational_validation_incomplete",
-        }.issubset(reasons):
+        if "price_not_named_bookmaker_quote" not in reasons:
             continue
         calibration = row.get("calibration")
         if not isinstance(calibration, dict):
@@ -3970,7 +3964,7 @@ def _render_ticket_card(
     ]
     if receipt.get("league") == League.EUROLEAGUE.value:
         lines[2:2] = [
-            "EUROLEAGUE STRICT NAMED-BOOK TICKET LANE — exact validated pre-tip quote; calibrated p × odds > 1.00;",
+            "EUROLEAGUE STRICT NAMED-BOOK TICKET LANE — exact named-book pre-tip quote; calibrated p × odds > 1.00;",
             "at least 10 past settled picks and positive ROI in the matching band; aggregate consensus prices are excluded.",
         ]
     if not positions:
@@ -4191,12 +4185,11 @@ def _named_price_draft_candidates(
 ) -> List[Dict[str, Any]]:
     """Return transparent Edge-style draft candidates, never ticket legs.
 
-    This is deliberately broader than the strict receipt lane: a current,
-    exact quote from a named bookmaker remains visible even when the source
-    permission or operational validation gate blocks it from a strict paper
-    ticket.  It is presentation-only and retains every blocker beside the
-    candidate, so a visible DraftKings price cannot be mistaken for validated
-    execution evidence.
+    This is deliberately broader than the strict receipt lane: it shows each
+    current exact named-book quote before the decision cutoff, including rows
+    that still fail model, calibration, or ROI gates. Source-permission and
+    operational-validation labels remain visible audit metadata; aggregate
+    consensus prices do not enter this named-book surface.
     """
 
     now = parse_utc(generated_utc)
@@ -4267,8 +4260,8 @@ def _render_named_price_draft_section(
         "PRE-CUTOFF NAMED-PRICE DRAFT SLIPS — DRAFT ONLY / PRE-CUTOFF",
         "- DRAFT ONLY: no paper stake, ticket receipt, settlement grade, bank impact, ROI/P&L impact, or real-money instruction.",
         "- One exact, observed, current pre-tip quote from a named bookmaker per displayed game; no price is inferred or promoted.",
-        "- Unresolved permission or operational validation means a leg is PREVIEW-ONLY, not strict execution evidence.",
-        "- A strict receipt is created only at the decision cutoff and only from strict-eligible candidates.",
+        "- Unresolved source permission and operational-validation labels remain audit metadata; a named-book quote may enter the paper lane only after the model, calibration, and ROI gates pass.",
+        "- A strict receipt is created only at the decision cutoff and only from qualifying named-book candidates.",
         (
             f"- Current decision cutoff: {_local_time(str(cutoff), timezone_name)}"
             if cutoff
@@ -4293,7 +4286,7 @@ def _render_named_price_draft_section(
             book = row["book"]
             probability, basis = _confidence_probability(row)
             reasons = ",".join((row.get("eligibility") or {}).get("reasons") or []) or "none"
-            validation = "STRICT-ELIGIBLE" if book.get("ticket_price_eligible") is True else "PREVIEW-ONLY"
+            validation = "NAMED-BOOK PRICE" if book.get("ticket_price_eligible") is True else "RESEARCH-ONLY"
             lines.append(
                 f"    [{validation}] {row.get('home')} vs {row.get('away')} · "
                 f"{_selection_label(row)} · @{float(book['selected_decimal_price']):.3f} {book.get('book')} · "
@@ -4466,7 +4459,7 @@ def _render_empty_ticket_scan(
         )
     if league is League.EUROLEAGUE:
         lines[3:3] = [
-            "EUROLEAGUE STRICT NAMED-BOOK TICKET LANE — exact validated pre-tip quote; calibrated p × odds > 1.00; "
+            "EUROLEAGUE STRICT NAMED-BOOK TICKET LANE — exact named-book pre-tip quote; calibrated p × odds > 1.00; "
             "at least 10 past settled picks and positive ROI in the matching band; aggregate consensus prices are excluded.",
             "Separate no-stake aggregate research board: euroleague_consensus_paper_YYYY-MM-DD.txt (never a ticket, receipt, bank, ROI/P&L, or real-money instruction).",
         ]

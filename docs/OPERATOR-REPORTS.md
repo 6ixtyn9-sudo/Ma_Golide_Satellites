@@ -251,9 +251,10 @@ partial market locking the date.
 
 Before the cutoff, that single dated card also carries a clearly labelled
 `DRAFT ONLY` / `PRE-CUTOFF` named-price draft section: it may display one
-current exact pre-tip named-book price per game even where source permission
-or operational validation prevents strict ticket eligibility. Legs are labelled
-**PREVIEW-ONLY** unless they are genuinely strict-eligible, preserve their
+current exact pre-tip named-book price per game. Unresolved source-permission
+and operational-validation labels remain audit metadata; they do not
+independently block that named-book quote from the paper-ticket lane. Legs are labelled
+**NAMED-BOOK PRICE** or **RESEARCH-ONLY**, preserve their model/calibration/ROI
 blockers, rank only by forecast confidence (not a fabricated EV), and create
 no receipt, stake, grade, bank/performance entry, or real-money instruction.
 There is no separate preview sidecar artifact; a strict receipt or immutable

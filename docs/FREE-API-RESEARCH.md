@@ -87,5 +87,7 @@ evidence only, not an approval of either provider for a new lane.
    global API cannot be labelled an official result source merely because it
    returns a score.
 5. Add a candidate only after hermetic parser fixtures and a documented live
-   smoke prove the contract. Price evidence additionally needs cleared reuse
-   permission and validated operation before any paper-ticket use.
+   smoke prove the contract. Preserve price-source reuse permission and
+   operational-validation status as audit metadata; aggregate consensus prices
+   remain research-only, while named-book paper candidates still require every
+   model, calibration, and ROI gate.

@@ -579,17 +579,13 @@ def test_ticket_waits_for_the_pre_tip_decision_window_and_uses_later_price(tmp_p
     assert receipt["accas"][0]["legs"][0]["book"]["selected_decimal_price"] == 1.95
 
 
-def _blocked_named_price_draft_rows():
+def _named_price_draft_rows():
     rows = []
     for number in (1, 2, 3):
         row = forecast(
             number,
             eligible=False,
-            reasons=[
-                "price_source_permission_unresolved",
-                "price_operational_validation_incomplete",
-                "insufficient_walk_forward_samples",
-            ],
+            reasons=["insufficient_walk_forward_samples"],
             calibration_n=8,
         )
         row = with_quote_evidence(
@@ -598,13 +594,14 @@ def _blocked_named_price_draft_rows():
             price_provenance="named_book",
             source_permission="unresolved",
             operational_validation="unverified",
+            ticket_price_eligible=True,
         )
         rows.append(row)
     return rows
 
 
 def test_pre_cutoff_dated_card_is_the_only_named_price_draft_surface(tmp_path):
-    rows = _blocked_named_price_draft_rows()
+    rows = _named_price_draft_rows()
 
     result = publish(
         tmp_path,
@@ -619,9 +616,10 @@ def test_pre_cutoff_dated_card_is_the_only_named_price_draft_surface(tmp_path):
     assert "PRE-CUTOFF NAMED-PRICE DRAFT SLIPS — DRAFT ONLY / PRE-CUTOFF" in card
     assert "DRAFT ONLY: no paper stake, ticket receipt, settlement grade" in card
     assert "[DRAFT 2-LEG SLIP #1]" in card
-    assert "[PREVIEW-ONLY]" in card
-    assert "price_source_permission_unresolved" in card
-    assert "price_operational_validation_incomplete" in card
+    assert "[NAMED-BOOK PRICE]" in card
+    assert "insufficient_walk_forward_samples" in card
+    assert "price_source_permission_unresolved" not in card
+    assert "price_operational_validation_incomplete" not in card
     assert "ticket_preview" not in result
     assert not list(tmp_path.glob("auto_tickets_*_preview.txt"))
     assert result["ticket_receipt"] is None
@@ -629,7 +627,7 @@ def test_pre_cutoff_dated_card_is_the_only_named_price_draft_surface(tmp_path):
 
 
 def test_no_draft_content_is_promoted_to_a_terminal_no_bet_card(tmp_path):
-    rows = _blocked_named_price_draft_rows()
+    rows = _named_price_draft_rows()
     games = Store([game(number) for number in (1, 2, 3)])
     early = publish(
         tmp_path,
@@ -638,7 +636,7 @@ def test_no_draft_content_is_promoted_to_a_terminal_no_bet_card(tmp_path):
         generated_utc="2026-11-07T06:30:00Z",
         run_id="pre-cutoff-draft",
     )
-    assert "[PREVIEW-ONLY]" in Path(early["ticket_text"]).read_text()
+    assert "[NAMED-BOOK PRICE]" in Path(early["ticket_text"]).read_text()
 
     terminal = publish(
         tmp_path,
@@ -653,14 +651,14 @@ def test_no_draft_content_is_promoted_to_a_terminal_no_bet_card(tmp_path):
     assert terminal["ticket_receipt"] is None
     assert "closed by an immutable no-bet decision" in card
     assert "PRE-CUTOFF NAMED-PRICE DRAFT SLIPS" not in card
-    assert "[PREVIEW-ONLY]" not in card
+    assert "[NAMED-BOOK PRICE]" not in card
     assert "[DRAFT" not in card
     assert not list(tmp_path.glob("auto_tickets_*_preview.txt"))
 
 
 def test_strict_receipt_card_never_carries_draft_content(tmp_path):
     rows = [forecast(number) for number in (1, 2, 3)]
-    blocked = _blocked_named_price_draft_rows()
+    blocked = _named_price_draft_rows()
     games = Store([game(number) for number in (1, 2, 3)])
     early = publish(
         tmp_path,
@@ -669,7 +667,7 @@ def test_strict_receipt_card_never_carries_draft_content(tmp_path):
         generated_utc="2026-11-07T06:30:00Z",
         run_id="pre-cutoff-draft",
     )
-    assert "[PREVIEW-ONLY]" in Path(early["ticket_text"]).read_text()
+    assert "[NAMED-BOOK PRICE]" in Path(early["ticket_text"]).read_text()
 
     frozen = publish(
         tmp_path,
@@ -683,7 +681,7 @@ def test_strict_receipt_card_never_carries_draft_content(tmp_path):
     assert receipt["decision_id"] == "at-decision-window"
     card = Path(frozen["ticket_text"]).read_text()
     assert "PRE-CUTOFF NAMED-PRICE DRAFT SLIPS" not in card
-    assert "[PREVIEW-ONLY]" not in card
+    assert "[NAMED-BOOK PRICE]" not in card
     assert "[DRAFT" not in card
     assert not list(tmp_path.glob("auto_tickets_*_preview.txt"))
 
@@ -3006,8 +3004,6 @@ def test_euroleague_consensus_price_paper_board_is_time_locked_and_has_no_ticket
             eligible=False,
             reasons=[
                 "price_not_named_bookmaker_quote",
-                "price_source_permission_unresolved",
-                "price_operational_validation_incomplete",
                 "insufficient_walk_forward_samples",
             ],
             calibration_n=12,

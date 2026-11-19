@@ -90,8 +90,9 @@ class LeagueSpec:
 
 
 # Named provider policies are deliberately reusable contracts, not a copy of
-# per-adapter defaults. A quote is ticket-price eligible only after the
-# registry has explicitly granted all three evidence axes.
+# per-adapter defaults. Every quote preserves all three evidence axes for audit;
+# the paper-ticket lane admits exact named-book quotes unless the source is
+# explicitly prohibited, while aggregate consensus evidence remains research-only.
 def _validated_named_book(provider: str) -> PriceSourcePolicy:
     return PriceSourcePolicy(
         provider,
@@ -150,16 +151,16 @@ def _euroleague_aggregate_consensus_paper_only(provider: str) -> PriceSourcePoli
 
 
 # ESPN scoreboard odds identify a named bookmaker but are a relayed observation,
-# not an approved price-feed lane. Keep them research-visible and fail closed
-# for tickets until a source-permission/operational validation decision is
-# recorded in this registry.
+# not an approved price-feed lane. Preserve their unresolved/unverified labels
+# for audit while allowing the ordinary paper-ticket model and ROI gates to
+# decide whether an exact current quote is usable.
 _ESPN_RELAY_ONLY = PriceSourcePolicy(
     "espn",
     PriceProvenance.NAMED_BOOK,
     SourcePermission.UNRESOLVED,
     OperationalValidation.UNVERIFIED,
     acquire=False,
-    detail="Named bookmaker observation relayed by ESPN; not a validated ticket price source.",
+    detail="Named bookmaker observation relayed by ESPN; unresolved/unverified audit metadata.",
 )
 
 

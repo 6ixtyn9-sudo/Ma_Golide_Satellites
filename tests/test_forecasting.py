@@ -1691,7 +1691,7 @@ def test_euroleague_service_publishes_a_stricter_priced_paper_lane_without_chang
     policy = before["accas"]["paper_pick_filter"]
 
     assert lane["name"] == "EUROLEAGUE_STRICT_NAMED_BOOK_VALUE_TICKET_LANE"
-    assert lane["requires_validated_cleared_named_book_quote"] is True
+    assert lane["requires_named_book_quote"] is True
     consensus_lane = before["accas"]["consensus_paper_lane"]
     assert consensus_lane["name"] == "EUROLEAGUE_AGGREGATE_CONSENSUS_PRICE_PAPER_LEAGUE"
     assert consensus_lane["no_ticket_receipt_bank_roi_or_pnl"] is True

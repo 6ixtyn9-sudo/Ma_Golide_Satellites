@@ -307,14 +307,52 @@ def test_aggregate_price_is_visible_but_never_ticket_eligible():
     assert calibrated.decimal_price == 1.8
     assert calibrated.book.ticket_price_eligible is False
     assert calibrated.eligibility["acca_eligible"] is False
-    assert {
-        "price_not_named_bookmaker_quote",
-        "price_source_permission_unresolved",
-        "price_operational_validation_incomplete",
-    } <= set(calibrated.eligibility["reasons"])
+    assert "price_not_named_bookmaker_quote" in calibrated.eligibility["reasons"]
+    assert "price_source_permission_unresolved" not in calibrated.eligibility["reasons"]
+    assert "price_operational_validation_incomplete" not in calibrated.eligibility["reasons"]
     row = calibrated.to_dict()
     assert row["book"]["price_provenance"] == "aggregate_consensus"
     assert row["book"]["ticket_price_eligible"] is False
+
+
+def test_named_book_price_is_not_blocked_by_permission_or_validation_labels():
+    evidence = BookEvidence(
+        provider="espn",
+        book="DraftKings",
+        observed_utc="2026-11-19T12:00:00Z",
+        source_modified_utc=None,
+        pre_match=True,
+        main_line=True,
+        frozen=False,
+        prices={"home": 1.8, "away": 2.1},
+        price_provenance=PriceProvenance.NAMED_BOOK,
+        source_permission=SourcePermission.UNRESOLVED,
+        operational_validation=OperationalValidation.UNVERIFIED,
+        game_id="g",
+        market="moneyline",
+        period="full_game",
+    )
+    forecast = Forecast(
+        game_id="g",
+        league="NBA",
+        scheduled_utc="2026-11-19T18:00:00Z",
+        home_name="Home",
+        away_name="Away",
+        market="moneyline",
+        period="full_game",
+        selection="home",
+        raw_probability=0.6,
+        alternative_probabilities={"home": 0.6, "away": 0.4},
+        source="fixture",
+        book=evidence,
+    )
+
+    calibrated = apply_profiles([forecast], {}, CalibrationConfig(min_samples=1))[0]
+
+    assert calibrated.book.ticket_price_eligible is True
+    assert "price_source_permission_unresolved" not in calibrated.eligibility["reasons"]
+    assert "price_operational_validation_incomplete" not in calibrated.eligibility["reasons"]
+    assert calibrated.eligibility["reasons"] == ["insufficient_walk_forward_samples"]
 
 
 def test_no_price_provenance_rejects_a_fabricated_decimal_quote():

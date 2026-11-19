@@ -369,16 +369,11 @@ def apply_profiles(
         elif forecast.decimal_price is None:
             reasons.append("missing_selected_decimal_price")
         elif not forecast.book.ticket_price_eligible:
-            # Preserve and grade observed aggregate/unresolved evidence, but
-            # fail closed for ticket selection.  The independent reasons make
-            # it auditable whether the block is provenance, permission, or
-            # operational validation rather than merely "no odds".
-            if forecast.book.price_provenance.value != "named_book":
-                reasons.append("price_not_named_bookmaker_quote")
-            if forecast.book.source_permission.value != "cleared":
-                reasons.append("price_source_permission_unresolved")
-            if forecast.book.operational_validation.value != "validated":
-                reasons.append("price_operational_validation_incomplete")
+            # Aggregate consensus evidence remains visible and auditable, but
+            # cannot become a paper-ticket leg. Named-book quotes retain their
+            # permission/operational labels as diagnostics without turning
+            # those labels into a blanket no-ticket gate.
+            reasons.append("price_not_named_bookmaker_quote")
         if profile is None or not profile.sufficient:
             reasons.append("insufficient_walk_forward_samples")
         if _requires_team_history(forecast) and (forecast.team_history or {}).get(
