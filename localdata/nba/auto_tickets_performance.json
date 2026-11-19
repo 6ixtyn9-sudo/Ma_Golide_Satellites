@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 2,
+  "awaiting_game_legs": 0,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -403,17 +403,17 @@
       "wins": 1
     },
     {
-      "awaiting_game_legs": 2,
-      "bank_units": 96.46235246235247,
+      "awaiting_game_legs": 0,
+      "bank_units": 102.7688506008459,
       "date": "2026-11-18",
       "decision_id": "44248321279_nba_1_attempt_1",
       "frozen_at": "2026-11-18T06:02:32Z",
       "league": "NBA",
       "losses": 4,
-      "pending_accas": 1,
-      "pending_positions": 1,
+      "pending_accas": 0,
+      "pending_positions": 0,
       "pending_singles": 0,
-      "pending_units": 1.0,
+      "pending_units": 0,
       "positions": [
         {
           "awaiting_game_legs": 0,
@@ -578,19 +578,19 @@
           "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 7.3065,
           "effective_decimal_odds": 7.306498138493428,
           "estimated_joint_win_probability": 0.26220381,
-          "grade_status": "pending",
+          "grade_status": "win",
           "leg_count": 3,
           "leg_outcomes": [
             "win",
             "win",
-            null
+            "win"
           ],
           "legs": [
             {
@@ -633,19 +633,20 @@
               "book_provider": "espn",
               "forecast_id": "ecef2d9a163ad851695b",
               "game_id": "401910015",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Denver Nuggets",
               "line": 221.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "ecef2d9a163ad851695b",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T02:30:00Z",
               "selected_decimal_price": 1.9433962264150944,
               "selection": "under"
             }
           ],
           "paper_only": true,
+          "profit_units": 6.306498138493428,
           "provisional_leg_count": 3,
           "provisional_sample_gate_bypassed": true,
           "publication_index": 3,
@@ -655,7 +656,7 @@
           "stake_units": 1.0,
           "ticket_id": "e68e2133040456bf9e52",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
           "awaiting_game_legs": 0,
@@ -739,7 +740,7 @@
           "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -750,7 +751,7 @@
           "leg_count": 3,
           "leg_outcomes": [
             "loss",
-            null,
+            "loss",
             "win"
           ],
           "legs": [
@@ -777,13 +778,13 @@
               "book_provider": "espn",
               "forecast_id": "a2983a1b3d866f2ce1b0",
               "game_id": "401910015",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Denver Nuggets",
               "line": 2.5,
               "market": "spread",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "a2983a1b3d866f2ce1b0",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T02:30:00Z",
               "selected_decimal_price": 1.9433962264150944,
               "selection": "away"
@@ -817,44 +818,44 @@
           "stake_units": 1.0,
           "ticket_id": "0180469d15e207f43ab0",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         }
       ],
-      "profit_units": -4.0,
+      "profit_units": 2.3064981384934278,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-18_decision.json",
       "result_unresolvable_legs": 0,
-      "returned_units": 0.0,
-      "settled_accas": 4,
-      "settled_positions": 4,
+      "returned_units": 7.306498138493428,
+      "settled_accas": 5,
+      "settled_positions": 5,
       "settled_singles": 0,
-      "staked_units": 4.0,
-      "unresolved_result_legs": 2,
-      "wins": 0
+      "staked_units": 5.0,
+      "unresolved_result_legs": 0,
+      "wins": 1
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.3333333333333333,
+  "hit_rate": 0.4,
   "league": "NBA",
   "losses": 6,
-  "paper_bank_units": 96.46235246235246,
-  "paper_committed_units": 1.0,
-  "paper_free_units": 95.46235246235246,
+  "paper_bank_units": 102.7688506008459,
+  "paper_committed_units": 0,
+  "paper_free_units": 102.7688506008459,
   "paper_only": true,
-  "pending_accas": 1,
-  "pending_positions": 1,
+  "pending_accas": 0,
+  "pending_positions": 0,
   "pending_singles": 0,
-  "profit_units": -3.537647537647538,
+  "profit_units": 2.76885060084589,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": -0.3930719486275042,
+  "roi": 0.276885060084589,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.2963888028015,
-  "settled_accas": 6,
-  "settled_positions": 9,
+  "selected_leg_brier_score": 0.2915578530025833,
+  "settled_accas": 7,
+  "settled_positions": 10,
   "settled_singles": 3,
-  "settled_stake_units": 9.0,
+  "settled_stake_units": 10.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 2,
-  "wins": 3
+  "unresolved_result_legs": 0,
+  "wins": 4
 }
