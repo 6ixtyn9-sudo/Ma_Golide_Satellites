@@ -102,8 +102,8 @@ fixtures, results, or named-book prices. The gate also wakes a league for its
 first dated draft, the 09:00 SAST (or earlier first-fixture safety) dated-ticket
 cutoff, each fixture's independent 60-minute pre-tip pick freeze, and
 frozen-result reconciliation. One serialized publisher commits compact ticket
-decisions/state, dated text cards, morning ticket previews, and immutable
-per-fixture pick freezes to `main`; structured dated pick JSON, detailed
+decisions/state, dated text cards, and immutable per-fixture pick freezes to
+`main`; structured dated pick JSON, detailed
 lifecycle renders, current-scan pick JSON, and expanded audits stay in cache and
 bounded workflow artifacts.
 
@@ -207,12 +207,13 @@ If no qualifying pre-tip candidate exists at the cutoff, the operator writes an
 immutable `auto_tickets_YYYY-MM-DD_no_bet.json` decision instead. It prevents a
 later price, an old Actions cache, or a later-game candidate from reopening the
 date. A delayed run that misses the first tip also fails closed to that no-bet
-decision. Before the cutoff, the normal text card identifies the pending
-decision time and `auto_tickets_YYYY-MM-DD_preview.txt` can show broader exact
-named-price draft candidates. The preview is not a receipt or instruction: it
-never creates a stake, grade, bank/performance entry, or real-money action, and
-retains source-permission and operational-validation blockers. After either
-strict decision, selections/prices/stakes—or the no-bet result—cannot change.
+decision. Before the cutoff, the single normal `auto_tickets_YYYY-MM-DD.txt`
+card carries a clearly labelled `DRAFT ONLY` / `PRE-CUTOFF` section with the
+broader exact named-price draft candidates. That section is not a receipt or
+instruction: it never creates a stake, grade, bank/performance entry, or
+real-money action, and retains source-permission and operational-validation
+blockers. After either strict decision, selections/prices/stakes—or the no-bet
+result—cannot change.
 
 ### EuroLeague aggregate-consensus paper board
 

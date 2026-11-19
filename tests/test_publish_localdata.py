@@ -413,7 +413,6 @@ def test_allowlist_is_narrow_and_missing_artifact_directory_is_a_noop(tmp_path):
         "auto_tickets_performance.json",
         "auto_tickets_performance.txt",
         "auto_tickets_2026-11-12.txt",
-        "auto_tickets_2026-11-12_preview.txt",
         "auto_tickets_2026-11-12_decision.json",
         "auto_tickets_2026-11-12_no_bet.json",
         "coverage_gap_2026-11-12.json",
@@ -434,10 +433,36 @@ def test_allowlist_is_narrow_and_missing_artifact_directory_is_a_noop(tmp_path):
     assert not allowed_operator_file("picks_audit_2026-11-12.md")
     assert not allowed_operator_file("picks_unapproved.json")
     assert not allowed_operator_file("auto_tickets_2026-11-12.json")
+    assert not allowed_operator_file("auto_tickets_2026-11-12_preview.txt")
     assert not allowed_operator_file("warehouse.duckdb")
     report = merge_downloaded_localdata(tmp_path / "missing", tmp_path / "repo")
     assert report["status"] == "no_changes"
     assert not (tmp_path / "repo" / "localdata").exists()
+
+
+def test_preview_sidecar_artifacts_are_ignored_by_the_publisher(tmp_path):
+    artifact_file(
+        tmp_path,
+        "nba-artifact",
+        "nba",
+        "auto_tickets_2026-11-12_preview.txt",
+        b"stale preview sidecar\n",
+    )
+    artifact_file(
+        tmp_path,
+        "nba-artifact",
+        "nba",
+        "auto_tickets_2026-11-12.txt",
+        b"current dated card\n",
+    )
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", tmp_path / "repo")
+    localdata = tmp_path / "repo" / "localdata" / "nba"
+
+    assert report["copied"] == ["localdata/nba/auto_tickets_2026-11-12.txt"]
+    assert report["copied_count"] == 1
+    assert (localdata / "auto_tickets_2026-11-12.txt").exists()
+    assert not (localdata / "auto_tickets_2026-11-12_preview.txt").exists()
 
 
 def test_cli_reports_json(tmp_path, capsys, monkeypatch):

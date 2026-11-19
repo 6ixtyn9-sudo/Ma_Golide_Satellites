@@ -63,7 +63,6 @@ ALLOWED_NAMES = tuple(
         r"auto_tickets_performance\.json",
         r"auto_tickets_performance\.txt",
         rf"auto_tickets_{DATE}\.txt",
-        rf"auto_tickets_{DATE}_preview\.txt",
         rf"auto_tickets_{DATE}_decision\.json",
         rf"auto_tickets_{DATE}_no_bet\.json",
         rf"auto_tickets_{DATE}_withdrawn\.json",
@@ -280,10 +279,11 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
             if not allowed_operator_file(source.name):
                 continue
             # Every dated auto-ticket text card is a mutable public view: it
-            # shows a pre-cutoff candidate preview, an immutable-ticket
-            # settlement view, or the terminal no-bet state. _ticket_receipt
-            # alone creates a state lock and immutable decision JSON at the
-            # 60-minute pre-tip cutoff.
+            # shows the single dated card (including its pre-cutoff draft
+            # section), an immutable-ticket settlement view, or the terminal
+            # no-bet state. _ticket_receipt alone creates a state lock and
+            # immutable decision JSON at the 60-minute pre-tip cutoff. The
+            # retired *_preview.txt sidecar is not allowlisted.
             if source.is_symlink() or not source.is_file():
                 raise ValueError(f"operator publication requires a regular file: {source}")
             size = source.stat().st_size

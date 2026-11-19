@@ -4189,7 +4189,7 @@ def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, 
     return funnel
 
 
-def _named_price_preview_candidates(
+def _named_price_draft_candidates(
     rows: List[Dict[str, Any]], *, generated_utc: str, maximum: int = 8
 ) -> List[Dict[str, Any]]:
     """Return transparent Edge-style draft candidates, never ticket legs.
@@ -4246,69 +4246,43 @@ def _named_price_preview_candidates(
     )[:maximum]
 
 
-def _render_morning_ticket_preview(
+def _render_named_price_draft_section(
     *,
-    league: League,
-    target_date: str,
     generated_utc: str,
     timezone_name: str,
     ticket_decision: Dict[str, Any],
     rows: List[Dict[str, Any]],
     candidate_funnel: Dict[str, Any],
-) -> str:
-    """Render the public morning draft-slip surface without creating a bet.
+) -> List[str]:
+    """Render the pre-cutoff named-price draft section of the dated ticket card.
 
-    The strict ticket receipt and its bank remain unchanged.  This companion
-    card makes the today-facing, named-price candidate universe available at
-    the 09:00 SAST workflow window even when an execution-validation issue
-    leaves the strict lane empty.
+    The strict ticket receipt and its bank remain unchanged. This section keeps
+    current named-price candidates on the single dated card before the 09:00
+    SAST (or earlier first-tip safety) cutoff. It never reaches a terminal
+    receipt or no-bet card.
     """
 
-    candidates = _named_price_preview_candidates(rows, generated_utc=generated_utc)
+    candidates = _named_price_draft_candidates(rows, generated_utc=generated_utc)
     cutoff = ticket_decision.get("planned_cutoff_utc")
-    morning = ticket_decision.get("morning_publication_cutoff_utc")
     strict_count = int(candidate_funnel.get("paper_accas") or 0)
     strict_singles = int(candidate_funnel.get("paper_single_picks") or 0)
     lines = [
-        f"MA GOLIDE MORNING TICKET PREVIEW — {league.value} {target_date}",
-        "=" * 72,
-        f"Latest draft scan: {_local_time(generated_utc, timezone_name)}",
-        "DRAFT ONLY — no paper stake, ticket receipt, settlement grade, bank impact, or real-money instruction.",
-        "The strict paper-ticket lane still requires cleared, operationally validated named-book evidence.",
-        "",
-        "MORNING PUBLICATION POLICY",
-        "- 09:00 SAST for this dated card, unless an earlier fixture needs its 60-minute pre-tip safety cutoff.",
+        "PRE-CUTOFF NAMED-PRICE DRAFT SLIPS — DRAFT ONLY / PRE-CUTOFF",
+        "- DRAFT ONLY: no paper stake, ticket receipt, settlement grade, bank impact, ROI/P&L impact, or real-money instruction.",
+        "- One exact, observed, current pre-tip quote from a named bookmaker per displayed game; no price is inferred or promoted.",
+        "- Unresolved permission or operational validation means a leg is PREVIEW-ONLY, not strict execution evidence.",
+        "- A strict receipt is created only at the decision cutoff and only from strict-eligible candidates.",
         (
             f"- Current decision cutoff: {_local_time(str(cutoff), timezone_name)}"
             if cutoff
             else "- Current decision cutoff: awaiting a confirmed slate fixture."
         ),
-        (
-            f"- Nominal 09:00 SAST cutoff: {_local_time(str(morning), timezone_name)}"
-            if morning
-            else ""
-        ),
-        "",
-        "STRICT PAPER-LANE STATUS",
-        f"- {strict_count} multi-leg candidate(s) and {strict_singles} ROI-qualified single(s) passed the strict model/price funnel in this scan.",
-        "- A strict receipt is created only at the decision cutoff and only from strict-eligible candidates.",
-        "",
-        "EDGE-STYLE NAMED-PRICE DRAFT SLIPS",
-        "- Broader preview: one exact current pre-tip quote from a named bookmaker per game; model blockers stay displayed.",
-        "- Unresolved permission or operational validation means a candidate is preview-only, not strict execution evidence.",
+        f"- Strict paper-lane status this scan: {strict_count} multi-leg candidate(s) and "
+        f"{strict_singles} ROI-qualified single(s) passed the strict model/price funnel.",
     ]
-    if league is League.EUROLEAGUE:
-        lines.extend(
-            (
-                "",
-                "EUROLEAGUE CONSENSUS-PRICE PAPER BOARD",
-                "- See euroleague_consensus_paper_YYYY-MM-DD.txt for the separate, no-stake BetExplorer average-price board.",
-                "- It is not a named-book draft slip and never enters tickets, receipts, bank, ROI/P&L, or real-money execution.",
-            )
-        )
     if not candidates:
-        lines.extend(("  (none — no exact, current named-book price was available before tip)", ""))
-        return "\n".join(line for line in lines if line != "") + "\n"
+        lines.append("  (none — no exact, current named-book price was available before tip)")
+        return lines
 
     for index in range(0, len(candidates), 2):
         draft_legs = candidates[index : index + 2]
@@ -4328,8 +4302,8 @@ def _render_morning_ticket_preview(
                 f"{_selection_label(row)} · @{float(book['selected_decimal_price']):.3f} {book.get('book')} · "
                 f"p={(probability or 0.0):.1%} ({basis}) · bucket={_bucket(row)} · blockers: {reasons}"
             )
-    lines.extend(("", "Every displayed price is preserved as observed evidence only; no price is inferred or promoted."))
-    return "\n".join(line for line in lines if line != "") + "\n"
+    lines.append("Every displayed price is preserved as observed evidence only; no price is inferred or promoted.")
+    return lines
 
 
 def _render_empty_ticket_scan(
@@ -4348,6 +4322,7 @@ def _render_empty_ticket_scan(
     priced_ineligible_audited_count: int = 0,
     unpriced_spread_shadow: Optional[Dict[str, Any]] = None,
     historical_archive: bool = False,
+    named_price_draft_rows: Optional[List[Dict[str, Any]]] = None,
 ) -> str:
     """Render a mutable current scan or a regraded historical audit archive."""
     paper_single_count = int(candidate_funnel.get("paper_single_picks") or 0)
@@ -4469,6 +4444,29 @@ def _render_empty_ticket_scan(
                 "Ticket decision deferred — no scheduled game for this slate date is available yet.",
                 "",
             ]
+    # The single dated card is the only pre-cutoff draft surface. A withdrawal,
+    # immutable no-bet decision, historical regrade, or passed cutoff suppresses
+    # this section so draft candidates cannot reach a terminal card.
+    if (
+        named_price_draft_rows is not None
+        and not historical_archive
+        and withdrawal is None
+        and no_bet_decision is None
+        and ticket_decision
+        and ticket_decision.get("status") == "pending_cutoff"
+    ):
+        lines.extend(
+            (
+                "",
+                *_render_named_price_draft_section(
+                    generated_utc=generated_utc,
+                    timezone_name=timezone_name,
+                    ticket_decision=ticket_decision,
+                    rows=named_price_draft_rows,
+                    candidate_funnel=candidate_funnel,
+                ),
+            )
+        )
     if league is League.EUROLEAGUE:
         lines[3:3] = [
             "EUROLEAGUE STRICT NAMED-BOOK TICKET LANE — exact validated pre-tip quote; calibrated p × odds > 1.00; "
@@ -4746,18 +4744,6 @@ def publish_operator_reports(
     )
     acca_report = (market_report or {}).get("accas") or {}
     candidate_funnel = _ticket_candidate_funnel(market_report)
-    ticket_preview_path = _write_text(
-        localdata / f"auto_tickets_{target_date}_preview.txt",
-        _render_morning_ticket_preview(
-            league=league,
-            target_date=target_date,
-            generated_utc=generated_utc,
-            timezone_name=timezone_name,
-            ticket_decision=ticket_decision,
-            rows=current,
-            candidate_funnel=candidate_funnel,
-        ),
-    )
     paper_filter = acca_report.get("paper_pick_filter") or {}
     band_details = paper_filter.get("candidate_band_details") or {}
     single_rows = list(acca_report.get("paper_single_picks") or [])
@@ -5114,6 +5100,9 @@ def publish_operator_reports(
                     else 0
                 ),
                 unpriced_spread_shadow=dated_spread_shadow,
+                # The current scan feeds the pre-cutoff section of the single
+                # dated card; terminal/history renders never receive it.
+                named_price_draft_rows=current,
             ),
         )
     state["last_generated_utc"] = generated_utc
@@ -5135,7 +5124,6 @@ def publish_operator_reports(
             else None
         ),
         "ticket_text": ticket_path,
-        "ticket_preview": ticket_preview_path,
         "historical_ticket_audit_cards_refreshed": historical_ticket_audit_cards,
         "ticket_state": str(localdata / "auto_tickets_state.json"),
         "performance": str(localdata / "auto_tickets_performance.json"),
