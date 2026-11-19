@@ -28,7 +28,7 @@ from ingestion.store import InMemoryStore
 def _event(league=League.NCAA_M):
     return {
         "id": "ncaa-1",
-        "uid": f"s:40~l:{'50' if league is League.NCAA_W else '41'}~e:ncaa-1",
+        "uid": f"s:40~l:{'54' if league is League.NCAA_W else '41'}~e:ncaa-1",
         "season": {"year": 2027},
         "competitions": [
             {

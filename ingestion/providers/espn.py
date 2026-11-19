@@ -121,7 +121,7 @@ HISTORY_FLOORS = {
 }
 _EVENT_REF_RE = re.compile(r"/events/(\d+)(?:[?/]|$)")
 # ESPN's event UID carries the sport/league path (for example
-# ``s:40~l:50~e:...`` for women's college basketball).  The public
+# ``s:40~l:54~e:...`` for women's college basketball).  The public
 # scoreboard can occasionally return a mixed or misrouted event list when a
 # group filter is involved, so the route URL alone is not enough to establish
 # the league identity of an individual event.
@@ -130,7 +130,11 @@ ESPN_LEAGUE_IDS = {
     League.NBA: "46",
     League.WNBA: "59",
     League.NCAA_M: "41",
-    League.NCAA_W: "50",
+    # The live Division-I women's scoreboard route consistently identifies
+    # events as ``s:40~l:54~e:<event>``.  ``50`` was an incorrect assumed UID
+    # and caused every current NCAA_W event to be quarantined despite the
+    # requested route and the event's own explicit women's-college identity.
+    League.NCAA_W: "54",
     League.NBA_G_LEAGUE: "69",
 }
 
