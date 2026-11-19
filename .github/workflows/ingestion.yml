@@ -1,5 +1,7 @@
 # Ma Golide automatic multi-league acquisition, with no dispatch selections.
-# - All seven leagues retain their public/keyless paths by default.
+# - The registry schedules every supported basketball league.  Lanes without a
+#   compliant official adapter run fail-closed and publish explicit coverage
+#   gaps rather than fabricated fixtures, results, or named-book prices.
 # - Optional provider secrets are passed only to the adapters that already
 #   support them; an absent secret leaves that adapter explicitly disabled.
 # - Named external-dispatch runs persist canonical state; manual dispatch
@@ -142,14 +144,14 @@ jobs:
       ALLOW_NOTIFICATION_WRITES: "false"
 
     steps:
-      - name: Enable keyless public provider path
+      - name: Enable registered league lifecycle
         id: capability
         env:
           LEAGUE: ${{ matrix.league }}
         run: |
           set -euo pipefail
           echo "available=true" >> "$GITHUB_OUTPUT"
-          echo "$LEAGUE enabled with public keyless providers; paid integrations are disabled."
+          echo "$LEAGUE enabled through its registry contract; unavailable source capabilities are reported as coverage gaps."
 
       - name: Check out repository
         if: steps.capability.outputs.available == 'true'
