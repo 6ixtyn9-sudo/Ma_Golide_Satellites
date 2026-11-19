@@ -280,8 +280,11 @@ writes.
 - `localdata/ledgers/`: immutable, content-addressed stage snapshots.
 - `localdata/reports/`: derived operational and market JSON reports.
 - `localdata/<league>/picks_YYYY-MM-DD.{json,txt}`: Git-published dated draft
-  cards and their mutable lifecycle views. Individual fixture draft evidence
-  stops changing at its own 60-minute pre-tip cutoff.
+  cards and compact human cards. Individual fixture draft evidence stops
+  changing at its own 60-minute pre-tip cutoff.
+- `localdata/<league>/picks_YYYY-MM-DD_lifecycle.json`: detailed mutable
+  lifecycle render retained only in the workflow cache and bounded Actions
+  artifacts, never Git-published.
 - `localdata/<league>/pick_freeze_YYYY-MM-DD_<fixture-hash>.json`: immutable
   per-fixture pick snapshots, including selections, prices/lines, evidence
   timestamps, scheduled tip, and freeze timestamp.
@@ -295,10 +298,10 @@ writes.
 
 After each named external-trigger GitHub run, one serialized publisher commits
 paper-ticket decisions, durable locks, settlement summaries, dated mutable pick
-cards/lifecycle views, and immutable per-fixture pick freezes to `main`; it
-never overwrites conflicting immutable evidence. `picks_today.json`, expanded
-audits, canonical DuckDB/CSV, acquisition ledgers, and caches remain outside
-Git.
+cards, and immutable per-fixture pick freezes to `main`; it never overwrites
+conflicting immutable evidence. Detailed lifecycle renders, `picks_today.json`,
+expanded audits, canonical DuckDB/CSV, acquisition ledgers, and caches remain
+outside Git.
 
 ```bash
 python -m ingestion.cli coverage --league NBA

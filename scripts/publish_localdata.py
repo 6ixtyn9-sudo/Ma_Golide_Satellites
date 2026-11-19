@@ -49,12 +49,11 @@ LIFECYCLE_RECOVERY_NAMES = tuple(
 ALLOWED_NAMES = tuple(
     re.compile(pattern)
     for pattern in (
-        # Dated pick cards are the operator-visible draft/freeze/settlement
-        # lifecycle. They are deliberately distinct from volatile picks_today
-        # and the expanded audit ledgers, which remain artifact-only.
+        # Dated pick cards, compact lifecycle state, and fixture freezes are
+        # the Git-durable operator evidence. Detailed dated lifecycle renders
+        # remain cache/Actions-artifact-only for every league.
         rf"picks_{DATE}\.json",
         rf"picks_{DATE}\.txt",
-        rf"picks_{DATE}_lifecycle\.json",
         r"pick_lifecycle_state\.json",
         rf"pick_freeze_{DATE}_[0-9a-f]{{16}}\.json",
         rf"coverage_gap_{DATE}\.json",
@@ -104,8 +103,9 @@ def _atomic_write(path: Path, raw: bytes) -> None:
 def _git_durable_bytes(source: Path) -> bytes:
     """Return the compact, durable form of one publishable operator file.
 
-    Dated draft/freeze lifecycle cards are Git durable. The two compact ticket
-    summaries below still contain scan clocks that are operational telemetry,
+    Dated draft cards and immutable fixture freezes are Git durable. Detailed
+    lifecycle renders remain artifact-only. The two compact ticket summaries
+    below still contain scan clocks that are operational telemetry,
     not evidence needed to reconstruct tickets. Removing only those volatile
     fields prevents no-op runs from producing new Git blobs while receipts and
     date locks remain complete.

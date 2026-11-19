@@ -190,14 +190,14 @@ create or modify canonical DuckDB/CSV state. Manual live dry runs force the
 full all-league rehearsal path.
 
 After the league matrix, one publisher commits immutable ticket/no-bet decisions,
-compact state/settlement summaries, dated mutable pick cards and lifecycle views,
-and immutable per-fixture pick freezes to `localdata/<league>` on `main`. The
-freeze carries the selection, price/line, source/evidence timestamps, scheduled
-tip, and actual freeze time; settlement reads that evidence rather than a later
-scan. `picks_today.json` and expanded audits remain in the active league cache
-and bounded Actions artifacts. Existing Git-durable history is retained and
-conflicting immutable receipts or freezes fail closed. Git wins over stale cached
-operator state on the next run.
+compact state/settlement summaries, dated mutable pick cards, and immutable
+per-fixture pick freezes to `localdata/<league>` on `main`. The freeze carries
+the selection, price/line, source/evidence timestamps, scheduled tip, and actual
+freeze time; settlement reads that evidence rather than a later scan. Detailed
+dated lifecycle renders, `picks_today.json`, and expanded audits remain in the
+active league cache and bounded Actions artifacts. Existing Git-durable history
+is retained and conflicting immutable receipts or freezes fail closed. Git wins
+over stale cached operator state on the next run.
 
 A CI cache is an operational optimization, not an archival guarantee. Export
 and retain CSV.GZ/ledger artifacts according to the desired recovery policy.

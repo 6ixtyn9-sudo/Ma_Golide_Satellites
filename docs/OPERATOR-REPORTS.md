@@ -12,20 +12,21 @@ raw-dump storage approach:
   dated Markdown, operational reports, and recovery evidence for 14 days;
 - Git tracks immutable ticket/no-bet decisions, human-readable cards for
   receipt-backed tickets, compact date locks, compact performance state, dated
-  mutable pick cards/lifecycle views, and immutable per-fixture pick freezes;
-- `picks_today.json`, rolling/dated expanded audits, and other scan payloads
-  remain cache/artifact-only so volatile current-scan detail does not become
-  permanent Git history.
+  mutable pick cards, and immutable per-fixture pick freezes;
+- detailed dated lifecycle renders, `picks_today.json`, rolling/dated expanded
+  audits, and other scan payloads remain cache/artifact-only so volatile or
+  expanded detail does not become permanent Git history.
 
 A dated pick card begins as a mutable draft. At each fixture's scheduled tip
 minus 60 minutes, the operator writes one immutable fixture snapshot. Later
 settlement reads the snapshot rather than a refreshed model or price scan, while
-the lifecycle view publishes the frozen/settled status. The publisher overlays
-Git-durable files without deleting older history and aborts if a recovered
-immutable receipt or pick freeze differs from repository evidence. Git-tracked
-operator state takes precedence over stale cached copies. If the rolling pick
-audit is absent after a cold-cache recovery, the forecaster uses its documented
-past-only prequential fallback rather than inventing or importing stale picks.
+the detailed lifecycle view records the frozen/settled status in cache and
+Actions artifacts. The publisher overlays Git-durable files without deleting
+older history and aborts if a recovered immutable receipt or pick freeze differs
+from repository evidence. Git-tracked operator state takes precedence over stale
+cached copies. If the rolling pick audit is absent after a cold-cache recovery,
+the forecaster uses its documented past-only prequential fallback rather than
+inventing or importing stale picks.
 DuckDB, CSV, acquisition ledgers, raw current-scan JSON, and credentials are
 never committed by this publisher. Only named external-trigger executions
 publish derived state to Git; manual runs retain inspection artifacts only. This
@@ -44,7 +45,7 @@ profitability.
 | `picks_today.json` | Current scan of every forecast; cache/artifact only, not Git |
 | `picks_YYYY-MM-DD.json` | Git-published dated draft evidence; rows for a fixture stop accepting later model/price observations once that fixture is frozen |
 | `pick_freeze_YYYY-MM-DD_<fixture-hash>.json` | Git-published immutable per-fixture evidence captured at the 60-minute cutoff: selections, prices/lines, source/evidence timestamps, scheduled tip, and freeze timestamp |
-| `picks_YYYY-MM-DD_lifecycle.json` | Git-published mutable lifecycle view; grades frozen evidence against reconciled official finals and labels draft/frozen/settled state |
+| `picks_YYYY-MM-DD_lifecycle.json` | Detailed mutable lifecycle view; grades frozen evidence against reconciled official finals and labels draft/frozen/settled state. Cache/Actions-artifact only for every league, never Git-published. |
 | `picks_YYYY-MM-DD.txt` | Git-published compact human card rendered from the lifecycle view |
 | `pick_lifecycle_state.json` | Compact Git-published pending-frozen-fixture state used by the scheduler gate to request result reconciliation |
 | `picks_audit_rolling.json` | Thirty-day logical and settled ledgers; cache/artifact only, not Git |
@@ -296,12 +297,12 @@ never replaces dated history.
 ## Grading
 
 Grading is separate from publication evidence. Every retained lifecycle view is
-refreshed on each run, including dates before the current target date. A frozen
-fixture is graded only from its immutable freeze snapshot; an unfrozen legacy
-row is visibly labelled as such and cannot claim freeze-backed settlement. Only
-a final game whose actual period scores reconcile to the official final can
-settle a forecast. Missing, incomplete, conflicting, or unreconciled results
-remain **PENDING**.
+refreshed in the cache/artifact layer on each run, including dates before the
+current target date. A frozen fixture is graded only from its immutable freeze
+snapshot; an unfrozen legacy row is visibly labelled as such and cannot claim
+freeze-backed settlement. Only a final game whose actual period scores reconcile
+to the official final can settle a forecast. Missing, incomplete, conflicting,
+or unreconciled results remain **PENDING**.
 
 Every official-final `WIN`, `LOSS`, or `PUSH` enters the rolling settled ledger,
 hit rate, bucket diagnostics, and priced-profit calculation immediately—even
