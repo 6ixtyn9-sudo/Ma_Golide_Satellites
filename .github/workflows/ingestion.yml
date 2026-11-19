@@ -218,7 +218,6 @@ jobs:
                   r"auto_tickets_performance\.txt",
                   rf"auto_tickets_{date}\.txt",
                   rf"auto_tickets_{date}_decision\.json",
-                  rf"auto_tickets_{date}_no_bet\.json",
                   rf"auto_tickets_{date}_withdrawn\.json",
                   # The EuroLeague consensus board has an immutable no-stake
                   # roster plus a mutable official-result card. Recover both
