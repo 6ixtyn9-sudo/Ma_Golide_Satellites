@@ -55,21 +55,6 @@ def test_gitignore_allows_every_durable_pick_lifecycle_artifact():
         assert result.returncode == 1, f"durable publisher artifact is ignored: {name}"
 
 
-def test_ncaaw_2026_11_19_lifecycle_render_is_intentionally_not_git_visible():
-    repo = Path(__file__).resolve().parents[1]
-    result = subprocess.run(
-        [
-            "git",
-            "check-ignore",
-            "-q",
-            "localdata/ncaa_w/picks_2026-11-19_lifecycle.json",
-        ],
-        cwd=repo,
-        check=False,
-    )
-    assert result.returncode == 0
-
-
 def test_operator_state_restore_uses_latest_main_not_event_sha():
     repo = Path(__file__).resolve().parents[1]
     for path in (

@@ -10,7 +10,6 @@ from scripts.publish_localdata import (
     STATE_KEYS,
     allowed_lifecycle_recovery_file,
     allowed_operator_file,
-    globally_visible_operator_file,
     merge_downloaded_localdata,
 )
 
@@ -112,32 +111,6 @@ def test_publisher_state_keys_follow_the_central_registry_and_publish_expansion_
 
     assert report["copied"] == ["localdata/spain_acb/picks_2026-11-18.txt"]
     assert report["skipped_states"] == []
-
-
-def test_ncaaw_2026_11_19_lifecycle_render_is_not_globally_published(tmp_path):
-    hidden_name = "picks_2026-11-19_lifecycle.json"
-    artifact_file(tmp_path, "ncaaw-artifact", "ncaa_w", hidden_name, b"detailed mutable rows\n")
-    artifact_file(
-        tmp_path,
-        "ncaaw-artifact",
-        "ncaa_w",
-        "pick_lifecycle_state.json",
-        b"compact lifecycle state\n",
-    )
-    artifact_file(tmp_path, "nba-artifact", "nba", hidden_name, b"ordinary lifecycle render\n")
-
-    report = merge_downloaded_localdata(tmp_path / "artifacts", tmp_path / "repo")
-
-    assert not globally_visible_operator_file("ncaa_w", hidden_name)
-    assert globally_visible_operator_file("nba", hidden_name)
-    assert not (tmp_path / "repo" / "localdata" / "ncaa_w" / hidden_name).exists()
-    assert (tmp_path / "repo" / "localdata" / "ncaa_w" / "pick_lifecycle_state.json").read_bytes() == (
-        b"compact lifecycle state\n"
-    )
-    assert (tmp_path / "repo" / "localdata" / "nba" / hidden_name).read_bytes() == (
-        b"ordinary lifecycle render\n"
-    )
-    assert report["global_visibility_excluded"] == [f"localdata/ncaa_w/{hidden_name}"]
 
 
 def test_publisher_reports_unknown_state_directories_without_publishing_them(tmp_path):

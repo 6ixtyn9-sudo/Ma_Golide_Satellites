@@ -44,7 +44,7 @@ profitability.
 | `picks_today.json` | Current scan of every forecast; cache/artifact only, not Git |
 | `picks_YYYY-MM-DD.json` | Git-published dated draft evidence; rows for a fixture stop accepting later model/price observations once that fixture is frozen |
 | `pick_freeze_YYYY-MM-DD_<fixture-hash>.json` | Git-published immutable per-fixture evidence captured at the 60-minute cutoff: selections, prices/lines, source/evidence timestamps, scheduled tip, and freeze timestamp |
-| `picks_YYYY-MM-DD_lifecycle.json` | Git-published mutable lifecycle view; grades frozen evidence against reconciled official finals and labels draft/frozen/settled state. The specifically redacted `localdata/ncaa_w/picks_2026-11-19_lifecycle.json` remains cache/artifact-only and is never globally published. |
+| `picks_YYYY-MM-DD_lifecycle.json` | Git-published mutable lifecycle view; grades frozen evidence against reconciled official finals and labels draft/frozen/settled state |
 | `picks_YYYY-MM-DD.txt` | Git-published compact human card rendered from the lifecycle view |
 | `pick_lifecycle_state.json` | Compact Git-published pending-frozen-fixture state used by the scheduler gate to request result reconciliation |
 | `picks_audit_rolling.json` | Thirty-day logical and settled ledgers; cache/artifact only, not Git |
