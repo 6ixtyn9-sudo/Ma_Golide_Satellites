@@ -98,7 +98,7 @@ def test_gate_runs_for_an_unfrozen_fixture_freeze_window(tmp_path: Path):
     nba = LEAGUES[0]
     _operator_state(tmp_path, nba, date="2026-11-18")
     state_dir = tmp_path / nba.state_key
-    _write_json(state_dir / "picks_2026-11-18.json", [])
+    (state_dir / "picks_2026-11-18.txt").write_text("dated pick card\n")
 
     decision = evaluate_league(
         nba,
@@ -150,7 +150,7 @@ def test_gate_fails_open_when_pick_lifecycle_state_is_invalid(tmp_path: Path):
     nba = LEAGUES[0]
     _operator_state(tmp_path, nba, date="2026-11-18")
     state_dir = tmp_path / nba.state_key
-    _write_json(state_dir / "picks_2026-11-18.json", [])
+    (state_dir / "picks_2026-11-18.txt").write_text("dated pick card\n")
     _write_json(
         state_dir / "pick_lifecycle_state.json",
         {"schema_version": "unknown", "league": "NBA", "pending_frozen_games": []},
@@ -171,7 +171,7 @@ def test_gate_rechecks_a_tipped_frozen_pick_until_it_settles(tmp_path: Path):
     nba = LEAGUES[0]
     _operator_state(tmp_path, nba, date="2026-11-18", frozen="ticket")
     state_dir = tmp_path / nba.state_key
-    _write_json(state_dir / "picks_2026-11-18.json", [])
+    (state_dir / "picks_2026-11-18.txt").write_text("dated pick card\n")
     _write_json(
         state_dir / "pick_lifecycle_state.json",
         {
@@ -314,7 +314,7 @@ def test_source_unavailable_lane_runs_once_for_a_durable_coverage_gap_then_skips
     assert not second.should_run
     assert second.reasons == ("no_work",)
 
-    (tmp_path / acb.state_key / "picks_2026-11-18.json").write_text("[]\n")
+    (tmp_path / acb.state_key / "picks_2026-11-18.txt").write_text("dated pick card\n")
     lifecycle = evaluate_league(acb, state_root=tmp_path, now=NOW, schedule_fetcher=should_not_fetch)
     assert lifecycle.should_run
     assert lifecycle.reasons == ("source_unavailable_pick_lifecycle_due",)

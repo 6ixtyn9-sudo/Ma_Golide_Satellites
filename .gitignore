@@ -18,10 +18,10 @@ localdata/*
 localdata/*/*
 localdata/*/picks_*.json
 localdata/*/picks_audit_*.md
-# Dated draft cards, compact lifecycle state, and fixture freezes are
-# Git-durable evidence restored by the workflow after cache recovery. Detailed
-# dated lifecycle renders remain isolated cache/Actions-artifact evidence.
-!localdata/*/picks_????-??-??.json
+# Dated text cards, compact lifecycle state, and fixture freezes are Git-durable
+# evidence restored by the workflow after cache recovery. Structured dated pick
+# JSON, including detailed lifecycle renders, remains cache/Actions-artifact
+# evidence for every league.
 !localdata/*/pick_lifecycle_state.json
 !localdata/*/pick_freeze_*.json
 !localdata/*/coverage_gap_*.json

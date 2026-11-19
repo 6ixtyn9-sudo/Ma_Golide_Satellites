@@ -125,42 +125,49 @@ def test_publisher_reports_unknown_state_directories_without_publishing_them(tmp
     assert not (tmp_path / "repo" / "localdata" / "unregistered_league").exists()
 
 
-def test_publisher_keeps_detailed_lifecycle_renders_artifact_only_globally(tmp_path):
+def test_publisher_keeps_structured_pick_json_artifact_only_globally(tmp_path):
+    dated_json_name = "picks_2026-11-18.json"
     lifecycle_name = "picks_2026-11-18_lifecycle.json"
     freeze_name = "pick_freeze_2026-11-18_0123456789abcdef.json"
     for state in ("nba", "ncaa_w"):
         artifact_file(tmp_path, f"{state}-artifact", state, lifecycle_name, b"detailed lifecycle\n")
-    artifact_file(tmp_path, "nba-artifact", "nba", "picks_2026-11-18.json", b"draft one\n")
+    artifact_file(tmp_path, "nba-artifact", "nba", dated_json_name, b"draft one\n")
     artifact_file(tmp_path, "nba-artifact", "nba", "picks_2026-11-18.txt", b"draft one\n")
     artifact_file(tmp_path, "nba-artifact", "nba", "pick_lifecycle_state.json", b"state one\n")
     freeze = artifact_file(tmp_path, "nba-artifact", "nba", freeze_name, b"frozen evidence\n")
 
     repo = tmp_path / "repo"
     first = merge_downloaded_localdata(tmp_path / "artifacts", repo)
-    assert first["copied_count"] == 4
+    assert first["copied_count"] == 3
+    assert not allowed_operator_file(dated_json_name)
     assert not allowed_operator_file(lifecycle_name)
-    assert allowed_lifecycle_recovery_file(lifecycle_name)
+    assert not allowed_lifecycle_recovery_file(dated_json_name)
+    assert not allowed_lifecycle_recovery_file(lifecycle_name)
     for state in ("nba", "ncaa_w"):
         assert not (repo / "localdata" / state / lifecycle_name).exists()
     destination = repo / "localdata" / "nba"
-    assert (destination / "picks_2026-11-18.json").read_bytes() == b"draft one\n"
+    assert not (destination / dated_json_name).exists()
+    assert (destination / "picks_2026-11-18.txt").read_bytes() == b"draft one\n"
     assert (destination / "pick_lifecycle_state.json").read_bytes() == b"state one\n"
 
-    artifact_file(tmp_path, "nba-artifact", "nba", "picks_2026-11-18.json", b"draft two\n")
+    artifact_file(tmp_path, "nba-artifact", "nba", dated_json_name, b"draft two\n")
     artifact_file(tmp_path, "nba-artifact", "nba", "picks_2026-11-18.txt", b"draft two\n")
     second = merge_downloaded_localdata(tmp_path / "artifacts", repo)
-    assert "localdata/nba/picks_2026-11-18.json" in second["copied"]
-    assert (destination / "picks_2026-11-18.json").read_bytes() == b"draft two\n"
+    assert second["copied"] == ["localdata/nba/picks_2026-11-18.txt"]
+    assert not (destination / dated_json_name).exists()
+    assert (destination / "picks_2026-11-18.txt").read_bytes() == b"draft two\n"
 
     freeze.write_bytes(b"rewritten frozen evidence\n")
     with pytest.raises(ValueError, match="immutable pick freeze differs"):
         merge_downloaded_localdata(tmp_path / "artifacts", repo)
 
 
-def test_interrupted_lane_artifact_can_publish_only_pick_lifecycle_evidence(tmp_path):
+def test_interrupted_lane_artifact_can_publish_only_durable_pick_lifecycle_evidence(tmp_path):
     artifact = "MaGolide-lifecycle-nba-run"
+    dated_json_name = "picks_2026-11-18.json"
     freeze_name = "pick_freeze_2026-11-18_0123456789abcdef.json"
-    artifact_file(tmp_path, artifact, "nba", "picks_2026-11-18.json", b"draft\n")
+    artifact_file(tmp_path, artifact, "nba", dated_json_name, b"raw draft\n")
+    artifact_file(tmp_path, artifact, "nba", "picks_2026-11-18.txt", b"draft card\n")
     artifact_file(tmp_path, artifact, "nba", freeze_name, b"freeze\n")
     artifact_file(tmp_path, artifact, "nba", "pick_lifecycle_state.json", b"lifecycle\n")
     artifact_file(
@@ -181,12 +188,14 @@ def test_interrupted_lane_artifact_can_publish_only_pick_lifecycle_evidence(tmp_
     report = merge_downloaded_localdata(tmp_path / "artifacts", tmp_path / "repo")
 
     destination = tmp_path / "repo" / "localdata" / "nba"
-    assert (destination / "picks_2026-11-18.json").read_bytes() == b"draft\n"
+    assert not (destination / dated_json_name).exists()
+    assert (destination / "picks_2026-11-18.txt").read_bytes() == b"draft card\n"
     assert (destination / freeze_name).read_bytes() == b"freeze\n"
     assert (destination / "pick_lifecycle_state.json").read_bytes() == b"lifecycle\n"
     assert not (destination / "auto_tickets_2026-11-18_decision.json").exists()
     assert not (destination / "auto_tickets_2026-11-18.txt").exists()
     assert {Path(path).name for path in report["recovery_files_skipped"]} == {
+        dated_json_name,
         "auto_tickets_2026-11-18_decision.json",
         "auto_tickets_2026-11-18.txt",
     }
@@ -374,11 +383,11 @@ def test_allowlist_is_narrow_and_missing_artifact_directory_is_a_noop(tmp_path):
         allowed_operator_file(name)
         for name in {
             "picks_2026-11-12.txt",
-            "picks_2026-11-12.json",
             "pick_lifecycle_state.json",
             "pick_freeze_2026-11-12_0123456789abcdef.json",
         }
     )
+    assert not allowed_operator_file("picks_2026-11-12.json")
     assert not allowed_operator_file("picks_2026-11-12_lifecycle.json")
     assert not allowed_operator_file("picks_today.json")
     assert not allowed_operator_file("picks_audit_rolling.json")
