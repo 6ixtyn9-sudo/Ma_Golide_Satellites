@@ -811,6 +811,45 @@ def test_historical_unfrozen_scan_card_regrades_shadows_without_creating_a_decis
     assert reconciled["grade_status"] == "win"
 
 
+def test_historical_pending_cards_stay_byte_preserved_when_raw_ledger_is_unavailable(tmp_path):
+    shadow_pick = forecast(
+        4,
+        price=None,
+        eligible=False,
+        reasons=["no_exact_bookmaker_market"],
+    )
+    history_games = seed_historical_success_picks(
+        tmp_path, "moneyline", wins=8, losses=3
+    )
+    first = publish(
+        tmp_path,
+        Store([game(4)] + history_games),
+        report([shadow_pick]),
+        generated_utc=AS_OF,
+        run_id="historical-shadow-before-ledger-eviction",
+    )
+    pick_card = Path(first["picks_text"])
+    ticket_card = Path(first["ticket_text"])
+    pick_bytes = pick_card.read_bytes()
+    ticket_bytes = ticket_card.read_bytes()
+    Path(first["dated_picks"]).unlink()
+
+    later = publish(
+        tmp_path,
+        Store([game(4, home_score=100, away_score=80)] + history_games),
+        report([]),
+        target_date="2026-11-12",
+        generated_utc="2026-11-12T18:00:00Z",
+        run_id="historical-shadow-without-retained-ledger",
+    )
+
+    assert later["historical_ticket_audit_cards_refreshed"] == []
+    assert pick_card.read_bytes() == pick_bytes
+    assert ticket_card.read_bytes() == ticket_bytes
+    assert not (tmp_path / f"auto_tickets_{DATE}_decision.json").exists()
+    assert not (tmp_path / f"auto_tickets_{DATE}_no_bet.json").exists()
+
+
 def test_historical_ticket_audit_reconciliation_keeps_future_shadow_draft(tmp_path):
     shadow_pick = forecast(
         4,
