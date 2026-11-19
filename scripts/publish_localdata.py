@@ -35,6 +35,17 @@ from ingestion.league_registry import SPECS  # noqa: E402
 # second hand-maintained allow-list forgot its state key.
 STATE_KEYS = frozenset(spec.state_key for spec in SPECS)
 DATE = r"\d{4}-\d{2}-\d{2}"
+LIFECYCLE_RECOVERY_ARTIFACT_PREFIX = "MaGolide-lifecycle-"
+LIFECYCLE_RECOVERY_NAMES = tuple(
+    re.compile(pattern)
+    for pattern in (
+        rf"picks_{DATE}\.json",
+        rf"picks_{DATE}\.txt",
+        rf"picks_{DATE}_lifecycle\.json",
+        r"pick_lifecycle_state\.json",
+        rf"pick_freeze_{DATE}_[0-9a-f]{{16}}\.json",
+    )
+)
 ALLOWED_NAMES = tuple(
     re.compile(pattern)
     for pattern in (
@@ -70,6 +81,17 @@ MAX_TOTAL_BYTES = 100 * 1024 * 1024
 def allowed_operator_file(name: str) -> bool:
     """Return whether a root-level filename is safe to publish to Git."""
     return any(pattern.fullmatch(name) for pattern in ALLOWED_NAMES)
+
+
+def allowed_lifecycle_recovery_file(name: str) -> bool:
+    """Return whether an interrupted-lane artifact may contain ``name``.
+
+    A matrix lane that fails after freezing picks may preserve the durable
+    lifecycle needed to replay that fixture. It must never smuggle a mutable
+    card, compact ticket summary, or ticket decision into publication.
+    """
+
+    return any(pattern.fullmatch(name) for pattern in LIFECYCLE_RECOVERY_NAMES)
 
 
 def _atomic_write(path: Path, raw: bytes) -> None:
@@ -172,7 +194,7 @@ def _decision_receipt_dates(paths: Iterable[Path]) -> frozenset[str]:
 
 def _artifact_league_dirs(
     artifacts: Path, *, skipped_states: list[str]
-) -> Iterable[tuple[str, Path]]:
+) -> Iterable[tuple[str, Path, str]]:
     """Yield recognised ``artifact/localdata/<state>`` directories once.
 
     Unknown state directories are never published, but they are reported to
@@ -193,7 +215,7 @@ def _artifact_league_dirs(
             if state_dir.name not in STATE_KEYS:
                 skipped_states.append((artifact / "localdata" / state_dir.name).as_posix())
                 continue
-            yield state_dir.name, state_dir
+            yield state_dir.name, state_dir, artifact.name
 
 
 def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
@@ -206,10 +228,14 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
     withdrawn_skipped = []
     no_bet_receipts_skipped = []
     skipped_states: list[str] = []
+    recovery_files_skipped = []
     total_bytes = 0
     seen_destinations = set()
-    for state, source_dir in _artifact_league_dirs(artifacts, skipped_states=skipped_states):
+    for state, source_dir, artifact_name in _artifact_league_dirs(
+        artifacts, skipped_states=skipped_states
+    ):
         destination_dir = repo / "localdata" / state
+        lifecycle_recovery = artifact_name.startswith(LIFECYCLE_RECOVERY_ARTIFACT_PREFIX)
         sources = sorted(source_dir.iterdir())
         withdrawn_decision_ids = _withdrawn_decision_ids(destination_dir)
         no_bet_dates = _no_bet_decision_dates(destination_dir) | _no_bet_decision_dates(
@@ -219,6 +245,9 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
             destination_dir.glob("auto_tickets_*_decision.json")
         ) | _decision_receipt_dates(sources)
         for source in sources:
+            if lifecycle_recovery and not allowed_lifecycle_recovery_file(source.name):
+                recovery_files_skipped.append((source_dir / source.name).as_posix())
+                continue
             if not allowed_operator_file(source.name):
                 continue
             ticket_card_match = TICKET_CARD_NAME.fullmatch(source.name)
@@ -296,6 +325,7 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
         "withdrawn_receipts_skipped": withdrawn_skipped,
         "no_bet_receipts_skipped": no_bet_receipts_skipped,
         "skipped_states": sorted(skipped_states),
+        "recovery_files_skipped": sorted(recovery_files_skipped),
         "copied_count": len(copied),
         "unchanged_count": len(unchanged),
         "source_bytes_checked": total_bytes,
