@@ -579,7 +579,7 @@ def test_ticket_waits_for_the_pre_tip_decision_window_and_uses_later_price(tmp_p
     assert receipt["accas"][0]["legs"][0]["book"]["selected_decimal_price"] == 1.95
 
 
-def test_morning_preview_surfaces_named_price_drafts_without_promoting_them(tmp_path):
+def _blocked_named_price_draft_rows():
     rows = []
     for number in (1, 2, 3):
         row = forecast(
@@ -600,24 +600,92 @@ def test_morning_preview_surfaces_named_price_drafts_without_promoting_them(tmp_
             operational_validation="unverified",
         )
         rows.append(row)
+    return rows
+
+
+def test_pre_cutoff_dated_card_is_the_only_named_price_draft_surface(tmp_path):
+    rows = _blocked_named_price_draft_rows()
 
     result = publish(
         tmp_path,
         Store([game(number) for number in (1, 2, 3)]),
         report(rows),
         generated_utc="2026-11-07T06:30:00Z",
-        run_id="morning-preview",
+        run_id="morning-draft",
     )
 
-    preview = Path(result["ticket_preview"]).read_text()
-    assert "MA GOLIDE MORNING TICKET PREVIEW — NBA 2026-11-07" in preview
-    assert "DRAFT ONLY — no paper stake, ticket receipt, settlement grade" in preview
-    assert "EDGE-STYLE NAMED-PRICE DRAFT SLIPS" in preview
-    assert "[DRAFT 2-LEG SLIP #1]" in preview
-    assert "[PREVIEW-ONLY]" in preview
-    assert "price_source_permission_unresolved" in preview
+    card = Path(result["ticket_text"]).read_text()
+    assert "MA GOLIDE PAPER TICKETS — NBA 2026-11-07" in card
+    assert "PRE-CUTOFF NAMED-PRICE DRAFT SLIPS — DRAFT ONLY / PRE-CUTOFF" in card
+    assert "DRAFT ONLY: no paper stake, ticket receipt, settlement grade" in card
+    assert "[DRAFT 2-LEG SLIP #1]" in card
+    assert "[PREVIEW-ONLY]" in card
+    assert "price_source_permission_unresolved" in card
+    assert "price_operational_validation_incomplete" in card
+    assert "ticket_preview" not in result
+    assert not list(tmp_path.glob("auto_tickets_*_preview.txt"))
     assert result["ticket_receipt"] is None
     assert json.loads(Path(result["ticket_state"]).read_text())["frozen_by_date"] == {}
+
+
+def test_no_draft_content_is_promoted_to_a_terminal_no_bet_card(tmp_path):
+    rows = _blocked_named_price_draft_rows()
+    games = Store([game(number) for number in (1, 2, 3)])
+    early = publish(
+        tmp_path,
+        games,
+        report(rows),
+        generated_utc="2026-11-07T06:30:00Z",
+        run_id="pre-cutoff-draft",
+    )
+    assert "[PREVIEW-ONLY]" in Path(early["ticket_text"]).read_text()
+
+    terminal = publish(
+        tmp_path,
+        games,
+        report(rows),
+        run_id="no-qualifying-ticket-at-cutoff",
+        generated_utc=TICKET_DECISION_AS_OF,
+    )
+
+    card = Path(terminal["ticket_text"]).read_text()
+    assert terminal["no_bet_decision"] is not None
+    assert terminal["ticket_receipt"] is None
+    assert "closed by an immutable no-bet decision" in card
+    assert "PRE-CUTOFF NAMED-PRICE DRAFT SLIPS" not in card
+    assert "[PREVIEW-ONLY]" not in card
+    assert "[DRAFT" not in card
+    assert not list(tmp_path.glob("auto_tickets_*_preview.txt"))
+
+
+def test_strict_receipt_card_never_carries_draft_content(tmp_path):
+    rows = [forecast(number) for number in (1, 2, 3)]
+    blocked = _blocked_named_price_draft_rows()
+    games = Store([game(number) for number in (1, 2, 3)])
+    early = publish(
+        tmp_path,
+        games,
+        report(blocked),
+        generated_utc="2026-11-07T06:30:00Z",
+        run_id="pre-cutoff-draft",
+    )
+    assert "[PREVIEW-ONLY]" in Path(early["ticket_text"]).read_text()
+
+    frozen = publish(
+        tmp_path,
+        games,
+        report(rows, [acca(rows, acca_id="strict-at-cutoff")]),
+        run_id="at-decision-window",
+        generated_utc=TICKET_DECISION_AS_OF,
+    )
+
+    receipt = json.loads(Path(frozen["ticket_receipt"]).read_text())
+    assert receipt["decision_id"] == "at-decision-window"
+    card = Path(frozen["ticket_text"]).read_text()
+    assert "PRE-CUTOFF NAMED-PRICE DRAFT SLIPS" not in card
+    assert "[PREVIEW-ONLY]" not in card
+    assert "[DRAFT" not in card
+    assert not list(tmp_path.glob("auto_tickets_*_preview.txt"))
 
 
 @pytest.mark.parametrize("league", list(League))

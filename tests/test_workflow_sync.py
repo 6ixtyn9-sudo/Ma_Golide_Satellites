@@ -62,6 +62,21 @@ def test_gitignore_allows_every_git_durable_operator_artifact():
         assert result.returncode == 1, f"durable publisher artifact is ignored: {relative_path}"
 
 
+def test_gitignore_rejects_retired_ticket_preview_sidecars():
+    repo = Path(__file__).resolve().parents[1]
+    result = subprocess.run(
+        [
+            "git",
+            "check-ignore",
+            "-q",
+            "localdata/nba/auto_tickets_2026-11-18_preview.txt",
+        ],
+        cwd=repo,
+        check=False,
+    )
+    assert result.returncode == 0
+
+
 def test_gitignore_keeps_structured_pick_json_artifact_only_for_every_league():
     repo = Path(__file__).resolve().parents[1]
     states = tuple(spec.state_key for spec in SPECS)

@@ -53,7 +53,7 @@ profitability.
 | `picks_audit_YYYY-MM-DD.md` | Expanded rolling summary; cache/artifact only, not Git |
 | `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper singles and accas |
 | `auto_tickets_YYYY-MM-DD_no_bet.json` | Immutable terminal decision that the 60-minute pre-tip window closed without a qualifying pre-tip position |
-| `auto_tickets_YYYY-MM-DD.txt` | Mutable, Git-published current card. Before the cutoff it is a clearly labelled candidate preview that may change on each scan and creates no position; after an immutable receipt it becomes the settlement card whose selections, prices, and stakes remain frozen while grades refresh; after a no-bet sidecar it displays that terminal no-bet state. |
+| `auto_tickets_YYYY-MM-DD.txt` | Mutable, Git-published current card. Before the cutoff its clearly labelled `DRAFT ONLY` / `PRE-CUTOFF` section may change on each scan and creates no position; after an immutable receipt it becomes the settlement card whose selections, prices, and stakes remain frozen while grades refresh; after a no-bet sidecar it displays that terminal no-bet state. |
 | `auto_tickets_state.json` | Git-durable write-once date locks; bounded scan telemetry stays cache/artifact-only |
 | `auto_tickets_performance.json` | Compact rolling settlement/financial summary; each history day points to its immutable receipt for full leg evidence |
 | `auto_tickets_performance.txt` | Bank, settled record, bet-days, held positions, and grading notes |
@@ -68,13 +68,13 @@ history row's `receipt_path` for complete provenance. Before Git publication,
 the publisher also removes bounded scan telemetry and generation timestamps
 from the mutable state/performance JSON. Those fields remain available in the
 cache and 14-day artifacts, but an otherwise unchanged hourly run produces no
-new Git blob. A mutable `auto_tickets_YYYY-MM-DD.txt` is published before the
-cutoff as a candidate preview and is deliberately replaced by later scans; it
-is not a receipt, a date lock, or a committed paper position. At the cutoff, an
-immutable receipt or no-bet sidecar makes the decision. Later updates refresh a
-receipt-backed card when official settlement changes a displayed grade and
-refresh the text card to display a terminal no-bet decision; the sidecar remains
-the durable terminal record.
+new Git blob. Before the cutoff, a mutable `auto_tickets_YYYY-MM-DD.txt` card
+contains the clearly labelled `DRAFT ONLY` / `PRE-CUTOFF` section and is
+deliberately replaced by later scans; it is not a receipt, a date lock, or a
+committed paper position. At the cutoff, an immutable receipt or no-bet sidecar
+makes the decision. Later updates refresh a receipt-backed card when official
+settlement changes a displayed grade and refresh the text card to display a
+terminal no-bet decision; the sidecar remains the durable terminal record.
 
 ## Pick categories
 
@@ -249,13 +249,15 @@ position when the existing sample-size-only exception applies. Candidates can
 therefore gain a later exact price before the decision point without an early
 partial market locking the date.
 
-Every scan also writes `auto_tickets_YYYY-MM-DD_preview.txt`. This is a separate
-morning draft surface: it may display one current exact pre-tip named-book price
-per game even where source permission or operational validation prevents strict
-ticket eligibility. It is always labeled **DRAFT ONLY** / **PREVIEW-ONLY** when
-applicable, preserves its blockers, ranks only by forecast confidence (not a
-fabricated EV), and creates no receipt, stake, grade, bank/performance entry, or
-real-money instruction.
+Before the cutoff, that single dated card also carries a clearly labelled
+`DRAFT ONLY` / `PRE-CUTOFF` named-price draft section: it may display one
+current exact pre-tip named-book price per game even where source permission
+or operational validation prevents strict ticket eligibility. Legs are labelled
+**PREVIEW-ONLY** unless they are genuinely strict-eligible, preserve their
+blockers, rank only by forecast confidence (not a fabricated EV), and create
+no receipt, stake, grade, bank/performance entry, or real-money instruction.
+There is no separate preview sidecar artifact; a strict receipt or immutable
+no-bet decision renders the terminal card without any draft section.
 
 If there is no qualifying pre-tip candidate at the strict decision point—or if
 the scheduler missed the first tip—the operator writes an immutable

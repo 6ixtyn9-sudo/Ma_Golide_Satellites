@@ -28,6 +28,10 @@ localdata/*/picks_audit_*.md
 !localdata/*/picks_*.txt
 !localdata/*/auto_tickets_*.json
 !localdata/*/auto_tickets_*.txt
+# The retired *_preview.txt sidecar was replaced by the draft section inside
+# the single dated auto_tickets_YYYY-MM-DD.txt card; do not let a stale cache
+# or an old workflow reintroduce it as a tracked artifact.
+localdata/*/auto_tickets_*_preview.txt
 # EuroLeague's separate aggregate-consensus research board preserves a
 # time-locked no-stake roster and mutable official-result card in Git.
 !localdata/euroleague/euroleague_consensus_paper_*.json
