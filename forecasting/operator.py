@@ -15,9 +15,10 @@ Operator evidence files live beneath one league's localdata directory:
 - ``picks_today.json`` and rolling/dated audit files retain full active-cache
   forecast evidence and workflow-artifact detail.
 - ``auto_tickets_YYYY-MM-DD_decision.json`` is an immutable paper receipt.
-- ``auto_tickets_YYYY-MM-DD.txt`` is a mutable cache/artifact card rendering
-  a frozen decision and latest available grades; its receipt-backed initial
-  snapshot is the only version eligible for Git publication.
+- ``auto_tickets_YYYY-MM-DD.txt`` is a mutable, Git-published settlement card
+  rendering a frozen decision and its latest available grades. Selections,
+  prices, and stakes remain receipt-backed; only settlement/audit presentation
+  may change after publication.
 - ``auto_tickets_state.json`` stores write-once date locks and bounded scan telemetry.
 - ``auto_tickets_performance.json`` / ``.txt`` reconstruct paper performance.
 
