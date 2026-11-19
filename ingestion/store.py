@@ -346,17 +346,18 @@ def _book_from_dict(d: dict) -> BookSnapshot:
     d = dict(d)
     d["market"] = Market(d["market"])
     d["period"] = Period(d["period"])
-    # Older warehouses did not persist evidence axes.  Preserve the one
-    # known aggregate source explicitly rather than silently upgrading it to
-    # a named-book quote during a schema migration.
+    # Pre-evidence-axis payloads cannot establish that a source was cleared or
+    # operationally validated. Preserve the known aggregate source explicitly;
+    # every other legacy provider remains a visible named-book observation but
+    # is fail-closed for tickets until a newly stamped acquisition supersedes it.
     if str(d.get("provider") or "").lower() == "betexplorer":
         d.setdefault("price_provenance", PriceProvenance.AGGREGATE_CONSENSUS.value)
         d.setdefault("source_permission", SourcePermission.UNRESOLVED.value)
         d.setdefault("operational_validation", OperationalValidation.PROBATION.value)
     else:
         d.setdefault("price_provenance", PriceProvenance.NAMED_BOOK.value)
-        d.setdefault("source_permission", SourcePermission.CLEARED.value)
-        d.setdefault("operational_validation", OperationalValidation.VALIDATED.value)
+        d.setdefault("source_permission", SourcePermission.UNRESOLVED.value)
+        d.setdefault("operational_validation", OperationalValidation.UNVERIFIED.value)
     return BookSnapshot(**d)
 
 

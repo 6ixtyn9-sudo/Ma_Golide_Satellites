@@ -1,15 +1,20 @@
 """Single registry for basketball competition operational contracts.
 
 The registry deliberately separates canonical competition identity from source
-capability.  Adding a league here makes it available to typed storage, CLI,
+capability. Adding a league here makes it available to typed storage, CLI,
 workflow scheduling, forecasting, and lifecycle state without pretending that
 an unverified public endpoint is an official schedule/result feed.
 
 A ``source_unavailable`` entry is therefore an explicit supported *unpriced
 forecast lifecycle* lane: existing canonical games/history can be forecast and
 settled, but automated acquisition reports a CoverageGap until a compliant
-official adapter is implemented.  It is not a shadow string or a fabricated
+official adapter is implemented. It is not a shadow string or a fabricated
 empty schedule.
+
+Price evidence policy also lives here. Provider adapters report observations;
+the pipeline stamps the registry contract onto every stored observation. An
+adapter cannot promote its own quote to ticket-eligible evidence merely by
+omitting evidence fields.
 """
 
 from __future__ import annotations
@@ -18,7 +23,40 @@ from dataclasses import dataclass
 import re
 from typing import Dict, Iterable, Tuple
 
-from .models import League, OperationalValidation, SourcePermission
+from .models import (
+    League,
+    OperationalValidation,
+    PriceProvenance,
+    SourcePermission,
+)
+
+
+@dataclass(frozen=True)
+class PriceSourcePolicy:
+    """Evidence contract for one provider in one league.
+
+    ``acquire`` distinguishes an explicit price-feed adapter from a schedule
+    provider that happens to expose embedded odds. Both are still stamped, but
+    only the former is called by ``_acquire_book_lines``. Unknown provider
+    identities are always downgraded to unresolved/unverified evidence.
+    """
+
+    provider: str
+    price_provenance: PriceProvenance
+    source_permission: SourcePermission
+    operational_validation: OperationalValidation
+    acquire: bool = True
+    detail: str = ""
+
+
+_UNVERIFIED_NAMED_BOOK = PriceSourcePolicy(
+    provider="unknown",
+    price_provenance=PriceProvenance.NAMED_BOOK,
+    source_permission=SourcePermission.UNRESOLVED,
+    operational_validation=OperationalValidation.UNVERIFIED,
+    acquire=False,
+    detail="No explicit registry evidence policy exists for this provider.",
+)
 
 
 @dataclass(frozen=True)
@@ -33,10 +71,14 @@ class LeagueSpec:
     schedule_source: str
     results_source: str
     gate_schedule_source: str
-    book_providers: Tuple[str, ...] = ()
-    price_permission: SourcePermission = SourcePermission.CLEARED
-    price_validation: OperationalValidation = OperationalValidation.UNAVAILABLE
+    price_sources: Tuple[PriceSourcePolicy, ...] = ()
     source_detail: str = ""
+
+    @property
+    def book_providers(self) -> Tuple[str, ...]:
+        """Configured adapter providers, preserving the historic public API."""
+
+        return tuple(policy.provider for policy in self.price_sources if policy.acquire)
 
     @property
     def automated_schedule_supported(self) -> bool:
@@ -47,26 +89,146 @@ class LeagueSpec:
         return self.results_source != "source_unavailable"
 
 
-# Keep this order user-facing and workflow-stable.  The first seven entries
-# are pre-existing routes; all later entries are the researched final
-# expansion, intentionally added in one canonical registry rather than in 17
-# bespoke pipeline branches.
+# Named provider policies are deliberately reusable contracts, not a copy of
+# per-adapter defaults. A quote is ticket-price eligible only after the
+# registry has explicitly granted all three evidence axes.
+def _validated_named_book(provider: str) -> PriceSourcePolicy:
+    return PriceSourcePolicy(
+        provider,
+        PriceProvenance.NAMED_BOOK,
+        SourcePermission.CLEARED,
+        OperationalValidation.VALIDATED,
+    )
+
+
+def _probationary_named_book(provider: str) -> PriceSourcePolicy:
+    return PriceSourcePolicy(
+        provider,
+        PriceProvenance.NAMED_BOOK,
+        SourcePermission.CLEARED,
+        OperationalValidation.PROBATION,
+    )
+
+
+def _unresolved_named_book(provider: str) -> PriceSourcePolicy:
+    return PriceSourcePolicy(
+        provider,
+        PriceProvenance.NAMED_BOOK,
+        SourcePermission.UNRESOLVED,
+        OperationalValidation.PROBATION,
+    )
+
+
+def _aggregate_research_only(provider: str) -> PriceSourcePolicy:
+    return PriceSourcePolicy(
+        provider,
+        PriceProvenance.AGGREGATE_CONSENSUS,
+        SourcePermission.UNRESOLVED,
+        OperationalValidation.PROBATION,
+    )
+# ESPN scoreboard odds identify a named bookmaker but are a relayed observation,
+# not an approved price-feed lane. Keep them research-visible and fail closed
+# for tickets until a source-permission/operational validation decision is
+# recorded in this registry.
+_ESPN_RELAY_ONLY = PriceSourcePolicy(
+    "espn",
+    PriceProvenance.NAMED_BOOK,
+    SourcePermission.UNRESOLVED,
+    OperationalValidation.UNVERIFIED,
+    acquire=False,
+    detail="Named bookmaker observation relayed by ESPN; not a validated ticket price source.",
+)
+
+
+# Keep this order user-facing and workflow-stable. The first seven entries are
+# pre-existing routes; all later entries are the researched final expansion,
+# intentionally added in one canonical registry rather than in 17 bespoke
+# pipeline branches.
 _SPECS: Tuple[LeagueSpec, ...] = (
-    LeagueSpec(League.NBA, "NBA", "nba", "America/New_York", "America/New_York", "espn", "espn", "espn", ("therundown", "sportsgameodds", "theoddsapi"), price_validation=OperationalValidation.VALIDATED),
-    LeagueSpec(League.WNBA, "WNBA", "wnba", "America/New_York", "America/New_York", "espn", "espn", "espn", ("theoddsapi",), price_validation=OperationalValidation.VALIDATED),
-    LeagueSpec(League.EUROLEAGUE, "EuroLeague", "euroleague", "Europe/Paris", "Europe/Paris", "euroleague", "euroleague", "euroleague", ("betexplorer",), SourcePermission.UNRESOLVED, OperationalValidation.PROBATION),
-    LeagueSpec(League.EUROLEAGUE_W, "EuroLeague Women", "euroleague_w", "Europe/Paris", "Europe/Paris", "fiba_elw", "fiba_elw", "fiba_elw"),
-    LeagueSpec(League.CBA, "Chinese CBA", "cba", "Asia/Shanghai", "Asia/Shanghai", "cba", "cba", "cba", ("isportsapi", "betexplorer"), SourcePermission.UNRESOLVED, OperationalValidation.PROBATION),
-    LeagueSpec(League.NCAA_M, "NCAA men", "ncaa_m", "America/New_York", "America/New_York", "espn", "espn", "espn", ("theoddsapi",), price_validation=OperationalValidation.VALIDATED),
-    LeagueSpec(League.NCAA_W, "NCAA women", "ncaa_w", "America/New_York", "America/New_York", "espn", "espn", "espn", ("theoddsapi",), price_validation=OperationalValidation.VALIDATED),
+    LeagueSpec(
+        League.NBA,
+        "NBA",
+        "nba",
+        "America/New_York",
+        "America/New_York",
+        "espn",
+        "espn",
+        "espn",
+        (_ESPN_RELAY_ONLY, *(_validated_named_book(provider) for provider in ("therundown", "sportsgameodds", "theoddsapi"))),
+    ),
+    LeagueSpec(
+        League.WNBA,
+        "WNBA",
+        "wnba",
+        "America/New_York",
+        "America/New_York",
+        "espn",
+        "espn",
+        "espn",
+        (_ESPN_RELAY_ONLY, _validated_named_book("theoddsapi")),
+    ),
+    LeagueSpec(
+        League.EUROLEAGUE,
+        "EuroLeague",
+        "euroleague",
+        "Europe/Paris",
+        "Europe/Paris",
+        "euroleague",
+        "euroleague",
+        "euroleague",
+        (_aggregate_research_only("betexplorer"),),
+    ),
+    LeagueSpec(
+        League.EUROLEAGUE_W,
+        "EuroLeague Women",
+        "euroleague_w",
+        "Europe/Paris",
+        "Europe/Paris",
+        "fiba_elw",
+        "fiba_elw",
+        "fiba_elw",
+    ),
+    LeagueSpec(
+        League.CBA,
+        "Chinese CBA",
+        "cba",
+        "Asia/Shanghai",
+        "Asia/Shanghai",
+        "cba",
+        "cba",
+        "cba",
+        (_unresolved_named_book("isportsapi"), _aggregate_research_only("betexplorer")),
+    ),
+    LeagueSpec(
+        League.NCAA_M,
+        "NCAA men",
+        "ncaa_m",
+        "America/New_York",
+        "America/New_York",
+        "espn",
+        "espn",
+        "espn",
+        (_ESPN_RELAY_ONLY, _validated_named_book("theoddsapi")),
+    ),
+    LeagueSpec(
+        League.NCAA_W,
+        "NCAA women",
+        "ncaa_w",
+        "America/New_York",
+        "America/New_York",
+        "espn",
+        "espn",
+        "espn",
+        (_ESPN_RELAY_ONLY, _validated_named_book("theoddsapi")),
+    ),
     LeagueSpec(League.EUROCUP, "EuroCup", "eurocup", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.BASKETBALL_CHAMPIONS_LEAGUE, "Basketball Champions League", "basketball_champions_league", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.NBA_G_LEAGUE, "NBA G League", "nba_g_league", "America/New_York", "America/New_York", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant official schedule/result adapter has been validated."),
     LeagueSpec(League.BASKETBALL_AFRICA_LEAGUE, "Basketball Africa League", "basketball_africa_league", "Africa/Johannesburg", "Africa/Johannesburg", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
-    # The Odds API NBL sport key is a documented integration lead.  It remains
+    # The Odds API NBL sport key is a documented integration lead. It remains
     # probationary until a credentialed regional/bookmaker smoke proves actual
     # account coverage, and it never supplies canonical schedule/results.
-    LeagueSpec(League.AUSTRALIA_NBL, "Australia NBL", "australia_nbl", "Australia/Sydney", "Australia/Sydney", "source_unavailable", "source_unavailable", "source_unavailable", ("theoddsapi",), SourcePermission.CLEARED, OperationalValidation.PROBATION, "No compliant official schedule/result adapter has been validated; The Odds API price lane is probationary."),
+    LeagueSpec(League.AUSTRALIA_NBL, "Australia NBL", "australia_nbl", "Australia/Sydney", "Australia/Sydney", "source_unavailable", "source_unavailable", "source_unavailable", (_probationary_named_book("theoddsapi"),), "No compliant official schedule/result adapter has been validated; The Odds API price lane is probationary."),
     LeagueSpec(League.SPAIN_ACB, "Spain ACB", "spain_acb", "Europe/Madrid", "Europe/Madrid", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.FRANCE_LNB_PRO_A, "France LNB Pro A", "france_lnb_pro_a", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.GERMANY_BBL, "Germany BBL", "germany_bbl", "Europe/Berlin", "Europe/Berlin", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
@@ -84,7 +246,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
 SPECS: Tuple[LeagueSpec, ...] = _SPECS
 _BY_LEAGUE: Dict[League, LeagueSpec] = {spec.league: spec for spec in SPECS}
 
-# Compatibility spellings are accepted only at the CLI/config boundary.  The
+# Compatibility spellings are accepted only at the CLI/config boundary. The
 # canonical enum value is persisted everywhere else.
 _ALIASES: Dict[str, League] = {
     "EUROLEAGUE": League.EUROLEAGUE,
@@ -107,6 +269,21 @@ def league_spec(league: League) -> LeagueSpec:
     """Return the complete contract for a canonical league enum."""
 
     return _BY_LEAGUE[league]
+
+
+def price_evidence_policy(league: League, provider: str) -> PriceSourcePolicy:
+    """Return the explicit evidence contract for an observed provider quote.
+
+    The fail-closed fallback deliberately does not inherit a league's most
+    permissive provider policy: a new or misspelled source remains visible but
+    cannot produce a ticket-priced forecast until the registry names it.
+    """
+
+    normalized = str(provider or "").strip().lower()
+    for policy in league_spec(league).price_sources:
+        if policy.provider.lower() == normalized:
+            return policy
+    return _UNVERIFIED_NAMED_BOOK
 
 
 def parse_league(value: str | League) -> League:
@@ -143,9 +320,11 @@ def source_unavailable_specs() -> Iterable[LeagueSpec]:
 
 __all__ = [
     "LeagueSpec",
+    "PriceSourcePolicy",
     "SPECS",
     "cli_league_choices",
     "league_spec",
     "parse_league",
+    "price_evidence_policy",
     "source_unavailable_specs",
 ]

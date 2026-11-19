@@ -31,6 +31,7 @@ from datetime import datetime, timedelta, timezone
 import hashlib
 import json
 import os
+import re
 from pathlib import Path
 from typing import Any, Callable, Iterable
 from urllib.request import Request, urlopen
@@ -57,6 +58,11 @@ SCHEMA_VERSION = "magolide.adaptive-gate"
 DECISION_LEAD_MINUTES = 60
 HTTP_TIMEOUT_SECONDS = 15
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024
+COVERAGE_GAP_MARKER_SCHEMA = "magolide.coverage_gap_marker"
+# Public browser-bundle fallback for the documented CBA data response format;
+# it is not a repository credential. An operator may override it for a rotated
+# public format through CBA_DECRYPT_KEY without exposing the value in reports.
+PUBLIC_CBA_AES_KEY = b"uVayqL4ONKjFbVzQ"
 
 # The FIBA wire contract (including public-key fallback and status mapping) is
 # shared with the full provider above.  This gate imports only its stdlib-only
@@ -67,7 +73,10 @@ MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 @dataclass(frozen=True)
 class LeagueGateConfig:
     label: str
+    # CLI/workflow spelling retained at the outer boundary. ``league_key`` is
+    # the canonical enum value used for every persisted-state comparison.
     league: str
+    league_key: str
     state_key: str
     acquisition_timezone: str
     schedule_source: str
@@ -79,6 +88,7 @@ LEAGUES: tuple[LeagueGateConfig, ...] = tuple(
         # Keep the established workflow spelling as a boundary alias; the
         # daily CLI immediately normalises it to League.EUROLEAGUE.
         "EuroLeague" if spec.league.value == "EUROLEAGUE" else spec.league.value,
+        spec.league.value,
         spec.state_key,
         spec.acquisition_timezone,
         spec.gate_schedule_source,
@@ -116,6 +126,7 @@ class GateDecision:
         return {
             "label": self.config.label,
             "league": self.config.league,
+            "league_key": self.config.league_key,
             "state_key": self.config.state_key,
             "target_date": self.target_date,
             "should_run": self.should_run,
@@ -127,6 +138,7 @@ class GateDecision:
         return {
             "label": self.config.label,
             "league": self.config.league,
+            "league_key": self.config.league_key,
             "state_key": self.config.state_key,
             "target_date": self.target_date,
             "gate_reason": "; ".join(self.reasons),
@@ -167,6 +179,39 @@ def _pick_freeze_path(state_dir: Path, target_date: str, game_id: str) -> Path:
     return state_dir / f"pick_freeze_{target_date}_{token}.json"
 
 
+def _coverage_gap_marker_path(state_dir: Path, target_date: str) -> Path:
+    return state_dir / f"coverage_gap_{target_date}.json"
+
+
+def _source_unavailable_reasons(
+    state_dir: Path, *, config: LeagueGateConfig, target_date: str
+) -> list[str]:
+    """Throttle known-unavailable lanes without inventing an empty schedule.
+
+    A Git-durable marker records that today's explicit CoverageGap was already
+    published. Existing ticket or pick-lifecycle work still wins over the
+    marker; unreadable/missing evidence remains a run decision.
+    """
+
+    marker_path = _coverage_gap_marker_path(state_dir, target_date)
+    if not marker_path.exists():
+        return ["coverage_gap_publication_due"]
+    marker = _read_json(marker_path, description="coverage-gap marker")
+    if (
+        marker.get("schema_version") != COVERAGE_GAP_MARKER_SCHEMA
+        or marker.get("league") != config.league_key
+        or marker.get("target_date") != target_date
+        or marker.get("schedule_source") != "source_unavailable"
+    ):
+        raise GateUncertain("coverage-gap marker has an unknown identity or schema")
+    # The gate cannot discover a source-unavailable fixture itself. A dated
+    # draft is therefore proof of a manually supplied lifecycle that needs the
+    # full pipeline rather than permission to skip it as an empty slate.
+    if (state_dir / f"picks_{target_date}.json").is_file():
+        return ["source_unavailable_pick_lifecycle_due"]
+    return ()
+
+
 def _pick_lifecycle_reasons(
     state_dir: Path,
     *,
@@ -203,7 +248,7 @@ def _pick_lifecycle_reasons(
     lifecycle = _read_json(lifecycle_path, description="pick lifecycle state")
     if lifecycle.get("schema_version") != "magolide.pick_lifecycle_state":
         raise GateUncertain("pick lifecycle state has an unknown schema")
-    if lifecycle.get("league") != config.league:
+    if lifecycle.get("league") != config.league_key:
         raise GateUncertain("pick lifecycle state belongs to a different or unknown league")
     pending = lifecycle.get("pending_frozen_games")
     if not isinstance(pending, list):
@@ -349,6 +394,55 @@ def _pending_reasons(performance: dict[str, Any]) -> list[str]:
     return reasons
 
 
+def _settlement_view_reasons(state_dir: Path, performance: dict[str, Any]) -> list[str]:
+    """Wake a lane when its public receipt card lags settled compact state.
+
+    Decision JSON stays immutable. The dated ``.txt`` card is intentionally a
+    derived settlement view, so a completed receipt must be re-rendered if it
+    is absent or still advertises a pending position after all grades settle.
+    Malformed history is state uncertainty rather than a false no-work result.
+    """
+
+    history = performance.get("history") or []
+    if not isinstance(history, list):
+        raise GateUncertain("operator performance has invalid history")
+    reasons: list[str] = []
+    settled_fields = (
+        "pending_positions",
+        "pending_accas",
+        "pending_singles",
+        "awaiting_game_legs",
+        "unresolved_result_legs",
+        "result_unresolvable_legs",
+    )
+    for row in history:
+        if not isinstance(row, dict):
+            raise GateUncertain("operator performance history has an invalid row")
+        date = row.get("date")
+        if not isinstance(date, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}", date):
+            raise GateUncertain("operator performance history has an invalid date")
+        if any(_nonnegative_int(row.get(field), field=f"history.{field}") for field in settled_fields):
+            continue
+        receipt = state_dir / f"auto_tickets_{date}_decision.json"
+        no_bet = state_dir / f"auto_tickets_{date}_no_bet.json"
+        if no_bet.exists() or not receipt.is_file():
+            continue
+        card = state_dir / f"auto_tickets_{date}.txt"
+        try:
+            text = card.read_text(encoding="utf-8")
+        except FileNotFoundError:
+            reasons.append(f"settlement_view_refresh_due:{date}")
+            continue
+        except OSError as exc:
+            raise GateUncertain(f"cannot read settlement view {date}") from exc
+        # The renderer uses this stable grade label in both ticket headers and
+        # legs. A zero-pending compact receipt with the label still present is
+        # provably a stale human view, not a new ticket decision.
+        if "PENDING" in text:
+            reasons.append(f"settlement_view_refresh_due:{date}")
+    return reasons
+
+
 def evaluate_league(
     config: LeagueGateConfig,
     *,
@@ -368,14 +462,51 @@ def evaluate_league(
     reasons: list[str] = []
     schedule_count: int | None = None
     try:
-        state, performance = _load_operator_summary(state_dir, league=config.league)
+        state, performance = _load_operator_summary(state_dir, league=config.league_key)
         frozen = date_is_frozen(
-            state_dir, state, target_date=target_date, league=config.league
+            state_dir, state, target_date=target_date, league=config.league_key
         )
         reasons.extend(_pending_reasons(performance))
+        reasons.extend(_settlement_view_reasons(state_dir, performance))
     except GateUncertain as exc:
         return GateDecision(
             config, target_date, True, (f"state_uncertain: {exc}",), schedule_count
+        )
+
+    if config.schedule_source == "source_unavailable":
+        try:
+            # There is no compliant schedule probe to call. Do not represent
+            # that as an authoritative empty slate; only skip once today's
+            # explicit CoverageGap is Git durable and no lifecycle work exists.
+            reasons.extend(
+                _pick_lifecycle_reasons(
+                    state_dir,
+                    config=config,
+                    target_date=target_date,
+                    games=(),
+                    now=now,
+                )
+            )
+            reasons.extend(
+                _source_unavailable_reasons(
+                    state_dir, config=config, target_date=target_date
+                )
+            )
+        except GateUncertain as exc:
+            return GateDecision(
+                config,
+                target_date,
+                True,
+                tuple(dict.fromkeys([*reasons, f"state_uncertain: {exc}"])),
+                schedule_count,
+            )
+        unique_reasons = tuple(dict.fromkeys(reasons))
+        return GateDecision(
+            config,
+            target_date,
+            bool(unique_reasons),
+            unique_reasons or ("no_work",),
+            schedule_count,
         )
 
     try:
@@ -499,8 +630,8 @@ def _read_json_response(url: str, *, headers: dict[str, str] | None = None) -> A
         raise GateUncertain("schedule response was not JSON") from exc
 
 
-def _espn_scoreboard_url(config: LeagueGateConfig, target_date: str) -> str:
-    yyyymmdd = target_date.replace("-", "")
+def _espn_scoreboard_url(config: LeagueGateConfig, target_date: str | None) -> str:
+    suffix: str
     if config.league == "NBA":
         slug, suffix = "nba", "limit=100"
     elif config.league == "WNBA":
@@ -511,14 +642,14 @@ def _espn_scoreboard_url(config: LeagueGateConfig, target_date: str) -> str:
         slug, suffix = "womens-college-basketball", "groups=50&limit=500"
     else:  # pragma: no cover - guarded by LEAGUES
         raise GateUncertain("unsupported ESPN league")
+    date_query = f"dates={target_date.replace('-', '')}&" if target_date else ""
     return (
         f"https://site.api.espn.com/apis/site/v2/sports/basketball/{slug}/"
-        f"scoreboard?dates={yyyymmdd}&{suffix}"
+        f"scoreboard?{date_query}{suffix}"
     )
 
 
-def _espn_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGame]:
-    payload = _read_json_response(_espn_scoreboard_url(config, target_date))
+def _espn_games(payload: Any) -> list[ScheduleGame]:
     if not isinstance(payload, dict) or not isinstance(payload.get("events"), list):
         raise GateUncertain("ESPN scoreboard lacks an events list")
     games: list[ScheduleGame] = []
@@ -548,11 +679,27 @@ def _espn_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleG
     return games
 
 
+def _espn_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGame]:
+    games = _espn_games(_read_json_response(_espn_scoreboard_url(config, target_date)))
+    if games:
+        return games
+    # A valid empty date-filtered payload is not sufficient proof that no work
+    # exists. Corroborate it once with ESPN's unfiltered current scoreboard;
+    # any same-local-date event means the date endpoint is uncertain and the
+    # gate must run rather than skip a fixture's freeze window.
+    unfiltered = _espn_games(_read_json_response(_espn_scoreboard_url(config, None)))
+    wanted = datetime.strptime(target_date, "%Y-%m-%d").date()
+    zone = ZoneInfo(config.acquisition_timezone)
+    if any(game.scheduled_utc.astimezone(zone).date() == wanted for game in unfiltered):
+        raise GateUncertain("empty ESPN date-filtered scoreboard conflicts with current scoreboard")
+    return []
+
+
 def _cba_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGame]:
     del config
     url = f"https://data-server.cbaleague.com/api/schedules/day?auto=0&day={target_date}"
     body = _read_limited_response(url, headers={"Referer": "https://www.cbaleague.com/data/"})
-    key = os.environ.get("CBA_DECRYPT_KEY", "").encode() or b"uVayqL4ONKjFbVzQ"
+    key = os.environ.get("CBA_DECRYPT_KEY", "").encode() or PUBLIC_CBA_AES_KEY
     try:
         rows = decrypt_body(body, key)
     except Undecryptable as exc:
@@ -605,7 +752,6 @@ def _fiba_schedule_payload(url: str) -> Any:
 def _fiba_elw_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGame]:
     """Read assigned FIBA ELW fixtures and fail open on status/schema drift."""
 
-    del config
     url = f"{GDAP_BASE_URL}/{SCHEDULE_ENDPOINT}?gdapCompetitionId={COMPETITION_ID}"
     payload = _fiba_schedule_payload(url)
     if not isinstance(payload, list) or not payload:
@@ -631,7 +777,7 @@ def _fiba_elw_schedule(config: LeagueGateConfig, target_date: str) -> list[Sched
             tip = game_datetime_utc(row.get("gameDateTimeUTC"))
         except ValueError as exc:
             raise GateUncertain("FIBA EuroLeague Women game timestamp is invalid") from exc
-        if tip.astimezone(ZoneInfo("Europe/Paris")).date() != wanted:
+        if tip.astimezone(ZoneInfo(config.acquisition_timezone)).date() != wanted:
             continue
         if not has_complete_team_identity(row):
             raise GateUncertain("FIBA EuroLeague Women row has incomplete assigned team identity")

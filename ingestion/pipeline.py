@@ -52,7 +52,7 @@ from .predictions import (
     resolve_frozen_bundle,
     select_prediction,
 )
-from .league_registry import SPECS, league_spec, parse_league
+from .league_registry import SPECS, league_spec, parse_league, price_evidence_policy
 from .leagues import native_periods
 from .providers import (
     betexplorer,
@@ -184,6 +184,34 @@ class Pipeline:
         self.quota = {}
         self.context_report = {}
         self.book_provider_status = {}
+
+    def _stamp_book_evidence(self, snapshot: BookSnapshot) -> BookSnapshot:
+        """Apply the registry evidence contract to every acquired price quote.
+
+        Provider adapters may parse a named bookmaker correctly, but must not
+        decide whether their source is permitted or operationally validated.
+        The registry is the sole promotion point. Unknown providers remain
+        visible as named observations while failing the ticket-price gate.
+        """
+
+        policy = price_evidence_policy(self.config.league_enum, snapshot.provider)
+        return replace(
+            snapshot,
+            price_provenance=policy.price_provenance,
+            source_permission=policy.source_permission,
+            operational_validation=policy.operational_validation,
+        )
+
+    @staticmethod
+    def _book_policy_status(provider: str, snapshot: BookSnapshot) -> Dict[str, str]:
+        """Expose applied evidence axes without treating them as a price quote."""
+
+        return {
+            "provider": provider,
+            "price_provenance": snapshot.price_provenance.value,
+            "source_permission": snapshot.source_permission.value,
+            "operational_validation": snapshot.operational_validation.value,
+        }
 
     def _standings_smoke(self) -> Dict[str, Any]:
         """Measure standings endpoint coverage without persisting/model use."""
@@ -629,8 +657,14 @@ class Pipeline:
                 ),
                 "games_with_pre_match_snapshots": len(pre_match_games),
             }
+            if scoreboard_snapshots:
+                stamped = self._stamp_book_evidence(scoreboard_snapshots[0])
+                self.book_provider_status["espn"]["evidence_policy"] = self._book_policy_status(
+                    "espn", stamped
+                )
         for game_id, snapshots in espn_books.items():
             for snapshot in snapshots:
+                snapshot = self._stamp_book_evidence(snapshot)
                 try:
                     self.store.upsert_book_snapshot(snapshot)
                 except Exception as exc:
@@ -697,7 +731,7 @@ class Pipeline:
             snaps = catchup_books.get(gid) or []
             for snap in snaps:
                 try:
-                    self.store.upsert_book_snapshot(snap)
+                    self.store.upsert_book_snapshot(self._stamp_book_evidence(snap))
                     hits += 1
                 except Exception:
                     pass
@@ -966,7 +1000,6 @@ class Pipeline:
         raw_snapshots: List[BookSnapshot] = []
         providers = _book_providers(self.config.league)
         if not providers:
-            spec = league_spec(self.config.league_enum)
             self.book_provider_status["policy"] = {
                 "enabled": False,
                 "status": "not_configured_for_league",
@@ -974,8 +1007,9 @@ class Pipeline:
                     "no validated named-book source is registered; forecasts remain "
                     "unpriced and ticket-ineligible rather than borrowing another league's market"
                 ),
-                "price_permission": spec.price_permission.value,
-                "operational_validation": spec.price_validation.value,
+                "price_provenance": "no_price",
+                "source_permission": "unresolved",
+                "operational_validation": "unavailable",
             }
             self._unsupported_source_gap(
                 "named_book_price",
@@ -1073,7 +1107,9 @@ class Pipeline:
             if not known_event_id:
                 game.provider_ids[raw.provider] = provider_event_id
                 self.store.upsert_game(game)
-            snapshot = replace(raw, game_id=game.game_id, provider_event_id=provider_event_id)
+            snapshot = self._stamp_book_evidence(
+                replace(raw, game_id=game.game_id, provider_event_id=provider_event_id)
+            )
             per_game = mapped.setdefault(game.game_id, [])
             if snapshot not in per_game:
                 per_game.append(snapshot)

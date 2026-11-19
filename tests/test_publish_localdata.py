@@ -5,7 +5,8 @@ from pathlib import Path
 
 import pytest
 
-from scripts.publish_localdata import allowed_operator_file, merge_downloaded_localdata
+from ingestion.league_registry import SPECS
+from scripts.publish_localdata import STATE_KEYS, allowed_operator_file, merge_downloaded_localdata
 
 
 def artifact_file(tmp_path: Path, artifact: str, state: str, name: str, content: bytes):
@@ -89,6 +90,34 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
     assert historical.read_text() == "retain me"
     assert not (repo / "localdata" / "nba" / "warehouse.duckdb").exists()
     assert not (repo / "localdata" / "nba" / "picks_unapproved.json").exists()
+
+
+def test_publisher_state_keys_follow_the_central_registry_and_publish_expansion_lanes(tmp_path):
+    assert STATE_KEYS == {spec.state_key for spec in SPECS}
+    artifact_file(
+        tmp_path,
+        "acb-artifact",
+        "spain_acb",
+        "picks_2026-11-18.txt",
+        b"expansion draft\n",
+    )
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", tmp_path / "repo")
+
+    assert report["copied"] == ["localdata/spain_acb/picks_2026-11-18.txt"]
+    assert report["skipped_states"] == []
+
+
+def test_publisher_reports_unknown_state_directories_without_publishing_them(tmp_path):
+    artifact_file(tmp_path, "unknown-artifact", "unregistered_league", "picks_2026-11-18.txt", b"x\n")
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", tmp_path / "repo")
+
+    assert report["status"] == "no_changes"
+    assert report["skipped_states"] == [
+        (tmp_path / "artifacts" / "unknown-artifact" / "localdata" / "unregistered_league").resolve().as_posix()
+    ]
+    assert not (tmp_path / "repo" / "localdata" / "unregistered_league").exists()
 
 
 def test_publisher_preserves_mutable_drafts_and_rejects_pick_freeze_rewrites(tmp_path):
@@ -295,6 +324,7 @@ def test_allowlist_is_narrow_and_missing_artifact_directory_is_a_noop(tmp_path):
         "auto_tickets_2026-11-12.txt",
         "auto_tickets_2026-11-12_decision.json",
         "auto_tickets_2026-11-12_no_bet.json",
+        "coverage_gap_2026-11-12.json",
     }
     assert all(allowed_operator_file(name) for name in expected)
     assert all(

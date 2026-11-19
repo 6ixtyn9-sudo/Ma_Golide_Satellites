@@ -68,15 +68,58 @@ def _write_run_report(localdata: Path, run_id: str, report: dict) -> str:
     return str(target)
 
 
+def _write_coverage_gap_marker(
+    localdata: Path, *, league: str, target_date: str, write_enabled: bool
+) -> str | None:
+    """Publish one stable daily marker for a known-unavailable source lane.
+
+    The marker is not sports evidence and does not claim an empty slate. It is
+    the gate's durable proof that the explicit CoverageGap already ran today,
+    allowing idle unavailable lanes to avoid repeating a full pipeline every
+    scheduler tick while still fail-opening on missing/corrupt state.
+    """
+
+    spec = league_spec(parse_league(league))
+    if not write_enabled or spec.schedule_source != "source_unavailable":
+        return None
+    payload = {
+        "schema_version": "magolide.coverage_gap_marker",
+        "league": spec.league.value,
+        "target_date": target_date,
+        "schedule_source": spec.schedule_source,
+        "results_source": spec.results_source,
+        "status": "source_unavailable",
+        "detail": spec.source_detail,
+    }
+    target = localdata / f"coverage_gap_{target_date}.json"
+    raw = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+    if target.is_file() and target.read_text() == raw:
+        return str(target)
+    temporary = target.with_name(target.name + ".tmp")
+    temporary.write_text(raw)
+    os.replace(temporary, target)
+    return str(target)
+
+
 def _prune_report_files(localdata: Path, cutoff_utc: str) -> int:
-    """Prune parseable derived telemetry, never canonical immutable ledgers."""
+    """Prune derived telemetry, never canonical immutable ledgers.
+
+    Parseable reports use their generated clock. A malformed report cannot keep
+    consuming cache space forever: its filesystem mtime is a bounded fallback.
+    """
+
     pruned = 0
     for path in (localdata / "reports").glob("*.json"):
         try:
             report = json.loads(path.read_text())
             generated = str(report.get("finished_utc") or report.get("generated_utc") or "")
         except (OSError, ValueError):
-            continue
+            try:
+                generated = datetime.fromtimestamp(
+                    path.stat().st_mtime, timezone.utc
+                ).strftime("%Y-%m-%dT%H:%M:%SZ")
+            except OSError:
+                continue
         if generated and generated < cutoff_utc:
             path.unlink()
             pruned += 1
@@ -244,6 +287,12 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             write_assay(str(localdata / f"assay_{args.league}.json"), assay) if args.write else None
         )
         exports = store.export_csv(str(localdata / "csv")) if args.write else {}
+        coverage_gap_marker = _write_coverage_gap_marker(
+            localdata,
+            league=config.league_enum.value,
+            target_date=args.date,
+            write_enabled=args.write,
+        )
 
         summary = {
             "schema_version": "magolide.daily",
@@ -266,6 +315,7 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             "assay": assay,
             "assay_path": assay_path,
             "csv_exports": exports,
+            "coverage_gap_marker": coverage_gap_marker,
             "counts": store.counts(),
             "retention": {
                 "keep_days": args.keep_days,

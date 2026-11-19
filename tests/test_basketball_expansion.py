@@ -8,7 +8,7 @@ from forecasting.harness import CalibrationConfig, apply_profiles
 from forecasting.types import BookEvidence, Forecast
 from ingestion.adaptive_gate import GateUncertain, LEAGUES, fetch_schedule
 from ingestion.duckdb_store import DuckDBStore
-from ingestion.league_registry import SPECS, league_spec, parse_league
+from ingestion.league_registry import SPECS, league_spec, parse_league, price_evidence_policy
 from ingestion.models import (
     BookSnapshot,
     Game,
@@ -128,6 +128,25 @@ def test_unavailable_adapter_reports_gap_but_preserves_manually_canonical_lifecy
     assert any(gap["required_field"] == "official_results" for gap in results["gaps"])
 
 
+def test_registry_price_policy_is_provider_specific_and_fail_closed():
+    nba_espn = price_evidence_policy(League.NBA, "espn")
+    assert nba_espn.price_provenance is PriceProvenance.NAMED_BOOK
+    assert nba_espn.source_permission is SourcePermission.UNRESOLVED
+    assert nba_espn.operational_validation is OperationalValidation.UNVERIFIED
+
+    cba_isports = price_evidence_policy(League.CBA, "isportsapi")
+    assert cba_isports.source_permission is SourcePermission.UNRESOLVED
+    assert cba_isports.operational_validation is OperationalValidation.PROBATION
+
+    nba_direct = price_evidence_policy(League.NBA, "theoddsapi")
+    assert nba_direct.source_permission is SourcePermission.CLEARED
+    assert nba_direct.operational_validation is OperationalValidation.VALIDATED
+
+    unknown = price_evidence_policy(League.NBA, "future-unreviewed-provider")
+    assert unknown.source_permission is SourcePermission.UNRESOLVED
+    assert unknown.operational_validation is OperationalValidation.UNVERIFIED
+
+
 def test_aggregate_price_is_visible_but_never_ticket_eligible():
     evidence = BookEvidence(
         provider="betexplorer",
@@ -186,6 +205,26 @@ def test_no_price_provenance_rejects_a_fabricated_decimal_quote():
             home_price_decimal=1.8,
             price_provenance=PriceProvenance.NO_PRICE,
         )
+
+
+def test_legacy_book_payload_without_axes_is_not_resurrected_as_ticket_eligible():
+    from ingestion.store import _book_from_dict
+
+    loaded = _book_from_dict(
+        {
+            "game_id": "legacy",
+            "provider": "espn",
+            "book": "DraftKings",
+            "market": "moneyline",
+            "period": "full_game",
+            "observed_utc": "2026-11-19T12:00:00Z",
+            "home_price_decimal": 1.8,
+            "away_price_decimal": 2.1,
+        }
+    )
+    assert loaded.price_provenance is PriceProvenance.NAMED_BOOK
+    assert loaded.source_permission is SourcePermission.UNRESOLVED
+    assert loaded.operational_validation is OperationalValidation.UNVERIFIED
 
 
 def test_evidence_axes_round_trip_through_duckdb(tmp_path):

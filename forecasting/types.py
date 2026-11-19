@@ -81,6 +81,9 @@ class BookEvidence:
     main_line: bool
     frozen: bool
     prices: Dict[str, Optional[float]]
+    # Live evidence is registry-stamped in the acquisition pipeline and
+    # persisted legacy rows are decoded fail-closed by the operator. Defaults
+    # retain compatibility for explicitly trusted fixture/manual construction.
     price_provenance: PriceProvenance = PriceProvenance.NAMED_BOOK
     source_permission: SourcePermission = SourcePermission.CLEARED
     operational_validation: OperationalValidation = OperationalValidation.VALIDATED

@@ -18,6 +18,13 @@ localdata/*
 localdata/*/*
 localdata/*/picks_*.json
 localdata/*/picks_audit_*.md
+# Dated draft/lifecycle views and fixture freezes are the Git-durable
+# lifecycle evidence restored by the workflow after cache recovery.
+!localdata/*/picks_????-??-??.json
+!localdata/*/picks_????-??-??_lifecycle.json
+!localdata/*/pick_lifecycle_state.json
+!localdata/*/pick_freeze_*.json
+!localdata/*/coverage_gap_*.json
 !localdata/*/picks_*.txt
 !localdata/*/auto_tickets_*.json
 !localdata/*/auto_tickets_*.txt
