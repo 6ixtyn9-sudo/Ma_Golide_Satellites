@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 6,
+  "awaiting_game_legs": 2,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -403,7 +403,7 @@
       "wins": 1
     },
     {
-      "awaiting_game_legs": 6,
+      "awaiting_game_legs": 2,
       "bank_units": 96.46235246235247,
       "date": "2026-11-18",
       "decision_id": "44248321279_nba_1_attempt_1",
@@ -416,7 +416,7 @@
       "pending_units": 1.0,
       "positions": [
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -427,8 +427,8 @@
           "leg_count": 3,
           "leg_outcomes": [
             "loss",
-            null,
-            null
+            "loss",
+            "loss"
           ],
           "legs": [
             {
@@ -454,13 +454,13 @@
               "book_provider": "espn",
               "forecast_id": "dcfc916e7fc24aaea2dc",
               "game_id": "401910013",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "New Orleans Pelicans",
               "line": 229.5,
               "market": "total",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "dcfc916e7fc24aaea2dc",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T01:00:00Z",
               "selected_decimal_price": 1.9174311926605505,
               "selection": "under"
@@ -471,13 +471,13 @@
               "book_provider": "espn",
               "forecast_id": "e43e6213a4dbe861a3c4",
               "game_id": "401910014",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Oklahoma City Thunder",
               "line": 228.5,
               "market": "total",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "e43e6213a4dbe861a3c4",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T01:00:00Z",
               "selected_decimal_price": 1.8928571428571428,
               "selection": "under"
@@ -494,7 +494,7 @@
           "stake_units": 1.0,
           "ticket_id": "3170b9f0ede538bf2ac5",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 0
         },
         {
           "awaiting_game_legs": 0,
@@ -658,7 +658,7 @@
           "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -668,7 +668,7 @@
           "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "loss",
             "win",
             "loss"
           ],
@@ -679,13 +679,13 @@
               "book_provider": "espn",
               "forecast_id": "9698a62f17d860f3e205",
               "game_id": "401910013",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "New Orleans Pelicans",
               "line": 7.5,
               "market": "spread",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "9698a62f17d860f3e205",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T01:00:00Z",
               "selected_decimal_price": 1.9345794392523366,
               "selection": "home"
@@ -736,10 +736,10 @@
           "stake_units": 1.0,
           "ticket_id": "b57cf20a84492cda23d7",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
@@ -751,7 +751,7 @@
           "leg_outcomes": [
             "loss",
             null,
-            null
+            "win"
           ],
           "legs": [
             {
@@ -794,13 +794,13 @@
               "book_provider": "espn",
               "forecast_id": "226ff1fa9a0f39908e16",
               "game_id": "401910013",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "New Orleans Pelicans",
               "line": 229.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "226ff1fa9a0f39908e16",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T01:00:00Z",
               "selected_decimal_price": 1.900900900900901,
               "selection": "over"
@@ -817,7 +817,7 @@
           "stake_units": 1.0,
           "ticket_id": "0180469d15e207f43ab0",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         }
       ],
       "profit_units": -4.0,
@@ -829,7 +829,7 @@
       "settled_positions": 4,
       "settled_singles": 0,
       "staked_units": 4.0,
-      "unresolved_result_legs": 6,
+      "unresolved_result_legs": 2,
       "wins": 0
     }
   ],
@@ -849,12 +849,12 @@
   "result_unresolvable_legs": 0,
   "roi": -0.3930719486275042,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.26061896067816664,
+  "selected_leg_brier_score": 0.2963888028015,
   "settled_accas": 6,
   "settled_positions": 9,
   "settled_singles": 3,
   "settled_stake_units": 9.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 6,
+  "unresolved_result_legs": 2,
   "wins": 3
 }
