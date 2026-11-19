@@ -8,7 +8,7 @@ files are eligible. Canonical DuckDB/CSV state, acquisition ledgers, caches,
 and credentials are never copied.
 
 Existing repository files not present in the latest artifact are retained. A
-conflicting immutable ticket or per-fixture pick freeze aborts publication
+conflicting immutable ticket or inline per-fixture snapshot aborts publication
 instead of rotating/reopening previously frozen evidence. Inline no-bet date
 locks in durable ticket state reject stale cached ticket receipts. Git-state
 withdrawal IDs are rejected when stale caches attempt to return a deliberately
@@ -42,7 +42,6 @@ LIFECYCLE_RECOVERY_NAMES = tuple(
     for pattern in (
         rf"picks_{DATE}\.txt",
         r"pick_lifecycle_state\.json",
-        rf"pick_freeze_{DATE}_[0-9a-f]{{16}}\.json",
         # A time-locked EuroLeague research roster is non-financial but still
         # immutable selection evidence, so an interrupted successful freeze
         # must be recoverable without allowing mutable cards/tickets through.
@@ -52,13 +51,12 @@ LIFECYCLE_RECOVERY_NAMES = tuple(
 ALLOWED_NAMES = tuple(
     re.compile(pattern)
     for pattern in (
-        # Dated text cards, compact lifecycle state, and fixture freezes are
-        # Git-durable operator evidence. Structured dated pick JSON and
-        # detailed lifecycle renders remain cache/Actions-artifact-only for
-        # every league.
+        # Dated text cards and lifecycle state (with inline immutable fixture
+        # snapshots) are Git-durable operator evidence. Structured dated pick
+        # JSON and detailed lifecycle renders remain cache/Actions-artifact-only
+        # for every league.
         rf"picks_{DATE}\.txt",
         r"pick_lifecycle_state\.json",
-        rf"pick_freeze_{DATE}_[0-9a-f]{{16}}\.json",
         rf"coverage_gap_{DATE}\.json",
         r"auto_tickets_state\.json",
         r"auto_tickets_performance\.json",
@@ -73,7 +71,7 @@ ALLOWED_NAMES = tuple(
     )
 )
 IMMUTABLE_NAMES = re.compile(
-    rf"(?:auto_tickets_{DATE}_decision|pick_freeze_{DATE}_[0-9a-f]{{16}}|"
+    rf"(?:auto_tickets_{DATE}_decision|"
     rf"euroleague_consensus_paper_{DATE}_roster)\.json"
 )
 DECISION_RECEIPT_NAME = re.compile(rf"auto_tickets_({DATE})_decision\.json")
@@ -115,9 +113,9 @@ def _atomic_write(path: Path, raw: bytes) -> None:
 def _git_durable_bytes(source: Path) -> bytes:
     """Return the compact, durable form of one publishable operator file.
 
-    Dated text cards and immutable fixture freezes are Git durable. Structured
-    dated pick JSON and detailed lifecycle renders remain artifact-only. The two
-    compact ticket summaries
+    Dated text cards and inline immutable fixture snapshots in lifecycle state
+    are Git durable. Structured dated pick JSON and detailed lifecycle renders
+    remain artifact-only. The two compact ticket summaries
     below still contain scan clocks that are operational telemetry,
     not evidence needed to reconstruct tickets. Removing only those volatile
     fields prevents no-op runs from producing new Git blobs while receipts and
@@ -141,6 +139,105 @@ def _git_durable_bytes(source: Path) -> bytes:
     else:
         data.pop("generated_utc", None)
     return (json.dumps(data, indent=2, sort_keys=True, default=str) + "\n").encode()
+
+
+def _pick_lifecycle_state(raw: bytes, *, description: str) -> dict[str, Any]:
+    """Validate the durable inline-fixture state before publishing it."""
+
+    try:
+        state = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid pick lifecycle state: {description}") from exc
+    if (
+        not isinstance(state, dict)
+        or state.get("schema_version") != "magolide.pick_lifecycle_state"
+        or not isinstance(state.get("league"), str)
+        or not isinstance(state.get("pending_frozen_games"), list)
+        or not isinstance(state.get("dated_reports"), dict)
+    ):
+        raise ValueError(f"invalid pick lifecycle state: {description}")
+    frozen_by_date = state.setdefault("frozen_by_date", {})
+    if not isinstance(frozen_by_date, dict):
+        raise ValueError(f"invalid pick lifecycle state locks: {description}")
+    for target_date, by_game in frozen_by_date.items():
+        if not isinstance(target_date, str) or not re.fullmatch(DATE, target_date):
+            raise ValueError(f"invalid pick lifecycle state date lock: {description}")
+        if not isinstance(by_game, dict):
+            raise ValueError(f"invalid pick lifecycle state fixture locks: {description}")
+        for game_id, freeze in by_game.items():
+            if (
+                not isinstance(freeze, dict)
+                or str(game_id) != str(freeze.get("game_id") or "")
+                or freeze.get("schema_version") != "magolide.pick_freeze"
+                or freeze.get("target_date") != target_date
+                or freeze.get("league") != state["league"]
+                or not isinstance(freeze.get("rows"), list)
+            ):
+                raise ValueError(f"invalid inline pick freeze: {description}")
+    return state
+
+
+def _pick_lifecycle_state_bytes(state: dict[str, Any]) -> bytes:
+    return (json.dumps(state, indent=2, sort_keys=True, default=str) + "\n").encode()
+
+
+def _merge_pick_lifecycle_state(
+    destination: Path, incoming_raw: bytes, *, relative: str
+) -> bytes:
+    """Merge immutable inline fixture snapshots without accepting rotations.
+
+    The mutable pending/report fields are taken from the incoming completed
+    lane. Snapshots missing from a stale artifact remain Git-authoritative, and
+    their existing pending entry is retained until a current lane regrades it.
+    """
+
+    incoming = _pick_lifecycle_state(incoming_raw, description=relative)
+    if not destination.exists():
+        return _pick_lifecycle_state_bytes(incoming)
+    existing = _pick_lifecycle_state(destination.read_bytes(), description=str(destination))
+    if existing["league"] != incoming["league"]:
+        raise ValueError(f"pick lifecycle state league differs from repository evidence: {relative}")
+
+    merged = dict(incoming)
+    incoming_locks = incoming["frozen_by_date"]
+    merged_locks = {
+        date: dict(by_game) for date, by_game in existing["frozen_by_date"].items()
+    }
+    for target_date, by_game in incoming_locks.items():
+        destination_locks = merged_locks.setdefault(target_date, {})
+        for game_id, freeze in by_game.items():
+            previous = destination_locks.get(game_id)
+            if previous is not None and previous != freeze:
+                raise ValueError(
+                    "immutable inline pick freeze differs from repository evidence: "
+                    f"{relative}:{target_date}/{game_id}"
+                )
+            destination_locks[game_id] = freeze
+    merged["frozen_by_date"] = merged_locks
+
+    incoming_game_ids = {
+        str(game_id) for by_game in incoming_locks.values() for game_id in by_game
+    }
+    pending = {
+        (str(item[0]), str(item[1]))
+        for item in incoming["pending_frozen_games"]
+        if isinstance(item, (list, tuple)) and len(item) == 2
+    }
+    for item in existing["pending_frozen_games"]:
+        if not isinstance(item, (list, tuple)) or len(item) != 2:
+            raise ValueError(f"invalid pick lifecycle pending fixture: {destination}")
+        if str(item[0]) not in incoming_game_ids:
+            pending.add((str(item[0]), str(item[1])))
+    merged["pending_frozen_games"] = [
+        list(item) for item in sorted(pending, key=lambda item: (item[1], item[0]))
+    ]
+    for target_date, by_game in merged_locks.items():
+        report = merged["dated_reports"].get(target_date)
+        if not isinstance(report, dict):
+            report = {}
+            merged["dated_reports"][target_date] = report
+        report["frozen_fixtures"] = max(int(report.get("frozen_fixtures") or 0), len(by_game))
+    return _pick_lifecycle_state_bytes(merged)
 
 
 def _would_regress_settled_card(destination: Path, artifact_bytes: bytes) -> bool:
@@ -304,6 +401,8 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                 raise ValueError(f"duplicate recovered operator destination: {relative}")
             seen_destinations.add(relative)
             raw = _git_durable_bytes(source)
+            if source.name == "pick_lifecycle_state.json":
+                raw = _merge_pick_lifecycle_state(destination, raw, relative=relative)
             if DECISION_RECEIPT_NAME.fullmatch(source.name) and withdrawn_decision_ids:
                 try:
                     candidate = json.loads(raw)
@@ -322,8 +421,6 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                         "immutable ticket receipt"
                         if DECISION_RECEIPT_NAME.fullmatch(source.name)
                         else "immutable EuroLeague consensus-paper roster"
-                        if source.name.startswith("euroleague_consensus_paper_")
-                        else "immutable pick freeze"
                     )
                     raise ValueError(f"{kind} differs from repository evidence: {relative}")
                 if previous == raw:

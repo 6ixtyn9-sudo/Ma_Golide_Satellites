@@ -41,6 +41,7 @@ def test_workflow_mirror_sync():
     # restoration must not delete it before replacing Git-durable files.
     assert all("picks_{date}.json" not in block for block in blocks)
     assert all("picks_{date}_lifecycle" not in block for block in blocks)
+    assert all("pick_freeze" not in block for block in blocks)
 
 
 def test_gitignore_allows_every_git_durable_operator_artifact():
@@ -48,7 +49,6 @@ def test_gitignore_allows_every_git_durable_operator_artifact():
     durable_paths = (
         "localdata/nba/picks_2026-11-18.txt",
         "localdata/nba/pick_lifecycle_state.json",
-        "localdata/nba/pick_freeze_2026-11-18_0123456789abcdef.json",
         "localdata/nba/coverage_gap_2026-11-18.json",
         "localdata/nba/auto_tickets_2026-11-18_decision.json",
         "localdata/euroleague/euroleague_consensus_paper_2026-11-18_roster.json",
@@ -63,19 +63,18 @@ def test_gitignore_allows_every_git_durable_operator_artifact():
         assert result.returncode == 1, f"durable publisher artifact is ignored: {relative_path}"
 
 
-def test_gitignore_rejects_retired_ticket_preview_sidecars():
+def test_gitignore_rejects_retired_ticket_and_pick_freeze_sidecars():
     repo = Path(__file__).resolve().parents[1]
-    result = subprocess.run(
-        [
-            "git",
-            "check-ignore",
-            "-q",
-            "localdata/nba/auto_tickets_2026-11-18_preview.txt",
-        ],
-        cwd=repo,
-        check=False,
-    )
-    assert result.returncode == 0
+    for relative_path in (
+        "localdata/nba/auto_tickets_2026-11-18_preview.txt",
+        "localdata/nba/pick_freeze_2026-11-18_0123456789abcdef.json",
+    ):
+        result = subprocess.run(
+            ["git", "check-ignore", "-q", relative_path],
+            cwd=repo,
+            check=False,
+        )
+        assert result.returncode == 0
 
 
 def test_gitignore_keeps_structured_pick_json_artifact_only_for_every_league():
@@ -86,6 +85,7 @@ def test_gitignore_keeps_structured_pick_json_artifact_only_for_every_league():
         for name in (
             "picks_2026-11-18.json",
             "picks_2026-11-18_lifecycle.json",
+            "pick_freeze_2026-11-18_0123456789abcdef.json",
         ):
             result = subprocess.run(
                 ["git", "check-ignore", "-q", f"localdata/{state}/{name}"],
@@ -201,7 +201,7 @@ def test_successful_lanes_publish_despite_a_failed_matrix_sibling():
         )[1].split("\n\n  publish-localdata:", 1)[0]
         assert "failure()" in recovery
         assert "MaGolide-lifecycle-${{ matrix.state_key }}" in text
-        assert "pick_freeze_*.json" in recovery
+        assert "pick_freeze_*.json" not in recovery
         assert "pick_lifecycle_state.json" in recovery
         assert "auto_tickets_" not in recovery
         assert "euroleague_consensus_paper_*_roster.json" in recovery

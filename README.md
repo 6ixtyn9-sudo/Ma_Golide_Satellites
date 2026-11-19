@@ -315,9 +315,10 @@ writes.
   `picks_YYYY-MM-DD_lifecycle.json`: structured mutable draft/lifecycle views
   retained only in the workflow cache and bounded Actions artifacts, never
   Git-published.
-- `localdata/<league>/pick_freeze_YYYY-MM-DD_<fixture-hash>.json`: immutable
-  per-fixture pick snapshots, including selections, prices/lines, evidence
-  timestamps, scheduled tip, and freeze timestamp.
+- `localdata/<league>/pick_lifecycle_state.json`: Git-published lifecycle
+  state with immutable per-fixture snapshots nested by date and fixture,
+  including selections, prices/lines, evidence timestamps, scheduled tip, and
+  freeze timestamp. No per-fixture JSON sidecar is produced.
 - `localdata/<league>/picks_today.json` and `picks_audit_*`: volatile scan and
   expanded audit detail retained in the workflow cache and 14-day artifacts.
 - `localdata/<league>/auto_tickets_*`: immutable paper receipts, compact
@@ -328,9 +329,9 @@ writes.
   metadata, not canonical sports evidence.
 
 After each named external-trigger GitHub run, one serialized publisher commits
-paper-ticket decisions, durable locks, settlement summaries, dated text cards,
-and immutable per-fixture pick freezes to `main`; it never overwrites
-conflicting immutable evidence. Structured dated pick JSON, detailed lifecycle
+paper-ticket decisions, durable locks (including inline immutable per-fixture
+pick snapshots), settlement summaries, and dated text cards to `main`; it never
+overwrites conflicting immutable evidence. Structured dated pick JSON, detailed lifecycle
 renders, `picks_today.json`, expanded audits, canonical DuckDB/CSV, acquisition
 ledgers, and caches remain outside Git.
 

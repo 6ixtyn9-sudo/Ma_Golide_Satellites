@@ -702,12 +702,13 @@ def test_fixture_pick_freeze_contract_is_global_for_every_supported_league(tmp_p
         run_id=f"{league.value.lower()}-fixture-freeze",
     )
 
-    freeze_path = next((tmp_path / league.value.lower()).glob("pick_freeze_*.json"))
-    freeze = json.loads(freeze_path.read_text())
+    lifecycle_state = json.loads(Path(result["pick_lifecycle_state"]).read_text())
+    freeze = lifecycle_state["frozen_by_date"][DATE][fixture.game_id]
     assert freeze["league"] == league.value
     assert freeze["game_id"] == fixture.game_id
     assert freeze["decision_cutoff_utc"] == FIXTURE_FREEZE_AS_OF
     assert freeze["rows"][0]["book"]["selected_decimal_price"] == 1.8
+    assert not list((tmp_path / league.value.lower()).glob("pick_freeze_*.json"))
     assert result["pick_freezes"] == 1
 
 
@@ -741,10 +742,10 @@ def test_per_fixture_pick_lifecycle_publishes_drafts_freezes_once_and_settles(tm
         run_id="fixture-one-cutoff",
         generated_utc="2026-11-07T19:00:00Z",
     )
-    freeze_paths = list(tmp_path.glob("pick_freeze_2026-11-07_*.json"))
-    assert len(freeze_paths) == 1
-    frozen_bytes = freeze_paths[0].read_bytes()
-    frozen_evidence = json.loads(frozen_bytes)
+    frozen_state = json.loads(Path(frozen["pick_lifecycle_state"]).read_text())
+    frozen_evidence = frozen_state["frozen_by_date"][DATE]["game-1"]
+    frozen_bytes = json.dumps(frozen_evidence, sort_keys=True).encode()
+    assert not list(tmp_path.glob("pick_freeze_2026-11-07_*.json"))
     assert frozen_evidence["game_id"] == "game-1"
     assert frozen_evidence["rows"][0]["book"]["selected_decimal_price"] == 1.95
     assert frozen["pick_freezes"] == 1
@@ -758,7 +759,10 @@ def test_per_fixture_pick_lifecycle_publishes_drafts_freezes_once_and_settles(tm
         run_id="later-draft-must-not-rewrite-fixture-one",
         generated_utc="2026-11-07T19:30:00Z",
     )
-    assert freeze_paths[0].read_bytes() == frozen_bytes
+    later_state = json.loads((tmp_path / "pick_lifecycle_state.json").read_text())
+    assert json.dumps(
+        later_state["frozen_by_date"][DATE]["game-1"], sort_keys=True
+    ).encode() == frozen_bytes
     archived_after_freeze = json.loads((tmp_path / "picks_2026-11-07.json").read_text())
     fixture_one_prices = {
         row["book"]["selected_decimal_price"]

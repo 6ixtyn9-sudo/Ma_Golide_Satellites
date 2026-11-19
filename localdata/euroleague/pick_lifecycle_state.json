@@ -5,6 +5,288 @@
       "logical_picks": 15
     }
   },
+  "frozen_by_date": {
+    "2026-11-19": {
+      "E2026-122": {
+        "decision_cutoff_utc": "2026-11-19T16:15:00Z",
+        "frozen_at": "2026-11-19T16:21:25Z",
+        "game_id": "E2026-122",
+        "league": "EUROLEAGUE",
+        "rows": [
+          {
+            "alternative_probabilities": {
+              "Q1": 0.27,
+              "Q2": 0.26,
+              "Q3": 0.23,
+              "Q4": 0.24
+            },
+            "away": "Dubai Basketball",
+            "book": null,
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.3274,
+            "calibration": {
+              "brier_score": 0.271725,
+              "calibration_version": "team_history_empirical-cb419eb48826",
+              "league": "EUROLEAGUE",
+              "log_loss": 0.742222,
+              "losses": 11,
+              "market": "highest_quarter",
+              "mean_raw_probability": 0.3065,
+              "minimum_samples": 30,
+              "n": 20,
+              "observed_win_rate": 0.45,
+              "period": "full_game",
+              "pool": "eligible",
+              "probability_adjustment": 0.0574,
+              "pushes": 0,
+              "source": "team_history_empirical",
+              "status": "provisional",
+              "sufficient_for_accas": false,
+              "wilson_lower_95": 0.284111,
+              "wins": 9
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "expected_margin": null,
+            "expected_total": 171.3917085066791,
+            "explanation": {
+              "calibration": {
+                "brier_score": 0.271725,
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "league": "EUROLEAGUE",
+                "log_loss": 0.742222,
+                "losses": 11,
+                "market": "highest_quarter",
+                "mean_raw_probability": 0.3065,
+                "minimum_samples": 30,
+                "n": 20,
+                "observed_win_rate": 0.45,
+                "period": "full_game",
+                "pool": "eligible",
+                "probability_adjustment": 0.0574,
+                "pushes": 0,
+                "source": "team_history_empirical",
+                "status": "provisional",
+                "sufficient_for_accas": false,
+                "wilson_lower_95": 0.284111,
+                "wins": 9
+              },
+              "effective_sample_size": 19.695522,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "no_exact_bookmaker_market",
+                  "insufficient_walk_forward_samples",
+                  "below_calibrated_probability_floor"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": null,
+                "opposite_selection": null,
+                "selected_decimal_price": null
+              },
+              "provenance": {
+                "book": null,
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "league": "EUROLEAGUE",
+                "market": "highest_quarter",
+                "period": "full_game",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.049972,
+                "candidate_probability": 0.3199723075098394,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.3274,
+                "ess": 19.695522,
+                "n": 20,
+                "probability": 0.3199723075098394,
+                "status": "provisional",
+                "weighted_n": 16.303056
+              }
+            },
+            "forecast_id": "d5430be1151f09a65c9d",
+            "game_id": "E2026-122",
+            "grade_status": "pending",
+            "home": "Maccabi Rapyd Tel Aviv",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "d5430be1151f09a65c9d",
+            "prediction": null,
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.27,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-19T17:15:00Z",
+            "selection": "Q1",
+            "team_history": {
+              "away_effective_games": 24.167193,
+              "home_effective_games": 24.167193,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": true
+            },
+            "training_games": 6721
+          },
+          {
+            "alternative_probabilities": {
+              "away": 0.49,
+              "draw": 0.0,
+              "home": 0.51
+            },
+            "away": "Dubai Basketball",
+            "book": null,
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.5454,
+            "calibration": {
+              "brier_score": 0.203475,
+              "calibration_version": "team_history_empirical-cb419eb48826",
+              "league": "EUROLEAGUE",
+              "log_loss": 0.597196,
+              "losses": 6,
+              "market": "moneyline",
+              "mean_raw_probability": 0.6115,
+              "minimum_samples": 30,
+              "n": 20,
+              "observed_win_rate": 0.7,
+              "period": "H1",
+              "pool": "eligible",
+              "probability_adjustment": 0.0354,
+              "pushes": 0,
+              "source": "team_history_empirical",
+              "status": "provisional",
+              "sufficient_for_accas": false,
+              "wilson_lower_95": 0.51618,
+              "wins": 14
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "expected_margin": 0.18969983789013867,
+            "expected_total": 86.14804371939411,
+            "explanation": {
+              "calibration": {
+                "brier_score": 0.203475,
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "league": "EUROLEAGUE",
+                "log_loss": 0.597196,
+                "losses": 6,
+                "market": "moneyline",
+                "mean_raw_probability": 0.6115,
+                "minimum_samples": 30,
+                "n": 20,
+                "observed_win_rate": 0.7,
+                "period": "H1",
+                "pool": "eligible",
+                "probability_adjustment": 0.0354,
+                "pushes": 0,
+                "source": "team_history_empirical",
+                "status": "provisional",
+                "sufficient_for_accas": false,
+                "wilson_lower_95": 0.51618,
+                "wins": 14
+              },
+              "effective_sample_size": 19.695522,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "no_exact_bookmaker_market",
+                  "insufficient_walk_forward_samples"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": null,
+                "opposite_selection": null,
+                "selected_decimal_price": null
+              },
+              "provenance": {
+                "book": null,
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "league": "EUROLEAGUE",
+                "market": "moneyline",
+                "period": "H1",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.02274,
+                "candidate_probability": 0.5327402622926961,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.5454,
+                "ess": 19.695522,
+                "n": 20,
+                "probability": 0.5327402622926961,
+                "status": "provisional",
+                "weighted_n": 16.303056
+              }
+            },
+            "forecast_id": "1e881eb309329dd71ac2",
+            "game_id": "E2026-122",
+            "grade_status": "pending",
+            "home": "Maccabi Rapyd Tel Aviv",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "1e881eb309329dd71ac2",
+            "prediction": null,
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-19T17:15:00Z",
+            "selection": "home",
+            "team_history": {
+              "away_effective_games": 24.167193,
+              "home_effective_games": 24.167193,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": true
+            },
+            "training_games": 6721
+          }
+        ],
+        "scheduled_utc": "2026-11-19T17:15:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-19"
+      }
+    }
+  },
   "league": "EUROLEAGUE",
   "pending_frozen_games": [
     [

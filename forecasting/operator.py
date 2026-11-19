@@ -8,8 +8,8 @@ Operator evidence files live beneath one league's localdata directory:
 - ``picks_YYYY-MM-DD.json`` and ``.txt`` are Git-published draft/lifecycle
   cards. They show all forecast picks, but are never evidence that a pick was
   actionable before its own cutoff.
-- ``pick_freeze_YYYY-MM-DD_<fixture-hash>.json`` is an immutable per-fixture
-  snapshot taken once the fixture enters its 60-minute pre-tip window.
+- ``pick_lifecycle_state.json`` embeds immutable per-fixture snapshots by date
+  and fixture once the fixture enters its 60-minute pre-tip window.
 - ``picks_YYYY-MM-DD_lifecycle.json`` is a mutable rendered view that grades
   only those immutable snapshots after official finals arrive.
 - ``picks_today.json`` and rolling/dated audit files retain full active-cache
@@ -1293,80 +1293,120 @@ def _latest_logical_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     )
 
 
-def _pick_freeze_token(game_id: str) -> str:
-    """Return a filesystem-safe, stable fixture identity for frozen evidence."""
+def _pick_lifecycle_state_path(localdata: Path) -> Path:
+    """Return the sole Git-durable home for per-fixture frozen snapshots."""
 
-    return hashlib.sha256(str(game_id).encode("utf-8")).hexdigest()[:16]
+    return localdata / "pick_lifecycle_state.json"
 
 
-def _pick_freeze_path(localdata: Path, target_date: str, game_id: str) -> Path:
-    return localdata / f"pick_freeze_{target_date}_{_pick_freeze_token(game_id)}.json"
+def _new_pick_lifecycle_state(league: str) -> Dict[str, Any]:
+    return {
+        "schema_version": PICK_LIFECYCLE_STATE_SCHEMA,
+        "league": league,
+        "frozen_by_date": {},
+        "pending_frozen_games": [],
+        "dated_reports": {},
+    }
+
+
+def _load_pick_lifecycle_state(localdata: Path, *, league: str) -> Dict[str, Any]:
+    """Load durable lifecycle state, retaining old empty states compatibly."""
+
+    path = _pick_lifecycle_state_path(localdata)
+    if not path.exists():
+        return _new_pick_lifecycle_state(league)
+    state = _read_json(path, {})
+    if (
+        not isinstance(state, dict)
+        or not schema_matches(state.get("schema_version"), PICK_LIFECYCLE_STATE_SCHEMA)
+        or state.get("league") != league
+    ):
+        raise ValueError(f"invalid pick lifecycle state: {path}")
+    frozen_by_date = state.setdefault("frozen_by_date", {})
+    if not isinstance(frozen_by_date, dict):
+        raise ValueError(f"invalid frozen pick lifecycle state: {path}")
+    return state
 
 
 def _load_pick_freezes(
-    localdata: Path, *, target_date: str, league: str
+    lifecycle_state: Dict[str, Any], *, target_date: str, league: str
 ) -> Dict[str, Dict[str, Any]]:
-    """Load immutable fixture snapshots, refusing ambiguous/corrupt evidence."""
+    """Read immutable fixture snapshots embedded in durable lifecycle state."""
 
+    frozen_by_date = lifecycle_state.get("frozen_by_date")
+    if not isinstance(frozen_by_date, dict):
+        raise ValueError("invalid frozen pick lifecycle state")
+    payloads = frozen_by_date.get(target_date, {})
+    if not isinstance(payloads, dict):
+        raise ValueError(f"invalid frozen pick date state: {target_date}")
     freezes: Dict[str, Dict[str, Any]] = {}
-    for path in sorted(localdata.glob(f"pick_freeze_{target_date}_*.json")):
-        payload = _read_json(path, {})
+    for game_id, payload in sorted(payloads.items()):
         if not isinstance(payload, dict):
-            raise ValueError(f"invalid immutable pick freeze: {path}")
-        game_id = str(payload.get("game_id") or "")
+            raise ValueError(f"invalid immutable inline pick freeze: {target_date}/{game_id}")
+        canonical_game_id = str(payload.get("game_id") or "")
         rows = payload.get("rows")
         if (
             not schema_matches(payload.get("schema_version"), PICK_FREEZE_SCHEMA)
             or payload.get("target_date") != target_date
             or payload.get("league") != league
-            or not game_id
+            or not canonical_game_id
+            or canonical_game_id != str(game_id)
             or not isinstance(rows, list)
-            or path != _pick_freeze_path(localdata, target_date, game_id)
         ):
-            raise ValueError(f"invalid immutable pick freeze: {path}")
-        if game_id in freezes:
-            raise ValueError(f"multiple immutable pick freezes for fixture {game_id}")
+            raise ValueError(f"invalid immutable inline pick freeze: {target_date}/{game_id}")
         try:
             scheduled_utc = parse_utc(str(payload["scheduled_utc"]))
             cutoff_utc = parse_utc(str(payload["decision_cutoff_utc"]))
             frozen_at = parse_utc(str(payload["frozen_at"]))
         except (KeyError, TypeError, ValueError) as exc:
-            raise ValueError(f"pick freeze has invalid lifecycle timestamps: {path}") from exc
+            raise ValueError(
+                f"inline pick freeze has invalid lifecycle timestamps: {target_date}/{game_id}"
+            ) from exc
         if (
             cutoff_utc != scheduled_utc - TICKET_DECISION_LEAD_TIME
             or not cutoff_utc <= frozen_at < scheduled_utc
         ):
-            raise ValueError(f"pick freeze violates its fixture cutoff: {path}")
+            raise ValueError(f"inline pick freeze violates its fixture cutoff: {target_date}/{game_id}")
         for row in rows:
-            if not isinstance(row, dict) or str(row.get("game_id")) != game_id:
-                raise ValueError(f"pick freeze contains inconsistent fixture evidence: {path}")
+            if not isinstance(row, dict) or str(row.get("game_id")) != canonical_game_id:
+                raise ValueError(
+                    f"inline pick freeze contains inconsistent fixture evidence: {target_date}/{game_id}"
+                )
             try:
                 row_scheduled_utc = parse_utc(str(row.get("scheduled_utc")))
             except ValueError as exc:
-                raise ValueError(f"pick freeze has invalid row schedule: {path}") from exc
+                raise ValueError(
+                    f"inline pick freeze has invalid row schedule: {target_date}/{game_id}"
+                ) from exc
             if row_scheduled_utc != scheduled_utc:
-                raise ValueError(f"pick freeze contains inconsistent fixture evidence: {path}")
-        freezes[game_id] = payload
+                raise ValueError(
+                    f"inline pick freeze contains inconsistent fixture evidence: {target_date}/{game_id}"
+                )
+        freezes[canonical_game_id] = payload
     return freezes
 
 
 def _freeze_due_pick_fixtures(
     localdata: Path,
     *,
+    lifecycle_state: Dict[str, Any],
     target_date: str,
     league: str,
     rows: List[Dict[str, Any]],
     generated_utc: str,
 ) -> Dict[str, Dict[str, Any]]:
-    """Freeze each fixture's latest draft evidence once it enters tip minus 60m.
+    """Freeze fixture evidence inline once it enters tip minus 60 minutes.
 
     A runner can arrive slightly after the exact cutoff, but never after tip.
-    Each fixture owns a separate immutable file so later fixtures keep their
-    draft lifecycle and an earlier snapshot can never be overwritten.
+    The immutable snapshot is nested by date and fixture in the Git-durable
+    lifecycle state, so later drafts cannot overwrite it and no sidecar is
+    needed for audit or settlement.
     """
 
     now = parse_utc(generated_utc)
-    existing = _load_pick_freezes(localdata, target_date=target_date, league=league)
+    existing = _load_pick_freezes(lifecycle_state, target_date=target_date, league=league)
+    frozen_by_date = lifecycle_state["frozen_by_date"].setdefault(target_date, {})
+    froze_any = False
     for game_id, fixture_rows in itertools.groupby(
         _latest_logical_rows(rows), key=lambda row: str(row["game_id"])
     ):
@@ -1394,8 +1434,23 @@ def _freeze_due_pick_fixtures(
             "frozen_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "rows": frozen_rows,
         }
-        _write_json(_pick_freeze_path(localdata, target_date, game_id), payload)
+        frozen_by_date[game_id] = payload
         existing[game_id] = payload
+        froze_any = True
+    if froze_any:
+        # Persist immediately: an interrupted run must not reopen a fixture
+        # that has already reached its individual pre-tip cutoff.
+        pending = {
+            (str(item[0]), str(item[1]))
+            for item in lifecycle_state.get("pending_frozen_games", [])
+            if isinstance(item, (list, tuple)) and len(item) == 2
+        }
+        pending.update(
+            (game_id, str(payload["scheduled_utc"]))
+            for game_id, payload in existing.items()
+        )
+        lifecycle_state["pending_frozen_games"] = [list(item) for item in sorted(pending)]
+        _write_json(_pick_lifecycle_state_path(localdata), lifecycle_state)
     return existing
 
 
@@ -1616,6 +1671,7 @@ def _refresh_dated_pick_reports(
 ) -> Dict[str, Any]:
     """Regrade cards and render drafts/frozen evidence as one lifecycle view."""
 
+    lifecycle_state = _load_pick_lifecycle_state(localdata, league=league)
     pending_frozen_games: List[Dict[str, str]] = []
     dated_reports: Dict[str, Dict[str, int]] = {}
     for path in _dated_pick_files(localdata):
@@ -1626,7 +1682,9 @@ def _refresh_dated_pick_reports(
             _set_grade(row, games)
         _write_json(path, rows)
         target_date = path.stem.removeprefix("picks_")
-        freezes = _load_pick_freezes(localdata, target_date=target_date, league=league)
+        freezes = _load_pick_freezes(
+            lifecycle_state, target_date=target_date, league=league
+        )
         lifecycle_rows, pending = _pick_lifecycle_rows(
             rows,
             freezes=freezes,
@@ -1655,20 +1713,23 @@ def _refresh_dated_pick_reports(
             "frozen_fixtures": len(freezes),
             "logical_picks": len(_latest_logical_rows(lifecycle_rows)),
         }
-    # This compact state lets the dependency-free gate request a result recheck
-    # after a frozen fixture has tipped without publishing raw scan telemetry.
-    lifecycle_state = {
-        "schema_version": PICK_LIFECYCLE_STATE_SCHEMA,
-        "league": league,
-        "pending_frozen_games": sorted(
-            {(
-                str(item["game_id"]), str(item["scheduled_utc"])
-            ) for item in pending_frozen_games},
+    # This durable state embeds immutable fixture snapshots and lets the
+    # dependency-free gate request a result recheck after a frozen fixture has
+    # tipped without publishing raw scan telemetry or one JSON file per game.
+    lifecycle_state["schema_version"] = PICK_LIFECYCLE_STATE_SCHEMA
+    lifecycle_state["league"] = league
+    lifecycle_state["pending_frozen_games"] = [
+        list(item)
+        for item in sorted(
+            {
+                (str(item["game_id"]), str(item["scheduled_utc"]))
+                for item in pending_frozen_games
+            },
             key=lambda item: (item[1], item[0]),
-        ),
-        "dated_reports": dated_reports,
-    }
-    _write_json(localdata / "pick_lifecycle_state.json", lifecycle_state)
+        )
+    ]
+    lifecycle_state["dated_reports"] = dated_reports
+    _write_json(_pick_lifecycle_state_path(localdata), lifecycle_state)
     return lifecycle_state
 
 
@@ -2069,7 +2130,7 @@ def _render_pick_audit_markdown(
             "## Evidence notes",
             "",
             "- Grades use reconciled official finals only; missing or conflicting results stay pending.",
-            "- Frozen fixtures use their immutable pick_freeze evidence; legacy rows retain dated forecast evidence.",
+            "- Frozen fixtures use their immutable inline lifecycle snapshot; legacy rows retain dated forecast evidence.",
             "- Flat one-paper-unit ROI is descriptive history, not proof of future performance.",
             "",
         ]
@@ -4760,8 +4821,9 @@ def publish_operator_reports(
     # audit compatibility, but no later model/price observation may rewrite or
     # append to the pre-cutoff draft evidence. The lifecycle view uses the
     # snapshot itself as settlement evidence.
+    pick_lifecycle_state = _load_pick_lifecycle_state(localdata, league=league.value)
     existing_pick_freezes = _load_pick_freezes(
-        localdata, target_date=target_date, league=league.value
+        pick_lifecycle_state, target_date=target_date, league=league.value
     )
     frozen_game_ids = set(existing_pick_freezes)
     archivable_current = [
@@ -4802,6 +4864,7 @@ def publish_operator_reports(
     _write_json(dated_path, archived)
     current_pick_freezes = _freeze_due_pick_fixtures(
         localdata,
+        lifecycle_state=pick_lifecycle_state,
         target_date=target_date,
         league=league.value,
         rows=archived,
