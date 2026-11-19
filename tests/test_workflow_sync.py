@@ -32,9 +32,10 @@ def test_workflow_mirror_sync():
         "replace both files with the same complete workflow YAML"
     )
     blocks = _extract_allowlist_blocks(source_text)
-    # Pin the withdrawn/no-bet sidecars in every cache-recovery allowlist.
+    # Withdrawn sidecars remain recoverable; no-bet decisions are inline in
+    # auto_tickets_state.json and must not grow a per-date recovery surface.
     assert all("withdrawn" in block for block in blocks)
-    assert all("no_bet" in block for block in blocks)
+    assert all("no_bet" not in block for block in blocks)
     assert all("euroleague_consensus_paper" in block for block in blocks)
     # Structured pick JSON is cache/artifact-only for every league, so
     # restoration must not delete it before replacing Git-durable files.

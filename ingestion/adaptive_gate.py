@@ -368,21 +368,19 @@ def date_is_frozen(
 ) -> bool:
     """Return whether today's decision is durably frozen and internally sound.
 
-    A lock without the matching immutable receipt/no-bet sidecar is not enough
-    to skip a run: cache recovery could otherwise turn missing evidence into a
-    false no-work decision.
+    A ticket lock without its matching immutable receipt is not enough to skip
+    a run. No-bet evidence is instead embedded in its durable state lock, so a
+    missing per-date sidecar cannot create artifact bloat or a false no-work
+    decision.
     """
 
     locks = state["frozen_by_date"]
     lock = locks.get(target_date)
     decision_path = state_dir / f"auto_tickets_{target_date}_decision.json"
-    no_bet_path = state_dir / f"auto_tickets_{target_date}_no_bet.json"
     withdrawn_path = state_dir / f"auto_tickets_{target_date}_withdrawn.json"
 
-    if decision_path.exists() and no_bet_path.exists():
-        raise GateUncertain(f"conflicting ticket and no-bet decisions for {target_date}")
     if lock is None:
-        if decision_path.exists() or no_bet_path.exists() or withdrawn_path.exists():
+        if decision_path.exists() or withdrawn_path.exists():
             raise GateUncertain(f"decision sidecar lacks a state lock for {target_date}")
         return False
     if not isinstance(lock, dict) or lock.get("final") is not True:
@@ -400,10 +398,16 @@ def date_is_frozen(
     if lock.get("no_bet") is True:
         if decision_path.exists():
             raise GateUncertain(f"no-bet lock conflicts with ticket receipt for {target_date}")
-        _validate_sidecar(no_bet_path, target_date=target_date, league=league, no_bet=True)
+        decision = lock.get("no_bet_decision")
+        if (
+            not isinstance(decision, dict)
+            or decision.get("target_date") != target_date
+            or decision.get("league") != league
+            or decision.get("status") != "frozen_no_bet"
+            or decision.get("decision_id") != lock.get("decision_id")
+        ):
+            raise GateUncertain(f"invalid inline no-bet decision for {target_date}")
         return True
-    if no_bet_path.exists():
-        raise GateUncertain(f"ticket lock conflicts with no-bet receipt for {target_date}")
     _validate_sidecar(decision_path, target_date=target_date, league=league, no_bet=False)
     return True
 
@@ -479,6 +483,10 @@ def _settlement_view_reasons(state_dir: Path, performance: dict[str, Any]) -> li
     history = performance.get("history") or []
     if not isinstance(history, list):
         raise GateUncertain("operator performance has invalid history")
+    state = _read_json(state_dir / "auto_tickets_state.json", description="operator state")
+    locks = state.get("frozen_by_date")
+    if not isinstance(locks, dict):
+        raise GateUncertain("operator state has invalid frozen date locks")
     reasons: list[str] = []
     settled_fields = (
         "pending_positions",
@@ -497,8 +505,8 @@ def _settlement_view_reasons(state_dir: Path, performance: dict[str, Any]) -> li
         if any(_nonnegative_int(row.get(field), field=f"history.{field}") for field in settled_fields):
             continue
         receipt = state_dir / f"auto_tickets_{date}_decision.json"
-        no_bet = state_dir / f"auto_tickets_{date}_no_bet.json"
-        if no_bet.exists() or not receipt.is_file():
+        lock = locks.get(date)
+        if (isinstance(lock, dict) and lock.get("no_bet") is True) or not receipt.is_file():
             continue
         card = state_dir / f"auto_tickets_{date}.txt"
         try:

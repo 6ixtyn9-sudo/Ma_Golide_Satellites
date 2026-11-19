@@ -52,7 +52,7 @@ profitability.
 | `picks_audit_rolling.json` | Thirty-day logical and settled ledgers; cache/artifact only, not Git |
 | `picks_audit_YYYY-MM-DD.md` | Expanded rolling summary; cache/artifact only, not Git |
 | `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper singles and accas |
-| `auto_tickets_YYYY-MM-DD_no_bet.json` | Immutable terminal decision that the 60-minute pre-tip window closed without a qualifying pre-tip position |
+| `auto_tickets_state.json` | Compact Git-durable state and immutable date locks, including inline no-bet decisions; no per-date no-bet sidecar is published |
 | `auto_tickets_YYYY-MM-DD.txt` | Mutable, Git-published current card. Before the cutoff its clearly labelled `DRAFT ONLY` / `PRE-CUTOFF` section may change on each scan and creates no position; after an immutable receipt it becomes the settlement card whose selections, prices, and stakes remain frozen while grades refresh; after a no-bet sidecar it displays that terminal no-bet state. |
 | `auto_tickets_state.json` | Git-durable write-once date locks; bounded scan telemetry stays cache/artifact-only |
 | `auto_tickets_performance.json` | Compact rolling settlement/financial summary; each history day points to its immutable receipt for full leg evidence |
@@ -251,27 +251,29 @@ partial market locking the date.
 
 Before the cutoff, that single dated card also carries a clearly labelled
 `DRAFT ONLY` / `PRE-CUTOFF` named-price draft section: it may display one
-current exact pre-tip named-book price per game even where source permission
-or operational validation prevents strict ticket eligibility. Legs are labelled
-**PREVIEW-ONLY** unless they are genuinely strict-eligible, preserve their
+current exact pre-tip named-book price per game. Unresolved source-permission
+and operational-validation labels remain audit metadata; they do not
+independently block that named-book quote from the paper-ticket lane. Legs are labelled
+**NAMED-BOOK PRICE** or **RESEARCH-ONLY**, preserve their model/calibration/ROI
 blockers, rank only by forecast confidence (not a fabricated EV), and create
 no receipt, stake, grade, bank/performance entry, or real-money instruction.
 There is no separate preview sidecar artifact; a strict receipt or immutable
 no-bet decision renders the terminal card without any draft section.
 
 If there is no qualifying pre-tip candidate at the strict decision point—or if
-the scheduler missed the first tip—the operator writes an immutable
-`auto_tickets_YYYY-MM-DD_no_bet.json` sidecar and date lock. This fail-closed
-no-bet decision prevents a later price or an old cache from publishing a
-replacement ticket. New ticket receipts store singles separately from accas and
-preserve the settled-pick ROI-band snapshot and provisional status/sample counts.
-Subsequent scans re-render each dated text card from the immutable ticket receipt
-(or the immutable no-bet decision), current reconciled leg results, and the dated
-pick ledger when available. Ticket and audit-shadow grade labels therefore
-refresh, while selections, prices, stakes, receipt bytes, and terminal no-bet
-outcomes remain frozen. A missing locked receipt or no-bet sidecar is an error;
-the engine never silently rebuilds or rotates a published decision. A receipt
-recovered without its state lock adopts a lock from the immutable receipt itself.
+the scheduler missed the first tip—the operator records an immutable inline
+no-bet decision in that date's `auto_tickets_state.json` lock. This fail-closed
+decision prevents a later price or an old cache from publishing a replacement
+ticket without creating a per-date JSON sidecar. New ticket receipts store
+singles separately from accas and preserve the settled-pick ROI-band snapshot
+and provisional status/sample counts. Subsequent scans re-render each dated text
+card from the immutable ticket receipt (or inline no-bet decision), current
+reconciled leg results, and the dated pick ledger when available. Ticket and
+audit-shadow grade labels therefore refresh, while selections, prices, stakes,
+receipt bytes, and terminal no-bet outcomes remain frozen. A missing locked
+receipt or malformed inline no-bet decision is an error; the engine never
+silently rebuilds or rotates a published decision. A receipt recovered without
+its state lock adopts a lock from the immutable receipt itself.
 Existing frozen receipts are never rebalanced or rewritten by selection-policy
 changes.
 

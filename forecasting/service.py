@@ -887,7 +887,7 @@ class MarketForecastService:
                         "name": "EUROLEAGUE_STRICT_NAMED_BOOK_VALUE_TICKET_LANE",
                         "role": "strict ticket-only lane; aggregate consensus quotes are excluded",
                         "requires_exact_selected_side_pre_tip_price": True,
-                        "requires_validated_cleared_named_book_quote": True,
+                        "requires_named_book_quote": True,
                         "requires_positive_calibrated_expected_value": True,
                         "minimum_prior_settled_picks_in_matching_roi_band": 10,
                         "roi_band_scope": [

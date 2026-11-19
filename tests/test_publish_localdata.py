@@ -49,13 +49,6 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
         tmp_path,
         "nba-artifact",
         "nba",
-        "auto_tickets_2026-11-14_no_bet.json",
-        b"no-bet-decision\n",
-    )
-    artifact_file(
-        tmp_path,
-        "nba-artifact",
-        "nba",
         "auto_tickets_2026-11-14.txt",
         b"hourly-no-bet-card\n",
     )
@@ -75,15 +68,15 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
 
     report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
 
-    assert report["copied_count"] == 6
+    assert report["copied_count"] == 5
     assert (repo / "localdata" / "nba" / "picks_2026-11-12.txt").read_bytes() == b"picks\n"
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12_decision.json").read_bytes() == b"receipt\n"
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12.txt").read_bytes() == b"frozen-ticket-card\n"
     # A pre-cutoff card is a mutable published preview, not a receipt or date lock.
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-13.txt").read_bytes() == b"hourly-candidate-card\n"
     assert not (repo / "localdata" / "nba" / "auto_tickets_2026-11-13_decision.json").exists()
-    assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-14_no_bet.json").read_bytes() == b"no-bet-decision\n"
-    # The terminal sidecar stays immutable while its text card reports no-bet.
+    # The terminal state is inline in auto_tickets_state.json; the dated card
+    # remains the only per-date no-bet publication.
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-14.txt").read_bytes() == b"hourly-no-bet-card\n"
     artifact_file(
         tmp_path,
@@ -242,18 +235,19 @@ def test_interrupted_lane_artifact_can_publish_only_durable_pick_lifecycle_evide
     assert not allowed_lifecycle_recovery_file("auto_tickets_2026-11-18_decision.json")
 
 
-def test_publisher_accepts_isolated_euroleague_w_operator_state(tmp_path):
+def test_publisher_rejects_retired_isolated_no_bet_sidecars(tmp_path):
     artifact_file(
         tmp_path,
         "elw-artifact",
         "euroleague_w",
         "auto_tickets_2026-11-18_no_bet.json",
-        b"frozen-no-bet\n",
+        b"retired-sidecar\n",
     )
 
     report = merge_downloaded_localdata(tmp_path / "artifacts", tmp_path / "repo")
 
-    assert report["copied"] == ["localdata/euroleague_w/auto_tickets_2026-11-18_no_bet.json"]
+    assert report["status"] == "no_changes"
+    assert report["copied"] == []
 
 
 def test_publisher_strips_hourly_telemetry_before_git_publication(tmp_path):
@@ -326,8 +320,14 @@ def test_git_no_bet_decision_blocks_a_stale_cached_ticket_receipt(tmp_path):
     )
     destination = tmp_path / "repo" / "localdata" / "nba"
     destination.mkdir(parents=True)
-    (destination / "auto_tickets_2026-11-12_no_bet.json").write_text(
-        json.dumps({"status": "frozen_no_bet", "decision_id": "no-bet"}) + "\n"
+    (destination / "auto_tickets_state.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "magolide.paper_ticket_state",
+                "frozen_by_date": {"2026-11-12": {"no_bet": True}},
+            }
+        )
+        + "\n"
     )
 
     report = merge_downloaded_localdata(tmp_path / "artifacts", tmp_path / "repo")
@@ -414,7 +414,6 @@ def test_allowlist_is_narrow_and_missing_artifact_directory_is_a_noop(tmp_path):
         "auto_tickets_performance.txt",
         "auto_tickets_2026-11-12.txt",
         "auto_tickets_2026-11-12_decision.json",
-        "auto_tickets_2026-11-12_no_bet.json",
         "coverage_gap_2026-11-12.json",
     }
     assert all(allowed_operator_file(name) for name in expected)
@@ -433,6 +432,7 @@ def test_allowlist_is_narrow_and_missing_artifact_directory_is_a_noop(tmp_path):
     assert not allowed_operator_file("picks_audit_2026-11-12.md")
     assert not allowed_operator_file("picks_unapproved.json")
     assert not allowed_operator_file("auto_tickets_2026-11-12.json")
+    assert not allowed_operator_file("auto_tickets_2026-11-12_no_bet.json")
     assert not allowed_operator_file("auto_tickets_2026-11-12_preview.txt")
     assert not allowed_operator_file("warehouse.duckdb")
     report = merge_downloaded_localdata(tmp_path / "missing", tmp_path / "repo")

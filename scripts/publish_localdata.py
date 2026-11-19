@@ -8,8 +8,9 @@ files are eligible. Canonical DuckDB/CSV state, acquisition ledgers, caches,
 and credentials are never copied.
 
 Existing repository files not present in the latest artifact are retained. A
-conflicting immutable ticket, no-bet decision, or per-fixture pick freeze aborts
-publication instead of rotating/reopening previously frozen evidence. Git-state
+conflicting immutable ticket or per-fixture pick freeze aborts publication
+instead of rotating/reopening previously frozen evidence. Inline no-bet date
+locks in durable ticket state reject stale cached ticket receipts. Git-state
 withdrawal IDs are rejected when stale caches attempt to return a deliberately
 withdrawn receipt.
 """
@@ -64,7 +65,6 @@ ALLOWED_NAMES = tuple(
         r"auto_tickets_performance\.txt",
         rf"auto_tickets_{DATE}\.txt",
         rf"auto_tickets_{DATE}_decision\.json",
-        rf"auto_tickets_{DATE}_no_bet\.json",
         rf"auto_tickets_{DATE}_withdrawn\.json",
         # This card is mutable only for official-result grades. The companion
         # roster below is the immutable, no-stake selection snapshot.
@@ -73,11 +73,10 @@ ALLOWED_NAMES = tuple(
     )
 )
 IMMUTABLE_NAMES = re.compile(
-    rf"(?:auto_tickets_{DATE}_(?:decision|no_bet)|pick_freeze_{DATE}_[0-9a-f]{{16}}|"
+    rf"(?:auto_tickets_{DATE}_decision|pick_freeze_{DATE}_[0-9a-f]{{16}}|"
     rf"euroleague_consensus_paper_{DATE}_roster)\.json"
 )
 DECISION_RECEIPT_NAME = re.compile(rf"auto_tickets_({DATE})_decision\.json")
-NO_BET_DECISION_NAME = re.compile(rf"auto_tickets_({DATE})_no_bet\.json")
 CALIBRATION_EPOCH = "2026-11-10"
 # A later publisher job can be based on an older workflow SHA than a manual
 # settlement already merged to main. Never let that stale artifact put a
@@ -215,10 +214,6 @@ def _no_bet_decision_dates(localdata: Path) -> frozenset[str]:
             for date, lock in locks.items()
             if isinstance(lock, dict) and lock.get("no_bet") is True
         )
-    for sidecar in localdata.glob("auto_tickets_*_no_bet.json"):
-        match = NO_BET_DECISION_NAME.fullmatch(sidecar.name)
-        if match:
-            dates.add(match.group(1))
     return frozenset(dates)
 
 
@@ -295,17 +290,11 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
             destination = destination_dir / source.name
             relative = destination.relative_to(repo).as_posix()
             receipt_match = DECISION_RECEIPT_NAME.fullmatch(source.name)
-            no_bet_match = NO_BET_DECISION_NAME.fullmatch(source.name)
             if receipt_match and receipt_match.group(1) in no_bet_dates:
                 # An older cache must never resurrect a ticket after this date
                 # was deliberately closed at its immutable cutoff with no bet.
                 no_bet_receipts_skipped.append(relative)
                 continue
-            if no_bet_match and (destination_dir / f"auto_tickets_{no_bet_match.group(1)}_decision.json").exists():
-                raise ValueError(
-                    "cannot publish a no-bet decision beside an existing immutable "
-                    f"ticket receipt: {relative}"
-                )
             # Hard-reset: never re-publish pre-epoch dated files (even from a warm older cache).
             m = re.search(r"(\d{4}-\d{2}-\d{2})", source.name)
             if m and m.group(1) < CALIBRATION_EPOCH:

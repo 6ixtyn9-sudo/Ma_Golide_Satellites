@@ -140,16 +140,17 @@ class BookEvidence:
 
     @property
     def ticket_price_eligible(self) -> bool:
-        """Whether this is validated, cleared, executable named-book evidence.
+        """Whether a quote may enter the named-book paper-ticket lane.
 
-        A numeric aggregate quote stays visible for research, but no amount of
-        model confidence may promote it to a paper-ticket leg.
+        Unresolved permission and operational-validation labels remain durable,
+        visible audit metadata, but they do not suppress a paper ticket from an
+        otherwise exact, current named-book quote. An explicitly prohibited
+        source and aggregate consensus quotes remain outside that lane.
         """
 
         return (
             self.price_provenance is PriceProvenance.NAMED_BOOK
-            and self.source_permission is SourcePermission.CLEARED
-            and self.operational_validation is OperationalValidation.VALIDATED
+            and self.source_permission is not SourcePermission.PROHIBITED
         )
 
 
