@@ -6,9 +6,10 @@
 #   support them; an absent secret leaves that adapter explicitly disabled.
 # - Named external-dispatch runs persist canonical state; manual dispatch
 #   remains a live read-only rehearsal so it cannot advance state.
-# Immutable decisions, compact ticket state, settlement summaries, and dated
-# draft/freeze pick lifecycle cards may be committed to localdata/<league>.
-# Raw current-scan forecast JSON and expanded audits remain cache/artifact-only.
+# Immutable decisions, compact ticket state, settlement summaries, dated draft
+# cards, and per-fixture freezes may be committed to localdata/<league>.
+# Detailed dated lifecycle renders, raw current-scan forecast JSON, and expanded
+# audits remain cache/artifact-only.
 # Install as .github/workflows/ingestion.yml (editing that path requires the
 # GitHub `workflows` permission).
 
@@ -192,11 +193,11 @@ jobs:
           # latest Git-authoritative operator state before using the cache.
           git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
           MAIN_REF=refs/remotes/origin/main
-          # Delete only Git-durable compact operator state and dated
-          # draft/freeze lifecycle evidence recovered from the cache before
-          # restoring it. Full current-scan JSON and expanded audits remain
-          # cache/artifact-only. Canonical data, ledgers, nested evidence, and
-          # unapproved files are not touched.
+          # Delete only Git-durable compact operator state, dated draft cards,
+          # and fixture-freeze evidence recovered from the cache before
+          # restoring it. Detailed lifecycle renders, full current-scan JSON,
+          # and expanded audits remain cache/artifact-only. Canonical data,
+          # ledgers, nested evidence, and unapproved files are not touched.
           python - "$STATE_DIR" <<'PY'
           from pathlib import Path
           import re
@@ -209,7 +210,6 @@ jobs:
               for pattern in (
                   rf"picks_{date}\.json",
                   rf"picks_{date}\.txt",
-                  rf"picks_{date}_lifecycle\.json",
                   r"pick_lifecycle_state\.json",
                   rf"pick_freeze_{date}_[0-9a-f]{{16}}\.json",
                   rf"coverage_gap_{date}\.json",
