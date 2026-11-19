@@ -716,6 +716,54 @@ def test_terminal_no_bet_at_cutoff_blocks_later_ticket_candidates(tmp_path):
     assert "closed by an immutable no-bet decision" in Path(later["ticket_text"]).read_text()
 
 
+def test_terminal_no_bet_card_refreshes_reconciled_shadow_grades(tmp_path):
+    rows = [forecast(number) for number in (1, 2, 3)]
+    shadow_pick = forecast(
+        4,
+        price=None,
+        eligible=False,
+        reasons=["no_exact_bookmaker_market"],
+    )
+    history_games = seed_historical_success_picks(
+        tmp_path, "moneyline", wins=8, losses=3
+    )
+    store = Store([game(number) for number in (1, 2, 3, 4)] + history_games)
+    no_bet = publish(
+        tmp_path,
+        store,
+        report([*rows, shadow_pick]),
+        run_id="no-bet-shadow-at-cutoff",
+    )
+
+    no_bet_path = Path(no_bet["no_bet_decision"])
+    frozen_no_bet = no_bet_path.read_bytes()
+    ticket_text_path = Path(no_bet["ticket_text"])
+    assert "SHADOW GROUP 1 — 1 audit-only pick (1 ⏳ PENDING)" in ticket_text_path.read_text()
+
+    settled_games = [
+        game(1, home_score=100, away_score=90),
+        game(2, home_score=100, away_score=90),
+        game(3, home_score=100, away_score=90),
+        game(4, home_score=100, away_score=80),
+        *history_games,
+    ]
+    later = publish(
+        tmp_path,
+        Store(settled_games),
+        report([]),
+        run_id="no-bet-shadow-result-refresh",
+        target_date="2026-11-12",
+        generated_utc="2026-11-12T18:00:00Z",
+    )
+
+    refreshed_card = ticket_text_path.read_text()
+    assert later["ticket_receipt"] is None
+    assert no_bet_path.read_bytes() == frozen_no_bet
+    assert "closed by an immutable no-bet decision" in refreshed_card
+    assert "SHADOW GROUP 1 — 1 audit-only pick (1 ✅ WIN)" in refreshed_card
+    assert "[✅ WIN] Home 4 vs Away 4" in refreshed_card
+
+
 def test_persisted_performance_is_compact_and_points_to_immutable_receipt(tmp_path):
     rows = [forecast(number) for number in (1, 2, 3)]
     rows[0]["team_history"] = {"large_debug_payload": "x" * 100_000}
