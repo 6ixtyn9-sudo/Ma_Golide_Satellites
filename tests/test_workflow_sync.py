@@ -77,6 +77,27 @@ def test_gitignore_rejects_retired_ticket_and_pick_freeze_sidecars():
         assert result.returncode == 0
 
 
+def test_no_fixture_pick_freeze_sidecars_are_tracked_in_any_league():
+    """Inline lifecycle state is the sole durable home for fixture snapshots."""
+
+    repo = Path(__file__).resolve().parents[1]
+    tracked = subprocess.run(
+        ["git", "ls-files", "-z"],
+        cwd=repo,
+        check=True,
+        capture_output=True,
+    ).stdout.decode().split("\0")
+    sidecars = [
+        path
+        for path in tracked
+        if re.fullmatch(
+            r"localdata/[^/]+/pick_freeze_\d{4}-\d{2}-\d{2}_[0-9a-f]{16}\.json",
+            path,
+        )
+    ]
+    assert not sidecars, f"retired fixture-freeze sidecars are tracked: {sidecars}"
+
+
 def test_gitignore_keeps_structured_pick_json_artifact_only_for_every_league():
     repo = Path(__file__).resolve().parents[1]
     states = tuple(spec.state_key for spec in SPECS)
