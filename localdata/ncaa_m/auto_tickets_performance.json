@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 6,
+  "awaiting_game_legs": 5,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -179,7 +179,7 @@
       "wins": 1
     },
     {
-      "awaiting_game_legs": 6,
+      "awaiting_game_legs": 5,
       "bank_units": 104.16751069210086,
       "date": "2026-11-18",
       "decision_id": "44248321279_ncaa_m_1_attempt_1",
@@ -270,7 +270,7 @@
           "unresolved_legs": 3
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
@@ -282,7 +282,7 @@
           "leg_outcomes": [
             null,
             null,
-            null
+            "win"
           ],
           "legs": [
             {
@@ -323,12 +323,12 @@
               "book_provider": "espn",
               "forecast_id": "9cee76b8c5ca082e44f3",
               "game_id": "401911277",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Lafayette Leopards",
               "market": "moneyline",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "9cee76b8c5ca082e44f3",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T00:00:00Z",
               "selected_decimal_price": 1.704225352112676,
               "selection": "home"
@@ -344,7 +344,7 @@
           "stake_units": 1.0,
           "ticket_id": "305535f17534ddae7c6f",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         }
       ],
       "profit_units": null,
@@ -356,7 +356,7 @@
       "settled_positions": 0,
       "settled_singles": 0,
       "staked_units": 0,
-      "unresolved_result_legs": 6,
+      "unresolved_result_legs": 5,
       "wins": 0
     }
   ],
@@ -376,12 +376,12 @@
   "result_unresolvable_legs": 0,
   "roi": 2.0837553460504274,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.10623049967900003,
+  "selected_leg_brier_score": 0.11590014318820004,
   "settled_accas": 1,
   "settled_positions": 2,
   "settled_singles": 1,
   "settled_stake_units": 2.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 6,
+  "unresolved_result_legs": 5,
   "wins": 2
 }
