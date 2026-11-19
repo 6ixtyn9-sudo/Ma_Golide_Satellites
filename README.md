@@ -320,9 +320,10 @@ writes.
   timestamps, scheduled tip, and freeze timestamp.
 - `localdata/<league>/picks_today.json` and `picks_audit_*`: volatile scan and
   expanded audit detail retained in the workflow cache and 14-day artifacts.
-- `localdata/<league>/auto_tickets_*`: immutable paper receipts/no-bet
-  decisions, compact durable locks, and compact grading/performance summaries
-  are allowlisted for Git publication; see `docs/OPERATOR-REPORTS.md`.
+- `localdata/<league>/auto_tickets_*`: immutable paper receipts, compact
+  durable locks (including inline no-bet decisions), and compact
+  grading/performance summaries are allowlisted for Git publication; see
+  `docs/OPERATOR-REPORTS.md`.
 - `localdata/notification_ledger.json`: bounded notification deduplication
   metadata, not canonical sports evidence.
 

@@ -6,9 +6,33 @@
       "decision_id": "44551164971_nba_g_league_1_attempt_1",
       "final": true,
       "frozen_at": "2026-11-19T15:08:27Z",
-      "lock_source": "no_bet_sidecar",
+      "lock_source": "inline_state_no_bet",
       "no_bet": true,
-      "no_bet_path": "auto_tickets_2026-11-19_no_bet.json"
+      "no_bet_decision": {
+        "decision_id": "44551164971_nba_g_league_1_attempt_1",
+        "frozen_at": "2026-11-19T15:08:27Z",
+        "league": "NBA_G_LEAGUE",
+        "reason": "no_qualifying_pre_tip_ticket_at_decision_cutoff",
+        "schema_version": "magolide.paper_ticket_no_bet",
+        "status": "frozen_no_bet",
+        "target_date": "2026-11-19",
+        "ticket_decision": {
+          "candidate_tickets_pre_tip": 0,
+          "candidate_tickets_seen": 0,
+          "earliest_slate_tip_utc": "2026-11-19T16:00:00Z",
+          "generated_utc": "2026-11-19T15:08:27Z",
+          "lead_minutes": 60,
+          "market_report_available": true,
+          "morning_publication_cutoff_utc": "2026-11-19T07:00:00Z",
+          "planned_cutoff_utc": "2026-11-19T07:00:00Z",
+          "policy": "morning_0900_sast_or_first_slate_tip_minus_60_minutes",
+          "pre_tip_safety_cutoff_utc": "2026-11-19T15:00:00Z",
+          "publication_timezone": "Africa/Johannesburg",
+          "slate_time_source": "games",
+          "slate_timezone": "America/New_York",
+          "status": "due"
+        }
+      }
     }
   },
   "paper_bank_units": 100.0,

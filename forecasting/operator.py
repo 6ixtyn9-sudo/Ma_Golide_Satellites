@@ -198,27 +198,24 @@ def _withdrawn_sidecar_path(localdata: Path, target_date: str) -> Path:
     return localdata / f"auto_tickets_{target_date}_withdrawn.json"
 
 
-def _no_bet_sidecar_path(localdata: Path, target_date: str) -> Path:
-    """Return the durable terminal no-bet decision for one slate date."""
-    return localdata / f"auto_tickets_{target_date}_no_bet.json"
+def _read_no_bet_decision(state: Dict[str, Any], target_date: str) -> Optional[Dict[str, Any]]:
+    """Return one date's immutable inline no-bet decision from durable state."""
 
-
-def _read_no_bet_decision(localdata: Path, target_date: str) -> Optional[Dict[str, Any]]:
-    path = _no_bet_sidecar_path(localdata, target_date)
-    if not path.exists():
+    lock = (state.get("frozen_by_date") or {}).get(target_date)
+    if not isinstance(lock, dict) or lock.get("no_bet") is not True:
         return None
-    decision = _read_json(path, {})
+    decision = lock.get("no_bet_decision")
     if (
         not isinstance(decision, dict)
         or not schema_matches(decision.get("schema_version"), NO_BET_DECISION_SCHEMA)
         or decision.get("status") != "frozen_no_bet"
+        or str(decision.get("target_date") or "") != target_date
+        or not decision.get("decision_id")
     ):
-        raise ValueError(f"invalid frozen no-bet decision: {path}")
-    if str(decision.get("target_date") or "") != target_date:
-        raise ValueError(f"frozen no-bet decision date mismatch: {path}")
-    if not decision.get("decision_id"):
-        raise ValueError(f"frozen no-bet decision lacks decision_id: {path}")
-    return decision
+        raise ValueError(f"invalid inline frozen no-bet decision for {target_date}")
+    if lock.get("decision_id") != decision["decision_id"]:
+        raise ValueError(f"no-bet lock decision id mismatch for {target_date}")
+    return deepcopy(decision)
 
 
 def _withdrawn_ids_from_sidecars(localdata: Path) -> set[str]:
@@ -2497,9 +2494,8 @@ def _freeze_no_bet_decision(
     run_id: str,
     ticket_decision: Dict[str, Any],
 ) -> Dict[str, Any]:
-    """Write the immutable terminal no-bet decision for a reached cutoff."""
-    path = _no_bet_sidecar_path(localdata, target_date)
-    existing = _read_no_bet_decision(localdata, target_date)
+    """Store the immutable terminal no-bet decision in the durable state lock."""
+    existing = _read_no_bet_decision(state, target_date)
     if existing is not None:
         return existing
     reason = (
@@ -2517,16 +2513,18 @@ def _freeze_no_bet_decision(
         "reason": reason,
         "ticket_decision": deepcopy(ticket_decision),
     }
-    _write_json(path, decision)
     state["frozen_by_date"][target_date] = {
         "decision_id": run_id,
         "frozen_at": captured_utc,
         "final": True,
         "no_bet": True,
-        "lock_source": "no_bet_sidecar",
-        "no_bet_path": path.name,
+        "lock_source": "inline_state_no_bet",
         "decision_cutoff_utc": ticket_decision.get("planned_cutoff_utc"),
+        "no_bet_decision": decision,
     }
+    # Persist the date lock immediately so an interrupted run cannot reopen a
+    # reached cutoff before the normal end-of-run state refresh.
+    _write_json(localdata / "auto_tickets_state.json", state)
     return decision
 
 
@@ -2553,7 +2551,7 @@ def _ticket_receipt(
     # Sidecar is authoritative even if state cache rolls back.
     if _withdrawn_sidecar_path(localdata, target_date).exists():
         return None
-    no_bet = _read_no_bet_decision(localdata, target_date)
+    no_bet = _read_no_bet_decision(state, target_date)
     if no_bet is not None:
         if path.exists():
             raise ValueError(
@@ -2581,9 +2579,8 @@ def _ticket_receipt(
             )
         return None
     if isinstance(lock, dict) and lock.get("no_bet") is True:
-        raise FileNotFoundError(
-            f"frozen no-bet decision is missing: {_no_bet_sidecar_path(localdata, target_date)}"
-        )
+        # `_read_no_bet_decision` above validates the inline immutable lock.
+        return None
     if lock is not None:
         locked_path = localdata / str(lock.get("receipt_path") or path.name)
         if not locked_path.exists():
@@ -4888,7 +4885,7 @@ def publish_operator_reports(
         ticket_decision=ticket_decision,
         allow_new_decision=allow_new_decision,
     )
-    no_bet_decision = _read_no_bet_decision(localdata, target_date)
+    no_bet_decision = _read_no_bet_decision(state, target_date)
     scan_record = {
         "run_id": run_id,
         "captured_at": generated_utc,
@@ -4998,17 +4995,19 @@ def publish_operator_reports(
         ):
             raise ValueError(f"invalid withdrawn ticket sidecar: {sidecar_path}")
         withdrawn_ticket_sidecars[withdrawn_date] = sidecar
-    # A no-bet sidecar is equally terminal for ticket creation, but its
+    # An inline no-bet lock is equally terminal for ticket creation, while its
     # human-readable card remains a mutable audit view. Rebuild every no-bet
     # card from its dated, regraded ledger so shadow grades do not remain
     # PENDING after official results arrive.
-    for sidecar_path in sorted(localdata.glob("auto_tickets_????-??-??_no_bet.json")):
-        no_bet_date = sidecar_path.name.removeprefix("auto_tickets_").removesuffix(
-            "_no_bet.json"
-        )
-        frozen_no_bet = _read_no_bet_decision(localdata, no_bet_date)
-        if frozen_no_bet is None:
-            raise ValueError(f"frozen no-bet decision is missing: {sidecar_path}")
+    no_bet_dates = sorted(
+        str(date)
+        for date, lock in state["frozen_by_date"].items()
+        if isinstance(lock, dict) and lock.get("no_bet") is True
+    )
+    for no_bet_date in no_bet_dates:
+        frozen_no_bet = _read_no_bet_decision(state, no_bet_date)
+        if frozen_no_bet is None:  # pragma: no cover - guarded by the lock filter
+            raise ValueError(f"frozen inline no-bet decision is missing: {no_bet_date}")
         terminal_ticket_dates.add(no_bet_date)
         audit_kwargs = _ticket_card_audit_kwargs(
             localdata,
@@ -5131,11 +5130,7 @@ def publish_operator_reports(
         "candidate_funnel": candidate_funnel,
         "ticket_decision": ticket_decision,
         "euroleague_consensus_paper": euroleague_consensus_paper,
-        "no_bet_decision": (
-            str(_no_bet_sidecar_path(localdata, target_date))
-            if no_bet_decision is not None
-            else None
-        ),
+        "no_bet_decision": deepcopy(no_bet_decision),
         "unpriced_audit": _unpriced_audit_summary(dated_unpriced_audit),
         "unpriced_spread_shadow": dated_spread_shadow,
         "priced_ineligible_shadow": (

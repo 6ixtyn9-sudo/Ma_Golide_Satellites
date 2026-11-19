@@ -32,6 +32,9 @@ localdata/*/picks_audit_*.md
 # the single dated auto_tickets_YYYY-MM-DD.txt card; do not let a stale cache
 # or an old workflow reintroduce it as a tracked artifact.
 localdata/*/auto_tickets_*_preview.txt
+# No-bet decisions are immutable date locks nested in auto_tickets_state.json,
+# not one sidecar per league/date.
+localdata/*/auto_tickets_*_no_bet.json
 # EuroLeague's separate aggregate-consensus research board preserves a
 # time-locked no-stake roster and mutable official-result card in Git.
 !localdata/euroleague/euroleague_consensus_paper_*.json

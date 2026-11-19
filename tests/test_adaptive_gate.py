@@ -34,11 +34,17 @@ def _operator_state(root: Path, config, *, date: str, frozen: str | None = None)
             {"date": date, "league": config.league, "status": "frozen"},
         )
     elif frozen == "no_bet":
-        locks[date] = {"final": True, "no_bet": True, "no_bet_path": f"auto_tickets_{date}_no_bet.json"}
-        _write_json(
-            state_dir / f"auto_tickets_{date}_no_bet.json",
-            {"target_date": date, "league": config.league, "status": "frozen_no_bet"},
-        )
+        locks[date] = {
+            "final": True,
+            "no_bet": True,
+            "decision_id": "no-bet",
+            "no_bet_decision": {
+                "target_date": date,
+                "league": config.league,
+                "status": "frozen_no_bet",
+                "decision_id": "no-bet",
+            },
+        }
     _write_json(state_dir / "auto_tickets_state.json", {"frozen_by_date": locks})
     _write_json(
         state_dir / "auto_tickets_performance.json",

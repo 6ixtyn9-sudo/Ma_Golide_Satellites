@@ -806,12 +806,12 @@ def test_terminal_no_bet_at_cutoff_blocks_later_ticket_candidates(tmp_path):
         generated_utc=TICKET_DECISION_AS_OF,
     )
 
-    no_bet_path = Path(no_bet["no_bet_decision"])
-    frozen_no_bet = no_bet_path.read_bytes()
+    frozen_no_bet = no_bet["no_bet_decision"]
     assert no_bet["ticket_receipt"] is None
-    assert json.loads(frozen_no_bet)["reason"] == "no_qualifying_pre_tip_ticket_at_decision_cutoff"
+    assert frozen_no_bet["reason"] == "no_qualifying_pre_tip_ticket_at_decision_cutoff"
     state = json.loads(Path(no_bet["ticket_state"]).read_text())
     assert state["frozen_by_date"][DATE]["no_bet"] is True
+    assert state["frozen_by_date"][DATE]["no_bet_decision"] == frozen_no_bet
 
     later = publish(
         tmp_path,
@@ -822,7 +822,8 @@ def test_terminal_no_bet_at_cutoff_blocks_later_ticket_candidates(tmp_path):
     )
 
     assert later["ticket_receipt"] is None
-    assert no_bet_path.read_bytes() == frozen_no_bet
+    assert later["no_bet_decision"] == frozen_no_bet
+    assert not list(tmp_path.glob("auto_tickets_*_no_bet.json"))
     assert "closed by an immutable no-bet decision" in Path(later["ticket_text"]).read_text()
 
 
@@ -836,8 +837,7 @@ def test_withdrawn_invalid_no_bet_cannot_be_recreated_from_later_candidates(tmp_
         generated_utc=TICKET_DECISION_AS_OF,
         run_id="invalid-no-bet-source",
     )
-    decision = json.loads(Path(first["no_bet_decision"]).read_text())
-    Path(first["no_bet_decision"]).unlink()
+    decision = first["no_bet_decision"]
     withdrawal = {
         "decision_id": decision["decision_id"],
         "withdrawn": True,
@@ -890,8 +890,7 @@ def test_terminal_no_bet_card_refreshes_reconciled_shadow_grades(tmp_path):
         run_id="no-bet-shadow-at-cutoff",
     )
 
-    no_bet_path = Path(no_bet["no_bet_decision"])
-    frozen_no_bet = no_bet_path.read_bytes()
+    frozen_no_bet = no_bet["no_bet_decision"]
     ticket_text_path = Path(no_bet["ticket_text"])
     assert "SHADOW GROUP 1 — 1 audit-only pick (1 ⏳ PENDING)" in ticket_text_path.read_text()
 
@@ -913,7 +912,9 @@ def test_terminal_no_bet_card_refreshes_reconciled_shadow_grades(tmp_path):
 
     refreshed_card = ticket_text_path.read_text()
     assert later["ticket_receipt"] is None
-    assert no_bet_path.read_bytes() == frozen_no_bet
+    refreshed_state = json.loads((tmp_path / "auto_tickets_state.json").read_text())
+    assert refreshed_state["frozen_by_date"][DATE]["no_bet_decision"] == frozen_no_bet
+    assert not list(tmp_path.glob("auto_tickets_*_no_bet.json"))
     assert "closed by an immutable no-bet decision" in refreshed_card
     assert "SHADOW GROUP 1 — 1 audit-only pick (1 ✅ WIN)" in refreshed_card
     assert "[✅ WIN] Home 4 vs Away 4" in refreshed_card

@@ -204,10 +204,11 @@ its own tip. The actual receipt records the policy, planned cutoff, and the
 scan that made the decision.
 
 If no qualifying pre-tip candidate exists at the cutoff, the operator writes an
-immutable `auto_tickets_YYYY-MM-DD_no_bet.json` decision instead. It prevents a
-later price, an old Actions cache, or a later-game candidate from reopening the
-date. A delayed run that misses the first tip also fails closed to that no-bet
-decision. Before the cutoff, the single normal `auto_tickets_YYYY-MM-DD.txt`
+immutable inline no-bet decision into that date's `auto_tickets_state.json` lock
+instead. It prevents a later price, an old Actions cache, or a later-game
+candidate from reopening the date without creating a per-date JSON sidecar. A
+delayed run that misses the first tip also fails closed to that no-bet decision.
+Before the cutoff, the single normal `auto_tickets_YYYY-MM-DD.txt`
 card carries a clearly labelled `DRAFT ONLY` / `PRE-CUTOFF` section with the
 broader exact named-price draft candidates. That section is not a receipt or
 instruction: it never creates a stake, grade, bank/performance entry, or
