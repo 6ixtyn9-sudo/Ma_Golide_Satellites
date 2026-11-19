@@ -33,6 +33,7 @@ from ingestion.books import BookConfig  # noqa: E402
 from ingestion.cli import _offline_fixture_fetch  # noqa: E402
 from ingestion.duckdb_store import DuckDBStore  # noqa: E402
 from ingestion.ledger import write_canonical_ledger  # noqa: E402
+from ingestion.league_registry import cli_league_choices, league_spec, parse_league  # noqa: E402
 from ingestion.mining import mine_prediction_assay, write_assay  # noqa: E402
 from ingestion.pipeline import ACQUISITION_TZ, Pipeline, PipelineConfig  # noqa: E402
 from ingestion.warehouse import DEFAULT_WAREHOUSE  # noqa: E402
@@ -314,7 +315,7 @@ def main() -> int:
     parser.add_argument(
         "--league",
         default="NBA",
-        choices=["NBA", "EuroLeague", "EUROLEAGUE_W", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
+        choices=cli_league_choices(),
     )
     parser.add_argument("--tz", default=None)
     parser.add_argument("--warehouse", default=None)
@@ -376,18 +377,26 @@ def main() -> int:
         help="send the heartbeat through configured WhatsApp credentials",
     )
     args = parser.parse_args()
+    args.league = parse_league(args.league).value
+    spec = league_spec(parse_league(args.league))
     if args.localdata is None:
+        # Preserve the established default state locations while new leagues
+        # begin isolated from legacy NBA-localdata state.
         args.localdata = (
-            "localdata/euroleague_w" if args.league.upper() == "EUROLEAGUE_W" else "localdata"
+            "localdata/euroleague_w"
+            if args.league == "EUROLEAGUE_W"
+            else "localdata"
+            if args.league in {"NBA", "EUROLEAGUE", "CBA", "WNBA", "NCAA_M", "NCAA_W"}
+            else str(Path("localdata") / spec.state_key)
         )
     if args.warehouse is None:
         args.warehouse = os.environ.get("MAGOLIDE_WAREHOUSE") or (
             str(Path(args.localdata) / "warehouse.duckdb")
-            if args.league.upper() == "EUROLEAGUE_W"
+            if args.league not in {"NBA", "EUROLEAGUE", "CBA", "WNBA", "NCAA_M", "NCAA_W"}
             else DEFAULT_WAREHOUSE
         )
     if args.date is None:
-        args.date = datetime.now(ZoneInfo(ACQUISITION_TZ[args.league.upper()])).strftime("%Y-%m-%d")
+        args.date = datetime.now(ZoneInfo(ACQUISITION_TZ[args.league])).strftime("%Y-%m-%d")
     try:
         args.date = datetime.strptime(args.date.replace("-", ""), "%Y%m%d").strftime("%Y-%m-%d")
     except ValueError:

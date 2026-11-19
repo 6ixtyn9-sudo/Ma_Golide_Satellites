@@ -204,12 +204,12 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                 if (
                     ticket_card_match.group(1) not in receipt_dates
                     or ticket_card_match.group(1) in no_bet_dates
-                    or (destination_dir / source.name).exists()
                 ):
                     # Candidate/no-bet cards contain a latest-scan timestamp
-                    # and price movement. Receipt cards are an initial human
-                    # snapshot only; settlement progress belongs in the compact
-                    # performance report, not an hourly Git card rewrite.
+                    # and price movement.  A card tied to an immutable receipt
+                    # is instead the mutable, human-visible settlement view:
+                    # its selections/prices remain receipt-backed while grades
+                    # may advance from pending to settled on a later run.
                     continue
             if source.is_symlink() or not source.is_file():
                 raise ValueError(f"operator publication requires a regular file: {source}")

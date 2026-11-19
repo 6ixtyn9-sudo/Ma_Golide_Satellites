@@ -40,6 +40,72 @@ class League(str, Enum):
     NCAA_M = "NCAA_M"
     NCAA_W = "NCAA_W"
 
+    # Final basketball expansion.  Values are intentionally stable machine
+    # identifiers rather than provider slugs: a provider can change without
+    # changing canonical game, forecast, warehouse, or lifecycle identities.
+    EUROCUP = "EUROCUP"
+    BASKETBALL_CHAMPIONS_LEAGUE = "BASKETBALL_CHAMPIONS_LEAGUE"
+    NBA_G_LEAGUE = "NBA_G_LEAGUE"
+    BASKETBALL_AFRICA_LEAGUE = "BASKETBALL_AFRICA_LEAGUE"
+    AUSTRALIA_NBL = "AUSTRALIA_NBL"
+    SPAIN_ACB = "SPAIN_ACB"
+    FRANCE_LNB_PRO_A = "FRANCE_LNB_PRO_A"
+    GERMANY_BBL = "GERMANY_BBL"
+    ITALY_LBA = "ITALY_LBA"
+    TURKEY_BSL = "TURKEY_BSL"
+    GREECE_BASKET_LEAGUE = "GREECE_BASKET_LEAGUE"
+    ABA_LEAGUE = "ABA_LEAGUE"
+    ISRAEL_PREMIER_LEAGUE = "ISRAEL_PREMIER_LEAGUE"
+    JAPAN_B_LEAGUE = "JAPAN_B_LEAGUE"
+    SOUTH_KOREA_KBL = "SOUTH_KOREA_KBL"
+    BRAZIL_NBB = "BRAZIL_NBB"
+    ARGENTINA_LIGA_NACIONAL = "ARGENTINA_LIGA_NACIONAL"
+
+    # Boundary aliases retain familiar competition abbreviations without
+    # creating a second persisted value.  Canonical writes always use the
+    # long, country-qualified values above.
+    BCL = "BASKETBALL_CHAMPIONS_LEAGUE"
+    BAL = "BASKETBALL_AFRICA_LEAGUE"
+    NBL = "AUSTRALIA_NBL"
+    ACB = "SPAIN_ACB"
+    LNB_PRO_A = "FRANCE_LNB_PRO_A"
+    BBL = "GERMANY_BBL"
+    LBA = "ITALY_LBA"
+    BSL = "TURKEY_BSL"
+    KBL = "SOUTH_KOREA_KBL"
+    NBB = "BRAZIL_NBB"
+    LIGA_NACIONAL = "ARGENTINA_LIGA_NACIONAL"
+
+
+class PriceProvenance(str, Enum):
+    """What a recorded price represents, independently of its availability.
+
+    ``AGGREGATE_CONSENSUS`` is an observed representative/average quote, not
+    an executable named-book offer.  ``NO_PRICE`` is retained for explicit
+    source records that establish price absence without inventing a quote.
+    """
+
+    NAMED_BOOK = "named_book"
+    AGGREGATE_CONSENSUS = "aggregate_consensus"
+    NO_PRICE = "no_price"
+
+
+class SourcePermission(str, Enum):
+    """Reuse/automation posture of the evidence source."""
+
+    CLEARED = "cleared"
+    UNRESOLVED = "unresolved"
+    PROHIBITED = "prohibited"
+
+
+class OperationalValidation(str, Enum):
+    """Observed operational confidence, separate from source permission."""
+
+    VALIDATED = "validated"
+    PROBATION = "probation"
+    UNVERIFIED = "unverified"
+    UNAVAILABLE = "unavailable"
+
 
 class GameStatus(str, Enum):
     SCHEDULED = "SCHEDULED"
@@ -408,6 +474,13 @@ class BookSnapshot:
     pre_match: bool = True
     main_line: bool = True
     payload_hash: Optional[str] = None
+    # Three independent evidence axes.  They make a named, executable
+    # bookmaker quote visibly different from an aggregate observation or a
+    # source whose automated reuse has not been cleared.  Defaults preserve
+    # backward-compatible decoding of existing named-book records.
+    price_provenance: PriceProvenance = PriceProvenance.NAMED_BOOK
+    source_permission: SourcePermission = SourcePermission.CLEARED
+    operational_validation: OperationalValidation = OperationalValidation.VALIDATED
     # Raw provider identity is retained until the pipeline resolves the
     # snapshot to a canonical Game. Names/start are populated whenever
     # available so cross-provider joins never rely on ID coincidence.
@@ -417,21 +490,40 @@ class BookSnapshot:
     scheduled_utc: Optional[str] = None
 
     def __post_init__(self) -> None:
+        # JSON/import callers may supply controlled-vocabulary values as
+        # strings.  Normalise once at the boundary and reject unknown values;
+        # downstream ticket policy must never operate on an invented grade.
+        for field_name, enum_type in (
+            ("price_provenance", PriceProvenance),
+            ("source_permission", SourcePermission),
+            ("operational_validation", OperationalValidation),
+        ):
+            value = getattr(self, field_name)
+            if not isinstance(value, enum_type):
+                try:
+                    setattr(self, field_name, enum_type(value))
+                except (TypeError, ValueError) as exc:
+                    raise ValueError(f"{field_name} is not a valid {enum_type.__name__}") from exc
         _require_utc(self.observed_utc, "observed_utc")
         if self.scheduled_utc:
             _require_utc(self.scheduled_utc, "scheduled_utc")
         if self.line is not None and not math.isfinite(self.line):
             raise ValueError("bookmaker line must be finite")
-        for name in (
+        price_fields = (
             "over_price_decimal",
             "under_price_decimal",
             "home_price_decimal",
             "away_price_decimal",
             "draw_price_decimal",
-        ):
+        )
+        for name in price_fields:
             value = getattr(self, name)
             if value is not None and (not math.isfinite(value) or value < 1.0):
                 raise ValueError(f"{name} must be finite decimal odds >= 1.0")
+        if self.price_provenance is PriceProvenance.NO_PRICE and any(
+            getattr(self, name) is not None for name in price_fields
+        ):
+            raise ValueError("no_price evidence cannot carry a decimal quote")
 
     def moneyline_for_side(self, side: str) -> Optional[float]:
         """Decimal price for ``home``, ``away``, or ``draw`` when observed."""

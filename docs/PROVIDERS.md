@@ -181,8 +181,8 @@ prices remain missing.
 | Provider | Implemented markets | Periods | League / key |
 | --- | --- | --- | --- |
 | ESPN scoreboard | Moneyline, totals, spreads when explicitly offered | Full game | NBA, WNBA, NCAA_M, NCAA_W; public, independently timestamped canonical snapshots |
-| BetExplorer | Representative average two-way moneyline prices | Full game | EuroLeague and CBA; public HTML pages; observed live 2026-11-16, but source terms/reuse rights are unreviewed; pre-tip rows only, no historical archive or per-book prices in this adapter |
-| TheOddsAPI | h2h, totals, spreads; half markets use native H1/H2 | NBA: full game, Q1–Q4, H1 h2h; NCAA_M/NCAA_W: full game and H1/H2 markets; WNBA: full game and provider-offered quarter markets | NBA, WNBA, NCAA_M, NCAA_W; `THE_ODDS_API_KEY` |
+| BetExplorer | Representative average two-way moneyline prices | Full game | EuroLeague and CBA; stored as `aggregate_consensus` with `unresolved` permission / `probation` validation, never a named-book ticket quote; public HTML pages observed live 2026-11-16; pre-tip rows only, no historical archive or per-book prices in this adapter |
+| TheOddsAPI | h2h, totals, spreads; half markets use native H1/H2 | NBA: full game, Q1–Q4, H1 h2h; NCAA_M/NCAA_W: full game and H1/H2 markets; WNBA: full game and provider-offered quarter markets | NBA, WNBA, NCAA_M, NCAA_W; `THE_ODDS_API_KEY`. Australia NBL is a documented but `probation` mapping pending credentialed region/bookmaker coverage. |
 | iSportsAPI | Moneyline, totals, spreads | Full game, H1 spread/total, Q1–Q4 spread/total | CBA; `ISPORTS_API_KEY`; `DOCUMENTATION_ONLY` |
 | SportsGameOdds | Totals only | Full game and Q1–Q4 | NBA; `SPORTSGAMEODDS_API_KEY` |
 | TheRundown | Moneyline and totals | Full game only | NBA; `THERUNDOWN_API_KEY` |

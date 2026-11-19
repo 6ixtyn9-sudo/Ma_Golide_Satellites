@@ -51,7 +51,7 @@ profitability.
 | `picks_audit_YYYY-MM-DD.md` | Expanded rolling summary; cache/artifact only, not Git |
 | `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper singles and accas |
 | `auto_tickets_YYYY-MM-DD_no_bet.json` | Immutable terminal decision that the 60-minute pre-tip window closed without a qualifying pre-tip position |
-| `auto_tickets_YYYY-MM-DD.txt` | Mutable card; a receipt-backed ticket card is published to Git once as an initial snapshot, while later, pre-cutoff, and no-bet cards stay cache/artifact-only to avoid hourly churn |
+| `auto_tickets_YYYY-MM-DD.txt` | Mutable, Git-published settlement card for an immutable receipt; its selections, prices, and stakes remain frozen while grades and compact settlement presentation refresh after official finals. Pre-cutoff and no-bet scan cards stay cache/artifact-only. |
 | `auto_tickets_state.json` | Git-durable write-once date locks; bounded scan telemetry stays cache/artifact-only |
 | `auto_tickets_performance.json` | Compact rolling settlement/financial summary; each history day points to its immutable receipt for full leg evidence |
 | `auto_tickets_performance.txt` | Bank, settled record, bet-days, held positions, and grading notes |
@@ -66,10 +66,11 @@ history row's `receipt_path` for complete provenance. Before Git publication,
 the publisher also removes bounded scan telemetry and generation timestamps
 from the mutable state/performance JSON. Those fields remain available in the
 cache and 14-day artifacts, but an otherwise unchanged hourly run produces no
-new Git blob. A mutable `auto_tickets_YYYY-MM-DD.txt` is likewise published
-once only when its matching immutable ticket receipt exists; later card updates,
-as well as no-bet and pre-cutoff cards, remain in artifacts because their
-latest-scan text is not durable financial evidence.
+new Git blob. A mutable `auto_tickets_YYYY-MM-DD.txt` is published only when
+its matching immutable ticket receipt exists. Later updates may publish the
+receipt-backed card when official settlement changes a displayed grade; no-bet
+and pre-cutoff scan cards remain artifact-only because their latest-scan text is
+not durable financial evidence.
 
 ## Pick categories
 

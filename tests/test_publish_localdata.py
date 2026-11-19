@@ -81,8 +81,9 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
         "auto_tickets_2026-11-12.txt",
         b"later-settlement-rewrite\n",
     )
-    assert merge_downloaded_localdata(tmp_path / "artifacts", repo)["status"] == "no_changes"
-    assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12.txt").read_bytes() == b"frozen-ticket-card\n"
+    settled = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert settled["copied"] == ["localdata/nba/auto_tickets_2026-11-12.txt"]
+    assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12.txt").read_bytes() == b"later-settlement-rewrite\n"
     for state in ("nba", "cba", "wnba"):
         assert not (repo / "localdata" / state / "picks_today.json").exists()
     assert historical.read_text() == "retain me"

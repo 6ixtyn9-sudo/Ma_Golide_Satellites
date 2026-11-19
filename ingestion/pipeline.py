@@ -52,6 +52,7 @@ from .predictions import (
     resolve_frozen_bundle,
     select_prediction,
 )
+from .league_registry import SPECS, league_spec, parse_league
 from .leagues import native_periods
 from .providers import (
     betexplorer,
@@ -69,45 +70,28 @@ logger = logging.getLogger(__name__)
 # Games in these states will never produce an official final to wait for.
 _CLOSED_STATUSES = frozenset({GameStatus.POSTPONED, GameStatus.CANCELLED, GameStatus.ABANDONED})
 
-DEFAULT_TZ = {
-    "NBA": "America/New_York",
-    "EUROLEAGUE": "Europe/Paris",
-    # EuroLeague Women uses FIBA fixtures across venue timezones.  The slate
-    # day is deliberately normalized in Europe/Paris, independently of the
-    # men's Euroleague Basketball adapter.
-    "EUROLEAGUE_W": "Europe/Paris",
-    "CBA": "Asia/Shanghai",
-    "WNBA": "America/New_York",
-    "NCAA_M": "America/New_York",
-    "NCAA_W": "America/New_York",
-}
-# CBA acquisition now follows the official league data API's Beijing-local
-# calendar day (schedules/day is keyed by Beijing date); its display and
-# ledger grouping use Asia/Shanghai as before.
-ACQUISITION_TZ = {**DEFAULT_TZ, "CBA": "Asia/Shanghai"}
+# All public configuration is derived from the central registry.  This keeps
+# workflow/CLI/warehouse identities aligned when a new basketball competition
+# is added and prevents a second hand-maintained timezone matrix.
+DEFAULT_TZ = {spec.league.value: spec.timezone for spec in SPECS}
+ACQUISITION_TZ = {spec.league.value: spec.acquisition_timezone for spec in SPECS}
 BOOK_PROVIDERS = ("therundown", "sportsgameodds", "theoddsapi")
-# EuroLeague and CBA bookmaker prices come from the keyless BetExplorer
-# fixture tables (representative average moneyline odds, LIVE_VERIFIED
-# 2026-11-16). CBA keeps its paid iSportsAPI adapter as an additional
-# source when a key exists; it is never assumed.
-BOOK_PROVIDERS_BY_LEAGUE = {
-    "CBA": ("isportsapi", "betexplorer"),
-    "EUROLEAGUE": ("betexplorer",),
-    # No FIBA Women market source has been validated as canonical named-book
-    # evidence.  Keep the lane explicitly unpriced rather than accidentally
-    # reusing the men's EuroLeague/BetExplorer mapping.
-    "EUROLEAGUE_W": (),
-    "NCAA_M": ("theoddsapi",),
-    "NCAA_W": ("theoddsapi",),
-    "WNBA": ("theoddsapi",),
-}
+# Explicit per-league tuples are retained as a public compatibility surface,
+# but their values now come from the registry.  Empty means intentionally
+# unpriced, not a fallback to an unrelated men's competition provider.
+BOOK_PROVIDERS_BY_LEAGUE = {spec.league.value: spec.book_providers for spec in SPECS}
 
-ESPN_LEAGUES = {League.NBA, League.WNBA, League.NCAA_M, League.NCAA_W}
+ESPN_LEAGUES = {spec.league for spec in SPECS if spec.schedule_source == "espn"}
 
 
 def _book_providers(league: str) -> Sequence[str]:
-    # NBA/EuroLeague retain the existing overrideable provider tuple.
-    return BOOK_PROVIDERS_BY_LEAGUE.get(league.upper(), BOOK_PROVIDERS)
+    parsed = parse_league(league)
+    # Preserve the existing overrideable NBA global for fixture/regression
+    # harnesses and local operator experiments.  Other lanes are explicitly
+    # registry-scoped so a new league never falls back to NBA providers.
+    if parsed is League.NBA:
+        return BOOK_PROVIDERS
+    return BOOK_PROVIDERS_BY_LEAGUE.get(parsed.value, ())
 
 
 BOOK_STALENESS_HOURS = 72.0
@@ -134,11 +118,11 @@ class PipelineConfig:
 
     @property
     def league_enum(self) -> League:
-        return League[self.league.upper()]
+        return parse_league(self.league)
 
     @property
     def timezone(self) -> str:
-        return self.tz_name or DEFAULT_TZ[self.league.upper()]
+        return self.tz_name or league_spec(self.league_enum).timezone
 
 
 class Pipeline:
@@ -157,7 +141,11 @@ class Pipeline:
         # Fixture tests provide a one-argument fetcher.  Live FIBA acquisition
         # needs its public APIM header and RSC text transport, so it owns a
         # small official client only when no fixture fetcher was supplied.
-        self._fiba_client = None if fetch is not None else fiba_euroleague_w.FibaClient()
+        self._fiba_client = (
+            None
+            if fetch is not None or config.league_enum is not League.EUROLEAGUE_W
+            else fiba_euroleague_w.FibaClient()
+        )
         self.fetch = fetch or HttpClient().get_json
         cache_dir = None
         store_path = getattr(store, "path", None)
@@ -263,7 +251,7 @@ class Pipeline:
         """Report observed provider coverage without writing canonical state."""
 
         self._reset_stage()
-        league = self.config.league.upper()
+        league = self.config.league_enum.value
         if league in {"NBA", "WNBA", "NCAA_M", "NCAA_W"}:
             report = espn.smoke(self.config.date_yyyymmdd, self.espn_fetch, self.config.league_enum)
             if league == "NBA":
@@ -301,7 +289,23 @@ class Pipeline:
             }
             report["bookmakers"] = self._bookmakers_smoke()
             return report
-        raise ValueError(f"unsupported league for smoke: {league}")
+        spec = league_spec(self.config.league_enum)
+        return {
+            "league": spec.league.value,
+            "status": "source_unavailable",
+            "schedule": {
+                "provider": spec.schedule_source,
+                "state": CoverageState.UNSUPPORTED.value,
+                "detail": spec.source_detail,
+            },
+            "results": {
+                "provider": spec.results_source,
+                "state": CoverageState.UNSUPPORTED.value,
+                "detail": spec.source_detail,
+            },
+            "bookmakers": self._bookmakers_smoke(),
+            "policy": "canonical stored games/history remain forecastable; no schedule or result is fabricated",
+        }
 
     def pregame(self) -> Dict[str, Any]:
         """Acquire fixtures, coherent predictions, and observed book evidence."""
@@ -395,7 +399,7 @@ class Pipeline:
                     game_id=None,
                     required_field="official_results",
                     reason=CoverageState.PROVIDER_ERROR,
-                    provider=self.config.league.lower(),
+                    provider=self.config.league_enum.value.lower(),
                     detail=str(exc)[:200],
                     observed_utc=self._now_iso(),
                 )
@@ -537,6 +541,37 @@ class Pipeline:
             return detail
         return self.fetch(url)
 
+    def _unsupported_source_gap(self, required_field: str, *, provider: str, detail: str) -> None:
+        """Surface missing compliant source capability without inventing data."""
+
+        self.gaps.append(
+            CoverageGap(
+                game_id=None,
+                required_field=required_field,
+                reason=CoverageState.UNSUPPORTED,
+                provider=provider,
+                detail=detail,
+                observed_utc=self._now_iso(),
+            )
+        )
+
+    def _stored_slate_games(self) -> List[Game]:
+        """Return only canonical games already supplied by a validated import.
+
+        This enables the normal prediction/freeze/forecast lifecycle for a
+        newly registered league while its automatic official adapter remains
+        unavailable.  It never turns an unavailable source into an empty
+        success: callers emit a CoverageGap separately.
+        """
+
+        wanted = self.config.date_yyyymmdd
+        timezone = ZoneInfo(self.config.timezone)
+        return [
+            game
+            for game in self.store.list_games(league=self.config.league_enum)
+            if parse_utc(game.scheduled_utc).astimezone(timezone).strftime("%Y%m%d") == wanted
+        ]
+
     def _discover_games(self) -> List[Game]:
         league = self.config.league_enum
         espn_books: Dict[str, List[BookSnapshot]] = {}
@@ -564,7 +599,16 @@ class Pipeline:
             # part of this stage's report rather than a hidden empty-slate.
             self.gaps.extend(fiba_euroleague_w.last_gaps())
         else:
-            raise ValueError(f"unsupported league for discovery: {league.value}")
+            spec = league_spec(league)
+            self._unsupported_source_gap(
+                "official_schedule",
+                provider=spec.schedule_source,
+                detail=(
+                    spec.source_detail
+                    or "No compliant automated schedule adapter is registered for this league."
+                ),
+            )
+            games = self._stored_slate_games()
         for game in games:
             self.store.upsert_game(game)
         if league in ESPN_LEAGUES:
@@ -786,7 +830,7 @@ class Pipeline:
         selections: Dict[str, SelectionResult] = {}
         now = self._now_iso()
         artifact = None
-        if self.config.league.upper() == "NBA":
+        if self.config.league_enum is League.NBA:
             try:
                 artifact = hardwood.load_forecasts(self.fetch)
             except Exception as exc:
@@ -922,14 +966,22 @@ class Pipeline:
         raw_snapshots: List[BookSnapshot] = []
         providers = _book_providers(self.config.league)
         if not providers:
+            spec = league_spec(self.config.league_enum)
             self.book_provider_status["policy"] = {
                 "enabled": False,
                 "status": "not_configured_for_league",
                 "detail": (
-                    "no validated named-book source for FIBA EuroLeague Women; "
-                    "men's EuroLeague market mappings are intentionally not reused"
+                    "no validated named-book source is registered; forecasts remain "
+                    "unpriced and ticket-ineligible rather than borrowing another league's market"
                 ),
+                "price_permission": spec.price_permission.value,
+                "operational_validation": spec.price_validation.value,
             }
+            self._unsupported_source_gap(
+                "named_book_price",
+                provider="price_registry",
+                detail="No named-book price source is registered; operate as an explicit unpriced forecast lane.",
+            )
         for provider in providers:
             module = _book_module(provider)
             if module is None:
@@ -948,7 +1000,7 @@ class Pipeline:
             try:
                 options = self._book_provider_options(provider)
                 provider_snapshots = module.fetch_odds(
-                    self.config.league.upper(),
+                    self.config.league_enum.value,
                     self.config.date_yyyymmdd,
                     self.fetch_factory,
                     **options,
@@ -1779,6 +1831,36 @@ class Pipeline:
         """
 
         self._reset_stage()
+        if self.config.league_enum not in ESPN_LEAGUES | {
+            League.EUROLEAGUE,
+            League.EUROLEAGUE_W,
+            League.CBA,
+        }:
+            spec = league_spec(self.config.league_enum)
+            self._unsupported_source_gap(
+                "official_history_results",
+                provider=spec.results_source,
+                detail=(
+                    spec.source_detail
+                    or "No compliant automated historical-result adapter is registered for this league."
+                ),
+            )
+            return self._report(
+                mode="write" if self.allow_writes else "dry_run",
+                fixtures_found=0,
+                extra={
+                    "finals_written": 0,
+                    "backfill": {
+                        "status": "source_unavailable",
+                        "requested_days": max(0, int(self.config.history_days)),
+                        "request_budget": max(0, int(self.config.history_request_budget)),
+                        "dates": [],
+                        "ledger_dates": [],
+                        "deep_history": {"status": "source_unavailable", "ledger_dates": []},
+                        "learning_or_calibration_claimed": False,
+                    },
+                },
+            )
         configured_days = max(0, int(self.config.history_days))
         budget = max(0, int(self.config.history_request_budget))
         days = min(configured_days, budget)
@@ -1940,7 +2022,16 @@ class Pipeline:
             return self._euroleague_finals(self._discover_games())
         if league is League.EUROLEAGUE_W:
             return self._fiba_euroleague_w_finals(self._discover_games())
-        raise ValueError(f"unsupported league for results: {league.value}")
+        spec = league_spec(league)
+        self._unsupported_source_gap(
+            "official_results",
+            provider=spec.results_source,
+            detail=(
+                spec.source_detail
+                or "No compliant automated official-result adapter is registered for this league."
+            ),
+        )
+        return []
 
     def _euroleague_finals(self, games: List[Game]) -> List[Game]:
         finals = []
@@ -2036,7 +2127,7 @@ class Pipeline:
                     game_id=None,
                     required_field="pending_final_expired",
                     reason=CoverageState.MISSING,
-                    provider=self.config.league.lower(),
+                    provider=self.config.league_enum.value.lower(),
                     detail=(
                         f"result_unresolvable: {len(expired)} pending final(s) aged beyond "
                         f"the {days}-day recheck window; oldest={oldest.game_id}"
@@ -2047,6 +2138,17 @@ class Pipeline:
         if not pending:
             return []
         league = self.config.league_enum
+        if league not in ESPN_LEAGUES | {League.EUROLEAGUE, League.EUROLEAGUE_W, League.CBA}:
+            spec = league_spec(league)
+            self._unsupported_source_gap(
+                "pending_results_recheck",
+                provider=spec.results_source,
+                detail=(
+                    spec.source_detail
+                    or "No compliant result adapter is registered for pending-final rechecks."
+                ),
+            )
+            return []
         if league in {League.EUROLEAGUE, League.EUROLEAGUE_W}:
             # Each official European source exposes a competition-wide schedule;
             # a single request covers all pending FIBA ELW games as well.
@@ -2120,7 +2222,7 @@ class Pipeline:
                 "note": "PREDIXSPORT_API_KEY missing; provider disabled",
             }
         try:
-            return predixsport.smoke(self.config.league.lower(), self.fetch_factory)
+            return predixsport.smoke(self.config.league_enum.value.lower(), self.fetch_factory)
         except Exception as exc:
             return {"verification": "PROVIDER_ERROR", "detail": str(exc)[:200]}
 
@@ -2140,7 +2242,7 @@ class Pipeline:
             try:
                 options = self._book_provider_options(provider)
                 output[provider] = module.smoke(
-                    self.config.league.upper(), self.fetch_factory, **options
+                    self.config.league_enum.value, self.fetch_factory, **options
                 )
             except Exception as exc:
                 output[provider] = {
@@ -2154,7 +2256,7 @@ class Pipeline:
 
     def _report(self, mode: str, fixtures_found: int, extra: Dict[str, Any]) -> Dict[str, Any]:
         report = CoverageReport(
-            league=self.config.league.upper(),
+            league=self.config.league_enum.value,
             generated_utc=self._now_iso(),
             mode=mode,
             fixtures_found=fixtures_found,

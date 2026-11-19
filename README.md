@@ -24,6 +24,18 @@ receipts, and audit state; DuckDB remains the canonical sports system of record.
 
 * TheOddsAPI requires `THE_ODDS_API_KEY`; without it WNBA/NCAA books are ESPN-scoreboard only (ESPN carries no NCAA_W moneyline — live 153/153 ML rows unpriced on free tier).
 
+The canonical registry also includes EuroCup, Basketball Champions League, NBA G
+League, Basketball Africa League, Australia NBL, Spain ACB, France LNB Pro A,
+Germany BBL, Italy LBA, Turkey BSL, Greece Basket League, ABA League, Israel
+Premier League, Japan B.League, South Korea KBL, Brazil NBB, and Argentina Liga
+Nacional. They have typed four-quarter contracts, independent local state, and
+normal forecast/freeze/settlement handling for already-canonical imported games.
+Until a compliant official schedule/result adapter is validated for a lane, its
+automated run emits an explicit unsupported-source `CoverageGap`; it does not
+invent a fixture, final, or price. Australia NBL has a probationary The Odds API
+sport-key mapping only: credentialed region/bookmaker coverage must be observed
+before it can be treated as a validated named-book lane.
+
 NCAA men's halves are never relabelled as quarters. Modern NCAA women's
 results are four quarters, while an explicitly declared older two-half event
 remains halves. Supported NCAAW H1/H2 **book markets** remain half markets:

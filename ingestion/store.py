@@ -22,9 +22,12 @@ from .models import (
     GameStatus,
     League,
     Market,
+    OperationalValidation,
     Period,
     Prediction,
+    PriceProvenance,
     ProviderHealth,
+    SourcePermission,
 )
 
 
@@ -333,6 +336,9 @@ def _book_to_dict(s: BookSnapshot) -> dict:
     d = s.__dict__.copy()
     d["market"] = s.market.value
     d["period"] = s.period.value
+    d["price_provenance"] = s.price_provenance.value
+    d["source_permission"] = s.source_permission.value
+    d["operational_validation"] = s.operational_validation.value
     return d
 
 
@@ -340,6 +346,17 @@ def _book_from_dict(d: dict) -> BookSnapshot:
     d = dict(d)
     d["market"] = Market(d["market"])
     d["period"] = Period(d["period"])
+    # Older warehouses did not persist evidence axes.  Preserve the one
+    # known aggregate source explicitly rather than silently upgrading it to
+    # a named-book quote during a schema migration.
+    if str(d.get("provider") or "").lower() == "betexplorer":
+        d.setdefault("price_provenance", PriceProvenance.AGGREGATE_CONSENSUS.value)
+        d.setdefault("source_permission", SourcePermission.UNRESOLVED.value)
+        d.setdefault("operational_validation", OperationalValidation.PROBATION.value)
+    else:
+        d.setdefault("price_provenance", PriceProvenance.NAMED_BOOK.value)
+        d.setdefault("source_permission", SourcePermission.CLEARED.value)
+        d.setdefault("operational_validation", OperationalValidation.VALIDATED.value)
     return BookSnapshot(**d)
 
 

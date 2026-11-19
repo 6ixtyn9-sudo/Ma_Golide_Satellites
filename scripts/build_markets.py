@@ -23,6 +23,7 @@ from forecasting.service import MarketForecastService, write_market_report  # no
 from ingestion.books import BookConfig  # noqa: E402
 from ingestion.duckdb_store import DuckDBStore  # noqa: E402
 from ingestion.identity import now_utc_iso  # noqa: E402
+from ingestion.league_registry import cli_league_choices, league_spec, parse_league  # noqa: E402
 from ingestion.models import League  # noqa: E402
 from ingestion.pipeline import ACQUISITION_TZ  # noqa: E402
 from ingestion.warehouse import DEFAULT_WAREHOUSE  # noqa: E402
@@ -39,7 +40,7 @@ def main() -> int:
     parser.add_argument(
         "--league",
         default="NBA",
-        choices=["NBA", "EUROLEAGUE", "EUROLEAGUE_W", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
+        choices=cli_league_choices(),
     )
     parser.add_argument("--date", default=None, help="optional local YYYYMMDD slate")
     parser.add_argument(
@@ -58,18 +59,20 @@ def main() -> int:
     parser.add_argument("--calibration-prior", type=float, default=30.0)
     parser.add_argument("--output", default=None)
     args = parser.parse_args()
+    args.league = parse_league(args.league).value
+    spec = league_spec(parse_league(args.league))
     args.tz = args.tz or ACQUISITION_TZ[args.league]
-    localdata = Path(args.localdata) if args.localdata else Path("localdata") / args.league.lower()
+    localdata = Path(args.localdata) if args.localdata else Path("localdata") / spec.state_key
     if args.warehouse is None:
         args.warehouse = os.environ.get("MAGOLIDE_WAREHOUSE") or (
             str(localdata / "warehouse.duckdb")
-            if args.league == "EUROLEAGUE_W"
+            if args.league not in {"NBA", "EUROLEAGUE", "CBA", "WNBA", "NCAA_M", "NCAA_W"}
             else DEFAULT_WAREHOUSE
         )
     warehouse = Path(args.warehouse)
     if not warehouse.exists():
         parser.error(f"warehouse does not exist: {warehouse}")
-    output_root = localdata if args.league == "EUROLEAGUE_W" else Path("localdata")
+    output_root = localdata if args.league not in {"NBA", "EUROLEAGUE", "CBA", "WNBA", "NCAA_M", "NCAA_W"} else Path("localdata")
     output = Path(args.output or output_root / f"markets_{args.league}_{args.date or 'upcoming'}.json")
     if output.suffix.lower() != ".json":
         parser.error("--output must be a .json report")

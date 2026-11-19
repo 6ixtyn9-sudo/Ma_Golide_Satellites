@@ -9,16 +9,10 @@ from typing import Any, Dict, Tuple
 from zoneinfo import ZoneInfo
 
 from .duckdb_store import DuckDBStore
+from .league_registry import SPECS
 from .models import League
 
-_DEFAULT_TZ = {
-    "NBA": "America/New_York",
-    "EUROLEAGUE": "Europe/Paris",
-    "CBA": "Asia/Shanghai",
-    "WNBA": "America/New_York",
-    "NCAA_M": "America/New_York",
-    "NCAA_W": "America/New_York",
-}
+_DEFAULT_TZ = {spec.league.value: spec.timezone for spec in SPECS}
 
 
 class LedgerConflictError(RuntimeError):

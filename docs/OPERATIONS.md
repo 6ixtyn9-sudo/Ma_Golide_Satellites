@@ -57,10 +57,10 @@ python scripts/daily.py --auto-once --date 2026-11-07 --league NBA
 
 Useful options:
 
-- `--timezone Africa/Johannesburg` controls local reporting dates. League
-  defaults are America/New_York (NBA/WNBA/NCAA), Europe/Paris (men's
-  EuroLeague and FIBA EuroLeague Women), and Asia/Shanghai (CBA). CBA schedule
-  acquisition itself uses iSportsAPI's documented UTC calendar window.
+- `--timezone Africa/Johannesburg` controls local reporting dates. An omitted
+  timezone comes from the selected canonical league registry (for example
+  America/New_York for NBA/WNBA/NCAA, Europe/Paris for EuroLeague/FIBA ELW,
+  Asia/Shanghai for CBA, and each expansion league's own competition region).
 - An omitted `--date` is derived in the selected league's acquisition timezone.
 - `--skip-results` performs pregame/freeze/markets only.
 - `--skip-markets` skips the derived forecast report.
@@ -80,7 +80,7 @@ external scheduler must invoke the workflow at least every 30 minutes. That
 cadence gives each slate a pre-tip opportunity to make its 60-minute ticket
 decision without letting the first partial-price scan freeze the date.
 
-## Automatic seven-league workflow
+## Automatic registry-driven basketball workflow
 
 `workflows/ingestion.yml` is the reviewed workflow source. Install its **entire
 file** unchanged as `.github/workflows/ingestion.yml` with a GitHub credential
@@ -93,10 +93,13 @@ league/date/mode/write inputs**; it deliberately has no GitHub Actions cron
 trigger. An adaptive, read-only gate runs first. It reads the latest
 Git-authoritative compact operator state and a bounded current-day schedule,
 then starts preflight and only the league matrix rows that have work due. The
-selected rows remain fail-independent across `NBA`, `WNBA`, men's `EuroLeague`,
-FIBA `EUROLEAGUE_W`, `CBA`, `NCAA_M`, and `NCAA_W`. The gate also wakes a league
-for its first dated draft, each fixture's 60-minute pre-tip pick freeze, and
-frozen-result reconciliation. One serialized publisher commits compact ticket
+selected rows remain fail-independent across every league in the canonical
+registry. A league without a compliant automated official schedule/result
+adapter still runs fail-closed: it reports an explicit unsupported-source gap
+and may use only already-canonical imported games/history; it never fabricates
+fixtures, results, or named-book prices. The gate also wakes a league for its
+first dated draft, each fixture's 60-minute pre-tip pick freeze, and frozen-result
+reconciliation. One serialized publisher commits compact ticket
 decisions/state, dated mutable pick cards/lifecycle views, and immutable
 per-fixture pick freezes to `main`; only current-scan pick JSON and expanded
 audits stay in cache and bounded workflow artifacts.
@@ -167,9 +170,8 @@ job, therefore cannot write or publish anything.
 
 Each matrix job has isolated state and artifacts:
 
-- `localdata/nba`, `localdata/wnba`, `localdata/euroleague`,
-  `localdata/euroleague_w`, `localdata/cba`, `localdata/ncaa_m`, and
-  `localdata/ncaa_w`;
+- `localdata/<state_key>`, where `state_key` comes from the canonical league
+  registry (including every expansion lane);
 - a league-specific DuckDB path, cache prefix, run ID, and artifact name;
 - an acquisition date derived automatically in that league's acquisition
   timezone, never a dispatch-selected date.
@@ -229,7 +231,7 @@ files):
 
 | Secret | Implemented adapter coverage (verify live) | Use it for |
 | --- | --- | --- |
-| `THE_ODDS_API_KEY` | NBA/WNBA/NCAA_M/NCAA_W full-game markets; NBA quarters and H1; NCAA H1/H2 where the provider offers them | The first supplemental source to validate, especially for NCAA_W |
+| `THE_ODDS_API_KEY` | NBA/WNBA/NCAA_M/NCAA_W full-game markets; NBA quarters and H1; NCAA H1/H2 where the provider offers them; probationary Australia NBL sport-key lane | The first supplemental source to validate, especially for NCAA_W; an NBL account/region/bookmaker smoke is required before ticket eligibility |
 | `THERUNDOWN_API_KEY` | NBA full-game moneyline and totals | A second named NBA source |
 | `SPORTSGAMEODDS_API_KEY` | NBA full-game and Q1–Q4 totals | NBA quarter-total coverage |
 | `ISPORTS_API_KEY` | CBA moneyline, totals, spreads, halves, and quarters | CBA market coverage; adapter remains documentation-only until an authenticated smoke succeeds |
