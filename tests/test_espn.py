@@ -492,7 +492,7 @@ def test_g_league_scoreboard_and_result_contract_is_strict_and_bpi_is_not_implie
         (League.NBA, "59"),
         (League.WNBA, "46"),
         (League.NCAA_M, "50"),
-        (League.NCAA_W, "41"),
+        (League.NCAA_W, "50"),
         (League.NBA_G_LEAGUE, "46"),
     ),
 )
@@ -512,10 +512,12 @@ def test_every_espn_league_rejects_a_contradictory_event_uid(
         )
 
 
-def test_ncaa_w_accepts_a_matching_event_level_espn_league_uid(load_fixture, fixture_fetch):
+def test_ncaa_w_accepts_live_event_level_espn_league_uid_54(load_fixture, fixture_fetch):
+    """NCAA Division-I's ``groups=50`` filter is distinct from event UID ``l:54``."""
+
     payload = load_fixture("espn/scoreboard_rich_401909938.json")
-    payload["events"][0]["uid"] = "s:40~l:50~e:401909938"
-    payload["events"][0]["competitions"][0]["uid"] = "s:40~l:50~e:401909938~c:401909938"
+    payload["events"][0]["uid"] = "s:40~l:54~e:401909938"
+    payload["events"][0]["competitions"][0]["uid"] = "s:40~l:54~e:401909938~c:401909938"
 
     games = discover_games(
         "20261107",
