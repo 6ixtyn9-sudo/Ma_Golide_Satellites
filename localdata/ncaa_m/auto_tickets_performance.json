@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 1,
+  "awaiting_game_legs": 0,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -179,7 +179,7 @@
       "wins": 1
     },
     {
-      "awaiting_game_legs": 1,
+      "awaiting_game_legs": 0,
       "bank_units": 107.33161741750128,
       "date": "2026-11-18",
       "decision_id": "44248321279_ncaa_m_1_attempt_1",
@@ -192,7 +192,7 @@
       "pending_units": 0,
       "positions": [
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -202,7 +202,7 @@
           "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "win",
             "loss",
             "win"
           ],
@@ -213,13 +213,13 @@
               "book_provider": "espn",
               "forecast_id": "4e4d5a107a8b45cafa47",
               "game_id": "401909742",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Arizona Wildcats",
               "line": -3.5,
               "market": "spread",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "4e4d5a107a8b45cafa47",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T02:00:00Z",
               "selected_decimal_price": 1.925925925925926,
               "selection": "home"
@@ -268,7 +268,7 @@
           "stake_units": 1.0,
           "ticket_id": "e2e45efa16fc31510a9b",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
           "awaiting_game_legs": 0,
@@ -358,7 +358,7 @@
       "settled_positions": 2,
       "settled_singles": 0,
       "staked_units": 2.0,
-      "unresolved_result_legs": 1,
+      "unresolved_result_legs": 0,
       "wins": 1
     }
   ],
@@ -378,12 +378,12 @@
   "result_unresolvable_legs": 0,
   "roi": 1.832904354375317,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.15794043509344446,
+  "selected_leg_brier_score": 0.14776186967410002,
   "settled_accas": 3,
   "settled_positions": 4,
   "settled_singles": 1,
   "settled_stake_units": 4.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 1,
+  "unresolved_result_legs": 0,
   "wins": 3
 }
