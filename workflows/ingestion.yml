@@ -120,6 +120,9 @@ jobs:
     needs: [gate, preflight]
     if: needs.gate.outputs.run_any == 'true' && needs.preflight.result == 'success'
     runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
     timeout-minutes: 45
     strategy:
       # The gate emits only leagues with due work. One unavailable/failed
@@ -230,6 +233,23 @@ jobs:
           if git cat-file -e "${MAIN_REF}:${STATE_DIR}" 2>/dev/null; then
             git restore --source="$MAIN_REF" --worktree -- "$STATE_DIR"
           fi
+
+      - name: Recover retained artifact-only pick ledgers after a cold cache
+        if: steps.capability.outputs.available == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TARGET_DATE: ${{ matrix.target_date }}
+          STATE_KEY: ${{ matrix.state_key }}
+        run: |
+          set -euo pipefail
+          # Public dated cards deliberately omit raw structured pick evidence.
+          # After Git restores those cards, recover only prior pending card
+          # ledgers from this lane's retained Actions artifacts before grading.
+          python scripts/recover_pick_ledgers.py \
+            --localdata "$LOCALDATA" \
+            --target-date "$TARGET_DATE" \
+            --state-key "$STATE_KEY" \
+            --repository "$GITHUB_REPOSITORY"
 
       - name: Execute every available stage automatically
         if: steps.capability.outputs.available == 'true'
