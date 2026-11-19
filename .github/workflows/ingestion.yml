@@ -343,9 +343,11 @@ jobs:
           path: ${{ env.LOCALDATA }}
           key: magolide-localdata-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
 
-      - name: Upload league reports and recovery evidence
+      - name: Upload successful league reports and recovery evidence
         # A failed pipeline can leave a partially rendered mutable card beside
-        # an older compact summary. Do not make that partial state publishable.
+        # an older compact summary. Only a successful lane may publish its
+        # ticket/performance state, but a failed sibling must not suppress
+        # publication from every other successful matrix lane.
         if: success()
         uses: actions/upload-artifact@v4
         with:
@@ -367,16 +369,39 @@ jobs:
           if-no-files-found: ignore
           retention-days: 14
 
+      - name: Preserve durable pick lifecycle evidence from an interrupted lane
+        # Pick freeze files are independently immutable and atomic. If a later
+        # non-ticket stage fails, retain the complete pick lifecycle needed to
+        # replay/settle that freeze, but never publish a partial ticket card,
+        # receipt, or compact performance summary from a failed lane.
+        if: >-
+          failure() &&
+          steps.capability.outputs.available == 'true' &&
+          github.event_name == 'repository_dispatch' &&
+          github.event.action == 'magolide-scheduled-tick'
+        uses: actions/upload-artifact@v4
+        with:
+          name: MaGolide-lifecycle-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.LOCALDATA }}/picks_*.json
+            ${{ env.LOCALDATA }}/picks_*.txt
+            ${{ env.LOCALDATA }}/pick_freeze_*.json
+            ${{ env.LOCALDATA }}/pick_lifecycle_state.json
+          if-no-files-found: ignore
+          retention-days: 14
+
   publish-localdata:
     name: Publish localdata to repository
     needs: [gate, preflight, league]
     # Only the strictly named external tick may make live operator evidence
-    # durable. Manual dispatch uploads artifacts but cannot publish.
+    # durable. Manual dispatch uploads artifacts but cannot publish. The matrix
+    # result is deliberately not a global publication veto: only successful-lane
+    # artifacts (and restricted lifecycle recovery artifacts) exist to merge,
+    # so an unrelated failed lane cannot strand completed settlement evidence.
     if: >-
       always() &&
       needs.gate.outputs.run_any == 'true' &&
       needs.preflight.result == 'success' &&
-      needs.league.result == 'success' &&
       github.ref == 'refs/heads/main' &&
       github.event_name == 'repository_dispatch' &&
       github.event.action == 'magolide-scheduled-tick'
