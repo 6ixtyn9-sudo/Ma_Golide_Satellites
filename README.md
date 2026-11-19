@@ -18,7 +18,7 @@ receipts, and audit state; DuckDB remains the canonical sports system of record.
 | WNBA | Event-declared H1/H2 or Q1–Q4 | ESPN | ESPN BPI | ESPN scoreboard* |
 | EuroLeague | Q1–Q4 | Euroleague Basketball | Predixsport | No supported EuroLeague book adapter |
 | EuroLeague Women (`EUROLEAGUE_W`) | Q1–Q4 + official OT | FIBA GDAP schedule + FIBA game-page detail | No independently validated pre-tip provider yet | No validated named-book adapter; intentionally unpriced |
-| CBA | Q1–Q4 | iSportsAPI | Sportradar Global Basketball | iSportsAPI |
+| CBA | Q1–Q4 | CBA public data service | Empirical team history after reconciled-history thresholds | BetExplorer aggregate research only; no validated named-book lane |
 | NCAA_M | H1/H2 | ESPN men's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI* |
 | NCAA_W | Q1–Q4; event-declared legacy H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI* |
 | NBA G League (`NBA_G_LEAGUE`) | Q1–Q4 | ESPN `basketball/nba-development` scoreboard + summary | No external pre-tip provider validated; empirical-history forecasts only after reconciled-history thresholds | No validated named-book lane; intentionally unpriced |
@@ -46,8 +46,8 @@ remains halves. Supported NCAAW H1/H2 **book markets** remain half markets:
 grading derives H1/H2 from Q1+Q2/Q3+Q4, and does not reuse a full-game line.
 Quarter/highest-quarter products remain disabled for both NCAA leagues. Early
 WNBA two-half games likewise remain halves; current event-declared four-quarter
-games remain quarters. CBA predictions and books deliberately come from
-independent providers; book-implied probabilities are not stored as model
+games remain quarters. CBA's public schedule/result source is kept separate from its empirical
+prediction surface; aggregate book observations are never stored as model
 predictions. EuroLeague Women is a separate FIBA competition with isolated
 `EUROLEAGUE_W` IDs and `localdata/euroleague_w` state: it never reuses the
 men's EuroLeague schedule, receipts, mappings, price lane, or model claims.
@@ -120,14 +120,13 @@ coverage. A versioned one-time NCAAW reparse repairs rows previously stored as
 two halves plus fake overtime. See
 [ESPN acquisition and history](docs/ESPN-ACQUISITION.md).
 
-Live CBA acquisition requires `ISPORTS_API_KEY` for fixtures/results/books and
-`SPORTRADAR_API_KEY` for independent probabilities. Set
-`SPORTRADAR_ACCESS_LEVEL=production` only for a production Sportradar key.
-NCAA book acquisition uses `THE_ODDS_API_KEY`; a missing key disables that
-provider rather than inventing book evidence. In GitHub Actions, optional
-provider credentials are supplied as Actions secrets (including
-`THE_ODDS_API_KEY`, `THERUNDOWN_API_KEY`, `SPORTSGAMEODDS_API_KEY`, and
-`ISPORTS_API_KEY`); without them the report explicitly marks the adapter as
+CBA schedule/result acquisition uses the public CBA data service; its aggregate
+book observations remain research-only and cannot create a ticket. NCAA book
+acquisition uses the permanently-free tier of `THE_ODDS_API_KEY`; a missing key
+disables that provider rather than inventing book evidence. In GitHub Actions,
+optional permanently-free provider credentials are supplied as Actions secrets
+(`THE_ODDS_API_KEY`, `THERUNDOWN_API_KEY`, `SPORTSGAMEODDS_API_KEY`, and
+`PREDIXSPORT_API_KEY`); without them the report explicitly marks the adapter as
 disabled. See [Operations: optional odds-provider credentials](docs/OPERATIONS.md#optional-odds-provider-credentials)
 for league/market coverage and safe rollout steps.
 

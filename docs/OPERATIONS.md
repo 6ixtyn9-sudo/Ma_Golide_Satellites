@@ -251,8 +251,7 @@ files):
 | `THE_ODDS_API_KEY` | NBA/WNBA/NCAA_M/NCAA_W full-game markets; NBA quarters and H1; NCAA H1/H2 where the provider offers them; probationary Australia NBL sport-key lane | The first supplemental source to validate, especially for NCAA_W; an NBL account/region/bookmaker smoke is required before ticket eligibility |
 | `THERUNDOWN_API_KEY` | NBA full-game moneyline and totals | A second named NBA source |
 | `SPORTSGAMEODDS_API_KEY` | NBA full-game and Q1–Q4 totals | NBA quarter-total coverage |
-| `ISPORTS_API_KEY` | CBA moneyline, totals, spreads, halves, and quarters | CBA market coverage; adapter remains documentation-only until an authenticated smoke succeeds |
-| `SPORTRADAR_API_KEY` / `PREDIXSPORT_API_KEY` | Independent CBA / EuroLeague prediction paths | Prediction redundancy, not bookmaker prices |
+| `PREDIXSPORT_API_KEY` | NBA and EuroLeague predictions | Personal/non-commercial free tier only; adapter remains documentation-only until an authenticated smoke succeeds |
 
 The workflow injects these only as process environment variables. A missing
 secret is safe: its adapter remains disabled and the pregame report records
@@ -291,13 +290,12 @@ coverage classes, verified index floors, and cache policy are documented in
 [ESPN acquisition and history](ESPN-ACQUISITION.md). Historical rows alone do
 not satisfy pre-tip prediction/book requirements or establish calibration.
 
-Configure provider secrets `PREDIXSPORT_API_KEY`, `THERUNDOWN_API_KEY`,
-`SPORTSGAMEODDS_API_KEY`, `THE_ODDS_API_KEY`, `ISPORTS_API_KEY`, and
-`SPORTRADAR_API_KEY` as needed. `SPORTRADAR_ACCESS_LEVEL` defaults to `trial`
-and may be set to `production` as a repository variable for a production key.
-Missing credentials disable only the affected provider and remain visible as
-coverage gaps; they do not fabricate substitute evidence. CBA/NCAA provider
-coverage is `DOCUMENTATION_ONLY` until authenticated smoke runs succeed.
+Configure only permanently-free provider secrets as needed:
+`PREDIXSPORT_API_KEY`, `THERUNDOWN_API_KEY`, `SPORTSGAMEODDS_API_KEY`, and
+`THE_ODDS_API_KEY`. Missing credentials disable only the affected provider and
+remain visible as coverage gaps; they do not fabricate substitute evidence.
+Predixsport and NCAA provider coverage is `DOCUMENTATION_ONLY` until
+an authenticated smoke succeeds.
 
 ## Hermetic rehearsal
 

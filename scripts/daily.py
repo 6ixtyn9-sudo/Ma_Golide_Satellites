@@ -415,7 +415,6 @@ def main() -> int:
             "therundown",
             "sportsgameodds",
             "theoddsapi",
-            "isportsapi",
             "betexplorer",
             "espn",
         ],

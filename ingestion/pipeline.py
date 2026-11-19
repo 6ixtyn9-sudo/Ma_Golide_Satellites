@@ -61,8 +61,6 @@ from .providers import (
     euroleague,
     fiba_euroleague_w,
     hardwood,
-    isportsapi,
-    sportradar,
 )
 
 logger = logging.getLogger(__name__)
@@ -306,13 +304,6 @@ class Pipeline:
             report = cbaleague.schedule_smoke(
                 self.config.date_yyyymmdd, self.fetch, self.config.league_enum
             )
-            report["isportsapi"] = isportsapi.schedule_smoke(
-                self.config.date_yyyymmdd, self.fetch, self.config.league_enum
-            )
-            try:
-                report["sportradar"] = sportradar.smoke(self.config.date_yyyymmdd, self.fetch)
-            except Exception as exc:
-                report["sportradar"] = {"status": "PROVIDER_ERROR", "detail": str(exc)[:200]}
             report["bookmakers"] = self._bookmakers_smoke()
             return report
         if league == "EUROLEAGUE":
@@ -626,9 +617,8 @@ class Pipeline:
                 observed_utc=self._now_iso(),
             )
         elif league is League.CBA:
-            # Official keyless league data (cbaleague data-server). The paid
-            # iSportsAPI adapter remains book-only; one discovery source per
-            # league prevents duplicate canonical games.
+            # Public league data from the CBA data-server remains the sole
+            # discovery source, preventing duplicate canonical games.
             games = cbaleague.discover_games(self.config.date_yyyymmdd, self.fetch, league)
             self.gaps.extend(cbaleague.last_gaps())
         elif league is League.EUROLEAGUE:
@@ -895,40 +885,6 @@ class Pipeline:
                     )
                 )
 
-        cba_probabilities: Dict[str, Prediction] = {}
-        if self.config.league_enum is League.CBA:
-            if sportradar.is_enabled():
-                try:
-                    cba_probabilities = sportradar.fetch_cba_probabilities(
-                        self.config.date_yyyymmdd,
-                        games,
-                        self.fetch,
-                        now_utc=self.config.fixture_now_utc,
-                    )
-                except Exception as exc:
-                    logger.warning("Sportradar CBA probabilities unavailable: %s", exc)
-                    self.gaps.append(
-                        CoverageGap(
-                            game_id=None,
-                            required_field="sportradar_probabilities",
-                            reason=CoverageState.PROVIDER_ERROR,
-                            provider="sportradar",
-                            detail=str(exc)[:200],
-                            observed_utc=now,
-                        )
-                    )
-            else:
-                self.gaps.append(
-                    CoverageGap(
-                        game_id=None,
-                        required_field="sportradar_probabilities",
-                        reason=CoverageState.UNAUTHORIZED,
-                        provider="sportradar",
-                        detail="missing SPORTRADAR_API_KEY",
-                        observed_utc=now,
-                    )
-                )
-
         for game in games:
             # Stored pre-tip observations compete with fresh observations. A
             # transient provider failure must not blank a still-fresh bundle.
@@ -959,10 +915,6 @@ class Pipeline:
                     )
                 if league is League.NBA and artifact is not None:
                     candidates.extend(_hardwood_candidates(game, artifact, self.fetch, self.gaps))
-            elif league is League.CBA:
-                prediction = cba_probabilities.get(game.game_id)
-                if prediction is not None:
-                    candidates.append(prediction)
             elif league is League.EUROLEAGUE:
                 candidates.extend(_predixsport_candidates(game, self.fetch_factory))
 
@@ -2466,14 +2418,13 @@ def _default_fetch_factory(provider: str):
 
 
 def _book_module(provider: str):
-    from .providers import isportsapi, sportsgameodds, theoddsapi, therundown
+    from .providers import sportsgameodds, theoddsapi, therundown
 
     return {
         "betexplorer": betexplorer,
         "therundown": therundown,
         "sportsgameodds": sportsgameodds,
         "theoddsapi": theoddsapi,
-        "isportsapi": isportsapi,
     }[provider]
 
 

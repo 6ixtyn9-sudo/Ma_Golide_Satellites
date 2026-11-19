@@ -256,10 +256,6 @@ def test_registry_price_policy_is_provider_specific_and_fail_closed():
     assert nba_espn.source_permission is SourcePermission.UNRESOLVED
     assert nba_espn.operational_validation is OperationalValidation.UNVERIFIED
 
-    cba_isports = price_evidence_policy(League.CBA, "isportsapi")
-    assert cba_isports.source_permission is SourcePermission.UNRESOLVED
-    assert cba_isports.operational_validation is OperationalValidation.PROBATION
-
     nba_direct = price_evidence_policy(League.NBA, "theoddsapi")
     assert nba_direct.source_permission is SourcePermission.CLEARED
     assert nba_direct.operational_validation is OperationalValidation.VALIDATED

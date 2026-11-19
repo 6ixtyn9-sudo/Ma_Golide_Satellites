@@ -131,15 +131,12 @@ jobs:
     env:
       LOCALDATA: localdata/${{ matrix.state_key }}
       MAGOLIDE_WAREHOUSE: localdata/${{ matrix.state_key }}/warehouse.duckdb
-      SPORTRADAR_ACCESS_LEVEL: "trial"
       # Optional credentials. Empty GitHub secrets stay empty and the adapter
       # records a disabled status in the pregame report; values are never
       # printed by the workflow or stored in localdata.
       THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
       THERUNDOWN_API_KEY: ${{ secrets.THERUNDOWN_API_KEY }}
       SPORTSGAMEODDS_API_KEY: ${{ secrets.SPORTSGAMEODDS_API_KEY }}
-      ISPORTS_API_KEY: ${{ secrets.ISPORTS_API_KEY }}
-      SPORTRADAR_API_KEY: ${{ secrets.SPORTRADAR_API_KEY }}
       PREDIXSPORT_API_KEY: ${{ secrets.PREDIXSPORT_API_KEY }}
       ALLOW_MAGOLIDE_WRITES: "true"
       ALLOW_NOTIFICATION_WRITES: "false"
