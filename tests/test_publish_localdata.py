@@ -125,25 +125,26 @@ def test_publisher_reports_unknown_state_directories_without_publishing_them(tmp
     assert not (tmp_path / "repo" / "localdata" / "unregistered_league").exists()
 
 
-def test_publisher_preserves_mutable_drafts_and_rejects_pick_freeze_rewrites(tmp_path):
+def test_publisher_keeps_detailed_lifecycle_renders_artifact_only_globally(tmp_path):
+    lifecycle_name = "picks_2026-11-18_lifecycle.json"
     freeze_name = "pick_freeze_2026-11-18_0123456789abcdef.json"
+    for state in ("nba", "ncaa_w"):
+        artifact_file(tmp_path, f"{state}-artifact", state, lifecycle_name, b"detailed lifecycle\n")
     artifact_file(tmp_path, "nba-artifact", "nba", "picks_2026-11-18.json", b"draft one\n")
     artifact_file(tmp_path, "nba-artifact", "nba", "picks_2026-11-18.txt", b"draft one\n")
-    artifact_file(
-        tmp_path,
-        "nba-artifact",
-        "nba",
-        "picks_2026-11-18_lifecycle.json",
-        b"lifecycle one\n",
-    )
     artifact_file(tmp_path, "nba-artifact", "nba", "pick_lifecycle_state.json", b"state one\n")
     freeze = artifact_file(tmp_path, "nba-artifact", "nba", freeze_name, b"frozen evidence\n")
 
     repo = tmp_path / "repo"
     first = merge_downloaded_localdata(tmp_path / "artifacts", repo)
-    assert first["copied_count"] == 5
+    assert first["copied_count"] == 4
+    assert not allowed_operator_file(lifecycle_name)
+    assert allowed_lifecycle_recovery_file(lifecycle_name)
+    for state in ("nba", "ncaa_w"):
+        assert not (repo / "localdata" / state / lifecycle_name).exists()
     destination = repo / "localdata" / "nba"
     assert (destination / "picks_2026-11-18.json").read_bytes() == b"draft one\n"
+    assert (destination / "pick_lifecycle_state.json").read_bytes() == b"state one\n"
 
     artifact_file(tmp_path, "nba-artifact", "nba", "picks_2026-11-18.json", b"draft two\n")
     artifact_file(tmp_path, "nba-artifact", "nba", "picks_2026-11-18.txt", b"draft two\n")
@@ -374,11 +375,11 @@ def test_allowlist_is_narrow_and_missing_artifact_directory_is_a_noop(tmp_path):
         for name in {
             "picks_2026-11-12.txt",
             "picks_2026-11-12.json",
-            "picks_2026-11-12_lifecycle.json",
             "pick_lifecycle_state.json",
             "pick_freeze_2026-11-12_0123456789abcdef.json",
         }
     )
+    assert not allowed_operator_file("picks_2026-11-12_lifecycle.json")
     assert not allowed_operator_file("picks_today.json")
     assert not allowed_operator_file("picks_audit_rolling.json")
     assert not allowed_operator_file("picks_audit_2026-11-12.md")

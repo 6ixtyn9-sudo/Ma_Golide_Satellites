@@ -101,9 +101,9 @@ and may use only already-canonical imported games/history; it never fabricates
 fixtures, results, or named-book prices. The gate also wakes a league for its
 first dated draft, each fixture's 60-minute pre-tip pick freeze, and frozen-result
 reconciliation. One serialized publisher commits compact ticket
-decisions/state, dated mutable pick cards/lifecycle views, and immutable
-per-fixture pick freezes to `main`; only current-scan pick JSON and expanded
-audits stay in cache and bounded workflow artifacts.
+decisions/state, dated mutable pick cards, and immutable per-fixture pick
+freezes to `main`; detailed lifecycle renders, current-scan pick JSON, and
+expanded audits stay in cache and bounded workflow artifacts.
 
 ### Reliable external trigger
 
