@@ -91,15 +91,15 @@
         "source": "team_history_empirical"
       },
       "shadow_calibration": {
-        "adjustment": 0.022908,
-        "candidate_probability": 0.5329079138812087,
+        "adjustment": 0.022893,
+        "candidate_probability": 0.5328925920574874,
         "challenger_version": "recency-389a235f88f3",
         "champion_probability": 0.5454,
         "ess": 19.695522,
         "n": 20,
-        "probability": 0.5329079138812087,
+        "probability": 0.5328925920574874,
         "status": "provisional",
-        "weighted_n": 16.489313
+        "weighted_n": 16.472229
       }
     },
     "forecast_id": "1e881eb309329dd71ac2",
@@ -226,15 +226,15 @@
         "source": "team_history_empirical"
       },
       "shadow_calibration": {
-        "adjustment": 0.050341,
-        "candidate_probability": 0.32034072615989007,
+        "adjustment": 0.050307,
+        "candidate_probability": 0.32030705606071697,
         "challenger_version": "recency-389a235f88f3",
         "champion_probability": 0.3274,
         "ess": 19.695522,
         "n": 20,
-        "probability": 0.32034072615989007,
+        "probability": 0.32030705606071697,
         "status": "provisional",
-        "weighted_n": 16.489313
+        "weighted_n": 16.472229
       }
     },
     "forecast_id": "d5430be1151f09a65c9d",
@@ -525,15 +525,15 @@
         "source": "team_history_empirical"
       },
       "shadow_calibration": {
-        "adjustment": 0.022908,
-        "candidate_probability": 0.6329079138812087,
+        "adjustment": 0.022893,
+        "candidate_probability": 0.6328925920574874,
         "challenger_version": "recency-389a235f88f3",
         "champion_probability": 0.6454,
         "ess": 19.695522,
         "n": 20,
-        "probability": 0.6329079138812087,
+        "probability": 0.6328925920574874,
         "status": "provisional",
-        "weighted_n": 16.489313
+        "weighted_n": 16.472229
       }
     },
     "forecast_id": "92cb7202a9d1a83ebc43",
@@ -660,15 +660,15 @@
         "source": "team_history_empirical"
       },
       "shadow_calibration": {
-        "adjustment": 0.050341,
-        "candidate_probability": 0.44034072615989006,
+        "adjustment": 0.050307,
+        "candidate_probability": 0.44030705606071696,
         "challenger_version": "recency-389a235f88f3",
         "champion_probability": 0.4474,
         "ess": 19.695522,
         "n": 20,
-        "probability": 0.44034072615989006,
+        "probability": 0.44030705606071696,
         "status": "provisional",
-        "weighted_n": 16.489313
+        "weighted_n": 16.472229
       }
     },
     "forecast_id": "b22f333b5aa3bd402fec",
@@ -692,6 +692,173 @@
     "role": null,
     "scheduled_utc": "2026-11-19T18:00:00Z",
     "selection": "Q4",
+    "team_history": {
+      "away_effective_games": 29.348836,
+      "home_effective_games": 29.356789,
+      "required_effective_games_per_team": 8.0,
+      "sufficient_for_accas": true
+    },
+    "training_games": 6721
+  },
+  {
+    "alternative_probabilities": {
+      "away": 0.44,
+      "draw": 0.0,
+      "home": 0.56
+    },
+    "away": "Panathinaikos AKTOR Athens",
+    "book": {
+      "book": "average",
+      "frozen": false,
+      "game_id": "E2026-121",
+      "line": null,
+      "main_line": true,
+      "market": "moneyline",
+      "observed_utc": "2026-11-19T11:08:00Z",
+      "operational_validation": "probation",
+      "period": "full_game",
+      "pre_match": true,
+      "price_provenance": "aggregate_consensus",
+      "provider": "betexplorer",
+      "selected_decimal_price": 1.81,
+      "side_prices": {
+        "away": 1.93,
+        "draw": null,
+        "home": 1.81,
+        "over": null,
+        "under": null
+      },
+      "source_modified_utc": null,
+      "source_permission": "unresolved",
+      "ticket_price_eligible": false
+    },
+    "bucket": "SKIPPED_INELIGIBLE",
+    "calibrated_probability": 0.585714,
+    "calibration": {
+      "brier_score": 0.218389,
+      "calibration_version": "team_history_empirical-cb419eb48826",
+      "league": "EUROLEAGUE",
+      "log_loss": 0.628565,
+      "losses": 7,
+      "market": "moneyline",
+      "mean_raw_probability": 0.565263,
+      "minimum_samples": 30,
+      "n": 19,
+      "observed_win_rate": 0.631579,
+      "period": "full_game",
+      "pool": "eligible",
+      "probability_adjustment": 0.025714,
+      "pushes": 0,
+      "source": "team_history_empirical",
+      "status": "provisional",
+      "sufficient_for_accas": false,
+      "wilson_lower_95": 0.444069,
+      "wins": 12
+    },
+    "calibration_version": "team_history_empirical-cb419eb48826",
+    "context": null,
+    "date": "2026-11-19",
+    "eligibility": {
+      "acca_eligible": false,
+      "evidence_state": "current_pre_tip_unfrozen",
+      "reasons": [
+        "price_not_named_bookmaker_quote",
+        "price_source_permission_unresolved",
+        "price_operational_validation_incomplete",
+        "insufficient_walk_forward_samples"
+      ]
+    },
+    "expected_margin": 3.55654522847432,
+    "expected_total": 166.70710061312928,
+    "explanation": {
+      "calibration": {
+        "brier_score": 0.218389,
+        "calibration_version": "team_history_empirical-cb419eb48826",
+        "league": "EUROLEAGUE",
+        "log_loss": 0.628565,
+        "losses": 7,
+        "market": "moneyline",
+        "mean_raw_probability": 0.565263,
+        "minimum_samples": 30,
+        "n": 19,
+        "observed_win_rate": 0.631579,
+        "period": "full_game",
+        "pool": "eligible",
+        "probability_adjustment": 0.025714,
+        "pushes": 0,
+        "source": "team_history_empirical",
+        "status": "provisional",
+        "sufficient_for_accas": false,
+        "wilson_lower_95": 0.444069,
+        "wins": 12
+      },
+      "effective_sample_size": 18.705166,
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "price_not_named_bookmaker_quote",
+          "price_source_permission_unresolved",
+          "price_operational_validation_incomplete",
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "prices": {
+        "opposite_decimal_price": 1.93,
+        "opposite_selection": "away",
+        "selected_decimal_price": 1.81
+      },
+      "provenance": {
+        "book": {
+          "book": "average",
+          "frozen": false,
+          "main_line": true,
+          "observed_utc": "2026-11-19T11:08:00Z",
+          "pre_match": true,
+          "provider": "betexplorer"
+        },
+        "prediction": null
+      },
+      "segment": {
+        "calibration_version": "team_history_empirical-cb419eb48826",
+        "league": "EUROLEAGUE",
+        "market": "moneyline",
+        "period": "full_game",
+        "source": "team_history_empirical"
+      },
+      "shadow_calibration": {
+        "adjustment": 0.020942,
+        "candidate_probability": 0.5809417629532462,
+        "challenger_version": "recency-389a235f88f3",
+        "champion_probability": 0.5857142857142857,
+        "ess": 18.705166,
+        "n": 19,
+        "probability": 0.5809417629532462,
+        "status": "provisional",
+        "weighted_n": 15.716297
+      }
+    },
+    "forecast_id": "c211ff237c1fc0598a00",
+    "game_id": "E2026-121",
+    "grade_status": "pending",
+    "home": "Zalgiris Kaunas",
+    "league": "EUROLEAGUE",
+    "line": null,
+    "market": "moneyline",
+    "model": "team_history_empirical",
+    "model_version": "team_history_empirical",
+    "outcome": null,
+    "paper_only": true,
+    "period": "full_game",
+    "pick_id": "c211ff237c1fc0598a00",
+    "prediction": null,
+    "price_evidence": "AGGREGATE_CONSENSUS_PRICE",
+    "push_probability": 0.0,
+    "raw_probability": 0.56,
+    "residual_games": 100,
+    "role": null,
+    "scheduled_utc": "2026-11-19T18:00:00Z",
+    "selection": "home",
     "team_history": {
       "away_effective_games": 29.348836,
       "home_effective_games": 29.356789,
@@ -959,15 +1126,15 @@
         "source": "team_history_empirical"
       },
       "shadow_calibration": {
-        "adjustment": 0.022908,
-        "candidate_probability": 0.6529079138812087,
+        "adjustment": 0.022893,
+        "candidate_probability": 0.6528925920574874,
         "challenger_version": "recency-389a235f88f3",
         "champion_probability": 0.6654,
         "ess": 19.695522,
         "n": 20,
-        "probability": 0.6529079138812087,
+        "probability": 0.6528925920574874,
         "status": "provisional",
-        "weighted_n": 16.489313
+        "weighted_n": 16.472229
       }
     },
     "forecast_id": "34c9f006a2f9c3082318",
@@ -987,6 +1154,173 @@
     "price_evidence": "UNMATCHED",
     "push_probability": 0.0,
     "raw_probability": 0.63,
+    "residual_games": 100,
+    "role": null,
+    "scheduled_utc": "2026-11-19T19:00:00Z",
+    "selection": "home",
+    "team_history": {
+      "away_effective_games": 24.167193,
+      "home_effective_games": 29.356483,
+      "required_effective_games_per_team": 8.0,
+      "sufficient_for_accas": true
+    },
+    "training_games": 6721
+  },
+  {
+    "alternative_probabilities": {
+      "away": 0.42,
+      "draw": 0.0,
+      "home": 0.58
+    },
+    "away": "Kosner Baskonia Vitoria-Gasteiz",
+    "book": {
+      "book": "average",
+      "frozen": false,
+      "game_id": "E2026-124",
+      "line": null,
+      "main_line": true,
+      "market": "moneyline",
+      "observed_utc": "2026-11-19T11:08:00Z",
+      "operational_validation": "probation",
+      "period": "full_game",
+      "pre_match": true,
+      "price_provenance": "aggregate_consensus",
+      "provider": "betexplorer",
+      "selected_decimal_price": 1.32,
+      "side_prices": {
+        "away": 3.18,
+        "draw": null,
+        "home": 1.32,
+        "over": null,
+        "under": null
+      },
+      "source_modified_utc": null,
+      "source_permission": "unresolved",
+      "ticket_price_eligible": false
+    },
+    "bucket": "SKIPPED_INELIGIBLE",
+    "calibrated_probability": 0.605714,
+    "calibration": {
+      "brier_score": 0.218389,
+      "calibration_version": "team_history_empirical-cb419eb48826",
+      "league": "EUROLEAGUE",
+      "log_loss": 0.628565,
+      "losses": 7,
+      "market": "moneyline",
+      "mean_raw_probability": 0.565263,
+      "minimum_samples": 30,
+      "n": 19,
+      "observed_win_rate": 0.631579,
+      "period": "full_game",
+      "pool": "eligible",
+      "probability_adjustment": 0.025714,
+      "pushes": 0,
+      "source": "team_history_empirical",
+      "status": "provisional",
+      "sufficient_for_accas": false,
+      "wilson_lower_95": 0.444069,
+      "wins": 12
+    },
+    "calibration_version": "team_history_empirical-cb419eb48826",
+    "context": null,
+    "date": "2026-11-19",
+    "eligibility": {
+      "acca_eligible": false,
+      "evidence_state": "current_pre_tip_unfrozen",
+      "reasons": [
+        "price_not_named_bookmaker_quote",
+        "price_source_permission_unresolved",
+        "price_operational_validation_incomplete",
+        "insufficient_walk_forward_samples"
+      ]
+    },
+    "expected_margin": 5.018144701304735,
+    "expected_total": 171.5816727157013,
+    "explanation": {
+      "calibration": {
+        "brier_score": 0.218389,
+        "calibration_version": "team_history_empirical-cb419eb48826",
+        "league": "EUROLEAGUE",
+        "log_loss": 0.628565,
+        "losses": 7,
+        "market": "moneyline",
+        "mean_raw_probability": 0.565263,
+        "minimum_samples": 30,
+        "n": 19,
+        "observed_win_rate": 0.631579,
+        "period": "full_game",
+        "pool": "eligible",
+        "probability_adjustment": 0.025714,
+        "pushes": 0,
+        "source": "team_history_empirical",
+        "status": "provisional",
+        "sufficient_for_accas": false,
+        "wilson_lower_95": 0.444069,
+        "wins": 12
+      },
+      "effective_sample_size": 18.705166,
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "price_not_named_bookmaker_quote",
+          "price_source_permission_unresolved",
+          "price_operational_validation_incomplete",
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "prices": {
+        "opposite_decimal_price": 3.18,
+        "opposite_selection": "away",
+        "selected_decimal_price": 1.32
+      },
+      "provenance": {
+        "book": {
+          "book": "average",
+          "frozen": false,
+          "main_line": true,
+          "observed_utc": "2026-11-19T11:08:00Z",
+          "pre_match": true,
+          "provider": "betexplorer"
+        },
+        "prediction": null
+      },
+      "segment": {
+        "calibration_version": "team_history_empirical-cb419eb48826",
+        "league": "EUROLEAGUE",
+        "market": "moneyline",
+        "period": "full_game",
+        "source": "team_history_empirical"
+      },
+      "shadow_calibration": {
+        "adjustment": 0.020942,
+        "candidate_probability": 0.6009417629532461,
+        "challenger_version": "recency-389a235f88f3",
+        "champion_probability": 0.6057142857142856,
+        "ess": 18.705166,
+        "n": 19,
+        "probability": 0.6009417629532461,
+        "status": "provisional",
+        "weighted_n": 15.716297
+      }
+    },
+    "forecast_id": "3860cd1860279b71becc",
+    "game_id": "E2026-124",
+    "grade_status": "pending",
+    "home": "FC Bayern Munich",
+    "league": "EUROLEAGUE",
+    "line": null,
+    "market": "moneyline",
+    "model": "team_history_empirical",
+    "model_version": "team_history_empirical",
+    "outcome": null,
+    "paper_only": true,
+    "period": "full_game",
+    "pick_id": "3860cd1860279b71becc",
+    "prediction": null,
+    "price_evidence": "AGGREGATE_CONSENSUS_PRICE",
+    "push_probability": 0.0,
+    "raw_probability": 0.58,
     "residual_games": 100,
     "role": null,
     "scheduled_utc": "2026-11-19T19:00:00Z",
@@ -1335,6 +1669,173 @@
   },
   {
     "alternative_probabilities": {
+      "away": 0.52,
+      "draw": 0.0,
+      "home": 0.48
+    },
+    "away": "Fenerbahce Tarfin Istanbul",
+    "book": {
+      "book": "average",
+      "frozen": false,
+      "game_id": "E2026-123",
+      "line": null,
+      "main_line": true,
+      "market": "moneyline",
+      "observed_utc": "2026-11-19T11:08:00Z",
+      "operational_validation": "probation",
+      "period": "full_game",
+      "pre_match": true,
+      "price_provenance": "aggregate_consensus",
+      "provider": "betexplorer",
+      "selected_decimal_price": 1.52,
+      "side_prices": {
+        "away": 1.52,
+        "draw": null,
+        "home": 2.43,
+        "over": null,
+        "under": null
+      },
+      "source_modified_utc": null,
+      "source_permission": "unresolved",
+      "ticket_price_eligible": false
+    },
+    "bucket": "SKIPPED_INELIGIBLE",
+    "calibrated_probability": 0.545714,
+    "calibration": {
+      "brier_score": 0.218389,
+      "calibration_version": "team_history_empirical-cb419eb48826",
+      "league": "EUROLEAGUE",
+      "log_loss": 0.628565,
+      "losses": 7,
+      "market": "moneyline",
+      "mean_raw_probability": 0.565263,
+      "minimum_samples": 30,
+      "n": 19,
+      "observed_win_rate": 0.631579,
+      "period": "full_game",
+      "pool": "eligible",
+      "probability_adjustment": 0.025714,
+      "pushes": 0,
+      "source": "team_history_empirical",
+      "status": "provisional",
+      "sufficient_for_accas": false,
+      "wilson_lower_95": 0.444069,
+      "wins": 12
+    },
+    "calibration_version": "team_history_empirical-cb419eb48826",
+    "context": null,
+    "date": "2026-11-19",
+    "eligibility": {
+      "acca_eligible": false,
+      "evidence_state": "current_pre_tip_unfrozen",
+      "reasons": [
+        "price_not_named_bookmaker_quote",
+        "price_source_permission_unresolved",
+        "price_operational_validation_incomplete",
+        "insufficient_walk_forward_samples"
+      ]
+    },
+    "expected_margin": 0.41860694370461715,
+    "expected_total": 163.55567537018285,
+    "explanation": {
+      "calibration": {
+        "brier_score": 0.218389,
+        "calibration_version": "team_history_empirical-cb419eb48826",
+        "league": "EUROLEAGUE",
+        "log_loss": 0.628565,
+        "losses": 7,
+        "market": "moneyline",
+        "mean_raw_probability": 0.565263,
+        "minimum_samples": 30,
+        "n": 19,
+        "observed_win_rate": 0.631579,
+        "period": "full_game",
+        "pool": "eligible",
+        "probability_adjustment": 0.025714,
+        "pushes": 0,
+        "source": "team_history_empirical",
+        "status": "provisional",
+        "sufficient_for_accas": false,
+        "wilson_lower_95": 0.444069,
+        "wins": 12
+      },
+      "effective_sample_size": 18.705166,
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "price_not_named_bookmaker_quote",
+          "price_source_permission_unresolved",
+          "price_operational_validation_incomplete",
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "prices": {
+        "opposite_decimal_price": 2.43,
+        "opposite_selection": "home",
+        "selected_decimal_price": 1.52
+      },
+      "provenance": {
+        "book": {
+          "book": "average",
+          "frozen": false,
+          "main_line": true,
+          "observed_utc": "2026-11-19T11:08:00Z",
+          "pre_match": true,
+          "provider": "betexplorer"
+        },
+        "prediction": null
+      },
+      "segment": {
+        "calibration_version": "team_history_empirical-cb419eb48826",
+        "league": "EUROLEAGUE",
+        "market": "moneyline",
+        "period": "full_game",
+        "source": "team_history_empirical"
+      },
+      "shadow_calibration": {
+        "adjustment": 0.020942,
+        "candidate_probability": 0.5409417629532461,
+        "challenger_version": "recency-389a235f88f3",
+        "champion_probability": 0.5457142857142857,
+        "ess": 18.705166,
+        "n": 19,
+        "probability": 0.5409417629532461,
+        "status": "provisional",
+        "weighted_n": 15.716297
+      }
+    },
+    "forecast_id": "078ee345951792183416",
+    "game_id": "E2026-123",
+    "grade_status": "pending",
+    "home": "Armani Olimpia Milan",
+    "league": "EUROLEAGUE",
+    "line": null,
+    "market": "moneyline",
+    "model": "team_history_empirical",
+    "model_version": "team_history_empirical",
+    "outcome": null,
+    "paper_only": true,
+    "period": "full_game",
+    "pick_id": "078ee345951792183416",
+    "prediction": null,
+    "price_evidence": "AGGREGATE_CONSENSUS_PRICE",
+    "push_probability": 0.0,
+    "raw_probability": 0.52,
+    "residual_games": 100,
+    "role": null,
+    "scheduled_utc": "2026-11-19T19:30:00Z",
+    "selection": "away",
+    "team_history": {
+      "away_effective_games": 9.988531,
+      "home_effective_games": 9.988531,
+      "required_effective_games_per_team": 8.0,
+      "sufficient_for_accas": true
+    },
+    "training_games": 6721
+  },
+  {
+    "alternative_probabilities": {
       "away": 0.46,
       "draw": 0.0,
       "home": 0.54
@@ -1425,15 +1926,15 @@
         "source": "team_history_empirical"
       },
       "shadow_calibration": {
-        "adjustment": 0.022908,
-        "candidate_probability": 0.5629079138812088,
+        "adjustment": 0.022893,
+        "candidate_probability": 0.5628925920574874,
         "challenger_version": "recency-389a235f88f3",
         "champion_probability": 0.5754,
         "ess": 19.695522,
         "n": 20,
-        "probability": 0.5629079138812088,
+        "probability": 0.5628925920574874,
         "status": "provisional",
-        "weighted_n": 16.489313
+        "weighted_n": 16.472229
       }
     },
     "forecast_id": "159d3d4d32ad9ab68098",
@@ -2061,15 +2562,15 @@
         "source": "team_history_empirical"
       },
       "shadow_calibration": {
-        "adjustment": 0.050341,
-        "candidate_probability": 0.3303407261598901,
+        "adjustment": 0.050307,
+        "candidate_probability": 0.330307056060717,
         "challenger_version": "recency-389a235f88f3",
         "champion_probability": 0.33740000000000003,
         "ess": 19.695522,
         "n": 20,
-        "probability": 0.3303407261598901,
+        "probability": 0.330307056060717,
         "status": "provisional",
-        "weighted_n": 16.489313
+        "weighted_n": 16.472229
       }
     },
     "forecast_id": "7aaf5892f57edf88331f",
@@ -2193,15 +2694,15 @@
         "source": "team_history_empirical"
       },
       "shadow_calibration": {
-        "adjustment": 0.022908,
-        "candidate_probability": 0.6329079138812087,
+        "adjustment": 0.022893,
+        "candidate_probability": 0.6328925920574874,
         "challenger_version": "recency-389a235f88f3",
         "champion_probability": 0.6454,
         "ess": 19.695522,
         "n": 20,
-        "probability": 0.6329079138812087,
+        "probability": 0.6328925920574874,
         "status": "provisional",
-        "weighted_n": 16.489313
+        "weighted_n": 16.472229
       }
     },
     "forecast_id": "b627f40799e38b6665d7",
@@ -2402,6 +2903,173 @@
   },
   {
     "alternative_probabilities": {
+      "away": 0.47,
+      "draw": 0.0,
+      "home": 0.53
+    },
+    "away": "Hapoel IBI Tel Aviv",
+    "book": {
+      "book": "average",
+      "frozen": false,
+      "game_id": "E2026-126",
+      "line": null,
+      "main_line": true,
+      "market": "moneyline",
+      "observed_utc": "2026-11-19T11:08:00Z",
+      "operational_validation": "probation",
+      "period": "full_game",
+      "pre_match": true,
+      "price_provenance": "aggregate_consensus",
+      "provider": "betexplorer",
+      "selected_decimal_price": 1.88,
+      "side_prices": {
+        "away": 1.85,
+        "draw": null,
+        "home": 1.88,
+        "over": null,
+        "under": null
+      },
+      "source_modified_utc": null,
+      "source_permission": "unresolved",
+      "ticket_price_eligible": false
+    },
+    "bucket": "SKIPPED_INELIGIBLE",
+    "calibrated_probability": 0.555714,
+    "calibration": {
+      "brier_score": 0.218389,
+      "calibration_version": "team_history_empirical-cb419eb48826",
+      "league": "EUROLEAGUE",
+      "log_loss": 0.628565,
+      "losses": 7,
+      "market": "moneyline",
+      "mean_raw_probability": 0.565263,
+      "minimum_samples": 30,
+      "n": 19,
+      "observed_win_rate": 0.631579,
+      "period": "full_game",
+      "pool": "eligible",
+      "probability_adjustment": 0.025714,
+      "pushes": 0,
+      "source": "team_history_empirical",
+      "status": "provisional",
+      "sufficient_for_accas": false,
+      "wilson_lower_95": 0.444069,
+      "wins": 12
+    },
+    "calibration_version": "team_history_empirical-cb419eb48826",
+    "context": null,
+    "date": "2026-11-19",
+    "eligibility": {
+      "acca_eligible": false,
+      "evidence_state": "current_pre_tip_unfrozen",
+      "reasons": [
+        "price_not_named_bookmaker_quote",
+        "price_source_permission_unresolved",
+        "price_operational_validation_incomplete",
+        "insufficient_walk_forward_samples"
+      ]
+    },
+    "expected_margin": 2.9976910490220234,
+    "expected_total": 173.3117039654222,
+    "explanation": {
+      "calibration": {
+        "brier_score": 0.218389,
+        "calibration_version": "team_history_empirical-cb419eb48826",
+        "league": "EUROLEAGUE",
+        "log_loss": 0.628565,
+        "losses": 7,
+        "market": "moneyline",
+        "mean_raw_probability": 0.565263,
+        "minimum_samples": 30,
+        "n": 19,
+        "observed_win_rate": 0.631579,
+        "period": "full_game",
+        "pool": "eligible",
+        "probability_adjustment": 0.025714,
+        "pushes": 0,
+        "source": "team_history_empirical",
+        "status": "provisional",
+        "sufficient_for_accas": false,
+        "wilson_lower_95": 0.444069,
+        "wins": 12
+      },
+      "effective_sample_size": 18.705166,
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "price_not_named_bookmaker_quote",
+          "price_source_permission_unresolved",
+          "price_operational_validation_incomplete",
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "prices": {
+        "opposite_decimal_price": 1.85,
+        "opposite_selection": "away",
+        "selected_decimal_price": 1.88
+      },
+      "provenance": {
+        "book": {
+          "book": "average",
+          "frozen": false,
+          "main_line": true,
+          "observed_utc": "2026-11-19T11:08:00Z",
+          "pre_match": true,
+          "provider": "betexplorer"
+        },
+        "prediction": null
+      },
+      "segment": {
+        "calibration_version": "team_history_empirical-cb419eb48826",
+        "league": "EUROLEAGUE",
+        "market": "moneyline",
+        "period": "full_game",
+        "source": "team_history_empirical"
+      },
+      "shadow_calibration": {
+        "adjustment": 0.020942,
+        "candidate_probability": 0.5509417629532462,
+        "challenger_version": "recency-389a235f88f3",
+        "champion_probability": 0.5557142857142857,
+        "ess": 18.705166,
+        "n": 19,
+        "probability": 0.5509417629532462,
+        "status": "provisional",
+        "weighted_n": 15.716297
+      }
+    },
+    "forecast_id": "fc7d99901781ceed2e70",
+    "game_id": "E2026-126",
+    "grade_status": "pending",
+    "home": "Paris Basketball",
+    "league": "EUROLEAGUE",
+    "line": null,
+    "market": "moneyline",
+    "model": "team_history_empirical",
+    "model_version": "team_history_empirical",
+    "outcome": null,
+    "paper_only": true,
+    "period": "full_game",
+    "pick_id": "fc7d99901781ceed2e70",
+    "prediction": null,
+    "price_evidence": "AGGREGATE_CONSENSUS_PRICE",
+    "push_probability": 0.0,
+    "raw_probability": 0.53,
+    "residual_games": 100,
+    "role": null,
+    "scheduled_utc": "2026-11-19T19:45:00Z",
+    "selection": "home",
+    "team_history": {
+      "away_effective_games": 24.838983,
+      "home_effective_games": 27.966271,
+      "required_effective_games_per_team": 8.0,
+      "sufficient_for_accas": true
+    },
+    "training_games": 6721
+  },
+  {
+    "alternative_probabilities": {
       "away": 0.31,
       "draw": 0.0,
       "home": 0.69
@@ -2492,15 +3160,15 @@
         "source": "team_history_empirical"
       },
       "shadow_calibration": {
-        "adjustment": 0.022908,
-        "candidate_probability": 0.7129079138812087,
+        "adjustment": 0.022893,
+        "candidate_probability": 0.7128925920574873,
         "challenger_version": "recency-389a235f88f3",
         "champion_probability": 0.7253999999999999,
         "ess": 19.695522,
         "n": 20,
-        "probability": 0.7129079138812087,
+        "probability": 0.7128925920574873,
         "status": "provisional",
-        "weighted_n": 16.489313
+        "weighted_n": 16.472229
       }
     },
     "forecast_id": "098915aef02062079e2a",
@@ -2627,15 +3295,15 @@
         "source": "team_history_empirical"
       },
       "shadow_calibration": {
-        "adjustment": 0.050341,
-        "candidate_probability": 0.3303407261598901,
+        "adjustment": 0.050307,
+        "candidate_probability": 0.330307056060717,
         "challenger_version": "recency-389a235f88f3",
         "champion_probability": 0.33740000000000003,
         "ess": 19.695522,
         "n": 20,
-        "probability": 0.3303407261598901,
+        "probability": 0.330307056060717,
         "status": "provisional",
-        "weighted_n": 16.489313
+        "weighted_n": 16.472229
       }
     },
     "forecast_id": "2d0e4da4267667d42674",
@@ -2659,6 +3327,173 @@
     "role": null,
     "scheduled_utc": "2026-11-19T20:00:00Z",
     "selection": "Q1",
+    "team_history": {
+      "away_effective_games": 26.761991,
+      "home_effective_games": 29.345146,
+      "required_effective_games_per_team": 8.0,
+      "sufficient_for_accas": true
+    },
+    "training_games": 6721
+  },
+  {
+    "alternative_probabilities": {
+      "away": 0.32,
+      "draw": 0.0,
+      "home": 0.68
+    },
+    "away": "Virtus Bologna",
+    "book": {
+      "book": "average",
+      "frozen": false,
+      "game_id": "E2026-125",
+      "line": null,
+      "main_line": true,
+      "market": "moneyline",
+      "observed_utc": "2026-11-19T11:08:00Z",
+      "operational_validation": "probation",
+      "period": "full_game",
+      "pre_match": true,
+      "price_provenance": "aggregate_consensus",
+      "provider": "betexplorer",
+      "selected_decimal_price": 1.18,
+      "side_prices": {
+        "away": 4.59,
+        "draw": null,
+        "home": 1.18,
+        "over": null,
+        "under": null
+      },
+      "source_modified_utc": null,
+      "source_permission": "unresolved",
+      "ticket_price_eligible": false
+    },
+    "bucket": "SKIPPED_INELIGIBLE",
+    "calibrated_probability": 0.705714,
+    "calibration": {
+      "brier_score": 0.218389,
+      "calibration_version": "team_history_empirical-cb419eb48826",
+      "league": "EUROLEAGUE",
+      "log_loss": 0.628565,
+      "losses": 7,
+      "market": "moneyline",
+      "mean_raw_probability": 0.565263,
+      "minimum_samples": 30,
+      "n": 19,
+      "observed_win_rate": 0.631579,
+      "period": "full_game",
+      "pool": "eligible",
+      "probability_adjustment": 0.025714,
+      "pushes": 0,
+      "source": "team_history_empirical",
+      "status": "provisional",
+      "sufficient_for_accas": false,
+      "wilson_lower_95": 0.444069,
+      "wins": 12
+    },
+    "calibration_version": "team_history_empirical-cb419eb48826",
+    "context": null,
+    "date": "2026-11-19",
+    "eligibility": {
+      "acca_eligible": false,
+      "evidence_state": "current_pre_tip_unfrozen",
+      "reasons": [
+        "price_not_named_bookmaker_quote",
+        "price_source_permission_unresolved",
+        "price_operational_validation_incomplete",
+        "insufficient_walk_forward_samples"
+      ]
+    },
+    "expected_margin": 7.637354399525847,
+    "expected_total": 170.0051729643937,
+    "explanation": {
+      "calibration": {
+        "brier_score": 0.218389,
+        "calibration_version": "team_history_empirical-cb419eb48826",
+        "league": "EUROLEAGUE",
+        "log_loss": 0.628565,
+        "losses": 7,
+        "market": "moneyline",
+        "mean_raw_probability": 0.565263,
+        "minimum_samples": 30,
+        "n": 19,
+        "observed_win_rate": 0.631579,
+        "period": "full_game",
+        "pool": "eligible",
+        "probability_adjustment": 0.025714,
+        "pushes": 0,
+        "source": "team_history_empirical",
+        "status": "provisional",
+        "sufficient_for_accas": false,
+        "wilson_lower_95": 0.444069,
+        "wins": 12
+      },
+      "effective_sample_size": 18.705166,
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "price_not_named_bookmaker_quote",
+          "price_source_permission_unresolved",
+          "price_operational_validation_incomplete",
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "prices": {
+        "opposite_decimal_price": 4.59,
+        "opposite_selection": "away",
+        "selected_decimal_price": 1.18
+      },
+      "provenance": {
+        "book": {
+          "book": "average",
+          "frozen": false,
+          "main_line": true,
+          "observed_utc": "2026-11-19T11:08:00Z",
+          "pre_match": true,
+          "provider": "betexplorer"
+        },
+        "prediction": null
+      },
+      "segment": {
+        "calibration_version": "team_history_empirical-cb419eb48826",
+        "league": "EUROLEAGUE",
+        "market": "moneyline",
+        "period": "full_game",
+        "source": "team_history_empirical"
+      },
+      "shadow_calibration": {
+        "adjustment": 0.020942,
+        "candidate_probability": 0.7009417629532462,
+        "challenger_version": "recency-389a235f88f3",
+        "champion_probability": 0.7057142857142857,
+        "ess": 18.705166,
+        "n": 19,
+        "probability": 0.7009417629532462,
+        "status": "provisional",
+        "weighted_n": 15.716297
+      }
+    },
+    "forecast_id": "38ae5d052724caf844cf",
+    "game_id": "E2026-125",
+    "grade_status": "pending",
+    "home": "Valencia Basket",
+    "league": "EUROLEAGUE",
+    "line": null,
+    "market": "moneyline",
+    "model": "team_history_empirical",
+    "model_version": "team_history_empirical",
+    "outcome": null,
+    "paper_only": true,
+    "period": "full_game",
+    "pick_id": "38ae5d052724caf844cf",
+    "prediction": null,
+    "price_evidence": "AGGREGATE_CONSENSUS_PRICE",
+    "push_probability": 0.0,
+    "raw_probability": 0.68,
+    "residual_games": 100,
+    "role": null,
+    "scheduled_utc": "2026-11-19T20:00:00Z",
+    "selection": "home",
     "team_history": {
       "away_effective_games": 26.761991,
       "home_effective_games": 29.345146,
