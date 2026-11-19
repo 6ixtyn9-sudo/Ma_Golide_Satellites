@@ -12,10 +12,11 @@ raw-dump storage approach:
   dated Markdown, operational reports, and recovery evidence for 14 days;
 - Git tracks immutable ticket/no-bet decisions, human-readable cards for
   receipt-backed tickets, compact date locks, compact performance state, dated
-  mutable pick cards, and immutable per-fixture pick freezes;
-- detailed dated lifecycle renders, `picks_today.json`, rolling/dated expanded
-  audits, and other scan payloads remain cache/artifact-only so volatile or
-  expanded detail does not become permanent Git history.
+  text cards, and immutable per-fixture pick freezes;
+- structured dated pick JSON, detailed dated lifecycle renders,
+  `picks_today.json`, rolling/dated expanded audits, and other scan payloads
+  remain cache/artifact-only so volatile or expanded detail does not become
+  permanent Git history.
 
 A dated pick card begins as a mutable draft. At each fixture's scheduled tip
 minus 60 minutes, the operator writes one immutable fixture snapshot. Later
@@ -43,7 +44,7 @@ profitability.
 | File | Purpose |
 | --- | --- |
 | `picks_today.json` | Current scan of every forecast; cache/artifact only, not Git |
-| `picks_YYYY-MM-DD.json` | Git-published dated draft evidence; rows for a fixture stop accepting later model/price observations once that fixture is frozen |
+| `picks_YYYY-MM-DD.json` | Structured dated draft evidence; cache/Actions-artifact only for every league, never Git-published |
 | `pick_freeze_YYYY-MM-DD_<fixture-hash>.json` | Git-published immutable per-fixture evidence captured at the 60-minute cutoff: selections, prices/lines, source/evidence timestamps, scheduled tip, and freeze timestamp |
 | `picks_YYYY-MM-DD_lifecycle.json` | Detailed mutable lifecycle view; grades frozen evidence against reconciled official finals and labels draft/frozen/settled state. Cache/Actions-artifact only for every league, never Git-published. |
 | `picks_YYYY-MM-DD.txt` | Git-published compact human card rendered from the lifecycle view |

@@ -205,9 +205,10 @@ def _source_unavailable_reasons(
     ):
         raise GateUncertain("coverage-gap marker has an unknown identity or schema")
     # The gate cannot discover a source-unavailable fixture itself. A dated
-    # draft is therefore proof of a manually supplied lifecycle that needs the
-    # full pipeline rather than permission to skip it as an empty slate.
-    if (state_dir / f"picks_{target_date}.json").is_file():
+    # durable text card is therefore proof of a manually supplied lifecycle
+    # that needs the full pipeline rather than permission to skip it as an
+    # empty slate. The corresponding structured JSON stays cache/artifact-only.
+    if (state_dir / f"picks_{target_date}.txt").is_file():
         return ["source_unavailable_pick_lifecycle_due"]
     return ()
 
@@ -228,7 +229,7 @@ def _pick_lifecycle_reasons(
     # only at each fixture's own pre-tip window or for result reconciliation.
     if (
         any(game.game_id for game in games)
-        and not (state_dir / f"picks_{target_date}.json").is_file()
+        and not (state_dir / f"picks_{target_date}.txt").is_file()
     ):
         reasons.append("pick_draft_publication_due")
     for game in games:

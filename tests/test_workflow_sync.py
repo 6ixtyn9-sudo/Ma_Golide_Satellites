@@ -35,15 +35,15 @@ def test_workflow_mirror_sync():
     # Pin the withdrawn/no-bet sidecars in every cache-recovery allowlist.
     assert all("withdrawn" in block for block in blocks)
     assert all("no_bet" in block for block in blocks)
-    # Detailed lifecycle renders are cache/artifact-only for every league, so
-    # restoration must not delete them before replacing Git-durable files.
+    # Structured pick JSON is cache/artifact-only for every league, so
+    # restoration must not delete it before replacing Git-durable files.
+    assert all("picks_{date}.json" not in block for block in blocks)
     assert all("picks_{date}_lifecycle" not in block for block in blocks)
 
 
 def test_gitignore_allows_every_git_durable_operator_artifact():
     repo = Path(__file__).resolve().parents[1]
     durable_names = (
-        "picks_2026-11-18.json",
         "picks_2026-11-18.txt",
         "pick_lifecycle_state.json",
         "pick_freeze_2026-11-18_0123456789abcdef.json",
@@ -59,22 +59,21 @@ def test_gitignore_allows_every_git_durable_operator_artifact():
         assert result.returncode == 1, f"durable publisher artifact is ignored: {name}"
 
 
-def test_gitignore_keeps_detailed_lifecycle_renders_artifact_only_for_every_league():
+def test_gitignore_keeps_structured_pick_json_artifact_only_for_every_league():
     repo = Path(__file__).resolve().parents[1]
     states = tuple(spec.state_key for spec in SPECS)
     assert states
     for state in states:
-        result = subprocess.run(
-            [
-                "git",
-                "check-ignore",
-                "-q",
-                f"localdata/{state}/picks_2026-11-18_lifecycle.json",
-            ],
-            cwd=repo,
-            check=False,
-        )
-        assert result.returncode == 0, f"detailed lifecycle render is globally visible: {state}"
+        for name in (
+            "picks_2026-11-18.json",
+            "picks_2026-11-18_lifecycle.json",
+        ):
+            result = subprocess.run(
+                ["git", "check-ignore", "-q", f"localdata/{state}/{name}"],
+                cwd=repo,
+                check=False,
+            )
+            assert result.returncode == 0, f"structured pick JSON is globally visible: {state}/{name}"
 
 
 def test_operator_state_restore_uses_latest_main_not_event_sha():
