@@ -147,10 +147,14 @@ When the external adaptive gate finds work due, the orchestrator runs pregame
 acquisition, current market generation, immutable pre-tip freezing, and (unless
 skipped) result reconciliation. Idle external ticks perform only a read-only
 schedule/state check; unavailable state or schedule data fails open to the full
-league run. Paper positions are not selected on the first usable scan: ticket
-candidates remain mutable until 60 minutes before the first local-slate tip,
-then either a pre-tip ticket or an immutable no-bet decision is recorded.
-Generate a report directly from an existing warehouse with:
+league run. Paper positions are not selected on the first usable scan: each
+dated card is decided at **09:00 Africa/Johannesburg** on its named date, unless
+the first fixture's 60-minute pre-tip safety cutoff is earlier. At that point,
+either a strictly evidenced pre-tip ticket or an immutable no-bet decision is
+recorded. A separate `auto_tickets_YYYY-MM-DD_preview.txt` can show current
+named-price draft candidates before then, but it is explicitly non-execution
+research: it creates no receipt, stake, grade, bank impact, or real-money
+instruction. Generate a report directly from an existing warehouse with:
 
 ```bash
 python scripts/build_markets.py \
