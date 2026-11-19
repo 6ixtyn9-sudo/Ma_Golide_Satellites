@@ -2,11 +2,13 @@
 """Restore missing historical pick ledgers from retained Actions artifacts.
 
 Dated structured pick ledgers deliberately remain cache/artifact-only: they are
-not published to Git.  A cold or evicted cache must therefore recover any
-historical ledger whose public text card still contains pending rows.  This
+not published to Git. A cold or evicted cache can therefore attempt to recover
+any historical ledger whose public text card still contains pending rows. This
 utility downloads only the owning lane's retained workflow artifacts, restores
 only the required ``picks_YYYY-MM-DD.json`` files, and leaves all Git-durable
-cards and decisions untouched.
+cards and decisions untouched. If the exact evidence is no longer retained,
+it reports that fact and leaves the public view unreconstructed; absence of an
+artifact is never permission to fail a whole league lane or invent a grade.
 
 It is designed for GitHub Actions.  The pure discovery/extraction helpers are
 also deliberately testable with local zip files.
@@ -36,7 +38,12 @@ LEDGER_RE = re.compile(r"^picks_(\d{4}-\d{2}-\d{2})\.json$")
 ARTIFACT_NAME_RE = re.compile(r"^MaGolide-(?:lifecycle-)?([a-z0-9_]+)-\d+-\d+$")
 MAX_LEDGER_BYTES = 25 * 1024 * 1024
 ARTIFACTS_PER_PAGE = 100
-DEFAULT_MAX_ARTIFACTS = 192
+# Keep a retry storm below the 45-minute matrix-job timeout. Recent retained
+# lane artifacts normally carry any cache-resident dated ledger; an older
+# absent ledger is reported rather than turning each scheduler tick into an
+# unbounded archival crawl.
+DEFAULT_MAX_ARTIFACTS = 16
+ARTIFACT_DOWNLOAD_TIMEOUT_SECONDS = 30
 
 
 @dataclass(frozen=True)
@@ -47,6 +54,8 @@ class RecoveryReport:
     recovered_dates: tuple[str, ...]
     inspected_artifacts: int
     download_failures: int = 0
+    invalid_artifacts: int = 0
+    recovery_unavailable_reason: str | None = None
 
     @property
     def missing_dates(self) -> tuple[str, ...]:
@@ -59,6 +68,8 @@ class RecoveryReport:
             "missing_dates": list(self.missing_dates),
             "inspected_artifacts": self.inspected_artifacts,
             "download_failures": self.download_failures,
+            "invalid_artifacts": self.invalid_artifacts,
+            "recovery_unavailable_reason": self.recovery_unavailable_reason,
         }
 
 
@@ -190,7 +201,12 @@ def _download_artifact(url: str, token: str, destination: Path) -> None:
     try:
         # requests removes Authorization when a GitHub API redirect crosses to
         # the signed storage host, so the workflow token is never forwarded.
-        with requests.get(url, headers=headers, stream=True, timeout=180) as response:
+        with requests.get(
+            url,
+            headers=headers,
+            stream=True,
+            timeout=ARTIFACT_DOWNLOAD_TIMEOUT_SECONDS,
+        ) as response:
             response.raise_for_status()
             with destination.open("wb") as handle:
                 for chunk in response.iter_content(chunk_size=1024 * 1024):
@@ -259,54 +275,73 @@ def recover_from_actions(
     needed = missing_historical_pick_ledgers(localdata, target_date=target_date)
     if not needed:
         return RecoveryReport(needed, (), 0)
+    # Retained artifacts are helpful evidence, not a prerequisite for safely
+    # running the current league lifecycle. Without this token the operator
+    # still leaves every unavailable historical card byte-preserved because no
+    # dated JSON ledger is available to its historical render paths.
     if not token:
-        raise RuntimeError("GITHUB_TOKEN is required to recover artifact-only pick ledgers")
+        return RecoveryReport(
+            needed,
+            (),
+            0,
+            recovery_unavailable_reason="github_token_unavailable",
+        )
 
     recovered: set[str] = set()
     inspected = 0
     download_failures = 0
-    with tempfile.TemporaryDirectory(prefix="magolide-pick-ledgers-") as temp_dir:
-        for index, url in enumerate(
-            _artifact_urls(
-                repository,
-                state_key,
-                token,
-                max_artifacts=max_artifacts,
-            )
-        ):
-            if set(needed).issubset(recovered):
-                break
-            archive = Path(temp_dir) / f"artifact-{index}.zip"
-            try:
-                _download_artifact(url, token, archive)
-            except RuntimeError:
-                # Actions storage redirects can fail transiently. Continue to
-                # another retained same-lane artifact; only report failure
-                # after every bounded source has been exhausted.
-                download_failures += 1
-                continue
-            inspected += 1
-            recovered.update(
-                restore_pick_ledgers_from_zip(
-                    archive,
-                    localdata=localdata,
-                    dates=set(needed) - recovered,
+    invalid_artifacts = 0
+    unavailable_reason: str | None = None
+    try:
+        with tempfile.TemporaryDirectory(prefix="magolide-pick-ledgers-") as temp_dir:
+            for index, url in enumerate(
+                _artifact_urls(
+                    repository,
+                    state_key,
+                    token,
+                    max_artifacts=max_artifacts,
                 )
-            )
-    report = RecoveryReport(
+            ):
+                if set(needed).issubset(recovered):
+                    break
+                archive = Path(temp_dir) / f"artifact-{index}.zip"
+                try:
+                    _download_artifact(url, token, archive)
+                except RuntimeError:
+                    # Actions storage redirects can fail transiently. Continue
+                    # to another retained same-lane artifact. A failed download
+                    # is unavailable evidence, never a reason to reconstruct.
+                    download_failures += 1
+                    continue
+                inspected += 1
+                try:
+                    recovered.update(
+                        restore_pick_ledgers_from_zip(
+                            archive,
+                            localdata=localdata,
+                            dates=set(needed) - recovered,
+                        )
+                    )
+                except ValueError:
+                    # A malformed or incomplete artifact cannot be trusted as
+                    # grading evidence. Preserve the existing public card and
+                    # continue searching another retained lane artifact.
+                    invalid_artifacts += 1
+    except (OSError, RuntimeError):
+        # Artifact listing/storage availability must not make a scheduled
+        # league lane fail. The report below makes the unrecovered dates
+        # visible, while the operator's missing-ledger guards leave their
+        # historic views untouched.
+        unavailable_reason = "actions_artifact_service_unavailable"
+
+    return RecoveryReport(
         needed,
         tuple(sorted(recovered)),
         inspected,
         download_failures,
+        invalid_artifacts,
+        unavailable_reason,
     )
-    if report.missing_dates:
-        missing = ", ".join(report.missing_dates)
-        raise RuntimeError(
-            "historical pending pick cards lack retained artifact-only ledgers: "
-            f"{missing}; inspected={report.inspected_artifacts}; "
-            f"download_failures={report.download_failures}"
-        )
-    return report
 
 
 def main() -> int:

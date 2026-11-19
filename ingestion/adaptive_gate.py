@@ -404,11 +404,12 @@ def _historical_pending_card_reasons(state_dir: Path, *, target_date: str) -> li
 
     Structured dated pick ledgers are intentionally cache/artifact-only, so a
     cold runner cannot inspect their rows before the full pipeline starts. The
-    Git-durable cards are sufficient to request that run: recovery then obtains
-    the original ledger from the owning Actions artifacts and normal lifecycle
-    rendering decides whether an official final can settle each row.  This
-    catches unfrozen pick cards and audit-only auto-ticket shadow cards that
-    have no receipt/no-bet sidecar, categories not represented in performance.
+    Git-durable cards are sufficient to request a *bounded recovery attempt*.
+    Only a recovered original ledger permits normal lifecycle rendering to
+    settle a row; if retained evidence is absent, the operator's missing-ledger
+    guards leave the historical card untouched. This catches unfrozen pick
+    cards and audit-only auto-ticket shadow cards that have no receipt/no-bet
+    sidecar, categories not represented in performance.
     """
 
     reasons: list[str] = []

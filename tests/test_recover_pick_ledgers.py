@@ -168,6 +168,61 @@ def test_recovery_tries_later_artifacts_after_a_transient_download_failure(tmp_p
     ]
 
 
+def test_recovery_reports_absent_artifacts_without_failing_or_changing_the_card(
+    tmp_path, monkeypatch
+):
+    localdata = tmp_path / "euroleague"
+    localdata.mkdir()
+    card = localdata / "picks_2026-11-18.txt"
+    card.write_text("grade=⏳ PENDING\n")
+    original = card.read_bytes()
+    monkeypatch.setattr(
+        recovery,
+        "_artifact_urls",
+        lambda *_args, **_kwargs: iter(()),
+    )
+
+    report = recovery.recover_from_actions(
+        localdata=localdata,
+        target_date="2026-11-19",
+        state_key="euroleague",
+        repository="owner/repo",
+        token="token",
+        max_artifacts=2,
+    )
+
+    assert report.needed_dates == ("2026-11-18",)
+    assert report.recovered_dates == ()
+    assert report.missing_dates == ("2026-11-18",)
+    assert report.inspected_artifacts == 0
+    assert report.recovery_unavailable_reason is None
+    assert card.read_bytes() == original
+    assert not (localdata / "picks_2026-11-18.json").exists()
+
+
+def test_recovery_reports_actions_lookup_outage_without_failing_the_lane(tmp_path, monkeypatch):
+    localdata = tmp_path / "nba"
+    localdata.mkdir()
+    write_card(localdata, "2026-11-18", "grade=⏳ PENDING\n")
+
+    def unavailable(*_args, **_kwargs):
+        raise RuntimeError("GitHub Actions artifact lookup failed: ConnectionError")
+
+    monkeypatch.setattr(recovery, "_artifact_urls", unavailable)
+
+    report = recovery.recover_from_actions(
+        localdata=localdata,
+        target_date="2026-11-19",
+        state_key="nba",
+        repository="owner/repo",
+        token="token",
+        max_artifacts=2,
+    )
+
+    assert report.missing_dates == ("2026-11-18",)
+    assert report.recovery_unavailable_reason == "actions_artifact_service_unavailable"
+
+
 def test_missing_historical_pick_ledgers_rejects_invalid_target_date(tmp_path):
     with pytest.raises(ValueError, match="target_date"):
         missing_historical_pick_ledgers(tmp_path, target_date="not-a-date")
