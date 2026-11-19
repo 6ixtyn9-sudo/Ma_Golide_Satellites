@@ -88,7 +88,15 @@ def test_operator_state_restore_uses_latest_main_not_event_sha():
         )
         assert 'MAIN_REF=refs/remotes/origin/main' in text
         assert 'git cat-file -e "${MAIN_REF}:${STATE_DIR}"' in text
-        assert 'git restore --source="$MAIN_REF" --worktree -- "$STATE_DIR"' in text
+        restore = 'git restore --source="$MAIN_REF" --worktree -- "$STATE_DIR"'
+        assert restore in text
+        recovery = "Recover retained artifact-only pick ledgers after a cold cache"
+        assert recovery in text
+        assert text.index(restore) < text.index(recovery)
+        assert "python scripts/recover_pick_ledgers.py" in text
+        assert "--state-key \"$STATE_KEY\"" in text
+        assert "--repository \"$GITHUB_REPOSITORY\"" in text
+        assert 'actions: read' in text
         assert 'git cat-file -e "HEAD:${STATE_DIR}"' not in text
 
 
