@@ -5,9 +5,15 @@ winner, alter a probability, or place a bet. Current forecasts come from
 ``MarketForecastService``; outcomes come only from reconciled official finals.
 
 Operator evidence files live beneath one league's localdata directory:
-- ``picks_YYYY-MM-DD.json``, ``picks_today.json``, and rolling/dated audit
-  files are full forecast evidence kept in the active cache and workflow artifacts.
-- ``picks_YYYY-MM-DD.txt`` is a compact human card retained in cache/artifacts.
+- ``picks_YYYY-MM-DD.json`` and ``.txt`` are Git-published draft/lifecycle
+  cards. They show all forecast picks, but are never evidence that a pick was
+  actionable before its own cutoff.
+- ``pick_freeze_YYYY-MM-DD_<fixture-hash>.json`` is an immutable per-fixture
+  snapshot taken once the fixture enters its 60-minute pre-tip window.
+- ``picks_YYYY-MM-DD_lifecycle.json`` is a mutable rendered view that grades
+  only those immutable snapshots after official finals arrive.
+- ``picks_today.json`` and rolling/dated audit files retain full active-cache
+  forecast evidence and workflow-artifact detail.
 - ``auto_tickets_YYYY-MM-DD_decision.json`` is an immutable paper receipt.
 - ``auto_tickets_YYYY-MM-DD.txt`` is a mutable cache/artifact card rendering
   a frozen decision and latest available grades; its receipt-backed initial
@@ -28,6 +34,7 @@ from collections import Counter, defaultdict
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 import hashlib
+import itertools
 import json
 import math
 import os
@@ -52,6 +59,9 @@ FADE_AUDIT_SCHEMA = "magolide.paper_fade_audit"
 TICKET_SCHEMA = "magolide.paper_ticket_receipt"
 NO_BET_DECISION_SCHEMA = "magolide.paper_ticket_no_bet"
 STATE_SCHEMA = "magolide.paper_ticket_state"
+PICK_FREEZE_SCHEMA = "magolide.pick_freeze"
+PICK_LIFECYCLE_SCHEMA = "magolide.pick_lifecycle"
+PICK_LIFECYCLE_STATE_SCHEMA = "magolide.pick_lifecycle_state"
 UNPRICED_AUDIT_SCHEMA = "magolide.unpriced_forecast_audit"
 UNPRICED_SUCCESS_RATE_THRESHOLD = 0.70
 UNPRICED_SUCCESS_RATE_MIN_DECISIONS_EXCLUSIVE = 10
@@ -818,6 +828,163 @@ def _latest_logical_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     )
 
 
+def _pick_freeze_token(game_id: str) -> str:
+    """Return a filesystem-safe, stable fixture identity for frozen evidence."""
+
+    return hashlib.sha256(str(game_id).encode("utf-8")).hexdigest()[:16]
+
+
+def _pick_freeze_path(localdata: Path, target_date: str, game_id: str) -> Path:
+    return localdata / f"pick_freeze_{target_date}_{_pick_freeze_token(game_id)}.json"
+
+
+def _load_pick_freezes(
+    localdata: Path, *, target_date: str, league: str
+) -> Dict[str, Dict[str, Any]]:
+    """Load immutable fixture snapshots, refusing ambiguous/corrupt evidence."""
+
+    freezes: Dict[str, Dict[str, Any]] = {}
+    for path in sorted(localdata.glob(f"pick_freeze_{target_date}_*.json")):
+        payload = _read_json(path, {})
+        if not isinstance(payload, dict):
+            raise ValueError(f"invalid immutable pick freeze: {path}")
+        game_id = str(payload.get("game_id") or "")
+        rows = payload.get("rows")
+        if (
+            not schema_matches(payload.get("schema_version"), PICK_FREEZE_SCHEMA)
+            or payload.get("target_date") != target_date
+            or payload.get("league") != league
+            or not game_id
+            or not isinstance(rows, list)
+            or path != _pick_freeze_path(localdata, target_date, game_id)
+        ):
+            raise ValueError(f"invalid immutable pick freeze: {path}")
+        if game_id in freezes:
+            raise ValueError(f"multiple immutable pick freezes for fixture {game_id}")
+        try:
+            scheduled_utc = parse_utc(str(payload["scheduled_utc"]))
+            cutoff_utc = parse_utc(str(payload["decision_cutoff_utc"]))
+            frozen_at = parse_utc(str(payload["frozen_at"]))
+        except (KeyError, TypeError, ValueError) as exc:
+            raise ValueError(f"pick freeze has invalid lifecycle timestamps: {path}") from exc
+        if (
+            cutoff_utc != scheduled_utc - TICKET_DECISION_LEAD_TIME
+            or not cutoff_utc <= frozen_at < scheduled_utc
+        ):
+            raise ValueError(f"pick freeze violates its fixture cutoff: {path}")
+        for row in rows:
+            if not isinstance(row, dict) or str(row.get("game_id")) != game_id:
+                raise ValueError(f"pick freeze contains inconsistent fixture evidence: {path}")
+            try:
+                row_scheduled_utc = parse_utc(str(row.get("scheduled_utc")))
+            except ValueError as exc:
+                raise ValueError(f"pick freeze has invalid row schedule: {path}") from exc
+            if row_scheduled_utc != scheduled_utc:
+                raise ValueError(f"pick freeze contains inconsistent fixture evidence: {path}")
+        freezes[game_id] = payload
+    return freezes
+
+
+def _freeze_due_pick_fixtures(
+    localdata: Path,
+    *,
+    target_date: str,
+    league: str,
+    rows: List[Dict[str, Any]],
+    generated_utc: str,
+) -> Dict[str, Dict[str, Any]]:
+    """Freeze each fixture's latest draft evidence once it enters tip minus 60m.
+
+    A runner can arrive slightly after the exact cutoff, but never after tip.
+    Each fixture owns a separate immutable file so later fixtures keep their
+    draft lifecycle and an earlier snapshot can never be overwritten.
+    """
+
+    now = parse_utc(generated_utc)
+    existing = _load_pick_freezes(localdata, target_date=target_date, league=league)
+    for game_id, fixture_rows in itertools.groupby(
+        _latest_logical_rows(rows), key=lambda row: str(row["game_id"])
+    ):
+        fixture_rows = list(fixture_rows)
+        tips = {str(row["scheduled_utc"]) for row in fixture_rows}
+        if len(tips) != 1:
+            raise ValueError(f"pick freeze fixture has inconsistent scheduled_utc: {game_id}")
+        tip = parse_utc(tips.pop())
+        cutoff = tip - TICKET_DECISION_LEAD_TIME
+        if game_id in existing or not (cutoff <= now < tip):
+            continue
+        frozen_rows = deepcopy(fixture_rows)
+        for row in frozen_rows:
+            # A frozen snapshot is evidence, not a settlement. Keep outcome
+            # blank until an official final is read through the lifecycle view.
+            row["outcome"] = None
+            row["grade_status"] = "pending"
+        payload = {
+            "schema_version": PICK_FREEZE_SCHEMA,
+            "target_date": target_date,
+            "league": league,
+            "game_id": game_id,
+            "scheduled_utc": tip.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "decision_cutoff_utc": cutoff.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "frozen_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
+            "rows": frozen_rows,
+        }
+        _write_json(_pick_freeze_path(localdata, target_date, game_id), payload)
+        existing[game_id] = payload
+    return existing
+
+
+def _pick_lifecycle_rows(
+    raw_rows: List[Dict[str, Any]],
+    *,
+    freezes: Dict[str, Dict[str, Any]],
+    games: Dict[str, Game],
+    generated_utc: str,
+) -> tuple[List[Dict[str, Any]], List[Dict[str, str]]]:
+    """Render frozen evidence in preference to mutable draft observations."""
+
+    now = parse_utc(generated_utc)
+    frozen_game_ids = set(freezes)
+    display_rows = [
+        deepcopy(row) for row in raw_rows if str(row.get("game_id")) not in frozen_game_ids
+    ]
+    pending_frozen_games: List[Dict[str, str]] = []
+    for game_id, payload in freezes.items():
+        fixture_rows = deepcopy(payload["rows"])
+        frozen_at = str(payload["frozen_at"])
+        fixture_pending = False
+        for row in fixture_rows:
+            _set_grade(row, games)
+            game = games.get(game_id)
+            if row["grade_status"] in {"win", "loss", "push", "void"}:
+                lifecycle = "SETTLED"
+            elif game is not None and game.status is GameStatus.FINAL:
+                lifecycle = "RESULT_UNRESOLVABLE"
+                fixture_pending = True
+            else:
+                lifecycle = "FROZEN"
+                fixture_pending = True
+            row["lifecycle_status"] = lifecycle
+            row["frozen_at"] = frozen_at
+            row["decision_cutoff_utc"] = payload["decision_cutoff_utc"]
+        if fixture_pending:
+            pending_frozen_games.append(
+                {"game_id": game_id, "scheduled_utc": str(payload["scheduled_utc"])}
+            )
+        display_rows.extend(fixture_rows)
+    for row in display_rows:
+        if str(row.get("game_id")) in frozen_game_ids:
+            continue
+        _set_grade(row, games)
+        if row["grade_status"] in {"win", "loss", "push", "void"}:
+            row["lifecycle_status"] = "SETTLED_UNFROZEN"
+        elif parse_utc(row["scheduled_utc"]) <= now:
+            row["lifecycle_status"] = "UNFROZEN_AWAITING_RESULT"
+        else:
+            row["lifecycle_status"] = "DRAFT"
+    return display_rows, pending_frozen_games
+
+
 def _render_picks(
     rows: List[Dict[str, Any]],
     *,
@@ -839,7 +1006,8 @@ def _render_picks(
         "=" * 72,
         f"Generated at: {_local_time(generated_utc, timezone_name)}",
         "PAPER ONLY · eligibility labels are evidence states, not profit guarantees.",
-        "Active sections show the latest pending pre-tip observation per logical pick.",
+        "Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.",
+        "Only FROZEN rows are immutable settlement evidence; all final grades use official results.",
         "Started and settled games are retained separately as archive status.",
         "",
     ]
@@ -870,10 +1038,14 @@ def _render_picks(
         eligibility = row.get("eligibility") or {}
         reasons = ",".join(eligibility.get("reasons") or []) or "none"
         calibration = row.get("calibration") or {}
+        lifecycle = str(row.get("lifecycle_status") or "DRAFT")
+        lifecycle_detail = f"lifecycle={lifecycle}"
+        if row.get("frozen_at"):
+            lifecycle_detail += f" · frozen_at={row['frozen_at']}"
         lines.append(
             f"      bucket={bucket} · price_evidence={row['price_evidence']} "
             f"· acca_eligible={bool(eligibility.get('acca_eligible'))} "
-            f"· grade={_grade_badge(row['grade_status'])}"
+            f"· grade={_grade_badge(row['grade_status'])} · {lifecycle_detail}"
         )
         lines.append(
             f"      calibration={calibration.get('status', 'unknown')} "
@@ -976,9 +1148,11 @@ def _refresh_dated_pick_reports(
     league: str,
     generated_utc: str,
     timezone_name: str,
-) -> None:
-    """Regrade every retained date before rendering or auditing its picks."""
+) -> Dict[str, Any]:
+    """Regrade cards and render drafts/frozen evidence as one lifecycle view."""
 
+    pending_frozen_games: List[Dict[str, str]] = []
+    dated_reports: Dict[str, Dict[str, int]] = {}
     for path in _dated_pick_files(localdata):
         rows = _read_json(path, [])
         if not isinstance(rows, list):
@@ -987,16 +1161,50 @@ def _refresh_dated_pick_reports(
             _set_grade(row, games)
         _write_json(path, rows)
         target_date = path.stem.removeprefix("picks_")
+        freezes = _load_pick_freezes(localdata, target_date=target_date, league=league)
+        lifecycle_rows, pending = _pick_lifecycle_rows(
+            rows,
+            freezes=freezes,
+            games=games,
+            generated_utc=generated_utc,
+        )
+        pending_frozen_games.extend(pending)
+        lifecycle = {
+            "schema_version": PICK_LIFECYCLE_SCHEMA,
+            "league": league,
+            "target_date": target_date,
+            "rows": lifecycle_rows,
+        }
+        _write_json(localdata / f"picks_{target_date}_lifecycle.json", lifecycle)
         _write_text(
             path.with_suffix(".txt"),
             _render_picks(
-                rows,
+                lifecycle_rows,
                 league=league,
                 target_date=target_date,
                 generated_utc=generated_utc,
                 timezone_name=timezone_name,
             ),
         )
+        dated_reports[target_date] = {
+            "frozen_fixtures": len(freezes),
+            "logical_picks": len(_latest_logical_rows(lifecycle_rows)),
+        }
+    # This compact state lets the dependency-free gate request a result recheck
+    # after a frozen fixture has tipped without publishing raw scan telemetry.
+    lifecycle_state = {
+        "schema_version": PICK_LIFECYCLE_STATE_SCHEMA,
+        "league": league,
+        "pending_frozen_games": sorted(
+            {(
+                str(item["game_id"]), str(item["scheduled_utc"])
+            ) for item in pending_frozen_games},
+            key=lambda item: (item[1], item[0]),
+        ),
+        "dated_reports": dated_reports,
+    }
+    _write_json(localdata / "pick_lifecycle_state.json", lifecycle_state)
+    return lifecycle_state
 
 
 def _audit_period_label(period: str) -> str:
@@ -1134,7 +1342,7 @@ def _render_pick_audit_markdown(
             f"- same-day pending rows outside prior-day counters: {report['same_day_pending_picks']}",
             f"- same-day official-final picks included: {report['same_day_settled_picks']}",
             f"- eligible prior-day picks: {report['eligible_prior_picks']}",
-            "- latest observation per logical pick; superseded dated evidence remains in JSON",
+            "- frozen fixtures grade only their immutable snapshot; unfrozen legacy/draft rows use the latest observation",
             "",
             "## Bucket performance",
             "",
@@ -1396,12 +1604,40 @@ def _render_pick_audit_markdown(
             "## Evidence notes",
             "",
             "- Grades use reconciled official finals only; missing or conflicting results stay pending.",
-            "- Dated JSON preserves every forecast, price, model, calibration, and eligibility field.",
+            "- Frozen fixtures use their immutable pick_freeze evidence; legacy rows retain dated forecast evidence.",
             "- Flat one-paper-unit ROI is descriptive history, not proof of future performance.",
             "",
         ]
     )
     return "\n".join(lines)
+
+
+def _audit_rows_for_date(path: Path) -> List[Dict[str, Any]]:
+    """Load one date's audit evidence, preferring its frozen lifecycle view.
+
+    Historical ledgers written before the fixture-freeze lifecycle remain
+    readable as legacy evidence. Once a lifecycle file exists, using the raw
+    dated draft again would allow a later scan to influence pick settlement.
+    """
+
+    payload = _read_json(path, [])
+    if not isinstance(payload, list):
+        raise ValueError(f"dated pick ledger must be a list: {path}")
+    target_date = path.stem.removeprefix("picks_")
+    lifecycle_path = path.with_name(f"picks_{target_date}_lifecycle.json")
+    if not lifecycle_path.exists():
+        return payload
+    lifecycle = _read_json(lifecycle_path, {})
+    rows = lifecycle.get("rows") if isinstance(lifecycle, dict) else None
+    if (
+        not isinstance(lifecycle, dict)
+        or not schema_matches(lifecycle.get("schema_version"), PICK_LIFECYCLE_SCHEMA)
+        or lifecycle.get("target_date") != target_date
+        or not isinstance(rows, list)
+        or any(not isinstance(row, dict) for row in rows)
+    ):
+        raise ValueError(f"invalid pick lifecycle evidence: {lifecycle_path}")
+    return rows
 
 
 def _write_pick_audit(
@@ -1416,10 +1652,7 @@ def _write_pick_audit(
     start = end - timedelta(days=29)
     ledger: List[Dict[str, Any]] = []
     for path in _dated_pick_files(localdata):
-        payload = _read_json(path, [])
-        if not isinstance(payload, list):
-            raise ValueError(f"dated pick ledger must be a list: {path}")
-        ledger.extend(payload)
+        ledger.extend(_audit_rows_for_date(path))
     window = [row for row in ledger if start.isoformat() <= row["date"] <= target_date]
     logical_window = _latest_logical_rows(window)
     local_cutoff = parse_utc(generated_utc).astimezone(ZoneInfo(timezone_name)).date().isoformat()
@@ -1584,9 +1817,9 @@ def _write_pick_audit(
         "by_market": by_market,
         "by_selection": by_selection,
         "grading_basis": (
-            "reconciled_official_finals_only; official_finals_settle_immediately; "
-            "pending_is_not_a_loss; local_day_pending_cutoff; "
-            "latest_observation_per_logical_pick"
+            "reconciled_official_finals_only; frozen_fixture_snapshots_precede_drafts; "
+            "official_finals_settle_immediately; pending_is_not_a_loss; "
+            "local_day_pending_cutoff; latest_observation_per_unfrozen_logical_pick"
         ),
         "ledger": logical_window,
         "settled_ledger": settled,
@@ -3861,8 +4094,20 @@ def publish_operator_reports(
     prior = _read_json(dated_path, [])
     if not isinstance(prior, list):
         raise ValueError(f"dated pick ledger must be a list: {dated_path}")
+    # After an immutable fixture snapshot exists, this dated draft ledger is
+    # closed for that fixture. It can still receive official grading below for
+    # audit compatibility, but no later model/price observation may rewrite or
+    # append to the pre-cutoff draft evidence. The lifecycle view uses the
+    # snapshot itself as settlement evidence.
+    existing_pick_freezes = _load_pick_freezes(
+        localdata, target_date=target_date, league=league.value
+    )
+    frozen_game_ids = set(existing_pick_freezes)
+    archivable_current = [
+        row for row in current if str(row["game_id"]) not in frozen_game_ids
+    ]
     merged = {str(row["pick_id"]): row for row in prior}
-    merged.update({row["pick_id"]: row for row in current})
+    merged.update({row["pick_id"]: row for row in archivable_current})
     archived = sorted(
         merged.values(),
         key=lambda row: (row["scheduled_utc"], row["game_id"], row["pick_id"]),
@@ -3894,6 +4139,13 @@ def publish_operator_reports(
         )
     _write_json(localdata / "picks_today.json", current)
     _write_json(dated_path, archived)
+    current_pick_freezes = _freeze_due_pick_fixtures(
+        localdata,
+        target_date=target_date,
+        league=league.value,
+        rows=archived,
+        generated_utc=generated_utc,
+    )
     _refresh_dated_pick_reports(
         localdata,
         games=games,
@@ -4097,6 +4349,9 @@ def publish_operator_reports(
         "picks_today": str(localdata / "picks_today.json"),
         "dated_picks": str(dated_path),
         "picks_text": str(localdata / f"picks_{target_date}.txt"),
+        "pick_lifecycle": str(localdata / f"picks_{target_date}_lifecycle.json"),
+        "pick_freezes": len(current_pick_freezes),
+        "pick_lifecycle_state": str(localdata / "pick_lifecycle_state.json"),
         "rolling_audit": str(localdata / "picks_audit_rolling.json"),
         "dated_audit": str(localdata / f"picks_audit_{target_date}.md"),
         "ticket_receipt": (

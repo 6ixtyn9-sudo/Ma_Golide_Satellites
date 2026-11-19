@@ -7,9 +7,10 @@ commit/push. Only derived pick and paper-ticket files are eligible. Canonical
 DuckDB/CSV state, acquisition ledgers, caches, and credentials are never copied.
 
 Existing repository files not present in the latest artifact are retained. A
-conflicting immutable ticket or no-bet decision aborts publication instead of
-rotating/reopening a previously frozen date. Git-state withdrawal IDs are
-rejected when stale caches attempt to return a deliberately withdrawn receipt.
+conflicting immutable ticket, no-bet decision, or per-fixture pick freeze aborts
+publication instead of rotating/reopening previously frozen evidence. Git-state
+withdrawal IDs are rejected when stale caches attempt to return a deliberately
+withdrawn receipt.
 """
 
 from __future__ import annotations
@@ -28,8 +29,14 @@ DATE = r"\d{4}-\d{2}-\d{2}"
 ALLOWED_NAMES = tuple(
     re.compile(pattern)
     for pattern in (
-        # All pick cards/archives and expanded audits are cache/artifact-only.
-        # Hourly price scans must not create a new Git blob for each card update.
+        # Dated pick cards are the operator-visible draft/freeze/settlement
+        # lifecycle. They are deliberately distinct from volatile picks_today
+        # and the expanded audit ledgers, which remain artifact-only.
+        rf"picks_{DATE}\.json",
+        rf"picks_{DATE}\.txt",
+        rf"picks_{DATE}_lifecycle\.json",
+        r"pick_lifecycle_state\.json",
+        rf"pick_freeze_{DATE}_[0-9a-f]{{16}}\.json",
         r"auto_tickets_state\.json",
         r"auto_tickets_performance\.json",
         r"auto_tickets_performance\.txt",
@@ -40,7 +47,7 @@ ALLOWED_NAMES = tuple(
     )
 )
 IMMUTABLE_NAMES = re.compile(
-    rf"auto_tickets_{DATE}_(?:decision|no_bet)\.json"
+    rf"(?:auto_tickets_{DATE}_(?:decision|no_bet)|pick_freeze_{DATE}_[0-9a-f]{{16}})\.json"
 )
 DECISION_RECEIPT_NAME = re.compile(rf"auto_tickets_({DATE})_decision\.json")
 NO_BET_DECISION_NAME = re.compile(rf"auto_tickets_({DATE})_no_bet\.json")
@@ -65,11 +72,10 @@ def _atomic_write(path: Path, raw: bytes) -> None:
 def _git_durable_bytes(source: Path) -> bytes:
     """Return the compact, durable form of one publishable operator file.
 
-    Live pick cards are intentionally artifact-only: their timestamped price
-    scans change hourly. The two mutable JSON summaries below are Git durable,
-    but their scan log and generation timestamp are operational telemetry, not
-    evidence needed to reconstruct tickets. Removing only those volatile fields
-    prevents no-op hourly runs from producing new Git blobs while receipts and
+    Dated draft/freeze lifecycle cards are Git durable. The two compact ticket
+    summaries below still contain scan clocks that are operational telemetry,
+    not evidence needed to reconstruct tickets. Removing only those volatile
+    fields prevents no-op runs from producing new Git blobs while receipts and
     date locks remain complete.
     """
     raw = source.read_bytes()
@@ -247,9 +253,12 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
             if destination.exists():
                 previous = destination.read_bytes()
                 if IMMUTABLE_NAMES.fullmatch(source.name) and previous != raw:
-                    raise ValueError(
-                        f"immutable ticket receipt differs from repository evidence: {relative}"
+                    kind = (
+                        "immutable ticket receipt"
+                        if DECISION_RECEIPT_NAME.fullmatch(source.name)
+                        else "immutable pick freeze"
                     )
+                    raise ValueError(f"{kind} differs from repository evidence: {relative}")
                 if previous == raw:
                     unchanged.append(relative)
                     if IMMUTABLE_NAMES.fullmatch(source.name):
