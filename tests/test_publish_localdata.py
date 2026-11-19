@@ -70,10 +70,12 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
     historical = repo / "localdata" / "nba" / "picks_2026-11-11.txt"
     historical.parent.mkdir(parents=True)
     historical.write_text("retain me")
+    stale_no_bet_card = repo / "localdata" / "nba" / "auto_tickets_2026-11-14.txt"
+    stale_no_bet_card.write_text("stale pending candidate\n")
 
     report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
 
-    assert report["copied_count"] == 5
+    assert report["copied_count"] == 6
     assert (repo / "localdata" / "nba" / "picks_2026-11-12.txt").read_bytes() == b"picks\n"
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12_decision.json").read_bytes() == b"receipt\n"
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12.txt").read_bytes() == b"frozen-ticket-card\n"
@@ -81,7 +83,8 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-13.txt").read_bytes() == b"hourly-candidate-card\n"
     assert not (repo / "localdata" / "nba" / "auto_tickets_2026-11-13_decision.json").exists()
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-14_no_bet.json").read_bytes() == b"no-bet-decision\n"
-    assert not (repo / "localdata" / "nba" / "auto_tickets_2026-11-14.txt").exists()
+    # The terminal sidecar stays immutable while its text card reports no-bet.
+    assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-14.txt").read_bytes() == b"hourly-no-bet-card\n"
     artifact_file(
         tmp_path,
         "nba-artifact",
