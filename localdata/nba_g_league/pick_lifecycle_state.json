@@ -1,11 +1,16 @@
 {
   "dated_reports": {
     "2026-11-19": {
-      "frozen_fixtures": 0,
-      "logical_picks": 0
+      "frozen_fixtures": 1,
+      "logical_picks": 12
     }
   },
   "league": "NBA_G_LEAGUE",
-  "pending_frozen_games": [],
+  "pending_frozen_games": [
+    [
+      "401914571",
+      "2026-11-19T16:00:00Z"
+    ]
+  ],
   "schema_version": "magolide.pick_lifecycle_state"
 }
