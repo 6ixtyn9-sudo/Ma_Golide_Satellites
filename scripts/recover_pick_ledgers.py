@@ -35,6 +35,8 @@ PENDING_GRADE_RE = re.compile(r"(?:grade=|\[\s*)PENDING\b|⏳\s+PENDING\b")
 LEDGER_RE = re.compile(r"^picks_(\d{4}-\d{2}-\d{2})\.json$")
 ARTIFACT_NAME_RE = re.compile(r"^MaGolide-(?:lifecycle-)?([a-z0-9_]+)-\d+-\d+$")
 MAX_LEDGER_BYTES = 25 * 1024 * 1024
+ARTIFACTS_PER_PAGE = 100
+DEFAULT_MAX_ARTIFACTS = 192
 
 
 @dataclass(frozen=True)
@@ -44,6 +46,7 @@ class RecoveryReport:
     needed_dates: tuple[str, ...]
     recovered_dates: tuple[str, ...]
     inspected_artifacts: int
+    download_failures: int = 0
 
     @property
     def missing_dates(self) -> tuple[str, ...]:
@@ -55,6 +58,7 @@ class RecoveryReport:
             "recovered_dates": list(self.recovered_dates),
             "missing_dates": list(self.missing_dates),
             "inspected_artifacts": self.inspected_artifacts,
+            "download_failures": self.download_failures,
         }
 
 
@@ -196,28 +200,45 @@ def _download_artifact(url: str, token: str, destination: Path) -> None:
         raise RuntimeError(f"GitHub Actions artifact download failed: {type(exc).__name__}") from exc
 
 
-def _artifact_urls(repository: str, state_key: str, token: str) -> list[str]:
+def _artifact_urls(
+    repository: str, state_key: str, token: str, *, max_artifacts: int
+) -> Iterable[str]:
+    """Yield newest retained lane artifacts, paging beyond a busy day's first page."""
+
     if not re.fullmatch(r"[A-Za-z0-9_.-]+/[A-Za-z0-9_.-]+", repository):
         raise ValueError("repository must be owner/name")
-    payload = _api_json(
-        f"https://api.github.com/repos/{repository}/actions/artifacts?per_page=100",
-        token,
-    )
-    artifacts = payload.get("artifacts")
-    if not isinstance(artifacts, list):
-        raise RuntimeError("GitHub Actions artifact lookup omitted artifacts")
-    urls: list[str] = []
-    for artifact in artifacts:
-        if not isinstance(artifact, dict) or artifact.get("expired") is True:
-            continue
-        name = str(artifact.get("name") or "")
-        match = ARTIFACT_NAME_RE.fullmatch(name)
-        if match is None or match.group(1) != state_key:
-            continue
-        url = artifact.get("archive_download_url")
-        if isinstance(url, str) and url.startswith("https://api.github.com/"):
-            urls.append(url)
-    return urls
+    yielded = 0
+    page = 1
+    while yielded < max_artifacts:
+        payload = _api_json(
+            "https://api.github.com/repos/"
+            f"{repository}/actions/artifacts?per_page={ARTIFACTS_PER_PAGE}&page={page}",
+            token,
+        )
+        artifacts = payload.get("artifacts")
+        if not isinstance(artifacts, list):
+            raise RuntimeError("GitHub Actions artifact lookup omitted artifacts")
+        for artifact in artifacts:
+            if not isinstance(artifact, dict) or artifact.get("expired") is True:
+                continue
+            name = str(artifact.get("name") or "")
+            match = ARTIFACT_NAME_RE.fullmatch(name)
+            if match is None or match.group(1) != state_key:
+                continue
+            url = artifact.get("archive_download_url")
+            if isinstance(url, str) and url.startswith("https://api.github.com/"):
+                yield url
+                yielded += 1
+                if yielded >= max_artifacts:
+                    return
+        # The API's list is newest-first. Stop only once its declared inventory
+        # is exhausted, not after one dense global page full of other leagues.
+        total = payload.get("total_count")
+        if not artifacts or (
+            isinstance(total, int) and page * ARTIFACTS_PER_PAGE >= total
+        ):
+            return
+        page += 1
 
 
 def recover_from_actions(
@@ -243,12 +264,27 @@ def recover_from_actions(
 
     recovered: set[str] = set()
     inspected = 0
+    download_failures = 0
     with tempfile.TemporaryDirectory(prefix="magolide-pick-ledgers-") as temp_dir:
-        for index, url in enumerate(_artifact_urls(repository, state_key, token)):
-            if index >= max_artifacts or set(needed).issubset(recovered):
+        for index, url in enumerate(
+            _artifact_urls(
+                repository,
+                state_key,
+                token,
+                max_artifacts=max_artifacts,
+            )
+        ):
+            if set(needed).issubset(recovered):
                 break
             archive = Path(temp_dir) / f"artifact-{index}.zip"
-            _download_artifact(url, token, archive)
+            try:
+                _download_artifact(url, token, archive)
+            except RuntimeError:
+                # Actions storage redirects can fail transiently. Continue to
+                # another retained same-lane artifact; only report failure
+                # after every bounded source has been exhausted.
+                download_failures += 1
+                continue
             inspected += 1
             recovered.update(
                 restore_pick_ledgers_from_zip(
@@ -257,11 +293,18 @@ def recover_from_actions(
                     dates=set(needed) - recovered,
                 )
             )
-    report = RecoveryReport(needed, tuple(sorted(recovered)), inspected)
+    report = RecoveryReport(
+        needed,
+        tuple(sorted(recovered)),
+        inspected,
+        download_failures,
+    )
     if report.missing_dates:
         missing = ", ".join(report.missing_dates)
         raise RuntimeError(
-            "historical pending pick cards lack retained artifact-only ledgers: " + missing
+            "historical pending pick cards lack retained artifact-only ledgers: "
+            f"{missing}; inspected={report.inspected_artifacts}; "
+            f"download_failures={report.download_failures}"
         )
     return report
 
@@ -272,7 +315,7 @@ def main() -> int:
     parser.add_argument("--target-date", required=True)
     parser.add_argument("--state-key", required=True)
     parser.add_argument("--repository", required=True)
-    parser.add_argument("--max-artifacts", type=int, default=8)
+    parser.add_argument("--max-artifacts", type=int, default=DEFAULT_MAX_ARTIFACTS)
     args = parser.parse_args()
     report = recover_from_actions(
         localdata=args.localdata,
