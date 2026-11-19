@@ -27,7 +27,7 @@ full project package.
 from __future__ import annotations
 
 from dataclasses import dataclass
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone
 import json
 import os
 import re
@@ -38,7 +38,6 @@ from zoneinfo import ZoneInfo
 
 from ingestion.league_registry import SPECS
 from ingestion.providers._cba_aes import Undecryptable, decrypt_body
-from ingestion.ticket_policy import TICKET_PUBLICATION_TIMEZONE, ticket_publication_local_time
 from ingestion.providers.fiba_euroleague_w_contract import (
     COMPETITION_CODE,
     COMPETITION_ID,
@@ -56,10 +55,12 @@ from ingestion.providers.fiba_euroleague_w_contract import (
 
 SCHEMA_VERSION = "magolide.adaptive-gate"
 DECISION_LEAD_MINUTES = 60
-# Keep this scheduling decision aligned with forecasting.operator. The shared
-# dependency-free policy keeps NBA at 18:00 Johannesburg time and every other
-# league at 09:00, unless an earlier fixture needs the ordinary 60-minute
-# pre-tip safety cutoff.
+# Keep this compact NBA exception aligned with forecasting.operator. NBA uses
+# 18:00 Johannesburg time; every other league uses 09:00, unless an earlier
+# fixture needs the ordinary 60-minute pre-tip safety cutoff.
+TICKET_PUBLICATION_TIMEZONE = "Africa/Johannesburg"
+DEFAULT_TICKET_PUBLICATION_LOCAL_TIME = time(hour=9)
+NBA_TICKET_PUBLICATION_LOCAL_TIME = time(hour=18)
 HTTP_TIMEOUT_SECONDS = 15
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 COVERAGE_GAP_MARKER_SCHEMA = "magolide.coverage_gap_marker"
@@ -198,9 +199,14 @@ def _ticket_decision_cutoff(
     ]
     if not tips:
         return None
+    publication_time = (
+        NBA_TICKET_PUBLICATION_LOCAL_TIME
+        if config.league_key == "NBA"
+        else DEFAULT_TICKET_PUBLICATION_LOCAL_TIME
+    )
     publication = datetime.combine(
         target_day,
-        ticket_publication_local_time(config.league_key),
+        publication_time,
         tzinfo=ZoneInfo(TICKET_PUBLICATION_TIMEZONE),
     ).astimezone(timezone.utc)
     return min(publication, min(tips) - timedelta(minutes=DECISION_LEAD_MINUTES))

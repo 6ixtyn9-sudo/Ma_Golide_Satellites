@@ -36,7 +36,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from copy import deepcopy
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone
 import hashlib
 import itertools
 import json
@@ -56,11 +56,6 @@ from ingestion.models import (
     PriceProvenance,
     SourcePermission,
     schema_matches,
-)
-from ingestion.ticket_policy import (
-    TICKET_PUBLICATION_TIMEZONE,
-    ticket_decision_policy,
-    ticket_publication_local_time,
 )
 
 from .types import (
@@ -113,12 +108,27 @@ EUROLEAGUE_CONSENSUS_ALLOWED_BLOCKERS = frozenset(
 UNPRICED_SPREAD_SHADOW_MIN_PROBABILITY = 0.70
 BASE_PAPER_UNITS = 100.0
 STAKE_UNITS_PER_ACCA = 1.0
-# Dated cards use a Johannesburg publication window. NBA cards publish at
-# 18:00 SAST so the North-American board has time to mature; other leagues use
-# the established 09:00 window. An earlier fixture still wins: no card may be
-# first decided after its pre-tip safety window. The resulting receipt/no-bet
-# remains immutable.
+# Keep this compact NBA exception aligned with ingestion.adaptive_gate: NBA
+# cards publish at 18:00 SAST so the North-American board can mature; other
+# leagues retain the established 09:00 window. An earlier fixture still wins.
 TICKET_DECISION_LEAD_TIME = timedelta(hours=1)
+TICKET_PUBLICATION_TIMEZONE = "Africa/Johannesburg"
+DEFAULT_TICKET_PUBLICATION_LOCAL_TIME = time(hour=9)
+NBA_TICKET_PUBLICATION_LOCAL_TIME = time(hour=18)
+DEFAULT_TICKET_DECISION_POLICY = "0900_sast_or_first_slate_tip_minus_60_minutes"
+NBA_TICKET_DECISION_POLICY = "1800_sast_or_first_slate_tip_minus_60_minutes"
+
+
+def _ticket_publication_local_time(league: League) -> time:
+    return (
+        NBA_TICKET_PUBLICATION_LOCAL_TIME
+        if league is League.NBA
+        else DEFAULT_TICKET_PUBLICATION_LOCAL_TIME
+    )
+
+
+def _ticket_decision_policy(league: League) -> str:
+    return NBA_TICKET_DECISION_POLICY if league is League.NBA else DEFAULT_TICKET_DECISION_POLICY
 BUCKET_ORDER = [
     "ELIGIBLE_CLEAN",
     "CAUTION",
@@ -276,8 +286,8 @@ def _ticket_decision_window(
     except (TypeError, ValueError) as exc:
         raise ValueError("invalid ticket decision date, time, or slate timezone") from exc
 
-    publication_time = ticket_publication_local_time(league.value)
-    publication_policy = ticket_decision_policy(league.value)
+    publication_time = _ticket_publication_local_time(league)
+    publication_policy = _ticket_decision_policy(league)
     publication_cutoff = datetime.combine(
         target_day, publication_time, tzinfo=publication_zone
     ).astimezone(UTC)
