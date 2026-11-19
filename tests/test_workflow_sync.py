@@ -137,21 +137,30 @@ def test_adaptive_gate_skips_idle_external_ticks_but_keeps_manual_rehearsals_ful
         assert "matrix: ${{ fromJSON(needs.gate.outputs.matrix) }}" in league
 
 
-def test_failed_league_jobs_cannot_publish_partial_operator_artifacts():
+def test_successful_lanes_publish_despite_a_failed_matrix_sibling():
     repo = Path(__file__).resolve().parents[1]
     for path in (
         repo / "workflows" / "ingestion.yml",
         repo / ".github" / "workflows" / "ingestion.yml",
     ):
         text = path.read_text()
-        artifact = text.split("name: Upload league reports and recovery evidence", 1)[1].split(
+        artifact = text.split("name: Upload successful league reports and recovery evidence", 1)[1].split(
             "uses: actions/upload-artifact@v4", 1
         )[0]
         assert "if: success()" in artifact
+        recovery = text.split(
+            "name: Preserve durable pick lifecycle evidence from an interrupted lane", 1
+        )[1].split("\n\n  publish-localdata:", 1)[0]
+        assert "failure()" in recovery
+        assert "MaGolide-lifecycle-${{ matrix.state_key }}" in text
+        assert "pick_freeze_*.json" in recovery
+        assert "pick_lifecycle_state.json" in recovery
+        assert "auto_tickets_" not in recovery
         publish = text.split("publish-localdata:", 1)[1].split("runs-on:", 1)[0]
         assert "needs: [gate, preflight, league]" in text
         assert "needs.preflight.result == 'success'" in publish
-        assert "needs.league.result == 'success'" in publish
+        assert "needs.league.result == 'success'" not in publish
+        assert "always()" in publish
 
 
 def test_only_named_automated_triggers_can_publish_a_durable_operator_decision():
