@@ -6,9 +6,18 @@ verification. Passing fixtures do not prove a provider's current availability.
 
 ## Scope
 
-ESPN now supplies acquisition for **NBA, WNBA, NCAA_M, and NCAA_W**. WNBA is
-an independent Ma Golide league with isolated `localdata/wnba` state;
-it is not aliased to NBA. EuroLeague and CBA retain their existing providers.
+ESPN now supplies schedule/result acquisition for **NBA, WNBA, NCAA_M, NCAA_W,
+and NBA_G_LEAGUE**. WNBA and NBA G League are independent Ma Golide leagues
+with isolated local state; neither is aliased to NBA. EuroLeague and CBA retain
+their existing providers.
+
+NBA G League is intentionally narrower than the established ESPN lanes: a
+captured `basketball/nba-development` scoreboard and summary validate its
+canonical fixture identity, UTC tip, terminal status, and reconciled four
+quarter results. They do **not** validate ESPN BPI, the deep core-event index,
+or a named-book execution lane. It can emit only empirical-history forecast
+cards after the normal reconciled-history threshold; missing external
+prediction evidence is not synthesized.
 
 The acquisition layer provides bounded requests, retries/backoff, a bounded
 redacted run-receipt list, response hashes, cooldowns for recent failures, and
@@ -28,9 +37,11 @@ ledgers; raw caches and receipts are recovery aids, not a second sports store.
   rows into every canonical game. Article `lastModified`/`published` is
   retained when available; payload fetch time is separately retained as
   `observed_utc`.
-- ESPN BPI as independent prediction evidence. `homeTeam`/`awayTeam` are
-  matched to provider team IDs, and both `gameProjection` and
-  `teamChanceLoss` orientations are tested.
+- ESPN BPI as independent prediction evidence for **NBA, WNBA, NCAA_M, and
+  NCAA_W only**. `homeTeam`/`awayTeam` are matched to provider team IDs, and
+  both `gameProjection` and `teamChanceLoss` orientations are tested. NBA G
+  League is rejected by this prediction adapter until its own BPI payload
+  contract is independently validated.
 - Every accepted current book as a timestamped `BookSnapshot`, independent of
   whether a prediction exists. Opening numbers are used as a free-tier fallback when `close` is not yet posted (timestamped at discovery, still `observed < tip` and never CLV); untimestamped open fields remain context only.
 
@@ -93,9 +104,12 @@ ESPN rejected the tested multi-day scoreboard ranges with HTTP 400; recent
 backfill therefore uses individual dates.
 
 Conservative acquisition floors are NBA 1947, WNBA 1997, NCAA_M 2001, and
-NCAA_W 2001. An empty earlier query does **not** prove that no older data
-exists anywhere in ESPN. These floors may be revised only after another
-validated probe; they are not represented as absolute historical minima.
+NCAA_W 2001. NBA G League deliberately has **no** deep-index floor: its
+scoreboard/summary capture validates only date-bounded recent results, so the
+pipeline does not advance a core-index history cursor for that lane. An empty
+earlier query does **not** prove that no older data exists anywhere in ESPN.
+These floors may be revised only after another validated probe; they are not
+represented as absolute historical minima.
 
 ## Bounded backfill algorithm
 

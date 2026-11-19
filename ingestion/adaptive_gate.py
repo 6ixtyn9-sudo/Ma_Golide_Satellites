@@ -640,6 +640,10 @@ def _espn_scoreboard_url(config: LeagueGateConfig, target_date: str | None) -> s
         slug, suffix = "mens-college-basketball", "groups=50&limit=500"
     elif config.league == "NCAA_W":
         slug, suffix = "womens-college-basketball", "groups=50&limit=500"
+    elif config.league == "NBA_G_LEAGUE":
+        # Validated separately from NBA: this is ESPN's NBA G League route,
+        # not the NBA scoreboard with a group filter.
+        slug, suffix = "nba-development", "limit=100"
     else:  # pragma: no cover - guarded by LEAGUES
         raise GateUncertain("unsupported ESPN league")
     date_query = f"dates={target_date.replace('-', '')}&" if target_date else ""

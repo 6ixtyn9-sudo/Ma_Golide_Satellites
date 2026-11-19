@@ -21,20 +21,24 @@ receipts, and audit state; DuckDB remains the canonical sports system of record.
 | CBA | Q1–Q4 | iSportsAPI | Sportradar Global Basketball | iSportsAPI |
 | NCAA_M | H1/H2 | ESPN men's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI* |
 | NCAA_W | Q1–Q4; event-declared legacy H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI* |
+| NBA G League (`NBA_G_LEAGUE`) | Q1–Q4 | ESPN `basketball/nba-development` scoreboard + summary | No external pre-tip provider validated; empirical-history forecasts only after reconciled-history thresholds | No validated named-book lane; intentionally unpriced |
 
 * TheOddsAPI requires `THE_ODDS_API_KEY`; without it WNBA/NCAA books are ESPN-scoreboard only (ESPN carries no NCAA_W moneyline — live 153/153 ML rows unpriced on free tier).
 
-The canonical registry also includes EuroCup, Basketball Champions League, NBA G
-League, Basketball Africa League, Australia NBL, Spain ACB, France LNB Pro A,
-Germany BBL, Italy LBA, Turkey BSL, Greece Basket League, ABA League, Israel
-Premier League, Japan B.League, South Korea KBL, Brazil NBB, and Argentina Liga
+The canonical registry also includes EuroCup, Basketball Champions League,
+Basketball Africa League, Australia NBL, Spain ACB, France LNB Pro A, Germany
+BBL, Italy LBA, Turkey BSL, Greece Basket League, ABA League, Israel Premier
+League, Japan B.League, South Korea KBL, Brazil NBB, and Argentina Liga
 Nacional. They have typed four-quarter contracts, independent local state, and
 normal forecast/freeze/settlement handling for already-canonical imported games.
-Until a compliant official schedule/result adapter is validated for a lane, its
-automated run emits an explicit unsupported-source `CoverageGap`; it does not
-invent a fixture, final, or price. Australia NBL has a probationary The Odds API
-sport-key mapping only: credentialed region/bookmaker coverage must be observed
-before it can be treated as a validated named-book lane.
+Until a compliant schedule/result adapter is validated for a lane, its automated
+run emits an explicit unsupported-source `CoverageGap`; it does not invent a
+fixture, final, probability, or price. NBA G League is the current exception:
+its captured ESPN source contract enables date-bounded canonical fixtures and
+reconciled results, but not ESPN BPI, deep ESPN-index history, or a named-book
+execution lane. Australia NBL has a probationary The Odds API sport-key mapping
+only: credentialed region/bookmaker coverage must be observed before it can be
+treated as a validated named-book lane.
 
 NCAA men's halves are never relabelled as quarters. Modern NCAA women's
 results are four quarters, while an explicitly declared older two-half event

@@ -320,6 +320,17 @@ def test_source_unavailable_lane_runs_once_for_a_durable_coverage_gap_then_skips
     assert lifecycle.reasons == ("source_unavailable_pick_lifecycle_due",)
 
 
+def test_g_league_gate_uses_its_validated_espn_route():
+    import ingestion.adaptive_gate as gate
+
+    g_league = next(config for config in LEAGUES if config.league == "NBA_G_LEAGUE")
+    assert g_league.schedule_source == "espn"
+    assert gate._espn_scoreboard_url(g_league, "2026-11-18") == (
+        "https://site.api.espn.com/apis/site/v2/sports/basketball/nba-development/"
+        "scoreboard?dates=20261118&limit=100"
+    )
+
+
 def test_empty_espn_date_scoreboard_is_corrobated_before_a_skip(monkeypatch):
     import ingestion.adaptive_gate as gate
 

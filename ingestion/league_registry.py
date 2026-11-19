@@ -223,7 +223,12 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     ),
     LeagueSpec(League.EUROCUP, "EuroCup", "eurocup", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.BASKETBALL_CHAMPIONS_LEAGUE, "Basketball Champions League", "basketball_champions_league", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
-    LeagueSpec(League.NBA_G_LEAGUE, "NBA G League", "nba_g_league", "America/New_York", "America/New_York", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant official schedule/result adapter has been validated."),
+    # ESPN's public NBA G League scoreboard and event-summary route were
+    # captured with stable event/team identity, UTC tips, terminal status, and
+    # reconciled Q1–Q4 finals. This grants canonical schedule/result handling
+    # only; ESPN BPI, deep core-index history, and named-book pricing remain
+    # separately unvalidated and fail closed.
+    LeagueSpec(League.NBA_G_LEAGUE, "NBA G League", "nba_g_league", "America/New_York", "America/New_York", "espn", "espn", "espn", (_ESPN_RELAY_ONLY,), "ESPN public basketball/nba-development scoreboard and summary are validated for date-bounded schedule/results; forecasts are empirical-history-only until an independent pre-tip prediction source is validated."),
     LeagueSpec(League.BASKETBALL_AFRICA_LEAGUE, "Basketball Africa League", "basketball_africa_league", "Africa/Johannesburg", "Africa/Johannesburg", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     # The Odds API NBL sport key is a documented integration lead. It remains
     # probationary until a credentialed regional/bookmaker smoke proves actual

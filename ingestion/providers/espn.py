@@ -1,9 +1,17 @@
-"""ESPN NBA provider: discovery, results, standings and BPI predictions.
+"""ESPN basketball provider: discovery, results, context, and selected BPI.
 
-Keyless, undocumented public endpoints (no SLA). Sampled responses were
-LIVE_VERIFIED on 2026-11-06 (see docs/PROVIDERS.md); ordinary tests run
-against small committed fixtures only, and smoke() labels its evidence
-accordingly (LIVE_VERIFIED only when it is handed a real ``http.HttpClient``).
+Keyless, undocumented public endpoints (no SLA). NBA, WNBA, and NCAA samples
+were LIVE_VERIFIED on 2026-11-06; the NBA G League scoreboard and summary
+contract was independently captured on 2026-10-29 (see docs/PROVIDERS.md).
+Ordinary tests run against small committed fixtures only, and smoke() labels
+its evidence accordingly (LIVE_VERIFIED only when it is handed a real
+``http.HttpClient``).
+
+A working ESPN schedule/result route does not imply an ESPN BPI contract. NBA
+G League is intentionally discovery/result/context-only here: its forecast
+surface is the separately identified empirical-history model after enough
+reconciled finals exist. ``BPI_LEAGUES`` is the closed allow-list for external
+ESPN prediction evidence.
 
 Discovery: the site scoreboard is the ONLY discovery source. The core
 ``events?dates=`` endpoint returned **0 events** during the 2026-11-06 live
@@ -81,7 +89,18 @@ LEAGUE_SLUGS = {
     League.WNBA: "wnba",
     League.NCAA_M: "mens-college-basketball",
     League.NCAA_W: "womens-college-basketball",
+    # Captured ESPN G League scoreboard and summary responses confirm the
+    # canonical basketball/nba-development route, identity fields, status,
+    # four regulation linescores, and reconciled final totals. Do not infer
+    # BPI support from a schedule/result route; see BPI_LEAGUES below.
+    League.NBA_G_LEAGUE: "nba-development",
 }
+
+# A BPI endpoint is an independent source contract, not a generic ESPN
+# capability. Keep this deliberately narrower than LEAGUE_SLUGS.
+BPI_LEAGUES = frozenset(
+    {League.NBA, League.WNBA, League.NCAA_M, League.NCAA_W}
+)
 
 # ESPN does not expose a stable BPI model release. This adapter-owned tag is
 # the calibration boundary; give it a new name when the BPI source contract or
@@ -1086,6 +1105,10 @@ def fetch_bpi(
 ) -> Prediction:
     """Fetch the ESPN BPI predictor and normalise it to a canonical Prediction.
 
+    ``league`` must be in the independently validated BPI allow-list; a
+    working ESPN scoreboard endpoint must never be upgraded into prediction
+    evidence by merely constructing a predictor URL.
+
     Orientation: single-sided payloads reconcile the populated side's team id
     against the event competitors. Dual-sided NCAA payloads instead require
     exact home/away team-ref matches and reciprocal probabilities; they are
@@ -1113,6 +1136,8 @@ def fetch_bpi(
     if game is not None:
         event_id = str(game.provider_ids.get("espn") or event_id)
     league = game.league if game is not None else league
+    if league not in BPI_LEAGUES:
+        raise ValueError(f"ESPN BPI prediction contract is not validated for {league.value}")
     payload = fetch(_bpi_url(event_id, league))
     if not isinstance(payload, dict) or not payload:
         raise ValueError(f"event {event_id}: empty predictor payload")
@@ -1598,37 +1623,39 @@ def smoke(date_yyyymmdd: str, fetch: FetchFn, league: League = League.NBA) -> Di
 
     accumulator = CoverageAccumulator()
     bpi_complete = 0
-    for game in games:
-        try:
-            prediction = fetch_bpi(game.game_id, fetch, game=game)
-        except Exception as exc:  # keep sweeping; this event counts incomplete
-            detail = f"{type(exc).__name__}: {exc}"
-            for field in ("prob", "expected_scores", "total"):
-                accumulator.observe(
-                    field, False, detail=detail, game_id=game.game_id, provider="espn"
-                )
-            continue
-        prob_ok = accumulator.observe(
-            "prob",
-            prediction.prob_home is not None and prediction.prob_away is not None,
-            game_id=game.game_id,
-            provider="espn",
-        )
-        scores_ok = accumulator.observe(
-            "expected_scores",
-            prediction.expected_home_score is not None
-            and prediction.expected_away_score is not None,
-            game_id=game.game_id,
-            provider="espn",
-        )
-        total_ok = accumulator.observe(
-            "total",
-            prediction.expected_total is not None,
-            game_id=game.game_id,
-            provider="espn",
-        )
-        if prob_ok and scores_ok and total_ok:
-            bpi_complete += 1
+    bpi_supported = league in BPI_LEAGUES
+    if bpi_supported:
+        for game in games:
+            try:
+                prediction = fetch_bpi(game.game_id, fetch, game=game, league=league)
+            except Exception as exc:  # keep sweeping; this event counts incomplete
+                detail = f"{type(exc).__name__}: {exc}"
+                for field in ("prob", "expected_scores", "total"):
+                    accumulator.observe(
+                        field, False, detail=detail, game_id=game.game_id, provider="espn"
+                    )
+                continue
+            prob_ok = accumulator.observe(
+                "prob",
+                prediction.prob_home is not None and prediction.prob_away is not None,
+                game_id=game.game_id,
+                provider="espn",
+            )
+            scores_ok = accumulator.observe(
+                "expected_scores",
+                prediction.expected_home_score is not None
+                and prediction.expected_away_score is not None,
+                game_id=game.game_id,
+                provider="espn",
+            )
+            total_ok = accumulator.observe(
+                "total",
+                prediction.expected_total is not None,
+                game_id=game.game_id,
+                provider="espn",
+            )
+            if prob_ok and scores_ok and total_ok:
+                bpi_complete += 1
 
     finals = 0
     reconciled = 0
@@ -1695,7 +1722,16 @@ def smoke(date_yyyymmdd: str, fetch: FetchFn, league: League = League.NBA) -> Di
     verification = "LIVE_VERIFIED" if isinstance(fetch_target, HttpClient) else "FIXTURE_VERIFIED"
     return {
         "fixtures_found": len(games),
-        "bpi_complete": {"complete": bpi_complete, "total": len(games)},
+        "bpi_complete": {"complete": bpi_complete, "total": len(games) if bpi_supported else 0},
+        "prediction_evidence": (
+            {"provider": "espn-bpi", "status": "validated"}
+            if bpi_supported
+            else {
+                "provider": "espn-bpi",
+                "status": "not_validated_for_league",
+                "policy": "empirical_history_only_until_a_separately_validated_pre_tip_provider_exists",
+            }
+        ),
         "results_reconciled": {
             "finals": finals,
             "reconciled": reconciled,

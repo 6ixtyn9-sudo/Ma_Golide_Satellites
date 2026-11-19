@@ -61,6 +61,13 @@ class MarketForecastService:
     _ESPN_CONTEXT_LEAGUES = frozenset(
         {League.NBA, League.WNBA, League.NCAA_M, League.NCAA_W}
     )
+    # These lanes can render transparent team-history forecasts after their
+    # reconciled-history gate, but have no validated named-book execution lane.
+    # Keep this explicit: an ESPN schedule/result source or unvalidated relayed
+    # odds observation must not make a price/value/ticket claim.
+    _UNPRICED_EMPIRICAL_LEAGUES = frozenset(
+        {League.EUROLEAGUE_W, League.NBA_G_LEAGUE}
+    )
 
     def __init__(
         self,
@@ -667,9 +674,9 @@ class MarketForecastService:
                 "require_positive_expected_value": True,
                 "require_point_in_time_price": True,
             }
-        elif self.league is League.EUROLEAGUE_W:
-            # Independent FIBA ELW policy: no named-book feed is validated yet,
-            # so it must never inherit the men's priced-value paper lane.
+        elif self.league in self._UNPRICED_EMPIRICAL_LEAGUES:
+            # This source contract has no validated named-book feed, so it
+            # must never inherit a priced-value paper lane from another league.
             paper_lane_options = {}
         else:
             paper_lane_options = {}
@@ -766,6 +773,8 @@ class MarketForecastService:
                 "league_operator_policy": (
                     "fiba_elw_empirical_history_only_no_validated_named_book_lane"
                     if self.league is League.EUROLEAGUE_W
+                    else "nba_g_league_empirical_history_only_no_validated_named_book_lane"
+                    if self.league is League.NBA_G_LEAGUE
                     else "standard_policy"
                 ),
                 "full_game_moneyline": [
@@ -839,7 +848,7 @@ class MarketForecastService:
                 "mode": "paper_only",
                 "pricing_evidence_status": (
                     "unpriced_no_validated_named_book_lane"
-                    if self.league is League.EUROLEAGUE_W
+                    if self.league in self._UNPRICED_EMPIRICAL_LEAGUES
                     else "priced_lane_policy_applies"
                 ),
                 "paper_policy": (
@@ -856,9 +865,9 @@ class MarketForecastService:
                         "positive calibrated expected value, and at least ten prior settled picks "
                         "in the matching model/market/period/probability/odds band"
                         if self.league is League.EUROLEAGUE
-                        else "; EuroLeague Women has no validated named-book lane: paper counts are unpriced "
+                        else "; this league has no validated named-book lane: paper counts are unpriced "
                         "decision-support candidates, never value/EV claims"
-                        if self.league is League.EUROLEAGUE_W
+                        if self.league in self._UNPRICED_EMPIRICAL_LEAGUES
                         else ""
                     )
                 ),

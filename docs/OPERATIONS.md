@@ -152,9 +152,11 @@ A valid frozen ticket or no-bet sidecar is required before the gate can regard a
 reached decision window as complete. Missing/contradictory state, a failed
 latest-`main` restore, provider errors, and unknown schedule statuses all
 **fail open** to the normal full league job; the gate never turns uncertainty
-into "no work." NBA, WNBA, NCAA men, and NCAA women use one ESPN scoreboard
-request for their current acquisition day; CBA uses one official Beijing-day
-schedule request. FIBA EuroLeague Women uses its official GDAP competition
+into "no work." NBA, WNBA, NCAA men, NCAA women, and NBA G League use one
+ESPN scoreboard request for their current acquisition day; CBA uses one
+official Beijing-day schedule request. NBA G League uses the separately
+validated `basketball/nba-development` route and cannot inherit NBA BPI or
+book-price capability. FIBA EuroLeague Women uses its official GDAP competition
 schedule (`209127`) and filters the canonical `gameDateTimeUTC` rows to the
 Europe/Paris slate date. GDAP publishes future bracket placeholders with no
 assigned teams: the gate ignores those non-fixtures and the full pipeline emits
@@ -227,6 +229,12 @@ unpriced decision-support counts, **not** price, positive-EV, or betting
 recommendations. The standalone `scripts/build_markets.py` defaults `--tz` to
 the selected league's acquisition timezone (Europe/Paris for ELW), not UTC;
 pass `--tz` explicitly only when deliberately inspecting another local slate.
+
+NBA G League has the same no-price boundary: it may publish an empirical
+history forecast only after the normal reconciled-history and residual gates.
+It has no validated external pre-tip prediction source or named-book lane, so
+its reports carry `pricing_evidence_status=unpriced_no_validated_named_book_lane`
+and can never turn a relayed ESPN offer into a price, EV, or ticket claim.
 
 ### Optional odds-provider credentials
 
