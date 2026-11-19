@@ -53,7 +53,7 @@ profitability.
 | `picks_audit_YYYY-MM-DD.md` | Expanded rolling summary; cache/artifact only, not Git |
 | `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper singles and accas |
 | `auto_tickets_YYYY-MM-DD_no_bet.json` | Immutable terminal decision that the 60-minute pre-tip window closed without a qualifying pre-tip position |
-| `auto_tickets_YYYY-MM-DD.txt` | Mutable, Git-published current card. Before the cutoff it is a clearly labelled candidate preview that may change on each scan and creates no position; after an immutable receipt it becomes the settlement card whose selections, prices, and stakes remain frozen while grades refresh. A no-bet sidecar remains the terminal decision. |
+| `auto_tickets_YYYY-MM-DD.txt` | Mutable, Git-published current card. Before the cutoff it is a clearly labelled candidate preview that may change on each scan and creates no position; after an immutable receipt it becomes the settlement card whose selections, prices, and stakes remain frozen while grades refresh; after a no-bet sidecar it displays that terminal no-bet state. |
 | `auto_tickets_state.json` | Git-durable write-once date locks; bounded scan telemetry stays cache/artifact-only |
 | `auto_tickets_performance.json` | Compact rolling settlement/financial summary; each history day points to its immutable receipt for full leg evidence |
 | `auto_tickets_performance.txt` | Bank, settled record, bet-days, held positions, and grading notes |
@@ -72,8 +72,9 @@ new Git blob. A mutable `auto_tickets_YYYY-MM-DD.txt` is published before the
 cutoff as a candidate preview and is deliberately replaced by later scans; it
 is not a receipt, a date lock, or a committed paper position. At the cutoff, an
 immutable receipt or no-bet sidecar makes the decision. Later updates refresh a
-receipt-backed card when official settlement changes a displayed grade; the
-no-bet sidecar remains the durable terminal record.
+receipt-backed card when official settlement changes a displayed grade and
+refresh the text card to display a terminal no-bet decision; the sidecar remains
+the durable terminal record.
 
 ## Pick categories
 

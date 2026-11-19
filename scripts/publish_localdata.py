@@ -69,7 +69,6 @@ IMMUTABLE_NAMES = re.compile(
 )
 DECISION_RECEIPT_NAME = re.compile(rf"auto_tickets_({DATE})_decision\.json")
 NO_BET_DECISION_NAME = re.compile(rf"auto_tickets_({DATE})_no_bet\.json")
-TICKET_CARD_NAME = re.compile(rf"auto_tickets_({DATE})\.txt")
 CALIBRATION_EPOCH = "2026-11-10"
 MAX_FILE_BYTES = 25 * 1024 * 1024
 MAX_TOTAL_BYTES = 100 * 1024 * 1024
@@ -237,15 +236,11 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                 continue
             if not allowed_operator_file(source.name):
                 continue
-            ticket_card_match = TICKET_CARD_NAME.fullmatch(source.name)
-            if ticket_card_match and ticket_card_match.group(1) in no_bet_dates:
-                # The no-bet sidecar is the immutable terminal decision. Do not
-                # replace it with a mutable latest-scan card after the cutoff.
-                continue
-            # Pre-cutoff cards are intentionally published even before a
-            # receipt exists: they show the current candidate surface while it
-            # remains mutable. _ticket_receipt still creates a state lock and
-            # immutable decision JSON only at the 60-minute pre-tip cutoff.
+            # Every dated auto-ticket text card is a mutable public view: it
+            # shows a pre-cutoff candidate preview, an immutable-ticket
+            # settlement view, or the terminal no-bet state. _ticket_receipt
+            # alone creates a state lock and immutable decision JSON at the
+            # 60-minute pre-tip cutoff.
             if source.is_symlink() or not source.is_file():
                 raise ValueError(f"operator publication requires a regular file: {source}")
             size = source.stat().st_size
