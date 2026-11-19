@@ -182,15 +182,6 @@ def _no_bet_decision_dates(localdata: Path) -> frozenset[str]:
     return frozenset(dates)
 
 
-def _decision_receipt_dates(paths: Iterable[Path]) -> frozenset[str]:
-    """Return dates with an immutable ticket receipt, never a live scan card."""
-    return frozenset(
-        match.group(1)
-        for path in paths
-        if (match := DECISION_RECEIPT_NAME.fullmatch(path.name)) is not None
-    )
-
-
 def _artifact_league_dirs(
     artifacts: Path, *, skipped_states: list[str]
 ) -> Iterable[tuple[str, Path, str]]:
@@ -240,9 +231,6 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
         no_bet_dates = _no_bet_decision_dates(destination_dir) | _no_bet_decision_dates(
             source_dir
         )
-        receipt_dates = _decision_receipt_dates(
-            destination_dir.glob("auto_tickets_*_decision.json")
-        ) | _decision_receipt_dates(sources)
         for source in sources:
             if lifecycle_recovery and not allowed_lifecycle_recovery_file(source.name):
                 recovery_files_skipped.append((source_dir / source.name).as_posix())
@@ -250,17 +238,14 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
             if not allowed_operator_file(source.name):
                 continue
             ticket_card_match = TICKET_CARD_NAME.fullmatch(source.name)
-            if ticket_card_match:
-                if (
-                    ticket_card_match.group(1) not in receipt_dates
-                    or ticket_card_match.group(1) in no_bet_dates
-                ):
-                    # Candidate/no-bet cards contain a latest-scan timestamp
-                    # and price movement.  A card tied to an immutable receipt
-                    # is instead the mutable, human-visible settlement view:
-                    # its selections/prices remain receipt-backed while grades
-                    # may advance from pending to settled on a later run.
-                    continue
+            if ticket_card_match and ticket_card_match.group(1) in no_bet_dates:
+                # The no-bet sidecar is the immutable terminal decision. Do not
+                # replace it with a mutable latest-scan card after the cutoff.
+                continue
+            # Pre-cutoff cards are intentionally published even before a
+            # receipt exists: they show the current candidate surface while it
+            # remains mutable. _ticket_receipt still creates a state lock and
+            # immutable decision JSON only at the 60-minute pre-tip cutoff.
             if source.is_symlink() or not source.is_file():
                 raise ValueError(f"operator publication requires a regular file: {source}")
             size = source.stat().st_size
