@@ -172,34 +172,16 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install .
 
-      - name: Restore league-isolated DuckDB/CSV state
-        # NCAA_W starts a fresh cache epoch: pre-guard cache state did not
-        # preserve per-event ESPN league identity and cannot prove it was a
-        # women's-only dataset.
-        if: >-
-          steps.capability.outputs.available == 'true' &&
-          matrix.league != 'NCAA_W'
+      - name: Restore league-isolated evidence-verified cache epoch
+        # Every league starts a fresh cache epoch. No pre-guard warehouse or
+        # artifact cache can bypass the current event/source evidence policy.
+        if: steps.capability.outputs.available == 'true'
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.LOCALDATA }}
-          key: magolide-localdata-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
-          # The second prefix is a one-time fallback to the pre-rename snapshot.
+          key: magolide-localdata-evidence-v1-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            magolide-localdata-${{ matrix.state_key }}-
-            magolide-localdata-v4-${{ matrix.state_key }}-
-
-      - name: Restore NCAA_W identity-verified cache epoch
-        # Never recover a pre-identity-guard NCAA_W warehouse or artifact.
-        # Valid history is reacquired under event-level ESPN l:50 evidence.
-        if: >-
-          steps.capability.outputs.available == 'true' &&
-          matrix.league == 'NCAA_W'
-        uses: actions/cache/restore@v4
-        with:
-          path: ${{ env.LOCALDATA }}
-          key: magolide-localdata-ncaa_w-identity-v1-${{ github.run_id }}-${{ github.run_attempt }}
-          restore-keys: |
-            magolide-localdata-ncaa_w-identity-v1-
+            magolide-localdata-evidence-v1-${{ matrix.state_key }}-
 
       - name: Restore Git-durable operator reports after cache recovery
         if: steps.capability.outputs.available == 'true'
@@ -368,29 +350,16 @@ jobs:
               print("```")
           PY
 
-      - name: Persist league-isolated acquisition and canonical state
+      - name: Persist league-isolated evidence-verified cache epoch
         if: >-
           success() &&
           steps.capability.outputs.available == 'true' &&
-          matrix.league != 'NCAA_W' &&
           github.event_name == 'repository_dispatch' &&
           github.event.action == 'magolide-scheduled-tick'
         uses: actions/cache/save@v4
         with:
           path: ${{ env.LOCALDATA }}
-          key: magolide-localdata-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
-
-      - name: Persist NCAA_W identity-verified cache epoch
-        if: >-
-          success() &&
-          steps.capability.outputs.available == 'true' &&
-          matrix.league == 'NCAA_W' &&
-          github.event_name == 'repository_dispatch' &&
-          github.event.action == 'magolide-scheduled-tick'
-        uses: actions/cache/save@v4
-        with:
-          path: ${{ env.LOCALDATA }}
-          key: magolide-localdata-ncaa_w-identity-v1-${{ github.run_id }}-${{ github.run_attempt }}
+          key: magolide-localdata-evidence-v1-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Upload successful league reports and recovery evidence
         # A failed pipeline can leave a partially rendered mutable card beside
