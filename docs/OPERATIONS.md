@@ -91,9 +91,10 @@ snippet.
 It has a durable named external trigger and a manual dispatch with **no
 league/date/mode/write inputs**; it deliberately has no GitHub Actions cron
 trigger. An adaptive, read-only gate runs first. It reads the latest
-Git-authoritative compact operator state and a bounded current-day schedule,
-then starts preflight and only the league matrix rows that have work due. The
-selected rows remain fail-independent across every league in the canonical
+Git-authoritative compact operator state and a bounded current-day schedule.
+Preflight runs independently, so a gate import/configuration failure remains
+visible instead of silently suppressing all matrix work; only matrix rows with
+work due run the full league pipeline. The selected rows remain fail-independent across every league in the canonical
 registry. A league without a compliant automated official schedule/result
 adapter still runs fail-closed: it reports an explicit unsupported-source gap
 and may use only already-canonical imported games/history; it never fabricates
@@ -141,6 +142,9 @@ conditions holds:
   60-minute decision lead;
 - the compact performance report has a pending position, awaiting game leg, or
   unresolved-result leg needing reconciliation or settlement; or
+- a receipt-backed settlement card is missing or still displays `PENDING` after
+  its compact performance history has no pending/result-reconciliation counts;
+  or
 - state/receipt validation or schedule retrieval is unavailable, malformed, or
   otherwise uncertain.
 
@@ -161,7 +165,12 @@ header authentication uses a shared public fallback and retries after one
 public-page key refresh; a refresh failure also fails open. Men's EuroLeague
 currently has only the verified whole-season schedule endpoint, not a verified
 date-bounded alternative, so it deliberately fails open rather than disguising
-a season download as a lightweight gate.
+a season download as a lightweight gate. A `source_unavailable` expansion lane
+likewise never fabricates an empty schedule: its first write-enabled run each
+acquisition day publishes a durable `coverage_gap_YYYY-MM-DD.json` marker.
+With no pending ticket/pick lifecycle state, that marker lets later ticks skip
+the otherwise identical coverage-gap pipeline; missing, corrupt, or
+identity-mismatched markers fail open.
 
 `workflow_dispatch` remains deliberately different: it forces the existing
 all-league read-only rehearsal, even if the adaptive gate would otherwise skip

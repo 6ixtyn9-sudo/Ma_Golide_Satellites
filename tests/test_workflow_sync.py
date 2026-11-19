@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import re
+import subprocess
 from pathlib import Path
 
 # F1/R5-2: Guard against source vs installed workflow drift.
@@ -32,6 +33,26 @@ def test_workflow_mirror_sync():
     # Pin the withdrawn/no-bet sidecars in every cache-recovery allowlist.
     assert all("withdrawn" in block for block in blocks)
     assert all("no_bet" in block for block in blocks)
+
+
+def test_gitignore_allows_every_durable_pick_lifecycle_artifact():
+    repo = Path(__file__).resolve().parents[1]
+    durable_names = (
+        "picks_2026-11-18.json",
+        "picks_2026-11-18.txt",
+        "picks_2026-11-18_lifecycle.json",
+        "pick_lifecycle_state.json",
+        "pick_freeze_2026-11-18_0123456789abcdef.json",
+        "coverage_gap_2026-11-18.json",
+        "auto_tickets_2026-11-18_decision.json",
+    )
+    for name in durable_names:
+        result = subprocess.run(
+            ["git", "check-ignore", "-q", f"localdata/nba/{name}"],
+            cwd=repo,
+            check=False,
+        )
+        assert result.returncode == 1, f"durable publisher artifact is ignored: {name}"
 
 
 def test_operator_state_restore_uses_latest_main_not_event_sha():
@@ -88,7 +109,7 @@ def test_workflow_keeps_keyless_fallback_and_wires_optional_provider_secrets():
         cache = text.split("name: Persist league-isolated acquisition and canonical state", 1)[1].split(
             "uses: actions/cache/save@v4", 1
         )[0]
-        assert "github.event_name == 'workflow_dispatch'" in cache
+        assert "github.event_name == 'workflow_dispatch'" not in cache
         assert "github.event_name == 'repository_dispatch'" in cache
         assert "github.event.action == 'magolide-scheduled-tick'" in cache
 
@@ -107,12 +128,30 @@ def test_adaptive_gate_skips_idle_external_ticks_but_keeps_manual_rehearsals_ful
         assert "manual_read_only_rehearsal" in gate
         assert "python scripts/adaptive_gate.py" in gate
         preflight = text.split("  preflight:\n", 1)[1].split("\n  league:", 1)[0]
-        assert "needs: gate" in preflight
-        assert "if: needs.gate.outputs.run_any == 'true'" in preflight
+        assert "needs: gate" not in preflight
+        assert "if: needs.gate.outputs.run_any" not in preflight
+        assert "gate itself cannot start" in preflight
         league = text.split("  league:\n", 1)[1].split("\n  publish-localdata:", 1)[0]
         assert "needs: [gate, preflight]" in league
         assert "needs.gate.outputs.run_any == 'true'" in league
         assert "matrix: ${{ fromJSON(needs.gate.outputs.matrix) }}" in league
+
+
+def test_failed_league_jobs_cannot_publish_partial_operator_artifacts():
+    repo = Path(__file__).resolve().parents[1]
+    for path in (
+        repo / "workflows" / "ingestion.yml",
+        repo / ".github" / "workflows" / "ingestion.yml",
+    ):
+        text = path.read_text()
+        artifact = text.split("name: Upload league reports and recovery evidence", 1)[1].split(
+            "uses: actions/upload-artifact@v4", 1
+        )[0]
+        assert "if: success()" in artifact
+        publish = text.split("publish-localdata:", 1)[1].split("runs-on:", 1)[0]
+        assert "needs: [gate, preflight, league]" in text
+        assert "needs.preflight.result == 'success'" in publish
+        assert "needs.league.result == 'success'" in publish
 
 
 def test_only_named_automated_triggers_can_publish_a_durable_operator_decision():

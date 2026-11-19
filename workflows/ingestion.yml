@@ -91,12 +91,12 @@ jobs:
             cat gate-report.json >> "$GITHUB_STEP_SUMMARY"
             echo '```' >> "$GITHUB_STEP_SUMMARY"
           else
-            echo "The gate did not produce a report; its fail-open output should run all leagues." >> "$GITHUB_STEP_SUMMARY"
+            echo "The gate failed before producing a matrix; matrix jobs are fail-closed. Preflight runs independently so the import/configuration error is visible." >> "$GITHUB_STEP_SUMMARY"
           fi
 
   preflight:
-    needs: gate
-    if: needs.gate.outputs.run_any == 'true'
+    # Keep import/configuration regressions observable even if the lightweight
+    # gate itself cannot start and therefore cannot emit fail-open outputs.
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
@@ -212,6 +212,7 @@ jobs:
                   rf"picks_{date}_lifecycle\.json",
                   r"pick_lifecycle_state\.json",
                   rf"pick_freeze_{date}_[0-9a-f]{{16}}\.json",
+                  rf"coverage_gap_{date}\.json",
                   r"auto_tickets_state\.json",
                   r"auto_tickets_performance\.json",
                   r"auto_tickets_performance\.txt",
@@ -335,16 +336,17 @@ jobs:
         if: >-
           success() &&
           steps.capability.outputs.available == 'true' &&
-          (github.event_name == 'workflow_dispatch' ||
-           (github.event_name == 'repository_dispatch' &&
-            github.event.action == 'magolide-scheduled-tick'))
+          github.event_name == 'repository_dispatch' &&
+          github.event.action == 'magolide-scheduled-tick'
         uses: actions/cache/save@v4
         with:
           path: ${{ env.LOCALDATA }}
           key: magolide-localdata-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Upload league reports and recovery evidence
-        if: always()
+        # A failed pipeline can leave a partially rendered mutable card beside
+        # an older compact summary. Do not make that partial state publishable.
+        if: success()
         uses: actions/upload-artifact@v4
         with:
           name: MaGolide-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
@@ -358,6 +360,7 @@ jobs:
             ${{ env.LOCALDATA }}/picks_audit_*.md
             ${{ env.LOCALDATA }}/pick_freeze_*.json
             ${{ env.LOCALDATA }}/pick_lifecycle_state.json
+            ${{ env.LOCALDATA }}/coverage_gap_*.json
             ${{ env.LOCALDATA }}/auto_tickets_*.json
             ${{ env.LOCALDATA }}/auto_tickets_*.txt
             ${{ env.LOCALDATA }}/csv/*.csv.gz
@@ -366,12 +369,14 @@ jobs:
 
   publish-localdata:
     name: Publish localdata to repository
-    needs: [gate, league]
+    needs: [gate, preflight, league]
     # Only the strictly named external tick may make live operator evidence
     # durable. Manual dispatch uploads artifacts but cannot publish.
     if: >-
       always() &&
       needs.gate.outputs.run_any == 'true' &&
+      needs.preflight.result == 'success' &&
+      needs.league.result == 'success' &&
       github.ref == 'refs/heads/main' &&
       github.event_name == 'repository_dispatch' &&
       github.event.action == 'magolide-scheduled-tick'
