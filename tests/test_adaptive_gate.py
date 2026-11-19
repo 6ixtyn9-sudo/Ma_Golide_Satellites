@@ -79,6 +79,30 @@ def test_gate_skips_a_valid_idle_league(tmp_path: Path):
     assert decision.scheduled_game_count == 1
 
 
+def test_gate_wakes_for_prior_pick_and_shadow_cards_with_rendered_pending_grades(tmp_path: Path):
+    nba = LEAGUES[0]
+    _operator_state(tmp_path, nba, date="2026-11-18")
+    state_dir = tmp_path / nba.state_key
+    (state_dir / "picks_2026-11-17.txt").write_text("grade=PENDING\n")
+    (state_dir / "auto_tickets_2026-11-16.txt").write_text("[⏳ PENDING] shadow\n")
+    # Descriptive prose and current-date rows must not spur needless recovery.
+    (state_dir / "picks_2026-11-15.txt").write_text("latest pending pre-tip observation\n")
+    (state_dir / "auto_tickets_2026-11-18.txt").write_text("⏳ PENDING current\n")
+
+    decision = evaluate_league(
+        nba,
+        state_root=tmp_path,
+        now=NOW,
+        schedule_fetcher=_schedule(),
+    )
+
+    assert decision.should_run
+    assert decision.reasons == (
+        "historical_auto_tickets_reconciliation_due:2026-11-16",
+        "historical_picks_reconciliation_due:2026-11-17",
+    )
+
+
 def test_gate_publishes_an_identified_fixture_draft_before_its_freeze_window(tmp_path: Path):
     nba = LEAGUES[0]
     _operator_state(tmp_path, nba, date="2026-11-18")

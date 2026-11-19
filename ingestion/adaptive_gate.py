@@ -59,6 +59,10 @@ DECISION_LEAD_MINUTES = 60
 HTTP_TIMEOUT_SECONDS = 15
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 COVERAGE_GAP_MARKER_SCHEMA = "magolide.coverage_gap_marker"
+HISTORICAL_CARD_RE = re.compile(r"^(picks|auto_tickets)_(\d{4}-\d{2}-\d{2})\.txt$")
+# Keep this aligned with the recovery utility. It deliberately detects rendered
+# grades only, never explanatory prose mentioning a pending observation.
+PENDING_GRADE_RE = re.compile(r"(?:grade=|\[\s*)PENDING\b|⏳\s+PENDING\b")
 # Public browser-bundle fallback for the documented CBA data response format;
 # it is not a repository credential. An operator may override it for a rotated
 # public format through CBA_DECRYPT_KEY without exposing the value in reports.
@@ -395,6 +399,43 @@ def _pending_reasons(performance: dict[str, Any]) -> list[str]:
     return reasons
 
 
+def _historical_pending_card_reasons(state_dir: Path, *, target_date: str) -> list[str]:
+    """Wake recovery when an earlier public card still displays a real grade.
+
+    Structured dated pick ledgers are intentionally cache/artifact-only, so a
+    cold runner cannot inspect their rows before the full pipeline starts. The
+    Git-durable cards are sufficient to request that run: recovery then obtains
+    the original ledger from the owning Actions artifacts and normal lifecycle
+    rendering decides whether an official final can settle each row.  This
+    catches unfrozen pick cards and audit-only auto-ticket shadow cards that
+    have no receipt/no-bet sidecar, categories not represented in performance.
+    """
+
+    reasons: list[str] = []
+    try:
+        cards = sorted(path for path in state_dir.iterdir() if path.is_file())
+    except FileNotFoundError:
+        return reasons
+    except OSError as exc:
+        raise GateUncertain("cannot inspect historical operator cards") from exc
+    for path in cards:
+        match = HISTORICAL_CARD_RE.fullmatch(path.name)
+        if match is None:
+            continue
+        kind, card_date = match.groups()
+        # ISO dates have chronological lexical order. Future/current cards
+        # must remain draft-capable and are intentionally outside recovery.
+        if card_date >= target_date:
+            continue
+        try:
+            has_pending_grade = PENDING_GRADE_RE.search(path.read_text(encoding="utf-8")) is not None
+        except OSError as exc:
+            raise GateUncertain(f"cannot read historical {kind} card {card_date}") from exc
+        if has_pending_grade:
+            reasons.append(f"historical_{kind}_reconciliation_due:{card_date}")
+    return reasons
+
+
 def _settlement_view_reasons(state_dir: Path, performance: dict[str, Any]) -> list[str]:
     """Wake a lane when its public receipt card lags settled compact state.
 
@@ -469,6 +510,7 @@ def evaluate_league(
         )
         reasons.extend(_pending_reasons(performance))
         reasons.extend(_settlement_view_reasons(state_dir, performance))
+        reasons.extend(_historical_pending_card_reasons(state_dir, target_date=target_date))
     except GateUncertain as exc:
         return GateDecision(
             config, target_date, True, (f"state_uncertain: {exc}",), schedule_count

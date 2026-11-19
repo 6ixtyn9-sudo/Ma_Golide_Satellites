@@ -764,6 +764,92 @@ def test_terminal_no_bet_card_refreshes_reconciled_shadow_grades(tmp_path):
     assert "[✅ WIN] Home 4 vs Away 4" in refreshed_card
 
 
+def test_historical_unfrozen_scan_card_regrades_shadows_without_creating_a_decision(tmp_path):
+    shadow_pick = forecast(
+        4,
+        price=None,
+        eligible=False,
+        reasons=["no_exact_bookmaker_market"],
+    )
+    history_games = seed_historical_success_picks(
+        tmp_path, "moneyline", wins=8, losses=3
+    )
+    first = publish(
+        tmp_path,
+        Store([game(4)] + history_games),
+        report([shadow_pick]),
+        generated_utc=AS_OF,
+        run_id="historical-unfrozen-shadow",
+    )
+    card_path = Path(first["ticket_text"])
+    ledger_path = Path(first["dated_picks"])
+    original = json.loads(ledger_path.read_text())[0]
+    assert first["ticket_receipt"] is None
+    assert not (tmp_path / f"auto_tickets_{DATE}_no_bet.json").exists()
+    assert "[⏳ PENDING] Home 4 vs Away 4" in card_path.read_text()
+
+    later = publish(
+        tmp_path,
+        Store([game(4, home_score=100, away_score=80)] + history_games),
+        report([]),
+        target_date="2026-11-12",
+        generated_utc="2026-11-12T18:00:00Z",
+        run_id="historical-unfrozen-shadow-result-refresh",
+    )
+
+    refreshed = card_path.read_text()
+    reconciled = json.loads(ledger_path.read_text())[0]
+    assert later["historical_ticket_audit_cards_refreshed"] == [DATE]
+    assert "HISTORICAL SCAN ARCHIVE" in refreshed
+    assert "does not create, replace, or retrospectively freeze" in refreshed
+    assert "[✅ WIN] Home 4 vs Away 4" in refreshed
+    assert "⏳ PENDING" not in refreshed
+    assert not (tmp_path / f"auto_tickets_{DATE}_decision.json").exists()
+    assert not (tmp_path / f"auto_tickets_{DATE}_no_bet.json").exists()
+    for key in ("pick_id", "forecast_id", "bucket", "scheduled_utc"):
+        assert reconciled[key] == original[key]
+    assert reconciled["grade_status"] == "win"
+
+
+def test_historical_ticket_audit_reconciliation_keeps_future_shadow_draft(tmp_path):
+    shadow_pick = forecast(
+        4,
+        price=None,
+        eligible=False,
+        reasons=["no_exact_bookmaker_market"],
+    )
+    shadow_pick["scheduled_utc"] = "2026-11-20T20:00:00Z"
+    history_games = seed_historical_success_picks(
+        tmp_path, "moneyline", wins=8, losses=3
+    )
+    first = publish(
+        tmp_path,
+        Store([game(4, scheduled_utc="2026-11-20T20:00:00Z")] + history_games),
+        report([shadow_pick]),
+        generated_utc=AS_OF,
+        run_id="historical-future-shadow",
+    )
+    card_path = Path(first["ticket_text"])
+
+    later = publish(
+        tmp_path,
+        Store([game(4, scheduled_utc="2026-11-20T20:00:00Z")] + history_games),
+        report([]),
+        target_date="2026-11-12",
+        generated_utc="2026-11-12T18:00:00Z",
+        run_id="historical-future-shadow-refresh",
+    )
+
+    lifecycle = json.loads((tmp_path / f"picks_{DATE}_lifecycle.json").read_text())
+    row = next(row for row in lifecycle["rows"] if row["game_id"] == "game-4")
+    assert later["historical_ticket_audit_cards_refreshed"] == [DATE]
+    assert row["grade_status"] == "pending"
+    assert row["lifecycle_status"] == "DRAFT"
+    assert "[⏳ PENDING] Home 4 vs Away 4" in card_path.read_text()
+    assert not (tmp_path / f"auto_tickets_{DATE}_decision.json").exists()
+    assert not (tmp_path / f"auto_tickets_{DATE}_no_bet.json").exists()
+
+
 def test_persisted_performance_is_compact_and_points_to_immutable_receipt(tmp_path):
     rows = [forecast(number) for number in (1, 2, 3)]
     rows[0]["team_history"] = {"large_debug_payload": "x" * 100_000}
@@ -962,6 +1048,66 @@ def test_withdrawn_ticket_survives_old_cache_without_becoming_a_live_position(tm
     assert "withdrawn for model-integrity failure" in text
     assert "closed to replacement ticket publication" in text
     assert json.loads(state_path.read_text())["frozen_by_date"][DATE]["withdrawn"] is True
+
+
+def test_historical_withdrawn_card_regrades_shadows_without_reviving_receipt(tmp_path):
+    rows = [forecast(number) for number in (1, 2, 3)]
+    shadow_pick = forecast(
+        4,
+        price=None,
+        eligible=False,
+        reasons=["no_exact_bookmaker_market"],
+    )
+    history_games = seed_historical_success_picks(
+        tmp_path, "moneyline", wins=8, losses=3
+    )
+    first = publish(
+        tmp_path,
+        Store([*(game(number) for number in (1, 2, 3, 4)), *history_games]),
+        report([*rows, shadow_pick], [acca(rows)]),
+        run_id="withdrawn-shadow-receipt",
+    )
+    receipt_path = Path(first["ticket_receipt"])
+    receipt_bytes = receipt_path.read_bytes()
+    card_path = Path(first["ticket_text"])
+    state_path = Path(first["ticket_state"])
+    state = json.loads(state_path.read_text())
+    state["frozen_by_date"][DATE].update(withdrawn=True, decision_id="withdrawn-shadow-receipt")
+    state_path.write_text(json.dumps(state, indent=2) + "\n")
+    # Materialise the Git-durable withdrawal marker while the original slate
+    # is still the target date.
+    publish(
+        tmp_path,
+        Store([*(game(number) for number in (1, 2, 3, 4)), *history_games]),
+        report([]),
+        run_id="materialise-withdrawal",
+    )
+    withdrawal_path = tmp_path / f"auto_tickets_{DATE}_withdrawn.json"
+    assert withdrawal_path.exists()
+
+    later = publish(
+        tmp_path,
+        Store(
+            [
+                *(game(number, home_score=100, away_score=90) for number in (1, 2, 3)),
+                game(4, home_score=100, away_score=80),
+                *history_games,
+            ]
+        ),
+        report([]),
+        target_date="2026-11-12",
+        generated_utc="2026-11-12T18:00:00Z",
+        run_id="withdrawn-shadow-result-refresh",
+    )
+
+    refreshed = card_path.read_text()
+    assert later["historical_ticket_audit_cards_refreshed"] == [DATE]
+    assert "withdrawn for model-integrity failure" in refreshed
+    assert "HISTORICAL SCAN ARCHIVE" not in refreshed
+    assert "[✅ WIN] Home 4 vs Away 4" in refreshed
+    assert receipt_path.read_bytes() == receipt_bytes
+    assert withdrawal_path.exists()
+    assert json.loads(Path(later["performance"]).read_text())["history"] == []
 
 
 def test_withdrawn_sidecar_written_and_blocks_adoption_without_state_lock(tmp_path):
