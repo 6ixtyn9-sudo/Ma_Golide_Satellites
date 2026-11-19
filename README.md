@@ -46,7 +46,10 @@ remains halves. Supported NCAAW H1/H2 **book markets** remain half markets:
 grading derives H1/H2 from Q1+Q2/Q3+Q4, and does not reuse a full-game line.
 Quarter/highest-quarter products remain disabled for both NCAA leagues. Early
 WNBA two-half games likewise remain halves; current event-declared four-quarter
-games remain quarters. CBA's public schedule/result source is kept separate from its empirical
+games remain quarters. Every ESPN-backed league—NBA, WNBA, NCAA_M, NCAA_W, and
+NBA G League—requires a matching event-level ESPN league UID before discovery
+or result reconciliation; missing or contradictory identity is quarantined.
+CBA's public schedule/result source is kept separate from its empirical
 prediction surface; aggregate book observations are never stored as model
 predictions. EuroLeague Women is a separate FIBA competition with isolated
 `EUROLEAGUE_W` IDs and `localdata/euroleague_w` state: it never reuses the

@@ -185,7 +185,9 @@ Each matrix job has isolated state and artifacts:
 
 - `localdata/<state_key>`, where `state_key` comes from the canonical league
   registry (including every expansion lane);
-- a league-specific DuckDB path, cache prefix, run ID, and artifact name;
+- a league-specific DuckDB path, evidence-verified cache prefix, run ID, and
+  artifact name. The `evidence-v1` cache epoch is universal: no league restores
+  a cache created before the current source-identity/evidence policy;
 - an acquisition date derived automatically in that league's acquisition
   timezone, never a dispatch-selected date.
 

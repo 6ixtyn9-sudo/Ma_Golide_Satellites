@@ -311,12 +311,11 @@ def _assert_event_league_identity(
 ) -> None:
     """Reject an ESPN event whose explicit league identity disagrees.
 
-    NCAA women's events require an event-level UID.  This is intentionally
-    fail-closed: the incident that prompted this guard was a men's slate
-    rendered as NCAA_W, and neither team spelling nor a scoreboard route can
-    repair an absent women's event identity.  Other legacy payload variants
-    remain readable when they expose no per-event league field, while any
-    disclosed contradiction is rejected for every league.
+    Every supported ESPN basketball lane requires event-level league identity.
+    A scoreboard route, team spelling, or date cannot repair an absent identity
+    field, and a disclosed contradiction is quarantined rather than relabeled.
+    This applies the same source-identity contract to NBA, WNBA, NCAA men's,
+    NCAA women's, and NBA G League events.
     """
 
     expected = ESPN_LEAGUE_IDS.get(league)
@@ -324,11 +323,12 @@ def _assert_event_league_identity(
         return
     found = _event_league_ids(event, comp)
     event_id = str(event.get("id") or "unknown")
-    if league is League.NCAA_W and not found:
+    if not found:
         raise IdentityError(
-            f"event {event_id}: NCAA_W event lacks an explicit ESPN league UID; quarantined"
+            f"event {event_id}: {league.value} event lacks an explicit ESPN league UID; "
+            "quarantined"
         )
-    if found and found != {expected}:
+    if found != {expected}:
         raise IdentityError(
             f"event {event_id}: ESPN league identity {sorted(found)!r} does not match "
             f"requested {league.value} ({expected}); quarantined"

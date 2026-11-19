@@ -135,7 +135,7 @@ def test_workflow_keeps_keyless_fallback_and_wires_optional_provider_secrets():
         assert "repository_dispatch:magolide-scheduled-tick)" in text
         assert "schedule:*" not in text
         assert '[ "$AUTOMATED_TICK" = "true" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]' in text
-        cache = text.split("name: Persist league-isolated acquisition and canonical state", 1)[1].split(
+        cache = text.split("name: Persist league-isolated evidence-verified cache epoch", 1)[1].split(
             "uses: actions/cache/save@v4", 1
         )[0]
         assert "github.event_name == 'workflow_dispatch'" not in cache
@@ -208,36 +208,18 @@ def test_only_named_automated_triggers_can_publish_a_durable_operator_decision()
         assert "Manual dispatch uploads artifacts but cannot publish." in publish
 
 
-def test_renamed_cache_key_falls_back_to_the_pre_rename_snapshot():
-    # Source workflow only: the installed copy is synced by a manual
-    # workflows-permission step and must keep its key until then.
-    repo = Path(__file__).resolve().parents[1]
-    for path in (repo / "workflows" / "ingestion.yml",):
-        text = path.read_text()
-        restore = text.split("restore-keys: |", 1)[1].splitlines()[1:3]
-        assert [line.strip() for line in restore] == [
-            "magolide-localdata-${{ matrix.state_key }}-",
-            "magolide-localdata-v" + "4-${{ matrix.state_key }}-",
-        ]
-        assert text.count("key: magolide-localdata-${{ matrix.state_key }}-${{ github.run_id }}") == 2
-
-
-def test_ncaa_w_cache_starts_after_the_event_identity_guard():
+def test_evidence_verified_cache_epoch_applies_to_every_league():
     repo = Path(__file__).resolve().parents[1]
     for path in (
         repo / "workflows" / "ingestion.yml",
         repo / ".github" / "workflows" / "ingestion.yml",
     ):
         text = path.read_text()
-        assert "Restore NCAA_W identity-verified cache epoch" in text
-        assert "Persist NCAA_W identity-verified cache epoch" in text
-        assert "matrix.league != 'NCAA_W'" in text
-        assert "matrix.league == 'NCAA_W'" in text
-        assert text.count("magolide-localdata-ncaa_w-identity-v1-") == 3
-        # The new epoch intentionally has no legacy restore fallback: cache
-        # contents before the explicit event-level l:50 check are unverifiable.
-        ncaa_block = text.split("Restore NCAA_W identity-verified cache epoch", 1)[1].split(
-            "Restore Git-durable operator reports", 1
-        )[0]
-        assert "magolide-localdata-v4-ncaa_w-" not in ncaa_block
-        assert "magolide-localdata-ncaa_w-identity-v1-" in ncaa_block
+        assert "Restore league-isolated evidence-verified cache epoch" in text
+        assert "Persist league-isolated evidence-verified cache epoch" in text
+        assert text.count("magolide-localdata-evidence-v1-") == 3
+        # No league may fall back to a pre-policy cache namespace.
+        assert "magolide-localdata-v4-" not in text
+        assert "magolide-localdata-ncaa_w-identity-v1-" not in text
+        assert "matrix.league != 'NCAA_W'" not in text
+        assert "matrix.league == 'NCAA_W'" not in text
