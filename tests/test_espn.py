@@ -438,6 +438,51 @@ def test_discover_games_from_scoreboard(load_fixture, fixture_fetch):
     assert "Philadelphia 76ers" in names
 
 
+def test_g_league_scoreboard_and_result_contract_is_strict_and_bpi_is_not_implied(
+    fixture_fetch,
+):
+    """Captured 2026-10-29 ESPN NBA G League response; no synthetic facts."""
+
+    mapping = {"dates=20260410": "espn/scoreboard_gleague_20260410.json"}
+    games = discover_games("20260410", fixture_fetch(mapping), league=League.NBA_G_LEAGUE)
+    assert len(games) == 1
+    game = games[0]
+    assert game.game_id == "401867657"
+    assert game.league is League.NBA_G_LEAGUE
+    assert game.season == "2026"
+    assert game.scheduled_utc == "2026-04-11T02:00:00Z"
+    assert (game.home_team_id, game.home_name) == ("23", "Stockton Kings")
+    assert (game.away_team_id, game.away_name) == ("9", "Greensboro Swarm")
+    assert game.status is GameStatus.FINAL
+    assert game.provider_ids == {"espn": "401867657"}
+
+    result = fetch_recent_results(
+        "20260410", fixture_fetch(mapping), league=League.NBA_G_LEAGUE
+    )[0]
+    assert result.actual is not None
+    assert result.actual.period_kind is PeriodKind.QUARTERS
+    assert result.actual.home_quarters == [19.0, 31.0, 33.0, 21.0]
+    assert result.actual.away_quarters == [25.0, 37.0, 27.0, 30.0]
+    assert (result.actual.home_final, result.actual.away_final) == (104.0, 119.0)
+    assert result.actual.reconciles() == (True, "")
+    assert result.final_status() is FinalStatus.FT
+
+    summary_result = fetch_game_result(
+        "401867657",
+        fixture_fetch({"summary?event=401867657": "espn/summary_gleague_401867657.json"}),
+        league=League.NBA_G_LEAGUE,
+    )
+    assert summary_result.actual is not None
+    assert summary_result.actual.period_kind is PeriodKind.QUARTERS
+    assert summary_result.actual.reconciles() == (True, "")
+    assert (summary_result.actual.home_final, summary_result.actual.away_final) == (104.0, 119.0)
+
+    # An endpoint URL can exist without becoming prediction evidence. The
+    # closed BPI allow-list rejects this lane before it can issue a request.
+    with pytest.raises(ValueError, match="not validated for NBA_G_LEAGUE"):
+        fetch_bpi("401867657", lambda _url: {}, league=League.NBA_G_LEAGUE)
+
+
 def test_rich_scoreboard_retains_context_and_named_full_game_books(fixture_fetch):
     games, books = discover_games_with_evidence(
         "20261107",
@@ -792,6 +837,23 @@ def test_smoke_reports_actual_coverage(load_fixture, fixture_fetch):
         "flagged": 0,
     }
     assert report["verification"] == "FIXTURE_VERIFIED"
+
+
+def test_g_league_smoke_reports_result_coverage_without_unvalidated_bpi(fixture_fetch):
+    report = smoke(
+        "20260410",
+        fixture_fetch({"dates=20260410": "espn/scoreboard_gleague_20260410.json"}),
+        league=League.NBA_G_LEAGUE,
+    )
+    assert report["fixtures_found"] == 1
+    assert report["bpi_complete"] == {"complete": 0, "total": 0}
+    assert report["prediction_evidence"] == {
+        "provider": "espn-bpi",
+        "status": "not_validated_for_league",
+        "policy": "empirical_history_only_until_a_separately_validated_pre_tip_provider_exists",
+    }
+    assert report["results_reconciled"] == {"finals": 1, "reconciled": 1, "flagged": 0}
+    assert report["gaps"] == []
 
 
 def test_smoke_flags_reconciliation_gap(load_fixture, fixture_fetch):

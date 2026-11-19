@@ -81,7 +81,13 @@ BOOK_PROVIDERS = ("therundown", "sportsgameodds", "theoddsapi")
 # unpriced, not a fallback to an unrelated men's competition provider.
 BOOK_PROVIDERS_BY_LEAGUE = {spec.league.value: spec.book_providers for spec in SPECS}
 
+# Registry declares which leagues have a validated ESPN schedule/result route.
+# ESPN's deeper core-event-index history and BPI are independent contracts with
+# narrower allow-lists in the adapter; a new scoreboard lane must not inherit
+# either one by association.
 ESPN_LEAGUES = {spec.league for spec in SPECS if spec.schedule_source == "espn"}
+ESPN_DEEP_HISTORY_LEAGUES = frozenset(espn.HISTORY_FLOORS)
+ESPN_BPI_LEAGUES = espn.BPI_LEAGUES
 
 
 def _book_providers(league: str) -> Sequence[str]:
@@ -280,10 +286,19 @@ class Pipeline:
 
         self._reset_stage()
         league = self.config.league_enum.value
-        if league in {"NBA", "WNBA", "NCAA_M", "NCAA_W"}:
+        if self.config.league_enum in ESPN_LEAGUES:
             report = espn.smoke(self.config.date_yyyymmdd, self.espn_fetch, self.config.league_enum)
             if league == "NBA":
                 report["hardwood"] = self._hardwood_smoke()
+            if self.config.league_enum not in ESPN_BPI_LEAGUES:
+                # Schedule/result support has been independently checked, but
+                # no external pre-tip model is represented until that contract
+                # is separately validated. The empirical model remains an
+                # eligible forecast surface only after its own history gate.
+                report["predictions"] = {
+                    "status": "no_external_prediction_provider_validated",
+                    "policy": "empirical_history_only_after_reconciled_history_threshold",
+                }
             report["standings"] = self._standings_smoke()
             report["bookmakers"] = self._bookmakers_smoke()
             return report
@@ -921,7 +936,7 @@ class Pipeline:
                 pred for pred in self.store.get_predictions(game.game_id) if pred.pre_tip
             ]
             league = self.config.league_enum
-            if league in ESPN_LEAGUES:
+            if league in ESPN_BPI_LEAGUES:
                 try:
                     candidates.append(
                         espn.fetch_bpi(
@@ -2006,8 +2021,18 @@ class Pipeline:
                     }
                 )
 
-        if espn_enabled:
+        if self.config.league_enum in ESPN_DEEP_HISTORY_LEAGUES:
             deep = self._backfill_deep_history()
+        elif espn_enabled:
+            # A date-bounded scoreboard/result route is enough for the bounded
+            # recent-result history pass above. It is not evidence that this
+            # league's core event index has been validated for durable deep
+            # history, so do not advance an unreviewed cursor.
+            deep = {
+                "status": "not_validated_for_league",
+                "ledger_dates": [],
+                "learning_or_calibration_claimed": False,
+            }
         elif self.config.league_enum is League.EUROLEAGUE:
             deep = self._backfill_euroleague_history()
         elif self.config.league_enum is League.EUROLEAGUE_W:
@@ -2019,7 +2044,9 @@ class Pipeline:
         ledger_dates.update(deep.get("ledger_dates") or [])
         status = (
             "disabled"
-            if not days and deep["status"] in {"disabled", "unsupported_league"}
+            if not days
+            and deep["status"]
+            in {"disabled", "unsupported_league", "not_validated_for_league"}
             else "acquired"
         )
         return self._report(

@@ -2,14 +2,18 @@
 
 from __future__ import annotations
 
+from datetime import datetime, timedelta, timezone
+
 import pytest
 
 from forecasting.harness import CalibrationConfig, apply_profiles
+from forecasting.service import MarketForecastService
 from forecasting.types import BookEvidence, Forecast
 from ingestion.adaptive_gate import GateUncertain, LEAGUES, fetch_schedule
 from ingestion.duckdb_store import DuckDBStore
 from ingestion.league_registry import SPECS, league_spec, parse_league, price_evidence_policy
 from ingestion.models import (
+    ActualResult,
     BookSnapshot,
     Game,
     GameStatus,
@@ -17,6 +21,7 @@ from ingestion.models import (
     Market,
     OperationalValidation,
     Period,
+    PeriodKind,
     PriceProvenance,
     SourcePermission,
 )
@@ -71,9 +76,19 @@ def test_final_expansion_is_typed_and_registry_backed_everywhere():
         assert DEFAULT_TZ[league.value] == spec.timezone
         assert ACQUISITION_TZ[league.value] == spec.acquisition_timezone
         assert parse_league(league.value) is league
-        # No unverified endpoint is represented as a functional adapter.
-        assert spec.schedule_source == "source_unavailable"
-        assert spec.results_source == "source_unavailable"
+        if league is League.NBA_G_LEAGUE:
+            # Captured ESPN NBA G League scoreboards and summaries establish
+            # canonical schedule/result handling, but not an external BPI or
+            # named-book price contract.
+            assert (spec.schedule_source, spec.results_source, spec.gate_schedule_source) == (
+                "espn",
+                "espn",
+                "espn",
+            )
+        else:
+            # No unverified endpoint is represented as a functional adapter.
+            assert spec.schedule_source == "source_unavailable"
+            assert spec.results_source == "source_unavailable"
 
 
 def test_adaptive_gate_schedules_every_registry_lane_and_fails_open_for_unavailable_sources():
@@ -126,6 +141,113 @@ def test_unavailable_adapter_reports_gap_but_preserves_manually_canonical_lifecy
     results = pipeline.results()
     assert results["finals_written"] == 0
     assert any(gap["required_field"] == "official_results" for gap in results["gaps"])
+
+
+def test_g_league_espn_pipeline_routes_canonical_results_but_never_fabricates_bpi(
+    fixture_fetch,
+):
+    store = InMemoryStore()
+    pipeline = Pipeline(
+        PipelineConfig(
+            league="NBA_G_LEAGUE",
+            date_yyyymmdd="20260410",
+            fixture_now_utc="2026-04-12T12:00:00Z",
+            history_days=0,
+            deep_history_event_budget=1,
+        ),
+        store,
+        fetch=fixture_fetch({"dates=20260410": "espn/scoreboard_gleague_20260410.json"}),
+    )
+
+    backfill = pipeline.backfill()
+    pregame = pipeline.pregame()
+    results = pipeline.results()
+    smoke = pipeline.smoke()
+
+    assert backfill["backfill"]["status"] == "disabled"
+    assert backfill["backfill"]["deep_history"]["status"] == "not_validated_for_league"
+    assert pregame["fixtures_found"] == 1
+    assert not any(gap["required_field"] == "official_schedule" for gap in pregame["gaps"])
+    # This lane has no validated external pre-tip predictor; it must not
+    # manufacture an ESPN BPI provider failure or a substitute probability.
+    assert not any(gap["required_field"] == "espn_bpi" for gap in pregame["gaps"])
+    assert pregame["rows"][0]["prediction"] is None
+    assert results["finals_written"] == 1
+    game = store.get_game("401867657")
+    assert game.league is League.NBA_G_LEAGUE
+    assert game.actual is not None and game.actual.reconciles()[0]
+    assert smoke["predictions"] == {
+        "status": "no_external_prediction_provider_validated",
+        "policy": "empirical_history_only_after_reconciled_history_threshold",
+    }
+    assert smoke["bpi_complete"] == {"complete": 0, "total": 0}
+
+
+def test_g_league_emits_empirical_forecast_cards_only_after_reconciled_history():
+    """No provider probability or price is needed for an unpriced forecast card."""
+
+    store = InMemoryStore()
+    first_tip = datetime(2026, 9, 1, 20, tzinfo=timezone.utc)
+    # The model requires 20 baseline games and 20 independently generated
+    # residual samples, so 40 reconciled finals demonstrate both evidence
+    # gates rather than weakening them for a new league.
+    for index in range(40):
+        home = 95 + index % 5
+        away = 88 + index % 4
+        tip = first_tip + timedelta(days=index)
+        store.upsert_game(
+            Game(
+                game_id=f"gleague-final-{index}",
+                league=League.NBA_G_LEAGUE,
+                season="2027",
+                home_team_id="23",
+                away_team_id="9",
+                home_name="Stockton Kings",
+                away_name="Greensboro Swarm",
+                scheduled_utc=tip.strftime("%Y-%m-%dT%H:%M:%SZ"),
+                status=GameStatus.FINAL,
+                provider_ids={"espn": f"historical-{index}"},
+                actual=ActualResult(
+                    period_kind=PeriodKind.QUARTERS,
+                    home_quarters=[24.0, 23.0, 25.0, float(home - 72)],
+                    away_quarters=[22.0, 21.0, 23.0, float(away - 66)],
+                    home_final=float(home),
+                    away_final=float(away),
+                    source="espn",
+                ),
+            )
+        )
+    store.upsert_game(
+        Game(
+            game_id="gleague-upcoming",
+            league=League.NBA_G_LEAGUE,
+            season="2027",
+            home_team_id="23",
+            away_team_id="9",
+            home_name="Stockton Kings",
+            away_name="Greensboro Swarm",
+            scheduled_utc="2026-11-19T20:00:00Z",
+            status=GameStatus.SCHEDULED,
+            provider_ids={"espn": "upcoming"},
+        )
+    )
+
+    report = MarketForecastService(store, League.NBA_G_LEAGUE).build_report(
+        as_of_utc="2026-11-19T12:00:00Z",
+        date_yyyymmdd="20261119",
+        timezone_name="America/New_York",
+    )
+
+    cards = [card for card in report["forecasts"] if card["game_id"] == "gleague-upcoming"]
+    assert cards
+    assert all(card["prediction"] is None for card in cards)
+    assert all(card["model"] == "team_history_empirical" for card in cards)
+    assert all(card["book"] is None for card in cards)
+    assert report["capabilities"]["league_operator_policy"] == (
+        "nba_g_league_empirical_history_only_no_validated_named_book_lane"
+    )
+    assert report["accas"]["pricing_evidence_status"] == "unpriced_no_validated_named_book_lane"
+    assert report["accas"]["strict_result_count"] == 0
 
 
 def test_registry_price_policy_is_provider_specific_and_fail_closed():
