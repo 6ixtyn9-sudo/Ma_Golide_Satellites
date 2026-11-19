@@ -42,6 +42,10 @@ LIFECYCLE_RECOVERY_NAMES = tuple(
         rf"picks_{DATE}\.txt",
         r"pick_lifecycle_state\.json",
         rf"pick_freeze_{DATE}_[0-9a-f]{{16}}\.json",
+        # A time-locked EuroLeague research roster is non-financial but still
+        # immutable selection evidence, so an interrupted successful freeze
+        # must be recoverable without allowing mutable cards/tickets through.
+        rf"euroleague_consensus_paper_{DATE}_roster\.json",
     )
 )
 ALLOWED_NAMES = tuple(
@@ -63,10 +67,15 @@ ALLOWED_NAMES = tuple(
         rf"auto_tickets_{DATE}_decision\.json",
         rf"auto_tickets_{DATE}_no_bet\.json",
         rf"auto_tickets_{DATE}_withdrawn\.json",
+        # This card is mutable only for official-result grades. The companion
+        # roster below is the immutable, no-stake selection snapshot.
+        rf"euroleague_consensus_paper_{DATE}\.txt",
+        rf"euroleague_consensus_paper_{DATE}_roster\.json",
     )
 )
 IMMUTABLE_NAMES = re.compile(
-    rf"(?:auto_tickets_{DATE}_(?:decision|no_bet)|pick_freeze_{DATE}_[0-9a-f]{{16}})\.json"
+    rf"(?:auto_tickets_{DATE}_(?:decision|no_bet)|pick_freeze_{DATE}_[0-9a-f]{{16}}|"
+    rf"euroleague_consensus_paper_{DATE}_roster)\.json"
 )
 DECISION_RECEIPT_NAME = re.compile(rf"auto_tickets_({DATE})_decision\.json")
 NO_BET_DECISION_NAME = re.compile(rf"auto_tickets_({DATE})_no_bet\.json")
@@ -306,7 +315,7 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                 raise ValueError(f"duplicate recovered operator destination: {relative}")
             seen_destinations.add(relative)
             raw = _git_durable_bytes(source)
-            if IMMUTABLE_NAMES.fullmatch(source.name) and withdrawn_decision_ids:
+            if DECISION_RECEIPT_NAME.fullmatch(source.name) and withdrawn_decision_ids:
                 try:
                     candidate = json.loads(raw)
                 except json.JSONDecodeError as exc:
@@ -323,6 +332,8 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                     kind = (
                         "immutable ticket receipt"
                         if DECISION_RECEIPT_NAME.fullmatch(source.name)
+                        else "immutable EuroLeague consensus-paper roster"
+                        if source.name.startswith("euroleague_consensus_paper_")
                         else "immutable pick freeze"
                     )
                     raise ValueError(f"{kind} differs from repository evidence: {relative}")

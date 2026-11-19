@@ -1690,7 +1690,11 @@ def test_euroleague_service_publishes_a_stricter_priced_paper_lane_without_chang
     lane = before["accas"]["paper_lane"]
     policy = before["accas"]["paper_pick_filter"]
 
-    assert lane["name"] == "EUROLEAGUE_PRICED_VALUE_PAPER_LANE"
+    assert lane["name"] == "EUROLEAGUE_STRICT_NAMED_BOOK_VALUE_TICKET_LANE"
+    assert lane["requires_validated_cleared_named_book_quote"] is True
+    consensus_lane = before["accas"]["consensus_paper_lane"]
+    assert consensus_lane["name"] == "EUROLEAGUE_AGGREGATE_CONSENSUS_PRICE_PAPER_LEAGUE"
+    assert consensus_lane["no_ticket_receipt_bank_roi_or_pnl"] is True
     assert lane["requires_exact_selected_side_pre_tip_price"] is True
     assert lane["requires_positive_calibrated_expected_value"] is True
     assert lane["minimum_prior_settled_picks_in_matching_roi_band"] == 10

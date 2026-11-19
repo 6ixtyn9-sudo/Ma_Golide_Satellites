@@ -28,6 +28,10 @@ localdata/*/picks_audit_*.md
 !localdata/*/picks_*.txt
 !localdata/*/auto_tickets_*.json
 !localdata/*/auto_tickets_*.txt
+# EuroLeague's separate aggregate-consensus research board preserves a
+# time-locked no-stake roster and mutable official-result card in Git.
+!localdata/euroleague/euroleague_consensus_paper_*.json
+!localdata/euroleague/euroleague_consensus_paper_*.txt
 *.duckdb
 *.duckdb.wal
 *.tmp

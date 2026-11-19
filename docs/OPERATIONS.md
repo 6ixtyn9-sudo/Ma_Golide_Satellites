@@ -214,6 +214,29 @@ never creates a stake, grade, bank/performance entry, or real-money action, and
 retains source-permission and operational-validation blockers. After either
 strict decision, selections/prices/stakes—or the no-bet result—cannot change.
 
+### EuroLeague aggregate-consensus paper board
+
+Men's EuroLeague has a distinct `EUROLEAGUE_AGGREGATE_CONSENSUS_PRICE_PAPER_LEAGUE`
+for the keyless BetExplorer representative average. It is not a route around
+the named-book rule: every board price remains `aggregate_consensus`,
+`unresolved`, and `probation`, and the strict ticket/receipt/bank lane rejects
+it. The board may time-lock at the existing 09:00 SAST-or-earlier-first-tip
+cutoff only while all selections remain pre-tip; a late scan never backfills a
+board.
+
+The immutable no-stake selection artifact is
+`euroleague_consensus_paper_YYYY-MM-DD_roster.json`; the corresponding `.txt`
+card can refresh only official-result grades. A roster holds at most three
+full-game-moneyline selections, one per fixture, selected by the exact
+observed average and calibrated model-versus-consensus edge. The only allowable
+strict-lane blockers are the three aggregate evidence blockers and, where
+disclosed, a developing calibration segment with at least 10 samples. It has
+no stake, ticket, receipt, paper bank, ROI/P&L, or real-money instruction.
+
+The publisher treats the roster as immutable Git-durable evidence and rejects
+a cache/artifact that tries to replace it. Its mutable card is also protected
+from regressions that would replace a rendered settled grade with `PENDING`.
+
 ### EuroLeague Women history, result, and market boundaries
 
 FIBA ELW deep history currently covers **only the GDAP edition exposed by

@@ -2778,7 +2778,7 @@ def test_audit_groups_markets_by_fixture_with_actual_period_scores(tmp_path):
     assert "Price: **No exact bookmaker price**" in text
 
 
-def test_euroleague_ticket_card_identifies_strict_priced_value_paper_lane():
+def test_euroleague_ticket_card_identifies_strict_named_book_ticket_lane():
     card = _render_empty_ticket_scan(
         league=League.EUROLEAGUE,
         target_date=DATE,
@@ -2802,7 +2802,8 @@ def test_euroleague_ticket_card_identifies_strict_priced_value_paper_lane():
         },
     )
 
-    assert "EUROLEAGUE PRICED-VALUE LANE" in card
+    assert "EUROLEAGUE STRICT NAMED-BOOK TICKET LANE" in card
+    assert "aggregate consensus prices are excluded" in card
     assert "calibrated p × odds > 1.00" in card
     assert "at least 10 past settled picks" in card
 
@@ -2925,3 +2926,99 @@ def test_unpriced_moneyline_picks_are_shadow_tracked_against_posted_spreads(tmp_
     assert "1W-0L-0P (100.0% cover) · +0.91u at posted prices over 1 priced" in card
     assert "SPREAD full_game -10.5 -> HOME @1.909 Test Book · ML p 97.0% · ✅ WIN" in card
     assert json.loads(Path(settled["performance"]).read_text())["paper_bank_units"] == 100.0
+
+
+def test_euroleague_consensus_price_paper_board_is_time_locked_and_has_no_ticket_bank_or_roi(tmp_path):
+    rows = []
+    for number, probability, price in ((1, 0.62, 1.80), (2, 0.59, 1.85), (3, 0.54, 1.70)):
+        row = forecast(
+            number,
+            price=price,
+            eligible=False,
+            reasons=[
+                "price_not_named_bookmaker_quote",
+                "price_source_permission_unresolved",
+                "price_operational_validation_incomplete",
+                "insufficient_walk_forward_samples",
+            ],
+            calibration_n=12,
+        )
+        row.update(
+            {
+                "league": League.EUROLEAGUE.value,
+                "scheduled_utc": f"2026-11-07T{19 + number}:00:00Z",
+                "calibrated_probability": probability,
+            }
+        )
+        row["book"] = {
+            **row["book"],
+            "provider": "betexplorer",
+            "book": "average",
+            "observed_utc": "2026-11-07T06:00:00Z",
+            "game_id": row["game_id"],
+            "market": "moneyline",
+            "period": "full_game",
+            "line": None,
+            "side_prices": {"home": price, "away": 2.0},
+            "price_provenance": "aggregate_consensus",
+            "source_permission": "unresolved",
+            "operational_validation": "probation",
+            "ticket_price_eligible": False,
+        }
+        rows.append(row)
+    games = [
+        game(
+            number,
+            league=League.EUROLEAGUE,
+            scheduled_utc=row["scheduled_utc"],
+        )
+        for number, row in enumerate(rows, 1)
+    ]
+
+    first = publish_operator_reports(
+        Store(games),
+        League.EUROLEAGUE,
+        report(rows),
+        tmp_path,
+        target_date=DATE,
+        generated_utc=TICKET_DECISION_AS_OF,
+        run_id="euroleague-consensus-freeze",
+        slate_timezone_name="Europe/Paris",
+    )
+
+    board = first["euroleague_consensus_paper"]
+    assert board is not None
+    assert board["frozen_now"] is True
+    assert board["candidate_count"] == 2
+    assert board["no_stake_ticket_receipt_bank_roi_or_pnl"] is True
+    roster_path = Path(board["roster"])
+    roster = json.loads(roster_path.read_text())
+    assert roster["schema_version"] == "magolide.euroleague_consensus_paper_roster"
+    assert len(roster["selections"]) == 2
+    assert all("grade_status" not in row for row in roster["selections"])
+    assert roster["selection_policy"]["no_ticket_receipt_bank_roi_or_pnl"] is True
+    card = Path(board["card"]).read_text()
+    assert "CONSENSUS-PRICE PAPER LEAGUE" in card
+    assert "NO STAKE · NO TICKET · NO RECEIPT · NO PAPER BANK · NO ROI/P&L" in card
+    assert "@1.800 average consensus" in card
+    assert "strict-ticket blockers: price_not_named_bookmaker_quote" in card
+    assert "TIME-LOCKED BOARD" in card
+    assert first["ticket_receipt"] is None
+
+    # A later scan cannot rotate the time-locked no-stake roster, even if its
+    # aggregate prices or model probabilities now differ.
+    changed = json.loads(json.dumps(rows))
+    changed[0]["book"]["selected_decimal_price"] = 2.40
+    changed[0]["book"]["side_prices"]["home"] = 2.40
+    second = publish_operator_reports(
+        Store(games),
+        League.EUROLEAGUE,
+        report(changed),
+        tmp_path,
+        target_date=DATE,
+        generated_utc="2026-11-07T08:00:00Z",
+        run_id="euroleague-consensus-rerun",
+        slate_timezone_name="Europe/Paris",
+    )
+    assert second["euroleague_consensus_paper"]["frozen_now"] is False
+    assert roster_path.read_text() == json.dumps(roster, indent=2, sort_keys=True) + "\n"

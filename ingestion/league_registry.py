@@ -126,6 +126,29 @@ def _aggregate_research_only(provider: str) -> PriceSourcePolicy:
         SourcePermission.UNRESOLVED,
         OperationalValidation.PROBATION,
     )
+
+
+def _euroleague_aggregate_consensus_paper_only(provider: str) -> PriceSourcePolicy:
+    """Allow a visibly separate no-stake research board, never ticket pricing.
+
+    This does not relax any evidence axis. The operator may preserve the exact
+    representative aggregate as a EuroLeague consensus-paper observation, but
+    source permission/validation remain unresolved/probationary and strict
+    tickets, receipts, bank, ROI, and real-money execution remain unavailable.
+    """
+
+    return PriceSourcePolicy(
+        provider,
+        PriceProvenance.AGGREGATE_CONSENSUS,
+        SourcePermission.UNRESOLVED,
+        OperationalValidation.PROBATION,
+        detail=(
+            "EuroLeague aggregate-consensus research-board price only; never a "
+            "named-book ticket or execution quote."
+        ),
+    )
+
+
 # ESPN scoreboard odds identify a named bookmaker but are a relayed observation,
 # not an approved price-feed lane. Keep them research-visible and fail closed
 # for tickets until a source-permission/operational validation decision is
@@ -176,7 +199,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
         "euroleague",
         "euroleague",
         "euroleague",
-        (_aggregate_research_only("betexplorer"),),
+        (_euroleague_aggregate_consensus_paper_only("betexplorer"),),
     ),
     LeagueSpec(
         League.EUROLEAGUE_W,
