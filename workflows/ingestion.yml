@@ -220,6 +220,11 @@ jobs:
                   rf"auto_tickets_{date}_decision\.json",
                   rf"auto_tickets_{date}_no_bet\.json",
                   rf"auto_tickets_{date}_withdrawn\.json",
+                  # The EuroLeague consensus board has an immutable no-stake
+                  # roster plus a mutable official-result card. Recover both
+                  # from Git before a cache can propose a replacement roster.
+                  rf"euroleague_consensus_paper_{date}\.txt",
+                  rf"euroleague_consensus_paper_{date}_roster\.json",
               )
           )
           if state_dir.is_dir():
@@ -383,6 +388,8 @@ jobs:
             ${{ env.LOCALDATA }}/coverage_gap_*.json
             ${{ env.LOCALDATA }}/auto_tickets_*.json
             ${{ env.LOCALDATA }}/auto_tickets_*.txt
+            ${{ env.LOCALDATA }}/euroleague_consensus_paper_*.json
+            ${{ env.LOCALDATA }}/euroleague_consensus_paper_*.txt
             ${{ env.LOCALDATA }}/csv/*.csv.gz
           if-no-files-found: ignore
           retention-days: 14
@@ -405,6 +412,10 @@ jobs:
             ${{ env.LOCALDATA }}/picks_*.txt
             ${{ env.LOCALDATA }}/pick_freeze_*.json
             ${{ env.LOCALDATA }}/pick_lifecycle_state.json
+            # This is a no-stake, immutable research roster. It is safe to
+            # recover after a later matrix-stage failure; mutable board cards
+            # still wait for a successful complete lane.
+            ${{ env.LOCALDATA }}/euroleague_consensus_paper_*_roster.json
           if-no-files-found: ignore
           retention-days: 14
 
