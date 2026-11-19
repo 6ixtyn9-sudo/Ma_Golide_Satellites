@@ -173,10 +173,10 @@ class DuckDBStore(InMemoryStore):
         self._con = duckdb.connect(self._connection_path, read_only=read_only)
         if not read_only:
             self._con.execute(_SCHEMA)
-            book_columns = {
-                row[1] for row in self._con.execute("PRAGMA table_info(book_snapshots)").fetchall()
+            book_column_info = {
+                row[1]: row for row in self._con.execute("PRAGMA table_info(book_snapshots)").fetchall()
             }
-            if "draw_price_decimal" not in book_columns:
+            if "draw_price_decimal" not in book_column_info:
                 self._con.execute("ALTER TABLE book_snapshots ADD COLUMN draw_price_decimal DOUBLE")
                 self._con.execute(
                     "UPDATE book_snapshots SET draw_price_decimal = "
@@ -186,15 +186,53 @@ class DuckDBStore(InMemoryStore):
             # Evidence-axis columns are queryable for audits while complete
             # payload JSON remains the backwards-compatible source of truth.
             # Historical BetExplorer rows must stay aggregate/unresolved.
-            for column, default in (
+            evidence_axes = (
                 ("price_provenance", "named_book"),
                 ("source_permission", "unresolved"),
                 ("operational_validation", "unverified"),
-            ):
-                if column not in book_columns:
+            )
+            axes_needing_constraints = []
+            for column, default in evidence_axes:
+                column_info = book_column_info.get(column)
+                if column_info is None:
+                    # DuckDB 1.5 supports constraints in CREATE TABLE, but
+                    # not in ADD COLUMN against an existing cached warehouse.
+                    self._con.execute(f"ALTER TABLE book_snapshots ADD COLUMN {column} VARCHAR")
+                    axes_needing_constraints.append((column, default))
+                elif not column_info[3] or column_info[4] != f"'{default}'":
+                    axes_needing_constraints.append((column, default))
+
+                # The migration is deliberately restart-safe: a process can
+                # fail between ADD COLUMN and the backfill, so repair nulls
+                # even when the column was added by an earlier invocation.
+                # Complete JSON payloads retain their axis values; legacy
+                # payloads receive the conservative default.
+                self._con.execute(
+                    f"UPDATE book_snapshots SET {column} = COALESCE("
+                    f"json_extract_string(payload_json, '$.{column}'), '{default}') "
+                    f"WHERE {column} IS NULL"
+                )
+
+            if axes_needing_constraints:
+                # DuckDB 1.5 cannot change a column constraint while this
+                # store-owned index depends on the table. Recreate it after
+                # the backfill and separately-applied constraints. CREATE
+                # INDEX in a transaction with an UPDATE is unsupported, so
+                # this is intentionally outside an explicit transaction.
+                self._con.execute("DROP INDEX IF EXISTS idx_books_game_market_period")
+                try:
+                    for column, default in axes_needing_constraints:
+                        self._con.execute(
+                            f"ALTER TABLE book_snapshots ALTER COLUMN {column} "
+                            f"SET DEFAULT '{default}'"
+                        )
+                        self._con.execute(
+                            f"ALTER TABLE book_snapshots ALTER COLUMN {column} SET NOT NULL"
+                        )
+                finally:
                     self._con.execute(
-                        f"ALTER TABLE book_snapshots ADD COLUMN {column} VARCHAR "
-                        f"NOT NULL DEFAULT '{default}'"
+                        "CREATE INDEX IF NOT EXISTS idx_books_game_market_period "
+                        "ON book_snapshots(game_id, market, period, pre_match)"
                     )
             self._con.execute(
                 "UPDATE book_snapshots SET "

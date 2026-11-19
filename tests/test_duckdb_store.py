@@ -176,6 +176,63 @@ def test_first_half_draw_price_roundtrip_and_schema_migration(tmp_path):
         migrated.close()
 
 
+def test_evidence_axis_migration_accepts_cached_warehouse_without_axis_columns(tmp_path):
+    import duckdb
+
+    path = tmp_path / "legacy-axis-warehouse.duckdb"
+    store = DuckDBStore(str(path))
+    store.upsert_book_snapshot(_snapshot())
+    store.upsert_book_snapshot(_snapshot(book="legacybook"))
+    store.close()
+
+    # Reproduce the pre-axis cached warehouse that the Actions run restored.
+    # These were created before schema v3/v4 and cannot accept an ADD COLUMN
+    # statement carrying NOT NULL/DEFAULT constraints in DuckDB 1.5.
+    con = duckdb.connect(str(path))
+    legacy_payload = json.loads(
+        con.execute(
+            "SELECT payload_json FROM book_snapshots WHERE book = 'legacybook'"
+        ).fetchone()[0]
+    )
+    for column in ("price_provenance", "source_permission", "operational_validation"):
+        legacy_payload.pop(column)
+    con.execute(
+        "UPDATE book_snapshots SET payload_json = ? WHERE book = 'legacybook'",
+        [json.dumps(legacy_payload)],
+    )
+    con.execute("DROP INDEX idx_books_game_market_period")
+    for column in ("price_provenance", "source_permission", "operational_validation"):
+        con.execute(f"ALTER TABLE book_snapshots DROP COLUMN {column}")
+    con.close()
+
+    migrated = DuckDBStore(str(path))
+    try:
+        rows = {row["book"]: row for row in migrated.table_rows("book_snapshots")}
+        # Newer JSON values are retained rather than overwritten by defaults.
+        assert rows["draftkings"]["price_provenance"] == "named_book"
+        assert rows["draftkings"]["source_permission"] == "cleared"
+        assert rows["draftkings"]["operational_validation"] == "validated"
+        # A true pre-axis payload remains visible but is ticket-ineligible.
+        assert rows["legacybook"]["price_provenance"] == "named_book"
+        assert rows["legacybook"]["source_permission"] == "unresolved"
+        assert rows["legacybook"]["operational_validation"] == "unverified"
+        columns = {
+            row[1]: row for row in migrated._con.execute("PRAGMA table_info(book_snapshots)").fetchall()
+        }
+        for column, default in (
+            ("price_provenance", "named_book"),
+            ("source_permission", "unresolved"),
+            ("operational_validation", "unverified"),
+        ):
+            assert columns[column][3]
+            assert columns[column][4] == f"'{default}'"
+        loaded = {snapshot.book: snapshot for snapshot in migrated.get_book_snapshots("espn-1")}
+        assert loaded["draftkings"].source_permission.value == "cleared"
+        assert loaded["legacybook"].source_permission.value == "unresolved"
+    finally:
+        migrated.close()
+
+
 def test_operational_run_retention_does_not_touch_canonical_facts(tmp_path):
     store = DuckDBStore(str(tmp_path / "warehouse.duckdb"))
     store.upsert_game(_game())
