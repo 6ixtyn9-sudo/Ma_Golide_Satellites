@@ -4352,6 +4352,40 @@ def publish_operator_reports(
             rendered_card = _preserve_ticket_audit_section(rendered_card, card_path)
         _write_text(card_path, rendered_card)
 
+    # A no-bet sidecar is equally terminal for ticket creation, but its
+    # human-readable card remains a mutable audit view. Rebuild every no-bet
+    # card from its dated, regraded ledger so shadow grades do not remain
+    # PENDING after official results arrive.
+    for sidecar_path in sorted(localdata.glob("auto_tickets_????-??-??_no_bet.json")):
+        no_bet_date = sidecar_path.name.removeprefix("auto_tickets_").removesuffix(
+            "_no_bet.json"
+        )
+        frozen_no_bet = _read_no_bet_decision(localdata, no_bet_date)
+        if frozen_no_bet is None:
+            raise ValueError(f"frozen no-bet decision is missing: {sidecar_path}")
+        audit_kwargs = _ticket_card_audit_kwargs(
+            localdata,
+            target_date=no_bet_date,
+            league=league,
+            settled_history=settled_history,
+        )
+        if audit_kwargs is None:
+            audit_kwargs = {"unpriced_audit_picks": []}
+        _write_text(
+            localdata / f"auto_tickets_{no_bet_date}.txt",
+            _render_empty_ticket_scan(
+                league=league,
+                target_date=no_bet_date,
+                generated_utc=generated_utc,
+                performance=performance,
+                timezone_name=timezone_name,
+                candidate_funnel={},
+                no_bet_decision=frozen_no_bet,
+                ticket_decision=frozen_no_bet.get("ticket_decision"),
+                **audit_kwargs,
+            ),
+        )
+
     ticket_path = str(localdata / f"auto_tickets_{target_date}.txt")
     if receipt is None:
         ticket_path = _write_text(
