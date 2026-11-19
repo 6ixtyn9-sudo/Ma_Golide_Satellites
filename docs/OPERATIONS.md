@@ -99,8 +99,9 @@ registry. A league without a compliant automated official schedule/result
 adapter still runs fail-closed: it reports an explicit unsupported-source gap
 and may use only already-canonical imported games/history; it never fabricates
 fixtures, results, or named-book prices. The gate also wakes a league for its
-first dated draft, the 09:00 SAST (or earlier first-fixture safety) dated-ticket
-cutoff, each fixture's independent 60-minute pre-tip snapshot, and
+first dated draft, the league-specific dated-ticket cutoff (18:00 SAST for NBA,
+09:00 SAST for other leagues, or earlier first-fixture safety), each fixture's
+independent 60-minute pre-tip snapshot, and
 frozen-result reconciliation. One serialized publisher commits compact ticket
 and lifecycle state (including immutable inline per-fixture snapshots) and
 dated text cards to `main`; structured dated pick JSON, detailed
@@ -195,10 +196,11 @@ Each matrix job has isolated state and artifacts:
 
 A current scan is candidate evidence, not a ticket publication. The
 **acquisition timezone** identifies the fixtures belonging to a league/date,
-but the dated-card decision is at **09:00 Africa/Johannesburg** on that named
-date. If the first fixture's ordinary 60-minute pre-tip safety cutoff is
-earlier, that earlier cutoff takes precedence. The first successful scan at the
-applicable pre-tip cutoff freezes all currently valid, exact-priced paper
+but NBA's dated-card decision is at **18:00 Africa/Johannesburg** on that named
+date; all other leagues use **09:00 Africa/Johannesburg**. If the first
+fixture's ordinary 60-minute pre-tip safety cutoff is earlier, that earlier
+cutoff takes precedence. The first successful scan at the applicable pre-tip
+cutoff freezes all currently valid, exact-priced paper
 candidates into one immutable receipt. Every leg must still be strictly before
 its own tip. The actual receipt records the policy, planned cutoff, and the
 scan that made the decision.

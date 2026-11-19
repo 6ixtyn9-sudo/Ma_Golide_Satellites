@@ -108,14 +108,27 @@ EUROLEAGUE_CONSENSUS_ALLOWED_BLOCKERS = frozenset(
 UNPRICED_SPREAD_SHADOW_MIN_PROBABILITY = 0.70
 BASE_PAPER_UNITS = 100.0
 STAKE_UNITS_PER_ACCA = 1.0
-# Every dated card is decided in the morning Johannesburg publication window,
-# rather than requiring an operator to wait for a late North-American first
-# tip.  An earlier fixture still wins: no card may be first decided after its
-# pre-tip safety window.  The resulting receipt/no-bet remains immutable.
+# Keep this compact NBA exception aligned with ingestion.adaptive_gate: NBA
+# cards publish at 18:00 SAST so the North-American board can mature; other
+# leagues retain the established 09:00 window. An earlier fixture still wins.
 TICKET_DECISION_LEAD_TIME = timedelta(hours=1)
 TICKET_PUBLICATION_TIMEZONE = "Africa/Johannesburg"
-TICKET_PUBLICATION_LOCAL_TIME = time(hour=9)
-TICKET_DECISION_POLICY = "morning_0900_sast_or_first_slate_tip_minus_60_minutes"
+DEFAULT_TICKET_PUBLICATION_LOCAL_TIME = time(hour=9)
+NBA_TICKET_PUBLICATION_LOCAL_TIME = time(hour=18)
+DEFAULT_TICKET_DECISION_POLICY = "0900_sast_or_first_slate_tip_minus_60_minutes"
+NBA_TICKET_DECISION_POLICY = "1800_sast_or_first_slate_tip_minus_60_minutes"
+
+
+def _ticket_publication_local_time(league: League) -> time:
+    return (
+        NBA_TICKET_PUBLICATION_LOCAL_TIME
+        if league is League.NBA
+        else DEFAULT_TICKET_PUBLICATION_LOCAL_TIME
+    )
+
+
+def _ticket_decision_policy(league: League) -> str:
+    return NBA_TICKET_DECISION_POLICY if league is League.NBA else DEFAULT_TICKET_DECISION_POLICY
 BUCKET_ORDER = [
     "ELIGIBLE_CLEAN",
     "CAUTION",
@@ -251,18 +264,19 @@ def _utc_iso(value: datetime) -> str:
 def _ticket_decision_window(
     games: Dict[str, Game],
     *,
+    league: League,
     forecast_rows: List[Dict[str, Any]],
     target_date: str,
     generated_utc: str,
     slate_timezone_name: str,
 ) -> Dict[str, Any]:
-    """Describe the immutable morning decision point for a dated slate.
+    """Describe the immutable per-league decision point for a dated slate.
 
-    Cards publish at 09:00 SAST on their named date, so an overnight NBA
-    slate is available while the operator is awake.  A genuinely earlier game
-    cannot be deferred to that morning card: its ordinary tip-minus-60-minute
-    safety cutoff takes precedence.  Fixture-level pick freezes remain their
-    own tip-minus-60-minute evidence lifecycle.
+    NBA cards publish at 18:00 SAST so their evening board can mature. Other
+    leagues retain the established 09:00 SAST window. A genuinely earlier game
+    cannot be deferred to the normal publication time: its ordinary
+    tip-minus-60-minute safety cutoff takes precedence. Fixture-level pick
+    snapshots remain their own tip-minus-60-minute evidence lifecycle.
     """
     try:
         target_day = datetime.strptime(target_date, "%Y-%m-%d").date()
@@ -272,8 +286,10 @@ def _ticket_decision_window(
     except (TypeError, ValueError) as exc:
         raise ValueError("invalid ticket decision date, time, or slate timezone") from exc
 
-    morning_cutoff = datetime.combine(
-        target_day, TICKET_PUBLICATION_LOCAL_TIME, tzinfo=publication_zone
+    publication_time = _ticket_publication_local_time(league)
+    publication_policy = _ticket_decision_policy(league)
+    publication_cutoff = datetime.combine(
+        target_day, publication_time, tzinfo=publication_zone
     ).astimezone(UTC)
     slate_tips = []
     for game in games.values():
@@ -299,16 +315,17 @@ def _ticket_decision_window(
     if not slate_tips:
         return {
             "status": "no_slate_game",
-            "policy": TICKET_DECISION_POLICY,
+            "policy": publication_policy,
             "lead_minutes": int(TICKET_DECISION_LEAD_TIME.total_seconds() // 60),
             "publication_timezone": TICKET_PUBLICATION_TIMEZONE,
-            "morning_publication_cutoff_utc": _utc_iso(morning_cutoff),
+            "publication_local_time": publication_time.strftime("%H:%M"),
+            "publication_cutoff_utc": _utc_iso(publication_cutoff),
             "slate_timezone": slate_timezone_name,
         }
 
     earliest_tip = min(slate_tips)
     pre_tip_cutoff = earliest_tip - TICKET_DECISION_LEAD_TIME
-    cutoff = min(morning_cutoff, pre_tip_cutoff)
+    cutoff = min(publication_cutoff, pre_tip_cutoff)
     if generated < cutoff:
         status = "pending_cutoff"
     elif generated < earliest_tip:
@@ -319,10 +336,11 @@ def _ticket_decision_window(
         status = "missed_pre_tip_window"
     return {
         "status": status,
-        "policy": TICKET_DECISION_POLICY,
+        "policy": publication_policy,
         "lead_minutes": int(TICKET_DECISION_LEAD_TIME.total_seconds() // 60),
         "publication_timezone": TICKET_PUBLICATION_TIMEZONE,
-        "morning_publication_cutoff_utc": _utc_iso(morning_cutoff),
+        "publication_local_time": publication_time.strftime("%H:%M"),
+        "publication_cutoff_utc": _utc_iso(publication_cutoff),
         "pre_tip_safety_cutoff_utc": _utc_iso(pre_tip_cutoff),
         "slate_timezone": slate_timezone_name,
         "slate_time_source": slate_source,
@@ -670,7 +688,7 @@ def _publish_euroleague_consensus_paper(
             "target_date": target_date,
             "frozen_at": generated_utc,
             "decision_status": decision_status,
-            "decision_policy": TICKET_DECISION_POLICY,
+            "decision_policy": ticket_decision.get("policy"),
             "planned_cutoff_utc": ticket_decision.get("planned_cutoff_utc"),
             "price_contract": {
                 "provider": EUROLEAGUE_CONSENSUS_PROVIDER,
@@ -4308,8 +4326,9 @@ def _render_named_price_draft_section(
     """Render the pre-cutoff named-price draft section of the dated ticket card.
 
     The strict ticket receipt and its bank remain unchanged. This section keeps
-    current named-price candidates on the single dated card before the 09:00
-    SAST (or earlier first-tip safety) cutoff. It never reaches a terminal
+    current named-price candidates on the single dated card before its
+    league-specific SAST publication cutoff (or earlier first-tip safety). It
+    never reaches a terminal
     receipt or no-bet card.
     """
 
@@ -4476,12 +4495,15 @@ def _render_empty_ticket_scan(
         if decision_status == "pending_cutoff":
             cutoff = ticket_decision.get("planned_cutoff_utc")
             earliest = ticket_decision.get("earliest_slate_tip_utc")
-            morning = ticket_decision.get("morning_publication_cutoff_utc")
+            publication = ticket_decision.get("publication_cutoff_utc") or ticket_decision.get(
+                "morning_publication_cutoff_utc"
+            )
+            publication_time = ticket_decision.get("publication_local_time") or "09:00"
             safety = ticket_decision.get("pre_tip_safety_cutoff_utc")
             if cutoff and earliest:
                 policy_detail = (
-                    f"09:00 SAST morning publication: {_local_time(str(morning), timezone_name)}"
-                    if morning and cutoff == morning
+                    f"{publication_time} SAST publication: {_local_time(str(publication), timezone_name)}"
+                    if publication and cutoff == publication
                     else f"earlier pre-tip safety cutoff: {_local_time(str(safety or cutoff), timezone_name)}"
                 )
                 lines[7:7] = [
@@ -4773,6 +4795,7 @@ def publish_operator_reports(
     ]
     ticket_decision = _ticket_decision_window(
         games,
+        league=league,
         forecast_rows=current,
         target_date=target_date,
         generated_utc=generated_utc,

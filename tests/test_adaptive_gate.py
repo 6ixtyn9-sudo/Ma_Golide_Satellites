@@ -122,10 +122,7 @@ def test_gate_publishes_an_identified_fixture_draft_before_its_freeze_window(tmp
     )
 
     assert decision.should_run
-    assert decision.reasons == (
-        "pick_draft_publication_due",
-        "ticket_creation_or_acquisition_due",
-    )
+    assert decision.reasons == ("pick_draft_publication_due",)
 
 
 def test_gate_runs_for_an_unfrozen_fixture_freeze_window(tmp_path: Path):
@@ -148,17 +145,35 @@ def test_gate_runs_for_an_unfrozen_fixture_freeze_window(tmp_path: Path):
     )
 
 
-def test_gate_wakes_at_the_0900_sast_morning_ticket_cutoff(tmp_path: Path):
+def test_gate_wakes_at_the_1800_sast_nba_ticket_cutoff(tmp_path: Path):
     nba = LEAGUES[0]
     _operator_state(tmp_path, nba, date="2026-11-18")
-    morning_cutoff = datetime(2026, 11, 18, 7, 0, tzinfo=timezone.utc)
+    nba_cutoff = datetime(2026, 11, 18, 16, 0, tzinfo=timezone.utc)
 
     decision = evaluate_league(
         nba,
         state_root=tmp_path,
-        now=morning_cutoff,
+        now=nba_cutoff,
         schedule_fetcher=_schedule(
-            ScheduleGame(morning_cutoff + timedelta(hours=13), "scheduled"),
+            ScheduleGame(nba_cutoff + timedelta(hours=13), "scheduled"),
+        ),
+    )
+
+    assert decision.should_run
+    assert decision.reasons == ("ticket_creation_or_acquisition_due",)
+
+
+def test_gate_keeps_the_0900_sast_ticket_cutoff_for_non_nba_leagues(tmp_path: Path):
+    euroleague = next(config for config in LEAGUES if config.league_key == "EUROLEAGUE")
+    _operator_state(tmp_path, euroleague, date="2026-11-18")
+    default_cutoff = datetime(2026, 11, 18, 7, 0, tzinfo=timezone.utc)
+
+    decision = evaluate_league(
+        euroleague,
+        state_root=tmp_path,
+        now=default_cutoff,
+        schedule_fetcher=_schedule(
+            ScheduleGame(default_cutoff + timedelta(hours=13), "scheduled"),
         ),
     )
 
