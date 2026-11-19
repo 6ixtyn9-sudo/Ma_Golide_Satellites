@@ -6,7 +6,12 @@ from pathlib import Path
 import pytest
 
 from ingestion.league_registry import SPECS
-from scripts.publish_localdata import STATE_KEYS, allowed_operator_file, merge_downloaded_localdata
+from scripts.publish_localdata import (
+    STATE_KEYS,
+    allowed_lifecycle_recovery_file,
+    allowed_operator_file,
+    merge_downloaded_localdata,
+)
 
 
 def artifact_file(tmp_path: Path, artifact: str, state: str, name: str, content: bytes):
@@ -149,6 +154,43 @@ def test_publisher_preserves_mutable_drafts_and_rejects_pick_freeze_rewrites(tmp
     freeze.write_bytes(b"rewritten frozen evidence\n")
     with pytest.raises(ValueError, match="immutable pick freeze differs"):
         merge_downloaded_localdata(tmp_path / "artifacts", repo)
+
+
+def test_interrupted_lane_artifact_can_publish_only_pick_lifecycle_evidence(tmp_path):
+    artifact = "MaGolide-lifecycle-nba-run"
+    freeze_name = "pick_freeze_2026-11-18_0123456789abcdef.json"
+    artifact_file(tmp_path, artifact, "nba", "picks_2026-11-18.json", b"draft\n")
+    artifact_file(tmp_path, artifact, "nba", freeze_name, b"freeze\n")
+    artifact_file(tmp_path, artifact, "nba", "pick_lifecycle_state.json", b"lifecycle\n")
+    artifact_file(
+        tmp_path,
+        artifact,
+        "nba",
+        "auto_tickets_2026-11-18_decision.json",
+        b"must-not-publish\n",
+    )
+    artifact_file(
+        tmp_path,
+        artifact,
+        "nba",
+        "auto_tickets_2026-11-18.txt",
+        b"must-not-publish\n",
+    )
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", tmp_path / "repo")
+
+    destination = tmp_path / "repo" / "localdata" / "nba"
+    assert (destination / "picks_2026-11-18.json").read_bytes() == b"draft\n"
+    assert (destination / freeze_name).read_bytes() == b"freeze\n"
+    assert (destination / "pick_lifecycle_state.json").read_bytes() == b"lifecycle\n"
+    assert not (destination / "auto_tickets_2026-11-18_decision.json").exists()
+    assert not (destination / "auto_tickets_2026-11-18.txt").exists()
+    assert {Path(path).name for path in report["recovery_files_skipped"]} == {
+        "auto_tickets_2026-11-18_decision.json",
+        "auto_tickets_2026-11-18.txt",
+    }
+    assert allowed_lifecycle_recovery_file(freeze_name)
+    assert not allowed_lifecycle_recovery_file("auto_tickets_2026-11-18_decision.json")
 
 
 def test_publisher_accepts_isolated_euroleague_w_operator_state(tmp_path):
