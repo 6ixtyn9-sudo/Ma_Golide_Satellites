@@ -67,8 +67,8 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
 
     report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
 
-    assert report["copied_count"] == 3
-    assert not (repo / "localdata" / "nba" / "picks_2026-11-12.txt").exists()
+    assert report["copied_count"] == 4
+    assert (repo / "localdata" / "nba" / "picks_2026-11-12.txt").read_bytes() == b"picks\n"
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12_decision.json").read_bytes() == b"receipt\n"
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12.txt").read_bytes() == b"frozen-ticket-card\n"
     assert not (repo / "localdata" / "nba" / "auto_tickets_2026-11-13.txt").exists()
@@ -88,6 +88,37 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
     assert historical.read_text() == "retain me"
     assert not (repo / "localdata" / "nba" / "warehouse.duckdb").exists()
     assert not (repo / "localdata" / "nba" / "picks_unapproved.json").exists()
+
+
+def test_publisher_preserves_mutable_drafts_and_rejects_pick_freeze_rewrites(tmp_path):
+    freeze_name = "pick_freeze_2026-11-18_0123456789abcdef.json"
+    artifact_file(tmp_path, "nba-artifact", "nba", "picks_2026-11-18.json", b"draft one\n")
+    artifact_file(tmp_path, "nba-artifact", "nba", "picks_2026-11-18.txt", b"draft one\n")
+    artifact_file(
+        tmp_path,
+        "nba-artifact",
+        "nba",
+        "picks_2026-11-18_lifecycle.json",
+        b"lifecycle one\n",
+    )
+    artifact_file(tmp_path, "nba-artifact", "nba", "pick_lifecycle_state.json", b"state one\n")
+    freeze = artifact_file(tmp_path, "nba-artifact", "nba", freeze_name, b"frozen evidence\n")
+
+    repo = tmp_path / "repo"
+    first = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert first["copied_count"] == 5
+    destination = repo / "localdata" / "nba"
+    assert (destination / "picks_2026-11-18.json").read_bytes() == b"draft one\n"
+
+    artifact_file(tmp_path, "nba-artifact", "nba", "picks_2026-11-18.json", b"draft two\n")
+    artifact_file(tmp_path, "nba-artifact", "nba", "picks_2026-11-18.txt", b"draft two\n")
+    second = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert "localdata/nba/picks_2026-11-18.json" in second["copied"]
+    assert (destination / "picks_2026-11-18.json").read_bytes() == b"draft two\n"
+
+    freeze.write_bytes(b"rewritten frozen evidence\n")
+    with pytest.raises(ValueError, match="immutable pick freeze differs"):
+        merge_downloaded_localdata(tmp_path / "artifacts", repo)
 
 
 def test_publisher_accepts_isolated_euroleague_w_operator_state(tmp_path):
@@ -265,9 +296,17 @@ def test_allowlist_is_narrow_and_missing_artifact_directory_is_a_noop(tmp_path):
         "auto_tickets_2026-11-12_no_bet.json",
     }
     assert all(allowed_operator_file(name) for name in expected)
+    assert all(
+        allowed_operator_file(name)
+        for name in {
+            "picks_2026-11-12.txt",
+            "picks_2026-11-12.json",
+            "picks_2026-11-12_lifecycle.json",
+            "pick_lifecycle_state.json",
+            "pick_freeze_2026-11-12_0123456789abcdef.json",
+        }
+    )
     assert not allowed_operator_file("picks_today.json")
-    assert not allowed_operator_file("picks_2026-11-12.txt")
-    assert not allowed_operator_file("picks_2026-11-12.json")
     assert not allowed_operator_file("picks_audit_rolling.json")
     assert not allowed_operator_file("picks_audit_2026-11-12.md")
     assert not allowed_operator_file("picks_unapproved.json")

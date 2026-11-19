@@ -263,9 +263,14 @@ writes.
   recovery.
 - `localdata/ledgers/`: immutable, content-addressed stage snapshots.
 - `localdata/reports/`: derived operational and market JSON reports.
-- `localdata/<league>/picks_*`: all current/dated pick cards, JSON scans, and
-  expanded audits stay in the active workflow cache and 14-day artifacts, not
-  Git; hourly price movement must not create permanent repository history.
+- `localdata/<league>/picks_YYYY-MM-DD.{json,txt}`: Git-published dated draft
+  cards and their mutable lifecycle views. Individual fixture draft evidence
+  stops changing at its own 60-minute pre-tip cutoff.
+- `localdata/<league>/pick_freeze_YYYY-MM-DD_<fixture-hash>.json`: immutable
+  per-fixture pick snapshots, including selections, prices/lines, evidence
+  timestamps, scheduled tip, and freeze timestamp.
+- `localdata/<league>/picks_today.json` and `picks_audit_*`: volatile scan and
+  expanded audit detail retained in the workflow cache and 14-day artifacts.
 - `localdata/<league>/auto_tickets_*`: immutable paper receipts/no-bet
   decisions, compact durable locks, and compact grading/performance summaries
   are allowlisted for Git publication; see `docs/OPERATOR-REPORTS.md`.
@@ -273,11 +278,11 @@ writes.
   metadata, not canonical sports evidence.
 
 After each named external-trigger GitHub run, one serialized publisher commits
-only compact paper-ticket decisions, durable locks, and settlement summaries to
-`main`; it never overwrites a conflicting immutable decision. Pick cards—including
-`.txt` cards—remain in the league cache and bounded Actions artifacts, so frequent
-price movement cannot create unbounded Git-history growth. Canonical DuckDB, CSV,
-acquisition ledgers, and caches also remain outside Git.
+paper-ticket decisions, durable locks, settlement summaries, dated mutable pick
+cards/lifecycle views, and immutable per-fixture pick freezes to `main`; it
+never overwrites conflicting immutable evidence. `picks_today.json`, expanded
+audits, canonical DuckDB/CSV, acquisition ledgers, and caches remain outside
+Git.
 
 ```bash
 python -m ingestion.cli coverage --league NBA

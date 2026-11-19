@@ -28,6 +28,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -94,6 +95,9 @@ class ScheduleGame:
 
     scheduled_utc: datetime
     status: str
+    # Source event identity is used only to wake a per-fixture draft/freeze
+    # lifecycle. Empty remains supported for hermetic legacy schedule tests.
+    game_id: str = ""
 
 
 @dataclass(frozen=True)
@@ -154,6 +158,62 @@ def target_date_for(config: LeagueGateConfig, now: datetime) -> str:
     if now.tzinfo is None:
         raise ValueError("gate clock must be timezone-aware")
     return now.astimezone(ZoneInfo(config.acquisition_timezone)).strftime("%Y-%m-%d")
+
+
+def _pick_freeze_path(state_dir: Path, target_date: str, game_id: str) -> Path:
+    token = hashlib.sha256(str(game_id).encode("utf-8")).hexdigest()[:16]
+    return state_dir / f"pick_freeze_{target_date}_{token}.json"
+
+
+def _pick_lifecycle_reasons(
+    state_dir: Path,
+    *,
+    config: LeagueGateConfig,
+    target_date: str,
+    games: Iterable[ScheduleGame],
+    now: datetime,
+) -> list[str]:
+    """Decide whether draft, fixture-freeze, or frozen-result work is due."""
+
+    reasons: list[str] = []
+    games = list(games)
+    # One early run publishes the current-day draft; after that the gate wakes
+    # only at each fixture's own pre-tip window or for result reconciliation.
+    if (
+        any(game.game_id for game in games)
+        and not (state_dir / f"picks_{target_date}.json").is_file()
+    ):
+        reasons.append("pick_draft_publication_due")
+    for game in games:
+        if game.status not in {"scheduled", "live"}:
+            continue
+        tip = game.scheduled_utc.astimezone(timezone.utc)
+        if (
+            game.game_id
+            and tip - timedelta(minutes=DECISION_LEAD_MINUTES) <= now < tip
+            and not _pick_freeze_path(state_dir, target_date, game.game_id).is_file()
+        ):
+            reasons.append("fixture_pick_freeze_due")
+            break
+    lifecycle_path = state_dir / "pick_lifecycle_state.json"
+    if not lifecycle_path.exists():
+        return reasons
+    lifecycle = _read_json(lifecycle_path, description="pick lifecycle state")
+    if lifecycle.get("schema_version") != "magolide.pick_lifecycle_state":
+        raise GateUncertain("pick lifecycle state has an unknown schema")
+    if lifecycle.get("league") != config.league:
+        raise GateUncertain("pick lifecycle state belongs to a different or unknown league")
+    pending = lifecycle.get("pending_frozen_games")
+    if not isinstance(pending, list):
+        raise GateUncertain("pick lifecycle state has invalid pending_frozen_games")
+    for item in pending:
+        if not isinstance(item, (list, tuple)) or len(item) != 2:
+            raise GateUncertain("pick lifecycle state has invalid pending fixture")
+        tip = _parse_utc(item[1], context="frozen pick fixture")
+        if tip <= now:
+            reasons.append("frozen_pick_settlement_due")
+            break
+    return reasons
 
 
 def _read_json(path: Path, *, description: str) -> dict[str, Any]:
@@ -336,6 +396,24 @@ def evaluate_league(
             schedule_count,
         )
 
+    try:
+        reasons.extend(
+            _pick_lifecycle_reasons(
+                state_dir,
+                config=config,
+                target_date=target_date,
+                games=games,
+                now=now,
+            )
+        )
+    except GateUncertain as exc:
+        return GateDecision(
+            config,
+            target_date,
+            True,
+            tuple(dict.fromkeys([*reasons, f"state_uncertain: {exc}"])),
+            schedule_count,
+        )
     if not frozen:
         deadline = now + timedelta(minutes=DECISION_LEAD_MINUTES)
         if any(
@@ -455,10 +533,14 @@ def _espn_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleG
         mapped_status = {"pre": "scheduled", "in": "live", "post": "final"}.get(status)
         if mapped_status is None:
             raise GateUncertain("ESPN event has an unknown state")
+        event_id = str(event.get("id") or "").strip()
+        if not event_id:
+            raise GateUncertain("ESPN event lacks an identity")
         games.append(
             ScheduleGame(
                 _parse_utc(competition.get("date") or event.get("date"), context="ESPN event"),
                 mapped_status,
+                event_id,
             )
         )
     return games
@@ -494,7 +576,10 @@ def _cba_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGa
             )
         except ValueError as exc:
             raise GateUncertain("CBA scheduleTime is invalid") from exc
-        games.append(ScheduleGame(tip.astimezone(timezone.utc), mapped_status))
+        schedule_id = str(row.get("scheduleId") or "").strip()
+        if not schedule_id:
+            raise GateUncertain("CBA schedule row lacks scheduleId")
+        games.append(ScheduleGame(tip.astimezone(timezone.utc), mapped_status, schedule_id))
     return games
 
 
@@ -551,7 +636,10 @@ def _fiba_elw_schedule(config: LeagueGateConfig, target_date: str) -> list[Sched
         status = schedule_status(row)
         if status not in {"scheduled", "live", "final"}:
             raise GateUncertain(f"FIBA EuroLeague Women row has {status} status")
-        games.append(ScheduleGame(tip, status))
+        game_id = str(row.get("gameId") or "").strip()
+        if not game_id:
+            raise GateUncertain("FIBA EuroLeague Women row lacks gameId")
+        games.append(ScheduleGame(tip, status, f"fiba-elw-{COMPETITION_ID}-{game_id}"))
     return games
 
 

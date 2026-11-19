@@ -94,10 +94,12 @@ trigger. An adaptive, read-only gate runs first. It reads the latest
 Git-authoritative compact operator state and a bounded current-day schedule,
 then starts preflight and only the league matrix rows that have work due. The
 selected rows remain fail-independent across `NBA`, `WNBA`, men's `EuroLeague`,
-FIBA `EUROLEAGUE_W`, `CBA`, `NCAA_M`, and `NCAA_W`. One serialized publisher then commits compact
-ticket decisions and state to `main`; all pick cards and expanded audits stay in
-the cache and bounded workflow artifacts so frequent price movement does not
-create permanent Git history.
+FIBA `EUROLEAGUE_W`, `CBA`, `NCAA_M`, and `NCAA_W`. The gate also wakes a league
+for its first dated draft, each fixture's 60-minute pre-tip pick freeze, and
+frozen-result reconciliation. One serialized publisher commits compact ticket
+decisions/state, dated mutable pick cards/lifecycle views, and immutable
+per-fixture pick freezes to `main`; only current-scan pick JSON and expanded
+audits stay in cache and bounded workflow artifacts.
 
 ### Reliable external trigger
 

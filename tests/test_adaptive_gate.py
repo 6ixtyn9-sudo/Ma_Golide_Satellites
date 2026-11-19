@@ -76,6 +76,41 @@ def test_gate_skips_a_valid_idle_league(tmp_path: Path):
     assert decision.scheduled_game_count == 1
 
 
+def test_gate_publishes_an_identified_fixture_draft_before_its_freeze_window(tmp_path: Path):
+    nba = LEAGUES[0]
+    _operator_state(tmp_path, nba, date="2026-11-18")
+
+    decision = evaluate_league(
+        nba,
+        state_root=tmp_path,
+        now=NOW,
+        schedule_fetcher=_schedule(ScheduleGame(NOW + timedelta(hours=4), "scheduled", "game-1")),
+    )
+
+    assert decision.should_run
+    assert decision.reasons == ("pick_draft_publication_due",)
+
+
+def test_gate_runs_for_an_unfrozen_fixture_freeze_window(tmp_path: Path):
+    nba = LEAGUES[0]
+    _operator_state(tmp_path, nba, date="2026-11-18")
+    state_dir = tmp_path / nba.state_key
+    _write_json(state_dir / "picks_2026-11-18.json", [])
+
+    decision = evaluate_league(
+        nba,
+        state_root=tmp_path,
+        now=NOW,
+        schedule_fetcher=_schedule(ScheduleGame(NOW + timedelta(minutes=60), "scheduled", "game-1")),
+    )
+
+    assert decision.should_run
+    assert decision.reasons == (
+        "fixture_pick_freeze_due",
+        "ticket_creation_or_acquisition_due",
+    )
+
+
 def test_gate_runs_for_an_unfrozen_slate_inside_the_ticket_window(tmp_path: Path):
     nba = LEAGUES[0]
     _operator_state(tmp_path, nba, date="2026-11-18")
@@ -106,6 +141,52 @@ def test_gate_accepts_a_valid_frozen_no_bet_for_a_due_game(tmp_path: Path):
 
     assert not decision.should_run
     assert decision.reasons == ("no_work",)
+
+
+def test_gate_fails_open_when_pick_lifecycle_state_is_invalid(tmp_path: Path):
+    nba = LEAGUES[0]
+    _operator_state(tmp_path, nba, date="2026-11-18")
+    state_dir = tmp_path / nba.state_key
+    _write_json(state_dir / "picks_2026-11-18.json", [])
+    _write_json(
+        state_dir / "pick_lifecycle_state.json",
+        {"schema_version": "unknown", "league": "NBA", "pending_frozen_games": []},
+    )
+
+    decision = evaluate_league(
+        nba,
+        state_root=tmp_path,
+        now=NOW,
+        schedule_fetcher=_schedule(ScheduleGame(NOW + timedelta(hours=8), "scheduled", "game-later")),
+    )
+
+    assert decision.should_run
+    assert decision.reasons == ("state_uncertain: pick lifecycle state has an unknown schema",)
+
+
+def test_gate_rechecks_a_tipped_frozen_pick_until_it_settles(tmp_path: Path):
+    nba = LEAGUES[0]
+    _operator_state(tmp_path, nba, date="2026-11-18", frozen="ticket")
+    state_dir = tmp_path / nba.state_key
+    _write_json(state_dir / "picks_2026-11-18.json", [])
+    _write_json(
+        state_dir / "pick_lifecycle_state.json",
+        {
+            "schema_version": "magolide.pick_lifecycle_state",
+            "league": "NBA",
+            "pending_frozen_games": [["game-yesterday", "2026-11-18T11:00:00Z"]],
+        },
+    )
+
+    decision = evaluate_league(
+        nba,
+        state_root=tmp_path,
+        now=NOW,
+        schedule_fetcher=_schedule(ScheduleGame(NOW + timedelta(hours=8), "scheduled", "game-later")),
+    )
+
+    assert decision.should_run
+    assert decision.reasons == ("frozen_pick_settlement_due",)
 
 
 def test_gate_runs_pending_positions_and_awaiting_results_even_when_the_slate_is_later(

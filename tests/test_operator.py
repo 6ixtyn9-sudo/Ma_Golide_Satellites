@@ -578,6 +578,113 @@ def test_ticket_waits_for_the_pre_tip_decision_window_and_uses_later_price(tmp_p
     assert receipt["accas"][0]["legs"][0]["book"]["selected_decimal_price"] == 1.95
 
 
+@pytest.mark.parametrize("league", list(League))
+def test_fixture_pick_freeze_contract_is_global_for_every_supported_league(tmp_path, league):
+    row = forecast(1)
+    row["league"] = league.value
+    fixture = game(1, league=league, scheduled_utc="2026-11-07T20:00:00Z")
+
+    result = publish_operator_reports(
+        Store([fixture]),
+        league,
+        report([row]),
+        tmp_path / league.value.lower(),
+        target_date=DATE,
+        generated_utc=TICKET_DECISION_AS_OF,
+        run_id=f"{league.value.lower()}-fixture-freeze",
+    )
+
+    freeze_path = next((tmp_path / league.value.lower()).glob("pick_freeze_*.json"))
+    freeze = json.loads(freeze_path.read_text())
+    assert freeze["league"] == league.value
+    assert freeze["game_id"] == fixture.game_id
+    assert freeze["decision_cutoff_utc"] == TICKET_DECISION_AS_OF
+    assert freeze["rows"][0]["book"]["selected_decimal_price"] == 1.8
+    assert result["pick_freezes"] == 1
+
+
+def test_per_fixture_pick_lifecycle_publishes_drafts_freezes_once_and_settles(tmp_path):
+    draft_rows = [forecast(1), forecast(2)]
+    draft_rows[1]["scheduled_utc"] = "2026-11-07T22:00:00Z"
+    games = Store(
+        [
+            game(1, scheduled_utc="2026-11-07T20:00:00Z"),
+            game(2, scheduled_utc="2026-11-07T22:00:00Z"),
+        ]
+    )
+
+    draft = publish(
+        tmp_path,
+        games,
+        report(draft_rows),
+        run_id="draft-before-cutoff",
+        generated_utc="2026-11-07T18:00:00Z",
+    )
+    assert draft["pick_freezes"] == 0
+    draft_lifecycle = json.loads(Path(draft["pick_lifecycle"]).read_text())
+    assert {row["lifecycle_status"] for row in draft_lifecycle["rows"]} == {"DRAFT"}
+
+    freeze_rows = [forecast(1, price=1.95), forecast(2)]
+    freeze_rows[1]["scheduled_utc"] = "2026-11-07T22:00:00Z"
+    frozen = publish(
+        tmp_path,
+        games,
+        report(freeze_rows),
+        run_id="fixture-one-cutoff",
+        generated_utc="2026-11-07T19:00:00Z",
+    )
+    freeze_paths = list(tmp_path.glob("pick_freeze_2026-11-07_*.json"))
+    assert len(freeze_paths) == 1
+    frozen_bytes = freeze_paths[0].read_bytes()
+    frozen_evidence = json.loads(frozen_bytes)
+    assert frozen_evidence["game_id"] == "game-1"
+    assert frozen_evidence["rows"][0]["book"]["selected_decimal_price"] == 1.95
+    assert frozen["pick_freezes"] == 1
+
+    changed_rows = [forecast(1, price=2.10), forecast(2)]
+    changed_rows[1]["scheduled_utc"] = "2026-11-07T22:00:00Z"
+    publish(
+        tmp_path,
+        games,
+        report(changed_rows),
+        run_id="later-draft-must-not-rewrite-fixture-one",
+        generated_utc="2026-11-07T19:30:00Z",
+    )
+    assert freeze_paths[0].read_bytes() == frozen_bytes
+    archived_after_freeze = json.loads((tmp_path / "picks_2026-11-07.json").read_text())
+    fixture_one_prices = {
+        row["book"]["selected_decimal_price"]
+        for row in archived_after_freeze
+        if row["game_id"] == "game-1"
+    }
+    assert fixture_one_prices == {1.95}
+    lifecycle = json.loads((tmp_path / "picks_2026-11-07_lifecycle.json").read_text())
+    frozen_row = next(row for row in lifecycle["rows"] if row["game_id"] == "game-1")
+    assert frozen_row["book"]["selected_decimal_price"] == 1.95
+    assert frozen_row["lifecycle_status"] == "FROZEN"
+
+    games.games[0] = game(
+        1,
+        home_score=101,
+        away_score=90,
+        scheduled_utc="2026-11-07T20:00:00Z",
+    )
+    settled = publish(
+        tmp_path,
+        games,
+        report(changed_rows),
+        run_id="official-final-for-fixture-one",
+        generated_utc="2026-11-07T20:30:00Z",
+    )
+    lifecycle = json.loads(Path(settled["pick_lifecycle"]).read_text())
+    settled_row = next(row for row in lifecycle["rows"] if row["game_id"] == "game-1")
+    draft_row = next(row for row in lifecycle["rows"] if row["game_id"] == "game-2")
+    assert settled_row["grade_status"] == "win"
+    assert settled_row["lifecycle_status"] == "SETTLED"
+    assert draft_row["lifecycle_status"] == "DRAFT"
+    assert "lifecycle=SETTLED" in Path(settled["picks_text"]).read_text()
+
+
 def test_terminal_no_bet_at_cutoff_blocks_later_ticket_candidates(tmp_path):
     rows = [forecast(number) for number in (1, 2, 3)]
     games = Store([game(number) for number in (1, 2, 3)])
@@ -1535,7 +1642,13 @@ def test_repeated_observations_render_and_grade_as_one_logical_pick(tmp_path):
         calibration_n=0,
     )
     original["prediction"]["observed_utc"] = "2026-11-07T17:00:00Z"
-    first = publish(tmp_path, Store([game(1)]), report([original]), run_id="first")
+    first = publish(
+        tmp_path,
+        Store([game(1)]),
+        report([original]),
+        run_id="first",
+        generated_utc=AS_OF,
+    )
     dated_path = Path(first["dated_picks"])
 
     later = json.loads(json.dumps(original))
@@ -1543,7 +1656,13 @@ def test_repeated_observations_render_and_grade_as_one_logical_pick(tmp_path):
     later["book"]["observed_utc"] = "2026-11-07T17:30:00Z"
     later["book"]["selected_decimal_price"] = 1.95
     later["prediction"]["observed_utc"] = "2026-11-07T17:30:00Z"
-    publish(tmp_path, Store([game(1)]), report([later]), run_id="second")
+    publish(
+        tmp_path,
+        Store([game(1)]),
+        report([later]),
+        run_id="second",
+        generated_utc="2026-11-07T18:30:00Z",
+    )
 
     archived = json.loads(dated_path.read_text())
     assert len(archived) == 2
@@ -1693,7 +1812,13 @@ def test_later_exact_quote_hides_stale_unpriced_logical_pick_but_keeps_evidence(
         calibration_n=4,
     )
     unpriced["forecast_id"] = "forecast-1-before-quote"
-    first = publish(tmp_path, Store([game(1)]), report([unpriced]), run_id="before-quote")
+    first = publish(
+        tmp_path,
+        Store([game(1)]),
+        report([unpriced]),
+        run_id="before-quote",
+        generated_utc=AS_OF,
+    )
     assert first["unpriced_audit"]["count"] == 1
 
     priced = forecast(
@@ -1704,7 +1829,13 @@ def test_later_exact_quote_hides_stale_unpriced_logical_pick_but_keeps_evidence(
         calibration_n=4,
     )
     priced["forecast_id"] = "forecast-1-after-quote"
-    result = publish(tmp_path, Store([game(1)]), report([priced]), run_id="after-quote")
+    result = publish(
+        tmp_path,
+        Store([game(1)]),
+        report([priced]),
+        run_id="after-quote",
+        generated_utc="2026-11-07T18:30:00Z",
+    )
 
     # The original no-price evidence remains immutable in the dated ledger,
     # but the card/audit reflects the later exact quote for the same selection.
