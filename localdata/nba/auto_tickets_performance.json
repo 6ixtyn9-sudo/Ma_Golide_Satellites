@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 11,
+  "awaiting_game_legs": 6,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -403,17 +403,17 @@
       "wins": 1
     },
     {
-      "awaiting_game_legs": 11,
-      "bank_units": 98.46235246235247,
+      "awaiting_game_legs": 6,
+      "bank_units": 96.46235246235247,
       "date": "2026-11-18",
       "decision_id": "44248321279_nba_1_attempt_1",
       "frozen_at": "2026-11-18T06:02:32Z",
       "league": "NBA",
-      "losses": 2,
-      "pending_accas": 3,
-      "pending_positions": 3,
+      "losses": 4,
+      "pending_accas": 1,
+      "pending_positions": 1,
       "pending_singles": 0,
-      "pending_units": 3.0,
+      "pending_units": 1.0,
       "positions": [
         {
           "awaiting_game_legs": 2,
@@ -497,7 +497,7 @@
           "unresolved_legs": 2
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -507,7 +507,7 @@
           "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "loss",
             "loss",
             "win"
           ],
@@ -518,13 +518,13 @@
               "book_provider": "espn",
               "forecast_id": "e230bc865df3f3cb82e9",
               "game_id": "401910009",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Miami Heat",
               "line": 236.5,
               "market": "total",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "e230bc865df3f3cb82e9",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T00:00:00Z",
               "selected_decimal_price": 1.9090909090909092,
               "selection": "under"
@@ -575,10 +575,10 @@
           "stake_units": 1.0,
           "ticket_id": "04c0d4bdf785270ee593",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
@@ -588,8 +588,8 @@
           "grade_status": "pending",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
-            null,
+            "win",
+            "win",
             null
           ],
           "legs": [
@@ -599,13 +599,13 @@
               "book_provider": "espn",
               "forecast_id": "c0b20c1a042ad42f98e5",
               "game_id": "401910009",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Miami Heat",
               "line": -12.5,
               "market": "spread",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "c0b20c1a042ad42f98e5",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T00:00:00Z",
               "selected_decimal_price": 1.9433962264150944,
               "selection": "away"
@@ -616,13 +616,13 @@
               "book_provider": "espn",
               "forecast_id": "431ba3a1f29024cc7058",
               "game_id": "401910012",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Toronto Raptors",
               "line": 226.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "431ba3a1f29024cc7058",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T00:30:00Z",
               "selected_decimal_price": 1.9345794392523366,
               "selection": "under"
@@ -655,22 +655,22 @@
           "stake_units": 1.0,
           "ticket_id": "e68e2133040456bf9e52",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 7.1467,
           "effective_decimal_odds": 7.146730401711888,
           "estimated_joint_win_probability": 0.21130389,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
             null,
             "win",
-            null
+            "loss"
           ],
           "legs": [
             {
@@ -713,19 +713,20 @@
               "book_provider": "espn",
               "forecast_id": "16573e0929a25ceed9c4",
               "game_id": "401910012",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Toronto Raptors",
               "line": -7.5,
               "market": "spread",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "16573e0929a25ceed9c4",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T00:30:00Z",
               "selected_decimal_price": 1.9433962264150944,
               "selection": "home"
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 3,
           "provisional_sample_gate_bypassed": true,
           "publication_index": 4,
@@ -735,20 +736,20 @@
           "stake_units": 1.0,
           "ticket_id": "b57cf20a84492cda23d7",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 6.9634,
           "effective_decimal_odds": 6.963410396537797,
           "estimated_joint_win_probability": 0.18757224,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "loss",
             null,
             null
           ],
@@ -759,13 +760,13 @@
               "book_provider": "espn",
               "forecast_id": "f987d670eed8ab290f84",
               "game_id": "401910012",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Toronto Raptors",
               "line": 226.5,
               "market": "total",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "f987d670eed8ab290f84",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T00:30:00Z",
               "selected_decimal_price": 1.8849557522123894,
               "selection": "over"
@@ -806,6 +807,7 @@
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 3,
           "provisional_sample_gate_bypassed": true,
           "publication_index": 5,
@@ -815,44 +817,44 @@
           "stake_units": 1.0,
           "ticket_id": "0180469d15e207f43ab0",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         }
       ],
-      "profit_units": -2.0,
+      "profit_units": -4.0,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-18_decision.json",
       "result_unresolvable_legs": 0,
       "returned_units": 0.0,
-      "settled_accas": 2,
-      "settled_positions": 2,
+      "settled_accas": 4,
+      "settled_positions": 4,
       "settled_singles": 0,
-      "staked_units": 2.0,
-      "unresolved_result_legs": 11,
+      "staked_units": 4.0,
+      "unresolved_result_legs": 6,
       "wins": 0
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.42857142857142855,
+  "hit_rate": 0.3333333333333333,
   "league": "NBA",
-  "losses": 4,
-  "paper_bank_units": 98.46235246235246,
-  "paper_committed_units": 3.0,
+  "losses": 6,
+  "paper_bank_units": 96.46235246235246,
+  "paper_committed_units": 1.0,
   "paper_free_units": 95.46235246235246,
   "paper_only": true,
-  "pending_accas": 3,
-  "pending_positions": 3,
+  "pending_accas": 1,
+  "pending_positions": 1,
   "pending_singles": 0,
-  "profit_units": -1.5376475376475378,
+  "profit_units": -3.537647537647538,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": -0.21966393394964825,
+  "roi": -0.3930719486275042,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.2427196319116923,
-  "settled_accas": 4,
-  "settled_positions": 7,
+  "selected_leg_brier_score": 0.26061896067816664,
+  "settled_accas": 6,
+  "settled_positions": 9,
   "settled_singles": 3,
-  "settled_stake_units": 7.0,
+  "settled_stake_units": 9.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 11,
+  "unresolved_result_legs": 6,
   "wins": 3
 }

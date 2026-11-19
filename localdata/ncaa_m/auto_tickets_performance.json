@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 3,
+  "awaiting_game_legs": 2,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -179,7 +179,7 @@
       "wins": 1
     },
     {
-      "awaiting_game_legs": 3,
+      "awaiting_game_legs": 2,
       "bank_units": 103.16751069210086,
       "date": "2026-11-18",
       "decision_id": "44248321279_ncaa_m_1_attempt_1",
@@ -271,7 +271,7 @@
           "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
@@ -282,7 +282,7 @@
           "leg_count": 3,
           "leg_outcomes": [
             null,
-            null,
+            "win",
             "win"
           ],
           "legs": [
@@ -308,12 +308,12 @@
               "book_provider": "espn",
               "forecast_id": "45675451376e6df85dab",
               "game_id": "401919848",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Stonehill Skyhawks",
               "market": "moneyline",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "45675451376e6df85dab",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T01:00:00Z",
               "selected_decimal_price": 1.7407407407407407,
               "selection": "away"
@@ -345,7 +345,7 @@
           "stake_units": 1.0,
           "ticket_id": "305535f17534ddae7c6f",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         }
       ],
       "profit_units": -1.0,
@@ -357,7 +357,7 @@
       "settled_positions": 1,
       "settled_singles": 0,
       "staked_units": 1.0,
-      "unresolved_result_legs": 3,
+      "unresolved_result_legs": 2,
       "wins": 0
     }
   ],
@@ -377,12 +377,12 @@
   "result_unresolvable_legs": 0,
   "roi": 1.0558368973669516,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.16326252719871429,
+  "selected_leg_brier_score": 0.161495137202,
   "settled_accas": 2,
   "settled_positions": 3,
   "settled_singles": 1,
   "settled_stake_units": 3.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 3,
+  "unresolved_result_legs": 2,
   "wins": 2
 }
