@@ -1,6 +1,6 @@
 Ma Golide Picks — EUROLEAGUE 2026-11-19
 ========================================================================
-Generated at: 2026-11-19 17:53 SAST
+Generated at: 2026-11-19 18:21 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -39,7 +39,7 @@ WATCHLIST — NO MATCHED ODDS
       calibration=provisional n=20 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] Maccabi Rapyd Tel Aviv vs Dubai Basketball · KO 2026-11-19 19:15 SAST
       MONEYLINE H1 -> HOME · p=54.5% (raw 51.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-19T16:21:25Z
       calibration=provisional n=20 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] Zalgiris Kaunas vs Panathinaikos AKTOR Athens · KO 2026-11-19 20:00 SAST
       HIGHEST QUARTER full_game -> Q4 · p=44.7% (raw 39.0%) @n/a no matched book
@@ -55,7 +55,7 @@ WATCHLIST — NO MATCHED ODDS
       calibration=provisional n=20 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Maccabi Rapyd Tel Aviv vs Dubai Basketball · KO 2026-11-19 19:15 SAST
       HIGHEST QUARTER full_game -> Q1 · p=32.7% (raw 27.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-19T16:21:25Z
       calibration=provisional n=20 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
 
 WATCHLIST — INSUFFICIENT CONTEXT
@@ -68,27 +68,27 @@ SKIPPED — INELIGIBLE
       MONEYLINE full_game -> HOME · p=70.6% (raw 68.0%) @1.200 average
       bucket=SKIPPED_INELIGIBLE · price_evidence=AGGREGATE_CONSENSUS_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=19 · reasons=price_not_named_bookmaker_quote,price_source_permission_unresolved,price_operational_validation_incomplete,insufficient_walk_forward_samples · prediction=history
-      archived_revisions=2 · latest_evidence_utc=2026-11-19T15:38:23Z
+      archived_revisions=3 · latest_evidence_utc=2026-11-19T16:08:16Z
   [team_history_empirical/team_history_empirical] FC Bayern Munich vs Kosner Baskonia Vitoria-Gasteiz · KO 2026-11-19 21:00 SAST
       MONEYLINE full_game -> HOME · p=60.6% (raw 58.0%) @1.300 average
       bucket=SKIPPED_INELIGIBLE · price_evidence=AGGREGATE_CONSENSUS_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=19 · reasons=price_not_named_bookmaker_quote,price_source_permission_unresolved,price_operational_validation_incomplete,insufficient_walk_forward_samples · prediction=history
-      archived_revisions=2 · latest_evidence_utc=2026-11-19T15:38:23Z
+      archived_revisions=3 · latest_evidence_utc=2026-11-19T16:08:16Z
   [team_history_empirical/team_history_empirical] Zalgiris Kaunas vs Panathinaikos AKTOR Athens · KO 2026-11-19 20:00 SAST
-      MONEYLINE full_game -> HOME · p=58.6% (raw 56.0%) @1.840 average
+      MONEYLINE full_game -> HOME · p=58.6% (raw 56.0%) @1.870 average
       bucket=SKIPPED_INELIGIBLE · price_evidence=AGGREGATE_CONSENSUS_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=19 · reasons=price_not_named_bookmaker_quote,price_source_permission_unresolved,price_operational_validation_incomplete,insufficient_walk_forward_samples · prediction=history
-      archived_revisions=2 · latest_evidence_utc=2026-11-19T15:38:23Z
+      archived_revisions=3 · latest_evidence_utc=2026-11-19T16:08:16Z
   [team_history_empirical/team_history_empirical] Paris Basketball vs Hapoel IBI Tel Aviv · KO 2026-11-19 21:45 SAST
       MONEYLINE full_game -> HOME · p=55.6% (raw 53.0%) @1.910 average
       bucket=SKIPPED_INELIGIBLE · price_evidence=AGGREGATE_CONSENSUS_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=19 · reasons=price_not_named_bookmaker_quote,price_source_permission_unresolved,price_operational_validation_incomplete,insufficient_walk_forward_samples · prediction=history
-      archived_revisions=2 · latest_evidence_utc=2026-11-19T15:38:23Z
+      archived_revisions=3 · latest_evidence_utc=2026-11-19T16:08:16Z
   [team_history_empirical/team_history_empirical] Armani Olimpia Milan vs Fenerbahce Tarfin Istanbul · KO 2026-11-19 21:30 SAST
       MONEYLINE full_game -> AWAY · p=54.6% (raw 52.0%) @1.520 average
       bucket=SKIPPED_INELIGIBLE · price_evidence=AGGREGATE_CONSENSUS_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=19 · reasons=price_not_named_bookmaker_quote,price_source_permission_unresolved,price_operational_validation_incomplete,insufficient_walk_forward_samples · prediction=history
-      archived_revisions=2 · latest_evidence_utc=2026-11-19T15:38:23Z
+      archived_revisions=3 · latest_evidence_utc=2026-11-19T16:08:16Z
 
 IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
@@ -101,7 +101,7 @@ SETTLED PICKS — ARCHIVE ONLY
 Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 WATCHLIST_NO_ODDS=10 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=5
 ROI-qualified individual paper singles: 0
 Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=0
-Logical picks shown: 15 · superseded observations: 5
-Total archived pick evidence rows: 20
+Logical picks shown: 15 · superseded observations: 10
+Total archived pick evidence rows: 25
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.
