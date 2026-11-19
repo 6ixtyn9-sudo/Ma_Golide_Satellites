@@ -1,6 +1,6 @@
 Ma Golide Picks — EUROLEAGUE 2026-11-19
 ========================================================================
-Generated at: 2026-11-19 09:58 SAST
+Generated at: 2026-11-19 12:29 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -13,28 +13,7 @@ ELIGIBLE CLEAN PICKS
 
 CAUTION PICKS
 ========================================================================
-  [team_history_empirical/team_history_empirical] Valencia Basket vs Virtus Bologna · KO 2026-11-19 22:00 SAST
-      MONEYLINE full_game -> HOME · p=70.6% (raw 68.0%) @1.190 average
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=19 · reasons=insufficient_walk_forward_samples · prediction=history
-  [team_history_empirical/team_history_empirical] FC Bayern Munich vs Kosner Baskonia Vitoria-Gasteiz · KO 2026-11-19 21:00 SAST
-      MONEYLINE full_game -> HOME · p=60.6% (raw 58.0%) @1.330 average
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=19 · reasons=insufficient_walk_forward_samples · prediction=history
-  [team_history_empirical/team_history_empirical] Zalgiris Kaunas vs Panathinaikos AKTOR Athens · KO 2026-11-19 20:00 SAST
-      MONEYLINE full_game -> HOME · p=58.6% (raw 56.0%) @1.820 average
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=19 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -0.5% / adjusted -11.1%
-  [team_history_empirical/team_history_empirical] Paris Basketball vs Hapoel IBI Tel Aviv · KO 2026-11-19 21:45 SAST
-      MONEYLINE full_game -> HOME · p=55.6% (raw 53.0%) @2.050 average
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=19 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=0 · recency ROI n/a / adjusted n/a
-  [team_history_empirical/team_history_empirical] Armani Olimpia Milan vs Fenerbahce Tarfin Istanbul · KO 2026-11-19 21:30 SAST
-      MONEYLINE full_game -> AWAY · p=54.6% (raw 52.0%) @1.530 average
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=19 · reasons=insufficient_walk_forward_samples · prediction=history
+  (none)
 
 WATCHLIST — NO MATCHED ODDS
 ========================================================================
@@ -85,7 +64,26 @@ WATCHLIST — INSUFFICIENT CONTEXT
 
 SKIPPED — INELIGIBLE
 ========================================================================
-  (none)
+  [team_history_empirical/team_history_empirical] Valencia Basket vs Virtus Bologna · KO 2026-11-19 22:00 SAST
+      MONEYLINE full_game -> HOME · p=70.6% (raw 68.0%) @1.190 average
+      bucket=SKIPPED_INELIGIBLE · price_evidence=AGGREGATE_CONSENSUS_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=19 · reasons=price_not_named_bookmaker_quote,price_source_permission_unresolved,price_operational_validation_incomplete,insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] FC Bayern Munich vs Kosner Baskonia Vitoria-Gasteiz · KO 2026-11-19 21:00 SAST
+      MONEYLINE full_game -> HOME · p=60.6% (raw 58.0%) @1.330 average
+      bucket=SKIPPED_INELIGIBLE · price_evidence=AGGREGATE_CONSENSUS_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=19 · reasons=price_not_named_bookmaker_quote,price_source_permission_unresolved,price_operational_validation_incomplete,insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Zalgiris Kaunas vs Panathinaikos AKTOR Athens · KO 2026-11-19 20:00 SAST
+      MONEYLINE full_game -> HOME · p=58.6% (raw 56.0%) @1.820 average
+      bucket=SKIPPED_INELIGIBLE · price_evidence=AGGREGATE_CONSENSUS_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=19 · reasons=price_not_named_bookmaker_quote,price_source_permission_unresolved,price_operational_validation_incomplete,insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Paris Basketball vs Hapoel IBI Tel Aviv · KO 2026-11-19 21:45 SAST
+      MONEYLINE full_game -> HOME · p=55.6% (raw 53.0%) @2.050 average
+      bucket=SKIPPED_INELIGIBLE · price_evidence=AGGREGATE_CONSENSUS_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=19 · reasons=price_not_named_bookmaker_quote,price_source_permission_unresolved,price_operational_validation_incomplete,insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Armani Olimpia Milan vs Fenerbahce Tarfin Istanbul · KO 2026-11-19 21:30 SAST
+      MONEYLINE full_game -> AWAY · p=54.6% (raw 52.0%) @1.530 average
+      bucket=SKIPPED_INELIGIBLE · price_evidence=AGGREGATE_CONSENSUS_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=19 · reasons=price_not_named_bookmaker_quote,price_source_permission_unresolved,price_operational_validation_incomplete,insufficient_walk_forward_samples · prediction=history
 
 IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
@@ -95,7 +93,7 @@ SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
   (none)
 
-Active summary: ELIGIBLE_CLEAN=0 CAUTION=5 WATCHLIST_NO_ODDS=10 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 WATCHLIST_NO_ODDS=10 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=5
 ROI-qualified individual paper singles: 0
 Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=0
 Logical picks shown: 15 · superseded observations: 0
