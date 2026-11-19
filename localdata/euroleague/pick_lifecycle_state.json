@@ -7,6 +7,447 @@
   },
   "frozen_by_date": {
     "2026-11-19": {
+      "E2026-121": {
+        "decision_cutoff_utc": "2026-11-19T17:00:00Z",
+        "frozen_at": "2026-11-19T17:21:13Z",
+        "game_id": "E2026-121",
+        "league": "EUROLEAGUE",
+        "rows": [
+          {
+            "alternative_probabilities": {
+              "Q1": 0.19,
+              "Q2": 0.25,
+              "Q3": 0.17,
+              "Q4": 0.39
+            },
+            "away": "Panathinaikos AKTOR Athens",
+            "book": null,
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.4474,
+            "calibration": {
+              "brier_score": 0.271725,
+              "calibration_version": "team_history_empirical-cb419eb48826",
+              "league": "EUROLEAGUE",
+              "log_loss": 0.742222,
+              "losses": 11,
+              "market": "highest_quarter",
+              "mean_raw_probability": 0.3065,
+              "minimum_samples": 30,
+              "n": 20,
+              "observed_win_rate": 0.45,
+              "period": "full_game",
+              "pool": "eligible",
+              "probability_adjustment": 0.0574,
+              "pushes": 0,
+              "source": "team_history_empirical",
+              "status": "provisional",
+              "sufficient_for_accas": false,
+              "wilson_lower_95": 0.284111,
+              "wins": 9
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "expected_margin": null,
+            "expected_total": 165.01167400166878,
+            "explanation": {
+              "calibration": {
+                "brier_score": 0.271725,
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "league": "EUROLEAGUE",
+                "log_loss": 0.742222,
+                "losses": 11,
+                "market": "highest_quarter",
+                "mean_raw_probability": 0.3065,
+                "minimum_samples": 30,
+                "n": 20,
+                "observed_win_rate": 0.45,
+                "period": "full_game",
+                "pool": "eligible",
+                "probability_adjustment": 0.0574,
+                "pushes": 0,
+                "source": "team_history_empirical",
+                "status": "provisional",
+                "sufficient_for_accas": false,
+                "wilson_lower_95": 0.284111,
+                "wins": 9
+              },
+              "effective_sample_size": 19.695522,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "no_exact_bookmaker_market",
+                  "insufficient_walk_forward_samples",
+                  "below_calibrated_probability_floor"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": null,
+                "opposite_selection": null,
+                "selected_decimal_price": null
+              },
+              "provenance": {
+                "book": null,
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "league": "EUROLEAGUE",
+                "market": "highest_quarter",
+                "period": "full_game",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.049906,
+                "candidate_probability": 0.43990560965454545,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.4474,
+                "ess": 19.695522,
+                "n": 20,
+                "probability": 0.43990560965454545,
+                "status": "provisional",
+                "weighted_n": 16.269496
+              }
+            },
+            "forecast_id": "b22f333b5aa3bd402fec",
+            "game_id": "E2026-121",
+            "grade_status": "pending",
+            "home": "Zalgiris Kaunas",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "b22f333b5aa3bd402fec",
+            "prediction": null,
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.39,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-19T18:00:00Z",
+            "selection": "Q4",
+            "team_history": {
+              "away_effective_games": 29.348836,
+              "home_effective_games": 29.356789,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": true
+            },
+            "training_games": 6721
+          },
+          {
+            "alternative_probabilities": {
+              "away": 0.39,
+              "draw": 0.0,
+              "home": 0.61
+            },
+            "away": "Panathinaikos AKTOR Athens",
+            "book": null,
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.6454,
+            "calibration": {
+              "brier_score": 0.203475,
+              "calibration_version": "team_history_empirical-cb419eb48826",
+              "league": "EUROLEAGUE",
+              "log_loss": 0.597196,
+              "losses": 6,
+              "market": "moneyline",
+              "mean_raw_probability": 0.6115,
+              "minimum_samples": 30,
+              "n": 20,
+              "observed_win_rate": 0.7,
+              "period": "H1",
+              "pool": "eligible",
+              "probability_adjustment": 0.0354,
+              "pushes": 0,
+              "source": "team_history_empirical",
+              "status": "provisional",
+              "sufficient_for_accas": false,
+              "wilson_lower_95": 0.51618,
+              "wins": 14
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "expected_margin": 1.6630735375626244,
+            "expected_total": 82.36244660484385,
+            "explanation": {
+              "calibration": {
+                "brier_score": 0.203475,
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "league": "EUROLEAGUE",
+                "log_loss": 0.597196,
+                "losses": 6,
+                "market": "moneyline",
+                "mean_raw_probability": 0.6115,
+                "minimum_samples": 30,
+                "n": 20,
+                "observed_win_rate": 0.7,
+                "period": "H1",
+                "pool": "eligible",
+                "probability_adjustment": 0.0354,
+                "pushes": 0,
+                "source": "team_history_empirical",
+                "status": "provisional",
+                "sufficient_for_accas": false,
+                "wilson_lower_95": 0.51618,
+                "wins": 14
+              },
+              "effective_sample_size": 19.695522,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "no_exact_bookmaker_market",
+                  "insufficient_walk_forward_samples"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": null,
+                "opposite_selection": null,
+                "selected_decimal_price": null
+              },
+              "provenance": {
+                "book": null,
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "league": "EUROLEAGUE",
+                "market": "moneyline",
+                "period": "H1",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.02271,
+                "candidate_probability": 0.6327099109481349,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.6454,
+                "ess": 19.695522,
+                "n": 20,
+                "probability": 0.6327099109481349,
+                "status": "provisional",
+                "weighted_n": 16.269496
+              }
+            },
+            "forecast_id": "92cb7202a9d1a83ebc43",
+            "game_id": "E2026-121",
+            "grade_status": "pending",
+            "home": "Zalgiris Kaunas",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "92cb7202a9d1a83ebc43",
+            "prediction": null,
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.61,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-19T18:00:00Z",
+            "selection": "home",
+            "team_history": {
+              "away_effective_games": 29.348836,
+              "home_effective_games": 29.356789,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": true
+            },
+            "training_games": 6721
+          },
+          {
+            "alternative_probabilities": {
+              "away": 0.44,
+              "draw": 0.0,
+              "home": 0.56
+            },
+            "away": "Panathinaikos AKTOR Athens",
+            "book": {
+              "book": "average",
+              "frozen": false,
+              "game_id": "E2026-121",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-19T17:08:10Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "aggregate_consensus",
+              "provider": "betexplorer",
+              "selected_decimal_price": 1.96,
+              "side_prices": {
+                "away": 1.84,
+                "draw": null,
+                "home": 1.96,
+                "over": null,
+                "under": null
+              },
+              "source_modified_utc": null,
+              "source_permission": "unresolved",
+              "ticket_price_eligible": false
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.585714,
+            "calibration": {
+              "brier_score": 0.218389,
+              "calibration_version": "team_history_empirical-cb419eb48826",
+              "league": "EUROLEAGUE",
+              "log_loss": 0.628565,
+              "losses": 7,
+              "market": "moneyline",
+              "mean_raw_probability": 0.565263,
+              "minimum_samples": 30,
+              "n": 19,
+              "observed_win_rate": 0.631579,
+              "period": "full_game",
+              "pool": "eligible",
+              "probability_adjustment": 0.025714,
+              "pushes": 0,
+              "source": "team_history_empirical",
+              "status": "provisional",
+              "sufficient_for_accas": false,
+              "wilson_lower_95": 0.444069,
+              "wins": 12
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "price_not_named_bookmaker_quote",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "expected_margin": 3.55654522847432,
+            "expected_total": 166.70710061312928,
+            "explanation": {
+              "calibration": {
+                "brier_score": 0.218389,
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "league": "EUROLEAGUE",
+                "log_loss": 0.628565,
+                "losses": 7,
+                "market": "moneyline",
+                "mean_raw_probability": 0.565263,
+                "minimum_samples": 30,
+                "n": 19,
+                "observed_win_rate": 0.631579,
+                "period": "full_game",
+                "pool": "eligible",
+                "probability_adjustment": 0.025714,
+                "pushes": 0,
+                "source": "team_history_empirical",
+                "status": "provisional",
+                "sufficient_for_accas": false,
+                "wilson_lower_95": 0.444069,
+                "wins": 12
+              },
+              "effective_sample_size": 18.705166,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "price_not_named_bookmaker_quote",
+                  "insufficient_walk_forward_samples"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": 1.84,
+                "opposite_selection": "away",
+                "selected_decimal_price": 1.96
+              },
+              "provenance": {
+                "book": {
+                  "book": "average",
+                  "frozen": false,
+                  "main_line": true,
+                  "observed_utc": "2026-11-19T17:08:10Z",
+                  "pre_match": true,
+                  "provider": "betexplorer"
+                },
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "league": "EUROLEAGUE",
+                "market": "moneyline",
+                "period": "full_game",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.020772,
+                "candidate_probability": 0.5807719084507451,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.5857142857142857,
+                "ess": 18.705166,
+                "n": 19,
+                "probability": 0.5807719084507451,
+                "status": "provisional",
+                "weighted_n": 15.522868
+              }
+            },
+            "forecast_id": "c9d2d76d1d0cc40d6dc2",
+            "game_id": "E2026-121",
+            "grade_status": "pending",
+            "home": "Zalgiris Kaunas",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "c9d2d76d1d0cc40d6dc2",
+            "prediction": null,
+            "price_evidence": "AGGREGATE_CONSENSUS_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-19T18:00:00Z",
+            "selection": "home",
+            "team_history": {
+              "away_effective_games": 29.348836,
+              "home_effective_games": 29.356789,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": true
+            },
+            "training_games": 6721
+          }
+        ],
+        "scheduled_utc": "2026-11-19T18:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-19"
+      },
       "E2026-122": {
         "decision_cutoff_utc": "2026-11-19T16:15:00Z",
         "frozen_at": "2026-11-19T16:21:25Z",
