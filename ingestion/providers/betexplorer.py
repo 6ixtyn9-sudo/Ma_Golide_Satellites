@@ -41,7 +41,16 @@ from zoneinfo import ZoneInfo
 
 from ..http import HttpClient
 from ..identity import canonical_team_name, now_utc_iso, parse_utc, to_utc_iso
-from ..models import BookSnapshot, League, Market, Period, payload_hash
+from ..models import (
+    BookSnapshot,
+    League,
+    Market,
+    OperationalValidation,
+    Period,
+    PriceProvenance,
+    SourcePermission,
+    payload_hash,
+)
 from . import IdentityError
 
 PROVIDER = "betexplorer"
@@ -242,6 +251,13 @@ def fetch_odds(
                 payload_hash=payload_hash(
                     {"match_id": match_id, "slug": slug, "odds": odds}
                 ),
+                # BetExplorer's fixture-table value is explicitly an average
+                # quote.  It is retained for research/provenance but cannot
+                # become a named-book ticket price until source reuse and a
+                # named book contract are independently cleared.
+                price_provenance=PriceProvenance.AGGREGATE_CONSENSUS,
+                source_permission=SourcePermission.UNRESOLVED,
+                operational_validation=OperationalValidation.PROBATION,
                 provider_event_id=match_id,
                 home_name=canonical_team_name(home.strip()),
                 away_name=canonical_team_name(away.strip()),

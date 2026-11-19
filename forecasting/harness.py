@@ -368,6 +368,17 @@ def apply_profiles(
             reasons.append("no_exact_bookmaker_market")
         elif forecast.decimal_price is None:
             reasons.append("missing_selected_decimal_price")
+        elif not forecast.book.ticket_price_eligible:
+            # Preserve and grade observed aggregate/unresolved evidence, but
+            # fail closed for ticket selection.  The independent reasons make
+            # it auditable whether the block is provenance, permission, or
+            # operational validation rather than merely "no odds".
+            if forecast.book.price_provenance.value != "named_book":
+                reasons.append("price_not_named_bookmaker_quote")
+            if forecast.book.source_permission.value != "cleared":
+                reasons.append("price_source_permission_unresolved")
+            if forecast.book.operational_validation.value != "validated":
+                reasons.append("price_operational_validation_incomplete")
         if profile is None or not profile.sufficient:
             reasons.append("insufficient_walk_forward_samples")
         if _requires_team_history(forecast) and (forecast.team_history or {}).get(

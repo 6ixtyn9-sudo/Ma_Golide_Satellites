@@ -13,6 +13,7 @@ sys.path.insert(0, str(ROOT))
 
 from ingestion.duckdb_store import DuckDBStore  # noqa: E402
 from ingestion.mining import mine_prediction_assay, write_assay  # noqa: E402
+from ingestion.league_registry import cli_league_choices, league_spec, parse_league  # noqa: E402
 from ingestion.models import League  # noqa: E402
 from ingestion.warehouse import DEFAULT_WAREHOUSE  # noqa: E402
 
@@ -23,7 +24,7 @@ def main() -> int:
     parser.add_argument(
         "--league",
         default="NBA",
-        choices=["NBA", "EuroLeague", "EUROLEAGUE_W", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
+        choices=cli_league_choices(),
     )
     parser.add_argument(
         "--output",
@@ -31,10 +32,11 @@ def main() -> int:
         help="optional derived JSON artifact; stdout is always available",
     )
     args = parser.parse_args()
+    args.league = parse_league(args.league).value
     if args.warehouse is None:
         args.warehouse = (
-            "localdata/euroleague_w/warehouse.duckdb"
-            if args.league.upper() == "EUROLEAGUE_W"
+            str(Path("localdata") / league_spec(parse_league(args.league)).state_key / "warehouse.duckdb")
+            if args.league not in {"NBA", "EUROLEAGUE", "CBA", "WNBA", "NCAA_M", "NCAA_W"}
             else DEFAULT_WAREHOUSE
         )
     if not Path(args.warehouse).exists():

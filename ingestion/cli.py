@@ -21,6 +21,7 @@ from typing import List, Optional
 
 from .books import BookConfig
 from .duckdb_store import DuckDBStore
+from .league_registry import cli_league_choices, league_spec, parse_league
 from .pipeline import Pipeline, PipelineConfig
 from .store import InMemoryStore
 from .warehouse import DEFAULT_WAREHOUSE
@@ -31,10 +32,13 @@ def _warehouse(args) -> str:
     explicit = getattr(args, "warehouse", None) or os.environ.get("MAGOLIDE_WAREHOUSE")
     if explicit:
         return explicit
-    # A direct ELW CLI run must not silently land in the men's/shared default
-    # warehouse. Workflow runs already pass this same isolated path explicitly.
-    if str(getattr(args, "league", "")).upper() == "EUROLEAGUE_W":
+    # A direct non-legacy CLI run must not silently land in the shared NBA
+    # warehouse.  Workflow runs already pass isolated paths explicitly.
+    league = parse_league(str(getattr(args, "league", "NBA")))
+    if league.value == "EUROLEAGUE_W":
         return "localdata/euroleague_w/warehouse.duckdb"
+    if league.value not in {"NBA", "EUROLEAGUE", "CBA", "WNBA", "NCAA_M", "NCAA_W"}:
+        return str(Path("localdata") / league_spec(league).state_key / "warehouse.duckdb")
     return DEFAULT_WAREHOUSE
 
 
@@ -77,7 +81,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         command_parser.add_argument(
             "--league",
             default="NBA",
-            choices=["NBA", "EuroLeague", "EUROLEAGUE_W", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
+            choices=cli_league_choices(),
         )
         command_parser.add_argument("--date", default=None, help="league-local slate date YYYYMMDD")
         command_parser.add_argument("--tz", default=None, help="league-local timezone (IANA)")
@@ -114,11 +118,12 @@ def main(argv: Optional[List[str]] = None) -> int:
     coverage_parser.add_argument(
         "--league",
         default="NBA",
-        choices=["NBA", "EuroLeague", "EUROLEAGUE_W", "CBA", "WNBA", "NCAA_M", "NCAA_W"],
+        choices=cli_league_choices(),
     )
     coverage_parser.add_argument("--warehouse", default=None)
 
     args = parser.parse_args(argv)
+    args.league = parse_league(args.league).value
     if args.command == "smoke" and args.write:
         parser.error("smoke is read-only; remove --write")
     if args.command == "coverage":

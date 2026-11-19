@@ -36,6 +36,7 @@ from typing import Any, Callable, Iterable
 from urllib.request import Request, urlopen
 from zoneinfo import ZoneInfo
 
+from ingestion.league_registry import SPECS
 from ingestion.providers._cba_aes import Undecryptable, decrypt_body
 from ingestion.providers.fiba_euroleague_w_contract import (
     COMPETITION_CODE,
@@ -72,16 +73,17 @@ class LeagueGateConfig:
     schedule_source: str
 
 
-LEAGUES: tuple[LeagueGateConfig, ...] = (
-    LeagueGateConfig("NBA", "NBA", "nba", "America/New_York", "espn"),
-    LeagueGateConfig("WNBA", "WNBA", "wnba", "America/New_York", "espn"),
-    LeagueGateConfig("EuroLeague", "EuroLeague", "euroleague", "Europe/Paris", "euroleague"),
+LEAGUES: tuple[LeagueGateConfig, ...] = tuple(
     LeagueGateConfig(
-        "EuroLeague Women", "EUROLEAGUE_W", "euroleague_w", "Europe/Paris", "fiba_elw"
-    ),
-    LeagueGateConfig("Chinese CBA", "CBA", "cba", "Asia/Shanghai", "cba"),
-    LeagueGateConfig("NCAA men", "NCAA_M", "ncaa_m", "America/New_York", "espn"),
-    LeagueGateConfig("NCAA women", "NCAA_W", "ncaa_w", "America/New_York", "espn"),
+        spec.label,
+        # Keep the established workflow spelling as a boundary alias; the
+        # daily CLI immediately normalises it to League.EUROLEAGUE.
+        "EuroLeague" if spec.league.value == "EUROLEAGUE" else spec.league.value,
+        spec.state_key,
+        spec.acquisition_timezone,
+        spec.gate_schedule_source,
+    )
+    for spec in SPECS
 )
 
 
@@ -434,7 +436,7 @@ def evaluate_gate(
     schedule_fetcher: ScheduleFetcher | None = None,
     force_all_reason: str | None = None,
 ) -> list[GateDecision]:
-    """Evaluate the fixed seven-league matrix, with an explicit force-open mode."""
+    """Evaluate the registry-driven league matrix, with explicit force-open mode."""
 
     current = now or utc_now()
     if current.tzinfo is None:

@@ -41,10 +41,11 @@ from forecasting.market_eval import (  # noqa: E402
     join_for_evaluation,
     parse_utc,
 )
+from ingestion.league_registry import SPECS  # noqa: E402
 from ingestion.models import ActualResult, PeriodKind  # noqa: E402
 from ingestion.warehouse import DEFAULT_WAREHOUSE, connect  # noqa: E402
 
-LEAGUES = ["NBA", "EUROLEAGUE", "EuroLeague", "EUROLEAGUE_W", "CBA", "WNBA", "NCAA_M", "NCAA_W"]
+LEAGUES = ["EuroLeague", *(spec.league.value for spec in SPECS)]
 
 
 def _json_safe(value):

@@ -43,7 +43,16 @@ from typing import Any, Dict, List, Optional
 from zoneinfo import ZoneInfo
 
 from ingestion.identity import parse_utc
-from ingestion.models import Game, GameStatus, League, Period, schema_matches
+from ingestion.models import (
+    Game,
+    GameStatus,
+    League,
+    OperationalValidation,
+    Period,
+    PriceProvenance,
+    SourcePermission,
+    schema_matches,
+)
 
 from .types import (
     BookEvidence,
@@ -322,9 +331,18 @@ def _bucket(forecast: Dict[str, Any]) -> str:
 
 
 def _price_evidence(forecast: Dict[str, Any]) -> str:
+    """Render price provenance without upgrading an aggregate quote to a book."""
+
     book = forecast.get("book") or {}
+    provenance = book.get("price_provenance")
     if book.get("selected_decimal_price") is not None:
+        if provenance == PriceProvenance.AGGREGATE_CONSENSUS.value:
+            return "AGGREGATE_CONSENSUS_PRICE"
+        if provenance == PriceProvenance.NO_PRICE.value:
+            return "UNPRICED_SOURCE_CONTRADICTION"
         return "NAMED_BOOKMAKER_PRICE"
+    if provenance == PriceProvenance.NO_PRICE.value:
+        return "UNPRICED_EVIDENCE"
     if book:
         return "MATCHED_BUT_SELECTED_PRICE_MISSING"
     return "UNMATCHED"
@@ -577,8 +595,10 @@ def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
         else:
             # Legacy rows retain only the selected quote; never backfill sides.
             prices = {str(row["selection"]): book_row.get("selected_decimal_price")}
+        provider = str(book_row.get("provider") or "unknown")
+        legacy_aggregate = provider == "betexplorer"
         book = BookEvidence(
-            provider=str(book_row.get("provider") or "unknown"),
+            provider=provider,
             book=str(book_row.get("book") or "unknown"),
             observed_utc=str(book_row["observed_utc"]),
             source_modified_utc=book_row.get("source_modified_utc"),
@@ -586,6 +606,18 @@ def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
             main_line=bool(book_row.get("main_line", True)),
             frozen=bool(book_row.get("frozen", False)),
             prices=prices,
+            price_provenance=PriceProvenance(
+                book_row.get(
+                    "price_provenance",
+                    "aggregate_consensus" if legacy_aggregate else "named_book",
+                )
+            ),
+            source_permission=SourcePermission(
+                book_row.get("source_permission", "unresolved" if legacy_aggregate else "cleared")
+            ),
+            operational_validation=OperationalValidation(
+                book_row.get("operational_validation", "probation" if legacy_aggregate else "validated")
+            ),
             game_id=book_row.get("game_id"),
             market=book_row.get("market"),
             period=book_row.get("period"),

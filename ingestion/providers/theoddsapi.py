@@ -15,9 +15,12 @@ until then. Documented contract used here:
   (from ``THE_ODDS_API_KEY``); ``http.redact`` scrubs it from any error
   text and this module never logs URLs.
 - ``NBA_SPORT_KEY = "basketball_nba"`` is a constant that MUST be verified
-  against GET /sports at enablement. NO EuroLeague sport key is assumed to
-  exist — EuroLeague raises ``ValueError("not enabled for this league
-  yet")`` (coverage unproven, never fabricated).
+  against GET /sports at enablement. ``basketball_nbl`` is retained only as a
+  documented Australia NBL probationary mapping: a credentialed account,
+  region, and bookmaker smoke must establish usable coverage before it becomes
+  ticket-eligible. NO EuroLeague sport key is assumed to exist — EuroLeague
+  raises ``ValueError("not enabled for this league yet")`` (coverage unproven,
+  never fabricated).
 - ``oddsFormat=decimal`` is requested explicitly, so prices are ALREADY
   decimal and are stored AS-IS — ``books.american_to_decimal`` must NOT be
   applied (it would corrupt decimal prices; American conversion belongs to
@@ -49,7 +52,17 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 from urllib.parse import urlencode
 
 from .. import identity
-from ..models import BookSnapshot, CoverageGap, CoverageState, Market, Period, payload_hash
+from ..models import (
+    BookSnapshot,
+    CoverageGap,
+    CoverageState,
+    Market,
+    OperationalValidation,
+    Period,
+    PriceProvenance,
+    SourcePermission,
+    payload_hash,
+)
 from ._common import bound_client_quota
 
 PROVIDER = "theoddsapi"
@@ -67,6 +80,10 @@ SPORT_KEYS = {
     "WNBA": "basketball_wnba",
     "NCAA_M": "basketball_ncaab",
     "NCAA_W": "basketball_wncaab",
+    # Documented key only.  Operational validation is intentionally
+    # probationary until an authenticated account/region/bookmaker smoke run
+    # observes usable coverage; see ``_evidence_axes`` below.
+    "AUSTRALIA_NBL": "basketball_nbl",
 }
 
 MONEYLINE_MARKET_KEYS: Dict[str, Period] = {
@@ -198,6 +215,21 @@ def _require_supported_league(league: str) -> str:
             f"verified mappings: {', '.join(SPORT_KEYS)}"
         )
     return normalized
+
+
+def _evidence_axes(league: str) -> tuple[PriceProvenance, SourcePermission, OperationalValidation]:
+    """Classify API observations without asserting unverified NBL coverage."""
+
+    normalized = _require_supported_league(league)
+    return (
+        PriceProvenance.NAMED_BOOK,
+        SourcePermission.CLEARED,
+        (
+            OperationalValidation.PROBATION
+            if normalized == "AUSTRALIA_NBL"
+            else OperationalValidation.VALIDATED
+        ),
+    )
 
 
 def _regions() -> str:
@@ -642,6 +674,7 @@ def fetch_odds(
     if not is_enabled():
         return []
     league = _require_supported_league(league)
+    price_provenance, source_permission, operational_validation = _evidence_axes(league)
     fetch = fetch_factory(PROVIDER)
     now = now_utc or identity.now_utc_iso()
     observed_utc = now
@@ -655,6 +688,9 @@ def fetch_odds(
 
     def _extend(new: List[BookSnapshot]) -> None:
         for snapshot in new:
+            snapshot.price_provenance = price_provenance
+            snapshot.source_permission = source_permission
+            snapshot.operational_validation = operational_validation
             key = (snapshot.game_id, snapshot.book, snapshot.market, snapshot.period)
             if key in seen:
                 continue

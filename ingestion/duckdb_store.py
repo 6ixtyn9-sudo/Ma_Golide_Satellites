@@ -36,7 +36,7 @@ from .store import (
     _prediction_to_dict,
 )
 
-SCHEMA_VERSION = "2"
+SCHEMA_VERSION = "3"
 EXPORT_TABLES = (
     "games",
     "predictions",
@@ -98,6 +98,9 @@ CREATE TABLE IF NOT EXISTS book_snapshots (
     pre_match BOOLEAN NOT NULL,
     main_line BOOLEAN NOT NULL,
     payload_hash VARCHAR,
+    price_provenance VARCHAR NOT NULL DEFAULT 'named_book',
+    source_permission VARCHAR NOT NULL DEFAULT 'cleared',
+    operational_validation VARCHAR NOT NULL DEFAULT 'validated',
     frozen BOOLEAN NOT NULL DEFAULT FALSE,
     payload_json VARCHAR NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -180,6 +183,27 @@ class DuckDBStore(InMemoryStore):
                     "TRY_CAST(json_extract_string(payload_json, "
                     "'$.draw_price_decimal') AS DOUBLE)"
                 )
+            # Evidence-axis columns are queryable for audits while complete
+            # payload JSON remains the backwards-compatible source of truth.
+            # Historical BetExplorer rows must stay aggregate/unresolved.
+            for column, default in (
+                ("price_provenance", "named_book"),
+                ("source_permission", "cleared"),
+                ("operational_validation", "validated"),
+            ):
+                if column not in book_columns:
+                    self._con.execute(
+                        f"ALTER TABLE book_snapshots ADD COLUMN {column} VARCHAR "
+                        f"NOT NULL DEFAULT '{default}'"
+                    )
+            self._con.execute(
+                "UPDATE book_snapshots SET "
+                "price_provenance = 'aggregate_consensus', "
+                "source_permission = 'unresolved', "
+                "operational_validation = 'probation' "
+                "WHERE provider = 'betexplorer' AND "
+                "(price_provenance = 'named_book' OR price_provenance IS NULL)"
+            )
             self._con.execute(
                 "INSERT OR REPLACE INTO schema_meta(key, value) VALUES ('schema_version', ?)",
                 [SCHEMA_VERSION],
@@ -363,6 +387,9 @@ class DuckDBStore(InMemoryStore):
                     "pre_match",
                     "main_line",
                     "payload_hash",
+                    "price_provenance",
+                    "source_permission",
+                    "operational_validation",
                     "frozen",
                     "payload_json",
                 ],
@@ -384,6 +411,9 @@ class DuckDBStore(InMemoryStore):
                     snapshot.pre_match,
                     snapshot.main_line,
                     snapshot.payload_hash,
+                    snapshot.price_provenance.value,
+                    snapshot.source_permission.value,
+                    snapshot.operational_validation.value,
                     is_frozen,
                     self._json(_book_to_dict(snapshot)),
                 ],

@@ -170,7 +170,7 @@ def test_first_half_draw_price_roundtrip_and_schema_migration(tmp_path):
             migrated._con.execute(
                 "select value from schema_meta where key='schema_version'"
             ).fetchone()[0]
-            == "2"
+            == "3"
         )
     finally:
         migrated.close()

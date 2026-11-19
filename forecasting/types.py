@@ -8,7 +8,16 @@ import math
 import re
 from typing import Any, Dict, Optional
 
-from ingestion.models import BookSnapshot, Game, Market, Period, PeriodKind
+from ingestion.models import (
+    BookSnapshot,
+    Game,
+    Market,
+    OperationalValidation,
+    Period,
+    PeriodKind,
+    PriceProvenance,
+    SourcePermission,
+)
 
 MODEL_VERSION = "team_history_empirical"
 
@@ -72,10 +81,23 @@ class BookEvidence:
     main_line: bool
     frozen: bool
     prices: Dict[str, Optional[float]]
+    price_provenance: PriceProvenance = PriceProvenance.NAMED_BOOK
+    source_permission: SourcePermission = SourcePermission.CLEARED
+    operational_validation: OperationalValidation = OperationalValidation.VALIDATED
     game_id: Optional[str] = None
     market: Optional[str] = None
     period: Optional[str] = None
     line: Optional[float] = None
+
+    def __post_init__(self) -> None:
+        for field_name, enum_type in (
+            ("price_provenance", PriceProvenance),
+            ("source_permission", SourcePermission),
+            ("operational_validation", OperationalValidation),
+        ):
+            value = getattr(self, field_name)
+            if not isinstance(value, enum_type):
+                object.__setattr__(self, field_name, enum_type(value))
 
     @classmethod
     def from_snapshot(cls, snapshot: BookSnapshot, *, frozen: bool) -> "BookEvidence":
@@ -94,6 +116,9 @@ class BookEvidence:
                 "over": snapshot.over_price_decimal,
                 "under": snapshot.under_price_decimal,
             },
+            price_provenance=snapshot.price_provenance,
+            source_permission=snapshot.source_permission,
+            operational_validation=snapshot.operational_validation,
             game_id=snapshot.game_id,
             market=snapshot.market.value,
             period=snapshot.period.value,
@@ -109,6 +134,20 @@ class BookEvidence:
         if price is None or not math.isfinite(price) or price <= 1.0:
             return None
         return float(price)
+
+    @property
+    def ticket_price_eligible(self) -> bool:
+        """Whether this is validated, cleared, executable named-book evidence.
+
+        A numeric aggregate quote stays visible for research, but no amount of
+        model confidence may promote it to a paper-ticket leg.
+        """
+
+        return (
+            self.price_provenance is PriceProvenance.NAMED_BOOK
+            and self.source_permission is SourcePermission.CLEARED
+            and self.operational_validation is OperationalValidation.VALIDATED
+        )
 
 
 def opposite_selection(
@@ -341,6 +380,10 @@ class Forecast:
                 "pre_match": self.book.pre_match,
                 "main_line": self.book.main_line,
                 "frozen": self.book.frozen,
+                "price_provenance": self.book.price_provenance.value,
+                "source_permission": self.book.source_permission.value,
+                "operational_validation": self.book.operational_validation.value,
+                "ticket_price_eligible": self.book.ticket_price_eligible,
                 "game_id": self.book.game_id,
                 "market": self.book.market,
                 "period": self.book.period,
