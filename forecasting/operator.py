@@ -21,6 +21,9 @@ Operator evidence files live beneath one league's localdata directory:
   may change after publication.
 - ``auto_tickets_state.json`` stores write-once date locks and bounded scan telemetry.
 - ``auto_tickets_performance.json`` / ``.txt`` reconstruct paper performance.
+- ``euroleague_consensus_paper_YYYY-MM-DD_roster.json`` is a time-locked,
+  no-stake EuroLeague aggregate-consensus research board; its matching ``.txt``
+  card renders grades without creating a ticket, receipt, bank, ROI, or P&L.
 
 A known losing leg settles its paper position as a loss even when other legs
 are still pending. Push legs are removed from an acca's effective price once
@@ -83,6 +86,25 @@ PRICED_INELIGIBLE_SHADOW_MIN_DECIMAL_ODDS = 1.30
 PRICED_INELIGIBLE_SHADOW_MIN_PROBABILITY = 0.70
 PRICED_INELIGIBLE_SHADOW_SCHEMA = "magolide.priced_ineligible_shadow"
 UNPRICED_SPREAD_SHADOW_SCHEMA = "magolide.unpriced_spread_shadow"
+# EuroLeague's public BetExplorer adapter exposes a representative aggregate
+# price, not an executable named-book quote.  It therefore has its own
+# deliberately isolated research board: the board preserves the exact observed
+# consensus price, but can never feed tickets, receipts, stakes, bank, ROI, or
+# P&L.  These quality gates are intentionally stricter than a simple watchlist.
+EUROLEAGUE_CONSENSUS_PAPER_SCHEMA = "magolide.euroleague_consensus_paper_roster"
+EUROLEAGUE_CONSENSUS_PROVIDER = "betexplorer"
+EUROLEAGUE_CONSENSUS_BOOK = "average"
+EUROLEAGUE_CONSENSUS_MAX_PICKS = 3
+EUROLEAGUE_CONSENSUS_MIN_CALIBRATION_SAMPLES = 10
+EUROLEAGUE_CONSENSUS_MIN_MODEL_EDGE = 0.03
+EUROLEAGUE_CONSENSUS_ALLOWED_BLOCKERS = frozenset(
+    {
+        "price_not_named_bookmaker_quote",
+        "price_source_permission_unresolved",
+        "price_operational_validation_incomplete",
+        "insufficient_walk_forward_samples",
+    }
+)
 # No-price full-game moneyline picks at or above this model probability are
 # re-expressed as the same side against the bookmaker's posted full-game spread.
 UNPRICED_SPREAD_SHADOW_MIN_PROBABILITY = 0.70
@@ -325,6 +347,405 @@ def _ticket_candidate_is_pre_tip(candidate: Dict[str, Any], generated_utc: str) 
         return all(parse_utc(str(leg["scheduled_utc"])) > generated for leg in legs)
     except (KeyError, TypeError, ValueError):
         return False
+
+
+def _finite_number(value: Any) -> Optional[float]:
+    """Return a finite numeric value, rejecting bools and malformed evidence."""
+
+    if isinstance(value, bool) or not isinstance(value, (int, float)):
+        return None
+    try:
+        number = float(value)
+    except (OverflowError, TypeError, ValueError):
+        return None
+    return number if math.isfinite(number) else None
+
+
+def _euroleague_consensus_paper_candidates(
+    rows: List[Dict[str, Any]],
+    *,
+    target_date: str,
+    generated_utc: str,
+    slate_timezone_name: str,
+) -> List[Dict[str, Any]]:
+    """Return the small, no-stake EuroLeague aggregate-consensus board.
+
+    This is intentionally *not* a relaxation of ``acca_eligible``.  A row may
+    enter only when every ordinary model-quality gate has passed and the only
+    strict-lane blockers are the documented aggregate-price evidence axes (and,
+    during the developing period, the sample-size gate).  The representative
+    BetExplorer average remains explicitly unresolved/probationary throughout.
+    """
+
+    now = parse_utc(generated_utc)
+    target_zone = ZoneInfo(slate_timezone_name)
+    by_game: Dict[str, Dict[str, Any]] = {}
+    for original in rows:
+        row = deepcopy(original)
+        book = row.get("book")
+        if not isinstance(book, dict) or not _has_exact_selected_price(row):
+            continue
+        if (
+            str(row.get("league") or "") != League.EUROLEAGUE.value
+            or str(row.get("market") or "") != "moneyline"
+            or str(row.get("period") or "") != Period.FULL_GAME.value
+            or str(row.get("selection") or "") not in {"home", "away"}
+            or str(book.get("provider") or "").strip().lower()
+            != EUROLEAGUE_CONSENSUS_PROVIDER
+            or str(book.get("book") or "").strip().lower() != EUROLEAGUE_CONSENSUS_BOOK
+            or book.get("price_provenance") != PriceProvenance.AGGREGATE_CONSENSUS.value
+            or book.get("source_permission") != SourcePermission.UNRESOLVED.value
+            or book.get("operational_validation") != OperationalValidation.PROBATION.value
+            or book.get("ticket_price_eligible") is True
+            or book.get("pre_match") is not True
+        ):
+            continue
+        try:
+            observed = parse_utc(str(book["observed_utc"]))
+            tip = parse_utc(str(row["scheduled_utc"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+        if (
+            observed > now
+            or observed >= tip
+            or now >= tip
+            or tip.astimezone(target_zone).date().isoformat() != target_date
+        ):
+            continue
+        eligibility = row.get("eligibility")
+        reasons = set(eligibility.get("reasons") or []) if isinstance(eligibility, dict) else set()
+        if not reasons or not reasons.issubset(EUROLEAGUE_CONSENSUS_ALLOWED_BLOCKERS):
+            continue
+        # An aggregate row must remain blocked from the strict execution lane.
+        if not {
+            "price_not_named_bookmaker_quote",
+            "price_source_permission_unresolved",
+            "price_operational_validation_incomplete",
+        }.issubset(reasons):
+            continue
+        calibration = row.get("calibration")
+        if not isinstance(calibration, dict):
+            continue
+        n = calibration.get("n")
+        sufficient = calibration.get("sufficient_for_accas") is True
+        if sufficient:
+            calibration_tier = "fully_calibrated"
+        elif (
+            calibration.get("status") == "provisional"
+            and isinstance(n, int)
+            and not isinstance(n, bool)
+            and n >= EUROLEAGUE_CONSENSUS_MIN_CALIBRATION_SAMPLES
+            and "insufficient_walk_forward_samples" in reasons
+        ):
+            calibration_tier = "developing_calibration"
+        else:
+            continue
+        probability = _finite_number(row.get("calibrated_probability"))
+        price = _finite_number(book.get("selected_decimal_price"))
+        if probability is None or price is None or not 0.0 < probability <= 1.0 or price <= 1.0:
+            continue
+        edge = probability * price - 1.0
+        if edge < EUROLEAGUE_CONSENSUS_MIN_MODEL_EDGE:
+            continue
+        game_id = str(row.get("game_id") or "")
+        if not game_id:
+            continue
+        row["consensus_paper"] = {
+            "lane": "EUROLEAGUE_AGGREGATE_CONSENSUS_PRICE_PAPER_LEAGUE",
+            "price_source": "BetExplorer representative average",
+            "price_provenance": PriceProvenance.AGGREGATE_CONSENSUS.value,
+            "model_consensus_edge": round(edge, 6),
+            "minimum_model_consensus_edge": EUROLEAGUE_CONSENSUS_MIN_MODEL_EDGE,
+            "calibration_tier": calibration_tier,
+            "calibration_n": n,
+            "maximum_daily_selections": EUROLEAGUE_CONSENSUS_MAX_PICKS,
+            "no_stake": True,
+            "strict_ticket_eligible": False,
+        }
+        prior = by_game.get(game_id)
+        if prior is None or (
+            float(row["consensus_paper"]["model_consensus_edge"]),
+            probability,
+            str(row.get("forecast_id") or ""),
+        ) > (
+            float((prior.get("consensus_paper") or {}).get("model_consensus_edge") or -math.inf),
+            _finite_number(prior.get("calibrated_probability")) or -math.inf,
+            str(prior.get("forecast_id") or ""),
+        ):
+            by_game[game_id] = row
+    return sorted(
+        by_game.values(),
+        key=lambda row: (
+            -float((row.get("consensus_paper") or {})["model_consensus_edge"]),
+            -(_finite_number(row.get("calibrated_probability")) or 0.0),
+            str(row.get("scheduled_utc") or ""),
+            str(row.get("forecast_id") or ""),
+        ),
+    )[:EUROLEAGUE_CONSENSUS_MAX_PICKS]
+
+
+def _consensus_paper_roster_path(localdata: Path, target_date: str) -> Path:
+    return localdata / f"euroleague_consensus_paper_{target_date}_roster.json"
+
+
+def _consensus_paper_card_path(localdata: Path, target_date: str) -> Path:
+    return localdata / f"euroleague_consensus_paper_{target_date}.txt"
+
+
+def _read_consensus_paper_roster(path: Path, *, target_date: Optional[str] = None) -> Dict[str, Any]:
+    roster = _read_json(path, {})
+    if (
+        not isinstance(roster, dict)
+        or not schema_matches(roster.get("schema_version"), EUROLEAGUE_CONSENSUS_PAPER_SCHEMA)
+        or roster.get("league") != League.EUROLEAGUE.value
+        or not isinstance(roster.get("selections"), list)
+        or not isinstance(roster.get("frozen_at"), str)
+    ):
+        raise ValueError(f"invalid EuroLeague consensus-paper roster: {path}")
+    if target_date is not None and roster.get("target_date") != target_date:
+        raise ValueError(f"EuroLeague consensus-paper roster date mismatch: {path}")
+    return roster
+
+
+def _write_consensus_paper_roster(path: Path, roster: Dict[str, Any]) -> str:
+    """Write a one-time no-stake roster; a later scan may never rotate it."""
+
+    raw = json.dumps(roster, indent=2, sort_keys=True, default=str) + "\n"
+    if path.exists():
+        if path.read_text() != raw:
+            raise ValueError(f"refusing to replace time-locked consensus-paper roster: {path}")
+        return str(path)
+    _write_json(path, roster)
+    return str(path)
+
+
+def _consensus_paper_summary(selections: List[Dict[str, Any]]) -> Dict[str, Any]:
+    counts = Counter(str(row.get("grade_status") or "pending") for row in selections)
+    wins = counts["win"]
+    losses = counts["loss"]
+    pushes = counts["push"]
+    decisions = wins + losses
+    scored = [row for row in selections if str(row.get("grade_status")) in {"win", "loss"}]
+    brier_terms = []
+    for row in scored:
+        probability = _finite_number(row.get("calibrated_probability"))
+        if probability is not None:
+            brier_terms.append((probability - float(row.get("grade_status") == "win")) ** 2)
+    return {
+        "selections": len(selections),
+        "wins": wins,
+        "losses": losses,
+        "pushes": pushes,
+        "pending": counts["pending"],
+        "decisions": decisions,
+        "hit_rate": round(wins / decisions, 6) if decisions else None,
+        "brier_score": round(sum(brier_terms) / len(brier_terms), 6) if brier_terms else None,
+        "brier_n": len(brier_terms),
+    }
+
+
+def _render_euroleague_consensus_paper(
+    *,
+    target_date: str,
+    generated_utc: str,
+    timezone_name: str,
+    ticket_decision: Dict[str, Any],
+    candidates: List[Dict[str, Any]],
+    roster: Optional[Dict[str, Any]],
+    games: Dict[str, Game],
+) -> str:
+    """Render the separate aggregate-price research board, never a ticket card."""
+
+    frozen = roster is not None
+    selections = deepcopy((roster or {}).get("selections") or candidates)
+    for row in selections:
+        _set_grade(row, games)
+    summary = _consensus_paper_summary(selections)
+    cutoff = ticket_decision.get("planned_cutoff_utc")
+    status = ticket_decision.get("status")
+    lines = [
+        f"MA GOLIDE EUROLEAGUE CONSENSUS-PRICE PAPER LEAGUE — {target_date}",
+        "=" * 72,
+        "RESEARCH PAPER BOARD — BetExplorer representative average price; not a named bookmaker quote.",
+        "NO STAKE · NO TICKET · NO RECEIPT · NO PAPER BANK · NO ROI/P&L · NO REAL-MONEY INSTRUCTION.",
+        "The strict EuroLeague ticket lane remains fail-closed: aggregate/unresolved/probationary prices cannot enter it.",
+        "",
+        "QUALITY RULES",
+        "- Full-game moneyline only; exact pre-tip BetExplorer average observed before the board scan.",
+        "- All normal model gates must pass; only aggregate-price evidence blockers and a developing calibration sample may remain.",
+        f"- Developing calibration requires n≥{EUROLEAGUE_CONSENSUS_MIN_CALIBRATION_SAMPLES}; fully calibrated rows remain preferred.",
+        f"- Model-versus-consensus threshold: calibrated p × displayed average odds − 1 ≥ {EUROLEAGUE_CONSENSUS_MIN_MODEL_EDGE:.0%}.",
+        f"- At most {EUROLEAGUE_CONSENSUS_MAX_PICKS} selections; one selection per fixture; ordered by model-versus-consensus edge.",
+        "",
+    ]
+    if frozen:
+        frozen_at = str(roster["frozen_at"])
+        lines.extend(
+            [
+                f"TIME-LOCKED BOARD: {_local_time(frozen_at, timezone_name)} · source scan decision: {roster.get('decision_status', 'unknown')}",
+                "Selections and their observed consensus prices are fixed in the roster JSON; only official-result grades refresh below.",
+            ]
+        )
+    elif status == "pending_cutoff":
+        lines.append(
+            "DRAFT BOARD — selections are mutable until "
+            f"{_local_time(str(cutoff), timezone_name) if cutoff else 'a confirmed cutoff'}; no roster exists yet."
+        )
+    elif status == "missed_pre_tip_window":
+        lines.append("NO TIME-LOCKED BOARD — the earliest game already tipped before this scan; no late roster is fabricated.")
+    elif status == "no_slate_game":
+        lines.append("DRAFT BOARD UNAVAILABLE — no confirmed EuroLeague slate fixture is available for this date.")
+    else:
+        lines.append("DRAFT BOARD — awaiting a confirmed, eligible scan before the time-lock window.")
+    lines.extend(
+        [
+            f"Latest render: {_local_time(generated_utc, timezone_name)}",
+            "",
+        ]
+    )
+    if not selections:
+        lines.extend(["  (no qualifying consensus-paper selections)", ""])
+    else:
+        for index, row in enumerate(selections, 1):
+            book = row.get("book") or {}
+            paper = row.get("consensus_paper") or {}
+            probability = _finite_number(row.get("calibrated_probability"))
+            price = _finite_number(book.get("selected_decimal_price"))
+            edge = _finite_number(paper.get("model_consensus_edge"))
+            calibration = row.get("calibration") or {}
+            reasons = ", ".join((row.get("eligibility") or {}).get("reasons") or []) or "none"
+            lines.extend(
+                [
+                    f"  [CONSENSUS PAPER PICK #{index}] {row.get('home')} vs {row.get('away')} · "
+                    f"TIP-OFF {_local_time(str(row.get('scheduled_utc')), timezone_name)}",
+                    f"     {_selection_label(row)} @{'n/a' if price is None else f'{price:.3f}'} average consensus · "
+                    f"calibrated p={'n/a' if probability is None else f'{probability:.1%}'} · "
+                    f"model-v-consensus edge={'n/a' if edge is None else f'{edge:+.1%}'} · {_grade_badge(row.get('grade_status'))}",
+                    f"     calibration={paper.get('calibration_tier', calibration.get('status', 'unknown'))} "
+                    f"n={paper.get('calibration_n', calibration.get('n', 'n/a'))} · "
+                    "evidence=aggregate_consensus / permission=unresolved / validation=probation",
+                    f"     strict-ticket blockers: {reasons}",
+                ]
+            )
+        lines.append("")
+    hit_rate = summary["hit_rate"]
+    brier = summary["brier_score"]
+    lines.extend(
+        [
+            "OUTCOME TRACKING — selection accuracy/calibration only; displayed prices never generate profit, stake, or ROI accounting.",
+            f"Selections {summary['selections']} · {summary['wins']}W-{summary['losses']}L-{summary['pushes']}P · "
+            f"{summary['pending']} pending · hit rate {'n/a' if hit_rate is None else f'{hit_rate:.1%}'} · "
+            f"Brier {'n/a' if brier is None else f'{brier:.4f}'} (n={summary['brier_n']}).",
+            "",
+        ]
+    )
+    return "\n".join(lines)
+
+
+def _publish_euroleague_consensus_paper(
+    *,
+    localdata: Path,
+    target_date: str,
+    generated_utc: str,
+    timezone_name: str,
+    slate_timezone_name: str,
+    ticket_decision: Dict[str, Any],
+    current_rows: List[Dict[str, Any]],
+    games: Dict[str, Game],
+    market_report_available: bool,
+) -> Dict[str, Any]:
+    """Publish the isolated EuroLeague consensus board and regrade old boards."""
+
+    candidates = _euroleague_consensus_paper_candidates(
+        current_rows,
+        target_date=target_date,
+        generated_utc=generated_utc,
+        slate_timezone_name=slate_timezone_name,
+    )
+    roster_path = _consensus_paper_roster_path(localdata, target_date)
+    roster = _read_consensus_paper_roster(roster_path, target_date=target_date) if roster_path.exists() else None
+    decision_status = str(ticket_decision.get("status") or "unknown")
+    frozen_now = False
+    if roster is None and market_report_available and decision_status == "due":
+        selections = []
+        for candidate in candidates:
+            selection = deepcopy(candidate)
+            selection.pop("grade_status", None)
+            selection.pop("outcome", None)
+            selections.append(selection)
+        roster = {
+            "schema_version": EUROLEAGUE_CONSENSUS_PAPER_SCHEMA,
+            "league": League.EUROLEAGUE.value,
+            "target_date": target_date,
+            "frozen_at": generated_utc,
+            "decision_status": decision_status,
+            "decision_policy": TICKET_DECISION_POLICY,
+            "planned_cutoff_utc": ticket_decision.get("planned_cutoff_utc"),
+            "price_contract": {
+                "provider": EUROLEAGUE_CONSENSUS_PROVIDER,
+                "book": EUROLEAGUE_CONSENSUS_BOOK,
+                "price_provenance": PriceProvenance.AGGREGATE_CONSENSUS.value,
+                "source_permission": SourcePermission.UNRESOLVED.value,
+                "operational_validation": OperationalValidation.PROBATION.value,
+            },
+            "selection_policy": {
+                "maximum_picks": EUROLEAGUE_CONSENSUS_MAX_PICKS,
+                "minimum_developing_calibration_samples": EUROLEAGUE_CONSENSUS_MIN_CALIBRATION_SAMPLES,
+                "minimum_model_consensus_edge": EUROLEAGUE_CONSENSUS_MIN_MODEL_EDGE,
+                "one_selection_per_fixture": True,
+                "full_game_moneyline_only": True,
+                "no_stake": True,
+                "no_ticket_receipt_bank_roi_or_pnl": True,
+            },
+            "selections": selections,
+        }
+        _write_consensus_paper_roster(roster_path, roster)
+        frozen_now = True
+
+    card_path = _consensus_paper_card_path(localdata, target_date)
+    _write_text(
+        card_path,
+        _render_euroleague_consensus_paper(
+            target_date=target_date,
+            generated_utc=generated_utc,
+            timezone_name=timezone_name,
+            ticket_decision=ticket_decision,
+            candidates=candidates,
+            roster=roster,
+            games=games,
+        ),
+    )
+    refreshed_cards = []
+    for old_roster_path in sorted(localdata.glob("euroleague_consensus_paper_????-??-??_roster.json")):
+        old_date = old_roster_path.name.removeprefix("euroleague_consensus_paper_").removesuffix("_roster.json")
+        if old_date == target_date:
+            continue
+        old_roster = _read_consensus_paper_roster(old_roster_path, target_date=old_date)
+        _write_text(
+            _consensus_paper_card_path(localdata, old_date),
+            _render_euroleague_consensus_paper(
+                target_date=old_date,
+                generated_utc=generated_utc,
+                timezone_name=timezone_name,
+                ticket_decision={"status": "historical_time_locked"},
+                candidates=[],
+                roster=old_roster,
+                games=games,
+            ),
+        )
+        refreshed_cards.append(old_date)
+    return {
+        "lane": "EUROLEAGUE_AGGREGATE_CONSENSUS_PRICE_PAPER_LEAGUE",
+        "paper_only": True,
+        "no_stake_ticket_receipt_bank_roi_or_pnl": True,
+        "candidate_count": len(candidates),
+        "candidate_forecast_ids": [str(row.get("forecast_id")) for row in candidates],
+        "roster": str(roster_path) if roster is not None else None,
+        "card": str(card_path),
+        "frozen_now": frozen_now,
+        "decision_status": decision_status,
+        "historical_cards_refreshed": refreshed_cards,
+    }
 
 
 def _bucket(forecast: Dict[str, Any]) -> str:
@@ -3552,8 +3973,8 @@ def _render_ticket_card(
     ]
     if receipt.get("league") == League.EUROLEAGUE.value:
         lines[2:2] = [
-            "EUROLEAGUE PRICED-VALUE LANE — exact pre-tip quote; calibrated p × odds > 1.00;",
-            "at least 10 past settled picks and positive ROI in the matching band.",
+            "EUROLEAGUE STRICT NAMED-BOOK TICKET LANE — exact validated pre-tip quote; calibrated p × odds > 1.00;",
+            "at least 10 past settled picks and positive ROI in the matching band; aggregate consensus prices are excluded.",
         ]
     if not positions:
         lines.extend(["NO PAPER BET — no single or multi-leg paper ticket at publication.", ""])
@@ -3876,6 +4297,15 @@ def _render_morning_ticket_preview(
         "- Broader preview: one exact current pre-tip quote from a named bookmaker per game; model blockers stay displayed.",
         "- Unresolved permission or operational validation means a candidate is preview-only, not strict execution evidence.",
     ]
+    if league is League.EUROLEAGUE:
+        lines.extend(
+            (
+                "",
+                "EUROLEAGUE CONSENSUS-PRICE PAPER BOARD",
+                "- See euroleague_consensus_paper_YYYY-MM-DD.txt for the separate, no-stake BetExplorer average-price board.",
+                "- It is not a named-book draft slip and never enters tickets, receipts, bank, ROI/P&L, or real-money execution.",
+            )
+        )
     if not candidates:
         lines.extend(("  (none — no exact, current named-book price was available before tip)", ""))
         return "\n".join(line for line in lines if line != "") + "\n"
@@ -4040,11 +4470,11 @@ def _render_empty_ticket_scan(
                 "",
             ]
     if league is League.EUROLEAGUE:
-        lines.insert(
-            3,
-            "EUROLEAGUE PRICED-VALUE LANE — exact pre-tip quote; calibrated p × odds > 1.00; "
-            "at least 10 past settled picks and positive ROI in the matching band.",
-        )
+        lines[3:3] = [
+            "EUROLEAGUE STRICT NAMED-BOOK TICKET LANE — exact validated pre-tip quote; calibrated p × odds > 1.00; "
+            "at least 10 past settled picks and positive ROI in the matching band; aggregate consensus prices are excluded.",
+            "Separate no-stake aggregate research board: euroleague_consensus_paper_YYYY-MM-DD.txt (never a ticket, receipt, bank, ROI/P&L, or real-money instruction).",
+        ]
     elif league is League.EUROLEAGUE_W:
         lines.insert(
             3,
@@ -4298,6 +4728,21 @@ def publish_operator_reports(
         target_date=target_date,
         generated_utc=generated_utc,
         slate_timezone_name=slate_timezone_name,
+    )
+    euroleague_consensus_paper = (
+        _publish_euroleague_consensus_paper(
+            localdata=localdata,
+            target_date=target_date,
+            generated_utc=generated_utc,
+            timezone_name=timezone_name,
+            slate_timezone_name=slate_timezone_name,
+            ticket_decision=ticket_decision,
+            current_rows=current,
+            games=games,
+            market_report_available=market_report is not None,
+        )
+        if league is League.EUROLEAGUE
+        else None
     )
     acca_report = (market_report or {}).get("accas") or {}
     candidate_funnel = _ticket_candidate_funnel(market_report)
@@ -4697,6 +5142,7 @@ def publish_operator_reports(
         "performance_text": str(localdata / "auto_tickets_performance.txt"),
         "candidate_funnel": candidate_funnel,
         "ticket_decision": ticket_decision,
+        "euroleague_consensus_paper": euroleague_consensus_paper,
         "no_bet_decision": (
             str(_no_bet_sidecar_path(localdata, target_date))
             if no_bet_decision is not None

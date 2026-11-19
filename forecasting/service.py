@@ -771,7 +771,9 @@ class MarketForecastService:
             },
             "capabilities": {
                 "league_operator_policy": (
-                    "fiba_elw_empirical_history_only_no_validated_named_book_lane"
+                    "euroleague_strict_named_book_tickets_plus_separate_aggregate_consensus_paper_research"
+                    if self.league is League.EUROLEAGUE
+                    else "fiba_elw_empirical_history_only_no_validated_named_book_lane"
                     if self.league is League.EUROLEAGUE_W
                     else "nba_g_league_empirical_history_only_no_validated_named_book_lane"
                     if self.league is League.NBA_G_LEAGUE
@@ -882,9 +884,10 @@ class MarketForecastService:
                 ),
                 "paper_lane": (
                     {
-                        "name": "EUROLEAGUE_PRICED_VALUE_PAPER_LANE",
-                        "role": "paper_only; never changes probabilities or strict eligibility",
+                        "name": "EUROLEAGUE_STRICT_NAMED_BOOK_VALUE_TICKET_LANE",
+                        "role": "strict ticket-only lane; aggregate consensus quotes are excluded",
                         "requires_exact_selected_side_pre_tip_price": True,
+                        "requires_validated_cleared_named_book_quote": True,
                         "requires_positive_calibrated_expected_value": True,
                         "minimum_prior_settled_picks_in_matching_roi_band": 10,
                         "roi_band_scope": [
@@ -901,6 +904,20 @@ class MarketForecastService:
                             "candidate_positive_expected_value_count"
                         ],
                         "qualifying_picks": paper_pick_filter["qualifying_pick_count"],
+                    }
+                    if self.league is League.EUROLEAGUE
+                    else None
+                ),
+                "consensus_paper_lane": (
+                    {
+                        "name": "EUROLEAGUE_AGGREGATE_CONSENSUS_PRICE_PAPER_LEAGUE",
+                        "role": "separate no-stake research board; never feeds strict tickets",
+                        "price_source": "BetExplorer representative average",
+                        "price_provenance": "aggregate_consensus",
+                        "source_permission": "unresolved",
+                        "operational_validation": "probation",
+                        "no_ticket_receipt_bank_roi_or_pnl": True,
+                        "selection_surface": "operator time-locked daily consensus-paper roster",
                     }
                     if self.league is League.EUROLEAGUE
                     else None

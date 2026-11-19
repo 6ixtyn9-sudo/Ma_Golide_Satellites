@@ -35,6 +35,7 @@ def test_workflow_mirror_sync():
     # Pin the withdrawn/no-bet sidecars in every cache-recovery allowlist.
     assert all("withdrawn" in block for block in blocks)
     assert all("no_bet" in block for block in blocks)
+    assert all("euroleague_consensus_paper" in block for block in blocks)
     # Structured pick JSON is cache/artifact-only for every league, so
     # restoration must not delete it before replacing Git-durable files.
     assert all("picks_{date}.json" not in block for block in blocks)
@@ -43,20 +44,22 @@ def test_workflow_mirror_sync():
 
 def test_gitignore_allows_every_git_durable_operator_artifact():
     repo = Path(__file__).resolve().parents[1]
-    durable_names = (
-        "picks_2026-11-18.txt",
-        "pick_lifecycle_state.json",
-        "pick_freeze_2026-11-18_0123456789abcdef.json",
-        "coverage_gap_2026-11-18.json",
-        "auto_tickets_2026-11-18_decision.json",
+    durable_paths = (
+        "localdata/nba/picks_2026-11-18.txt",
+        "localdata/nba/pick_lifecycle_state.json",
+        "localdata/nba/pick_freeze_2026-11-18_0123456789abcdef.json",
+        "localdata/nba/coverage_gap_2026-11-18.json",
+        "localdata/nba/auto_tickets_2026-11-18_decision.json",
+        "localdata/euroleague/euroleague_consensus_paper_2026-11-18_roster.json",
+        "localdata/euroleague/euroleague_consensus_paper_2026-11-18.txt",
     )
-    for name in durable_names:
+    for relative_path in durable_paths:
         result = subprocess.run(
-            ["git", "check-ignore", "-q", f"localdata/nba/{name}"],
+            ["git", "check-ignore", "-q", relative_path],
             cwd=repo,
             check=False,
         )
-        assert result.returncode == 1, f"durable publisher artifact is ignored: {name}"
+        assert result.returncode == 1, f"durable publisher artifact is ignored: {relative_path}"
 
 
 def test_gitignore_keeps_structured_pick_json_artifact_only_for_every_league():
@@ -185,6 +188,8 @@ def test_successful_lanes_publish_despite_a_failed_matrix_sibling():
         assert "pick_freeze_*.json" in recovery
         assert "pick_lifecycle_state.json" in recovery
         assert "auto_tickets_" not in recovery
+        assert "euroleague_consensus_paper_*_roster.json" in recovery
+        assert "euroleague_consensus_paper_*.txt" not in recovery
         publish = text.split("publish-localdata:", 1)[1].split("runs-on:", 1)[0]
         assert "needs: [gate, preflight, league]" in text
         assert "needs.preflight.result == 'success'" in publish
