@@ -30,9 +30,9 @@ from ingestion.models import (
 
 DATE = "2026-11-07"
 AS_OF = "2026-11-07T18:00:00Z"
-# Dated cards freeze at 09:00 SAST (07:00Z). Fixture-level draft evidence
+# NBA dated cards freeze at 18:00 SAST (16:00Z). Fixture-level draft evidence
 # remains independently frozen at each fixture's 60-minute pre-tip point.
-TICKET_DECISION_AS_OF = "2026-11-07T07:00:00Z"
+TICKET_DECISION_AS_OF = "2026-11-07T16:00:00Z"
 FIXTURE_FREEZE_AS_OF = "2026-11-07T19:00:00Z"
 
 
@@ -508,7 +508,7 @@ def test_ticket_is_frozen_empty_scans_do_not_cancel_and_known_leg_loss_settles(t
     assert "pending 1.000" in pending_day_line
     assert not any(icon in pending_day_line for icon in ("✅", "❌", "➖"))
     ticket_text = Path(first["ticket_text"]).read_text()
-    assert "DECISION FROZEN AT 09:00" in ticket_text
+    assert "DECISION FROZEN AT 18:00" in ticket_text
     assert "displayed grades refresh when reconciled results arrive" in ticket_text
     assert "TIP-OFF" in ticket_text
     assert "KICKOFF" not in ticket_text
@@ -554,12 +554,14 @@ def test_ticket_waits_for_the_pre_tip_decision_window_and_uses_later_price(tmp_p
         Store([game(number) for number in (1, 2, 3)]),
         report(early_rows, [acca(early_rows)]),
         run_id="before-decision-window",
-        generated_utc="2026-11-07T06:30:00Z",
+        generated_utc="2026-11-07T15:30:00Z",
     )
 
     assert early["ticket_receipt"] is None
     assert early["ticket_decision"]["status"] == "pending_cutoff"
-    assert early["ticket_decision"]["planned_cutoff_utc"] == "2026-11-07T07:00:00Z"
+    assert early["ticket_decision"]["policy"] == "1800_sast_or_first_slate_tip_minus_60_minutes"
+    assert early["ticket_decision"]["publication_local_time"] == "18:00"
+    assert early["ticket_decision"]["planned_cutoff_utc"] == "2026-11-07T16:00:00Z"
     assert json.loads(Path(early["ticket_state"]).read_text())["frozen_by_date"] == {}
     assert "Ticket decision pending" in Path(early["ticket_text"]).read_text()
 
@@ -3050,7 +3052,7 @@ def test_euroleague_consensus_price_paper_board_is_time_locked_and_has_no_ticket
         report(rows),
         tmp_path,
         target_date=DATE,
-        generated_utc=TICKET_DECISION_AS_OF,
+        generated_utc="2026-11-07T07:00:00Z",
         run_id="euroleague-consensus-freeze",
         slate_timezone_name="Europe/Paris",
     )
@@ -3063,6 +3065,7 @@ def test_euroleague_consensus_price_paper_board_is_time_locked_and_has_no_ticket
     roster_path = Path(board["roster"])
     roster = json.loads(roster_path.read_text())
     assert roster["schema_version"] == "magolide.euroleague_consensus_paper_roster"
+    assert roster["decision_policy"] == "0900_sast_or_first_slate_tip_minus_60_minutes"
     assert len(roster["selections"]) == 2
     assert all("grade_status" not in row for row in roster["selections"])
     assert roster["selection_policy"]["no_ticket_receipt_bank_roi_or_pnl"] is True

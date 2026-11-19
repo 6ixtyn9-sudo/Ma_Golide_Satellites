@@ -38,6 +38,7 @@ from zoneinfo import ZoneInfo
 
 from ingestion.league_registry import SPECS
 from ingestion.providers._cba_aes import Undecryptable, decrypt_body
+from ingestion.ticket_policy import TICKET_PUBLICATION_TIMEZONE, ticket_publication_local_time
 from ingestion.providers.fiba_euroleague_w_contract import (
     COMPETITION_CODE,
     COMPETITION_ID,
@@ -55,12 +56,10 @@ from ingestion.providers.fiba_euroleague_w_contract import (
 
 SCHEMA_VERSION = "magolide.adaptive-gate"
 DECISION_LEAD_MINUTES = 60
-# Keep this scheduling decision aligned with forecasting.operator: dated cards
-# freeze at 09:00 Johannesburg time, unless an earlier fixture needs the
-# ordinary 60-minute pre-tip safety cutoff.  The gate is dependency-free, so
-# these policy constants live here rather than importing the full forecaster.
-TICKET_PUBLICATION_TIMEZONE = "Africa/Johannesburg"
-TICKET_PUBLICATION_HOUR = 9
+# Keep this scheduling decision aligned with forecasting.operator. The shared
+# dependency-free policy keeps NBA at 18:00 Johannesburg time and every other
+# league at 09:00, unless an earlier fixture needs the ordinary 60-minute
+# pre-tip safety cutoff.
 HTTP_TIMEOUT_SECONDS = 15
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 COVERAGE_GAP_MARKER_SCHEMA = "magolide.coverage_gap_marker"
@@ -184,9 +183,9 @@ def target_date_for(config: LeagueGateConfig, now: datetime) -> str:
 
 
 def _ticket_decision_cutoff(
-    target_date: str, games: Iterable[ScheduleGame]
+    config: LeagueGateConfig, target_date: str, games: Iterable[ScheduleGame]
 ) -> datetime | None:
-    """Return the morning card cutoff, bounded by the first game's safety window."""
+    """Return the league card cutoff, bounded by the first game's safety window."""
 
     try:
         target_day = datetime.strptime(target_date, "%Y-%m-%d").date()
@@ -199,12 +198,12 @@ def _ticket_decision_cutoff(
     ]
     if not tips:
         return None
-    morning = datetime.combine(
+    publication = datetime.combine(
         target_day,
-        datetime.min.time().replace(hour=TICKET_PUBLICATION_HOUR),
+        ticket_publication_local_time(config.league_key),
         tzinfo=ZoneInfo(TICKET_PUBLICATION_TIMEZONE),
     ).astimezone(timezone.utc)
-    return min(morning, min(tips) - timedelta(minutes=DECISION_LEAD_MINUTES))
+    return min(publication, min(tips) - timedelta(minutes=DECISION_LEAD_MINUTES))
 
 
 def _coverage_gap_marker_path(state_dir: Path, target_date: str) -> Path:
@@ -664,8 +663,8 @@ def evaluate_league(
             schedule_count,
         )
     if not frozen:
-        decision_cutoff = _ticket_decision_cutoff(target_date, games)
-        # Once the morning cutoff arrives, wake the lane until it records an
+        decision_cutoff = _ticket_decision_cutoff(config, target_date, games)
+        # Once the publication cutoff arrives, wake the lane until it records an
         # immutable ticket or no-bet.  If the run arrives late it will record
         # the explicit missed-window no-bet rather than creating a post-tip
         # position.  A no-game slate stays idle after its normal draft work.

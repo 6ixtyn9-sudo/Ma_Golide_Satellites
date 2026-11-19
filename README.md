@@ -151,9 +151,10 @@ acquisition, current market generation, immutable pre-tip freezing, and (unless
 skipped) result reconciliation. Idle external ticks perform only a read-only
 schedule/state check; unavailable state or schedule data fails open to the full
 league run. Paper positions are not selected on the first usable scan: each
-dated card is decided at **09:00 Africa/Johannesburg** on its named date, unless
-the first fixture's 60-minute pre-tip safety cutoff is earlier. At that point,
-either a strictly evidenced pre-tip ticket or an immutable no-bet decision is
+NBA dated cards are decided at **18:00 Africa/Johannesburg** on their named
+date; every other league retains **09:00 Africa/Johannesburg**. An earlier
+first fixture's 60-minute pre-tip safety cutoff always takes precedence. At that
+point, either a strictly evidenced pre-tip ticket or an immutable no-bet decision is
 recorded. Before then, the single `auto_tickets_YYYY-MM-DD.txt` card carries a
 clearly labelled `DRAFT ONLY` / `PRE-CUTOFF` section showing current named-price
 draft candidates, but that section is explicitly non-execution research: it
