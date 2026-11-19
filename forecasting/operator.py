@@ -33,7 +33,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from copy import deepcopy
-from datetime import datetime, timedelta, timezone
+from datetime import datetime, time, timedelta, timezone
 import hashlib
 import itertools
 import json
@@ -88,10 +88,14 @@ UNPRICED_SPREAD_SHADOW_SCHEMA = "magolide.unpriced_spread_shadow"
 UNPRICED_SPREAD_SHADOW_MIN_PROBABILITY = 0.70
 BASE_PAPER_UNITS = 100.0
 STAKE_UNITS_PER_ACCA = 1.0
-# Ticket selection remains mutable until this pre-tip slate decision point. A
-# receipt (or terminal no-bet decision) is then immutable, so an early partial
-# book snapshot cannot lock the entire date.
+# Every dated card is decided in the morning Johannesburg publication window,
+# rather than requiring an operator to wait for a late North-American first
+# tip.  An earlier fixture still wins: no card may be first decided after its
+# pre-tip safety window.  The resulting receipt/no-bet remains immutable.
 TICKET_DECISION_LEAD_TIME = timedelta(hours=1)
+TICKET_PUBLICATION_TIMEZONE = "Africa/Johannesburg"
+TICKET_PUBLICATION_LOCAL_TIME = time(hour=9)
+TICKET_DECISION_POLICY = "morning_0900_sast_or_first_slate_tip_minus_60_minutes"
 BUCKET_ORDER = [
     "ELIGIBLE_CLEAN",
     "CAUTION",
@@ -235,21 +239,25 @@ def _ticket_decision_window(
     generated_utc: str,
     slate_timezone_name: str,
 ) -> Dict[str, Any]:
-    """Describe the single immutable decision point for a local-date slate.
+    """Describe the immutable morning decision point for a dated slate.
 
-    The forecast service already scopes its current rows to the acquisition
-    timezone's local date. Use that same timezone here rather than the
-    Johannesburg presentation timezone; otherwise a cross-midnight US or CBA
-    slate could freeze against the wrong day. A terminal decision is permitted
-    only once the planned pre-tip cutoff has arrived.
+    Cards publish at 09:00 SAST on their named date, so an overnight NBA
+    slate is available while the operator is awake.  A genuinely earlier game
+    cannot be deferred to that morning card: its ordinary tip-minus-60-minute
+    safety cutoff takes precedence.  Fixture-level pick freezes remain their
+    own tip-minus-60-minute evidence lifecycle.
     """
     try:
         target_day = datetime.strptime(target_date, "%Y-%m-%d").date()
         generated = parse_utc(generated_utc)
         slate_zone = ZoneInfo(slate_timezone_name)
+        publication_zone = ZoneInfo(TICKET_PUBLICATION_TIMEZONE)
     except (TypeError, ValueError) as exc:
         raise ValueError("invalid ticket decision date, time, or slate timezone") from exc
 
+    morning_cutoff = datetime.combine(
+        target_day, TICKET_PUBLICATION_LOCAL_TIME, tzinfo=publication_zone
+    ).astimezone(UTC)
     slate_tips = []
     for game in games.values():
         try:
@@ -274,13 +282,16 @@ def _ticket_decision_window(
     if not slate_tips:
         return {
             "status": "no_slate_game",
-            "policy": "first_slate_tip_minus_60_minutes",
+            "policy": TICKET_DECISION_POLICY,
             "lead_minutes": int(TICKET_DECISION_LEAD_TIME.total_seconds() // 60),
+            "publication_timezone": TICKET_PUBLICATION_TIMEZONE,
+            "morning_publication_cutoff_utc": _utc_iso(morning_cutoff),
             "slate_timezone": slate_timezone_name,
         }
 
     earliest_tip = min(slate_tips)
-    cutoff = earliest_tip - TICKET_DECISION_LEAD_TIME
+    pre_tip_cutoff = earliest_tip - TICKET_DECISION_LEAD_TIME
+    cutoff = min(morning_cutoff, pre_tip_cutoff)
     if generated < cutoff:
         status = "pending_cutoff"
     elif generated < earliest_tip:
@@ -291,8 +302,11 @@ def _ticket_decision_window(
         status = "missed_pre_tip_window"
     return {
         "status": status,
-        "policy": "first_slate_tip_minus_60_minutes",
+        "policy": TICKET_DECISION_POLICY,
         "lead_minutes": int(TICKET_DECISION_LEAD_TIME.total_seconds() // 60),
+        "publication_timezone": TICKET_PUBLICATION_TIMEZONE,
+        "morning_publication_cutoff_utc": _utc_iso(morning_cutoff),
+        "pre_tip_safety_cutoff_utc": _utc_iso(pre_tip_cutoff),
         "slate_timezone": slate_timezone_name,
         "slate_time_source": slate_source,
         "earliest_slate_tip_utc": _utc_iso(earliest_tip),
@@ -3754,6 +3768,140 @@ def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, 
     return funnel
 
 
+def _named_price_preview_candidates(
+    rows: List[Dict[str, Any]], *, generated_utc: str, maximum: int = 8
+) -> List[Dict[str, Any]]:
+    """Return transparent Edge-style draft candidates, never ticket legs.
+
+    This is deliberately broader than the strict receipt lane: a current,
+    exact quote from a named bookmaker remains visible even when the source
+    permission or operational validation gate blocks it from a strict paper
+    ticket.  It is presentation-only and retains every blocker beside the
+    candidate, so a visible DraftKings price cannot be mistaken for validated
+    execution evidence.
+    """
+
+    now = parse_utc(generated_utc)
+    by_game: Dict[str, Dict[str, Any]] = {}
+    for row in rows:
+        book = row.get("book")
+        if not isinstance(book, dict) or not _has_exact_selected_price(row):
+            continue
+        if book.get("price_provenance") not in {None, PriceProvenance.NAMED_BOOK.value}:
+            continue
+        if not str(book.get("book") or "").strip() or book.get("pre_match") is not True:
+            continue
+        try:
+            observed = parse_utc(str(book["observed_utc"]))
+            tip = parse_utc(str(row["scheduled_utc"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+        if not observed < tip or not now < tip:
+            continue
+        game_id = str(row.get("game_id") or "")
+        if not game_id:
+            continue
+        probability, _basis = _confidence_probability(row)
+        if probability is None:
+            continue
+        current = by_game.get(game_id)
+        # Probability orders candidates.  No price-derived ranking or
+        # fabricated EV is used in this draft-only lane.
+        if current is None or (
+            probability,
+            str(row.get("forecast_id") or ""),
+        ) > (
+            _confidence_probability(current)[0] or -1.0,
+            str(current.get("forecast_id") or ""),
+        ):
+            by_game[game_id] = row
+    return sorted(
+        by_game.values(),
+        key=lambda row: (
+            -(_confidence_probability(row)[0] or 0.0),
+            str(row.get("scheduled_utc") or ""),
+            str(row.get("forecast_id") or ""),
+        ),
+    )[:maximum]
+
+
+def _render_morning_ticket_preview(
+    *,
+    league: League,
+    target_date: str,
+    generated_utc: str,
+    timezone_name: str,
+    ticket_decision: Dict[str, Any],
+    rows: List[Dict[str, Any]],
+    candidate_funnel: Dict[str, Any],
+) -> str:
+    """Render the public morning draft-slip surface without creating a bet.
+
+    The strict ticket receipt and its bank remain unchanged.  This companion
+    card makes the today-facing, named-price candidate universe available at
+    the 09:00 SAST workflow window even when an execution-validation issue
+    leaves the strict lane empty.
+    """
+
+    candidates = _named_price_preview_candidates(rows, generated_utc=generated_utc)
+    cutoff = ticket_decision.get("planned_cutoff_utc")
+    morning = ticket_decision.get("morning_publication_cutoff_utc")
+    strict_count = int(candidate_funnel.get("paper_accas") or 0)
+    strict_singles = int(candidate_funnel.get("paper_single_picks") or 0)
+    lines = [
+        f"MA GOLIDE MORNING TICKET PREVIEW — {league.value} {target_date}",
+        "=" * 72,
+        f"Latest draft scan: {_local_time(generated_utc, timezone_name)}",
+        "DRAFT ONLY — no paper stake, ticket receipt, settlement grade, bank impact, or real-money instruction.",
+        "The strict paper-ticket lane still requires cleared, operationally validated named-book evidence.",
+        "",
+        "MORNING PUBLICATION POLICY",
+        "- 09:00 SAST for this dated card, unless an earlier fixture needs its 60-minute pre-tip safety cutoff.",
+        (
+            f"- Current decision cutoff: {_local_time(str(cutoff), timezone_name)}"
+            if cutoff
+            else "- Current decision cutoff: awaiting a confirmed slate fixture."
+        ),
+        (
+            f"- Nominal 09:00 SAST cutoff: {_local_time(str(morning), timezone_name)}"
+            if morning
+            else ""
+        ),
+        "",
+        "STRICT PAPER-LANE STATUS",
+        f"- {strict_count} multi-leg candidate(s) and {strict_singles} ROI-qualified single(s) passed the strict model/price funnel in this scan.",
+        "- A strict receipt is created only at the decision cutoff and only from strict-eligible candidates.",
+        "",
+        "EDGE-STYLE NAMED-PRICE DRAFT SLIPS",
+        "- Broader preview: one exact current pre-tip quote from a named bookmaker per game; model blockers stay displayed.",
+        "- Unresolved permission or operational validation means a candidate is preview-only, not strict execution evidence.",
+    ]
+    if not candidates:
+        lines.extend(("  (none — no exact, current named-book price was available before tip)", ""))
+        return "\n".join(line for line in lines if line != "") + "\n"
+
+    for index in range(0, len(candidates), 2):
+        draft_legs = candidates[index : index + 2]
+        prices = [float((row.get("book") or {})["selected_decimal_price"]) for row in draft_legs]
+        combined = math.prod(prices)
+        lines.append(
+            f"  [DRAFT {'2-LEG' if len(draft_legs) == 2 else 'SINGLE'} SLIP #{index // 2 + 1}] "
+            f"@{combined:.3f} · no stake / no receipt"
+        )
+        for row in draft_legs:
+            book = row["book"]
+            probability, basis = _confidence_probability(row)
+            reasons = ",".join((row.get("eligibility") or {}).get("reasons") or []) or "none"
+            validation = "STRICT-ELIGIBLE" if book.get("ticket_price_eligible") is True else "PREVIEW-ONLY"
+            lines.append(
+                f"    [{validation}] {row.get('home')} vs {row.get('away')} · "
+                f"{_selection_label(row)} · @{float(book['selected_decimal_price']):.3f} {book.get('book')} · "
+                f"p={(probability or 0.0):.1%} ({basis}) · bucket={_bucket(row)} · blockers: {reasons}"
+            )
+    lines.extend(("", "Every displayed price is preserved as observed evidence only; no price is inferred or promoted."))
+    return "\n".join(line for line in lines if line != "") + "\n"
+
+
 def _render_empty_ticket_scan(
     *,
     league: League,
@@ -3872,10 +4020,17 @@ def _render_empty_ticket_scan(
         if decision_status == "pending_cutoff":
             cutoff = ticket_decision.get("planned_cutoff_utc")
             earliest = ticket_decision.get("earliest_slate_tip_utc")
+            morning = ticket_decision.get("morning_publication_cutoff_utc")
+            safety = ticket_decision.get("pre_tip_safety_cutoff_utc")
             if cutoff and earliest:
+                policy_detail = (
+                    f"09:00 SAST morning publication: {_local_time(str(morning), timezone_name)}"
+                    if morning and cutoff == morning
+                    else f"earlier pre-tip safety cutoff: {_local_time(str(safety or cutoff), timezone_name)}"
+                )
                 lines[7:7] = [
                     "Ticket decision pending — candidates and exact prices remain mutable until "
-                    f"{_local_time(str(cutoff), timezone_name)} (60 minutes before first tip: "
+                    f"{_local_time(str(cutoff), timezone_name)} ({policy_detail}; first tip: "
                     f"{_local_time(str(earliest), timezone_name)}).",
                     "",
                 ]
@@ -4146,6 +4301,18 @@ def publish_operator_reports(
     )
     acca_report = (market_report or {}).get("accas") or {}
     candidate_funnel = _ticket_candidate_funnel(market_report)
+    ticket_preview_path = _write_text(
+        localdata / f"auto_tickets_{target_date}_preview.txt",
+        _render_morning_ticket_preview(
+            league=league,
+            target_date=target_date,
+            generated_utc=generated_utc,
+            timezone_name=timezone_name,
+            ticket_decision=ticket_decision,
+            rows=current,
+            candidate_funnel=candidate_funnel,
+        ),
+    )
     paper_filter = acca_report.get("paper_pick_filter") or {}
     band_details = paper_filter.get("candidate_band_details") or {}
     single_rows = list(acca_report.get("paper_single_picks") or [])
@@ -4523,6 +4690,7 @@ def publish_operator_reports(
             else None
         ),
         "ticket_text": ticket_path,
+        "ticket_preview": ticket_preview_path,
         "historical_ticket_audit_cards_refreshed": historical_ticket_audit_cards,
         "ticket_state": str(localdata / "auto_tickets_state.json"),
         "performance": str(localdata / "auto_tickets_performance.json"),

@@ -46,7 +46,10 @@ remains halves. Supported NCAAW H1/H2 **book markets** remain half markets:
 grading derives H1/H2 from Q1+Q2/Q3+Q4, and does not reuse a full-game line.
 Quarter/highest-quarter products remain disabled for both NCAA leagues. Early
 WNBA two-half games likewise remain halves; current event-declared four-quarter
-games remain quarters. CBA's public schedule/result source is kept separate from its empirical
+games remain quarters. Every ESPN-backed league—NBA, WNBA, NCAA_M, NCAA_W, and
+NBA G League—requires a matching event-level ESPN league UID before discovery
+or result reconciliation; missing or contradictory identity is quarantined.
+CBA's public schedule/result source is kept separate from its empirical
 prediction surface; aggregate book observations are never stored as model
 predictions. EuroLeague Women is a separate FIBA competition with isolated
 `EUROLEAGUE_W` IDs and `localdata/euroleague_w` state: it never reuses the
@@ -147,10 +150,14 @@ When the external adaptive gate finds work due, the orchestrator runs pregame
 acquisition, current market generation, immutable pre-tip freezing, and (unless
 skipped) result reconciliation. Idle external ticks perform only a read-only
 schedule/state check; unavailable state or schedule data fails open to the full
-league run. Paper positions are not selected on the first usable scan: ticket
-candidates remain mutable until 60 minutes before the first local-slate tip,
-then either a pre-tip ticket or an immutable no-bet decision is recorded.
-Generate a report directly from an existing warehouse with:
+league run. Paper positions are not selected on the first usable scan: each
+dated card is decided at **09:00 Africa/Johannesburg** on its named date, unless
+the first fixture's 60-minute pre-tip safety cutoff is earlier. At that point,
+either a strictly evidenced pre-tip ticket or an immutable no-bet decision is
+recorded. A separate `auto_tickets_YYYY-MM-DD_preview.txt` can show current
+named-price draft candidates before then, but it is explicitly non-execution
+research: it creates no receipt, stake, grade, bank impact, or real-money
+instruction. Generate a report directly from an existing warehouse with:
 
 ```bash
 python scripts/build_markets.py \

@@ -172,16 +172,16 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install .
 
-      - name: Restore league-isolated DuckDB/CSV state
+      - name: Restore league-isolated evidence-verified cache epoch
+        # Every league starts a fresh cache epoch. No pre-guard warehouse or
+        # artifact cache can bypass the current event/source evidence policy.
         if: steps.capability.outputs.available == 'true'
         uses: actions/cache/restore@v4
         with:
           path: ${{ env.LOCALDATA }}
-          key: magolide-localdata-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
-          # The second prefix is a one-time fallback to the pre-rename snapshot.
+          key: magolide-localdata-evidence-v1-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
           restore-keys: |
-            magolide-localdata-${{ matrix.state_key }}-
-            magolide-localdata-v4-${{ matrix.state_key }}-
+            magolide-localdata-evidence-v1-${{ matrix.state_key }}-
 
       - name: Restore Git-durable operator reports after cache recovery
         if: steps.capability.outputs.available == 'true'
@@ -216,6 +216,7 @@ jobs:
                   r"auto_tickets_state\.json",
                   r"auto_tickets_performance\.json",
                   r"auto_tickets_performance\.txt",
+                  rf"auto_tickets_{date}_preview\.txt",
                   rf"auto_tickets_{date}_decision\.json",
                   rf"auto_tickets_{date}_no_bet\.json",
                   rf"auto_tickets_{date}_withdrawn\.json",
@@ -349,7 +350,7 @@ jobs:
               print("```")
           PY
 
-      - name: Persist league-isolated acquisition and canonical state
+      - name: Persist league-isolated evidence-verified cache epoch
         if: >-
           success() &&
           steps.capability.outputs.available == 'true' &&
@@ -358,7 +359,7 @@ jobs:
         uses: actions/cache/save@v4
         with:
           path: ${{ env.LOCALDATA }}
-          key: magolide-localdata-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          key: magolide-localdata-evidence-v1-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
 
       - name: Upload successful league reports and recovery evidence
         # A failed pipeline can leave a partially rendered mutable card beside

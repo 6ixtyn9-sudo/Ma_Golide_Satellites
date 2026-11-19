@@ -28,6 +28,7 @@ from ingestion.models import (
 )
 from ingestion.providers import IdentityError
 from ingestion.providers.espn import (
+    ESPN_LEAGUE_IDS,
     discover_games,
     discover_games_with_evidence,
     fetch_bpi,
@@ -228,6 +229,7 @@ def test_bpi_missing_expected_scores_keeps_probabilities_and_gaps(load_fixture, 
         "events": [
             {
                 "id": partial_event,
+                "uid": f"s:40~l:59~e:{partial_event}",
                 "date": "2026-06-10T02:00Z",
                 "name": "New York Liberty at Las Vegas Aces",
                 "season": {"year": 2026},
@@ -258,6 +260,7 @@ def test_bpi_missing_expected_scores_keeps_probabilities_and_gaps(load_fixture, 
                 f"competitions/{partial_event}/predictor": "espn/predictor_409900001_partial.json",
             }
         ),
+        league=League.WNBA,
     )
     assert report["fixtures_found"] == 1
     assert report["bpi_complete"] == {"complete": 0, "total": 1}
@@ -481,6 +484,64 @@ def test_g_league_scoreboard_and_result_contract_is_strict_and_bpi_is_not_implie
     # closed BPI allow-list rejects this lane before it can issue a request.
     with pytest.raises(ValueError, match="not validated for NBA_G_LEAGUE"):
         fetch_bpi("401867657", lambda _url: {}, league=League.NBA_G_LEAGUE)
+
+
+@pytest.mark.parametrize(
+    ("league", "wrong_league_id"),
+    (
+        (League.NBA, "59"),
+        (League.WNBA, "46"),
+        (League.NCAA_M, "50"),
+        (League.NCAA_W, "41"),
+        (League.NBA_G_LEAGUE, "46"),
+    ),
+)
+def test_every_espn_league_rejects_a_contradictory_event_uid(
+    load_fixture, fixture_fetch, league, wrong_league_id
+):
+    """A route label cannot override ESPN's per-event league identity."""
+
+    payload = load_fixture("espn/scoreboard_rich_401909938.json")
+    event = payload["events"][0]
+    event["uid"] = f"s:40~l:{wrong_league_id}~e:401909938"
+    with pytest.raises(IdentityError, match=f"does not match requested {league.value}"):
+        discover_games(
+            "20261107",
+            fixture_fetch({"dates=20261107": payload}),
+            league=league,
+        )
+
+
+def test_ncaa_w_accepts_a_matching_event_level_espn_league_uid(load_fixture, fixture_fetch):
+    payload = load_fixture("espn/scoreboard_rich_401909938.json")
+    payload["events"][0]["uid"] = "s:40~l:50~e:401909938"
+    payload["events"][0]["competitions"][0]["uid"] = "s:40~l:50~e:401909938~c:401909938"
+
+    games = discover_games(
+        "20261107",
+        fixture_fetch({"dates=20261107": payload}),
+        league=League.NCAA_W,
+    )
+
+    assert len(games) == 1
+    assert games[0].league is League.NCAA_W
+
+
+@pytest.mark.parametrize("league", tuple(ESPN_LEAGUE_IDS))
+def test_every_espn_league_requires_an_event_level_espn_league_uid(
+    load_fixture, fixture_fetch, league
+):
+    """Missing identity is quarantined rather than guessed from a route or teams."""
+
+    payload = load_fixture("espn/scoreboard_rich_401909938.json")
+    payload["events"][0].pop("uid", None)
+    payload["events"][0]["competitions"][0].pop("uid", None)
+    with pytest.raises(IdentityError, match="lacks an explicit ESPN league UID"):
+        discover_games(
+            "20261107",
+            fixture_fetch({"dates=20261107": payload}),
+            league=league,
+        )
 
 
 def test_rich_scoreboard_retains_context_and_named_full_game_books(fixture_fetch):

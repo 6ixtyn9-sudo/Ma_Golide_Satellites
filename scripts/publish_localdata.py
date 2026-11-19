@@ -59,6 +59,7 @@ ALLOWED_NAMES = tuple(
         r"auto_tickets_performance\.json",
         r"auto_tickets_performance\.txt",
         rf"auto_tickets_{DATE}\.txt",
+        rf"auto_tickets_{DATE}_preview\.txt",
         rf"auto_tickets_{DATE}_decision\.json",
         rf"auto_tickets_{DATE}_no_bet\.json",
         rf"auto_tickets_{DATE}_withdrawn\.json",

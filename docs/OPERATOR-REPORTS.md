@@ -239,17 +239,26 @@ separate tickets may still win simultaneously. Strict `accas.results` rankings
 are unchanged and may overlap.
 
 A scan does **not** freeze the first non-empty ticket it sees. It remains
-candidate evidence until the first scheduled game on the league's acquisition-
-timezone slate is 60 minutes away. The first successful scan from that cutoff
-until the first tip freezes all currently valid candidates whose every leg is
-still pre-tip. It records the planned cutoff, source timezone, actual scan, and
-candidate counts in the receipt. This includes a provisional paper position when
-the existing sample-size-only exception applies. Candidates can therefore gain a
-later exact price before the decision point without an early partial market
-locking the date.
+candidate evidence until **09:00 Africa/Johannesburg** on the dated card's named
+day, unless the first scheduled fixture on the league's acquisition-timezone
+slate reaches its 60-minute pre-tip safety cutoff earlier. The first successful
+scan at that cutoff freezes all currently valid candidates whose every leg is
+still pre-tip. It records the policy, planned cutoff, source timezone, actual
+scan, and candidate counts in the receipt. This includes a provisional paper
+position when the existing sample-size-only exception applies. Candidates can
+therefore gain a later exact price before the decision point without an early
+partial market locking the date.
 
-If there is no qualifying pre-tip candidate at that decision point—or if the
-scheduler missed the first tip—the operator writes an immutable
+Every scan also writes `auto_tickets_YYYY-MM-DD_preview.txt`. This is a separate
+morning draft surface: it may display one current exact pre-tip named-book price
+per game even where source permission or operational validation prevents strict
+ticket eligibility. It is always labeled **DRAFT ONLY** / **PREVIEW-ONLY** when
+applicable, preserves its blockers, ranks only by forecast confidence (not a
+fabricated EV), and creates no receipt, stake, grade, bank/performance entry, or
+real-money instruction.
+
+If there is no qualifying pre-tip candidate at the strict decision point—or if
+the scheduler missed the first tip—the operator writes an immutable
 `auto_tickets_YYYY-MM-DD_no_bet.json` sidecar and date lock. This fail-closed
 no-bet decision prevents a later price or an old cache from publishing a
 replacement ticket. New ticket receipts store singles separately from accas and

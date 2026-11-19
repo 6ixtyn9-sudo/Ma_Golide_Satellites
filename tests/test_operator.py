@@ -30,9 +30,10 @@ from ingestion.models import (
 
 DATE = "2026-11-07"
 AS_OF = "2026-11-07T18:00:00Z"
-# The first test fixture tips at 20:00Z, so this is the configured 60-minute
-# pre-tip paper-ticket decision point. Prediction evidence remains at AS_OF.
-TICKET_DECISION_AS_OF = "2026-11-07T19:00:00Z"
+# Dated cards freeze at 09:00 SAST (07:00Z). Fixture-level draft evidence
+# remains independently frozen at each fixture's 60-minute pre-tip point.
+TICKET_DECISION_AS_OF = "2026-11-07T07:00:00Z"
+FIXTURE_FREEZE_AS_OF = "2026-11-07T19:00:00Z"
 
 
 class Store:
@@ -507,7 +508,7 @@ def test_ticket_is_frozen_empty_scans_do_not_cancel_and_known_leg_loss_settles(t
     assert "pending 1.000" in pending_day_line
     assert not any(icon in pending_day_line for icon in ("✅", "❌", "➖"))
     ticket_text = Path(first["ticket_text"]).read_text()
-    assert "DECISION FROZEN AT 21:00" in ticket_text
+    assert "DECISION FROZEN AT 09:00" in ticket_text
     assert "displayed grades refresh when reconciled results arrive" in ticket_text
     assert "TIP-OFF" in ticket_text
     assert "KICKOFF" not in ticket_text
@@ -553,12 +554,12 @@ def test_ticket_waits_for_the_pre_tip_decision_window_and_uses_later_price(tmp_p
         Store([game(number) for number in (1, 2, 3)]),
         report(early_rows, [acca(early_rows)]),
         run_id="before-decision-window",
-        generated_utc="2026-11-07T18:30:00Z",
+        generated_utc="2026-11-07T06:30:00Z",
     )
 
     assert early["ticket_receipt"] is None
     assert early["ticket_decision"]["status"] == "pending_cutoff"
-    assert early["ticket_decision"]["planned_cutoff_utc"] == "2026-11-07T19:00:00Z"
+    assert early["ticket_decision"]["planned_cutoff_utc"] == "2026-11-07T07:00:00Z"
     assert json.loads(Path(early["ticket_state"]).read_text())["frozen_by_date"] == {}
     assert "Ticket decision pending" in Path(early["ticket_text"]).read_text()
 
@@ -578,6 +579,47 @@ def test_ticket_waits_for_the_pre_tip_decision_window_and_uses_later_price(tmp_p
     assert receipt["accas"][0]["legs"][0]["book"]["selected_decimal_price"] == 1.95
 
 
+def test_morning_preview_surfaces_named_price_drafts_without_promoting_them(tmp_path):
+    rows = []
+    for number in (1, 2, 3):
+        row = forecast(
+            number,
+            eligible=False,
+            reasons=[
+                "price_source_permission_unresolved",
+                "price_operational_validation_incomplete",
+                "insufficient_walk_forward_samples",
+            ],
+            calibration_n=8,
+        )
+        row = with_quote_evidence(
+            row,
+            {"home": 1.8, "away": 2.0, "draw": None, "over": None, "under": None},
+            price_provenance="named_book",
+            source_permission="unresolved",
+            operational_validation="unverified",
+        )
+        rows.append(row)
+
+    result = publish(
+        tmp_path,
+        Store([game(number) for number in (1, 2, 3)]),
+        report(rows),
+        generated_utc="2026-11-07T06:30:00Z",
+        run_id="morning-preview",
+    )
+
+    preview = Path(result["ticket_preview"]).read_text()
+    assert "MA GOLIDE MORNING TICKET PREVIEW — NBA 2026-11-07" in preview
+    assert "DRAFT ONLY — no paper stake, ticket receipt, settlement grade" in preview
+    assert "EDGE-STYLE NAMED-PRICE DRAFT SLIPS" in preview
+    assert "[DRAFT 2-LEG SLIP #1]" in preview
+    assert "[PREVIEW-ONLY]" in preview
+    assert "price_source_permission_unresolved" in preview
+    assert result["ticket_receipt"] is None
+    assert json.loads(Path(result["ticket_state"]).read_text())["frozen_by_date"] == {}
+
+
 @pytest.mark.parametrize("league", list(League))
 def test_fixture_pick_freeze_contract_is_global_for_every_supported_league(tmp_path, league):
     row = forecast(1)
@@ -590,7 +632,7 @@ def test_fixture_pick_freeze_contract_is_global_for_every_supported_league(tmp_p
         report([row]),
         tmp_path / league.value.lower(),
         target_date=DATE,
-        generated_utc=TICKET_DECISION_AS_OF,
+        generated_utc=FIXTURE_FREEZE_AS_OF,
         run_id=f"{league.value.lower()}-fixture-freeze",
     )
 
@@ -598,7 +640,7 @@ def test_fixture_pick_freeze_contract_is_global_for_every_supported_league(tmp_p
     freeze = json.loads(freeze_path.read_text())
     assert freeze["league"] == league.value
     assert freeze["game_id"] == fixture.game_id
-    assert freeze["decision_cutoff_utc"] == TICKET_DECISION_AS_OF
+    assert freeze["decision_cutoff_utc"] == FIXTURE_FREEZE_AS_OF
     assert freeze["rows"][0]["book"]["selected_decimal_price"] == 1.8
     assert result["pick_freezes"] == 1
 
@@ -714,6 +756,51 @@ def test_terminal_no_bet_at_cutoff_blocks_later_ticket_candidates(tmp_path):
     assert later["ticket_receipt"] is None
     assert no_bet_path.read_bytes() == frozen_no_bet
     assert "closed by an immutable no-bet decision" in Path(later["ticket_text"]).read_text()
+
+
+def test_withdrawn_invalid_no_bet_cannot_be_recreated_from_later_candidates(tmp_path):
+    rows = [forecast(number) for number in (1, 2, 3)]
+    games = Store([game(number) for number in (1, 2, 3)])
+    first = publish(
+        tmp_path,
+        games,
+        report(rows),
+        generated_utc=TICKET_DECISION_AS_OF,
+        run_id="invalid-no-bet-source",
+    )
+    decision = json.loads(Path(first["no_bet_decision"]).read_text())
+    Path(first["no_bet_decision"]).unlink()
+    withdrawal = {
+        "decision_id": decision["decision_id"],
+        "withdrawn": True,
+        "target_date": DATE,
+        "reason": "cross_league_source_identity_failure",
+        "invalid_decision_type": "no_bet",
+    }
+    (tmp_path / f"auto_tickets_{DATE}_withdrawn.json").write_text(
+        json.dumps(withdrawal, indent=2) + "\n"
+    )
+    state = json.loads(Path(first["ticket_state"]).read_text())
+    state["frozen_by_date"][DATE] = {
+        "decision_id": decision["decision_id"],
+        "withdrawn": True,
+        "final": True,
+        "reason": withdrawal["reason"],
+    }
+    Path(first["ticket_state"]).write_text(json.dumps(state, indent=2) + "\n")
+
+    later = publish(
+        tmp_path,
+        games,
+        report(rows, [acca(rows)]),
+        generated_utc="2026-11-07T07:20:00Z",
+        run_id="later-candidate-must-not-recreate-invalid-no-bet",
+    )
+
+    assert later["ticket_receipt"] is None
+    assert later["no_bet_decision"] is None
+    assert not (tmp_path / f"auto_tickets_{DATE}_no_bet.json").exists()
+    assert (tmp_path / f"auto_tickets_{DATE}_withdrawn.json").exists()
 
 
 def test_terminal_no_bet_card_refreshes_reconciled_shadow_grades(tmp_path):
@@ -2409,7 +2496,7 @@ def test_ncaam_shadow_uses_priced_ineligible_picks_with_odds_and_probability_flo
         ]),
         tmp_path,
         target_date=DATE,
-        generated_utc=AS_OF,
+        generated_utc="2026-11-07T06:00:00Z",
         run_id="ncaam-priced-ineligible-shadow",
     )
 

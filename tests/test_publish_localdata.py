@@ -413,6 +413,7 @@ def test_allowlist_is_narrow_and_missing_artifact_directory_is_a_noop(tmp_path):
         "auto_tickets_performance.json",
         "auto_tickets_performance.txt",
         "auto_tickets_2026-11-12.txt",
+        "auto_tickets_2026-11-12_preview.txt",
         "auto_tickets_2026-11-12_decision.json",
         "auto_tickets_2026-11-12_no_bet.json",
         "coverage_gap_2026-11-12.json",

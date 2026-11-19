@@ -99,11 +99,13 @@ registry. A league without a compliant automated official schedule/result
 adapter still runs fail-closed: it reports an explicit unsupported-source gap
 and may use only already-canonical imported games/history; it never fabricates
 fixtures, results, or named-book prices. The gate also wakes a league for its
-first dated draft, each fixture's 60-minute pre-tip pick freeze, and frozen-result
-reconciliation. One serialized publisher commits compact ticket
-decisions/state, dated text cards, and immutable per-fixture pick freezes to
-`main`; structured dated pick JSON, detailed lifecycle renders, current-scan
-pick JSON, and expanded audits stay in cache and bounded workflow artifacts.
+first dated draft, the 09:00 SAST (or earlier first-fixture safety) dated-ticket
+cutoff, each fixture's independent 60-minute pre-tip pick freeze, and
+frozen-result reconciliation. One serialized publisher commits compact ticket
+decisions/state, dated text cards, morning ticket previews, and immutable
+per-fixture pick freezes to `main`; structured dated pick JSON, detailed
+lifecycle renders, current-scan pick JSON, and expanded audits stay in cache and
+bounded workflow artifacts.
 
 ### Reliable external trigger
 
@@ -183,27 +185,34 @@ Each matrix job has isolated state and artifacts:
 
 - `localdata/<state_key>`, where `state_key` comes from the canonical league
   registry (including every expansion lane);
-- a league-specific DuckDB path, cache prefix, run ID, and artifact name;
+- a league-specific DuckDB path, evidence-verified cache prefix, run ID, and
+  artifact name. The `evidence-v1` cache epoch is universal: no league restores
+  a cache created before the current source-identity/evidence policy;
 - an acquisition date derived automatically in that league's acquisition
   timezone, never a dispatch-selected date.
 
 ### Paper-ticket decision cutoff
 
-A current scan is candidate evidence, not a ticket publication. For each
-league/date, the operator uses the **acquisition timezone** to find the first
-slate tip and waits until 60 minutes before that tip. The first successful scan
-in that pre-tip window freezes all currently valid, exact-priced paper
+A current scan is candidate evidence, not a ticket publication. The
+**acquisition timezone** identifies the fixtures belonging to a league/date,
+but the dated-card decision is at **09:00 Africa/Johannesburg** on that named
+date. If the first fixture's ordinary 60-minute pre-tip safety cutoff is
+earlier, that earlier cutoff takes precedence. The first successful scan at the
+applicable pre-tip cutoff freezes all currently valid, exact-priced paper
 candidates into one immutable receipt. Every leg must still be strictly before
-its own tip. The actual receipt records both the planned cutoff and the scan
-that made the decision.
+its own tip. The actual receipt records the policy, planned cutoff, and the
+scan that made the decision.
 
 If no qualifying pre-tip candidate exists at the cutoff, the operator writes an
 immutable `auto_tickets_YYYY-MM-DD_no_bet.json` decision instead. It prevents a
 later price, an old Actions cache, or a later-game candidate from reopening the
 date. A delayed run that misses the first tip also fails closed to that no-bet
-decision. Before the cutoff, the text card explicitly identifies the pending
-decision time and later scans may update candidate prices; after either decision,
-selections/prices/stakes—or the no-bet result—cannot change.
+decision. Before the cutoff, the normal text card identifies the pending
+decision time and `auto_tickets_YYYY-MM-DD_preview.txt` can show broader exact
+named-price draft candidates. The preview is not a receipt or instruction: it
+never creates a stake, grade, bank/performance entry, or real-money action, and
+retains source-permission and operational-validation blockers. After either
+strict decision, selections/prices/stakes—or the no-bet result—cannot change.
 
 ### EuroLeague Women history, result, and market boundaries
 
