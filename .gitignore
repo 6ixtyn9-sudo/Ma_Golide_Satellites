@@ -22,6 +22,9 @@ localdata/*/picks_audit_*.md
 # lifecycle evidence restored by the workflow after cache recovery.
 !localdata/*/picks_????-??-??.json
 !localdata/*/picks_????-??-??_lifecycle.json
+# This NCAA_W lifecycle render is retained only in run/cache evidence; do not
+# re-publish its detailed draft rows in the globally visible localdata tree.
+/localdata/ncaa_w/picks_2026-11-19_lifecycle.json
 !localdata/*/pick_lifecycle_state.json
 !localdata/*/pick_freeze_*.json
 !localdata/*/coverage_gap_*.json

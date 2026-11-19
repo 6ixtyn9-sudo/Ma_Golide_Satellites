@@ -73,6 +73,12 @@ IMMUTABLE_NAMES = re.compile(
 DECISION_RECEIPT_NAME = re.compile(rf"auto_tickets_({DATE})_decision\.json")
 NO_BET_DECISION_NAME = re.compile(rf"auto_tickets_({DATE})_no_bet\.json")
 TICKET_CARD_NAME = re.compile(rf"auto_tickets_({DATE})\.txt")
+# A dated lifecycle render can contain the full mutable draft rather than the
+# compact frozen-state evidence. This specifically redacted NCAA_W view stays
+# in the isolated run/cache artifact and must not re-enter Git publication.
+GLOBAL_VISIBILITY_EXCLUSIONS = frozenset(
+    {("ncaa_w", "picks_2026-11-19_lifecycle.json")}
+)
 CALIBRATION_EPOCH = "2026-11-10"
 MAX_FILE_BYTES = 25 * 1024 * 1024
 MAX_TOTAL_BYTES = 100 * 1024 * 1024
@@ -81,6 +87,17 @@ MAX_TOTAL_BYTES = 100 * 1024 * 1024
 def allowed_operator_file(name: str) -> bool:
     """Return whether a root-level filename is safe to publish to Git."""
     return any(pattern.fullmatch(name) for pattern in ALLOWED_NAMES)
+
+
+def globally_visible_operator_file(state_key: str, name: str) -> bool:
+    """Return whether an otherwise allowed report may enter Git publication.
+
+    The name allow-list controls file classes. This narrow state/path deny-list
+    handles a reviewed render that is safe in a private run artifact but need
+    not be globally visible in the repository.
+    """
+
+    return allowed_operator_file(name) and (state_key, name) not in GLOBAL_VISIBILITY_EXCLUSIONS
 
 
 def allowed_lifecycle_recovery_file(name: str) -> bool:
@@ -229,6 +246,7 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
     no_bet_receipts_skipped = []
     skipped_states: list[str] = []
     recovery_files_skipped = []
+    global_visibility_excluded = []
     total_bytes = 0
     seen_destinations = set()
     for state, source_dir, artifact_name in _artifact_league_dirs(
@@ -249,6 +267,9 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                 recovery_files_skipped.append((source_dir / source.name).as_posix())
                 continue
             if not allowed_operator_file(source.name):
+                continue
+            if not globally_visible_operator_file(state, source.name):
+                global_visibility_excluded.append(f"localdata/{state}/{source.name}")
                 continue
             ticket_card_match = TICKET_CARD_NAME.fullmatch(source.name)
             if ticket_card_match:
@@ -326,6 +347,7 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
         "no_bet_receipts_skipped": no_bet_receipts_skipped,
         "skipped_states": sorted(skipped_states),
         "recovery_files_skipped": sorted(recovery_files_skipped),
+        "global_visibility_excluded": sorted(global_visibility_excluded),
         "copied_count": len(copied),
         "unchanged_count": len(unchanged),
         "source_bytes_checked": total_bytes,
