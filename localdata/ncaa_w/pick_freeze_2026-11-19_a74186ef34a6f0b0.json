@@ -1,0 +1,335 @@
+{
+  "decision_cutoff_utc": "2026-11-19T15:00:00Z",
+  "frozen_at": "2026-11-19T15:39:35Z",
+  "game_id": "401912508",
+  "league": "NCAA_W",
+  "rows": [
+    {
+      "alternative_probabilities": {
+        "away": 0.26,
+        "draw": 0.0,
+        "home": 0.74
+      },
+      "away": "Liberty Flames",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.74,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "team_history_empirical-542f7e282358",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "team_history_empirical-542f7e282358",
+      "context": null,
+      "date": "2026-11-19",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 9.25864298729607,
+      "expected_total": 57.183563626384085,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "team_history_empirical-542f7e282358",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": null,
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical-542f7e282358",
+          "league": "NCAA_W",
+          "market": "moneyline",
+          "period": "H1",
+          "source": "team_history_empirical"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.74,
+          "challenger_version": "recency-389a235f88f3",
+          "champion_probability": 0.74,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.74,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "fc0c2f9680d47a6ed8eb",
+      "game_id": "401912508",
+      "grade_status": "pending",
+      "home": "Elon Phoenix",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical",
+      "model_version": "team_history_empirical",
+      "outcome": null,
+      "paper_only": true,
+      "period": "H1",
+      "pick_id": "fc0c2f9680d47a6ed8eb",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.74,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-19T16:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 3.80022,
+        "home_effective_games": 3.80022,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 1051
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.8252,
+        "home": 0.1748
+      },
+      "away": "Liberty Flames",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.8252,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "provider_prediction-7fb3e30d878d",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "provider_prediction-7fb3e30d878d",
+      "context": null,
+      "date": "2026-11-19",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "provider_prediction-7fb3e30d878d",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": "home",
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi",
+            "observed_utc": "2026-11-19T15:38:31Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "provider_prediction-7fb3e30d878d",
+          "league": "NCAA_W",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "provider:espn"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.8252000000000002,
+          "challenger_version": "recency-389a235f88f3",
+          "champion_probability": 0.8252000000000002,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.8252000000000002,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "3738e24f0cf400b744c8",
+      "game_id": "401912508",
+      "grade_status": "pending",
+      "home": "Elon Phoenix",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "3738e24f0cf400b744c8",
+      "prediction": {
+        "frozen": false,
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi",
+        "observed_utc": "2026-11-19T15:38:31Z",
+        "produced_by": "ESPN BPI",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.8252,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-19T16:00:00Z",
+      "selection": "away",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.38,
+        "draw": 0.0,
+        "home": 0.62
+      },
+      "away": "Liberty Flames",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.62,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "team_history_empirical-542f7e282358",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "team_history_empirical-542f7e282358",
+      "context": null,
+      "date": "2026-11-19",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 10.165034460227567,
+      "expected_total": 120.71351139208048,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "team_history_empirical-542f7e282358",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": "away",
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical-542f7e282358",
+          "league": "NCAA_W",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "team_history_empirical"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.62,
+          "challenger_version": "recency-389a235f88f3",
+          "champion_probability": 0.62,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.62,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "f62eed9e98df74592daa",
+      "game_id": "401912508",
+      "grade_status": "pending",
+      "home": "Elon Phoenix",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical",
+      "model_version": "team_history_empirical",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "f62eed9e98df74592daa",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.62,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-19T16:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 3.80022,
+        "home_effective_games": 3.80022,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 1051
+    }
+  ],
+  "scheduled_utc": "2026-11-19T16:00:00Z",
+  "schema_version": "magolide.pick_freeze",
+  "target_date": "2026-11-19"
+}

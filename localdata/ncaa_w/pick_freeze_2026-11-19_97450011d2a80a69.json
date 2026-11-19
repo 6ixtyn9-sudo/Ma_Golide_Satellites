@@ -1,0 +1,335 @@
+{
+  "decision_cutoff_utc": "2026-11-19T16:00:00Z",
+  "frozen_at": "2026-11-19T16:09:31Z",
+  "game_id": "401926043",
+  "league": "NCAA_W",
+  "rows": [
+    {
+      "alternative_probabilities": {
+        "away": 0.17,
+        "draw": 0.0,
+        "home": 0.83
+      },
+      "away": "South Alabama Jaguars",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.83,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "team_history_empirical-542f7e282358",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "team_history_empirical-542f7e282358",
+      "context": null,
+      "date": "2026-11-19",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 15.191500081788185,
+      "expected_total": 62.41445152660595,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "team_history_empirical-542f7e282358",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": null,
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical-542f7e282358",
+          "league": "NCAA_W",
+          "market": "moneyline",
+          "period": "H1",
+          "source": "team_history_empirical"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.83,
+          "challenger_version": "recency-389a235f88f3",
+          "champion_probability": 0.83,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.83,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "5bca67d4009b8a0c4ff0",
+      "game_id": "401926043",
+      "grade_status": "pending",
+      "home": "Memphis Tigers",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical",
+      "model_version": "team_history_empirical",
+      "outcome": null,
+      "paper_only": true,
+      "period": "H1",
+      "pick_id": "5bca67d4009b8a0c4ff0",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.83,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-19T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 4.67077,
+        "home_effective_games": 3.80022,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 1101
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.074,
+        "home": 0.926
+      },
+      "away": "South Alabama Jaguars",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.926,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "provider_prediction-7fb3e30d878d",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "provider_prediction-7fb3e30d878d",
+      "context": null,
+      "date": "2026-11-19",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "provider_prediction-7fb3e30d878d",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": "away",
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi",
+            "observed_utc": "2026-11-19T16:08:25Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "provider_prediction-7fb3e30d878d",
+          "league": "NCAA_W",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "provider:espn"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.926,
+          "challenger_version": "recency-389a235f88f3",
+          "champion_probability": 0.926,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.926,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "90ca4e5175af93943f5f",
+      "game_id": "401926043",
+      "grade_status": "pending",
+      "home": "Memphis Tigers",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "90ca4e5175af93943f5f",
+      "prediction": {
+        "frozen": false,
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi",
+        "observed_utc": "2026-11-19T16:08:25Z",
+        "produced_by": "ESPN BPI",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.926,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-19T17:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.06,
+        "draw": 0.0,
+        "home": 0.94
+      },
+      "away": "South Alabama Jaguars",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.94,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "team_history_empirical-542f7e282358",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "team_history_empirical-542f7e282358",
+      "context": null,
+      "date": "2026-11-19",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 31.573806548237933,
+      "expected_total": 127.5217320006044,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "team_history_empirical-542f7e282358",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": "away",
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical-542f7e282358",
+          "league": "NCAA_W",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "team_history_empirical"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.94,
+          "challenger_version": "recency-389a235f88f3",
+          "champion_probability": 0.94,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.94,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "a99d130264f3bc3c7eab",
+      "game_id": "401926043",
+      "grade_status": "pending",
+      "home": "Memphis Tigers",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical",
+      "model_version": "team_history_empirical",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "a99d130264f3bc3c7eab",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.94,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-19T17:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 4.67077,
+        "home_effective_games": 3.80022,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 1101
+    }
+  ],
+  "scheduled_utc": "2026-11-19T17:00:00Z",
+  "schema_version": "magolide.pick_freeze",
+  "target_date": "2026-11-19"
+}
