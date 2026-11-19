@@ -14,8 +14,11 @@ from ingestion.models import (
     GameStatus,
     League,
     Market,
+    OperationalValidation,
     Period,
     PeriodKind,
+    PriceProvenance,
+    SourcePermission,
     Prediction,
 )
 from ingestion.pipeline import Pipeline, PipelineConfig
@@ -67,6 +70,32 @@ def _pipeline(store=None):
         store or InMemoryStore(),
         fetch=lambda url: (_ for _ in ()).throw(AssertionError("no network")),
     )
+
+
+def test_pipeline_stamps_registry_evidence_not_adapter_constructor_defaults():
+    nba = _pipeline(InMemoryStore())
+    raw_espn = _snapshot(provider="espn")
+    stamped_espn = nba._stamp_book_evidence(raw_espn)
+    assert stamped_espn.price_provenance is PriceProvenance.NAMED_BOOK
+    assert stamped_espn.source_permission is SourcePermission.UNRESOLVED
+    assert stamped_espn.operational_validation is OperationalValidation.UNVERIFIED
+
+    cba = Pipeline(
+        PipelineConfig(
+            league="CBA",
+            date_yyyymmdd="20261107",
+            fixture_now_utc="2026-11-07T19:00:00Z",
+        ),
+        InMemoryStore(),
+        fetch=lambda _url: {},
+    )
+    stamped_isports = cba._stamp_book_evidence(_snapshot(provider="isportsapi"))
+    assert stamped_isports.source_permission is SourcePermission.UNRESOLVED
+    assert stamped_isports.operational_validation is OperationalValidation.PROBATION
+
+    stamped_unknown = nba._stamp_book_evidence(_snapshot(provider="unreviewed"))
+    assert stamped_unknown.source_permission is SourcePermission.UNRESOLVED
+    assert stamped_unknown.operational_validation is OperationalValidation.UNVERIFIED
 
 
 def test_book_slate_date_uses_league_timezone_not_utc_only():

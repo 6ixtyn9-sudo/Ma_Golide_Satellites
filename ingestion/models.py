@@ -474,10 +474,11 @@ class BookSnapshot:
     pre_match: bool = True
     main_line: bool = True
     payload_hash: Optional[str] = None
-    # Three independent evidence axes.  They make a named, executable
-    # bookmaker quote visibly different from an aggregate observation or a
-    # source whose automated reuse has not been cleared.  Defaults preserve
-    # backward-compatible decoding of existing named-book records.
+    # Three independent evidence axes. They make a named, executable bookmaker
+    # quote visibly different from an aggregate observation or a source whose
+    # automated reuse has not been cleared. Provider acquisition is always
+    # re-stamped by the central registry boundary; defaults preserve direct
+    # trusted-fixture construction and backwards-compatible local APIs.
     price_provenance: PriceProvenance = PriceProvenance.NAMED_BOOK
     source_permission: SourcePermission = SourcePermission.CLEARED
     operational_validation: OperationalValidation = OperationalValidation.VALIDATED

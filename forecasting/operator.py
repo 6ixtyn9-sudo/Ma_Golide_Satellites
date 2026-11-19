@@ -598,6 +598,9 @@ def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
             prices = {str(row["selection"]): book_row.get("selected_decimal_price")}
         provider = str(book_row.get("provider") or "unknown")
         legacy_aggregate = provider == "betexplorer"
+        # A historical receipt missing evidence axes cannot prove permission or
+        # provider validation. Keep it gradeable as immutable historical fact,
+        # but never let a decode upgrade it into a fresh ticket price.
         book = BookEvidence(
             provider=provider,
             book=str(book_row.get("book") or "unknown"),
@@ -614,10 +617,13 @@ def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
                 )
             ),
             source_permission=SourcePermission(
-                book_row.get("source_permission", "unresolved" if legacy_aggregate else "cleared")
+                book_row.get("source_permission", "unresolved")
             ),
             operational_validation=OperationalValidation(
-                book_row.get("operational_validation", "probation" if legacy_aggregate else "validated")
+                book_row.get(
+                    "operational_validation",
+                    "probation" if legacy_aggregate else "unverified",
+                )
             ),
             game_id=book_row.get("game_id"),
             market=book_row.get("market"),

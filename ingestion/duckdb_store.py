@@ -36,7 +36,7 @@ from .store import (
     _prediction_to_dict,
 )
 
-SCHEMA_VERSION = "3"
+SCHEMA_VERSION = "4"
 EXPORT_TABLES = (
     "games",
     "predictions",
@@ -99,8 +99,8 @@ CREATE TABLE IF NOT EXISTS book_snapshots (
     main_line BOOLEAN NOT NULL,
     payload_hash VARCHAR,
     price_provenance VARCHAR NOT NULL DEFAULT 'named_book',
-    source_permission VARCHAR NOT NULL DEFAULT 'cleared',
-    operational_validation VARCHAR NOT NULL DEFAULT 'validated',
+    source_permission VARCHAR NOT NULL DEFAULT 'unresolved',
+    operational_validation VARCHAR NOT NULL DEFAULT 'unverified',
     frozen BOOLEAN NOT NULL DEFAULT FALSE,
     payload_json VARCHAR NOT NULL,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -188,8 +188,8 @@ class DuckDBStore(InMemoryStore):
             # Historical BetExplorer rows must stay aggregate/unresolved.
             for column, default in (
                 ("price_provenance", "named_book"),
-                ("source_permission", "cleared"),
-                ("operational_validation", "validated"),
+                ("source_permission", "unresolved"),
+                ("operational_validation", "unverified"),
             ):
                 if column not in book_columns:
                     self._con.execute(
@@ -203,6 +203,17 @@ class DuckDBStore(InMemoryStore):
                 "operational_validation = 'probation' "
                 "WHERE provider = 'betexplorer' AND "
                 "(price_provenance = 'named_book' OR price_provenance IS NULL)"
+            )
+            # A pre-axis JSON payload cannot establish source permission or a
+            # successful operational validation. SQL audit columns must match
+            # the fail-closed decoding policy rather than inherit v3 defaults.
+            self._con.execute(
+                "UPDATE book_snapshots SET "
+                "price_provenance = 'named_book', "
+                "source_permission = 'unresolved', "
+                "operational_validation = 'unverified' "
+                "WHERE provider <> 'betexplorer' AND "
+                "json_extract_string(payload_json, '$.source_permission') IS NULL"
             )
             self._con.execute(
                 "INSERT OR REPLACE INTO schema_meta(key, value) VALUES ('schema_version', ?)",

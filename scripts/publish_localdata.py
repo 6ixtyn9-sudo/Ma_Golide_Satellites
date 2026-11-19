@@ -3,8 +3,9 @@
 
 The workflow's league matrix writes isolated artifact directories. A single
 publisher calls this module after all matrix jobs finish, then performs one Git
-commit/push. Only derived pick and paper-ticket files are eligible. Canonical
-DuckDB/CSV state, acquisition ledgers, caches, and credentials are never copied.
+commit/push. Only derived pick, paper-ticket, and daily coverage-gap marker
+files are eligible. Canonical DuckDB/CSV state, acquisition ledgers, caches,
+and credentials are never copied.
 
 Existing repository files not present in the latest artifact are retained. A
 conflicting immutable ticket, no-bet decision, or per-fixture pick freeze aborts
@@ -20,11 +21,19 @@ import json
 import os
 from pathlib import Path
 import re
+import sys
 from typing import Any, Dict, Iterable
 
-STATE_KEYS = frozenset(
-    {"nba", "wnba", "euroleague", "euroleague_w", "cba", "ncaa_m", "ncaa_w"}
-)
+ROOT = Path(__file__).resolve().parent.parent
+if str(ROOT) not in sys.path:
+    sys.path.insert(0, str(ROOT))
+
+from ingestion.league_registry import SPECS  # noqa: E402
+
+# Publishing must follow the same registry that creates state directories. A
+# new supported league cannot become an invisible artifact-only lane because a
+# second hand-maintained allow-list forgot its state key.
+STATE_KEYS = frozenset(spec.state_key for spec in SPECS)
 DATE = r"\d{4}-\d{2}-\d{2}"
 ALLOWED_NAMES = tuple(
     re.compile(pattern)
@@ -37,6 +46,7 @@ ALLOWED_NAMES = tuple(
         rf"picks_{DATE}_lifecycle\.json",
         r"pick_lifecycle_state\.json",
         rf"pick_freeze_{DATE}_[0-9a-f]{{16}}\.json",
+        rf"coverage_gap_{DATE}\.json",
         r"auto_tickets_state\.json",
         r"auto_tickets_performance\.json",
         r"auto_tickets_performance\.txt",
@@ -160,17 +170,28 @@ def _decision_receipt_dates(paths: Iterable[Path]) -> frozenset[str]:
     )
 
 
-def _artifact_league_dirs(artifacts: Path) -> Iterable[tuple[str, Path]]:
-    """Yield each recovered ``artifact/localdata/<state>`` directory once."""
+def _artifact_league_dirs(
+    artifacts: Path, *, skipped_states: list[str]
+) -> Iterable[tuple[str, Path]]:
+    """Yield recognised ``artifact/localdata/<state>`` directories once.
+
+    Unknown state directories are never published, but they are reported to
+    make registry/publisher drift reviewable instead of silently discarding an
+    otherwise valid artifact.
+    """
+
     if not artifacts.exists():
         return
     for artifact in sorted(artifacts.iterdir()):
         localdata = artifact / "localdata"
         if not localdata.is_dir():
-            # CBA's credential-skipped artifact contains only daily-output.json.
+            # A capability-skipped artifact can contain only daily-output.json.
             continue
         for state_dir in sorted(localdata.iterdir()):
-            if state_dir.name not in STATE_KEYS or not state_dir.is_dir():
+            if not state_dir.is_dir():
+                continue
+            if state_dir.name not in STATE_KEYS:
+                skipped_states.append((artifact / "localdata" / state_dir.name).as_posix())
                 continue
             yield state_dir.name, state_dir
 
@@ -184,9 +205,10 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
     immutable_verified = []
     withdrawn_skipped = []
     no_bet_receipts_skipped = []
+    skipped_states: list[str] = []
     total_bytes = 0
     seen_destinations = set()
-    for state, source_dir in _artifact_league_dirs(artifacts):
+    for state, source_dir in _artifact_league_dirs(artifacts, skipped_states=skipped_states):
         destination_dir = repo / "localdata" / state
         sources = sorted(source_dir.iterdir())
         withdrawn_decision_ids = _withdrawn_decision_ids(destination_dir)
@@ -273,6 +295,7 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
         "immutable_receipts_verified": immutable_verified,
         "withdrawn_receipts_skipped": withdrawn_skipped,
         "no_bet_receipts_skipped": no_bet_receipts_skipped,
+        "skipped_states": sorted(skipped_states),
         "copied_count": len(copied),
         "unchanged_count": len(unchanged),
         "source_bytes_checked": total_bytes,

@@ -8,7 +8,7 @@ import pytest
 from forecasting.service import MarketForecastService
 from ingestion.models import BookSnapshot, Game, League, Market, Period
 from ingestion.store import InMemoryStore
-from scripts.daily import _market_cutoff
+from scripts.daily import _market_cutoff, _write_coverage_gap_marker
 from scripts.daily import main as daily_main
 from scripts.daily import run_daily
 
@@ -40,6 +40,25 @@ def _args(tmp_path, **changes):
     return argparse.Namespace(**values)
 
 
+def test_source_unavailable_coverage_marker_is_stable_and_write_gated(tmp_path):
+    assert _write_coverage_gap_marker(
+        tmp_path, league="SPAIN_ACB", target_date="2026-11-18", write_enabled=False
+    ) is None
+    path = _write_coverage_gap_marker(
+        tmp_path, league="SPAIN_ACB", target_date="2026-11-18", write_enabled=True
+    )
+    assert path is not None
+    first = Path(path).read_bytes()
+    assert b'"status": "source_unavailable"' in first
+    assert _write_coverage_gap_marker(
+        tmp_path, league="SPAIN_ACB", target_date="2026-11-18", write_enabled=True
+    ) == path
+    assert Path(path).read_bytes() == first
+    assert _write_coverage_gap_marker(
+        tmp_path, league="NBA", target_date="2026-11-18", write_enabled=True
+    ) is None
+
+
 def test_daily_dry_run_creates_no_warehouse_and_builds_market_report(tmp_path):
     summary = run_daily(_args(tmp_path))
     assert summary["mode"] == "dry_run"
@@ -67,10 +86,16 @@ def test_dry_run_prunes_daily_and_market_report_retention(tmp_path):
     reports.mkdir(parents=True)
     (reports / "daily_old.json").write_text(json.dumps({"finished_utc": "2000-01-01T00:00:00Z"}))
     (reports / "markets_old.json").write_text(json.dumps({"generated_utc": "2000-01-01T00:00:00Z"}))
+    malformed = reports / "malformed_old.json"
+    malformed.write_text("not json")
+    import os
+
+    os.utime(malformed, (946684800, 946684800))  # 2000-01-01 UTC
     summary = run_daily(_args(tmp_path))
-    assert summary["retention"]["report_files_pruned"] == 2
+    assert summary["retention"]["report_files_pruned"] == 3
     assert not (reports / "daily_old.json").exists()
     assert not (reports / "markets_old.json").exists()
+    assert not malformed.exists()
 
 
 def test_fixture_persistence_and_notification_have_separate_guards(tmp_path, monkeypatch):
