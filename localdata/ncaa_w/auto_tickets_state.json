@@ -2,22 +2,16 @@
   "base_paper_units": 100.0,
   "frozen_by_date": {
     "2026-11-18": {
+      "decision_cutoff_utc": "2026-11-18T15:00:00Z",
       "decision_id": "44331874399_ncaa_w_1_attempt_1",
       "final": true,
-      "invalid_decision_type": "no_bet",
-      "lock_source": "data_integrity_quarantine",
-      "reason": "cross_league_source_identity_failure",
-      "withdrawn": true
+      "frozen_at": "2026-11-18T15:09:59Z",
+      "lock_source": "no_bet_sidecar",
+      "no_bet": true,
+      "no_bet_path": "auto_tickets_2026-11-18_no_bet.json"
     }
   },
   "paper_bank_units": 100.0,
-  "quarantined_draft_dates": {
-    "2026-11-19": {
-      "reason": "cross_league_source_identity_failure",
-      "scope": "unfrozen_current_date_draft_display",
-      "ticket_decision_created": false
-    }
-  },
   "schema_version": "magolide.paper_ticket_state",
   "stake_units_per_acca": 1.0
 }
