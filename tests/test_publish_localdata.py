@@ -73,11 +73,13 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
 
     report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
 
-    assert report["copied_count"] == 4
+    assert report["copied_count"] == 5
     assert (repo / "localdata" / "nba" / "picks_2026-11-12.txt").read_bytes() == b"picks\n"
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12_decision.json").read_bytes() == b"receipt\n"
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12.txt").read_bytes() == b"frozen-ticket-card\n"
-    assert not (repo / "localdata" / "nba" / "auto_tickets_2026-11-13.txt").exists()
+    # A pre-cutoff card is a mutable published preview, not a receipt or date lock.
+    assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-13.txt").read_bytes() == b"hourly-candidate-card\n"
+    assert not (repo / "localdata" / "nba" / "auto_tickets_2026-11-13_decision.json").exists()
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-14_no_bet.json").read_bytes() == b"no-bet-decision\n"
     assert not (repo / "localdata" / "nba" / "auto_tickets_2026-11-14.txt").exists()
     artifact_file(
