@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 15,
+  "awaiting_game_legs": 11,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -403,30 +403,30 @@
       "wins": 1
     },
     {
-      "awaiting_game_legs": 15,
-      "bank_units": 100.46235246235247,
+      "awaiting_game_legs": 11,
+      "bank_units": 98.46235246235247,
       "date": "2026-11-18",
       "decision_id": "44248321279_nba_1_attempt_1",
       "frozen_at": "2026-11-18T06:02:32Z",
       "league": "NBA",
-      "losses": 0,
-      "pending_accas": 5,
-      "pending_positions": 5,
+      "losses": 2,
+      "pending_accas": 3,
+      "pending_positions": 3,
       "pending_singles": 0,
-      "pending_units": 5.0,
+      "pending_units": 3.0,
       "positions": [
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 6.9592,
           "effective_decimal_odds": 6.959169502326644,
           "estimated_joint_win_probability": 0.50198601,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "loss",
             null,
             null
           ],
@@ -437,13 +437,13 @@
               "book_provider": "espn",
               "forecast_id": "bf08f91278f2ceef337d",
               "game_id": "401910007",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Cleveland Cavaliers",
               "line": 234.5,
               "market": "total",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "bf08f91278f2ceef337d",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T00:00:00Z",
               "selected_decimal_price": 1.9174311926605505,
               "selection": "under"
@@ -484,6 +484,7 @@
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 3,
           "provisional_sample_gate_bypassed": true,
           "publication_index": 1,
@@ -493,22 +494,22 @@
           "stake_units": 1.0,
           "ticket_id": "3170b9f0ede538bf2ac5",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 6.8139,
           "effective_decimal_odds": 6.813869924541861,
           "estimated_joint_win_probability": 0.32614411,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
             null,
-            null,
-            null
+            "loss",
+            "win"
           ],
           "legs": [
             {
@@ -534,13 +535,13 @@
               "book_provider": "espn",
               "forecast_id": "3d5ec32d9186f5e415ff",
               "game_id": "401910010",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Orlando Magic",
               "line": 222.5,
               "market": "total",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "3d5ec32d9186f5e415ff",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T00:00:00Z",
               "selected_decimal_price": 1.8695652173913042,
               "selection": "under"
@@ -551,19 +552,20 @@
               "book_provider": "espn",
               "forecast_id": "7c455148a15fa415c69f",
               "game_id": "401910008",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Indiana Pacers",
               "line": 224.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "7c455148a15fa415c69f",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T00:00:00Z",
               "selected_decimal_price": 1.9090909090909092,
               "selection": "under"
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 3,
           "provisional_sample_gate_bypassed": true,
           "publication_index": 2,
@@ -573,7 +575,7 @@
           "stake_units": 1.0,
           "ticket_id": "04c0d4bdf785270ee593",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 1
         },
         {
           "awaiting_game_legs": 3,
@@ -656,7 +658,7 @@
           "unresolved_legs": 3
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
@@ -667,7 +669,7 @@
           "leg_count": 3,
           "leg_outcomes": [
             null,
-            null,
+            "win",
             null
           ],
           "legs": [
@@ -694,13 +696,13 @@
               "book_provider": "espn",
               "forecast_id": "f1a3feae5b154afadf2b",
               "game_id": "401910007",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Cleveland Cavaliers",
               "line": 234.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "f1a3feae5b154afadf2b",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-19T00:00:00Z",
               "selected_decimal_price": 1.900900900900901,
               "selection": "over"
@@ -733,7 +735,7 @@
           "stake_units": 1.0,
           "ticket_id": "b57cf20a84492cda23d7",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         },
         {
           "awaiting_game_legs": 3,
@@ -816,41 +818,41 @@
           "unresolved_legs": 3
         }
       ],
-      "profit_units": null,
+      "profit_units": -2.0,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-18_decision.json",
       "result_unresolvable_legs": 0,
-      "returned_units": null,
-      "settled_accas": 0,
-      "settled_positions": 0,
+      "returned_units": 0.0,
+      "settled_accas": 2,
+      "settled_positions": 2,
       "settled_singles": 0,
-      "staked_units": 0,
-      "unresolved_result_legs": 15,
+      "staked_units": 2.0,
+      "unresolved_result_legs": 11,
       "wins": 0
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.6,
+  "hit_rate": 0.42857142857142855,
   "league": "NBA",
-  "losses": 2,
-  "paper_bank_units": 100.46235246235246,
-  "paper_committed_units": 5.0,
+  "losses": 4,
+  "paper_bank_units": 98.46235246235246,
+  "paper_committed_units": 3.0,
   "paper_free_units": 95.46235246235246,
   "paper_only": true,
-  "pending_accas": 5,
-  "pending_positions": 5,
+  "pending_accas": 3,
+  "pending_positions": 3,
   "pending_singles": 0,
-  "profit_units": 0.4623524623524622,
+  "profit_units": -1.5376475376475378,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": 0.09247049247049244,
+  "roi": -0.21966393394964825,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.19947973436966668,
-  "settled_accas": 2,
-  "settled_positions": 5,
+  "selected_leg_brier_score": 0.2427196319116923,
+  "settled_accas": 4,
+  "settled_positions": 7,
   "settled_singles": 3,
-  "settled_stake_units": 5.0,
+  "settled_stake_units": 7.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 15,
+  "unresolved_result_legs": 11,
   "wins": 3
 }
