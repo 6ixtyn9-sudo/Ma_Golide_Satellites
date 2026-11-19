@@ -17,7 +17,6 @@ No live-provider claim should be inferred from a passing offline suite.
 | EuroLeague | EuroLeague | Schedule discovery, game results, quarter/OT reconciliation, standings | Public endpoints | Schedule/boxscore live captures 2026-11-06; season schedule scores/partials, empty-season trap, and v3 per-round standings live-verified 2026-11-16; upstream reuse terms not reviewed |
 | FIBA GDAP + game page | EuroLeague Women (`EUROLEAGUE_W`) | Competition schedule, canonical UTC fixtures/status/results, official game-page play-by-play/period scores, player/team detail | Public APIM key shipped in FIBA's web client | Live facts and fixture-only cases are separated below; independent namespace, no men's EuroLeague reuse. Automation/reuse rights and future route/status vocabulary remain unresolved. |
 | CBA | CBA | Official league data API: season/day discovery, Beijing-local UTC times, quarter/OT reconciliation via observed period-score POST endpoint | Public endpoints; AES-128-ECB bodies decrypted with the key constant shipped in the site's own bundle | Live-verified 2026-11-16 from a datacenter IP (decryption, statuses, quarter sums, OT shape); unofficial/undocumented API and terms not reviewed — see caveats |
-| iSportsAPI | CBA | Exact Chinese league discovery, UTC schedule/results, four-quarter/OT reconciliation | `ISPORTS_API_KEY` | `DOCUMENTATION_ONLY`; fixture-tested adapter, paid access and live league ID not verified |
 
 Only final, reconciled results enter grading. In-progress scores, inconsistent
 native-period sums, invalid overtime totals, and irreconcilable team identities
@@ -135,7 +134,7 @@ unverified until older dates are actually acquired and reconciled.
 
 ## Prediction providers
 
-Priority is `espn`, `hardwood`, `predixsport`, then `sportradar` by default.
+Priority is `espn`, `hardwood`, then `predixsport` by default.
 One coherent provider bundle is selected; probabilities and expected scores
 from different providers are never averaged. Bookmaker prices are never
 converted into prediction records.
@@ -145,16 +144,6 @@ converted into prediction records.
 | ESPN BPI | NBA, WNBA, NCAA_M, NCAA_W | Home/away probabilities; expected scores, total, and margin when present | Public; per-prediction source modification time; adapter version `adapter:espn-bpi` |
 | Hardwood | NBA | One artifact's probabilities, expected scores, total, margin, model provenance | Public artifact; artifact-declared model version, generated-at freshness, and team/time/ID join |
 | Predixsport | NBA and EuroLeague | Probabilities; detail endpoint can add expected total/margin and derived scores | `PREDIXSPORT_API_KEY`; disabled without a key; adapter version `adapter:predixsport`; documentation-only endpoint schema |
-| Sportradar Global Basketball | CBA | Independent pre-match 2-way home/away probabilities; no expected scores or totals | `SPORTRADAR_API_KEY`, optional `SPORTRADAR_ACCESS_LEVEL=trial|production`; declared adapter model tag `global-basketball`; `DOCUMENTATION_ONLY` |
-
-Sportradar discovery requires one unique men's `CBA` competition in category
-`CHN`, then one non-disabled season containing the target date. Its documented
-Season Probabilities feed is paginated. An event joins an acquired CBA fixture
-only through a unique one-to-one match on both canonical team identities and
-the exact confirmed UTC start time. Missing, duplicate, unconfirmed, live, or
-removed probability evidence remains a gap; it is never replaced with implied
-book probabilities.
-
 ESPN BPI and Predixsport do not expose a stable upstream model release in the
 fields this adapter consumes. Their `adapter:` model versions fence known
 adapter/provider changes and must be bumped when those changes are observed;
@@ -184,7 +173,6 @@ prices remain missing.
 | ESPN scoreboard | Moneyline, totals, spreads when explicitly offered | Full game | NBA, WNBA, NCAA_M, NCAA_W, NBA G League; named-book observations are independently timestamped but relayed by ESPN, so registry policy keeps them `unresolved` / `unverified` and ticket-ineligible pending an explicit permission and operational-validation decision. NBA G League has no validated named-book lane even if a future scoreboard response carries an offer. |
 | BetExplorer | Representative average two-way moneyline prices | Full game | EuroLeague and CBA; stored as `aggregate_consensus` with `unresolved` permission / `probation` validation, never a named-book ticket quote; public HTML pages observed live 2026-11-16; pre-tip rows only, no historical archive or per-book prices in this adapter |
 | TheOddsAPI | h2h, totals, spreads; half markets use native H1/H2 | NBA: full game, Q1–Q4, H1 h2h; NCAA_M/NCAA_W: full game and H1/H2 markets; WNBA: full game and provider-offered quarter markets | NBA, WNBA, NCAA_M, NCAA_W; `THE_ODDS_API_KEY`. Australia NBL is a documented but `probation` mapping pending credentialed region/bookmaker coverage. |
-| iSportsAPI | Moneyline, totals, spreads | Full game, H1 spread/total, Q1–Q4 spread/total | CBA; `ISPORTS_API_KEY`; `DOCUMENTATION_ONLY` |
 | SportsGameOdds | Totals only | Full game and Q1–Q4 | NBA; `SPORTSGAMEODDS_API_KEY` |
 | TheRundown | Moneyline and totals | Full game only | NBA; `THERUNDOWN_API_KEY` |
 
@@ -206,11 +194,6 @@ Important restrictions:
   H1/H2 book markets and do not request quarter markets. For NCAAW, official
   quarter results derive the corresponding H1/H2 scores for settlement; a
   full-game line is never substituted for either half.
-- iSportsAPI prices are Hong Kong odds and are converted to decimal by adding
-  one. Spread, total, and European-moneyline bookmaker IDs remain in their
-  separate documented namespaces. In-play fields never become pre-match facts.
-  Its CBA policy is explicitly `unresolved` / `probation` while it remains
-  `DOCUMENTATION_ONLY`, so configuring a key cannot turn it into a ticket lane.
 - BetExplorer's fixture table exposes only a representative average moneyline
   pair in the observed HTML. This adapter skips rows with missing quotes or a
   tip time already passed; it does not retain post-tip, opening/closing, or

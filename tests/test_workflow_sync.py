@@ -100,16 +100,16 @@ def test_workflow_keeps_keyless_fallback_and_wires_optional_provider_secrets():
     for path in (source, installed):
         text = path.read_text()
         assert 'ALLOW_MAGOLIDE_WRITES: "true"' in text
-        assert 'SPORTRADAR_ACCESS_LEVEL: "trial"' in text
         assert 'ALLOW_NOTIFICATION_WRITES: "false"' in text
-        for secret in (
+        optional_provider_secrets = {
             "THE_ODDS_API_KEY",
             "THERUNDOWN_API_KEY",
             "SPORTSGAMEODDS_API_KEY",
-            "ISPORTS_API_KEY",
-            "SPORTRADAR_API_KEY",
             "PREDIXSPORT_API_KEY",
-        ):
+        }
+        wired_secrets = set(re.findall(r"secrets\.([A-Z0-9_]+)", text))
+        assert wired_secrets == optional_provider_secrets
+        for secret in optional_provider_secrets:
             assert f"{secret}: ${{{{ secrets.{secret} }}}}" in text
         assert "${{ vars." not in text
         assert "required_secret" not in text

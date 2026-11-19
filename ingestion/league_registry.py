@@ -197,7 +197,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
         "cba",
         "cba",
         "cba",
-        (_unresolved_named_book("isportsapi"), _aggregate_research_only("betexplorer")),
+        (_aggregate_research_only("betexplorer"),),
     ),
     LeagueSpec(
         League.NCAA_M,

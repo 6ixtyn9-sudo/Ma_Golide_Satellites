@@ -21,7 +21,7 @@ from ingestion.models import (
     Prediction,
 )
 from ingestion.pipeline import Pipeline, PipelineConfig
-from ingestion.providers import cbaleague, espn, isportsapi, sportradar, theoddsapi
+from ingestion.providers import cbaleague, espn, theoddsapi
 from ingestion.store import InMemoryStore
 
 
@@ -308,9 +308,9 @@ def test_probability_only_cba_prediction_produces_moneyline_without_fake_scores(
     )
     prediction = Prediction(
         game_id=game.game_id,
-        provider="sportradar",
+        provider="team_history_empirical",
         observed_utc="2026-11-07T08:00:00Z",
-        model="sportradar-pre-match-2way",
+        model="team_history_empirical",
         prob_home=0.55,
         prob_away=0.45,
     )
@@ -323,7 +323,7 @@ def test_probability_only_cba_prediction_produces_moneyline_without_fake_scores(
     assert forecasts[0].market == Market.MONEYLINE.value
     assert forecasts[0].selection == "home"
     assert forecasts[0].expected_total is None
-    assert forecasts[0].prediction_provider == "sportradar"
+    assert forecasts[0].prediction_provider == "team_history_empirical"
 
 
 def test_dual_sided_ncaa_bpi_matches_full_game_moneyline_book(load_fixture, fixture_fetch):
@@ -386,76 +386,6 @@ def test_dual_sided_ncaa_bpi_matches_full_game_moneyline_book(load_fixture, fixt
     assert report["accas"]["eligible_games"] == 0
 
 
-def test_cba_pipeline_separates_sportradar_predictions_from_isportsapi_books(monkeypatch):
-    game = Game(
-        game_id="cba-pipeline",
-        league=League.CBA,
-        season="26-27",
-        home_team_id="10",
-        away_team_id="20",
-        home_name="Beijing Ducks",
-        away_name="Shanghai Sharks",
-        scheduled_utc="2026-11-07T11:35:00Z",
-        provider_ids={"isportsapi": "cba-pipeline"},
-    )
-    prediction = Prediction(
-        game_id=game.game_id,
-        provider="sportradar",
-        observed_utc="2026-11-07T07:50:00Z",
-        prob_home=0.61,
-        prob_away=0.39,
-        model="sportradar-pre-match-2way",
-        source_revision="sr:sport_event:1",
-    )
-    book = BookSnapshot(
-        game_id=game.game_id,
-        provider="isportsapi",
-        provider_event_id=game.game_id,
-        book="Bet365",
-        market=Market.MONEYLINE,
-        period=Period.FULL_GAME,
-        observed_utc="2026-11-07T07:55:00Z",
-        home_price_decimal=1.8,
-        away_price_decimal=2.1,
-    )
-    monkeypatch.setattr(cbaleague, "discover_games", lambda *_args: [game])
-    monkeypatch.setattr(isportsapi, "is_enabled", lambda: True)
-    monkeypatch.setattr(sportradar, "is_enabled", lambda: True)
-    probability_calls = []
-    book_calls = []
-
-    def probabilities(date, games, fetch, **kwargs):
-        probability_calls.append((date, games, kwargs))
-        return {game.game_id: prediction}
-
-    def odds(league, date, fetch_factory, **kwargs):
-        book_calls.append((league, date, kwargs))
-        return [book]
-
-    monkeypatch.setattr(sportradar, "fetch_cba_probabilities", probabilities)
-    monkeypatch.setattr(isportsapi, "fetch_odds", odds)
-    store = InMemoryStore()
-    pipeline = Pipeline(
-        PipelineConfig(
-            league="CBA",
-            date_yyyymmdd="20261107",
-            fixture_now_utc="2026-11-07T08:00:00Z",
-        ),
-        store,
-        fetch=lambda _url, **_kwargs: pytest.fail("unexpected direct fetch"),
-    )
-    report = pipeline.pregame()
-
-    assert probability_calls[0][0] == "20261107"
-    assert probability_calls[0][1] == [game]
-    assert book_calls == [("CBA", "20261107", {})]
-    assert report["predictions_selected"] == {"sportradar": 1}
-    assert report["rows"][0]["prediction_provider"] == "sportradar"
-    assert [item.provider for item in store.get_predictions(game.game_id)] == ["sportradar"]
-    assert [item.provider for item in store.get_book_snapshots(game.game_id)] == ["isportsapi"]
-    assert not hasattr(isportsapi, "fetch_prediction")
-
-
 def test_ncaa_pipeline_uses_espn_and_native_half_books(monkeypatch):
     game = Game(
         game_id="ncaa-pipeline",
@@ -508,7 +438,6 @@ def test_ncaa_pipeline_uses_espn_and_native_half_books(monkeypatch):
         return books
 
     monkeypatch.setattr(theoddsapi, "fetch_odds", odds)
-    monkeypatch.setattr(isportsapi, "is_enabled", lambda: pytest.fail("CBA provider called"))
     store = InMemoryStore()
     report = Pipeline(
         PipelineConfig(

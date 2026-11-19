@@ -80,19 +80,6 @@ def test_pipeline_stamps_registry_evidence_not_adapter_constructor_defaults():
     assert stamped_espn.source_permission is SourcePermission.UNRESOLVED
     assert stamped_espn.operational_validation is OperationalValidation.UNVERIFIED
 
-    cba = Pipeline(
-        PipelineConfig(
-            league="CBA",
-            date_yyyymmdd="20261107",
-            fixture_now_utc="2026-11-07T19:00:00Z",
-        ),
-        InMemoryStore(),
-        fetch=lambda _url: {},
-    )
-    stamped_isports = cba._stamp_book_evidence(_snapshot(provider="isportsapi"))
-    assert stamped_isports.source_permission is SourcePermission.UNRESOLVED
-    assert stamped_isports.operational_validation is OperationalValidation.PROBATION
-
     stamped_unknown = nba._stamp_book_evidence(_snapshot(provider="unreviewed"))
     assert stamped_unknown.source_permission is SourcePermission.UNRESOLVED
     assert stamped_unknown.operational_validation is OperationalValidation.UNVERIFIED

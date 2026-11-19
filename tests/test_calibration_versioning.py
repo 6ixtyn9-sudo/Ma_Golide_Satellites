@@ -335,14 +335,10 @@ def test_renamed_identifiers_keep_every_id_and_fingerprint_hash():
                        "predixsport-nba-mature-model"),
             "b6a8758a1aa9", "4d1ffde26c22",
         ),
-        (
-            prediction("global-basketball", "sportradar", "sportradar-global-basketball"),
-            "dd662d34a519", "1c66d1979908",
-        ),
     ]
     for pred, provider_hash, hybrid_hash in cases:
         old_spelling = replace(pred, model_version=pred.model_version + {
-            "espn": "-v1", "predixsport": "-v1", "sportradar": "-v2"}[pred.provider])
+            "espn": "-v1", "predixsport": "-v1"}[pred.provider])
         for candidate in (pred, old_spelling):
             assert model._prediction_calibration_version(candidate) == (
                 f"provider_prediction-{provider_hash}"
