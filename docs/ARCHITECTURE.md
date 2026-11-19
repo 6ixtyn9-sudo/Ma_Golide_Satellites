@@ -191,9 +191,10 @@ full all-league rehearsal path.
 
 After the league matrix, one publisher commits immutable ticket/no-bet decisions,
 compact state/settlement summaries, dated text cards, and immutable per-fixture
-pick freezes to `localdata/<league>` on `main`. The freeze carries
-the selection, price/line, source/evidence timestamps, scheduled tip, and actual
-freeze time; settlement reads that evidence rather than a later scan. Structured
+snapshots nested in `pick_lifecycle_state.json` to `localdata/<league>` on
+`main`. Each snapshot carries the selection, price/line, source/evidence
+timestamps, scheduled tip, and actual freeze time; settlement reads that
+evidence rather than a later scan. Structured
 dated pick JSON, detailed dated lifecycle renders, `picks_today.json`, and
 expanded audits remain in the active league cache and bounded Actions artifacts.
 Existing Git-durable history is retained and conflicting immutable receipts or freezes fail closed. Git wins

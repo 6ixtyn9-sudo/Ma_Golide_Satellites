@@ -11,20 +11,21 @@ raw-dump storage approach:
   across active runs; downloaded Actions artifacts retain the raw picks JSON,
   dated Markdown, operational reports, and recovery evidence for 14 days;
 - Git tracks immutable ticket/no-bet decisions, human-readable cards for
-  receipt-backed tickets, compact date locks, compact performance state, dated
-  text cards, and immutable per-fixture pick freezes;
+  receipt-backed tickets, compact date locks (including inline immutable
+  per-fixture pick snapshots), compact performance state, and dated text cards;
 - structured dated pick JSON, detailed dated lifecycle renders,
   `picks_today.json`, rolling/dated expanded audits, and other scan payloads
   remain cache/artifact-only so volatile or expanded detail does not become
   permanent Git history.
 
 A dated pick card begins as a mutable draft. At each fixture's scheduled tip
-minus 60 minutes, the operator writes one immutable fixture snapshot. Later
-settlement reads the snapshot rather than a refreshed model or price scan, while
-the detailed lifecycle view records the frozen/settled status in cache and
-Actions artifacts. The publisher overlays Git-durable files without deleting
-older history and aborts if a recovered immutable receipt or pick freeze differs
-from repository evidence. Git-tracked operator state takes precedence over stale
+minus 60 minutes, the operator writes one immutable fixture snapshot inline in
+`pick_lifecycle_state.json`. Later settlement reads the snapshot rather than a
+refreshed model or price scan, while the detailed lifecycle view records the
+frozen/settled status in cache and Actions artifacts. The publisher overlays
+Git-durable files without deleting older history and aborts if a recovered
+immutable receipt or inline snapshot differs from repository evidence.
+Git-tracked operator state takes precedence over stale
 cached copies. If the rolling pick audit is absent after a cold-cache recovery,
 the forecaster uses its documented past-only prequential fallback rather than
 inventing or importing stale picks.
@@ -45,15 +46,14 @@ profitability.
 | --- | --- |
 | `picks_today.json` | Current scan of every forecast; cache/artifact only, not Git |
 | `picks_YYYY-MM-DD.json` | Structured dated draft evidence; cache/Actions-artifact only for every league, never Git-published |
-| `pick_freeze_YYYY-MM-DD_<fixture-hash>.json` | Git-published immutable per-fixture evidence captured at the 60-minute cutoff: selections, prices/lines, source/evidence timestamps, scheduled tip, and freeze timestamp |
+| `pick_lifecycle_state.json` | Git-published lifecycle state with immutable per-fixture evidence nested by date and fixture, captured at the 60-minute cutoff: selections, prices/lines, source/evidence timestamps, scheduled tip, and freeze timestamp; no per-fixture sidecar is published |
 | `picks_YYYY-MM-DD_lifecycle.json` | Detailed mutable lifecycle view; grades frozen evidence against reconciled official finals and labels draft/frozen/settled state. Cache/Actions-artifact only for every league, never Git-published. |
 | `picks_YYYY-MM-DD.txt` | Git-published compact human card rendered from the lifecycle view |
-| `pick_lifecycle_state.json` | Compact Git-published pending-frozen-fixture state used by the scheduler gate to request result reconciliation |
 | `picks_audit_rolling.json` | Thirty-day logical and settled ledgers; cache/artifact only, not Git |
 | `picks_audit_YYYY-MM-DD.md` | Expanded rolling summary; cache/artifact only, not Git |
 | `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper singles and accas |
 | `auto_tickets_state.json` | Compact Git-durable state and immutable date locks, including inline no-bet decisions; no per-date no-bet sidecar is published |
-| `auto_tickets_YYYY-MM-DD.txt` | Mutable, Git-published current card. Before the cutoff its clearly labelled `DRAFT ONLY` / `PRE-CUTOFF` section may change on each scan and creates no position; after an immutable receipt it becomes the settlement card whose selections, prices, and stakes remain frozen while grades refresh; after a no-bet sidecar it displays that terminal no-bet state. |
+| `auto_tickets_YYYY-MM-DD.txt` | Mutable, Git-published current card. Before the cutoff its clearly labelled `DRAFT ONLY` / `PRE-CUTOFF` section may change on each scan and creates no position; after an immutable receipt it becomes the settlement card whose selections, prices, and stakes remain frozen while grades refresh; after an inline no-bet lock it displays that terminal no-bet state. |
 | `auto_tickets_state.json` | Git-durable write-once date locks; bounded scan telemetry stays cache/artifact-only |
 | `auto_tickets_performance.json` | Compact rolling settlement/financial summary; each history day points to its immutable receipt for full leg evidence |
 | `auto_tickets_performance.txt` | Bank, settled record, bet-days, held positions, and grading notes |
@@ -306,8 +306,8 @@ synthesize a pick or ticket.
 Dated pick ledgers retain earlier rows when later pre-cutoff scans omit them.
 Fresh versions of the same forecast id replace dated draft evidence; distinct
 forecast ids remain distinct in JSON even when they are repeated observations
-of one logical pick. Once a fixture freeze exists, later model/price observations
-for that fixture are excluded from the dated draft ledger. `picks_today.json`
+of one logical pick. Once an inline fixture snapshot exists, later model/price
+observations for that fixture are excluded from the dated draft ledger. `picks_today.json`
 never replaces dated history.
 
 ## Grading

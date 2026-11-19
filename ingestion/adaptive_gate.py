@@ -28,7 +28,6 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
-import hashlib
 import json
 import os
 import re
@@ -208,11 +207,6 @@ def _ticket_decision_cutoff(
     return min(morning, min(tips) - timedelta(minutes=DECISION_LEAD_MINUTES))
 
 
-def _pick_freeze_path(state_dir: Path, target_date: str, game_id: str) -> Path:
-    token = hashlib.sha256(str(game_id).encode("utf-8")).hexdigest()[:16]
-    return state_dir / f"pick_freeze_{target_date}_{token}.json"
-
-
 def _coverage_gap_marker_path(state_dir: Path, target_date: str) -> Path:
     return state_dir / f"coverage_gap_{target_date}.json"
 
@@ -247,6 +241,40 @@ def _source_unavailable_reasons(
     return ()
 
 
+def _inline_frozen_game_ids(
+    lifecycle: dict[str, Any], *, config: LeagueGateConfig, target_date: str
+) -> set[str]:
+    """Validate and return one date's immutable inline fixture snapshots."""
+
+    frozen_by_date = lifecycle.get("frozen_by_date", {})
+    if not isinstance(frozen_by_date, dict):
+        raise GateUncertain("pick lifecycle state has invalid frozen fixture locks")
+    frozen = frozen_by_date.get(target_date, {})
+    if not isinstance(frozen, dict):
+        raise GateUncertain("pick lifecycle state has invalid frozen fixture date locks")
+    frozen_ids: set[str] = set()
+    for game_id, payload in frozen.items():
+        if not isinstance(payload, dict) or str(game_id) != str(payload.get("game_id") or ""):
+            raise GateUncertain("pick lifecycle state has an invalid frozen fixture lock")
+        if (
+            payload.get("schema_version") != "magolide.pick_freeze"
+            or payload.get("target_date") != target_date
+            or payload.get("league") != config.league_key
+            or not isinstance(payload.get("rows"), list)
+        ):
+            raise GateUncertain("pick lifecycle state has an invalid frozen fixture payload")
+        tip = _parse_utc(payload.get("scheduled_utc"), context="frozen pick fixture")
+        cutoff = _parse_utc(payload.get("decision_cutoff_utc"), context="frozen pick cutoff")
+        frozen_at = _parse_utc(payload.get("frozen_at"), context="frozen pick timestamp")
+        if (
+            cutoff != tip - timedelta(minutes=DECISION_LEAD_MINUTES)
+            or not cutoff <= frozen_at < tip
+        ):
+            raise GateUncertain("pick lifecycle state has an invalid frozen fixture cutoff")
+        frozen_ids.add(str(game_id))
+    return frozen_ids
+
+
 def _pick_lifecycle_reasons(
     state_dir: Path,
     *,
@@ -259,6 +287,18 @@ def _pick_lifecycle_reasons(
 
     reasons: list[str] = []
     games = list(games)
+    lifecycle_path = state_dir / "pick_lifecycle_state.json"
+    lifecycle = None
+    frozen_game_ids: set[str] = set()
+    if lifecycle_path.exists():
+        lifecycle = _read_json(lifecycle_path, description="pick lifecycle state")
+        if lifecycle.get("schema_version") != "magolide.pick_lifecycle_state":
+            raise GateUncertain("pick lifecycle state has an unknown schema")
+        if lifecycle.get("league") != config.league_key:
+            raise GateUncertain("pick lifecycle state belongs to a different or unknown league")
+        frozen_game_ids = _inline_frozen_game_ids(
+            lifecycle, config=config, target_date=target_date
+        )
     # One early run publishes the current-day draft; after that the gate wakes
     # only at each fixture's own pre-tip window or for result reconciliation.
     if (
@@ -273,18 +313,12 @@ def _pick_lifecycle_reasons(
         if (
             game.game_id
             and tip - timedelta(minutes=DECISION_LEAD_MINUTES) <= now < tip
-            and not _pick_freeze_path(state_dir, target_date, game.game_id).is_file()
+            and game.game_id not in frozen_game_ids
         ):
             reasons.append("fixture_pick_freeze_due")
             break
-    lifecycle_path = state_dir / "pick_lifecycle_state.json"
-    if not lifecycle_path.exists():
+    if lifecycle is None:
         return reasons
-    lifecycle = _read_json(lifecycle_path, description="pick lifecycle state")
-    if lifecycle.get("schema_version") != "magolide.pick_lifecycle_state":
-        raise GateUncertain("pick lifecycle state has an unknown schema")
-    if lifecycle.get("league") != config.league_key:
-        raise GateUncertain("pick lifecycle state belongs to a different or unknown league")
     pending = lifecycle.get("pending_frozen_games")
     if not isinstance(pending, list):
         raise GateUncertain("pick lifecycle state has invalid pending_frozen_games")

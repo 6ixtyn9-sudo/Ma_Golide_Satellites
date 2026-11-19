@@ -100,10 +100,10 @@ adapter still runs fail-closed: it reports an explicit unsupported-source gap
 and may use only already-canonical imported games/history; it never fabricates
 fixtures, results, or named-book prices. The gate also wakes a league for its
 first dated draft, the 09:00 SAST (or earlier first-fixture safety) dated-ticket
-cutoff, each fixture's independent 60-minute pre-tip pick freeze, and
+cutoff, each fixture's independent 60-minute pre-tip snapshot, and
 frozen-result reconciliation. One serialized publisher commits compact ticket
-decisions/state, dated text cards, and immutable per-fixture pick freezes to
-`main`; structured dated pick JSON, detailed
+and lifecycle state (including immutable inline per-fixture snapshots) and
+dated text cards to `main`; structured dated pick JSON, detailed
 lifecycle renders, current-scan pick JSON, and expanded audits stay in cache and
 bounded workflow artifacts.
 
