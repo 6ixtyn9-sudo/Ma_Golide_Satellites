@@ -70,6 +70,13 @@ IMMUTABLE_NAMES = re.compile(
 DECISION_RECEIPT_NAME = re.compile(rf"auto_tickets_({DATE})_decision\.json")
 NO_BET_DECISION_NAME = re.compile(rf"auto_tickets_({DATE})_no_bet\.json")
 CALIBRATION_EPOCH = "2026-11-10"
+# A later publisher job can be based on an older workflow SHA than a manual
+# settlement already merged to main. Never let that stale artifact put a
+# rendered pending grade back over Git-durable settled public evidence.
+PENDING_GRADE_RE = re.compile(r"(?:grade=|\[\s*)PENDING\b|⏳\s+PENDING\b")
+SETTLED_GRADE_RE = re.compile(
+    r"(?:grade=|\[\s*)?(?:✅\s+WIN|❌\s+LOSS|➖\s+PUSH|⚪\s+VOID)\b|lifecycle=SETTLED"
+)
 MAX_FILE_BYTES = 25 * 1024 * 1024
 MAX_TOTAL_BYTES = 100 * 1024 * 1024
 
@@ -126,6 +133,31 @@ def _git_durable_bytes(source: Path) -> bytes:
     else:
         data.pop("generated_utc", None)
     return (json.dumps(data, indent=2, sort_keys=True, default=str) + "\n").encode()
+
+
+def _would_regress_settled_card(destination: Path, artifact_bytes: bytes) -> bool:
+    """Return whether a stale artifact would re-open settled public evidence.
+
+    Text cards are mutable lifecycle views, but an authoritative settled grade
+    is never allowed to become ``PENDING`` merely because an older matrix job
+    reached its publisher after a newer main commit. An empty/current draft
+    still updates normally: this guard applies only when the repository view
+    actually contains rendered settled evidence.
+    """
+
+    if not destination.name.endswith(".txt"):
+        return False
+    try:
+        current = destination.read_text(encoding="utf-8")
+        incoming = artifact_bytes.decode("utf-8")
+    except UnicodeDecodeError:
+        # Text-card publication must not silently reinterpret non-UTF-8 data;
+        # the regular write path will preserve existing validation behavior.
+        return False
+    return (
+        SETTLED_GRADE_RE.search(current) is not None
+        and PENDING_GRADE_RE.search(incoming) is not None
+    )
 
 
 def _withdrawn_decision_ids(localdata: Path) -> frozenset[str]:
@@ -218,6 +250,7 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
     no_bet_receipts_skipped = []
     skipped_states: list[str] = []
     recovery_files_skipped = []
+    settled_card_regressions_skipped = []
     total_bytes = 0
     seen_destinations = set()
     for state, source_dir, artifact_name in _artifact_league_dirs(
@@ -282,6 +315,9 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                     continue
             if destination.exists():
                 previous = destination.read_bytes()
+                if _would_regress_settled_card(destination, raw):
+                    settled_card_regressions_skipped.append(relative)
+                    continue
                 if IMMUTABLE_NAMES.fullmatch(source.name) and previous != raw:
                     kind = (
                         "immutable ticket receipt"
@@ -305,6 +341,7 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
         "no_bet_receipts_skipped": no_bet_receipts_skipped,
         "skipped_states": sorted(skipped_states),
         "recovery_files_skipped": sorted(recovery_files_skipped),
+        "settled_card_regressions_skipped": sorted(settled_card_regressions_skipped),
         "copied_count": len(copied),
         "unchanged_count": len(unchanged),
         "source_bytes_checked": total_bytes,

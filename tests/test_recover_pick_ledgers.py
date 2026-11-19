@@ -6,6 +6,7 @@ import zipfile
 
 import pytest
 
+import scripts.recover_pick_ledgers as recovery
 from scripts.recover_pick_ledgers import (
     missing_historical_pick_ledgers,
     restore_pick_ledgers_from_zip,
@@ -89,6 +90,82 @@ def test_restore_pick_ledgers_never_rewrites_an_existing_ledger(tmp_path):
         archive, localdata=localdata, dates=("2026-11-18",)
     ) == ()
     assert json.loads(existing.read_text()) == [{"pick_id": "existing"}]
+
+
+def test_artifact_urls_pages_until_it_finds_the_requested_lane(monkeypatch):
+    calls: list[str] = []
+
+    def fake_api(url, _token):
+        calls.append(url)
+        if url.endswith("page=1"):
+            return {
+                "total_count": 200,
+                "artifacts": [
+                    {
+                        "name": "MaGolide-euroleague-1-1",
+                        "archive_download_url": "https://api.github.com/artifacts/euroleague",
+                    }
+                ],
+            }
+        return {
+            "total_count": 200,
+            "artifacts": [
+                {
+                    "name": "MaGolide-nba-2-1",
+                    "archive_download_url": "https://api.github.com/artifacts/nba",
+                }
+            ],
+        }
+
+    monkeypatch.setattr(recovery, "_api_json", fake_api)
+
+    assert tuple(
+        recovery._artifact_urls(
+            "owner/repo", "nba", "token", max_artifacts=1
+        )
+    ) == ("https://api.github.com/artifacts/nba",)
+    assert len(calls) == 2
+    assert "page=1" in calls[0]
+    assert "page=2" in calls[1]
+
+
+def test_recovery_tries_later_artifacts_after_a_transient_download_failure(tmp_path, monkeypatch):
+    localdata = tmp_path / "nba"
+    localdata.mkdir()
+    write_card(localdata, "2026-11-18", "grade=⏳ PENDING\n")
+    archive = make_artifact(
+        tmp_path / "working.zip",
+        {"picks_2026-11-18.json": b'[{"pick_id":"recovered"}]\n'},
+    )
+
+    monkeypatch.setattr(
+        recovery,
+        "_artifact_urls",
+        lambda *_args, **_kwargs: iter(("first", "second")),
+    )
+
+    def download(url, _token, destination):
+        if url == "first":
+            raise RuntimeError("GitHub Actions artifact download failed: ConnectionError")
+        destination.write_bytes(archive.read_bytes())
+
+    monkeypatch.setattr(recovery, "_download_artifact", download)
+
+    report = recovery.recover_from_actions(
+        localdata=localdata,
+        target_date="2026-11-19",
+        state_key="nba",
+        repository="owner/repo",
+        token="token",
+        max_artifacts=2,
+    )
+
+    assert report.recovered_dates == ("2026-11-18",)
+    assert report.inspected_artifacts == 1
+    assert report.download_failures == 1
+    assert json.loads((localdata / "picks_2026-11-18.json").read_text()) == [
+        {"pick_id": "recovered"}
+    ]
 
 
 def test_missing_historical_pick_ledgers_rejects_invalid_target_date(tmp_path):

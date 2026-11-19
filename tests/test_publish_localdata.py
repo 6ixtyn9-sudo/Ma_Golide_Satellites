@@ -102,6 +102,40 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
     assert not (repo / "localdata" / "nba" / "picks_unapproved.json").exists()
 
 
+def test_publisher_does_not_regress_settled_pick_or_ticket_card_to_pending(tmp_path):
+    artifact_file(
+        tmp_path,
+        "stale-nba-artifact",
+        "nba",
+        "picks_2026-11-18.txt",
+        "bucket=CAUTION · grade=⏳ PENDING\n".encode(),
+    )
+    artifact_file(
+        tmp_path,
+        "stale-nba-artifact",
+        "nba",
+        "auto_tickets_2026-11-18.txt",
+        "[⏳ PENDING] shadow\n".encode(),
+    )
+    repo = tmp_path / "repo"
+    state = repo / "localdata" / "nba"
+    state.mkdir(parents=True)
+    settled_pick = state / "picks_2026-11-18.txt"
+    settled_pick.write_text("grade=❌ LOSS · lifecycle=SETTLED_UNFROZEN\n")
+    settled_ticket = state / "auto_tickets_2026-11-18.txt"
+    settled_ticket.write_text("[✅ WIN] settled shadow\n")
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+
+    assert report["status"] == "no_changes"
+    assert report["settled_card_regressions_skipped"] == [
+        "localdata/nba/auto_tickets_2026-11-18.txt",
+        "localdata/nba/picks_2026-11-18.txt",
+    ]
+    assert "LOSS" in settled_pick.read_text()
+    assert "WIN" in settled_ticket.read_text()
+
+
 def test_publisher_state_keys_follow_the_central_registry_and_publish_expansion_lanes(tmp_path):
     assert STATE_KEYS == {spec.state_key for spec in SPECS}
     artifact_file(
