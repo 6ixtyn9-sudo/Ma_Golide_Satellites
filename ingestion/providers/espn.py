@@ -120,6 +120,19 @@ HISTORY_FLOORS = {
     League.NCAA_W: 2001,
 }
 _EVENT_REF_RE = re.compile(r"/events/(\d+)(?:[?/]|$)")
+# ESPN's event UID carries the sport/league path (for example
+# ``s:40~l:50~e:...`` for women's college basketball).  The public
+# scoreboard can occasionally return a mixed or misrouted event list when a
+# group filter is involved, so the route URL alone is not enough to establish
+# the league identity of an individual event.
+_EVENT_LEAGUE_UID_RE = re.compile(r"(?:^|~)l:(\d+)(?:~|$)")
+ESPN_LEAGUE_IDS = {
+    League.NBA: "46",
+    League.WNBA: "59",
+    League.NCAA_M: "41",
+    League.NCAA_W: "50",
+    League.NBA_G_LEAGUE: "69",
+}
 
 
 def _league_slug(league: League) -> str:
@@ -269,6 +282,59 @@ def _scheduled_iso(comp: Dict[str, Any], fallback_date: Any) -> str:
     return to_utc_iso(parse_utc(raw))
 
 
+def _event_league_ids(event: Dict[str, Any], comp: Dict[str, Any]) -> set[str]:
+    """Return explicit ESPN league ids carried by an event, never inferred.
+
+    Event payload variants put the UID at different levels.  We deliberately
+    inspect only provider-owned identity fields; team names, dates, and a
+    scoreboard URL cannot prove whether a college game is men's or women's.
+    """
+
+    values: list[Any] = [event.get("uid"), comp.get("uid")]
+    for container in (event.get("league"), comp.get("league")):
+        if isinstance(container, dict):
+            values.extend((container.get("uid"), container.get("id")))
+    ids: set[str] = set()
+    for value in values:
+        if value is None:
+            continue
+        match = _EVENT_LEAGUE_UID_RE.search(str(value))
+        if match:
+            ids.add(match.group(1))
+        elif isinstance(value, (int, str)) and str(value).strip().isdigit():
+            ids.add(str(value).strip())
+    return ids
+
+
+def _assert_event_league_identity(
+    event: Dict[str, Any], comp: Dict[str, Any], league: League
+) -> None:
+    """Reject an ESPN event whose explicit league identity disagrees.
+
+    NCAA women's events require an event-level UID.  This is intentionally
+    fail-closed: the incident that prompted this guard was a men's slate
+    rendered as NCAA_W, and neither team spelling nor a scoreboard route can
+    repair an absent women's event identity.  Other legacy payload variants
+    remain readable when they expose no per-event league field, while any
+    disclosed contradiction is rejected for every league.
+    """
+
+    expected = ESPN_LEAGUE_IDS.get(league)
+    if expected is None:
+        return
+    found = _event_league_ids(event, comp)
+    event_id = str(event.get("id") or "unknown")
+    if league is League.NCAA_W and not found:
+        raise IdentityError(
+            f"event {event_id}: NCAA_W event lacks an explicit ESPN league UID; quarantined"
+        )
+    if found and found != {expected}:
+        raise IdentityError(
+            f"event {event_id}: ESPN league identity {sorted(found)!r} does not match "
+            f"requested {league.value} ({expected}); quarantined"
+        )
+
+
 def _game_from_event(event: Dict[str, Any], comp: Dict[str, Any], league: League) -> Game:
     """Canonical Game from one scoreboard event.
 
@@ -279,6 +345,7 @@ def _game_from_event(event: Dict[str, Any], comp: Dict[str, Any], league: League
     event_id = event.get("id")
     if not event_id:
         raise IdentityError("scoreboard event without id")
+    _assert_event_league_identity(event, comp, league)
     home, away = _home_away_competitors(comp)
     season = event.get("season") or {}
     year = season.get("year")

@@ -483,6 +483,46 @@ def test_g_league_scoreboard_and_result_contract_is_strict_and_bpi_is_not_implie
         fetch_bpi("401867657", lambda _url: {}, league=League.NBA_G_LEAGUE)
 
 
+def test_ncaa_w_rejects_a_mens_event_uid_even_from_a_womens_route(load_fixture, fixture_fetch):
+    """A route label cannot override ESPN's per-event league identity."""
+
+    payload = load_fixture("espn/scoreboard_rich_401909938.json")
+    event = payload["events"][0]
+    event["uid"] = "s:40~l:41~e:401909938"  # NCAA men's basketball
+    with pytest.raises(IdentityError, match="does not match requested NCAA_W"):
+        discover_games(
+            "20261107",
+            fixture_fetch({"dates=20261107": payload}),
+            league=League.NCAA_W,
+        )
+
+
+def test_ncaa_w_accepts_a_matching_event_level_espn_league_uid(load_fixture, fixture_fetch):
+    payload = load_fixture("espn/scoreboard_rich_401909938.json")
+    payload["events"][0]["uid"] = "s:40~l:50~e:401909938"
+
+    games = discover_games(
+        "20261107",
+        fixture_fetch({"dates=20261107": payload}),
+        league=League.NCAA_W,
+    )
+
+    assert len(games) == 1
+    assert games[0].league is League.NCAA_W
+
+
+def test_ncaa_w_requires_an_event_level_espn_league_uid(load_fixture, fixture_fetch):
+    """Missing identity is quarantined rather than guessed from team names."""
+
+    payload = load_fixture("espn/scoreboard_rich_401909938.json")
+    with pytest.raises(IdentityError, match="lacks an explicit ESPN league UID"):
+        discover_games(
+            "20261107",
+            fixture_fetch({"dates=20261107": payload}),
+            league=League.NCAA_W,
+        )
+
+
 def test_rich_scoreboard_retains_context_and_named_full_game_books(fixture_fetch):
     games, books = discover_games_with_evidence(
         "20261107",

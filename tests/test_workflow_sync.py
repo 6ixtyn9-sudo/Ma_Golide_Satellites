@@ -220,3 +220,24 @@ def test_renamed_cache_key_falls_back_to_the_pre_rename_snapshot():
             "magolide-localdata-v" + "4-${{ matrix.state_key }}-",
         ]
         assert text.count("key: magolide-localdata-${{ matrix.state_key }}-${{ github.run_id }}") == 2
+
+
+def test_ncaa_w_cache_starts_after_the_event_identity_guard():
+    repo = Path(__file__).resolve().parents[1]
+    for path in (
+        repo / "workflows" / "ingestion.yml",
+        repo / ".github" / "workflows" / "ingestion.yml",
+    ):
+        text = path.read_text()
+        assert "Restore NCAA_W identity-verified cache epoch" in text
+        assert "Persist NCAA_W identity-verified cache epoch" in text
+        assert "matrix.league != 'NCAA_W'" in text
+        assert "matrix.league == 'NCAA_W'" in text
+        assert text.count("magolide-localdata-ncaa_w-identity-v1-") == 3
+        # The new epoch intentionally has no legacy restore fallback: cache
+        # contents before the explicit event-level l:50 check are unverifiable.
+        ncaa_block = text.split("Restore NCAA_W identity-verified cache epoch", 1)[1].split(
+            "Restore Git-durable operator reports", 1
+        )[0]
+        assert "magolide-localdata-v4-ncaa_w-" not in ncaa_block
+        assert "magolide-localdata-ncaa_w-identity-v1-" in ncaa_block

@@ -65,12 +65,13 @@ def test_gate_skips_a_valid_idle_league(tmp_path: Path):
     nba = LEAGUES[0]
     _operator_state(tmp_path, nba, date="2026-11-18")
 
+    before_morning_cutoff = NOW - timedelta(hours=7)  # 07:00 SAST
     decision = evaluate_league(
         nba,
         state_root=tmp_path,
-        now=NOW,
+        now=before_morning_cutoff,
         schedule_fetcher=_schedule(
-            ScheduleGame(NOW + timedelta(hours=4), "scheduled"),
+            ScheduleGame(before_morning_cutoff + timedelta(hours=4), "scheduled"),
         ),
     )
 
@@ -115,7 +116,10 @@ def test_gate_publishes_an_identified_fixture_draft_before_its_freeze_window(tmp
     )
 
     assert decision.should_run
-    assert decision.reasons == ("pick_draft_publication_due",)
+    assert decision.reasons == (
+        "pick_draft_publication_due",
+        "ticket_creation_or_acquisition_due",
+    )
 
 
 def test_gate_runs_for_an_unfrozen_fixture_freeze_window(tmp_path: Path):
@@ -136,6 +140,24 @@ def test_gate_runs_for_an_unfrozen_fixture_freeze_window(tmp_path: Path):
         "fixture_pick_freeze_due",
         "ticket_creation_or_acquisition_due",
     )
+
+
+def test_gate_wakes_at_the_0900_sast_morning_ticket_cutoff(tmp_path: Path):
+    nba = LEAGUES[0]
+    _operator_state(tmp_path, nba, date="2026-11-18")
+    morning_cutoff = datetime(2026, 11, 18, 7, 0, tzinfo=timezone.utc)
+
+    decision = evaluate_league(
+        nba,
+        state_root=tmp_path,
+        now=morning_cutoff,
+        schedule_fetcher=_schedule(
+            ScheduleGame(morning_cutoff + timedelta(hours=13), "scheduled"),
+        ),
+    )
+
+    assert decision.should_run
+    assert decision.reasons == ("ticket_creation_or_acquisition_due",)
 
 
 def test_gate_runs_for_an_unfrozen_slate_inside_the_ticket_window(tmp_path: Path):

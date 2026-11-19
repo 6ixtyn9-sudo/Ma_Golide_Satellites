@@ -56,6 +56,12 @@ from ingestion.providers.fiba_euroleague_w_contract import (
 
 SCHEMA_VERSION = "magolide.adaptive-gate"
 DECISION_LEAD_MINUTES = 60
+# Keep this scheduling decision aligned with forecasting.operator: dated cards
+# freeze at 09:00 Johannesburg time, unless an earlier fixture needs the
+# ordinary 60-minute pre-tip safety cutoff.  The gate is dependency-free, so
+# these policy constants live here rather than importing the full forecaster.
+TICKET_PUBLICATION_TIMEZONE = "Africa/Johannesburg"
+TICKET_PUBLICATION_HOUR = 9
 HTTP_TIMEOUT_SECONDS = 15
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 COVERAGE_GAP_MARKER_SCHEMA = "magolide.coverage_gap_marker"
@@ -176,6 +182,30 @@ def target_date_for(config: LeagueGateConfig, now: datetime) -> str:
     if now.tzinfo is None:
         raise ValueError("gate clock must be timezone-aware")
     return now.astimezone(ZoneInfo(config.acquisition_timezone)).strftime("%Y-%m-%d")
+
+
+def _ticket_decision_cutoff(
+    target_date: str, games: Iterable[ScheduleGame]
+) -> datetime | None:
+    """Return the morning card cutoff, bounded by the first game's safety window."""
+
+    try:
+        target_day = datetime.strptime(target_date, "%Y-%m-%d").date()
+    except ValueError as exc:  # pragma: no cover - target dates are internal ISO facts
+        raise GateUncertain("target date is invalid") from exc
+    tips = [
+        game.scheduled_utc.astimezone(timezone.utc)
+        for game in games
+        if game.status in {"scheduled", "live"}
+    ]
+    if not tips:
+        return None
+    morning = datetime.combine(
+        target_day,
+        datetime.min.time().replace(hour=TICKET_PUBLICATION_HOUR),
+        tzinfo=ZoneInfo(TICKET_PUBLICATION_TIMEZONE),
+    ).astimezone(timezone.utc)
+    return min(morning, min(tips) - timedelta(minutes=DECISION_LEAD_MINUTES))
 
 
 def _pick_freeze_path(state_dir: Path, target_date: str, game_id: str) -> Path:
@@ -592,12 +622,12 @@ def evaluate_league(
             schedule_count,
         )
     if not frozen:
-        deadline = now + timedelta(minutes=DECISION_LEAD_MINUTES)
-        if any(
-            game.status in {"scheduled", "live"}
-            and game.scheduled_utc.astimezone(timezone.utc) <= deadline
-            for game in games
-        ):
+        decision_cutoff = _ticket_decision_cutoff(target_date, games)
+        # Once the morning cutoff arrives, wake the lane until it records an
+        # immutable ticket or no-bet.  If the run arrives late it will record
+        # the explicit missed-window no-bet rather than creating a post-tip
+        # position.  A no-game slate stays idle after its normal draft work.
+        if decision_cutoff is not None and now >= decision_cutoff:
             reasons.append("ticket_creation_or_acquisition_due")
 
     unique_reasons = tuple(dict.fromkeys(reasons))
