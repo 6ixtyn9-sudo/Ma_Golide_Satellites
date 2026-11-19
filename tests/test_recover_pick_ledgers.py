@@ -29,11 +29,20 @@ def test_missing_historical_pick_ledgers_only_requests_prior_pending_cards(tmp_p
     write_card(localdata, "2026-11-17", "grade=✅ WIN\n")
     write_card(localdata, "2026-11-18", "grade=⏳ PENDING\n")
     write_card(localdata, "2026-11-19", "grade=⏳ PENDING\n")
+    # Ticket cards can contain audit-only shadow grades that depend on the
+    # same artifact-only dated pick ledger. Plain explanatory prose is not a
+    # grade and must not provoke an unnecessary/unsafe artifact requirement.
+    (localdata / "auto_tickets_2026-11-16.txt").write_text(
+        "The latest pending pre-tip observation remains mutable.\n"
+    )
+    (localdata / "auto_tickets_2026-11-17.txt").write_text("⏳ PENDING shadow\n")
 
     assert missing_historical_pick_ledgers(localdata, target_date="2026-11-19") == (
+        "2026-11-17",
         "2026-11-18",
     )
 
+    (localdata / "picks_2026-11-17.json").write_text("[]\n")
     (localdata / "picks_2026-11-18.json").write_text("[]\n")
     assert missing_historical_pick_ledgers(localdata, target_date="2026-11-19") == ()
 

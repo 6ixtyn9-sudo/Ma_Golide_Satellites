@@ -3769,8 +3769,9 @@ def _render_empty_ticket_scan(
     priced_ineligible_shadow_picks: Optional[List[Dict[str, Any]]] = None,
     priced_ineligible_audited_count: int = 0,
     unpriced_spread_shadow: Optional[Dict[str, Any]] = None,
+    historical_archive: bool = False,
 ) -> str:
-    """A concise mutable latest-scan view, never a frozen no-bet receipt."""
+    """Render a mutable current scan or a regraded historical audit archive."""
     paper_single_count = int(candidate_funnel.get("paper_single_picks") or 0)
     paper_single_games = int(candidate_funnel.get("paper_single_games") or 0)
     pick_filter = candidate_funnel.get("paper_pick_filter")
@@ -3783,7 +3784,12 @@ def _render_empty_ticket_scan(
             qualifying_pick_count = int(raw_qualifying_count)
     candidate_label = "candidate pick" if candidate_pick_count == 1 else "candidate picks"
 
-    if withdrawal:
+    if historical_archive:
+        scan_status = (
+            "HISTORICAL SCAN ARCHIVE — preserved pick/shadow evidence regraded from "
+            "authoritative results; no immutable ticket or no-bet receipt is present."
+        )
+    elif withdrawal:
         scan_status = (
             "NO PAPER BET — the earlier ticket publication was withdrawn for model-integrity failure."
         )
@@ -3835,17 +3841,22 @@ def _render_empty_ticket_scan(
         "",
         f"CURRENT PAPER BANK (all dates): {performance['paper_bank_units']:.3f} units "
         f"· free {performance['paper_free_units']:.3f} / reserved {performance['paper_committed_units']:.3f}",
-        f"Latest scan: {_local_time(generated_utc, timezone_name)}",
+        f"{'Reconciled at' if historical_archive else 'Latest scan'}: "
+        f"{_local_time(generated_utc, timezone_name)}",
         "",
         (
-            "This date is closed to replacement ticket publication after the withdrawal."
+            "This historical view does not create, replace, or retrospectively freeze a ticket/no-bet decision."
+            if historical_archive
+            else "This date is closed to replacement ticket publication after the withdrawal."
             if withdrawal
             else "This date is closed by an immutable no-bet decision; later prices remain audit evidence only."
             if no_bet_decision
             else "This scan card is not a frozen receipt; a later qualifying scan may publish tickets."
         ),
         (
-            "The withdrawn receipt is excluded from performance and retained unchanged as evidence."
+            "Only the preserved dated pick ledger is regraded; original buckets and revisions remain audit evidence."
+            if historical_archive
+            else "The withdrawn receipt is excluded from performance and retained unchanged as evidence."
             if withdrawal
             else "No-bet decision: "
             f"{_local_time(str(no_bet_decision.get('frozen_at')), timezone_name)} · "
@@ -3856,7 +3867,7 @@ def _render_empty_ticket_scan(
         "Paper only. No real-money stakes or automatic promotion.",
         "",
     ]
-    if ticket_decision and not withdrawal and not no_bet_decision:
+    if ticket_decision and not historical_archive and not withdrawal and not no_bet_decision:
         decision_status = ticket_decision.get("status")
         if decision_status == "pending_cutoff":
             cutoff = ticket_decision.get("planned_cutoff_utc")
@@ -4038,6 +4049,29 @@ def _ticket_card_audit_kwargs(
         "priced_ineligible_audited_count": 0,
         "unpriced_spread_shadow": _unpriced_spread_shadow(logical_rows, settled_history),
     }
+
+
+def _has_rendered_pending_grade(path: Path) -> bool:
+    """Recognise pending result labels without mistaking explanatory prose for one."""
+
+    try:
+        text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        raise ValueError(f"cannot read ticket card: {path}") from exc
+    return any(marker in text for marker in ("⏳ PENDING", "grade=PENDING", "[PENDING]"))
+
+
+def _historical_pending_ticket_cards(
+    localdata: Path, *, target_date: str
+) -> List[tuple[str, Path]]:
+    """Return prior mutable scan cards whose audit result view needs rebuilding."""
+
+    cards: List[tuple[str, Path]] = []
+    for path in sorted(localdata.glob("auto_tickets_????-??-??.txt")):
+        card_date = path.stem.removeprefix("auto_tickets_")
+        if card_date < target_date and _has_rendered_pending_grade(path):
+            cards.append((card_date, path))
+    return cards
 
 
 def _preserve_ticket_audit_section(rendered: str, existing_path: Path) -> str:
@@ -4352,6 +4386,20 @@ def publish_operator_reports(
             rendered_card = _preserve_ticket_audit_section(rendered_card, card_path)
         _write_text(card_path, rendered_card)
 
+    terminal_ticket_dates = {str(frozen_receipt["date"]) for frozen_receipt in receipts}
+    withdrawn_ticket_sidecars: Dict[str, Dict[str, Any]] = {}
+    for sidecar_path in sorted(localdata.glob("auto_tickets_????-??-??_withdrawn.json")):
+        withdrawn_date = sidecar_path.name.removeprefix("auto_tickets_").removesuffix(
+            "_withdrawn.json"
+        )
+        sidecar = _read_json(sidecar_path, {})
+        if (
+            not isinstance(sidecar, dict)
+            or sidecar.get("withdrawn") is not True
+            or sidecar.get("target_date") != withdrawn_date
+        ):
+            raise ValueError(f"invalid withdrawn ticket sidecar: {sidecar_path}")
+        withdrawn_ticket_sidecars[withdrawn_date] = sidecar
     # A no-bet sidecar is equally terminal for ticket creation, but its
     # human-readable card remains a mutable audit view. Rebuild every no-bet
     # card from its dated, regraded ledger so shadow grades do not remain
@@ -4363,6 +4411,7 @@ def publish_operator_reports(
         frozen_no_bet = _read_no_bet_decision(localdata, no_bet_date)
         if frozen_no_bet is None:
             raise ValueError(f"frozen no-bet decision is missing: {sidecar_path}")
+        terminal_ticket_dates.add(no_bet_date)
         audit_kwargs = _ticket_card_audit_kwargs(
             localdata,
             target_date=no_bet_date,
@@ -4385,6 +4434,47 @@ def publish_operator_reports(
                 **audit_kwargs,
             ),
         )
+
+    # A past scan that never reached a ticket/no-bet cutoff has no immutable
+    # sidecar, yet may still expose audit-only shadows. It cannot be turned
+    # into a retrospective decision, but recovered dated evidence can safely
+    # rebuild its mutable archive section with authoritative grades.
+    historical_ticket_audit_cards: List[str] = []
+    for historical_date, card_path in _historical_pending_ticket_cards(
+        localdata, target_date=target_date
+    ):
+        if historical_date in terminal_ticket_dates:
+            continue
+        withdrawal_sidecar = withdrawn_ticket_sidecars.get(historical_date)
+        audit_kwargs = _ticket_card_audit_kwargs(
+            localdata,
+            target_date=historical_date,
+            league=league,
+            settled_history=settled_history,
+        )
+        # If retained artifacts cannot supply the original dated evidence, do
+        # not manufacture a replacement audit card. Workflow recovery raises
+        # before this point for a known pending public grade; this guard also
+        # keeps direct/library callers fail-closed.
+        if audit_kwargs is None:
+            continue
+        _write_text(
+            card_path,
+            _render_empty_ticket_scan(
+                league=league,
+                target_date=historical_date,
+                generated_utc=generated_utc,
+                performance=performance,
+                timezone_name=timezone_name,
+                candidate_funnel={},
+                withdrawal=withdrawal_sidecar,
+                # A withdrawal is terminal evidence of a prior decision. It
+                # renders as withdrawn, never as a newly invented archive/no-bet.
+                historical_archive=withdrawal_sidecar is None,
+                **audit_kwargs,
+            ),
+        )
+        historical_ticket_audit_cards.append(historical_date)
 
     ticket_path = str(localdata / f"auto_tickets_{target_date}.txt")
     if receipt is None:
@@ -4433,6 +4523,7 @@ def publish_operator_reports(
             else None
         ),
         "ticket_text": ticket_path,
+        "historical_ticket_audit_cards_refreshed": historical_ticket_audit_cards,
         "ticket_state": str(localdata / "auto_tickets_state.json"),
         "performance": str(localdata / "auto_tickets_performance.json"),
         "performance_text": str(localdata / "auto_tickets_performance.txt"),
@@ -4470,6 +4561,7 @@ def publish_operator_reports(
             "settled_singles": performance["settled_singles"],
             "pending_singles": performance["pending_singles"],
             "paper_single_picks": candidate_funnel.get("paper_single_picks", 0),
+            "historical_ticket_audit_cards_refreshed": len(historical_ticket_audit_cards),
         },
     }
 

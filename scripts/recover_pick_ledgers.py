@@ -27,7 +27,11 @@ import requests
 import zipfile
 
 
-DATE_RE = re.compile(r"^picks_(\d{4}-\d{2}-\d{2})\.txt$")
+CARD_DATE_RE = re.compile(r"^(?:picks|auto_tickets)_(\d{4}-\d{2}-\d{2})\.txt$")
+# Match a rendered *grade*, not prose such as “pending pre-tip observation”.
+# Historic pick cards used ``grade=PENDING`` while the current render uses the
+# accessible ``⏳ PENDING`` badge; old ticket audits can also use ``[PENDING]``.
+PENDING_GRADE_RE = re.compile(r"(?:grade=|\[\s*)PENDING\b|⏳\s+PENDING\b")
 LEDGER_RE = re.compile(r"^picks_(\d{4}-\d{2}-\d{2})\.json$")
 ARTIFACT_NAME_RE = re.compile(r"^MaGolide-(?:lifecycle-)?([a-z0-9_]+)-\d+-\d+$")
 MAX_LEDGER_BYTES = 25 * 1024 * 1024
@@ -55,27 +59,36 @@ class RecoveryReport:
 
 
 def missing_historical_pick_ledgers(localdata: Path, *, target_date: str) -> tuple[str, ...]:
-    """Return earlier card dates still showing pending data without raw evidence."""
+    """Return prior pending card dates whose raw grading evidence is absent.
+
+    Both dated pick cards and auto-ticket cards can display audit-only shadow
+    grades. They derive those grades from the same artifact-only dated pick
+    ledger, so a cold cache must recover it for either public card surface.
+    """
 
     try:
         target = date.fromisoformat(target_date)
     except ValueError as exc:
         raise ValueError(f"target_date must be ISO yyyy-mm-dd: {target_date!r}") from exc
-    needed: list[str] = []
-    for card in sorted(Path(localdata).glob("picks_????-??-??.txt")):
-        match = DATE_RE.fullmatch(card.name)
+    cards = [
+        *Path(localdata).glob("picks_????-??-??.txt"),
+        *Path(localdata).glob("auto_tickets_????-??-??.txt"),
+    ]
+    needed: set[str] = set()
+    for card in sorted(cards):
+        match = CARD_DATE_RE.fullmatch(card.name)
         if match is None:
             continue
         card_date = match.group(1)
         if date.fromisoformat(card_date) >= target:
             continue
         try:
-            pending = "PENDING" in card.read_text(encoding="utf-8")
+            pending = PENDING_GRADE_RE.search(card.read_text(encoding="utf-8")) is not None
         except OSError as exc:
             raise ValueError(f"cannot read dated pick card: {card}") from exc
         if pending and not (Path(localdata) / f"picks_{card_date}.json").is_file():
-            needed.append(card_date)
-    return tuple(needed)
+            needed.add(card_date)
+    return tuple(sorted(needed))
 
 
 def _safe_ledger_member(member_name: str, *, wanted: set[str]) -> tuple[str, PurePosixPath] | None:
