@@ -1,0 +1,335 @@
+{
+  "decision_cutoff_utc": "2026-11-19T15:00:00Z",
+  "frozen_at": "2026-11-19T15:39:35Z",
+  "game_id": "401913008",
+  "league": "NCAA_W",
+  "rows": [
+    {
+      "alternative_probabilities": {
+        "away": 0.11,
+        "draw": 0.0,
+        "home": 0.89
+      },
+      "away": "Maryland Eastern Shore Hawks",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.89,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "team_history_empirical-542f7e282358",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "team_history_empirical-542f7e282358",
+      "context": null,
+      "date": "2026-11-19",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 16.639135997983768,
+      "expected_total": 61.908040192490205,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "team_history_empirical-542f7e282358",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": null,
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical-542f7e282358",
+          "league": "NCAA_W",
+          "market": "moneyline",
+          "period": "H1",
+          "source": "team_history_empirical"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.89,
+          "challenger_version": "recency-389a235f88f3",
+          "champion_probability": 0.89,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.89,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "76dd138630e0f3802e60",
+      "game_id": "401913008",
+      "grade_status": "pending",
+      "home": "Rutgers Scarlet Knights",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical",
+      "model_version": "team_history_empirical",
+      "outcome": null,
+      "paper_only": true,
+      "period": "H1",
+      "pick_id": "76dd138630e0f3802e60",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.89,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-19T16:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 3.80022,
+        "home_effective_games": 5.511667,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 1051
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.05,
+        "draw": 0.0,
+        "home": 0.95
+      },
+      "away": "Maryland Eastern Shore Hawks",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.95,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "team_history_empirical-542f7e282358",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "team_history_empirical-542f7e282358",
+      "context": null,
+      "date": "2026-11-19",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples",
+          "insufficient_team_specific_history"
+        ]
+      },
+      "expected_margin": 31.20642192658095,
+      "expected_total": 132.10951196107197,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "team_history_empirical-542f7e282358",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples",
+            "insufficient_team_specific_history"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": "away",
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": null
+        },
+        "segment": {
+          "calibration_version": "team_history_empirical-542f7e282358",
+          "league": "NCAA_W",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "team_history_empirical"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.95,
+          "challenger_version": "recency-389a235f88f3",
+          "champion_probability": 0.95,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.95,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "4e208a6b01b58b4ac028",
+      "game_id": "401913008",
+      "grade_status": "pending",
+      "home": "Rutgers Scarlet Knights",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "team_history_empirical",
+      "model_version": "team_history_empirical",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "4e208a6b01b58b4ac028",
+      "prediction": null,
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.95,
+      "residual_games": 100,
+      "role": null,
+      "scheduled_utc": "2026-11-19T16:00:00Z",
+      "selection": "home",
+      "team_history": {
+        "away_effective_games": 3.80022,
+        "home_effective_games": 5.511667,
+        "required_effective_games_per_team": 8.0,
+        "sufficient_for_accas": false
+      },
+      "training_games": 1051
+    },
+    {
+      "alternative_probabilities": {
+        "away": 0.0291,
+        "home": 0.9709
+      },
+      "away": "Maryland Eastern Shore Hawks",
+      "book": null,
+      "bucket": "WATCHLIST_NO_ODDS",
+      "calibrated_probability": 0.9709,
+      "calibration": {
+        "adjustment": 0.0,
+        "calibration_version": "provider_prediction-7fb3e30d878d",
+        "n": 0,
+        "status": "no_history",
+        "sufficient_for_accas": false
+      },
+      "calibration_version": "provider_prediction-7fb3e30d878d",
+      "context": null,
+      "date": "2026-11-19",
+      "eligibility": {
+        "acca_eligible": false,
+        "evidence_state": "current_pre_tip_unfrozen",
+        "reasons": [
+          "no_exact_bookmaker_market",
+          "insufficient_walk_forward_samples"
+        ]
+      },
+      "expected_margin": null,
+      "expected_total": null,
+      "explanation": {
+        "calibration": {
+          "adjustment": 0.0,
+          "calibration_version": "provider_prediction-7fb3e30d878d",
+          "n": 0,
+          "status": "no_history",
+          "sufficient_for_accas": false
+        },
+        "effective_sample_size": 0.0,
+        "eligibility": {
+          "acca_eligible": false,
+          "evidence_state": "current_pre_tip_unfrozen",
+          "reasons": [
+            "no_exact_bookmaker_market",
+            "insufficient_walk_forward_samples"
+          ]
+        },
+        "prices": {
+          "opposite_decimal_price": null,
+          "opposite_selection": "away",
+          "selected_decimal_price": null
+        },
+        "provenance": {
+          "book": null,
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi",
+            "observed_utc": "2026-11-19T15:38:31Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          }
+        },
+        "segment": {
+          "calibration_version": "provider_prediction-7fb3e30d878d",
+          "league": "NCAA_W",
+          "market": "moneyline",
+          "period": "full_game",
+          "source": "provider:espn"
+        },
+        "shadow_calibration": {
+          "adjustment": 0.0,
+          "candidate_probability": 0.9709,
+          "challenger_version": "recency-389a235f88f3",
+          "champion_probability": 0.9709,
+          "ess": 0.0,
+          "n": 0,
+          "probability": 0.9709,
+          "status": "no_history",
+          "weighted_n": 0.0
+        }
+      },
+      "forecast_id": "7686068631c07fb714da",
+      "game_id": "401913008",
+      "grade_status": "pending",
+      "home": "Rutgers Scarlet Knights",
+      "league": "NCAA_W",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "7686068631c07fb714da",
+      "prediction": {
+        "frozen": false,
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi",
+        "observed_utc": "2026-11-19T15:38:31Z",
+        "produced_by": "ESPN BPI",
+        "provider": "espn"
+      },
+      "price_evidence": "UNMATCHED",
+      "push_probability": 0.0,
+      "raw_probability": 0.9709,
+      "residual_games": 0,
+      "role": null,
+      "scheduled_utc": "2026-11-19T16:00:00Z",
+      "selection": "home",
+      "team_history": null,
+      "training_games": 0
+    }
+  ],
+  "scheduled_utc": "2026-11-19T16:00:00Z",
+  "schema_version": "magolide.pick_freeze",
+  "target_date": "2026-11-19"
+}
