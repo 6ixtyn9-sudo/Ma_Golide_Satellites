@@ -409,15 +409,30 @@ def _calendar_match_ref(cell: _Node) -> Optional[tuple[_Node, int, int, int]]:
     return candidates[0] if candidates else None
 
 
-def _unlinked_calendar_row_has_score_or_time(row_text: str) -> bool:
-    """Whether an unlinked row could be an event that requires identity.
+def _unlinked_calendar_row_has_score_or_time(cells: Sequence[_Node]) -> bool:
+    """Whether an unlinked calendar row's official result/time columns are set.
 
-    A date-only placeholder is explicitly unpinned rather than timed.  Any
-    score-shaped value or wall-clock time makes an unlinked row unsafe to
-    discard: without its match route we cannot assign it a canonical event.
+    A date-only placeholder is explicitly unpinned rather than timed.  The
+    calendar header defines columns 2 and 3 as Result and Date and Time;
+    score/time-looking descendant text elsewhere in the matchup or Info cells
+    is not an authoritative result or tip for this unlinked row.  A one-cell
+    row has no such reliable columns, so any score/date/time signal in it
+    remains fail-closed as malformed fixture content.
     """
 
-    return bool(re.search(r"\d+\s*:\s*\d+|\b\d{1,2}:\d{2}\b", row_text))
+    if len(cells) == 1:
+        return bool(
+            re.search(
+                r"\d+\s*:\s*\d+|\d{2}\.\d{2}\.\d{4}|\b(?:CET|CEST|Local time)\b",
+                cells[0].text(),
+            )
+        )
+    result = cells[1].text() if len(cells) > 1 else ""
+    when = cells[2].text() if len(cells) > 2 else ""
+    return bool(
+        re.search(r"\d+\s*:\s*\d+", result)
+        or re.search(r"\b\d{1,2}:\d{2}\b", when)
+    )
 
 
 def parse_calendar(html: str, season: int) -> List[CalendarGame]:
@@ -456,8 +471,7 @@ def parse_calendar(html: str, season: int) -> List[CalendarGame]:
                 raise IdentityError(f"{PROVIDER}: calendar row width {len(cells)} != {len(labels)}")
             match_ref = _calendar_match_ref(cells[0])
             if match_ref is None:
-                row_text = " ".join(cell.text() for cell in cells)
-                if _unlinked_calendar_row_has_score_or_time(row_text):
+                if _unlinked_calendar_row_has_score_or_time(cells):
                     raise IdentityError(
                         f"{PROVIDER}: calendar has an unlinked scored or timed row"
                     )
