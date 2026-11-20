@@ -66,6 +66,13 @@ minimal contract:
    the full calendar-final count. A malformed detail stops the cursor at the
    last written game; after a completed current-season scan, a changed calendar
    final count triggers a bounded replay rather than a silent late-result hole.
+   A clean exhausted scan also retains a compact per-season receipt in the
+   history provider-health cursor: season, calendar final count, reconciled
+   final count, non-canonical `not_applicable` row count, zero blocking gaps,
+   evidence label, and completion time. Unpinned rows are telemetry only and
+   are deliberately excluded from the final-count denominator. A receipt is
+   withheld and the cursor rewinds to game zero if the durable reconciled count
+   does not equal the calendar final count.
 
 `tests/test_aba_liga.py` uses synthetic contract examples to cover normal
 discovery/result parsing, DST interpretation, scope and team/time contradiction
@@ -102,7 +109,10 @@ capture dossier. At minimum it should contain:
 4. a direct check that the selected season, game ID, team IDs, home/away order,
    timestamp, final, and periods agree across the documented pages;
 5. a documented historical floor, page/rate limits, and acceptable retention
-   plan for raw source bodies versus compact durable coverage receipts; and
+   plan for raw source bodies versus compact durable coverage receipts. The
+   current count-only season receipts survive with provider health in the
+   canonical warehouse/cache but are not a substitute for an approved
+   Git-independent long-term retention policy; and
 6. confirmation that the provider is ABA League (`league_id=1`), rather than
    ABA 2 or another competition.
 

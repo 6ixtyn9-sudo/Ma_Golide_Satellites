@@ -1590,6 +1590,32 @@ class Pipeline:
             }
 
         cursor = self._history_cursor("aba-liga-history")
+        raw_receipts = cursor.get("season_receipts") or {}
+        if not isinstance(raw_receipts, dict) or any(
+            not isinstance(key, str) or not isinstance(value, dict)
+            for key, value in raw_receipts.items()
+        ):
+            self.gaps.append(
+                CoverageGap(
+                    game_id=None,
+                    required_field="aba_liga_season_receipt",
+                    reason=CoverageState.PROVIDER_ERROR,
+                    provider=aba_liga.PROVIDER,
+                    detail="stored ABA history receipts have an invalid shape; cursor retained",
+                    observed_utc=self._now_iso(),
+                )
+            )
+            return {
+                **base,
+                "status": "provider_error_cursor_retained",
+                "cursor": cursor,
+            }
+        # Coverage receipts are compact count attestations, not raw source
+        # pages. They travel with the cursor so a later bounded batch cannot
+        # erase evidence that an older season was fully reconciled.
+        season_receipts: Dict[str, Dict[str, Any]] = {
+            key: dict(value) for key, value in raw_receipts.items()
+        }
         target_day = datetime.strptime(self.config.date_yyyymmdd, "%Y%m%d").date()
         current = aba_liga.season_end_year(target_day)
         season = min(int(cursor.get("next_season") or current), current)
@@ -1599,6 +1625,7 @@ class Pipeline:
         remaining_events = event_budget
         remaining_seasons = season_budget
         ledger_dates: set = set()
+        base["season_receipts"] = []
 
         def cursor_coverage(next_season: int, last_game_no: int) -> Dict[str, Any]:
             coverage: Dict[str, Any] = {
@@ -1609,7 +1636,56 @@ class Pipeline:
             if last_completed_season is not None:
                 coverage["last_completed_season"] = int(last_completed_season)
                 coverage["last_completed_final_count"] = int(last_completed_final_count or 0)
+            if season_receipts:
+                coverage["season_receipts"] = season_receipts
             return coverage
+
+        def stored_reconciled_final_count(covered_season: int) -> int:
+            return sum(
+                game.status is GameStatus.FINAL
+                and game.actual is not None
+                and game.actual.reconciles()[0]
+                and int((game.evidence.get(aba_liga.PROVIDER) or {}).get("season_end_year") or 0)
+                == covered_season
+                for game in self.store.list_games(league=League.ABA_LEAGUE)
+            )
+
+        def record_season_receipt(
+            covered_season: int,
+            calendar_final_count: int,
+            reconciled_final_count: int,
+            adapter_gaps: List[CoverageGap],
+        ) -> None:
+            """Record a count-only receipt after a clean complete calendar scan.
+
+            Calendar final rows and unpinned schedule placeholders are separate
+            populations: only the former enter the final-count reconciliation.
+            The latter remain visible telemetry and must never be added to a
+            canonical-final denominator.
+            """
+
+            key = str(covered_season)
+            receipt = {
+                "season_end_year": covered_season,
+                "calendar_final_count": calendar_final_count,
+                "reconciled_final_count": reconciled_final_count,
+                "not_applicable_rows": sum(
+                    gap.reason is CoverageState.NOT_APPLICABLE for gap in adapter_gaps
+                ),
+                "blocking_gap_count": 0,
+                "status": "calendar_final_count_reconciled",
+                "source": aba_liga.PROVIDER,
+                "evidence": aba_liga.EVIDENCE,
+            }
+            previous = season_receipts.get(key)
+            if previous is not None and all(
+                previous.get(field) == value for field, value in receipt.items()
+            ):
+                receipt["completed_at_utc"] = previous.get("completed_at_utc")
+            else:
+                receipt["completed_at_utc"] = self._now_iso()
+            season_receipts[key] = receipt
+            base["season_receipts"].append(dict(receipt))
 
         # Once the current season was fully scanned, the monotonic history
         # cursor moves to older seasons. Re-read only its lightweight calendar
@@ -1637,14 +1713,7 @@ class Pipeline:
                     "status": "provider_error_cursor_retained",
                     "cursor": cursor,
                 }
-            stored_count = sum(
-                game.status is GameStatus.FINAL
-                and game.actual is not None
-                and game.actual.reconciles()[0]
-                and int((game.evidence.get(aba_liga.PROVIDER) or {}).get("season_end_year") or 0)
-                == current
-                for game in self.store.list_games(league=League.ABA_LEAGUE)
-            )
+            stored_count = stored_reconciled_final_count(current)
             if indexed_count != stored_count:
                 self.gaps.append(
                     CoverageGap(
@@ -1733,6 +1802,35 @@ class Pipeline:
                 )
                 break
             if exhausted:
+                reconciled_final_count = stored_reconciled_final_count(season)
+                if reconciled_final_count != calendar_final_count:
+                    # A complete index traversal with fewer durable finals is
+                    # not a completed season. Rewind this season rather than
+                    # moving the cursor to an older one and hiding a local
+                    # persistence hole behind a successful fetch.
+                    self.gaps.append(
+                        CoverageGap(
+                            game_id=None,
+                            required_field="aba_liga_season_receipt",
+                            reason=CoverageState.MISSING,
+                            provider=aba_liga.PROVIDER,
+                            detail=(
+                                f"season {season}: calendar has {calendar_final_count} final row(s), "
+                                f"store has {reconciled_final_count} reconciled final(s); "
+                                "receipt withheld and replay retained at game 0"
+                            ),
+                            observed_utc=self._now_iso(),
+                        )
+                    )
+                    self._record_history_cursor("aba-liga-history", cursor_coverage(season, 0))
+                    base["status"] = "provider_error_cursor_retained"
+                    break
+                record_season_receipt(
+                    season,
+                    calendar_final_count,
+                    reconciled_final_count,
+                    adapter_gaps,
+                )
                 if season == current:
                     last_completed_season = season
                     last_completed_final_count = calendar_final_count
