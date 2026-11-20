@@ -38,7 +38,9 @@ minimal contract:
    `{sez}/1/`. Every match link must repeat the same `sez` and `league_id`.
 2. **Fixture identity:** the calendar provides the event number, home/away
    display names, final-present indicator, and local wall-clock date/time.
-   Calendar names are not used as immutable team IDs.
+   Calendar names are not used as immutable team IDs. A future multi-day date
+   range without a single tip is a non-canonical placeholder: it is skipped
+   with explicit coverage telemetry, never assigned an invented timestamp.
 3. **Clock semantics:** the external reference reports a `CET` year-round site
    display. The parser interprets the reported wall-clock time in
    `Europe/Belgrade`, including DST, before converting it to UTC; this is a

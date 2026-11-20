@@ -37,6 +37,8 @@ CALENDAR = """
 </body></html>
 """
 
+UNPINNED_DATE_RANGE = "Tuesday, 01.02.2033 - Friday, 04.02.2033"
+
 MATCH = """
 <html><body>
 <input id="match_data_id" value="6"><input id="match_data_sez" value="25"><input id="match_data_lea" value="1">
@@ -107,6 +109,48 @@ def test_pipeline_uses_aba_adapter_for_discovery_and_results_without_fallback_ga
     finals = pipeline._fetch_finals()
     assert [game.game_id for game in finals] == ["aba_liga:25:1:6"]
     assert finals[0].actual is not None
+
+
+def test_calendar_skips_unpinned_future_date_range_with_visible_coverage_gap():
+    calendar = CALENDAR.replace("Friday, 10.10.2025 20:00 CET", UNPINNED_DATE_RANGE)
+
+    def fetch(url: str) -> str:
+        if "/calendar/" in url:
+            return calendar
+        if "/match/6/" in url:
+            return MATCH
+        raise AssertionError(url)
+
+    games, attempted, exhausted, calendar_final_count = aba.season_finals(2026, text_fetch=fetch)
+    assert [game.game_id for game in games] == ["aba_liga:25:1:6"]
+    assert attempted == [6]
+    assert exhausted is True
+    assert calendar_final_count == 1
+    gaps = aba.last_gaps()
+    assert len(gaps) == 1
+    assert gaps[0].game_id == "aba_liga:25:1:7"
+    assert gaps[0].required_field == "official_schedule_time"
+    assert gaps[0].reason.value == "not_applicable"
+    assert "no canonical game emitted" in gaps[0].detail
+
+
+def test_calendar_with_only_unpinned_future_ranges_is_a_visible_empty_slate():
+    calendar = (
+        CALENDAR.replace("93 : 97", "")
+        .replace("Sunday, 05.10.2025 19:30 CET", "Tuesday, 01.02.2033 - Friday, 04.02.2033")
+        .replace("Friday, 10.10.2025 20:00 CET", UNPINNED_DATE_RANGE)
+    )
+
+    def fetch(url: str) -> str:
+        if "/calendar/" in url:
+            return calendar
+        raise AssertionError(url)
+
+    assert aba.discover_games("20251005", text_fetch=fetch, season=2026) == []
+    gaps = aba.last_gaps()
+    assert len(gaps) == 2
+    assert all(gap.reason.value == "not_applicable" for gap in gaps)
+    assert all(gap.required_field == "official_schedule_time" for gap in gaps)
 
 
 def test_result_contract_reconciles_all_quarters_before_canonical_final():
@@ -205,6 +249,15 @@ def test_history_batch_stops_at_bad_game_and_does_not_claim_it_was_written():
 
 
 def test_pipeline_history_writes_reconciled_final_and_advances_game_cursor(tmp_path):
+    calendar = CALENDAR.replace("Friday, 10.10.2025 20:00 CET", UNPINNED_DATE_RANGE)
+
+    def fetch(url: str) -> str:
+        if "/calendar/" in url:
+            return calendar
+        if "/match/6/" in url:
+            return MATCH
+        raise AssertionError(url)
+
     store = DuckDBStore(str(tmp_path / "aba" / "warehouse.duckdb"), persist=True)
     try:
         pipeline = Pipeline(
@@ -217,7 +270,7 @@ def test_pipeline_history_writes_reconciled_final_and_advances_game_cursor(tmp_p
                 fixture_now_utc="2025-10-06T12:00:00Z",
             ),
             store,
-            fetch=_fetch,
+            fetch=fetch,
             allow_writes=True,
         )
         report = pipeline.backfill()
@@ -225,6 +278,11 @@ def test_pipeline_history_writes_reconciled_final_and_advances_game_cursor(tmp_p
         assert deep["status"] == "acquired"
         assert deep["events_acquired"] == 1
         assert deep["final_scores_written"] == 1
+        assert deep["quarantined_rows"] == 1
+        assert any(
+            gap.required_field == "official_schedule_time" and gap.reason.value == "not_applicable"
+            for gap in pipeline.gaps
+        )
         assert deep["cursor"] == {
             "floor_season": 2002,
             "last_game_no": 0,
@@ -312,3 +370,10 @@ def test_parser_rejects_a_calendar_scope_or_malformed_score():
         aba.parse_calendar(CALENDAR.replace('value="25/1/" selected', 'value="25/1/"'), 2026)
     with pytest.raises(IdentityError, match="calendar result"):
         aba.parse_calendar(CALENDAR.replace("93 : 97", "FINAL"), 2026)
+    with pytest.raises(IdentityError, match="no readable CET/CEST timestamp"):
+        aba.parse_calendar(CALENDAR.replace("Friday, 10.10.2025 20:00 CET", "TBD"), 2026)
+    with pytest.raises(IdentityError, match="completed calendar game 7 has a date range"):
+        aba.parse_calendar(
+            CALENDAR.replace("<td></td><td>Friday, 10.10.2025 20:00 CET</td>", f"<td>80 : 70</td><td>{UNPINNED_DATE_RANGE}</td>"),
+            2026,
+        )
