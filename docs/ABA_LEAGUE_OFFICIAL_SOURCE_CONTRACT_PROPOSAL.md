@@ -25,7 +25,8 @@ externally referenced contract routes:
 | --- | --- | --- |
 | Complete season calendar | `/calendar/{sez}/1/` | `sez = season_end_year - 2001`; ABA League `league_id = 1` |
 | Calendar event identity | `/match/{game_no}/{sez}/1/Overview` or `/match-live/{game_no}/{sez}/1/Overview` | Both routes must expose the same scoped `(game_no, sez, league_id)` tuple and rendered home/away pairing |
-| Completed-game detail | `/match/{game_no}/{sez}/1/Overview` | `(game_no, sez, league_id)` must echo on page |
+| Event-detail request | `/match/{game_no}/{sez}/1/Overview` | `(game_no, sez, league_id)` must echo on page; a live event can resolve to the separate `/match-live/...` presentation contract below |
+| Completed-game detail | `/match/{game_no}/{sez}/1/Overview` | Legacy clubs/result header, numeric final, and period table must be present and reconcile |
 
 For example, canonical 2025-26 maps to `sez=25`, and the stable event namespace
 is `aba_liga:25:1:{game_no}`. Game number alone is never globally unique.
@@ -55,15 +56,29 @@ minimal contract:
    informational only. `Local time` is a displayed source label, not permission
    to infer a missing timestamp. A fixed `+01:00` conversion is rejected by
    tests.
-4. **Detail scope and identity:** the match page must echo `match_data_id`,
-   `match_data_sez`, and `match_data_lea`; expose two scoped team links with
-   distinct official team IDs; repeat the calendar home/away display names; and
-   agree with the calendar tip time. All of that remains mandatory for a
-   canonical played game. An administrative disposition is not a game record:
-   it anchors identity to the scoped event ID and distinct official team-ID pair
-   because historical city/sponsor display suffixes can drift while the event
-   remains the same. Any unresolved scope/ID/tip contradiction produces a
-   coverage gap.
+4. **Detail scope and identity:** the event-detail response must echo
+   `match_data_id`, `match_data_sez`, and `match_data_lea`; agree with the
+   calendar tip time; and establish a distinct scoped official team-ID pair and
+   the calendar's ordered display names. Completed detail does this through the
+   legacy clubs/result header. During a direct 2026-11-20 review of the live
+   views for events 84 and 90, the requested `/match/...` detail resolved to
+   `/match-live/...` and omitted that legacy header. The live alternative is
+   accepted only if all of these independent, explicit signals are present:
+   exactly one visible label link ending `#home_stats_live`, exactly one ending
+   `#guest_stats_live`, and exactly two **image-only** scoped `/team/{id}/{sez}/1/`
+   links in document left-to-right home/away order (the direct review displayed
+   these in the official score header). The labels provide names; the scoped
+   header links provide IDs. The adapter does
+   not use prose, logo alt text, an arbitrary team link, or a score-table order
+   to fill either value. Missing, duplicate, out-of-scope, or non-distinct live
+   signals are a coverage gap, not a canonical game. The rendered observation
+   is a page-contract observation only; no raw source body is retained.
+
+   All of that remains mandatory for a canonical played game. An administrative
+   disposition is not a game record: it anchors identity to the scoped event ID
+   and distinct official team-ID pair because historical city/sponsor display
+   suffixes can drift while the event remains the same. Any unresolved
+   scope/ID/tip contradiction produces a coverage gap.
 5. **Finality:** a calendar score only identifies a candidate terminal row. A
    canonical played-game `ActualResult` requires the individual match page's
    numeric final and a Q1--Q4 table. Each OT period, if present, is retained as

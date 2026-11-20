@@ -12,10 +12,12 @@ source response in this repository:
   the season start year minus 2000 (25 means 2025-26); game numbers restart
   every season.
 * ``/match/{game_no}/{sez}/1/Overview`` carries stable team IDs, final score,
-  Q1--Q4 and any OT periods for completed games. A current calendar can expose
-  the same numeric event identity through ``/match-live/{game_no}/{sez}/1/``;
-  the adapter accepts either calendar-route form and retains the stable detail
-  path for subsequent identity verification.
+  Q1--Q4 and any OT periods for completed games. While an event is live, that
+  request can resolve to a ``/match-live/{game_no}/{sez}/1/`` view: its
+  image-only header team links carry scoped IDs in official left-to-right
+  home/away order, while its explicitly labelled ``#home_stats_live`` and
+  ``#guest_stats_live`` links carry the display names. A current calendar can
+  itself expose the same numeric event identity through ``/match-live``.
 * The external reference reports that the site labels wall-clock times ``CET``
   even during daylight saving. The parser treats those values as
   ``Europe/Belgrade`` wall-clock time, never as a fixed UTC offset; this remains
@@ -594,7 +596,59 @@ def parse_calendar(html: str, season: int) -> List[CalendarGame]:
     return games
 
 
+def _live_match_teams(root: _Node, season: int, game_no: int) -> Optional[tuple[str, str, str, str]]:
+    """Read the current live-detail team contract without guessing from logos.
+
+    Live ABA pages can replace the legacy clubs/result table with two scoped
+    team links in rendered home/away order and visible labelled links to the
+    page's ``home_stats_live`` and ``guest_stats_live`` sections.  Both pieces
+    are required: image-only team links alone do not establish a display-name
+    identity, and labels alone do not establish stable official team IDs.
+    """
+
+    labels: Dict[str, List[str]] = {"home": [], "away": []}
+    for anchor in root.find_all(tag="a"):
+        href = anchor.attrs.get("href", "")
+        for side, fragment in (("home", "#home_stats_live"), ("away", "#guest_stats_live")):
+            if href == fragment or href.endswith(fragment):
+                label = canonical_team_name(anchor.text())
+                if not label:
+                    raise IdentityError(f"{PROVIDER}: match {game_no} live {side} label is empty")
+                labels[side].append(label)
+
+    if not labels["home"] and not labels["away"]:
+        return None
+    if len(labels["home"]) != 1 or len(labels["away"]) != 1:
+        raise IdentityError(f"{PROVIDER}: match {game_no} has unresolved live home/away labels")
+
+    expected = (season_key(season), LEAGUE_ID)
+    team_ids: List[str] = []
+    for anchor in root.find_all(tag="a"):
+        # The live result header contains image-only, left-to-right home/away
+        # team links.  Do not collect text links from commentary, comparison,
+        # or any other page region.  Its displayed position is the official
+        # home/away ordering; the independently labelled stats links above
+        # supply the corresponding display names.
+        if anchor.text() or anchor.find(tag="img") is None:
+            continue
+        match = re.search(r"/team/(\d+)/(\d+)/(\d+)/", anchor.attrs.get("href", ""))
+        if match is None:
+            continue
+        team_id, sez, lea = (int(value) for value in match.groups())
+        if (sez, lea) != expected:
+            raise IdentityError(f"{PROVIDER}: match {game_no} live team is outside requested scope")
+        team_ids.append(str(team_id))
+    if len(team_ids) != 2 or team_ids[0] == team_ids[1]:
+        raise IdentityError(f"{PROVIDER}: match {game_no} has unresolved live home/away team IDs")
+
+    return team_ids[0], labels["home"][0], team_ids[1], labels["away"][0]
+
+
 def _match_teams(root: _Node, season: int, game_no: int) -> tuple[str, str, str, str]:
+    live_teams = _live_match_teams(root, season, game_no)
+    if live_teams is not None:
+        return live_teams
+
     block = root.find(tag="div", ident="match_clubs_and_results_info_table")
     if block is None:
         raise IdentityError(f"{PROVIDER}: match {game_no} has no clubs/result header")

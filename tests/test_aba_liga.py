@@ -56,6 +56,26 @@ MATCH = """
 </body></html>
 """
 
+# Synthetic representation of the current live-state contract.  It deliberately
+# omits the legacy clubs/result header: live display names are explicit
+# home/guest stats labels, while the image-only team links in the official score
+# header supply the scoped IDs and left-to-right home/away order.
+LIVE_MATCH = """
+<html><body>
+<input id="match_data_id" value="6"><input id="match_data_sez" value="25"><input id="match_data_lea" value="1">
+<div id="basic_match_info"><div class="dateAndVenue_container">Sunday, 05.10.2025 19:30 CET<br>Venue: Morača</div></div>
+<table id="live_score_header"><tr>
+<td><a href="/team/12/25/1/0/buducnost/"><img src="/club/12.png"></a></td>
+<td>37 : 42</td>
+<td><a href="/team/91/25/1/0/spartak/"><img src="/club/91.png"></a></td>
+</tr></table>
+<div id="live_boxscore">
+<a href="/match-live/6/25/1/Overview/#home_stats_live">Budućnost VOLI</a>
+<a href="/match-live/6/25/1/Overview/#guest_stats_live">Spartak Office Shoes</a>
+</div>
+</body></html>
+"""
+
 ADMINISTRATIVE_CALENDAR = CALENDAR.replace("93 : 97", "20 : 0")
 EMPTY_PERIOD_CONTAINER = (
     '<table id="match_cetrtine_rezultat"><tbody><tr></tr><tr></tr></tbody></table>'
@@ -159,6 +179,59 @@ def test_discovery_verifies_a_live_calendar_route_through_the_stable_detail_path
 
     assert [game.game_id for game in games] == ["aba_liga:25:1:6"]
     assert games[0].provider_ids == {"aba_liga": "25:1:6"}
+
+
+def test_discovery_accepts_a_stable_detail_url_that_resolves_to_live_contract_markup():
+    calendar = CALENDAR.replace(
+        "/match/6/25/1/Overview",
+        "/match-live/6/25/1/Overview",
+    )
+
+    def fetch(url: str) -> str:
+        if "/calendar/25/1/" in url:
+            return calendar
+        # The requested stable path can resolve to the live page while a game
+        # is in progress.  That response must stand on its own strict contract.
+        if "/match/6/25/1/Overview" in url:
+            return LIVE_MATCH
+        raise AssertionError(f"unexpected ABA contract URL: {url}")
+
+    games = aba.discover_games("20251005", text_fetch=fetch)
+
+    assert [(game.home_team_id, game.home_name, game.away_team_id, game.away_name) for game in games] == [
+        ("aba_liga:team:12", "Budućnost VOLI", "aba_liga:team:91", "Spartak Office Shoes")
+    ]
+
+
+def test_live_detail_refuses_missing_explicit_home_or_guest_label():
+    def fetch(url: str) -> str:
+        return CALENDAR if "/calendar/" in url else LIVE_MATCH.replace("#guest_stats_live", "#other")
+
+    assert aba.discover_games("20251005", text_fetch=fetch) == []
+    assert "unresolved live home/away labels" in aba.last_gaps()[0].detail
+
+
+def test_live_detail_refuses_an_out_of_scope_header_team_link():
+    out_of_scope = LIVE_MATCH.replace("/team/91/25/1/", "/team/91/24/1/")
+
+    def fetch(url: str) -> str:
+        return CALENDAR if "/calendar/" in url else out_of_scope
+
+    assert aba.discover_games("20251005", text_fetch=fetch) == []
+    assert "live team is outside requested scope" in aba.last_gaps()[0].detail
+
+
+def test_live_detail_refuses_duplicate_explicit_side_labels():
+    duplicate_label = LIVE_MATCH.replace(
+        "</div>\n</body>",
+        '<a href="/match-live/6/25/1/Overview/#home_stats_live">Budućnost VOLI</a></div>\n</body>',
+    )
+
+    def fetch(url: str) -> str:
+        return CALENDAR if "/calendar/" in url else duplicate_label
+
+    assert aba.discover_games("20251005", text_fetch=fetch) == []
+    assert "unresolved live home/away labels" in aba.last_gaps()[0].detail
 
 
 def test_calendar_accepts_duplicate_scoped_match_links_for_the_same_event():
