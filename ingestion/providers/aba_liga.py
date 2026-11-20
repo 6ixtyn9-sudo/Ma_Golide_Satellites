@@ -264,6 +264,19 @@ def _parse_when(value: str, label: str) -> str:
     return to_utc_iso(local)
 
 
+def _is_unpinned_date_range(value: str) -> bool:
+    """Recognize an upcoming calendar placeholder with no canonical tip time."""
+
+    text = re.sub(r"\s+", " ", value or "").strip()
+    return bool(
+        re.fullmatch(
+            r"(?:[A-Za-z]+, )?\d{2}\.\d{2}\.\d{4}\s*-\s*"
+            r"(?:[A-Za-z]+, )?\d{2}\.\d{2}\.\d{4}",
+            text,
+        )
+    )
+
+
 def _scope_calendar(root: _Node, season: int) -> None:
     selected = root.find(tag="select", ident="season")
     if selected is None:
@@ -291,6 +304,8 @@ def parse_calendar(html: str, season: int) -> List[CalendarGame]:
     root = _dom(html)
     _scope_calendar(root, season)
     games: List[CalendarGame] = []
+    game_numbers: List[int] = []
+    unpinned_rows = 0
     expected = (season_key(season), LEAGUE_ID)
     for table in root.find_all(tag="table", class_name="league_calendar_table"):
         panel = table.parent
@@ -321,26 +336,45 @@ def parse_calendar(html: str, season: int) -> List[CalendarGame]:
             game_no, sez, lea = (int(value) for value in match.groups())
             if (sez, lea) != expected:
                 raise IdentityError(f"{PROVIDER}: calendar link {sez}/{lea} is outside requested scope")
+            game_numbers.append(game_no)
             home, away = _pair(anchor, "calendar matchup")
             result = cells[1].text()
             score = re.fullmatch(r"(\d+)\s*:\s*(\d+)", result)
             if score is None and result:
                 raise IdentityError(f"{PROVIDER}: calendar result is malformed: {result!r}")
+            when = cells[2].text()
+            if _is_unpinned_date_range(when):
+                if score is not None:
+                    raise IdentityError(
+                        f"{PROVIDER}: completed calendar game {game_no} has a date range but no exact tip"
+                    )
+                unpinned_rows += 1
+                # The calendar can publish a future pairing's multi-day window
+                # before selecting one game tip. It is not a canonical fixture:
+                # retain a visible, non-fatal coverage record and do not invent
+                # a tip or attempt its match detail.
+                _gap(
+                    _game_ref(season, game_no),
+                    "official_schedule_time",
+                    f"calendar game {game_no} has an unpinned date range {when!r}; no canonical game emitted",
+                    reason=CoverageState.NOT_APPLICABLE,
+                )
+                continue
             games.append(
                 CalendarGame(
                     game_no=game_no,
                     season=season,
                     home_name=canonical_team_name(home),
                     away_name=canonical_team_name(away),
-                    scheduled_utc=_parse_when(cells[2].text(), f"calendar game {game_no}"),
+                    scheduled_utc=_parse_when(when, f"calendar game {game_no}"),
                     phase=phase,
                     has_final=score is not None,
                 )
             )
-    if not games:
-        raise IdentityError(f"{PROVIDER}: calendar has no scoped games")
-    if len({game.game_no for game in games}) != len(games):
+    if len(set(game_numbers)) != len(game_numbers):
         raise IdentityError(f"{PROVIDER}: calendar has duplicate game numbers")
+    if not games and not unpinned_rows:
+        raise IdentityError(f"{PROVIDER}: calendar has no scoped games")
     return games
 
 
@@ -486,6 +520,7 @@ def calendar_final_count(
     """Count final-marked rows in one scoped calendar without fetching details."""
 
     del fetch_factory
+    _reset_gaps()
     return sum(item.has_final for item in _calendar(season, _text_fetch(text_fetch)))
 
 

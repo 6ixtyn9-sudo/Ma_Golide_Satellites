@@ -1620,6 +1620,7 @@ class Pipeline:
                 indexed_count = aba_liga.calendar_final_count(
                     current, text_fetch=self._aba_text_fetch()
                 )
+                self.gaps.extend(aba_liga.last_gaps())
             except Exception as exc:
                 self.gaps.append(
                     CoverageGap(
@@ -1696,6 +1697,9 @@ class Pipeline:
                 break
             adapter_gaps = aba_liga.last_gaps()
             self.gaps.extend(adapter_gaps)
+            blocking_gaps = [
+                gap for gap in adapter_gaps if gap.reason is not CoverageState.NOT_APPLICABLE
+            ]
             for game in games:
                 self.store.upsert_game(game)
                 base["events_acquired"] += 1
@@ -1713,10 +1717,12 @@ class Pipeline:
                 }
             )
             base["quarantined_rows"] += len(adapter_gaps)
-            if adapter_gaps:
+            if blocking_gaps:
                 # The adapter stops on the first bad detail. Retain the prior
                 # successful game in the cursor so that malformed game remains
-                # the next retry, never a silently skipped hole.
+                # the next retry, never a silently skipped hole. Benign
+                # unpinned future date ranges are visible gaps but do not
+                # prevent completed-result history from advancing.
                 if games:
                     after_game_no = int(games[-1].evidence[aba_liga.PROVIDER]["game_no"])
                     self._record_history_cursor(
