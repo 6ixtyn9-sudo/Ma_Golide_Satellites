@@ -5,7 +5,7 @@
       "logical_picks": 15
     },
     "2026-11-20": {
-      "frozen_fixtures": 1,
+      "frozen_fixtures": 4,
       "logical_picks": 13
     }
   },
@@ -976,6 +976,465 @@
         "scheduled_utc": "2026-11-20T17:30:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
+      },
+      "E2026-128": {
+        "decision_cutoff_utc": "2026-11-20T18:30:00Z",
+        "frozen_at": "2026-11-20T18:58:09Z",
+        "game_id": "E2026-128",
+        "league": "EUROLEAGUE",
+        "rows": [
+          {
+            "away": "Crvena Zvezda Meridianbet Belgrade",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.397593,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "20ab77621e56a0c5faf7f332cfb749503ccec3f881c06cebe5de830324463083",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "2260f2aee05acbebe869",
+            "game_id": "E2026-128",
+            "grade_status": "pending",
+            "home": "FC Barcelona",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "2260f2aee05acbebe869",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.33,
+            "role": null,
+            "scheduled_utc": "2026-11-20T19:30:00Z",
+            "selection": "Q1"
+          },
+          {
+            "away": "Crvena Zvezda Meridianbet Belgrade",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.648929,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 26,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "3aca23736347bd10964057c18ff07d1a77095630e5a375322780b90b14642d2f",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "97714e95bd02d1265f05",
+            "game_id": "E2026-128",
+            "grade_status": "pending",
+            "home": "FC Barcelona",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "97714e95bd02d1265f05",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.61,
+            "role": null,
+            "scheduled_utc": "2026-11-20T19:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Crvena Zvezda Meridianbet Belgrade",
+            "book": {
+              "book": "average",
+              "frozen": false,
+              "game_id": "E2026-128",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T18:38:11Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "aggregate_consensus",
+              "provider": "betexplorer",
+              "selected_decimal_price": 1.67,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.585741,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "f9a634eea7ab53e4b1ac5349cf545b2110a7227b9533818ff4dfb47994296fa3",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "price_not_named_bookmaker_quote",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0ffc961452ec4685f7bd",
+            "game_id": "E2026-128",
+            "grade_status": "pending",
+            "home": "FC Barcelona",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "0ffc961452ec4685f7bd",
+            "price_evidence": "AGGREGATE_CONSENSUS_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-20T19:30:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T19:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
+      "E2026-129": {
+        "decision_cutoff_utc": "2026-11-20T18:45:00Z",
+        "frozen_at": "2026-11-20T18:58:09Z",
+        "game_id": "E2026-129",
+        "league": "EUROLEAGUE",
+        "rows": [
+          {
+            "away": "Besiktas Fuzul Istanbul",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.357593,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "8a0ff1cec98c28f5f3b1cfcfdbbf150619febe793c2ef3f6a0b61f878e75de42",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7a87dd01e4e37c3a3366",
+            "game_id": "E2026-129",
+            "grade_status": "pending",
+            "home": "Partizan Mozzart Bet Belgrade",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "7a87dd01e4e37c3a3366",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.29,
+            "role": null,
+            "scheduled_utc": "2026-11-20T19:45:00Z",
+            "selection": "Q1"
+          },
+          {
+            "away": "Besiktas Fuzul Istanbul",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.648929,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 26,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "e5da93e653c579c5d696a4b30d0f327c1246f636fb014994eee2965395aa7604",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "137a4ee4f9cec6b2653d",
+            "game_id": "E2026-129",
+            "grade_status": "pending",
+            "home": "Partizan Mozzart Bet Belgrade",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "137a4ee4f9cec6b2653d",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.61,
+            "role": null,
+            "scheduled_utc": "2026-11-20T19:45:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Besiktas Fuzul Istanbul",
+            "book": {
+              "book": "average",
+              "frozen": false,
+              "game_id": "E2026-129",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T09:07:59Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "aggregate_consensus",
+              "provider": "betexplorer",
+              "selected_decimal_price": 1.42,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.555741,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "c7491927ff6a854548024b914be3395cb3cb168493bcf40f3a6ccde08a8bf5b2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "price_not_named_bookmaker_quote",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0a75195093a48f8ec777",
+            "game_id": "E2026-129",
+            "grade_status": "pending",
+            "home": "Partizan Mozzart Bet Belgrade",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "0a75195093a48f8ec777",
+            "price_evidence": "AGGREGATE_CONSENSUS_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-20T19:45:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T19:45:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
+      "E2026-130": {
+        "decision_cutoff_utc": "2026-11-20T18:15:00Z",
+        "frozen_at": "2026-11-20T18:58:09Z",
+        "game_id": "E2026-130",
+        "league": "EUROLEAGUE",
+        "rows": [
+          {
+            "away": "Real Madrid",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.367593,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "a8beec6795ad42e796a17b53410811ef0fbb6d966eb1e9b080d139b21d8395fd",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1ed9c46d72d9a6634542",
+            "game_id": "E2026-130",
+            "grade_status": "pending",
+            "home": "Olympiacos Piraeus",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "1ed9c46d72d9a6634542",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.3,
+            "role": null,
+            "scheduled_utc": "2026-11-20T19:15:00Z",
+            "selection": "Q1"
+          },
+          {
+            "away": "Real Madrid",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.668929,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 26,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "02f9618022c25a427ec768a35945cc230078c03ea9476b5ce92234eae3b7fff4",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "88bb55afc1d8c540156f",
+            "game_id": "E2026-130",
+            "grade_status": "pending",
+            "home": "Olympiacos Piraeus",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "88bb55afc1d8c540156f",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.63,
+            "role": null,
+            "scheduled_utc": "2026-11-20T19:15:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Real Madrid",
+            "book": {
+              "book": "average",
+              "frozen": false,
+              "game_id": "E2026-130",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T18:38:11Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "aggregate_consensus",
+              "provider": "betexplorer",
+              "selected_decimal_price": 1.77,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.595741,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "61344bd74560e61a46d8265fb481e9f60b18b349264c5d5e966331f980c51328",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "price_not_named_bookmaker_quote",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "713102c02285432804e6",
+            "game_id": "E2026-130",
+            "grade_status": "pending",
+            "home": "Olympiacos Piraeus",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "713102c02285432804e6",
+            "price_evidence": "AGGREGATE_CONSENSUS_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-20T19:15:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T19:15:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
       }
     }
   },
@@ -984,6 +1443,18 @@
     [
       "E2026-127",
       "2026-11-20T17:30:00Z"
+    ],
+    [
+      "E2026-130",
+      "2026-11-20T19:15:00Z"
+    ],
+    [
+      "E2026-128",
+      "2026-11-20T19:30:00Z"
+    ],
+    [
+      "E2026-129",
+      "2026-11-20T19:45:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
