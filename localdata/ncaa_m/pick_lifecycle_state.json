@@ -9,7 +9,7 @@
       "logical_picks": 233
     },
     "2026-11-20": {
-      "frozen_fixtures": 10,
+      "frozen_fixtures": 11,
       "logical_picks": 438
     }
   },
@@ -15947,6 +15947,355 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
       },
+      "401920066": {
+        "decision_cutoff_utc": "2026-11-20T20:30:00Z",
+        "frozen_at": "2026-11-20T20:42:14Z",
+        "game_id": "401920066",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Rhode Island Rams",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.573125,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 66,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "fabeb90179fb3ffeed8a0d96072d46bc22a6b5437794f04233cdcaff09855976",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "302c96cc5068c70d82ec",
+            "game_id": "401920066",
+            "grade_status": "pending",
+            "home": "Liberty Flames",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "302c96cc5068c70d82ec",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.7,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Rhode Island Rams",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920066",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T20:38:25Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.483746,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 37,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "09c9bd17a4bf79bc329e7c80bfe3205666baf783cc0fe95fb7fa63df61ac4454",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "c2fd967de05fa2739da0",
+            "game_id": "401920066",
+            "grade_status": "pending",
+            "home": "Liberty Flames",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "c2fd967de05fa2739da0",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-20T20:38:37Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.5344,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-20T21:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Rhode Island Rams",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920066",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T20:38:25Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.559479,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 66,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "73126ddf01b87d892910eadb080738b4fe58df5f84fa4d207a1e74f5b95e64d0",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "f9f9e15639194be0363f",
+            "game_id": "401920066",
+            "grade_status": "pending",
+            "home": "Liberty Flames",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "f9f9e15639194be0363f",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.72,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Rhode Island Rams",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920066",
+              "line": 1.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T20:38:25Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 2.05,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.583243,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "04f4cacea7b11122f2398694bc22a970ee1c951b033ec50ba46370e5a49cb87f",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d10cbe0a5424f3bd17fc",
+            "game_id": "401920066",
+            "grade_status": "pending",
+            "home": "Liberty Flames",
+            "league": "NCAA_M",
+            "line": 1.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "d10cbe0a5424f3bd17fc",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Rhode Island Rams",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920066",
+              "line": -1.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T20:08:55Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8333333333333335,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.580833,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 6,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "43a2dba0fc19ec1276fa6fbd2cc01944824053b8fd5b490a30e44cc8e3505ff2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "f97551b8413a06fb868d",
+            "game_id": "401920066",
+            "grade_status": "pending",
+            "home": "Liberty Flames",
+            "league": "NCAA_M",
+            "line": -1.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "f97551b8413a06fb868d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Rhode Island Rams",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920066",
+              "line": 141.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T20:38:25Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.484474,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "c3758b2274f94f1e40c785b43b8d2fb442f6b3bc93ce13d51efdbc8fe892a9c1",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "18d389fd9e2b375a69e2",
+            "game_id": "401920066",
+            "grade_status": "pending",
+            "home": "Liberty Flames",
+            "league": "NCAA_M",
+            "line": 141.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "18d389fd9e2b375a69e2",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:30:00Z",
+            "selection": "over"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T21:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
       "401920380": {
         "decision_cutoff_utc": "2026-11-20T19:00:00Z",
         "frozen_at": "2026-11-20T19:11:48Z",
@@ -17813,6 +18162,10 @@
     [
       "401922022",
       "2026-11-20T21:00:00Z"
+    ],
+    [
+      "401920066",
+      "2026-11-20T21:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
