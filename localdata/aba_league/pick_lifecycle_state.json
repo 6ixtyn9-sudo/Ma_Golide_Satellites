@@ -5,12 +5,239 @@
       "logical_picks": 0
     },
     "2026-11-20": {
-      "frozen_fixtures": 0,
+      "frozen_fixtures": 1,
       "logical_picks": 12
     }
   },
-  "frozen_by_date": {},
+  "frozen_by_date": {
+    "2026-11-20": {
+      "aba_liga:26:1:85": {
+        "decision_cutoff_utc": "2026-11-20T16:00:00Z",
+        "frozen_at": "2026-11-20T16:10:22Z",
+        "game_id": "aba_liga:26:1:85",
+        "league": "ABA_LEAGUE",
+        "rows": [
+          {
+            "away": "Igokea m:tel",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.295833,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 6,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "b279805fea462be7648119f53bbf2317690cbfe1a7074ca08bafcca5f16cd399",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a8bed318a5c4c8dcc94e",
+            "game_id": "aba_liga:26:1:85",
+            "grade_status": "pending",
+            "home": "FMP MrBit",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "a8bed318a5c4c8dcc94e",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.32,
+            "role": null,
+            "scheduled_utc": "2026-11-20T17:00:00Z",
+            "selection": "Q1"
+          },
+          {
+            "away": "Igokea m:tel",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.25,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "68ce785400fd10a5215d9d7192b1a7305786fb3008328318726aa223f78d9c09",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "8bac1b1c3d51ff6260fc",
+            "game_id": "aba_liga:26:1:85",
+            "grade_status": "pending",
+            "home": "FMP MrBit",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "8bac1b1c3d51ff6260fc",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.29,
+            "role": null,
+            "scheduled_utc": "2026-11-20T17:00:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "Igokea m:tel",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.533947,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "74d2513ecfc63a653479f6dd3e694366084608b0f8e6565228489cf939053258",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "18456af34f3ad0cddddd",
+            "game_id": "aba_liga:26:1:85",
+            "grade_status": "pending",
+            "home": "FMP MrBit",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "18456af34f3ad0cddddd",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-20T17:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Igokea m:tel",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.489991,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 1,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "6a313d5c371077e5e810e475ac868302b20ed0b7546b26782e5f83aa9d9a9179",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "324b041db271beef3277",
+            "game_id": "aba_liga:26:1:85",
+            "grade_status": "pending",
+            "home": "FMP MrBit",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "324b041db271beef3277",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.506329,
+            "role": null,
+            "scheduled_utc": "2026-11-20T17:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Igokea m:tel",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.636579,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "7dcd7d6242a6f06187deff6316b8252217e87c5166b3d5a9fb56f10870c30518",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "858d874947d96b5549f5",
+            "game_id": "aba_liga:26:1:85",
+            "grade_status": "pending",
+            "home": "FMP MrBit",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "858d874947d96b5549f5",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.63,
+            "role": null,
+            "scheduled_utc": "2026-11-20T17:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T17:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      }
+    }
+  },
   "league": "ABA_LEAGUE",
-  "pending_frozen_games": [],
+  "pending_frozen_games": [
+    [
+      "aba_liga:26:1:85",
+      "2026-11-20T17:00:00Z"
+    ]
+  ],
   "schema_version": "magolide.pick_lifecycle_state"
 }

@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 0,
+  "awaiting_game_legs": 3,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -832,6 +832,112 @@
       "staked_units": 5.0,
       "unresolved_result_legs": 0,
       "wins": 1
+    },
+    {
+      "awaiting_game_legs": 3,
+      "bank_units": 102.7688506008459,
+      "date": "2026-11-20",
+      "decision_id": "44770100101_nba_1_attempt_1",
+      "frozen_at": "2026-11-20T16:09:43Z",
+      "league": "NBA",
+      "losses": 0,
+      "pending_accas": 1,
+      "pending_positions": 1,
+      "pending_singles": 0,
+      "pending_units": 1.0,
+      "positions": [
+        {
+          "awaiting_game_legs": 3,
+          "bookmakers": [
+            "DraftKings"
+          ],
+          "combined_decimal_odds": 7.182,
+          "effective_decimal_odds": 7.181972789115646,
+          "estimated_joint_win_probability": 0.29549972,
+          "grade_status": "pending",
+          "leg_count": 3,
+          "leg_outcomes": [
+            null,
+            null,
+            null
+          ],
+          "legs": [
+            {
+              "away": "Charlotte Hornets",
+              "book": "DraftKings",
+              "book_provider": "espn",
+              "forecast_id": "7be01770b9dea7e53f1e",
+              "game_id": "401909305",
+              "grade_status": "pending",
+              "home": "Atlanta Hawks",
+              "line": -6.5,
+              "market": "spread",
+              "period": "full_game",
+              "pick_id": "7be01770b9dea7e53f1e",
+              "result_resolution_status": "awaiting_game",
+              "scheduled_utc": "2026-11-21T00:00:00Z",
+              "selected_decimal_price": 1.9523809523809523,
+              "selection": "away"
+            },
+            {
+              "away": "Indiana Pacers",
+              "book": "DraftKings",
+              "book_provider": "espn",
+              "forecast_id": "95cee36ed5285ee02070",
+              "game_id": "401909307",
+              "grade_status": "pending",
+              "home": "Cleveland Cavaliers",
+              "line": 233.5,
+              "market": "total",
+              "period": "full_game",
+              "pick_id": "95cee36ed5285ee02070",
+              "result_resolution_status": "awaiting_game",
+              "scheduled_utc": "2026-11-21T00:30:00Z",
+              "selected_decimal_price": 1.9433962264150944,
+              "selection": "under"
+            },
+            {
+              "away": "Houston Rockets",
+              "book": "DraftKings",
+              "book_provider": "espn",
+              "forecast_id": "a62b545c9369da9e3b08",
+              "game_id": "401909312",
+              "grade_status": "pending",
+              "home": "Denver Nuggets",
+              "line": 226.5,
+              "market": "total",
+              "period": "full_game",
+              "pick_id": "a62b545c9369da9e3b08",
+              "result_resolution_status": "awaiting_game",
+              "scheduled_utc": "2026-11-21T03:00:00Z",
+              "selected_decimal_price": 1.8928571428571428,
+              "selection": "under"
+            }
+          ],
+          "paper_only": true,
+          "provisional_leg_count": 3,
+          "provisional_sample_gate_bypassed": true,
+          "publication_index": 1,
+          "push_legs": 0,
+          "ranking_status": "paper_only_provisional_sample_gate_bypassed",
+          "result_unresolvable_legs": 0,
+          "stake_units": 1.0,
+          "ticket_id": "4717780664e261375441",
+          "ticket_type": "acca",
+          "unresolved_legs": 3
+        }
+      ],
+      "profit_units": null,
+      "pushes": 0,
+      "receipt_path": "auto_tickets_2026-11-20_decision.json",
+      "result_unresolvable_legs": 0,
+      "returned_units": null,
+      "settled_accas": 0,
+      "settled_positions": 0,
+      "settled_singles": 0,
+      "staked_units": 0,
+      "unresolved_result_legs": 3,
+      "wins": 0
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
@@ -839,11 +945,11 @@
   "league": "NBA",
   "losses": 6,
   "paper_bank_units": 102.7688506008459,
-  "paper_committed_units": 0,
-  "paper_free_units": 102.7688506008459,
+  "paper_committed_units": 1.0,
+  "paper_free_units": 101.7688506008459,
   "paper_only": true,
-  "pending_accas": 0,
-  "pending_positions": 0,
+  "pending_accas": 1,
+  "pending_positions": 1,
   "pending_singles": 0,
   "profit_units": 2.76885060084589,
   "pushes": 0,
@@ -856,6 +962,6 @@
   "settled_singles": 3,
   "settled_stake_units": 10.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 0,
+  "unresolved_result_legs": 3,
   "wins": 4
 }
