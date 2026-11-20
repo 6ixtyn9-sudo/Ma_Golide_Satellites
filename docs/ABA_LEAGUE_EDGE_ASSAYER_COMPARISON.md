@@ -7,8 +7,9 @@ Ma Golide's local Edge Factory review with the independently supplied Z.ai
 **Decision:** adopt the design review's evidence-first direction, with the
 corrections below. Do **not** implement the five-PR Z.ai implementation plan as
 written. In particular, do not register OddsPortal as an ABA schedule/result
-source, add a live ABA BetExplorer price lane, or create a new adapter until a
-source contract has been demonstrated and reviewed.
+source until its contract is demonstrated and reviewed. The existing
+BetExplorer adapter may be exercised only as a probationary aggregate research
+observation; it is not a named-book, ROI, ticket, or canonical-source lane.
 
 This decision makes no claim about ABA predictive edge, calibration, ticket
 eligibility, return on investment, price availability, or historical coverage.
@@ -92,16 +93,17 @@ explicitly approved, demonstrably reliable replacement.
 ### 3.2 BetExplorer evidence does not transfer from one competition to ABA
 
 `ingestion/providers/betexplorer.py` is live-verified only for the existing
-EuroLeague and CBA URLs. Adding an ABA URL would inherit a parser and an
-unreviewed reuse position, not an ABA verification. Before the ABA URL can be
-configured, capture and test an ABA page, verify the competition identity and
-clock semantics against the selected canonical schedule, and make a source-use
-policy decision.
+EuroLeague and CBA URLs. An ABA route inherits a parser and an unreviewed reuse
+position, not an ABA verification. It can therefore be exercised only as a
+probationary aggregate research observation; it does not supply canonical
+fixtures/results or named-book evidence. Capture and test an ABA page, verify
+its competition identity and clock semantics against the selected canonical
+schedule, and make a source-use policy decision before promoting its evidence
+label or depending on it operationally.
 
-Even then, the adapter provides only an observed, aggregate average moneyline
-pair before tip. It has no historical archive and no named-book attribution.
-It cannot justify an ABA ROI figure, strict ticket, receipt, bank, or execution
-claim.
+The adapter provides only an observed, aggregate average moneyline pair before
+tip. It has no historical archive and no named-book attribution. It cannot
+justify an ABA ROI figure, strict ticket, receipt, bank, or execution claim.
 
 ### 3.3 CSV.GZ is recoverable materialization, not Git-durable history
 

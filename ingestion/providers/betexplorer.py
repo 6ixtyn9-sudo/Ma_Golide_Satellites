@@ -1,12 +1,16 @@
-"""BetExplorer bookmaker-price adapter (EuroLeague and CBA moneyline).
+"""BetExplorer aggregate-moneyline adapter.
 
 Evidence status (see docs/PROVIDERS.md)
 --------------------------------------------------
-``LIVE_VERIFIED (live captures 2026-11-16; source terms unreviewed)``: the
-server-rendered fixture tables for
-``/basketball/europe/euroleague/fixtures/`` and
-``/basketball/china/cba/fixtures/`` were fetched live on 2026-11-16 and
-captured into ``tests/fixtures/betexplorer/``. Verified conventions:
+``LIVE_VERIFIED (live captures 2026-11-16; source terms unreviewed)`` applies
+only to the server-rendered EuroLeague and CBA fixture tables captured under
+``tests/fixtures/betexplorer/``. ``ABA_LEAGUE`` uses the same constrained
+full-game moneyline adapter shape as a **probationary research-only route**:
+its price policy remains aggregate/unresolved/probation and cannot supply a
+named-book ticket, receipt, bank, ROI, or execution quote. Its route must not
+be mistaken for a validated ABA schedule/result contract.
+
+Verified conventions for the captured EuroLeague/CBA pages:
 
 - One moneyline pair per match (header columns ``1``/``2``), decimal odds in
   ``data-odd`` attributes. Capped/empty odds cells are skipped — a missing
@@ -57,12 +61,26 @@ PROVIDER = "betexplorer"
 BOOK = "average"
 SITE_TZ = "Europe/Paris"
 EVIDENCE = "LIVE_VERIFIED (live captures 2026-11-16; source terms unreviewed)"
+ABA_EVIDENCE = "PROBATIONARY_RESEARCH_ONLY (no named-book, ticket, ROI, or execution use)"
 
 FIXTURES_URLS = {
     "EUROLEAGUE": "https://www.betexplorer.com/basketball/europe/euroleague/fixtures/",
     "CBA": "https://www.betexplorer.com/basketball/china/cba/fixtures/",
+    "ABA_LEAGUE": "https://www.betexplorer.com/basketball/europe/aba-league/fixtures/",
 }
 SUPPORTED_LEAGUES = frozenset(FIXTURES_URLS)
+
+
+def evidence_for(league: League | str) -> str:
+    """Return the competition-specific evidence label without overclaiming.
+
+    The HTML parser is shared, but its EuroLeague/CBA live captures do not
+    prove a separate ABA competition page or grant named-book evidence.
+    """
+
+    league_key = league.value if isinstance(league, League) else str(league).strip().upper()
+    _require_league(league_key)
+    return ABA_EVIDENCE if league_key == "ABA_LEAGUE" else EVIDENCE
 
 _ROW_RE = re.compile(r"<tr>(?:(?!</tr>).)*?</tr>", re.S)
 _LINK_RE = re.compile(
@@ -290,7 +308,7 @@ def smoke(
     return {
         "provider": PROVIDER,
         "league": league_key,
-        "verification": EVIDENCE,
+        "verification": evidence_for(league_key),
         "rows_seen": len(rows),
         "rows_with_datetime": len(dated),
         "rows_with_prices": len(priced),
@@ -303,11 +321,14 @@ def smoke(
 
 
 __all__ = [
+    "ABA_EVIDENCE",
     "BOOK",
     "EVIDENCE",
     "FIXTURES_URLS",
     "PROVIDER",
     "SITE_TZ",
+    "SUPPORTED_LEAGUES",
+    "evidence_for",
     "fetch_odds",
     "is_enabled",
     "last_quota",
