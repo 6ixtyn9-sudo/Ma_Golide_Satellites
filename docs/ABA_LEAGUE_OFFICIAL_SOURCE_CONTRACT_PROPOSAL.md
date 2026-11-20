@@ -82,17 +82,24 @@ minimal contract:
 
 ### Historical-completeness policy
 
-The historical floor remains 2001-02 (`season_end_year=2002`), with one explicit
-operator exclusion: **2008-09** (`season_end_year=2009`). Its legacy calendar
-layout has no verified canonical parser contract, so the pipeline does not fetch
-or fabricate that season. Instead it emits an
-`aba_liga_history_policy / not_applicable` gap, records
-`excluded_by_operator_policy` in the bounded history report, and advances only
-to the next older season. A terminal run therefore reports
+The historical floor remains 2001-02 (`season_end_year=2002`), with two explicit
+operator exclusions:
+
+- **2008-09** (`season_end_year=2009`): legacy calendar layout without a
+  verified canonical parser contract.
+- **2019-20** (`season_end_year=2020`): the season was cancelled by the ABA
+  League due to COVID-19, and its official calendar retains an unregistered
+  awarded-score row without reconcilable periods. The season-level COVID
+  cancellation does not itself validate that individual score as canonical.
+
+The pipeline does not fetch, fabricate, or label either excluded season as
+canonical history. Instead it emits an `aba_liga_history_policy / not_applicable`
+gap, records `excluded_by_operator_policy` in the bounded history report, and
+advances only to the next older season. A terminal run therefore reports
 `complete_to_policy_floor_with_exclusions`, not an unqualified complete-to-floor
-claim. This exclusion does not cover awarded/forfeit rows, scored unpinned rows,
-or any other historical season; those remain hard failures until separately
-approved and evidenced.
+claim. These exclusions do not cover other awarded/forfeit rows, scored
+unpinned rows, or any other historical season; those remain hard failures until
+separately approved and evidenced.
 
 `tests/test_aba_liga.py` uses synthetic contract examples to cover normal
 discovery/result parsing, DST interpretation, scope and team/time contradiction

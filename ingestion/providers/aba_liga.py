@@ -46,13 +46,17 @@ HOST = "https://www.aba-liga.com"
 SITE_TZ = "Europe/Belgrade"
 LEAGUE_ID = 1
 FIRST_SEASON_END_YEAR = 2002
-# 2008-09 is explicitly outside the historical-completeness target. Its
-# legacy calendar layout has no verified canonical parser contract, so the
-# pipeline records a visible policy exclusion rather than fabricating rows or
-# silently stepping around the season. Other problematic historical variants
-# are deliberately NOT covered by this exclusion.
+# These seasons are explicitly outside the historical-completeness target.
+# Their known row variants lack a verified canonical parser contract, so the
+# pipeline records visible policy exclusions rather than fabricating rows or
+# silently stepping around them. Other problematic historical variants are
+# deliberately NOT covered by this exclusion.
 HISTORY_EXCLUDED_SEASONS = {
     2009: "operator policy excludes 2008-09 pending a verified legacy calendar contract",
+    2020: (
+        "operator policy excludes 2019-20: the COVID-cancelled season retains "
+        "an official unregistered awarded-score row without reconcilable periods"
+    ),
 }
 EVIDENCE = (
     "ROUTE_CONTRACT_REFERENCED (external SportsDataverse documentation describes "

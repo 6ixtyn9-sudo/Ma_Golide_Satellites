@@ -501,7 +501,16 @@ def test_history_withholds_receipt_for_an_all_placeholder_calendar(tmp_path):
         store.close()
 
 
-def test_history_explicitly_excludes_2008_09_without_fetching_or_silent_skip():
+@pytest.mark.parametrize(
+    ("season", "next_season", "expected_text"),
+    (
+        (2009, 2008, "2008-09"),
+        (2020, 2019, "2019-20"),
+    ),
+)
+def test_history_explicitly_excludes_approved_season_without_fetching_or_silent_skip(
+    season, next_season, expected_text
+):
     store = InMemoryStore()
     store.persist = True
     store.upsert_provider_health(
@@ -511,7 +520,7 @@ def test_history_explicitly_excludes_2008_09_without_fetching_or_silent_skip():
             coverage={
                 "floor_season": 2002,
                 "last_game_no": 0,
-                "next_season": 2009,
+                "next_season": season,
             },
         )
     )
@@ -533,21 +542,21 @@ def test_history_explicitly_excludes_2008_09_without_fetching_or_silent_skip():
     deep = pipeline.backfill()["backfill"]["deep_history"]
 
     exclusion = {
-        "season_end_year": 2009,
+        "season_end_year": season,
         "status": "excluded_by_operator_policy",
-        "detail": aba.HISTORY_EXCLUDED_SEASONS[2009],
+        "detail": aba.HISTORY_EXCLUDED_SEASONS[season],
     }
     assert deep["excluded_seasons"] == [exclusion]
     assert deep["seasons"] == [exclusion]
     assert deep["cursor"] == {
         "floor_season": 2002,
         "last_game_no": 0,
-        "next_season": 2008,
+        "next_season": next_season,
     }
     assert any(
         gap.required_field == "aba_liga_history_policy"
         and gap.reason.value == "not_applicable"
-        and "2008-09" in gap.detail
+        and expected_text in gap.detail
         for gap in pipeline.gaps
     )
 
