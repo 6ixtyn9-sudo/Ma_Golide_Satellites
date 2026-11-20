@@ -5,7 +5,7 @@
       "logical_picks": 271
     },
     "2026-11-19": {
-      "frozen_fixtures": 23,
+      "frozen_fixtures": 25,
       "logical_picks": 230
     }
   },
@@ -12301,6 +12301,1080 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-19"
       },
+      "401920520": {
+        "decision_cutoff_utc": "2026-11-20T00:30:00Z",
+        "frozen_at": "2026-11-20T00:39:58Z",
+        "game_id": "401920520",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "alternative_probabilities": {
+              "away": 0.3,
+              "draw": 0.0,
+              "home": 0.7
+            },
+            "away": "Rutgers Scarlet Knights",
+            "book": null,
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.642586,
+            "calibration": {
+              "brier_score": 0.268954,
+              "calibration_version": "team_history_empirical-542f7e282358",
+              "league": "NCAA_M",
+              "log_loss": 0.74994,
+              "losses": 11,
+              "market": "moneyline",
+              "mean_raw_probability": 0.726071,
+              "minimum_samples": 30,
+              "n": 28,
+              "observed_win_rate": 0.607143,
+              "period": "H1",
+              "pool": "eligible",
+              "probability_adjustment": -0.057414,
+              "pushes": 0,
+              "source": "team_history_empirical",
+              "status": "provisional",
+              "sufficient_for_accas": false,
+              "wilson_lower_95": 0.452411,
+              "wins": 17
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "expected_margin": 6.625071162711393,
+            "expected_total": 71.46307022757512,
+            "explanation": {
+              "calibration": {
+                "brier_score": 0.268954,
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "log_loss": 0.74994,
+                "losses": 11,
+                "market": "moneyline",
+                "mean_raw_probability": 0.726071,
+                "minimum_samples": 30,
+                "n": 28,
+                "observed_win_rate": 0.607143,
+                "period": "H1",
+                "pool": "eligible",
+                "probability_adjustment": -0.057414,
+                "pushes": 0,
+                "source": "team_history_empirical",
+                "status": "provisional",
+                "sufficient_for_accas": false,
+                "wilson_lower_95": 0.452411,
+                "wins": 17
+              },
+              "effective_sample_size": 27.427923,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "no_exact_bookmaker_market",
+                  "insufficient_walk_forward_samples",
+                  "insufficient_team_specific_history"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": null,
+                "opposite_selection": null,
+                "selected_decimal_price": null
+              },
+              "provenance": {
+                "book": null,
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "market": "moneyline",
+                "period": "H1",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": -0.040538,
+                "candidate_probability": 0.6594619922053914,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.6425862068965517,
+                "ess": 27.427923,
+                "n": 28,
+                "probability": 0.6594619922053914,
+                "status": "provisional",
+                "weighted_n": 22.591928
+              }
+            },
+            "forecast_id": "0e1e6c8f373d90baded3",
+            "game_id": "401920520",
+            "grade_status": "pending",
+            "home": "UNLV Rebels",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "0e1e6c8f373d90baded3",
+            "prediction": null,
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.7,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-20T01:30:00Z",
+            "selection": "home",
+            "team_history": {
+              "away_effective_games": 9.988531,
+              "home_effective_games": 5.511667,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": false
+            },
+            "training_games": 1729
+          },
+          {
+            "alternative_probabilities": {
+              "away": 0.6152,
+              "home": 0.3848
+            },
+            "away": "Rutgers Scarlet Knights",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920520",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T00:38:45Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.6756756756756757,
+              "side_prices": {
+                "away": 1.6756756756756757,
+                "draw": null,
+                "home": 2.24,
+                "over": null,
+                "under": null
+              },
+              "source_modified_utc": null,
+              "source_permission": "unresolved",
+              "ticket_price_eligible": true
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.622839,
+            "calibration": {
+              "brier_score": 0.056074,
+              "calibration_version": "provider_prediction-7fb3e30d878d",
+              "league": "NCAA_M",
+              "log_loss": 0.270235,
+              "losses": 0,
+              "market": "moneyline",
+              "mean_raw_probability": 0.7632,
+              "minimum_samples": 30,
+              "n": 1,
+              "observed_win_rate": 1.0,
+              "period": "full_game",
+              "pool": "eligible",
+              "probability_adjustment": 0.007639,
+              "pushes": 0,
+              "source": "provider:espn",
+              "status": "provisional",
+              "sufficient_for_accas": false,
+              "wilson_lower_95": 0.269831,
+              "wins": 1
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "expected_margin": null,
+            "expected_total": null,
+            "explanation": {
+              "calibration": {
+                "brier_score": 0.056074,
+                "calibration_version": "provider_prediction-7fb3e30d878d",
+                "league": "NCAA_M",
+                "log_loss": 0.270235,
+                "losses": 0,
+                "market": "moneyline",
+                "mean_raw_probability": 0.7632,
+                "minimum_samples": 30,
+                "n": 1,
+                "observed_win_rate": 1.0,
+                "period": "full_game",
+                "pool": "eligible",
+                "probability_adjustment": 0.007639,
+                "pushes": 0,
+                "source": "provider:espn",
+                "status": "provisional",
+                "sufficient_for_accas": false,
+                "wilson_lower_95": 0.269831,
+                "wins": 1
+              },
+              "effective_sample_size": 1.0,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "insufficient_walk_forward_samples"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": 2.24,
+                "opposite_selection": "home",
+                "selected_decimal_price": 1.6756756756756757
+              },
+              "provenance": {
+                "book": {
+                  "book": "DraftKings",
+                  "frozen": false,
+                  "main_line": true,
+                  "observed_utc": "2026-11-20T00:38:45Z",
+                  "pre_match": true,
+                  "provider": "espn"
+                },
+                "prediction": {
+                  "frozen": false,
+                  "model": "espn-bpi",
+                  "model_version": "adapter:espn-bpi",
+                  "observed_utc": "2026-11-20T00:38:48Z",
+                  "produced_by": "ESPN BPI",
+                  "provider": "espn"
+                }
+              },
+              "segment": {
+                "calibration_version": "provider_prediction-7fb3e30d878d",
+                "league": "NCAA_M",
+                "market": "moneyline",
+                "period": "full_game",
+                "source": "provider:espn"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.007561,
+                "candidate_probability": 0.6227606123264249,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.6228387096774193,
+                "ess": 1.0,
+                "n": 1,
+                "probability": 0.6227606123264249,
+                "status": "provisional",
+                "weighted_n": 0.989439
+              }
+            },
+            "forecast_id": "39be3e85d5496073f3e8",
+            "game_id": "401920520",
+            "grade_status": "pending",
+            "home": "UNLV Rebels",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.11836,
+              "candidate_pick_count": 2,
+              "expected_value_per_unit": 0.043676,
+              "historical_pick_count": 1,
+              "individual_odds_band": "1.50-<2.00",
+              "league": "NCAA_M",
+              "losses": 0,
+              "market": "moneyline",
+              "model": "provider:espn",
+              "observed_roi": 0.617284,
+              "parent_roi": -0.018167,
+              "period": "full_game",
+              "probability_band": "0.60-<0.70",
+              "pushes": 0,
+              "qualified_candidate_pick_count": 2,
+              "qualifies": true,
+              "raw_profit_units": 0.617284,
+              "raw_stake": 1.0,
+              "recency_weighted_profit_units": 0.506749,
+              "recency_weighted_roi": 0.617284,
+              "weighted_history_stake": 0.820934,
+              "wins": 1
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "39be3e85d5496073f3e8",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-20T00:38:48Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.6152,
+            "residual_games": 0,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-20T01:30:00Z",
+            "selection": "away",
+            "team_history": null,
+            "training_games": 0
+          },
+          {
+            "alternative_probabilities": {
+              "away": 0.25,
+              "draw": 0.0,
+              "home": 0.75
+            },
+            "away": "Rutgers Scarlet Knights",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920520",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T00:38:45Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 2.24,
+              "side_prices": {
+                "away": 1.6756756756756757,
+                "draw": null,
+                "home": 2.24,
+                "over": null,
+                "under": null
+              },
+              "source_modified_utc": null,
+              "source_permission": "unresolved",
+              "ticket_price_eligible": true
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.638793,
+            "calibration": {
+              "brier_score": 0.325025,
+              "calibration_version": "team_history_empirical-542f7e282358",
+              "league": "NCAA_M",
+              "log_loss": 0.902888,
+              "losses": 13,
+              "market": "moneyline",
+              "mean_raw_probability": 0.766071,
+              "minimum_samples": 30,
+              "n": 28,
+              "observed_win_rate": 0.535714,
+              "period": "full_game",
+              "pool": "eligible",
+              "probability_adjustment": -0.111207,
+              "pushes": 0,
+              "source": "team_history_empirical",
+              "status": "provisional",
+              "sufficient_for_accas": false,
+              "wilson_lower_95": 0.384482,
+              "wins": 15
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "expected_margin": 11.339876706437167,
+            "expected_total": 154.62830287874982,
+            "explanation": {
+              "calibration": {
+                "brier_score": 0.325025,
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "log_loss": 0.902888,
+                "losses": 13,
+                "market": "moneyline",
+                "mean_raw_probability": 0.766071,
+                "minimum_samples": 30,
+                "n": 28,
+                "observed_win_rate": 0.535714,
+                "period": "full_game",
+                "pool": "eligible",
+                "probability_adjustment": -0.111207,
+                "pushes": 0,
+                "source": "team_history_empirical",
+                "status": "provisional",
+                "sufficient_for_accas": false,
+                "wilson_lower_95": 0.384482,
+                "wins": 15
+              },
+              "effective_sample_size": 27.427923,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "insufficient_walk_forward_samples",
+                  "insufficient_team_specific_history"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": 1.6756756756756757,
+                "opposite_selection": "away",
+                "selected_decimal_price": 2.24
+              },
+              "provenance": {
+                "book": {
+                  "book": "DraftKings",
+                  "frozen": false,
+                  "main_line": true,
+                  "observed_utc": "2026-11-20T00:38:45Z",
+                  "pre_match": true,
+                  "provider": "espn"
+                },
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "market": "moneyline",
+                "period": "full_game",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": -0.093853,
+                "candidate_probability": 0.656147174847814,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.6387931034482757,
+                "ess": 27.427923,
+                "n": 28,
+                "probability": 0.656147174847814,
+                "status": "provisional",
+                "weighted_n": 22.591928
+              }
+            },
+            "forecast_id": "c1ae94750d9ac17711e9",
+            "game_id": "401920520",
+            "grade_status": "pending",
+            "home": "UNLV Rebels",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "c1ae94750d9ac17711e9",
+            "prediction": null,
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.75,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-20T01:30:00Z",
+            "selection": "home",
+            "team_history": {
+              "away_effective_games": 9.988531,
+              "home_effective_games": 5.511667,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": false
+            },
+            "training_games": 1729
+          },
+          {
+            "alternative_probabilities": {
+              "away": 0.51,
+              "home": 0.49
+            },
+            "away": "Rutgers Scarlet Knights",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920520",
+              "line": 2.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T00:38:45Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "side_prices": {
+                "away": 1.8695652173913042,
+                "draw": null,
+                "home": 1.9523809523809523,
+                "over": null,
+                "under": null
+              },
+              "source_modified_utc": null,
+              "source_permission": "unresolved",
+              "ticket_price_eligible": true
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.524516,
+            "calibration": {
+              "brier_score": 0.2025,
+              "calibration_version": "team_history_empirical-542f7e282358",
+              "league": "NCAA_M",
+              "log_loss": 0.597837,
+              "losses": 0,
+              "market": "spread",
+              "mean_raw_probability": 0.55,
+              "minimum_samples": 30,
+              "n": 1,
+              "observed_win_rate": 1.0,
+              "period": "full_game",
+              "pool": "eligible",
+              "probability_adjustment": 0.014516,
+              "pushes": 0,
+              "source": "team_history_empirical",
+              "status": "provisional",
+              "sufficient_for_accas": false,
+              "wilson_lower_95": 0.269831,
+              "wins": 1
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "expected_margin": 11.339876706437167,
+            "expected_total": 154.62830287874982,
+            "explanation": {
+              "calibration": {
+                "brier_score": 0.2025,
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "log_loss": 0.597837,
+                "losses": 0,
+                "market": "spread",
+                "mean_raw_probability": 0.55,
+                "minimum_samples": 30,
+                "n": 1,
+                "observed_win_rate": 1.0,
+                "period": "full_game",
+                "pool": "eligible",
+                "probability_adjustment": 0.014516,
+                "pushes": 0,
+                "source": "team_history_empirical",
+                "status": "provisional",
+                "sufficient_for_accas": false,
+                "wilson_lower_95": 0.269831,
+                "wins": 1
+              },
+              "effective_sample_size": 1.0,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "insufficient_walk_forward_samples",
+                  "insufficient_team_specific_history"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": 1.9523809523809523,
+                "opposite_selection": "home",
+                "selected_decimal_price": 1.8695652173913042
+              },
+              "provenance": {
+                "book": {
+                  "book": "DraftKings",
+                  "frozen": false,
+                  "main_line": true,
+                  "observed_utc": "2026-11-20T00:38:45Z",
+                  "pre_match": true,
+                  "provider": "espn"
+                },
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "market": "spread",
+                "period": "full_game",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.014368,
+                "candidate_probability": 0.5243677176811284,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.5245161290322581,
+                "ess": 1.0,
+                "n": 1,
+                "probability": 0.5243677176811284,
+                "status": "provisional",
+                "weighted_n": 0.989439
+              }
+            },
+            "forecast_id": "3a7dfbab602a0130b764",
+            "game_id": "401920520",
+            "grade_status": "pending",
+            "home": "UNLV Rebels",
+            "league": "NCAA_M",
+            "line": 2.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "3a7dfbab602a0130b764",
+            "prediction": null,
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-20T01:30:00Z",
+            "selection": "away",
+            "team_history": {
+              "away_effective_games": 9.988531,
+              "home_effective_games": 5.511667,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": false
+            },
+            "training_games": 1729
+          },
+          {
+            "alternative_probabilities": {
+              "over": 0.52,
+              "under": 0.48
+            },
+            "away": "Rutgers Scarlet Knights",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920520",
+              "line": 157.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-19T16:38:07Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "side_prices": {
+                "away": null,
+                "draw": null,
+                "home": null,
+                "over": 1.9523809523809523,
+                "under": 1.8695652173913042
+              },
+              "source_modified_utc": null,
+              "source_permission": "unresolved",
+              "ticket_price_eligible": false
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.52,
+            "calibration": {
+              "adjustment": 0.0,
+              "calibration_version": "team_history_empirical-542f7e282358",
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "price_source_permission_unresolved",
+                "price_operational_validation_incomplete",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "expected_margin": 7.0151377312004115,
+            "expected_total": 157.00022778204706,
+            "explanation": {
+              "calibration": {
+                "adjustment": 0.0,
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "n": 0,
+                "status": "no_history",
+                "sufficient_for_accas": false
+              },
+              "effective_sample_size": 0.0,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "price_source_permission_unresolved",
+                  "price_operational_validation_incomplete",
+                  "insufficient_walk_forward_samples",
+                  "insufficient_team_specific_history"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": 1.8695652173913042,
+                "opposite_selection": "under",
+                "selected_decimal_price": 1.9523809523809523
+              },
+              "provenance": {
+                "book": {
+                  "book": "DraftKings",
+                  "frozen": false,
+                  "main_line": true,
+                  "observed_utc": "2026-11-19T16:38:07Z",
+                  "pre_match": true,
+                  "provider": "espn"
+                },
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "market": "total",
+                "period": "full_game",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.0,
+                "candidate_probability": 0.52,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.52,
+                "ess": 0.0,
+                "n": 0,
+                "probability": 0.52,
+                "status": "no_history",
+                "weighted_n": 0.0
+              }
+            },
+            "forecast_id": "18bdc038bfc03c829a2c",
+            "game_id": "401920520",
+            "grade_status": "pending",
+            "home": "UNLV Rebels",
+            "league": "NCAA_M",
+            "line": 157.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "18bdc038bfc03c829a2c",
+            "prediction": null,
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-20T01:30:00Z",
+            "selection": "over",
+            "team_history": {
+              "away_effective_games": 6.323919,
+              "home_effective_games": 4.67077,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": false
+            },
+            "training_games": 1227
+          },
+          {
+            "alternative_probabilities": {
+              "over": 0.51,
+              "under": 0.49
+            },
+            "away": "Rutgers Scarlet Knights",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920520",
+              "line": 156.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-19T15:08:24Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "side_prices": {
+                "away": null,
+                "draw": null,
+                "home": null,
+                "over": 1.8695652173913042,
+                "under": 1.9523809523809523
+              },
+              "source_modified_utc": null,
+              "source_permission": "unresolved",
+              "ticket_price_eligible": false
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.51,
+            "calibration": {
+              "adjustment": 0.0,
+              "calibration_version": "team_history_empirical-542f7e282358",
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "price_source_permission_unresolved",
+                "price_operational_validation_incomplete",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "expected_margin": 4.724785726827463,
+            "expected_total": 156.1702394618575,
+            "explanation": {
+              "calibration": {
+                "adjustment": 0.0,
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "n": 0,
+                "status": "no_history",
+                "sufficient_for_accas": false
+              },
+              "effective_sample_size": 0.0,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "price_source_permission_unresolved",
+                  "price_operational_validation_incomplete",
+                  "insufficient_walk_forward_samples",
+                  "insufficient_team_specific_history"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": 1.9523809523809523,
+                "opposite_selection": "under",
+                "selected_decimal_price": 1.8695652173913042
+              },
+              "provenance": {
+                "book": {
+                  "book": "DraftKings",
+                  "frozen": false,
+                  "main_line": true,
+                  "observed_utc": "2026-11-19T15:08:24Z",
+                  "pre_match": true,
+                  "provider": "espn"
+                },
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "market": "total",
+                "period": "full_game",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.0,
+                "candidate_probability": 0.51,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.51,
+                "ess": 0.0,
+                "n": 0,
+                "probability": 0.51,
+                "status": "no_history",
+                "weighted_n": 0.0
+              }
+            },
+            "forecast_id": "3d0ff9d860985e67dfd5",
+            "game_id": "401920520",
+            "grade_status": "pending",
+            "home": "UNLV Rebels",
+            "league": "NCAA_M",
+            "line": 156.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "3d0ff9d860985e67dfd5",
+            "prediction": null,
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-20T01:30:00Z",
+            "selection": "over",
+            "team_history": {
+              "away_effective_games": 5.511667,
+              "home_effective_games": 4.67077,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": false
+            },
+            "training_games": 1077
+          },
+          {
+            "alternative_probabilities": {
+              "over": 0.48,
+              "under": 0.52
+            },
+            "away": "Rutgers Scarlet Knights",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920520",
+              "line": 157.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T00:38:45Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "side_prices": {
+                "away": null,
+                "draw": null,
+                "home": null,
+                "over": 1.8695652173913042,
+                "under": 1.9523809523809523
+              },
+              "source_modified_utc": null,
+              "source_permission": "unresolved",
+              "ticket_price_eligible": true
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.52,
+            "calibration": {
+              "adjustment": 0.0,
+              "calibration_version": "team_history_empirical-542f7e282358",
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "expected_margin": 11.339876706437167,
+            "expected_total": 154.62830287874982,
+            "explanation": {
+              "calibration": {
+                "adjustment": 0.0,
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "n": 0,
+                "status": "no_history",
+                "sufficient_for_accas": false
+              },
+              "effective_sample_size": 0.0,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "insufficient_walk_forward_samples",
+                  "insufficient_team_specific_history"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": 1.8695652173913042,
+                "opposite_selection": "over",
+                "selected_decimal_price": 1.9523809523809523
+              },
+              "provenance": {
+                "book": {
+                  "book": "DraftKings",
+                  "frozen": false,
+                  "main_line": true,
+                  "observed_utc": "2026-11-20T00:38:45Z",
+                  "pre_match": true,
+                  "provider": "espn"
+                },
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "market": "total",
+                "period": "full_game",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.0,
+                "candidate_probability": 0.52,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.52,
+                "ess": 0.0,
+                "n": 0,
+                "probability": 0.52,
+                "status": "no_history",
+                "weighted_n": 0.0
+              }
+            },
+            "forecast_id": "d7761c5000183f025321",
+            "game_id": "401920520",
+            "grade_status": "pending",
+            "home": "UNLV Rebels",
+            "league": "NCAA_M",
+            "line": 157.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "d7761c5000183f025321",
+            "prediction": null,
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-20T01:30:00Z",
+            "selection": "under",
+            "team_history": {
+              "away_effective_games": 9.988531,
+              "home_effective_games": 5.511667,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": false
+            },
+            "training_games": 1729
+          }
+        ],
+        "scheduled_utc": "2026-11-20T01:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-19"
+      },
       "401920845": {
         "decision_cutoff_utc": "2026-11-20T00:00:00Z",
         "frozen_at": "2026-11-20T00:10:42Z",
@@ -14355,6 +15429,1121 @@
           }
         ],
         "scheduled_utc": "2026-11-20T00:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-19"
+      },
+      "401920888": {
+        "decision_cutoff_utc": "2026-11-20T00:30:00Z",
+        "frozen_at": "2026-11-20T00:39:58Z",
+        "game_id": "401920888",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "alternative_probabilities": {
+              "away": 0.1,
+              "draw": 0.0,
+              "home": 0.9
+            },
+            "away": "Seton Hall Pirates",
+            "book": null,
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.842586,
+            "calibration": {
+              "brier_score": 0.268954,
+              "calibration_version": "team_history_empirical-542f7e282358",
+              "league": "NCAA_M",
+              "log_loss": 0.74994,
+              "losses": 11,
+              "market": "moneyline",
+              "mean_raw_probability": 0.726071,
+              "minimum_samples": 30,
+              "n": 28,
+              "observed_win_rate": 0.607143,
+              "period": "H1",
+              "pool": "eligible",
+              "probability_adjustment": -0.057414,
+              "pushes": 0,
+              "source": "team_history_empirical",
+              "status": "provisional",
+              "sufficient_for_accas": false,
+              "wilson_lower_95": 0.452411,
+              "wins": 17
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "expected_margin": 14.334567784799138,
+            "expected_total": 68.75452434526423,
+            "explanation": {
+              "calibration": {
+                "brier_score": 0.268954,
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "log_loss": 0.74994,
+                "losses": 11,
+                "market": "moneyline",
+                "mean_raw_probability": 0.726071,
+                "minimum_samples": 30,
+                "n": 28,
+                "observed_win_rate": 0.607143,
+                "period": "H1",
+                "pool": "eligible",
+                "probability_adjustment": -0.057414,
+                "pushes": 0,
+                "source": "team_history_empirical",
+                "status": "provisional",
+                "sufficient_for_accas": false,
+                "wilson_lower_95": 0.452411,
+                "wins": 17
+              },
+              "effective_sample_size": 27.427923,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "no_exact_bookmaker_market",
+                  "insufficient_walk_forward_samples"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": null,
+                "opposite_selection": null,
+                "selected_decimal_price": null
+              },
+              "provenance": {
+                "book": null,
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "market": "moneyline",
+                "period": "H1",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": -0.040538,
+                "candidate_probability": 0.8594619922053914,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.8425862068965517,
+                "ess": 27.427923,
+                "n": 28,
+                "probability": 0.8594619922053914,
+                "status": "provisional",
+                "weighted_n": 22.591928
+              }
+            },
+            "forecast_id": "124ea988ab5124fffc2a",
+            "game_id": "401920888",
+            "grade_status": "pending",
+            "home": "Wisconsin Badgers",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "124ea988ab5124fffc2a",
+            "prediction": null,
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-20T01:30:00Z",
+            "selection": "home",
+            "team_history": {
+              "away_effective_games": 8.598404,
+              "home_effective_games": 15.661363,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": true
+            },
+            "training_games": 1729
+          },
+          {
+            "alternative_probabilities": {
+              "away": 0.3541,
+              "home": 0.6459
+            },
+            "away": "Seton Hall Pirates",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920888",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T00:38:45Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.4587155963302751,
+              "side_prices": {
+                "away": 2.8,
+                "draw": null,
+                "home": 1.4587155963302751,
+                "over": null,
+                "under": null
+              },
+              "source_modified_utc": null,
+              "source_permission": "unresolved",
+              "ticket_price_eligible": true
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.653539,
+            "calibration": {
+              "brier_score": 0.056074,
+              "calibration_version": "provider_prediction-7fb3e30d878d",
+              "league": "NCAA_M",
+              "log_loss": 0.270235,
+              "losses": 0,
+              "market": "moneyline",
+              "mean_raw_probability": 0.7632,
+              "minimum_samples": 30,
+              "n": 1,
+              "observed_win_rate": 1.0,
+              "period": "full_game",
+              "pool": "eligible",
+              "probability_adjustment": 0.007639,
+              "pushes": 0,
+              "source": "provider:espn",
+              "status": "provisional",
+              "sufficient_for_accas": false,
+              "wilson_lower_95": 0.269831,
+              "wins": 1
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "expected_margin": null,
+            "expected_total": null,
+            "explanation": {
+              "calibration": {
+                "brier_score": 0.056074,
+                "calibration_version": "provider_prediction-7fb3e30d878d",
+                "league": "NCAA_M",
+                "log_loss": 0.270235,
+                "losses": 0,
+                "market": "moneyline",
+                "mean_raw_probability": 0.7632,
+                "minimum_samples": 30,
+                "n": 1,
+                "observed_win_rate": 1.0,
+                "period": "full_game",
+                "pool": "eligible",
+                "probability_adjustment": 0.007639,
+                "pushes": 0,
+                "source": "provider:espn",
+                "status": "provisional",
+                "sufficient_for_accas": false,
+                "wilson_lower_95": 0.269831,
+                "wins": 1
+              },
+              "effective_sample_size": 1.0,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "insufficient_walk_forward_samples"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": 2.8,
+                "opposite_selection": "away",
+                "selected_decimal_price": 1.4587155963302751
+              },
+              "provenance": {
+                "book": {
+                  "book": "DraftKings",
+                  "frozen": false,
+                  "main_line": true,
+                  "observed_utc": "2026-11-20T00:38:45Z",
+                  "pre_match": true,
+                  "provider": "espn"
+                },
+                "prediction": {
+                  "frozen": false,
+                  "model": "espn-bpi",
+                  "model_version": "adapter:espn-bpi",
+                  "observed_utc": "2026-11-20T00:38:48Z",
+                  "produced_by": "ESPN BPI",
+                  "provider": "espn"
+                }
+              },
+              "segment": {
+                "calibration_version": "provider_prediction-7fb3e30d878d",
+                "league": "NCAA_M",
+                "market": "moneyline",
+                "period": "full_game",
+                "source": "provider:espn"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.007561,
+                "candidate_probability": 0.6534606123264249,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.6535387096774193,
+                "ess": 1.0,
+                "n": 1,
+                "probability": 0.6534606123264249,
+                "status": "provisional",
+                "weighted_n": 0.989439
+              }
+            },
+            "forecast_id": "5396117a98c4c3562679",
+            "game_id": "401920888",
+            "grade_status": "pending",
+            "home": "Wisconsin Badgers",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "5396117a98c4c3562679",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-20T00:38:48Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.6459,
+            "residual_games": 0,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-20T01:30:00Z",
+            "selection": "home",
+            "team_history": null,
+            "training_games": 0
+          },
+          {
+            "alternative_probabilities": {
+              "away": 0.09,
+              "draw": 0.0,
+              "home": 0.91
+            },
+            "away": "Seton Hall Pirates",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920888",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T00:38:45Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.4587155963302751,
+              "side_prices": {
+                "away": 2.8,
+                "draw": null,
+                "home": 1.4587155963302751,
+                "over": null,
+                "under": null
+              },
+              "source_modified_utc": null,
+              "source_permission": "unresolved",
+              "ticket_price_eligible": true
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.798793,
+            "calibration": {
+              "brier_score": 0.325025,
+              "calibration_version": "team_history_empirical-542f7e282358",
+              "league": "NCAA_M",
+              "log_loss": 0.902888,
+              "losses": 13,
+              "market": "moneyline",
+              "mean_raw_probability": 0.766071,
+              "minimum_samples": 30,
+              "n": 28,
+              "observed_win_rate": 0.535714,
+              "period": "full_game",
+              "pool": "eligible",
+              "probability_adjustment": -0.111207,
+              "pushes": 0,
+              "source": "team_history_empirical",
+              "status": "provisional",
+              "sufficient_for_accas": false,
+              "wilson_lower_95": 0.384482,
+              "wins": 15
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "expected_margin": 20.72227209489953,
+            "expected_total": 147.16929085798367,
+            "explanation": {
+              "calibration": {
+                "brier_score": 0.325025,
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "log_loss": 0.902888,
+                "losses": 13,
+                "market": "moneyline",
+                "mean_raw_probability": 0.766071,
+                "minimum_samples": 30,
+                "n": 28,
+                "observed_win_rate": 0.535714,
+                "period": "full_game",
+                "pool": "eligible",
+                "probability_adjustment": -0.111207,
+                "pushes": 0,
+                "source": "team_history_empirical",
+                "status": "provisional",
+                "sufficient_for_accas": false,
+                "wilson_lower_95": 0.384482,
+                "wins": 15
+              },
+              "effective_sample_size": 27.427923,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "insufficient_walk_forward_samples"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": 2.8,
+                "opposite_selection": "away",
+                "selected_decimal_price": 1.4587155963302751
+              },
+              "provenance": {
+                "book": {
+                  "book": "DraftKings",
+                  "frozen": false,
+                  "main_line": true,
+                  "observed_utc": "2026-11-20T00:38:45Z",
+                  "pre_match": true,
+                  "provider": "espn"
+                },
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "market": "moneyline",
+                "period": "full_game",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": -0.093853,
+                "candidate_probability": 0.8161471748478141,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.7987931034482758,
+                "ess": 27.427923,
+                "n": 28,
+                "probability": 0.8161471748478141,
+                "status": "provisional",
+                "weighted_n": 22.591928
+              }
+            },
+            "forecast_id": "b4d15916d1729bcd7a4c",
+            "game_id": "401920888",
+            "grade_status": "pending",
+            "home": "Wisconsin Badgers",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": null,
+              "candidate_pick_count": 1,
+              "expected_value_per_unit": 0.165212,
+              "historical_pick_count": 0,
+              "individual_odds_band": "1.20-<1.50",
+              "league": "NCAA_M",
+              "losses": 0,
+              "market": "moneyline",
+              "model": "team_history_empirical",
+              "observed_roi": null,
+              "parent_roi": 0.012087,
+              "period": "full_game",
+              "probability_band": "0.70-<0.80",
+              "pushes": 0,
+              "qualified_candidate_pick_count": 0,
+              "qualifies": false,
+              "raw_profit_units": 0.0,
+              "raw_stake": 0.0,
+              "recency_weighted_profit_units": 0.0,
+              "recency_weighted_roi": null,
+              "weighted_history_stake": 0.0,
+              "wins": 0
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "b4d15916d1729bcd7a4c",
+            "prediction": null,
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.91,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-20T01:30:00Z",
+            "selection": "home",
+            "team_history": {
+              "away_effective_games": 8.598404,
+              "home_effective_games": 15.661363,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": true
+            },
+            "training_games": 1729
+          },
+          {
+            "alternative_probabilities": {
+              "away": 0.51,
+              "home": 0.49
+            },
+            "away": "Seton Hall Pirates",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920888",
+              "line": -5.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-19T23:38:24Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "side_prices": {
+                "away": 1.8928571428571428,
+                "draw": null,
+                "home": 1.925925925925926,
+                "over": null,
+                "under": null
+              },
+              "source_modified_utc": null,
+              "source_permission": "unresolved",
+              "ticket_price_eligible": true
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.525161,
+            "calibration": {
+              "brier_score": 0.2209,
+              "calibration_version": "team_history_empirical-542f7e282358",
+              "league": "NCAA_M",
+              "log_loss": 0.634878,
+              "losses": 0,
+              "market": "spread",
+              "mean_raw_probability": 0.53,
+              "minimum_samples": 30,
+              "n": 1,
+              "observed_win_rate": 1.0,
+              "period": "full_game",
+              "pool": "eligible",
+              "probability_adjustment": 0.015161,
+              "pushes": 0,
+              "source": "team_history_empirical",
+              "status": "provisional",
+              "sufficient_for_accas": false,
+              "wilson_lower_95": 0.269831,
+              "wins": 1
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "expected_margin": 18.623459946458183,
+            "expected_total": 148.0856544791625,
+            "explanation": {
+              "calibration": {
+                "brier_score": 0.2209,
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "log_loss": 0.634878,
+                "losses": 0,
+                "market": "spread",
+                "mean_raw_probability": 0.53,
+                "minimum_samples": 30,
+                "n": 1,
+                "observed_win_rate": 1.0,
+                "period": "full_game",
+                "pool": "eligible",
+                "probability_adjustment": 0.015161,
+                "pushes": 0,
+                "source": "team_history_empirical",
+                "status": "provisional",
+                "sufficient_for_accas": false,
+                "wilson_lower_95": 0.269831,
+                "wins": 1
+              },
+              "effective_sample_size": 1.0,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "insufficient_walk_forward_samples",
+                  "insufficient_team_specific_history"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": 1.925925925925926,
+                "opposite_selection": "home",
+                "selected_decimal_price": 1.8928571428571428
+              },
+              "provenance": {
+                "book": {
+                  "book": "DraftKings",
+                  "frozen": false,
+                  "main_line": true,
+                  "observed_utc": "2026-11-19T23:38:24Z",
+                  "pre_match": true,
+                  "provider": "espn"
+                },
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "market": "spread",
+                "period": "full_game",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.015036,
+                "candidate_probability": 0.5250364473092183,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.5251612903225806,
+                "ess": 1.0,
+                "n": 1,
+                "probability": 0.5250364473092183,
+                "status": "provisional",
+                "weighted_n": 0.991494
+              }
+            },
+            "forecast_id": "0367ac2ce148dc13c52c",
+            "game_id": "401920888",
+            "grade_status": "pending",
+            "home": "Wisconsin Badgers",
+            "league": "NCAA_M",
+            "line": -5.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "0367ac2ce148dc13c52c",
+            "prediction": null,
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-20T01:30:00Z",
+            "selection": "away",
+            "team_history": {
+              "away_effective_games": 7.866362,
+              "home_effective_games": 12.495741,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": false
+            },
+            "training_games": 1629
+          },
+          {
+            "alternative_probabilities": {
+              "away": 0.49,
+              "home": 0.51
+            },
+            "away": "Seton Hall Pirates",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920888",
+              "line": -5.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T00:08:45Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "side_prices": {
+                "away": 1.8928571428571428,
+                "draw": null,
+                "home": 1.925925925925926,
+                "over": null,
+                "under": null
+              },
+              "source_modified_utc": null,
+              "source_permission": "unresolved",
+              "ticket_price_eligible": true
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.524839,
+            "calibration": {
+              "brier_score": 0.2116,
+              "calibration_version": "team_history_empirical-542f7e282358",
+              "league": "NCAA_M",
+              "log_loss": 0.616186,
+              "losses": 0,
+              "market": "spread",
+              "mean_raw_probability": 0.54,
+              "minimum_samples": 30,
+              "n": 1,
+              "observed_win_rate": 1.0,
+              "period": "full_game",
+              "pool": "eligible",
+              "probability_adjustment": 0.014839,
+              "pushes": 0,
+              "source": "team_history_empirical",
+              "status": "provisional",
+              "sufficient_for_accas": false,
+              "wilson_lower_95": 0.269831,
+              "wins": 1
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "expected_margin": 20.95176960571294,
+            "expected_total": 147.69330425873883,
+            "explanation": {
+              "calibration": {
+                "brier_score": 0.2116,
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "log_loss": 0.616186,
+                "losses": 0,
+                "market": "spread",
+                "mean_raw_probability": 0.54,
+                "minimum_samples": 30,
+                "n": 1,
+                "observed_win_rate": 1.0,
+                "period": "full_game",
+                "pool": "eligible",
+                "probability_adjustment": 0.014839,
+                "pushes": 0,
+                "source": "team_history_empirical",
+                "status": "provisional",
+                "sufficient_for_accas": false,
+                "wilson_lower_95": 0.269831,
+                "wins": 1
+              },
+              "effective_sample_size": 1.0,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "insufficient_walk_forward_samples"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": 1.8928571428571428,
+                "opposite_selection": "away",
+                "selected_decimal_price": 1.925925925925926
+              },
+              "provenance": {
+                "book": {
+                  "book": "DraftKings",
+                  "frozen": false,
+                  "main_line": true,
+                  "observed_utc": "2026-11-20T00:08:45Z",
+                  "pre_match": true,
+                  "provider": "espn"
+                },
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "market": "spread",
+                "period": "full_game",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.014702,
+                "candidate_probability": 0.5247016647221578,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.5248387096774194,
+                "ess": 1.0,
+                "n": 1,
+                "probability": 0.5247016647221578,
+                "status": "provisional",
+                "weighted_n": 0.990459
+              }
+            },
+            "forecast_id": "de41b46784ab3e1f9b54",
+            "game_id": "401920888",
+            "grade_status": "pending",
+            "home": "Wisconsin Badgers",
+            "league": "NCAA_M",
+            "line": -5.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.193963,
+              "candidate_pick_count": 2,
+              "expected_value_per_unit": 0.0108,
+              "historical_pick_count": 15,
+              "individual_odds_band": "1.50-<2.00",
+              "league": "NCAA_M",
+              "losses": 9,
+              "market": "spread",
+              "model": "team_history_empirical",
+              "observed_roi": -0.240949,
+              "parent_roi": -0.083255,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualified_candidate_pick_count": 0,
+              "qualifies": false,
+              "raw_profit_units": -3.614237,
+              "raw_stake": 15.0,
+              "recency_weighted_profit_units": -2.802888,
+              "recency_weighted_roi": -0.220036,
+              "weighted_history_stake": 12.738293,
+              "wins": 6
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "de41b46784ab3e1f9b54",
+            "prediction": null,
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-20T01:30:00Z",
+            "selection": "home",
+            "team_history": {
+              "away_effective_games": 8.598404,
+              "home_effective_games": 14.160762,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": true
+            },
+            "training_games": 1679
+          },
+          {
+            "alternative_probabilities": {
+              "over": 0.55,
+              "under": 0.45
+            },
+            "away": "Seton Hall Pirates",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920888",
+              "line": 139.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-19T16:38:07Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "side_prices": {
+                "away": null,
+                "draw": null,
+                "home": null,
+                "over": 1.9090909090909092,
+                "under": 1.9090909090909092
+              },
+              "source_modified_utc": null,
+              "source_permission": "unresolved",
+              "ticket_price_eligible": false
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.55,
+            "calibration": {
+              "adjustment": 0.0,
+              "calibration_version": "team_history_empirical-542f7e282358",
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "price_source_permission_unresolved",
+                "price_operational_validation_incomplete",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "expected_margin": 15.962253137239799,
+            "expected_total": 144.39723401433835,
+            "explanation": {
+              "calibration": {
+                "adjustment": 0.0,
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "n": 0,
+                "status": "no_history",
+                "sufficient_for_accas": false
+              },
+              "effective_sample_size": 0.0,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "price_source_permission_unresolved",
+                  "price_operational_validation_incomplete",
+                  "insufficient_walk_forward_samples",
+                  "insufficient_team_specific_history"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": 1.9090909090909092,
+                "opposite_selection": "under",
+                "selected_decimal_price": 1.9090909090909092
+              },
+              "provenance": {
+                "book": {
+                  "book": "DraftKings",
+                  "frozen": false,
+                  "main_line": true,
+                  "observed_utc": "2026-11-19T16:38:07Z",
+                  "pre_match": true,
+                  "provider": "espn"
+                },
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "market": "total",
+                "period": "full_game",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.0,
+                "candidate_probability": 0.55,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.55,
+                "ess": 0.0,
+                "n": 0,
+                "probability": 0.55,
+                "status": "no_history",
+                "weighted_n": 0.0
+              }
+            },
+            "forecast_id": "92f64d9efd0f740b86c7",
+            "game_id": "401920888",
+            "grade_status": "pending",
+            "home": "Wisconsin Badgers",
+            "league": "NCAA_M",
+            "line": 139.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "92f64d9efd0f740b86c7",
+            "prediction": null,
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-20T01:30:00Z",
+            "selection": "over",
+            "team_history": {
+              "away_effective_games": 5.511667,
+              "home_effective_games": 5.511667,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": false
+            },
+            "training_games": 1227
+          },
+          {
+            "alternative_probabilities": {
+              "over": 0.58,
+              "under": 0.42
+            },
+            "away": "Seton Hall Pirates",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920888",
+              "line": 138.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T00:38:45Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "side_prices": {
+                "away": null,
+                "draw": null,
+                "home": null,
+                "over": 1.9090909090909092,
+                "under": 1.9090909090909092
+              },
+              "source_modified_utc": null,
+              "source_permission": "unresolved",
+              "ticket_price_eligible": true
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.58,
+            "calibration": {
+              "adjustment": 0.0,
+              "calibration_version": "team_history_empirical-542f7e282358",
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "expected_margin": 20.72227209489953,
+            "expected_total": 147.16929085798367,
+            "explanation": {
+              "calibration": {
+                "adjustment": 0.0,
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "n": 0,
+                "status": "no_history",
+                "sufficient_for_accas": false
+              },
+              "effective_sample_size": 0.0,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "insufficient_walk_forward_samples"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": 1.9090909090909092,
+                "opposite_selection": "under",
+                "selected_decimal_price": 1.9090909090909092
+              },
+              "provenance": {
+                "book": {
+                  "book": "DraftKings",
+                  "frozen": false,
+                  "main_line": true,
+                  "observed_utc": "2026-11-20T00:38:45Z",
+                  "pre_match": true,
+                  "provider": "espn"
+                },
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-542f7e282358",
+                "league": "NCAA_M",
+                "market": "total",
+                "period": "full_game",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.0,
+                "candidate_probability": 0.58,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.58,
+                "ess": 0.0,
+                "n": 0,
+                "probability": 0.58,
+                "status": "no_history",
+                "weighted_n": 0.0
+              }
+            },
+            "forecast_id": "d22d12cc03b9778cc638",
+            "game_id": "401920888",
+            "grade_status": "pending",
+            "home": "Wisconsin Badgers",
+            "league": "NCAA_M",
+            "line": 138.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "d22d12cc03b9778cc638",
+            "prediction": null,
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "residual_games": 100,
+            "role": null,
+            "scheduled_utc": "2026-11-20T01:30:00Z",
+            "selection": "over",
+            "team_history": {
+              "away_effective_games": 8.598404,
+              "home_effective_games": 15.661363,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": true
+            },
+            "training_games": 1729
+          }
+        ],
+        "scheduled_utc": "2026-11-20T01:30:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-19"
       },
@@ -20419,10 +22608,6 @@
   "league": "NCAA_M",
   "pending_frozen_games": [
     [
-      "401920519",
-      "2026-11-19T22:00:00Z"
-    ],
-    [
       "401918959",
       "2026-11-19T23:00:00Z"
     ],
@@ -20505,6 +22690,14 @@
     [
       "401929409",
       "2026-11-20T01:00:00Z"
+    ],
+    [
+      "401920520",
+      "2026-11-20T01:30:00Z"
+    ],
+    [
+      "401920888",
+      "2026-11-20T01:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
