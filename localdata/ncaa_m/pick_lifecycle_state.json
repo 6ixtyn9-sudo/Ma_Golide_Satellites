@@ -9,8 +9,8 @@
       "logical_picks": 233
     },
     "2026-11-20": {
-      "frozen_fixtures": 5,
-      "logical_picks": 426
+      "frozen_fixtures": 6,
+      "logical_picks": 431
     }
   },
   "frozen_by_date": {
@@ -14573,6 +14573,425 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
       },
+      "401919019": {
+        "decision_cutoff_utc": "2026-11-20T18:00:00Z",
+        "frozen_at": "2026-11-20T18:13:27Z",
+        "game_id": "401919019",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "UAB Blazers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.629891,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 62,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "ad1c6f8f27cab36f9208f70457553af9028b18e8d8934a84b44d5569c47e5ab1",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "234d969b39bdaeabda73",
+            "game_id": "401919019",
+            "grade_status": "pending",
+            "home": "George Washington Revolutionaries",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "234d969b39bdaeabda73",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.77,
+            "role": null,
+            "scheduled_utc": "2026-11-20T19:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UAB Blazers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401919019",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T18:08:41Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.2127659574468086,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.675109,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 62,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "9cea113972abfe306aeb869a73ad510ec8bd422fa59613c11973aabc40cd5740",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "57f47082d135b61821f7",
+            "game_id": "401919019",
+            "grade_status": "pending",
+            "home": "George Washington Revolutionaries",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "57f47082d135b61821f7",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.85,
+            "role": null,
+            "scheduled_utc": "2026-11-20T19:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UAB Blazers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401919019",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T18:08:41Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.2127659574468086,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.672736,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 36,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "b8716b69664dd3723dae95527b2b5e7dcd5664f2ffe89ceabc2c4a1f9192a89b",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6dd10ca8d137c7f84351",
+            "game_id": "401919019",
+            "grade_status": "pending",
+            "home": "George Washington Revolutionaries",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.167347,
+              "historical_pick_count": 2,
+              "individual_odds_band": "1.20-<1.50",
+              "losses": 1,
+              "market": "moneyline",
+              "observed_roi": -0.346154,
+              "period": "full_game",
+              "probability_band": "0.60-<0.70",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.343793,
+              "wins": 1
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "6dd10ca8d137c7f84351",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-20T18:08:49Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.7242,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-20T19:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UAB Blazers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401919019",
+              "line": -9.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T18:08:41Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.847457627118644,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.538919,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "c9c4afa4805b76bc6406f804efa4d18bdabbf69214d78bac921f0cc5c00394c9",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "3b9dc4b2c84b5eac8458",
+            "game_id": "401919019",
+            "grade_status": "pending",
+            "home": "George Washington Revolutionaries",
+            "league": "NCAA_M",
+            "line": -9.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "3b9dc4b2c84b5eac8458",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-20T19:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "UAB Blazers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401919019",
+              "line": -10.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T13:08:26Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.847457627118644,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.542162,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "2955b525b002078873851ea911ac0e5af16c889c8a4786cd5ea62e4e7f423cca",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5d964cfc463a2bf2c2d9",
+            "game_id": "401919019",
+            "grade_status": "pending",
+            "home": "George Washington Revolutionaries",
+            "league": "NCAA_M",
+            "line": -10.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "5d964cfc463a2bf2c2d9",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-20T19:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "UAB Blazers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401919019",
+              "line": 149.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T12:38:41Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.506757,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "26b2a6b086d865b450bd139e6f16680693a1e9cb841ba5846ef4fbac69f677ba",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0d28ebe416a982190fd8",
+            "game_id": "401919019",
+            "grade_status": "pending",
+            "home": "George Washington Revolutionaries",
+            "league": "NCAA_M",
+            "line": 149.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "0d28ebe416a982190fd8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-20T19:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "UAB Blazers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401919019",
+              "line": 150.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T18:08:41Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.518947,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "e7137e2a41174041cc7a6df22a184e868016faa8a725e5382755274a1bd840c0",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "3c3bc37d46d3d0c87b0f",
+            "game_id": "401919019",
+            "grade_status": "pending",
+            "home": "George Washington Revolutionaries",
+            "league": "NCAA_M",
+            "line": 150.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "3c3bc37d46d3d0c87b0f",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-20T19:00:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T19:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
       "401921418": {
         "decision_cutoff_utc": "2026-11-20T16:30:00Z",
         "frozen_at": "2026-11-20T16:42:13Z",
@@ -15322,10 +15741,6 @@
   "league": "NCAA_M",
   "pending_frozen_games": [
     [
-      "401918454",
-      "2026-11-20T16:00:00Z"
-    ],
-    [
       "401909698",
       "2026-11-20T17:00:00Z"
     ],
@@ -15340,6 +15755,10 @@
     [
       "401921418",
       "2026-11-20T17:30:00Z"
+    ],
+    [
+      "401919019",
+      "2026-11-20T19:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
