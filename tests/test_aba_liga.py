@@ -57,12 +57,15 @@ MATCH = """
 """
 
 ADMINISTRATIVE_CALENDAR = CALENDAR.replace("93 : 97", "20 : 0")
+EMPTY_PERIOD_CONTAINER = (
+    '<table id="match_cetrtine_rezultat"><tbody><tr></tr><tr></tr></tbody></table>'
+)
 ADMINISTRATIVE_MATCH = MATCH.replace("93 : 97", "20 : 0").replace(
     '<table id="match_cetrtine_rezultat"><tbody>\n'
     '<tr><td>Q1</td><td>Q2</td><td>Q3</td><td>Q4</td></tr>\n'
     '<tr><td>21 : 24</td><td>25 : 24</td><td>20 : 23</td><td>27 : 26</td></tr>\n'
-    "</tbody></table>\n",
-    "",
+    "</tbody></table>",
+    EMPTY_PERIOD_CONTAINER,
 )
 RETROACTIVELY_REGISTERED_MATCH = MATCH.replace("93 : 97", "20 : 0").replace(
     "</body></html>",
@@ -360,6 +363,95 @@ def test_default_forfeit_score_requires_and_records_generic_administrative_dispo
     assert gap.reason.value == "not_applicable"
 
 
+def test_administrative_tip_verification_accepts_local_time_but_not_a_different_clock():
+    local_time_match = ADMINISTRATIVE_MATCH.replace("19:30 CET", "19:30 Local time")
+
+    def fetch(url: str) -> str:
+        return ADMINISTRATIVE_CALENDAR if "/calendar/" in url else local_time_match
+
+    games, _attempted, exhausted, _count = aba.season_finals(2026, text_fetch=fetch)
+    assert games == []
+    assert exhausted is True
+    assert aba.last_administrative_dispositions()[0].calendar_has_exact_tip is True
+
+    wrong_clock = local_time_match.replace("19:30 Local time", "20:30 Local time")
+
+    def wrong_clock_fetch(url: str) -> str:
+        return ADMINISTRATIVE_CALENDAR if "/calendar/" in url else wrong_clock
+
+    games, _attempted, exhausted, _count = aba.season_finals(2026, text_fetch=wrong_clock_fetch)
+    assert games == []
+    assert exhausted is False
+    assert aba.last_administrative_dispositions() == []
+    assert "scheduled time contradicts calendar" in aba.last_gaps()[0].detail
+
+
+def test_administrative_identity_uses_scoped_team_ids_not_city_or_sponsor_display_suffix():
+    calendar = ADMINISTRATIVE_CALENDAR.replace(
+        "Budućnost VOLI <span>:</span> Spartak Office Shoes",
+        "Koper Primorska <span>:</span> Partizan Mozzart Bet",
+    )
+    suffixed_detail = (
+        ADMINISTRATIVE_MATCH.replace("Budućnost VOLI", "Koper Primorska")
+        .replace("Spartak Office Shoes", "Partizan Mozzart Bet Beograd")
+    )
+
+    def fetch(url: str) -> str:
+        return calendar if "/calendar/" in url else suffixed_detail
+
+    games, _attempted, exhausted, _count = aba.season_finals(2026, text_fetch=fetch)
+    assert games == []
+    assert exhausted is True
+    assert len(aba.last_administrative_dispositions()) == 1
+
+    out_of_scope = suffixed_detail.replace("/team/91/25/1/", "/team/91/24/1/")
+
+    def out_of_scope_fetch(url: str) -> str:
+        return calendar if "/calendar/" in url else out_of_scope
+
+    games, _attempted, exhausted, _count = aba.season_finals(2026, text_fetch=out_of_scope_fetch)
+    assert games == []
+    assert exhausted is False
+    assert aba.last_administrative_dispositions() == []
+    assert "outside requested scope" in aba.last_gaps()[0].detail
+
+
+def test_nonempty_but_unreadable_period_table_still_blocks_default_score():
+    malformed_periods = ADMINISTRATIVE_MATCH.replace(
+        EMPTY_PERIOD_CONTAINER,
+        "<table id=\"match_cetrtine_rezultat\"><tbody>"
+        "<tr><td>Q1</td><td>Q2</td><td>Q3</td><td>Q4</td></tr>"
+        "<tr><td></td><td></td><td></td><td></td></tr>"
+        "</tbody></table>",
+    )
+
+    def fetch(url: str) -> str:
+        return ADMINISTRATIVE_CALENDAR if "/calendar/" in url else malformed_periods
+
+    games, _attempted, exhausted, _count = aba.season_finals(2026, text_fetch=fetch)
+    assert games == []
+    assert exhausted is False
+    assert aba.last_administrative_dispositions() == []
+    assert "malformed" in aba.last_gaps()[0].detail
+
+
+def test_retroactive_marker_must_be_in_match_content_paragraph():
+    marker_outside_content = MATCH.replace("93 : 97", "20 : 0").replace(
+        "</body></html>",
+        "<div>This match took place, but has been later registered with official result.</div>"
+        "</body></html>",
+    )
+
+    def fetch(url: str) -> str:
+        return ADMINISTRATIVE_CALENDAR if "/calendar/" in url else marker_outside_content
+
+    games, _attempted, exhausted, _count = aba.season_finals(2026, text_fetch=fetch)
+    assert games == []
+    assert exhausted is False
+    assert aba.last_administrative_dispositions() == []
+    assert "does not reconcile" in aba.last_gaps()[0].detail
+
+
 def test_retroactively_registered_default_is_administrative_but_a_played_20_to_0_is_not():
     def retroactive_fetch(url: str) -> str:
         return ADMINISTRATIVE_CALENDAR if "/calendar/" in url else RETROACTIVELY_REGISTERED_MATCH
@@ -543,7 +635,7 @@ def test_history_receipt_separates_verified_administrative_dispositions(tmp_path
                 "calendar_final_count": 1,
                 "reconciled_final_count": 0,
                 "administrative_disposition_count": 1,
-                "not_applicable_rows": 1,
+                "not_applicable_rows": 0,
                 "blocking_gap_count": 0,
                 "status": "calendar_terminal_count_reconciled",
                 "source": "aba_liga",
@@ -844,7 +936,7 @@ def test_parser_rejects_a_calendar_scope_or_malformed_score():
         aba.parse_calendar(CALENDAR.replace('value="25/1/" selected', 'value="25/1/"'), 2026)
     with pytest.raises(IdentityError, match="calendar result"):
         aba.parse_calendar(CALENDAR.replace("93 : 97", "FINAL"), 2026)
-    with pytest.raises(IdentityError, match="no readable CET/CEST timestamp"):
+    with pytest.raises(IdentityError, match="no readable CET/CEST/Local time timestamp"):
         aba.parse_calendar(CALENDAR.replace("Friday, 10.10.2025 20:00 CET", "TBD"), 2026)
     with pytest.raises(IdentityError, match="completed calendar game 7 has an unpinned date range"):
         aba.parse_calendar(

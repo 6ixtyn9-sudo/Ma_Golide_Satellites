@@ -1698,7 +1698,9 @@ class Pipeline:
                 "reconciled_final_count": reconciled_final_count,
                 "administrative_disposition_count": administrative_count,
                 "not_applicable_rows": sum(
-                    gap.reason is CoverageState.NOT_APPLICABLE for gap in adapter_gaps
+                    gap.reason is CoverageState.NOT_APPLICABLE
+                    and gap.required_field != "official_administrative_disposition"
+                    for gap in adapter_gaps
                 ),
                 "blocking_gap_count": 0,
                 "status": "calendar_terminal_count_reconciled",
