@@ -379,7 +379,9 @@ def _calendar_match_ref(cell: _Node) -> Optional[tuple[_Node, int, int, int]]:
     The historic calendar contract put this link in ``p.hidden-xs``.  The
     route itself is the identity authority, not that presentation wrapper, so
     accept its relocation within the same event cell.  Multiple route-shaped
-    anchors remain ambiguous and fail closed.
+    anchors to distinct routes remain ambiguous and fail closed.  Responsive
+    markup may repeat a link to the *same* route; those are presentation
+    duplicates, not competing event identities.
     """
 
     matches: List[tuple[_Node, int, int, int]] = []
@@ -389,9 +391,22 @@ def _calendar_match_ref(cell: _Node) -> Optional[tuple[_Node, int, int, int]]:
         if match is not None:
             game_no, season_key_value, league_id = (int(value) for value in match.groups())
             matches.append((anchor, game_no, season_key_value, league_id))
-    if len(matches) > 1:
+    matchup_matches = [
+        candidate
+        for candidate in matches
+        if any(span.text() == ":" for span in candidate[0].direct("span"))
+    ]
+    # A link that is not itself the displayed home/away matchup cannot supply
+    # this row's identity.  Responsive/icon/related links are therefore not
+    # competing event identities when the cell contains one explicit matchup.
+    candidates = matchup_matches or matches
+    identities = {
+        (game_no, season_key_value, league_id)
+        for _, game_no, season_key_value, league_id in candidates
+    }
+    if len(identities) > 1:
         raise IdentityError(f"{PROVIDER}: calendar row has ambiguous scoped match links")
-    return matches[0] if matches else None
+    return candidates[0] if candidates else None
 
 
 def _unlinked_calendar_row_has_score_or_time(row_text: str) -> bool:

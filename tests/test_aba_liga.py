@@ -128,10 +128,34 @@ def test_calendar_uses_a_scoped_match_route_outside_legacy_hidden_xs_wrapper():
     assert [game.game_no for game in games] == [6, 7]
 
 
-def test_calendar_rejects_ambiguous_scoped_match_links_in_one_event_cell():
+def test_calendar_accepts_duplicate_scoped_match_links_for_the_same_event():
+    calendar = CALENDAR.replace(
+        "Spartak Office Shoes</a>",
+        'Spartak Office Shoes</a><a href="/match/6/25/1/Overview">Match details</a>',
+        1,
+    )
+
+    games = aba.parse_calendar(calendar, 2026)
+
+    assert [game.game_no for game in games] == [6, 7]
+
+
+def test_calendar_ignores_a_non_matchup_scoped_link_in_the_event_cell():
     calendar = CALENDAR.replace(
         "Spartak Office Shoes</a>",
         'Spartak Office Shoes</a><a href="/match/8/25/1/Overview">Other fixture</a>',
+        1,
+    )
+
+    games = aba.parse_calendar(calendar, 2026)
+
+    assert [game.game_no for game in games] == [6, 7]
+
+
+def test_calendar_rejects_distinct_matchup_scoped_links_in_one_event_cell():
+    calendar = CALENDAR.replace(
+        "Spartak Office Shoes</a>",
+        'Spartak Office Shoes</a><a href="/match/8/25/1/Overview">Other <span>:</span> fixture</a>',
         1,
     )
 
