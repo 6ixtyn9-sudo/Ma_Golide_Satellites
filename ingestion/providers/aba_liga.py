@@ -373,6 +373,38 @@ def _is_default_forfeit_score(score: Optional[tuple[int, int]]) -> bool:
     return score in {(20, 0), (0, 20)}
 
 
+def _calendar_match_ref(cell: _Node) -> Optional[tuple[_Node, int, int, int]]:
+    """Return the sole official match route exposed by a calendar event cell.
+
+    The historic calendar contract put this link in ``p.hidden-xs``.  The
+    route itself is the identity authority, not that presentation wrapper, so
+    accept its relocation within the same event cell.  Multiple route-shaped
+    anchors remain ambiguous and fail closed.
+    """
+
+    matches: List[tuple[_Node, int, int, int]] = []
+    for anchor in cell.find_all(tag="a"):
+        href = anchor.attrs.get("href", "")
+        match = re.search(r"/match/(\d+)/(\d+)/(\d+)/Overview", href)
+        if match is not None:
+            game_no, season_key_value, league_id = (int(value) for value in match.groups())
+            matches.append((anchor, game_no, season_key_value, league_id))
+    if len(matches) > 1:
+        raise IdentityError(f"{PROVIDER}: calendar row has ambiguous scoped match links")
+    return matches[0] if matches else None
+
+
+def _unlinked_calendar_row_has_score_or_time(row_text: str) -> bool:
+    """Whether an unlinked row could be an event that requires identity.
+
+    A date-only placeholder is explicitly unpinned rather than timed.  Any
+    score-shaped value or wall-clock time makes an unlinked row unsafe to
+    discard: without its match route we cannot assign it a canonical event.
+    """
+
+    return bool(re.search(r"\d+\s*:\s*\d+|\b\d{1,2}:\d{2}\b", row_text))
+
+
 def parse_calendar(html: str, season: int) -> List[CalendarGame]:
     """Parse a scoped official season calendar without inventing identities."""
     root = _dom(html)
@@ -407,13 +439,26 @@ def parse_calendar(html: str, season: int) -> List[CalendarGame]:
             undated_placeholder = len(cells) == 1
             if len(cells) != len(labels) and not undated_placeholder:
                 raise IdentityError(f"{PROVIDER}: calendar row width {len(cells)} != {len(labels)}")
-            full = cells[0].find(tag="p", class_name="hidden-xs")
-            anchor = full.find(tag="a") if full else None
-            href = anchor.attrs.get("href", "") if anchor else ""
-            match = re.search(r"/match/(\d+)/(\d+)/(\d+)/Overview", href)
-            if match is None or anchor is None:
-                raise IdentityError(f"{PROVIDER}: calendar row lacks a scoped match link")
-            game_no, sez, lea = (int(value) for value in match.groups())
+            match_ref = _calendar_match_ref(cells[0])
+            if match_ref is None:
+                row_text = " ".join(cell.text() for cell in cells)
+                if _unlinked_calendar_row_has_score_or_time(row_text):
+                    raise IdentityError(
+                        f"{PROVIDER}: calendar has an unlinked scored or timed row"
+                    )
+                # A row with no match route cannot establish a canonical event
+                # identity.  It is only safe to treat as an unpinned
+                # non-event/placeholder after excluding scores and exact times;
+                # record the omission visibly without retaining source text.
+                _gap(
+                    None,
+                    "official_schedule_identity",
+                    "calendar contains an unlinked, unscored, untimed row; "
+                    "no canonical game emitted",
+                    reason=CoverageState.NOT_APPLICABLE,
+                )
+                continue
+            anchor, game_no, sez, lea = match_ref
             if (sez, lea) != expected:
                 raise IdentityError(f"{PROVIDER}: calendar link {sez}/{lea} is outside requested scope")
             game_numbers.append(game_no)
