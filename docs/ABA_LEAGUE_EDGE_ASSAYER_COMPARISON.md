@@ -14,6 +14,13 @@ observation; it is not a named-book, ROI, ticket, or canonical-source lane.
 This decision makes no claim about ABA predictive edge, calibration, ticket
 eligibility, return on investment, price availability, or historical coverage.
 
+**Implementation update (2026-11-18):** an inactive, hermetic parser proposal
+for the documented official-site candidate now lives in
+[`ABA_LEAGUE_OFFICIAL_SOURCE_CONTRACT_PROPOSAL.md`](ABA_LEAGUE_OFFICIAL_SOURCE_CONTRACT_PROPOSAL.md).
+It does not fetch live pages, alter the registry, or satisfy Phase 0; it makes
+the future contract's scope/identity/finality/reconciliation refusal rules
+reviewable before any source-use approval.
+
 ## 1. Executive comparison
 
 | Topic | Local Edge/Ma Golide review | Z.ai design review | Z.ai implementation plan | Decision |
