@@ -67,10 +67,24 @@ ADMINISTRATIVE_MATCH = MATCH.replace("93 : 97", "20 : 0").replace(
     "</tbody></table>",
     EMPTY_PERIOD_CONTAINER,
 )
-RETROACTIVELY_REGISTERED_MATCH = MATCH.replace("93 : 97", "20 : 0").replace(
-    "</body></html>",
-    "<p>This match took place, but has been later registered with official result. "
-    "Statistics of the players from this match have been annulled.</p></body></html>",
+MATCH_CONTENT = MATCH.replace(
+    "<html><body>", "<html><body><div id=\"match_content\">"
+).replace("</body></html>", "</div></body></html>")
+RETROACTIVELY_REGISTERED_MATCH = (
+    MATCH_CONTENT.replace("93 : 97", "20 : 0")
+    .replace(
+        '<table id="match_cetrtine_rezultat"><tbody>\n'
+        '<tr><td>Q1</td><td>Q2</td><td>Q3</td><td>Q4</td></tr>\n'
+        '<tr><td>21 : 24</td><td>25 : 24</td><td>20 : 23</td><td>27 : 26</td></tr>\n'
+        "</tbody></table>",
+        EMPTY_PERIOD_CONTAINER,
+    )
+    .replace(
+        "</div></body></html>",
+        "<div><i>This match took place, but has been later registered with official result. "
+        "Statistics of the players from this match have been annulled.</i></div>"
+        "</div></body></html>",
+    )
 )
 PLAYED_TWENTY_TO_ZERO_MATCH = (
     MATCH.replace("93 : 97", "20 : 0")
@@ -435,11 +449,11 @@ def test_nonempty_but_unreadable_period_table_still_blocks_default_score():
     assert "malformed" in aba.last_gaps()[0].detail
 
 
-def test_retroactive_marker_must_be_in_match_content_paragraph():
-    marker_outside_content = MATCH.replace("93 : 97", "20 : 0").replace(
-        "</body></html>",
-        "<div>This match took place, but has been later registered with official result.</div>"
-        "</body></html>",
+def test_retroactive_marker_must_be_in_match_content_subtree():
+    marker_outside_content = MATCH_CONTENT.replace("93 : 97", "20 : 0").replace(
+        "</div></body></html>",
+        "</div><div><i>This match took place, but has been later registered with official result."
+        "</i></div></body></html>",
     )
 
     def fetch(url: str) -> str:

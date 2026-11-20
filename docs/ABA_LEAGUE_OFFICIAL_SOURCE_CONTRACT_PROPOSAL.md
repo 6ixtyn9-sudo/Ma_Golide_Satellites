@@ -138,6 +138,8 @@ would not take place and records the `0:20` award under the league bylaws
 The current official match archive can also state that a match took place but
 was later registered with an official result, with player statistics annulled
 ([example event](https://www.aba-liga.com/match/63/20/1/Boxscore/q1/1/home/krka-koper-primorska/)).
+The marker is accepted only inside the event's common match-detail subtree;
+text elsewhere on the page cannot classify an administrative disposition.
 Direct review on 2026-11-20 also observed that the latter archive page displays
 its historical tip as `Local time`, while an ordinary 2020/21 played final
 continues to display `CET`; the former's score is administrative despite retained

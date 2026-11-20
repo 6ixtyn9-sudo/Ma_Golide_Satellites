@@ -620,13 +620,55 @@ def _period_data_is_absent(root: _Node) -> bool:
     )
 
 
-def _has_retroactive_registration_marker(root: _Node) -> bool:
-    """Find the official annulment sentence in a match-content paragraph."""
+def _match_content_root(root: _Node) -> Optional[_Node]:
+    """Return the narrow common detail subtree for one official match page.
 
+    A retroactive-registration sentence is authoritative only when it belongs
+    to the event's own detail content. The full document can also contain site
+    navigation, news, or unrelated copy, so a whole-page marker scan is not a
+    valid event assertion. If the page no longer groups the primary event
+    blocks beneath a concrete subtree, return ``None`` and leave the row on
+    the existing fail-closed path.
+    """
+
+    basic_info = root.find(tag="div", ident="basic_match_info")
+    clubs = root.find(tag="div", ident="match_clubs_and_results_info_table")
+    if basic_info is None or clubs is None:
+        return None
+    blocks: List[_Node] = [basic_info, clubs]
+    period_table = root.find(tag="table", ident="match_cetrtine_rezultat")
+    if period_table is not None:
+        blocks.append(period_table)
+    ancestors: List[List[_Node]] = []
+    for block in blocks:
+        chain: List[_Node] = []
+        node = block
+        while node is not None:
+            chain.append(node)
+            node = node.parent
+        ancestors.append(chain)
+    shared = set(id(node) for node in ancestors[0])
+    for chain in ancestors[1:]:
+        shared &= {id(node) for node in chain}
+    # ``ancestors[0]`` runs from the closest event block outwards, so the
+    # first shared non-document node is the narrowest reliable event subtree.
+    for node in ancestors[0]:
+        if id(node) in shared and node.tag not in {"root", "html", "body"}:
+            return node
+    return None
+
+
+def _has_retroactive_registration_marker(root: _Node) -> bool:
+    """Find the official annulment sentence inside verified match content."""
+
+    content = _match_content_root(root)
+    if content is None:
+        return False
     marker = "this match took place, but has been later registered with official result"
+    nodes = [content, *content.find_all()]
     return any(
-        marker in node.text().casefold()
-        for node in root.find_all(tag="p")
+        node.tag in {"p", "div", "td", "i"} and marker in node.text().casefold()
+        for node in nodes
     )
 
 
