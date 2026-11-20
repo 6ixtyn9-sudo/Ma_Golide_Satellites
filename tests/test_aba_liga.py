@@ -128,6 +128,39 @@ def test_calendar_uses_a_scoped_match_route_outside_legacy_hidden_xs_wrapper():
     assert [game.game_no for game in games] == [6, 7]
 
 
+def test_calendar_accepts_a_scoped_live_match_route_for_the_same_event_identity():
+    calendar = CALENDAR.replace(
+        "/match/7/25/1/Overview",
+        "/match-live/7/25/1/Overview",
+    )
+
+    games = aba.parse_calendar(calendar, 2026)
+
+    assert [(game.game_no, game.home_name, game.away_name) for game in games] == [
+        (6, "Budućnost VOLI", "Spartak Office Shoes"),
+        (7, "Budućnost VOLI", "FMP"),
+    ]
+
+
+def test_discovery_verifies_a_live_calendar_route_through_the_stable_detail_path():
+    calendar = CALENDAR.replace(
+        "/match/6/25/1/Overview",
+        "/match-live/6/25/1/Overview",
+    )
+
+    def fetch(url: str) -> str:
+        if "/calendar/25/1/" in url:
+            return calendar
+        if "/match/6/25/1/Overview" in url:
+            return MATCH
+        raise AssertionError(f"unexpected ABA contract URL: {url}")
+
+    games = aba.discover_games("20251005", text_fetch=fetch)
+
+    assert [game.game_id for game in games] == ["aba_liga:25:1:6"]
+    assert games[0].provider_ids == {"aba_liga": "25:1:6"}
+
+
 def test_calendar_accepts_duplicate_scoped_match_links_for_the_same_event():
     calendar = CALENDAR.replace(
         "Spartak Office Shoes</a>",

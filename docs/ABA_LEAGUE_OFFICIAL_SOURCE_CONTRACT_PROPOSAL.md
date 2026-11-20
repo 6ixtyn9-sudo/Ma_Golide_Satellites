@@ -24,6 +24,7 @@ externally referenced contract routes:
 | Role | Proposed route | Required scope |
 | --- | --- | --- |
 | Complete season calendar | `/calendar/{sez}/1/` | `sez = season_end_year - 2001`; ABA League `league_id = 1` |
+| Calendar event identity | `/match/{game_no}/{sez}/1/Overview` or `/match-live/{game_no}/{sez}/1/Overview` | Both routes must expose the same scoped `(game_no, sez, league_id)` tuple and rendered home/away pairing |
 | Completed-game detail | `/match/{game_no}/{sez}/1/Overview` | `(game_no, sez, league_id)` must echo on page |
 
 For example, canonical 2025-26 maps to `sez=25`, and the stable event namespace
