@@ -1,7 +1,7 @@
 {
   "dated_reports": {
     "2026-11-19": {
-      "frozen_fixtures": 3,
+      "frozen_fixtures": 4,
       "logical_picks": 12
     }
   },
@@ -1002,6 +1002,338 @@
         "scheduled_utc": "2026-11-20T01:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-19"
+      },
+      "401914574": {
+        "decision_cutoff_utc": "2026-11-20T02:00:00Z",
+        "frozen_at": "2026-11-20T02:08:12Z",
+        "game_id": "401914574",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "alternative_probabilities": {
+              "Q1": 0.148148,
+              "Q2": 0.333333,
+              "Q3": 0.111111,
+              "Q4": 0.407407
+            },
+            "away": "Stockton Kings",
+            "book": null,
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.407407,
+            "calibration": {
+              "adjustment": 0.0,
+              "calibration_version": "team_history_empirical-cb419eb48826",
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "expected_margin": null,
+            "expected_total": 231.2035916453982,
+            "explanation": {
+              "calibration": {
+                "adjustment": 0.0,
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "n": 0,
+                "status": "no_history",
+                "sufficient_for_accas": false
+              },
+              "effective_sample_size": 0.0,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "no_exact_bookmaker_market",
+                  "insufficient_walk_forward_samples",
+                  "insufficient_team_specific_history",
+                  "below_calibrated_probability_floor"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": null,
+                "opposite_selection": null,
+                "selected_decimal_price": null
+              },
+              "provenance": {
+                "book": null,
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "league": "NBA_G_LEAGUE",
+                "market": "highest_quarter",
+                "period": "full_game",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.0,
+                "candidate_probability": 0.4074074074074074,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.4074074074074074,
+                "ess": 0.0,
+                "n": 0,
+                "probability": 0.4074074074074074,
+                "status": "no_history",
+                "weighted_n": 0.0
+              }
+            },
+            "forecast_id": "9235927ce47377e74834",
+            "game_id": "401914574",
+            "grade_status": "pending",
+            "home": "Coachella Valley Lakers",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "9235927ce47377e74834",
+            "prediction": null,
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.407407,
+            "residual_games": 54,
+            "role": null,
+            "scheduled_utc": "2026-11-20T03:00:00Z",
+            "selection": "Q4",
+            "team_history": {
+              "away_effective_games": 3.80022,
+              "home_effective_games": 4.67077,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": false
+            },
+            "training_games": 75
+          },
+          {
+            "alternative_probabilities": {
+              "away": 0.592593,
+              "draw": 0.0,
+              "home": 0.407407
+            },
+            "away": "Stockton Kings",
+            "book": null,
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.592593,
+            "calibration": {
+              "adjustment": 0.0,
+              "calibration_version": "team_history_empirical-cb419eb48826",
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "expected_margin": -0.8174406419450264,
+            "expected_total": 116.90271480560844,
+            "explanation": {
+              "calibration": {
+                "adjustment": 0.0,
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "n": 0,
+                "status": "no_history",
+                "sufficient_for_accas": false
+              },
+              "effective_sample_size": 0.0,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "no_exact_bookmaker_market",
+                  "insufficient_walk_forward_samples",
+                  "insufficient_team_specific_history"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": null,
+                "opposite_selection": null,
+                "selected_decimal_price": null
+              },
+              "provenance": {
+                "book": null,
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "league": "NBA_G_LEAGUE",
+                "market": "moneyline",
+                "period": "H1",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.0,
+                "candidate_probability": 0.5925925925925926,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.5925925925925926,
+                "ess": 0.0,
+                "n": 0,
+                "probability": 0.5925925925925926,
+                "status": "no_history",
+                "weighted_n": 0.0
+              }
+            },
+            "forecast_id": "9221bc64d270be2475dd",
+            "game_id": "401914574",
+            "grade_status": "pending",
+            "home": "Coachella Valley Lakers",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "9221bc64d270be2475dd",
+            "prediction": null,
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.592593,
+            "residual_games": 54,
+            "role": null,
+            "scheduled_utc": "2026-11-20T03:00:00Z",
+            "selection": "away",
+            "team_history": {
+              "away_effective_games": 3.80022,
+              "home_effective_games": 4.67077,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": false
+            },
+            "training_games": 75
+          },
+          {
+            "alternative_probabilities": {
+              "away": 0.62963,
+              "draw": 0.0,
+              "home": 0.37037
+            },
+            "away": "Stockton Kings",
+            "book": null,
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.62963,
+            "calibration": {
+              "adjustment": 0.0,
+              "calibration_version": "team_history_empirical-cb419eb48826",
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "context": null,
+            "date": "2026-11-19",
+            "eligibility": {
+              "acca_eligible": false,
+              "evidence_state": "current_pre_tip_unfrozen",
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "expected_margin": 0.1079260793154333,
+            "expected_total": 232.0437531454943,
+            "explanation": {
+              "calibration": {
+                "adjustment": 0.0,
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "n": 0,
+                "status": "no_history",
+                "sufficient_for_accas": false
+              },
+              "effective_sample_size": 0.0,
+              "eligibility": {
+                "acca_eligible": false,
+                "evidence_state": "current_pre_tip_unfrozen",
+                "reasons": [
+                  "no_exact_bookmaker_market",
+                  "insufficient_walk_forward_samples",
+                  "insufficient_team_specific_history"
+                ]
+              },
+              "prices": {
+                "opposite_decimal_price": null,
+                "opposite_selection": "home",
+                "selected_decimal_price": null
+              },
+              "provenance": {
+                "book": null,
+                "prediction": null
+              },
+              "segment": {
+                "calibration_version": "team_history_empirical-cb419eb48826",
+                "league": "NBA_G_LEAGUE",
+                "market": "moneyline",
+                "period": "full_game",
+                "source": "team_history_empirical"
+              },
+              "shadow_calibration": {
+                "adjustment": 0.0,
+                "candidate_probability": 0.6296296296296297,
+                "challenger_version": "recency-389a235f88f3",
+                "champion_probability": 0.6296296296296297,
+                "ess": 0.0,
+                "n": 0,
+                "probability": 0.6296296296296297,
+                "status": "no_history",
+                "weighted_n": 0.0
+              }
+            },
+            "forecast_id": "eab8b2cddf0cec109f75",
+            "game_id": "401914574",
+            "grade_status": "pending",
+            "home": "Coachella Valley Lakers",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "eab8b2cddf0cec109f75",
+            "prediction": null,
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.62963,
+            "residual_games": 54,
+            "role": null,
+            "scheduled_utc": "2026-11-20T03:00:00Z",
+            "selection": "away",
+            "team_history": {
+              "away_effective_games": 3.80022,
+              "home_effective_games": 4.67077,
+              "required_effective_games_per_team": 8.0,
+              "sufficient_for_accas": false
+            },
+            "training_games": 75
+          }
+        ],
+        "scheduled_utc": "2026-11-20T03:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-19"
       }
     }
   },
@@ -1010,6 +1342,10 @@
     [
       "401914573",
       "2026-11-20T01:00:00Z"
+    ],
+    [
+      "401914574",
+      "2026-11-20T03:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
