@@ -326,12 +326,27 @@ def test_pipeline_history_writes_reconciled_final_and_advances_game_cursor(tmp_p
             gap.required_field == "official_schedule_time" and gap.reason.value == "not_applicable"
             for gap in pipeline.gaps
         )
+        receipt = {
+            "season_end_year": 2026,
+            "calendar_final_count": 1,
+            "reconciled_final_count": 1,
+            # The unpinned placeholder is visible but not part of the
+            # final-score denominator.
+            "not_applicable_rows": 1,
+            "blocking_gap_count": 0,
+            "status": "calendar_final_count_reconciled",
+            "source": "aba_liga",
+            "evidence": aba.EVIDENCE,
+            "completed_at_utc": "2025-10-06T12:00:00Z",
+        }
+        assert deep["season_receipts"] == [receipt]
         assert deep["cursor"] == {
             "floor_season": 2002,
             "last_game_no": 0,
             "last_completed_season": 2026,
             "last_completed_final_count": 1,
             "next_season": 2025,
+            "season_receipts": {"2026": receipt},
         }
         stored = store.get_game("aba_liga:25:1:6")
         assert stored is not None and stored.actual is not None
@@ -340,6 +355,54 @@ def test_pipeline_history_writes_reconciled_final_and_advances_game_cursor(tmp_p
         assert health is not None and health.coverage == deep["cursor"]
     finally:
         store.close()
+
+
+def test_history_withholds_receipt_and_rewinds_when_a_final_was_not_persisted():
+    class DroppingStore(InMemoryStore):
+        # Exercise the same write-required ABA path while simulating a storage
+        # failure after a fully reconciled adapter batch.
+        persist = True
+
+        def upsert_game(self, game):
+            return None
+
+    def fetch(url: str) -> str:
+        if "/calendar/" in url:
+            return CALENDAR
+        if "/match/6/" in url:
+            return MATCH
+        raise AssertionError(url)
+
+    store = DroppingStore()
+    pipeline = Pipeline(
+        PipelineConfig(
+            league="ABA_LEAGUE",
+            date_yyyymmdd="20251006",
+            history_days=0,
+            history_request_budget=1,
+            deep_history_event_budget=5,
+            fixture_now_utc="2025-10-06T12:00:00Z",
+        ),
+        store,
+        fetch=fetch,
+        allow_writes=True,
+    )
+
+    deep = pipeline.backfill()["backfill"]["deep_history"]
+
+    assert deep["status"] == "provider_error_cursor_retained"
+    assert deep["season_receipts"] == []
+    assert deep["cursor"] == {
+        "floor_season": 2002,
+        "last_game_no": 0,
+        "next_season": 2026,
+    }
+    assert any(
+        gap.required_field == "aba_liga_season_receipt"
+        and gap.reason.value == "missing"
+        and "receipt withheld" in gap.detail
+        for gap in pipeline.gaps
+    )
 
 
 def test_history_replays_current_season_when_a_late_final_appears_below_cursor(tmp_path):
