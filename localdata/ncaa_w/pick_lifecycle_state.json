@@ -17,8 +17,8 @@
       "logical_picks": 191
     },
     "2026-11-20": {
-      "frozen_fixtures": 6,
-      "logical_picks": 141
+      "frozen_fixtures": 7,
+      "logical_picks": 142
     }
   },
   "frozen_by_date": {
@@ -10131,6 +10131,147 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
       },
+      "401918511": {
+        "decision_cutoff_utc": "2026-11-20T20:00:00Z",
+        "frozen_at": "2026-11-20T20:13:17Z",
+        "game_id": "401918511",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Simmons (KY) Falcons",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.719655,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 57,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "95dcafd9e223927ec79db4bad74fedbfcf3511be4e87676590cfb69e79de16c2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "183e1b9e3c09278e1204",
+            "game_id": "401918511",
+            "grade_status": "pending",
+            "home": "Eastern Kentucky Colonels",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "183e1b9e3c09278e1204",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.8,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Simmons (KY) Falcons",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.841264,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 57,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "534cb9dfd1ecdf3885c4c52838bd94488c217add402e82101f8ebc7d46d03fbb",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1f42d01b2bf99a62f2af",
+            "game_id": "401918511",
+            "grade_status": "pending",
+            "home": "Eastern Kentucky Colonels",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "1f42d01b2bf99a62f2af",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.87,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Simmons (KY) Falcons",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.93947,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 49,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "78e326cc91c18664889eeb6c7ffd154cc10490a689bb9344b5da03a7ae36347a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6a1e0b861cf2432faa76",
+            "game_id": "401918511",
+            "grade_status": "pending",
+            "home": "Eastern Kentucky Colonels",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6a1e0b861cf2432faa76",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-20T20:08:40Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9994,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T21:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
       "401918520": {
         "decision_cutoff_utc": "2026-11-20T16:00:00Z",
         "frozen_at": "2026-11-20T16:12:35Z",
@@ -10645,16 +10786,12 @@
   "league": "NCAA_W",
   "pending_frozen_games": [
     [
-      "401918426",
-      "2026-11-20T18:00:00Z"
-    ],
-    [
-      "401918809",
-      "2026-11-20T18:00:00Z"
-    ],
-    [
       "401917711",
       "2026-11-20T19:00:00Z"
+    ],
+    [
+      "401918511",
+      "2026-11-20T21:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"

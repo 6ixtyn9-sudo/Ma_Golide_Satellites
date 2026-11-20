@@ -9,8 +9,8 @@
       "logical_picks": 233
     },
     "2026-11-20": {
-      "frozen_fixtures": 9,
-      "logical_picks": 436
+      "frozen_fixtures": 10,
+      "logical_picks": 438
     }
   },
   "frozen_by_date": {
@@ -17008,6 +17008,603 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
       },
+      "401922022": {
+        "decision_cutoff_utc": "2026-11-20T20:00:00Z",
+        "frozen_at": "2026-11-20T20:13:16Z",
+        "game_id": "401922022",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "South Dakota State Jackrabbits",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.493542,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 66,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "08337dfb766e70d6bfe5492bc3025d40cc5c4fceb3712439aba0571fb997b34c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4546d18dd2699a17d977",
+            "game_id": "401922022",
+            "grade_status": "pending",
+            "home": "Idaho State Bengals",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "4546d18dd2699a17d977",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.62,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "South Dakota State Jackrabbits",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401922022",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T14:08:33Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.3448275862068966,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.339778,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 60,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "2a103d98eff7f2012392d38316167887433c6b502ba61b85af0973dd8f751cd0",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4e19e5160ad1d85c8577",
+            "game_id": "401922022",
+            "grade_status": "pending",
+            "home": "Idaho State Bengals",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "4e19e5160ad1d85c8577",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "South Dakota State Jackrabbits",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401922022",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T20:08:55Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.4081632653061225,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.686246,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 37,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "e1d09e3f850f43dcb715dada2403e5947350c8268d79d9241d32e9c0e81339fb",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "91fa13523ea9512737bd",
+            "game_id": "401922022",
+            "grade_status": "pending",
+            "home": "Idaho State Bengals",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.167093,
+              "historical_pick_count": 2,
+              "individual_odds_band": "1.20-<1.50",
+              "losses": 1,
+              "market": "moneyline",
+              "observed_roi": -0.346154,
+              "period": "full_game",
+              "probability_band": "0.60-<0.70",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.343793,
+              "wins": 1
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "91fa13523ea9512737bd",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-20T20:09:10Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.7369,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-20T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "South Dakota State Jackrabbits",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401922022",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T20:08:55Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 3.0,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.429583,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 66,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "1353e92a691febfeeea4dfe69d7124c3af2e12d467020dbb904b3b09381b40c6",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "9066eef16832b89653fa",
+            "game_id": "401922022",
+            "grade_status": "pending",
+            "home": "Idaho State Bengals",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "9066eef16832b89653fa",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "South Dakota State Jackrabbits",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401922022",
+              "line": 6.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T14:08:33Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.583889,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 6,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "5d77ab4b53f144bfff454dad3ec8de40f6b22d605f4e3dd10153c0eeedf4af53",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "431a33b58f283024732d",
+            "game_id": "401922022",
+            "grade_status": "pending",
+            "home": "Idaho State Bengals",
+            "league": "NCAA_M",
+            "line": 6.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "431a33b58f283024732d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "South Dakota State Jackrabbits",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401922022",
+              "line": 5.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T20:08:55Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.570833,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 6,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "20da713b72abf8bd8a76f37c1cadc6c1a3cbefda8a96931ed1f97307ceb684ea",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e67c88956c75a14e0a5d",
+            "game_id": "401922022",
+            "grade_status": "pending",
+            "home": "Idaho State Bengals",
+            "league": "NCAA_M",
+            "line": 5.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "e67c88956c75a14e0a5d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "South Dakota State Jackrabbits",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401922022",
+              "line": 142.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T20:08:55Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.508205,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 9,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "9c65e3cda42b2f4774f0eab18cfb611b2d30ee1cd2e5bbdf4850b8941234d1ff",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "88d44790b90a2aa0b05e",
+            "game_id": "401922022",
+            "grade_status": "pending",
+            "home": "Idaho State Bengals",
+            "league": "NCAA_M",
+            "line": 142.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "88d44790b90a2aa0b05e",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "South Dakota State Jackrabbits",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401922022",
+              "line": 141.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T14:08:33Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.530263,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "6ad85bd318a5b83ff83d659763bf11d64706876a603fbc953c38cd50b77c7c4a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "9786dbe68ea8dc2a5604",
+            "game_id": "401922022",
+            "grade_status": "pending",
+            "home": "Idaho State Bengals",
+            "league": "NCAA_M",
+            "line": 141.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "9786dbe68ea8dc2a5604",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "South Dakota State Jackrabbits",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401922022",
+              "line": 144.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T12:08:45Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.486486,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "c9ef8b1c9516d4a540f30162cce2d9a6349690990a9b98af9f47c9065f4ab072",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "df8c77a9ef0065a18ef9",
+            "game_id": "401922022",
+            "grade_status": "pending",
+            "home": "Idaho State Bengals",
+            "league": "NCAA_M",
+            "line": 144.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "df8c77a9ef0065a18ef9",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "South Dakota State Jackrabbits",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401922022",
+              "line": 144.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T11:08:28Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.483158,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "6a3516a2ea977c2551401bb08b7b7d02a07949ebe596ec2031e89244ddfe835b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6562067b17ebaa03e7d7",
+            "game_id": "401922022",
+            "grade_status": "pending",
+            "home": "Idaho State Bengals",
+            "league": "NCAA_M",
+            "line": 144.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6562067b17ebaa03e7d7",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-20T21:00:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T21:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
       "401925841": {
         "decision_cutoff_utc": "2026-11-20T16:00:00Z",
         "frozen_at": "2026-11-20T16:11:50Z",
@@ -17198,10 +17795,6 @@
   "league": "NCAA_M",
   "pending_frozen_games": [
     [
-      "401916122",
-      "2026-11-20T17:30:00Z"
-    ],
-    [
       "401919019",
       "2026-11-20T19:00:00Z"
     ],
@@ -17216,6 +17809,10 @@
     [
       "401920380",
       "2026-11-20T20:00:00Z"
+    ],
+    [
+      "401922022",
+      "2026-11-20T21:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
