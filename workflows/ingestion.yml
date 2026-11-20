@@ -219,6 +219,9 @@ jobs:
                   rf"auto_tickets_{date}\.txt",
                   rf"auto_tickets_{date}_decision\.json",
                   rf"auto_tickets_{date}_withdrawn\.json",
+                  # One count-only ABA historical receipt summary is Git
+                  # durable. It contains no raw source bodies or tickets.
+                  r"history_receipts\.json",
                   # The EuroLeague consensus board has an immutable no-stake
                   # roster plus a mutable official-result card. Recover both
                   # from Git before a cache can propose a replacement roster.
@@ -384,6 +387,7 @@ jobs:
             ${{ env.LOCALDATA }}/picks_audit_*.md
             ${{ env.LOCALDATA }}/pick_lifecycle_state.json
             ${{ env.LOCALDATA }}/coverage_gap_*.json
+            ${{ env.LOCALDATA }}/history_receipts.json
             ${{ env.LOCALDATA }}/auto_tickets_*.json
             ${{ env.LOCALDATA }}/auto_tickets_*.txt
             ${{ env.LOCALDATA }}/euroleague_consensus_paper_*.json
