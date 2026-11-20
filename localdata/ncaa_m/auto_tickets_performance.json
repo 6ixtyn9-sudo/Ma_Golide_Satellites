@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 13,
+  "awaiting_game_legs": 12,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -362,17 +362,17 @@
       "wins": 1
     },
     {
-      "awaiting_game_legs": 13,
-      "bank_units": 107.33161741750128,
+      "awaiting_game_legs": 12,
+      "bank_units": 106.33161741750128,
       "date": "2026-11-20",
       "decision_id": "44692592280_ncaa_m_1_attempt_1",
       "frozen_at": "2026-11-20T07:11:31Z",
       "league": "NCAA_M",
-      "losses": 0,
-      "pending_accas": 5,
-      "pending_positions": 5,
+      "losses": 1,
+      "pending_accas": 4,
+      "pending_positions": 4,
       "pending_singles": 0,
-      "pending_units": 5.0,
+      "pending_units": 4.0,
       "positions": [
         {
           "awaiting_game_legs": 2,
@@ -687,19 +687,19 @@
           "unresolved_legs": 3
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 7.1157,
           "effective_decimal_odds": 7.115702479338844,
           "estimated_joint_win_probability": 0.17935025,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
             null,
             null,
-            null
+            "loss"
           ],
           "legs": [
             {
@@ -742,19 +742,20 @@
               "book_provider": "espn",
               "forecast_id": "168674ac9a9a990baa31",
               "game_id": "401920380",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Virginia Tech Hokies",
               "line": -10.5,
               "market": "spread",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "168674ac9a9a990baa31",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-20T20:00:00Z",
               "selected_decimal_price": 1.9090909090909092,
               "selection": "away"
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 3,
           "provisional_sample_gate_bypassed": true,
           "publication_index": 5,
@@ -764,44 +765,44 @@
           "stake_units": 1.0,
           "ticket_id": "663aeda7711eec92c6a8",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         }
       ],
-      "profit_units": null,
+      "profit_units": -1.0,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-20_decision.json",
       "result_unresolvable_legs": 0,
-      "returned_units": null,
-      "settled_accas": 0,
-      "settled_positions": 0,
+      "returned_units": 0.0,
+      "settled_accas": 1,
+      "settled_positions": 1,
       "settled_singles": 0,
-      "staked_units": 0,
-      "unresolved_result_legs": 13,
+      "staked_units": 1.0,
+      "unresolved_result_legs": 12,
       "wins": 0
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.75,
+  "hit_rate": 0.6,
   "league": "NCAA_M",
-  "losses": 1,
-  "paper_bank_units": 107.33161741750126,
-  "paper_committed_units": 5.0,
+  "losses": 2,
+  "paper_bank_units": 106.33161741750126,
+  "paper_committed_units": 4.0,
   "paper_free_units": 102.33161741750126,
   "paper_only": true,
-  "pending_accas": 5,
-  "pending_positions": 5,
+  "pending_accas": 4,
+  "pending_positions": 4,
   "pending_singles": 0,
-  "profit_units": 7.331617417501268,
+  "profit_units": 6.331617417501268,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": 1.832904354375317,
+  "roi": 1.2663234835002535,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.13533487749450002,
-  "settled_accas": 3,
-  "settled_positions": 4,
+  "selected_leg_brier_score": 0.14882006896484617,
+  "settled_accas": 4,
+  "settled_positions": 5,
   "settled_singles": 1,
-  "settled_stake_units": 4.0,
+  "settled_stake_units": 5.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 13,
+  "unresolved_result_legs": 12,
   "wins": 3
 }

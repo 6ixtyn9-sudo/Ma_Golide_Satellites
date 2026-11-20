@@ -9,8 +9,8 @@
       "logical_picks": 233
     },
     "2026-11-20": {
-      "frozen_fixtures": 15,
-      "logical_picks": 450
+      "frozen_fixtures": 18,
+      "logical_picks": 451
     }
   },
   "frozen_by_date": {
@@ -17285,6 +17285,602 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
       },
+      "401920298": {
+        "decision_cutoff_utc": "2026-11-20T22:00:00Z",
+        "frozen_at": "2026-11-20T22:12:50Z",
+        "game_id": "401920298",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Delaware Blue Hens",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.496061,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 69,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "a372e2e7b9276524e8b7617d6ce1c36e26dd35768735a7652e49ebad5331f778",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6c7db391998ca56653b1",
+            "game_id": "401920298",
+            "grade_status": "pending",
+            "home": "Cal State Northridge Matadors",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "6c7db391998ca56653b1",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.62,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Delaware Blue Hens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920298",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T22:08:52Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.3076923076923077,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.574673,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 41,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "2e5127a7c562306a81e0a84dc26bd00111c2959022cf42e19e7d04907794e276",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "c568e36d818a72411c95",
+            "game_id": "401920298",
+            "grade_status": "pending",
+            "home": "Cal State Northridge Matadors",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": null,
+              "historical_pick_count": 0,
+              "individual_odds_band": "1.20-<1.50",
+              "losses": 0,
+              "market": "moneyline",
+              "observed_roi": null,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": null,
+              "wins": 0
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "c568e36d818a72411c95",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-20T22:09:06Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.625,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Delaware Blue Hens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920298",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T22:08:52Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.3076923076923077,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.512727,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 69,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "7cfecc59d8ccee8675085631fe53bf7114f23192e7e37b0f5eba74e15c7a9a1a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "fcf664f740969567410e",
+            "game_id": "401920298",
+            "grade_status": "pending",
+            "home": "Cal State Northridge Matadors",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "fcf664f740969567410e",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.67,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Delaware Blue Hens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920298",
+              "line": -6.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T12:38:41Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.581622,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "844fb1398a9ce20534bafe2654f20736d4e5d5fc3ff6318ada875ae86e2c5c99",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7265ee13c736fd32c628",
+            "game_id": "401920298",
+            "grade_status": "pending",
+            "home": "Cal State Northridge Matadors",
+            "league": "NCAA_M",
+            "line": -6.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "7265ee13c736fd32c628",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.6,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Delaware Blue Hens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920298",
+              "line": -8.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T13:38:38Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.592432,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "56ec572d2c7d0dbce028e208ba6965bf5adb2455e705682c9a6ac349eff3672e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "8160f33fcc2b889da244",
+            "game_id": "401920298",
+            "grade_status": "pending",
+            "home": "Cal State Northridge Matadors",
+            "league": "NCAA_M",
+            "line": -8.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "8160f33fcc2b889da244",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.61,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Delaware Blue Hens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920298",
+              "line": -7.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T22:08:52Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.67525,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 10,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "81ffa6dcdbad55e9dbd1c99cff65006b6fb7d46129270a9c80d7b1222e30b2bc",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "f0a64046d23219a52175",
+            "game_id": "401920298",
+            "grade_status": "pending",
+            "home": "Cal State Northridge Matadors",
+            "league": "NCAA_M",
+            "line": -7.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "f0a64046d23219a52175",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.61,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Delaware Blue Hens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920298",
+              "line": 151.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T22:08:52Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.492564,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 9,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "217b8ec8897644a7dce74c9345703b9fcb90f96db0a2c14789267030856cd635",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "173900fbb63b283439ad",
+            "game_id": "401920298",
+            "grade_status": "pending",
+            "home": "Cal State Northridge Matadors",
+            "league": "NCAA_M",
+            "line": 151.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "173900fbb63b283439ad",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Delaware Blue Hens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920298",
+              "line": 150.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T18:38:41Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.529211,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "d4a446b78a401addbb804ee9d7b838d1cfc12b416b8143938dcdb55ae4469969",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5142a6fa8a174ce106e6",
+            "game_id": "401920298",
+            "grade_status": "pending",
+            "home": "Cal State Northridge Matadors",
+            "league": "NCAA_M",
+            "line": 150.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "5142a6fa8a174ce106e6",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Delaware Blue Hens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920298",
+              "line": 148.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T14:38:15Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.519474,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "3a0ada99d38202e3ed7a731fc565b88036cca82ee4cc3f6e829601a334336f3d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6059e18959c32e6208c2",
+            "game_id": "401920298",
+            "grade_status": "pending",
+            "home": "Cal State Northridge Matadors",
+            "league": "NCAA_M",
+            "line": 148.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6059e18959c32e6208c2",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Delaware Blue Hens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920298",
+              "line": 147.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T12:38:41Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.496757,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "9277994466f2739005141d61974338f04fefae0dff042e67aac9beedbf54f99f",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "9106146aa3c12311b8ea",
+            "game_id": "401920298",
+            "grade_status": "pending",
+            "home": "Cal State Northridge Matadors",
+            "league": "NCAA_M",
+            "line": 147.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "9106146aa3c12311b8ea",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T23:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
       "401920380": {
         "decision_cutoff_utc": "2026-11-20T19:00:00Z",
         "frozen_at": "2026-11-20T19:11:48Z",
@@ -20064,6 +20660,289 @@
         "scheduled_utc": "2026-11-20T17:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
+      },
+      "401928834": {
+        "decision_cutoff_utc": "2026-11-20T22:00:00Z",
+        "frozen_at": "2026-11-20T22:12:50Z",
+        "game_id": "401928834",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "WVU Tech Golden Bears",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.596061,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 69,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "9931804fc7c89d2105e71cb3dd8f38eaa24b4c126aab2dd2d16d65b24922e578",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b8516a1b34c390a8c1a7",
+            "game_id": "401928834",
+            "grade_status": "pending",
+            "home": "Akron Zips",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "b8516a1b34c390a8c1a7",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.72,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "WVU Tech Golden Bears",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.948873,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 41,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "5d69e42faa39a785f237438422cb080771fdc354013d72a91b5040b9a05497e1",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1cf06f9c1e7800a575b6",
+            "game_id": "401928834",
+            "grade_status": "pending",
+            "home": "Akron Zips",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "1cf06f9c1e7800a575b6",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-20T22:09:06Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9992,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "WVU Tech Golden Bears",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.602727,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 69,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "ffd38608f8710c85c0ae0fe65504a8f655a72054ab754cad91c909b44b098269",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4e097ce1aed9f7768ca5",
+            "game_id": "401928834",
+            "grade_status": "pending",
+            "home": "Akron Zips",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "4e097ce1aed9f7768ca5",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.76,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T23:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
+      "401929460": {
+        "decision_cutoff_utc": "2026-11-20T22:00:00Z",
+        "frozen_at": "2026-11-20T22:12:50Z",
+        "game_id": "401929460",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Worcester State Lancers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.546061,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 69,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "4ad540a234eb3753e93e0f5cdff4e0dcbaf156dbfa4169ff10443b1aafb8460e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1803057e323984e12d90",
+            "game_id": "401929460",
+            "grade_status": "pending",
+            "home": "Bryant Bulldogs",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "1803057e323984e12d90",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.67,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Worcester State Lancers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.945173,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 41,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "1577120697ae70909e265276cc2ace6fa103bfdc51ceaa3792f868b7af92d951",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "82f3e7e11b9940bfbf23",
+            "game_id": "401929460",
+            "grade_status": "pending",
+            "home": "Bryant Bulldogs",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "82f3e7e11b9940bfbf23",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-20T22:09:06Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9955,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Worcester State Lancers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.482727,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 69,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "2b9b9439aa1aece64a4da5e7bef1674f39aececb1bbdc11887114cd028b2ab34",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "c957d681c92fb9c0015f",
+            "game_id": "401929460",
+            "grade_status": "pending",
+            "home": "Bryant Bulldogs",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "c957d681c92fb9c0015f",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.64,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T23:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
       }
     }
   },
@@ -20071,14 +20950,6 @@
   "pending_frozen_games": [
     [
       "401916123",
-      "2026-11-20T20:00:00Z"
-    ],
-    [
-      "401919826",
-      "2026-11-20T20:00:00Z"
-    ],
-    [
-      "401920380",
       "2026-11-20T20:00:00Z"
     ],
     [
@@ -20104,6 +20975,18 @@
     [
       "401921419",
       "2026-11-20T22:30:00Z"
+    ],
+    [
+      "401920298",
+      "2026-11-20T23:00:00Z"
+    ],
+    [
+      "401928834",
+      "2026-11-20T23:00:00Z"
+    ],
+    [
+      "401929460",
+      "2026-11-20T23:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
