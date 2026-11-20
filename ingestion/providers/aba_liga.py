@@ -409,30 +409,31 @@ def _calendar_match_ref(cell: _Node) -> Optional[tuple[_Node, int, int, int]]:
     return candidates[0] if candidates else None
 
 
-def _unlinked_calendar_row_has_score_or_time(cells: Sequence[_Node]) -> bool:
-    """Whether an unlinked calendar row's official result/time columns are set.
+def _unlinked_calendar_row_signal(cells: Sequence[_Node]) -> Optional[str]:
+    """Classify identity-relevant content in an unlinked calendar row.
 
-    A date-only placeholder is explicitly unpinned rather than timed.  The
-    calendar header defines columns 2 and 3 as Result and Date and Time;
+    The calendar header defines columns 2 and 3 as Result and Date and Time;
     score/time-looking descendant text elsewhere in the matchup or Info cells
     is not an authoritative result or tip for this unlinked row.  A one-cell
-    row has no such reliable columns, so any score/date/time signal in it
-    remains fail-closed as malformed fixture content.
+    row has no reliable columns, so any score/date/time signal in it remains a
+    fail-closed malformed-fixture signal.
     """
 
     if len(cells) == 1:
-        return bool(
-            re.search(
-                r"\d+\s*:\s*\d+|\d{2}\.\d{2}\.\d{4}|\b(?:CET|CEST|Local time)\b",
-                cells[0].text(),
-            )
-        )
+        text = cells[0].text()
+        if re.search(
+            r"\d+\s*:\s*\d+|\d{2}\.\d{2}\.\d{4}|\b(?:CET|CEST|Local time)\b",
+            text,
+        ):
+            return "malformed"
+        return None
     result = cells[1].text() if len(cells) > 1 else ""
     when = cells[2].text() if len(cells) > 2 else ""
-    return bool(
-        re.search(r"\d+\s*:\s*\d+", result)
-        or re.search(r"\b\d{1,2}:\d{2}\b", when)
-    )
+    if re.search(r"\d+\s*:\s*\d+", result):
+        return "scored"
+    if re.search(r"\b\d{1,2}:\d{2}\b", when):
+        return "timed"
+    return None
 
 
 def parse_calendar(html: str, season: int) -> List[CalendarGame]:
@@ -471,9 +472,15 @@ def parse_calendar(html: str, season: int) -> List[CalendarGame]:
                 raise IdentityError(f"{PROVIDER}: calendar row width {len(cells)} != {len(labels)}")
             match_ref = _calendar_match_ref(cells[0])
             if match_ref is None:
-                if _unlinked_calendar_row_has_score_or_time(cells):
+                signal = _unlinked_calendar_row_signal(cells)
+                if signal is not None:
+                    # Do not retain the row's displayed values in diagnostics:
+                    # a caller needs its structural class to investigate the
+                    # official page, not an unpinned source-derived identity.
                     raise IdentityError(
-                        f"{PROVIDER}: calendar has an unlinked scored or timed row"
+                        f"{PROVIDER}: calendar has an unlinked scored or timed row "
+                        f"(classification={signal}; cell_count={len(cells)}; "
+                        "authoritative_columns=result,date-and-time)"
                     )
                 # A row with no match route cannot establish a canonical event
                 # identity.  It is only safe to treat as an unpinned

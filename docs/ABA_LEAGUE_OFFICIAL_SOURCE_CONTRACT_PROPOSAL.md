@@ -43,6 +43,11 @@ minimal contract:
    a non-canonical placeholder: it is skipped with explicit coverage telemetry,
    never assigned an invented timestamp. This check occurs before team-name
    parsing because future bracket placeholders can also have no assigned teams.
+   An unlinked row with a result-column score or an exact Date-and-Time clock
+   fails closed in every path, including current-slate discovery. Its sanitized
+   error class (`scored`, `timed`, or malformed one-cell markup) and cell count
+   support first-party investigation without retaining or treating unpinned
+   names, scores, or clocks as a canonical event.
 3. **Clock semantics:** `CET`, `CEST`, and the source's `Local time` suffix
    are wall-clock values in `Europe/Belgrade`, including DST, before conversion
    to UTC; an optional trailing parenthetical local-time annotation is
