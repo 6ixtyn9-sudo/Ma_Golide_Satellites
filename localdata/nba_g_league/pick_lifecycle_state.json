@@ -5,7 +5,7 @@
       "logical_picks": 12
     },
     "2026-11-20": {
-      "frozen_fixtures": 3,
+      "frozen_fixtures": 4,
       "logical_picks": 27
     }
   },
@@ -957,6 +957,141 @@
         "scheduled_utc": "2026-11-21T00:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
+      },
+      "401914578": {
+        "decision_cutoff_utc": "2026-11-20T23:30:00Z",
+        "frozen_at": "2026-11-20T23:38:01Z",
+        "game_id": "401914578",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Westchester Knicks",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.4,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "569fec82b273a005c1b92390a0cae66d6018af028098c743496ba31e8b922bfc",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "68fe0d3d4f66aff151fd",
+            "game_id": "401914578",
+            "grade_status": "pending",
+            "home": "Raptors 905",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "68fe0d3d4f66aff151fd",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.4,
+            "role": null,
+            "scheduled_utc": "2026-11-21T00:30:00Z",
+            "selection": "Q4"
+          },
+          {
+            "away": "Westchester Knicks",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.589286,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "9896e2ad79ed23397476e8a9f4cd7148874061d07401d3f0986aa90cd2008d45",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "9091ce066d49e8f73149",
+            "game_id": "401914578",
+            "grade_status": "pending",
+            "home": "Raptors 905",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "9091ce066d49e8f73149",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.589286,
+            "role": null,
+            "scheduled_utc": "2026-11-21T00:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Westchester Knicks",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.571429,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "c33eadcae39b2109d886b103e51d09229f49edd3c163787f1ad2efad0f1ebe1e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1ae33d518dda1e9aa71d",
+            "game_id": "401914578",
+            "grade_status": "pending",
+            "home": "Raptors 905",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "1ae33d518dda1e9aa71d",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.571429,
+            "role": null,
+            "scheduled_utc": "2026-11-21T00:30:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T00:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
       }
     }
   },
@@ -973,6 +1108,10 @@
     [
       "401914577",
       "2026-11-21T00:00:00Z"
+    ],
+    [
+      "401914578",
+      "2026-11-21T00:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
