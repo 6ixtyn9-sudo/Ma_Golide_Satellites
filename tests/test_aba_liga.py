@@ -207,25 +207,56 @@ def test_calendar_rejects_an_unlinked_one_cell_row_with_score_or_time():
 """
     calendar = CALENDAR.replace("</tbody>", f"{malformed}</tbody>")
 
-    with pytest.raises(IdentityError, match="unlinked scored or timed row"):
+    with pytest.raises(IdentityError, match=r"classification=malformed; cell_count=1"):
         aba.parse_calendar(calendar, 2026)
 
 
 @pytest.mark.parametrize(
-    "result, when",
+    ("result", "when", "classification"),
     (
-        ("20 : 0", ""),
-        ("", "Saturday, 05.02.2033 20:00 CET"),
+        ("20 : 0", "", "scored"),
+        ("", "Saturday, 05.02.2033 20:00 CET", "timed"),
     ),
 )
-def test_calendar_rejects_an_unlinked_scored_or_timed_row(result, when):
+def test_calendar_rejects_and_classifies_an_unlinked_scored_or_timed_row(
+    result, when, classification
+):
     malformed = f"""
 <tr><td>Unlinked fixture</td><td>{result}</td><td>{when}</td><td></td></tr>
 """
     calendar = CALENDAR.replace("</tbody>", f"{malformed}</tbody>")
 
-    with pytest.raises(IdentityError, match="unlinked scored or timed row"):
+    with pytest.raises(IdentityError) as exc_info:
         aba.parse_calendar(calendar, 2026)
+
+    diagnostic = str(exc_info.value)
+    assert "unlinked scored or timed row" in diagnostic
+    assert f"classification={classification}; cell_count=4" in diagnostic
+    assert "authoritative_columns=result,date-and-time" in diagnostic
+    assert "Unlinked fixture" not in diagnostic
+    assert "20 : 0" not in diagnostic
+    assert "Saturday" not in diagnostic
+
+
+def test_current_slate_discovery_fails_closed_for_an_unlinked_exact_time_schedule():
+    scheduled = """
+<tr><td>FMP <span>:</span> IGO</td><td></td><td>Sunday, 05.10.2025 20:00 CET</td><td></td></tr>
+"""
+    calendar = CALENDAR.replace("</tbody>", f"{scheduled}</tbody>")
+
+    def fetch(url: str) -> str:
+        if "/calendar/" in url:
+            return calendar
+        raise AssertionError(url)
+
+    with pytest.raises(IdentityError) as exc_info:
+        aba.discover_games("20251005", text_fetch=fetch)
+
+    diagnostic = str(exc_info.value)
+    assert "classification=timed; cell_count=4" in diagnostic
+    assert "FMP" not in diagnostic
+    assert "IGO" not in diagnostic
+    assert "Sunday" not in diagnostic
 
 
 def test_discovery_requires_detail_team_ids_and_marks_calendar_finality():
