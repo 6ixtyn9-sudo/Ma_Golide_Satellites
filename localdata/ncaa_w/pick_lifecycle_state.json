@@ -17,7 +17,7 @@
       "logical_picks": 191
     },
     "2026-11-20": {
-      "frozen_fixtures": 8,
+      "frozen_fixtures": 9,
       "logical_picks": 145
     }
   },
@@ -10696,6 +10696,147 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
       },
+      "401925787": {
+        "decision_cutoff_utc": "2026-11-20T21:30:00Z",
+        "frozen_at": "2026-11-20T21:43:11Z",
+        "game_id": "401925787",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Towson Tigers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.646404,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 59,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "a57da76a060de8711f526b2ee19d2bb3ea842f4ca0fa7b11bdf9ae4fa1aee210",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "c6bbcf6bf22b5d678dfb",
+            "game_id": "401925787",
+            "grade_status": "pending",
+            "home": "Lehigh Mountain Hawks",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "c6bbcf6bf22b5d678dfb",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.73,
+            "role": null,
+            "scheduled_utc": "2026-11-20T22:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Towson Tigers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.734122,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 51,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "1e4d6f441c5652b48e21b67cb1c0f77e9de63ae18d9bfeb8cd1f438f539bc1f3",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "9dd40c53b1f16004a420",
+            "game_id": "401925787",
+            "grade_status": "pending",
+            "home": "Lehigh Mountain Hawks",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "9dd40c53b1f16004a420",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-20T21:38:29Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.8042,
+            "role": null,
+            "scheduled_utc": "2026-11-20T22:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Towson Tigers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.705287,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 57,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "3805f4aa0189528ae4897c4bcdd3fca5cbb79f86723579cd3b2e3e09d37e042c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "f11f5751af7c2f9ed8c7",
+            "game_id": "401925787",
+            "grade_status": "pending",
+            "home": "Lehigh Mountain Hawks",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "f11f5751af7c2f9ed8c7",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.75,
+            "role": null,
+            "scheduled_utc": "2026-11-20T22:30:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T22:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
       "401929110": {
         "decision_cutoff_utc": "2026-11-20T15:00:00Z",
         "frozen_at": "2026-11-20T15:11:32Z",
@@ -10934,6 +11075,10 @@
     [
       "401915889",
       "2026-11-20T22:00:00Z"
+    ],
+    [
+      "401925787",
+      "2026-11-20T22:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
