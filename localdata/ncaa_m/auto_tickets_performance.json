@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 15,
+  "awaiting_game_legs": 13,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -362,7 +362,7 @@
       "wins": 1
     },
     {
-      "awaiting_game_legs": 15,
+      "awaiting_game_legs": 13,
       "bank_units": 107.33161741750128,
       "date": "2026-11-20",
       "decision_id": "44692592280_ncaa_m_1_attempt_1",
@@ -375,7 +375,7 @@
       "pending_units": 5.0,
       "positions": [
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
@@ -387,7 +387,7 @@
           "leg_outcomes": [
             null,
             null,
-            null
+            "win"
           ],
           "legs": [
             {
@@ -428,12 +428,12 @@
               "book_provider": "espn",
               "forecast_id": "41ae857cba3e16d338b8",
               "game_id": "401909698",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Florida State Seminoles",
               "market": "moneyline",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "41ae857cba3e16d338b8",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-20T17:00:00Z",
               "selected_decimal_price": 1.02,
               "selection": "home"
@@ -449,7 +449,7 @@
           "stake_units": 1.0,
           "ticket_id": "dd83512446b2c4ae5e76",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         },
         {
           "awaiting_game_legs": 3,
@@ -529,7 +529,7 @@
           "unresolved_legs": 3
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
@@ -540,7 +540,7 @@
           "leg_count": 3,
           "leg_outcomes": [
             null,
-            null,
+            "win",
             null
           ],
           "legs": [
@@ -566,12 +566,12 @@
               "book_provider": "espn",
               "forecast_id": "dc54103d1f2ab7db739b",
               "game_id": "401921418",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Minnesota Golden Gophers",
               "market": "moneyline",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "dc54103d1f2ab7db739b",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-20T17:30:00Z",
               "selected_decimal_price": 1.8928571428571428,
               "selection": "home"
@@ -604,7 +604,7 @@
           "stake_units": 1.0,
           "ticket_id": "f5728dff19211d78b076",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         },
         {
           "awaiting_game_legs": 3,
@@ -776,7 +776,7 @@
       "settled_positions": 0,
       "settled_singles": 0,
       "staked_units": 0,
-      "unresolved_result_legs": 15,
+      "unresolved_result_legs": 13,
       "wins": 0
     }
   ],
@@ -796,12 +796,12 @@
   "result_unresolvable_legs": 0,
   "roi": 1.832904354375317,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.14776186967410002,
+  "selected_leg_brier_score": 0.13533487749450002,
   "settled_accas": 3,
   "settled_positions": 4,
   "settled_singles": 1,
   "settled_stake_units": 4.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 15,
+  "unresolved_result_legs": 13,
   "wins": 3
 }
