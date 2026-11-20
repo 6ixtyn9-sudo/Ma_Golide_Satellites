@@ -9,8 +9,8 @@
       "logical_picks": 233
     },
     "2026-11-20": {
-      "frozen_fixtures": 18,
-      "logical_picks": 451
+      "frozen_fixtures": 19,
+      "logical_picks": 453
     }
   },
   "frozen_by_date": {
@@ -20476,6 +20476,644 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
       },
+      "401925828": {
+        "decision_cutoff_utc": "2026-11-20T22:30:00Z",
+        "frozen_at": "2026-11-20T22:43:39Z",
+        "game_id": "401925828",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "North Texas Mean Green",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.5897,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 70,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "7d5db97b40fd9ae338edc2cc5ec4944ca2d2bc4f6b2134b2a3b3b2c7ce610747",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "751f62ec0e0288819ee3",
+            "game_id": "401925828",
+            "grade_status": "pending",
+            "home": "App State Mountaineers",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "751f62ec0e0288819ee3",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.72,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "North Texas Mean Green",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925828",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T22:38:42Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.704225352112676,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.466473,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 41,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "572221bb638158b0eaa2d28743536aa5121a1f122931698b71f72643bc1328f2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4060aafd40ecdb5cd870",
+            "game_id": "401925828",
+            "grade_status": "pending",
+            "home": "App State Mountaineers",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "4060aafd40ecdb5cd870",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-20T22:38:50Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.5168,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-20T23:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "North Texas Mean Green",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925828",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T22:38:42Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 2.2,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.5962,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 70,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "834e538beaff1121ca67db502c299b062daae8d1731dbe86b7b8bb420afb5eae",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "eef2c9c1d51128796126",
+            "game_id": "401925828",
+            "grade_status": "pending",
+            "home": "App State Mountaineers",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "eef2c9c1d51128796126",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.76,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "North Texas Mean Green",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925828",
+              "line": 2.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T22:38:42Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.59475,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 10,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "c603739d7a06912d41ec60645fe4c97147a7f446f9d0ce226933777ba25df7fb",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "752d759c5699c4a2fb85",
+            "game_id": "401925828",
+            "grade_status": "pending",
+            "home": "App State Mountaineers",
+            "league": "NCAA_M",
+            "line": 2.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "752d759c5699c4a2fb85",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "North Texas Mean Green",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925828",
+              "line": 3.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T17:38:48Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 2.0,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.529189,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "da1d7b59fe3421eeacc207bf9b9d33c924e4bc214eacbfa412da4e01dfe4ea88",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "83251882952360bbc15a",
+            "game_id": "401925828",
+            "grade_status": "pending",
+            "home": "App State Mountaineers",
+            "league": "NCAA_M",
+            "line": 3.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "83251882952360bbc15a",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "North Texas Mean Green",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925828",
+              "line": 131.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T22:38:42Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.513333,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 9,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "89777b0baa01f5f4dbc38d6a4a1827b22091e6fa5cdea9b588daf9833628db99",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0e1a9bb55fc4ee7d90cf",
+            "game_id": "401925828",
+            "grade_status": "pending",
+            "home": "App State Mountaineers",
+            "league": "NCAA_M",
+            "line": 131.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "0e1a9bb55fc4ee7d90cf",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "North Texas Mean Green",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925828",
+              "line": 128.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T07:08:32Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.573824,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 4,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "ba1564fe2827c76b3280a8f867e0e015539ba434c7be05ade785531e7f2440d2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4ccfaaa7448d1ae9d6c6",
+            "game_id": "401925828",
+            "grade_status": "pending",
+            "home": "App State Mountaineers",
+            "league": "NCAA_M",
+            "line": 128.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "4ccfaaa7448d1ae9d6c6",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "North Texas Mean Green",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925828",
+              "line": 132.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T19:38:44Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.537692,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 9,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "cb7007db0324eb9e53bdb283060be4d1155c0ded544af920cd2fbe3638bf2ffa",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "676881e8a5d04484353e",
+            "game_id": "401925828",
+            "grade_status": "pending",
+            "home": "App State Mountaineers",
+            "league": "NCAA_M",
+            "line": 132.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "676881e8a5d04484353e",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "North Texas Mean Green",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925828",
+              "line": 127.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T06:38:18Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.553529,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 4,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "5d3f5d51f45a139eedd8bcf0e570da8bc98a0db5e02e08ec4f88824adad544a4",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7ac10f3c7f33579fc9a8",
+            "game_id": "401925828",
+            "grade_status": "pending",
+            "home": "App State Mountaineers",
+            "league": "NCAA_M",
+            "line": 127.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "7ac10f3c7f33579fc9a8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "North Texas Mean Green",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925828",
+              "line": 129.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T14:08:33Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.560263,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "bc486d560192deb1569af5c3ecefc36ca7f96f916d4ac0940bb45d8f3c6b8f55",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e2587ce5117eeccc480c",
+            "game_id": "401925828",
+            "grade_status": "pending",
+            "home": "App State Mountaineers",
+            "league": "NCAA_M",
+            "line": 129.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "e2587ce5117eeccc480c",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "North Texas Mean Green",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925828",
+              "line": 130.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T14:38:15Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.549474,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "7802bed954aea3c75c2f6ee3202be21c5088ac0ceeceaefc8e4090db64cb5311",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "f4b894e4790de052e99f",
+            "game_id": "401925828",
+            "grade_status": "pending",
+            "home": "App State Mountaineers",
+            "league": "NCAA_M",
+            "line": 130.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "f4b894e4790de052e99f",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-20T23:30:00Z",
+            "selection": "over"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T23:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
       "401925841": {
         "decision_cutoff_utc": "2026-11-20T16:00:00Z",
         "frozen_at": "2026-11-20T16:11:50Z",
@@ -20949,10 +21587,6 @@
   "league": "NCAA_M",
   "pending_frozen_games": [
     [
-      "401916123",
-      "2026-11-20T20:00:00Z"
-    ],
-    [
       "401922022",
       "2026-11-20T21:00:00Z"
     ],
@@ -20987,6 +21621,10 @@
     [
       "401929460",
       "2026-11-20T23:00:00Z"
+    ],
+    [
+      "401925828",
+      "2026-11-20T23:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
