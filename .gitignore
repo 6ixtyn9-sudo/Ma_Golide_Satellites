@@ -30,6 +30,9 @@ localdata/*/pick_freeze_*.json
 !localdata/*/picks_*.txt
 !localdata/*/auto_tickets_*.json
 !localdata/*/auto_tickets_*.txt
+# One count-only ABA history summary is durable evidence. It never contains
+# raw source pages, per-game evidence, prices, or ticket state.
+!localdata/aba_league/history_receipts.json
 # The retired *_preview.txt sidecar was replaced by the draft section inside
 # the single dated auto_tickets_YYYY-MM-DD.txt card; do not let a stale cache
 # or an old workflow reintroduce it as a tracked artifact.

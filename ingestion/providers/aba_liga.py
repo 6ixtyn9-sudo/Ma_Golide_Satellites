@@ -46,6 +46,14 @@ HOST = "https://www.aba-liga.com"
 SITE_TZ = "Europe/Belgrade"
 LEAGUE_ID = 1
 FIRST_SEASON_END_YEAR = 2002
+# 2008-09 is explicitly outside the historical-completeness target. Its
+# legacy calendar layout has no verified canonical parser contract, so the
+# pipeline records a visible policy exclusion rather than fabricating rows or
+# silently stepping around the season. Other problematic historical variants
+# are deliberately NOT covered by this exclusion.
+HISTORY_EXCLUDED_SEASONS = {
+    2009: "operator policy excludes 2008-09 pending a verified legacy calendar contract",
+}
 EVIDENCE = (
     "ROUTE_CONTRACT_REFERENCED (external SportsDataverse documentation describes "
     "2026-10-12 captures; no Ma Golide first-party capture retained; tests are "
@@ -336,7 +344,13 @@ def parse_calendar(html: str, season: int) -> List[CalendarGame]:
             raise IdentityError(f"{PROVIDER}: calendar header drift {labels!r}")
         for row in body.direct("tr"):
             cells = row.direct("td", "th")
-            if len(cells) != len(labels):
+            # Some future bracket slots are rendered as one unscored matchup
+            # cell instead of the normal result/time columns. They have no
+            # canonical tip and must be visible coverage telemetry, never an
+            # invented fixture. Any score or timestamp-shaped content keeps
+            # failing closed: it cannot be a harmless placeholder.
+            undated_placeholder = len(cells) == 1
+            if len(cells) != len(labels) and not undated_placeholder:
                 raise IdentityError(f"{PROVIDER}: calendar row width {len(cells)} != {len(labels)}")
             full = cells[0].find(tag="p", class_name="hidden-xs")
             anchor = full.find(tag="a") if full else None
@@ -348,6 +362,21 @@ def parse_calendar(html: str, season: int) -> List[CalendarGame]:
             if (sez, lea) != expected:
                 raise IdentityError(f"{PROVIDER}: calendar link {sez}/{lea} is outside requested scope")
             game_numbers.append(game_no)
+            if undated_placeholder:
+                lone_text = cells[0].text()
+                if re.search(r"\d+\s*:\s*\d+|\d{2}\.\d{2}\.\d{4}|\b(?:CET|CEST)\b", lone_text):
+                    raise IdentityError(
+                        f"{PROVIDER}: calendar game {game_no} has an incomplete scored or timed row"
+                    )
+                unpinned_rows += 1
+                _gap(
+                    _game_ref(season, game_no),
+                    "official_schedule_time",
+                    f"calendar game {game_no} has an unscored undated placeholder; "
+                    "no canonical game emitted",
+                    reason=CoverageState.NOT_APPLICABLE,
+                )
+                continue
             result = cells[1].text()
             score = re.fullmatch(r"(\d+)\s*:\s*(\d+)", result)
             if score is None and result:

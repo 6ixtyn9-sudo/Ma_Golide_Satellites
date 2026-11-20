@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import argparse
+import json
 from pathlib import Path
 
 import pytest
@@ -8,7 +9,7 @@ import pytest
 from forecasting.service import MarketForecastService
 from ingestion.models import BookSnapshot, Game, League, Market, Period
 from ingestion.store import InMemoryStore
-from scripts.daily import _market_cutoff, _write_coverage_gap_marker
+from scripts.daily import _market_cutoff, _write_aba_history_receipts, _write_coverage_gap_marker
 from scripts.daily import main as daily_main
 from scripts.daily import run_daily
 
@@ -57,6 +58,48 @@ def test_source_unavailable_coverage_marker_is_stable_and_write_gated(tmp_path):
     assert _write_coverage_gap_marker(
         tmp_path, league="NBA", target_date="2026-11-18", write_enabled=True
     ) is None
+
+
+def test_aba_history_receipts_publish_only_completed_historical_seasons(tmp_path):
+    historical = {
+        "season_end_year": 2026,
+        "calendar_final_count": 185,
+        "reconciled_final_count": 185,
+        "not_applicable_rows": 0,
+        "blocking_gap_count": 0,
+        "status": "calendar_final_count_reconciled",
+        "source": "aba_liga",
+        "evidence": "ROUTE_CONTRACT_REFERENCED",
+        "completed_at_utc": "2026-11-20T13:40:00Z",
+    }
+    current = {**historical, "season_end_year": 2027, "completed_at_utc": "2026-11-20T14:00:00Z"}
+
+    path = _write_aba_history_receipts(
+        tmp_path, [historical, current], current_season_end_year=2027
+    )
+
+    assert path is not None
+    summary = json.loads(Path(path).read_text())
+    assert summary == {
+        "schema_version": "magolide.aba_history_receipts",
+        "league": "ABA_LEAGUE",
+        "provider": "aba_liga",
+        "receipts": {"2026": historical},
+    }
+    # An equivalent re-attestation preserves the original durable receipt and
+    # does not cause a timestamp-only publication change.
+    assert _write_aba_history_receipts(
+        tmp_path,
+        [{**historical, "completed_at_utc": "2026-11-20T15:00:00Z"}],
+        current_season_end_year=2027,
+    ) == path
+    assert json.loads(Path(path).read_text()) == summary
+    with pytest.raises(ValueError, match="conflicts with durable evidence"):
+        _write_aba_history_receipts(
+            tmp_path,
+            [{**historical, "calendar_final_count": 186, "reconciled_final_count": 186}],
+            current_season_end_year=2027,
+        )
 
 
 def test_daily_dry_run_creates_no_warehouse_and_builds_market_report(tmp_path):

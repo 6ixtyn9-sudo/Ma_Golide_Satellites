@@ -95,6 +95,65 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
     assert not (repo / "localdata" / "nba" / "picks_unapproved.json").exists()
 
 
+def test_publisher_unions_aba_history_receipts_and_rejects_count_conflicts(tmp_path):
+    receipt = {
+        "season_end_year": 2026,
+        "calendar_final_count": 185,
+        "reconciled_final_count": 185,
+        "not_applicable_rows": 0,
+        "blocking_gap_count": 0,
+        "status": "calendar_final_count_reconciled",
+        "source": "aba_liga",
+        "evidence": "ROUTE_CONTRACT_REFERENCED",
+        "completed_at_utc": "2026-11-20T13:40:00Z",
+    }
+
+    def payload(entry):
+        return json.dumps(
+            {
+                "schema_version": "magolide.aba_history_receipts",
+                "league": "ABA_LEAGUE",
+                "provider": "aba_liga",
+                "receipts": {str(entry["season_end_year"]): entry},
+            }
+        ).encode()
+
+    artifact_file(
+        tmp_path, "aba-artifact", "aba_league", "history_receipts.json", payload(receipt)
+    )
+    # This exact file name is ABA-only, even though the publisher scans all
+    # registered state directories.
+    artifact_file(tmp_path, "cba-artifact", "cba", "history_receipts.json", payload(receipt))
+
+    repo = tmp_path / "repo"
+    first = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    destination = repo / "localdata" / "aba_league" / "history_receipts.json"
+    assert first["copied"] == ["localdata/aba_league/history_receipts.json"]
+    assert not (repo / "localdata" / "cba" / "history_receipts.json").exists()
+    assert json.loads(destination.read_text())["receipts"] == {"2026": receipt}
+
+    artifact_file(
+        tmp_path,
+        "aba-artifact",
+        "aba_league",
+        "history_receipts.json",
+        payload({**receipt, "completed_at_utc": "2026-11-20T14:00:00Z"}),
+    )
+    repeated = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert repeated["unchanged"] == ["localdata/aba_league/history_receipts.json"]
+    assert json.loads(destination.read_text())["receipts"] == {"2026": receipt}
+
+    artifact_file(
+        tmp_path,
+        "aba-artifact",
+        "aba_league",
+        "history_receipts.json",
+        payload({**receipt, "calendar_final_count": 186, "reconciled_final_count": 186}),
+    )
+    with pytest.raises(ValueError, match="ABA history receipt conflicts"):
+        merge_downloaded_localdata(tmp_path / "artifacts", repo)
+
+
 def test_publisher_does_not_regress_settled_pick_or_ticket_card_to_pending(tmp_path):
     artifact_file(
         tmp_path,

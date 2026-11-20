@@ -51,6 +51,7 @@ def test_gitignore_allows_every_git_durable_operator_artifact():
         "localdata/nba/pick_lifecycle_state.json",
         "localdata/nba/coverage_gap_2026-11-18.json",
         "localdata/nba/auto_tickets_2026-11-18_decision.json",
+        "localdata/aba_league/history_receipts.json",
         "localdata/euroleague/euroleague_consensus_paper_2026-11-18_roster.json",
         "localdata/euroleague/euroleague_consensus_paper_2026-11-18.txt",
     )
@@ -217,6 +218,7 @@ def test_successful_lanes_publish_despite_a_failed_matrix_sibling():
             "uses: actions/upload-artifact@v4", 1
         )[0]
         assert "if: success()" in artifact
+        assert "${{ env.LOCALDATA }}/history_receipts.json" in text
         recovery = text.split(
             "name: Preserve durable pick lifecycle evidence from an interrupted lane", 1
         )[1].split("\n\n  publish-localdata:", 1)[0]
