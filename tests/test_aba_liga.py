@@ -38,6 +38,7 @@ CALENDAR = """
 """
 
 UNPINNED_DATE_RANGE = "Tuesday, 01.02.2033 - Friday, 04.02.2033"
+UNPINNED_DATE = "Saturday, 05.02.2033"
 
 MATCH = """
 <html><body>
@@ -134,11 +135,43 @@ def test_calendar_skips_unpinned_future_date_range_with_visible_coverage_gap():
     assert "no canonical game emitted" in gaps[0].detail
 
 
-def test_calendar_with_only_unpinned_future_ranges_is_a_visible_empty_slate():
+def test_calendar_accepts_cest_with_informational_local_time_annotation():
+    calendar = CALENDAR.replace(
+        "Friday, 10.10.2025 20:00 CET",
+        "Friday, 10.10.2025 20:00 CEST (21:00 Example City local time)",
+    )
+
+    games = aba.parse_calendar(calendar, 2026)
+    assert games[1].scheduled_utc == "2025-10-10T18:00:00Z"
+
+
+def test_calendar_skips_date_only_nameless_placeholder_before_team_parsing():
+    calendar = (
+        CALENDAR.replace("Friday, 10.10.2025 20:00 CET", UNPINNED_DATE)
+        .replace("Budućnost VOLI <span>:</span> FMP", "<span>:</span>")
+    )
+
+    def fetch(url: str) -> str:
+        if "/calendar/" in url:
+            return calendar
+        if "/match/6/" in url:
+            return MATCH
+        raise AssertionError(url)
+
+    games = aba.discover_games("20251005", text_fetch=fetch, season=2026)
+    assert [game.game_id for game in games] == ["aba_liga:25:1:6"]
+    gaps = aba.last_gaps()
+    assert len(gaps) == 1
+    assert gaps[0].game_id == "aba_liga:25:1:7"
+    assert gaps[0].reason.value == "not_applicable"
+
+
+def test_calendar_with_only_unpinned_future_rows_is_a_visible_empty_slate():
     calendar = (
         CALENDAR.replace("93 : 97", "")
         .replace("Sunday, 05.10.2025 19:30 CET", "Tuesday, 01.02.2033 - Friday, 04.02.2033")
-        .replace("Friday, 10.10.2025 20:00 CET", UNPINNED_DATE_RANGE)
+        .replace("Friday, 10.10.2025 20:00 CET", UNPINNED_DATE)
+        .replace("Budućnost VOLI <span>:</span> FMP", "<span>:</span>")
     )
 
     def fetch(url: str) -> str:
@@ -188,6 +221,16 @@ def test_ot_final_with_two_overtime_periods_aggregates_and_reconciles():
     assert final.actual.overtime_periods == 2
     assert final.actual.reconciles() == (True, "")
     assert final.final_status() is FinalStatus.AOT
+
+
+def test_match_detail_accepts_cest_wall_clock_suffix():
+    cesty_match = MATCH.replace("19:30 CET", "19:30 CEST (20:30 Example City local time)")
+
+    def fetch(url: str) -> str:
+        return CALENDAR if "/calendar/" in url else cesty_match
+
+    games = aba.discover_games("20251005", text_fetch=fetch)
+    assert [game.scheduled_utc for game in games] == ["2025-10-05T17:30:00Z"]
 
 
 def test_result_refuses_scope_drift_and_does_not_emit_a_final():
@@ -372,8 +415,21 @@ def test_parser_rejects_a_calendar_scope_or_malformed_score():
         aba.parse_calendar(CALENDAR.replace("93 : 97", "FINAL"), 2026)
     with pytest.raises(IdentityError, match="no readable CET/CEST timestamp"):
         aba.parse_calendar(CALENDAR.replace("Friday, 10.10.2025 20:00 CET", "TBD"), 2026)
-    with pytest.raises(IdentityError, match="completed calendar game 7 has a date range"):
+    with pytest.raises(IdentityError, match="completed calendar game 7 has an unpinned date range"):
         aba.parse_calendar(
-            CALENDAR.replace("<td></td><td>Friday, 10.10.2025 20:00 CET</td>", f"<td>80 : 70</td><td>{UNPINNED_DATE_RANGE}</td>"),
+            CALENDAR.replace(
+                "<td></td><td>Friday, 10.10.2025 20:00 CET</td>",
+                f"<td>80 : 70</td><td>{UNPINNED_DATE_RANGE}</td>",
+            ),
             2026,
         )
+    with pytest.raises(IdentityError, match="completed calendar game 7 has an unpinned date"):
+        aba.parse_calendar(
+            CALENDAR.replace(
+                "<td></td><td>Friday, 10.10.2025 20:00 CET</td>",
+                f"<td>80 : 70</td><td>{UNPINNED_DATE}</td>",
+            ),
+            2026,
+        )
+    with pytest.raises(IdentityError, match="calendar matchup has an unresolved team"):
+        aba.parse_calendar(CALENDAR.replace("Budućnost VOLI <span>:</span> FMP", "<span>:</span>"), 2026)

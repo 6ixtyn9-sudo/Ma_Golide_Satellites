@@ -38,14 +38,17 @@ minimal contract:
    `{sez}/1/`. Every match link must repeat the same `sez` and `league_id`.
 2. **Fixture identity:** the calendar provides the event number, home/away
    display names, final-present indicator, and local wall-clock date/time.
-   Calendar names are not used as immutable team IDs. A future multi-day date
-   range without a single tip is a non-canonical placeholder: it is skipped
-   with explicit coverage telemetry, never assigned an invented timestamp.
+   Calendar names are not used as immutable team IDs. A future date range or
+   date-only row without a single tip is a non-canonical placeholder: it is
+   skipped with explicit coverage telemetry, never assigned an invented
+   timestamp. This check occurs before team-name parsing because future bracket
+   placeholders can also have no assigned teams.
 3. **Clock semantics:** the external reference reports a `CET` year-round site
-   display. The parser interprets the reported wall-clock time in
-   `Europe/Belgrade`, including DST, before converting it to UTC; this is a
-   contract assumption pending first-party summer and winter captures. A fixed
-   `+01:00` conversion is rejected by tests.
+   display. The parser interprets `CET` or `CEST` wall-clock values in
+   `Europe/Belgrade`, including DST, before converting them to UTC; an optional
+   trailing parenthetical local-time annotation is informational only. This is
+   a contract assumption pending retained first-party summer and winter
+   captures. A fixed `+01:00` conversion is rejected by tests.
 4. **Detail scope and identity:** the match page must echo `match_data_id`,
    `match_data_sez`, and `match_data_lea`; expose two scoped team links with
    distinct official team IDs; repeat the calendar home/away order; and agree
