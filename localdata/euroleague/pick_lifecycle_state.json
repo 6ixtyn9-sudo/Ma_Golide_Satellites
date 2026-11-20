@@ -5,7 +5,7 @@
       "logical_picks": 15
     },
     "2026-11-20": {
-      "frozen_fixtures": 0,
+      "frozen_fixtures": 1,
       "logical_picks": 13
     }
   },
@@ -781,9 +781,210 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-19"
       }
+    },
+    "2026-11-20": {
+      "E2026-127": {
+        "decision_cutoff_utc": "2026-11-20T16:30:00Z",
+        "frozen_at": "2026-11-20T16:54:02Z",
+        "game_id": "E2026-127",
+        "league": "EUROLEAGUE",
+        "rows": [
+          {
+            "away": "LDLC ASVEL Villeurbanne",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.341731,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 22,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "17d2f8b02f01e37a5818d68932673e7048cbf0aa476bc5df934d1a3b3cc412dc",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "88a902e5efd13f6d977e",
+            "game_id": "E2026-127",
+            "grade_status": "pending",
+            "home": "Anadolu Efes Istanbul",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "88a902e5efd13f6d977e",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.28,
+            "role": null,
+            "scheduled_utc": "2026-11-20T17:30:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "LDLC ASVEL Villeurbanne",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.337593,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "bd5b878d24a0704e166a2511d3e27785b55114701892e63ea763c926e88742a6",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d08d703180c0cbc25f1a",
+            "game_id": "E2026-127",
+            "grade_status": "pending",
+            "home": "Anadolu Efes Istanbul",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "d08d703180c0cbc25f1a",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.27,
+            "role": null,
+            "scheduled_utc": "2026-11-20T17:30:00Z",
+            "selection": "Q4"
+          },
+          {
+            "away": "LDLC ASVEL Villeurbanne",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.698929,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 26,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "de615eb8a3de39e878d23d3863017586d2a9306fc488bc617802024c8ab2f016",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "8da36c74665a89c7fd1b",
+            "game_id": "E2026-127",
+            "grade_status": "pending",
+            "home": "Anadolu Efes Istanbul",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "8da36c74665a89c7fd1b",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.66,
+            "role": null,
+            "scheduled_utc": "2026-11-20T17:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "LDLC ASVEL Villeurbanne",
+            "book": {
+              "book": "average",
+              "frozen": false,
+              "game_id": "E2026-127",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-20T16:38:25Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "aggregate_consensus",
+              "provider": "betexplorer",
+              "selected_decimal_price": 1.28,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.605741,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "32a029eed61f57f38278dafdda65e2380d06108b348ccecafebad9cd4c6c2aa2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "price_not_named_bookmaker_quote",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1660958e0feeb846fb71",
+            "game_id": "E2026-127",
+            "grade_status": "pending",
+            "home": "Anadolu Efes Istanbul",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "1660958e0feeb846fb71",
+            "price_evidence": "AGGREGATE_CONSENSUS_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-20T17:30:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T17:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      }
     }
   },
   "league": "EUROLEAGUE",
-  "pending_frozen_games": [],
+  "pending_frozen_games": [
+    [
+      "E2026-127",
+      "2026-11-20T17:30:00Z"
+    ]
+  ],
   "schema_version": "magolide.pick_lifecycle_state"
 }

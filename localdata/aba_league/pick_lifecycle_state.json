@@ -5,12 +5,189 @@
       "logical_picks": 0
     },
     "2026-11-20": {
-      "frozen_fixtures": 1,
+      "frozen_fixtures": 2,
       "logical_picks": 12
     }
   },
   "frozen_by_date": {
     "2026-11-20": {
+      "aba_liga:26:1:84": {
+        "decision_cutoff_utc": "2026-11-20T16:30:00Z",
+        "frozen_at": "2026-11-20T16:40:30Z",
+        "game_id": "aba_liga:26:1:84",
+        "league": "ABA_LEAGUE",
+        "rows": [
+          {
+            "away": "Borac Mozzart",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.295833,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 6,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "f8ff6d5ef0c18577ba746e8299e721c1c324cf581adcab252795c02d8c46aa2b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1ce99e2da8b41d965f97",
+            "game_id": "aba_liga:26:1:84",
+            "grade_status": "pending",
+            "home": "Krka",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "1ce99e2da8b41d965f97",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.32,
+            "role": null,
+            "scheduled_utc": "2026-11-20T17:30:00Z",
+            "selection": "Q1"
+          },
+          {
+            "away": "Borac Mozzart",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.328649,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "c2c8230c79760c11f29ed112b8e5de6bc4887143cb95d649b7a2e7d080863205",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5e4de1625e20ccde6ade",
+            "game_id": "aba_liga:26:1:84",
+            "grade_status": "pending",
+            "home": "Krka",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "5e4de1625e20ccde6ade",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.37,
+            "role": null,
+            "scheduled_utc": "2026-11-20T17:30:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "Borac Mozzart",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.615789,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "ce132d324abadc71793ec70f104d576accd83c1fc368511fb7fac093f10d7697",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a6dd346edf3776c95921",
+            "game_id": "aba_liga:26:1:84",
+            "grade_status": "pending",
+            "home": "Krka",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "a6dd346edf3776c95921",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.63,
+            "role": null,
+            "scheduled_utc": "2026-11-20T17:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Borac Mozzart",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.626842,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "3dafdb24e5c7fa34fe5d1f1356d065438a12d8f63e77e2ef659fdeb1da444ac0",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4893dd052badc7423669",
+            "game_id": "aba_liga:26:1:84",
+            "grade_status": "pending",
+            "home": "Krka",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "4893dd052badc7423669",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.62,
+            "role": null,
+            "scheduled_utc": "2026-11-20T17:30:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T17:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
       "aba_liga:26:1:85": {
         "decision_cutoff_utc": "2026-11-20T16:00:00Z",
         "frozen_at": "2026-11-20T16:10:22Z",
@@ -237,6 +414,10 @@
     [
       "aba_liga:26:1:85",
       "2026-11-20T17:00:00Z"
+    ],
+    [
+      "aba_liga:26:1:84",
+      "2026-11-20T17:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
