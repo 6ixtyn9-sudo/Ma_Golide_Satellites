@@ -930,8 +930,9 @@ def fetch_schedule(config: LeagueGateConfig, target_date: str) -> Iterable[Sched
         # call it from a half-hour gate and claim this job is lightweight.
         raise GateUncertain("EuroLeague has no verified date-bounded schedule source")
     if config.schedule_source == "aba_liga":
-        # ABA's canonical official calendar is season-wide. The full pipeline
-        # owns its identity/detail checks; a half-hour gate must fail open
-        # rather than duplicate an HTML parser and call a whole season a probe.
+        # ABA's externally referenced calendar route is season-wide. The full
+        # pipeline owns its identity/detail checks; a half-hour gate must fail
+        # open rather than duplicate an HTML parser and call a whole season a
+        # probe.
         raise GateUncertain("ABA League has no independent date-bounded gate source")
     raise GateUncertain("no gate schedule source is configured")

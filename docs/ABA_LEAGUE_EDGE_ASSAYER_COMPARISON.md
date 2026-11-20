@@ -1,8 +1,9 @@
 # ABA League research comparison and implementation decision
 
-**Scope:** `ABA_LEAGUE` only. This is a no-code research decision. It compares
-Ma Golide's local Edge Factory review with the independently supplied Z.ai
-`aba_league_design_review.md` and `aba_league_implementation_plan.md`.
+**Scope:** `ABA_LEAGUE` only. This records the research decision and its
+subsequent narrow implementation. It compares Ma Golide's local Edge Factory
+review with the independently supplied Z.ai `aba_league_design_review.md` and
+`aba_league_implementation_plan.md`.
 
 **Decision:** adopt the design review's evidence-first direction, with the
 corrections below. Do **not** implement the five-PR Z.ai implementation plan as
@@ -11,12 +12,15 @@ source until its contract is demonstrated and reviewed. The existing
 BetExplorer adapter may be exercised only as a probationary aggregate research
 observation; it is not a named-book, ROI, ticket, or canonical-source lane.
 
-This decision makes no claim about ABA predictive edge, calibration, ticket
-eligibility, return on investment, price availability, or historical coverage.
+This decision and its constrained implementation make no claim about ABA
+predictive edge, calibration, ticket eligibility, return on investment, price
+availability, live source validation, or historical coverage.
 
-**Implementation update (2026-11-18):** the documented official-site contract
-is now active for canonical ABA schedule/result/history acquisition; the
-implementation and remaining source-use/capture follow-up are in
+**Implementation update (2026-11-18):** the adapter targeting the documented
+official-site route is active for canonical ABA schedule/result/history
+acquisition; its route contract is an external reference, not a retained Ma
+Golide first-party response. The implementation and remaining
+source-use/capture follow-up are in
 [`ABA_LEAGUE_OFFICIAL_SOURCE_CONTRACT_PROPOSAL.md`](ABA_LEAGUE_OFFICIAL_SOURCE_CONTRACT_PROPOSAL.md).
 This change does not relax price, ticket, ROI, bank, receipt, or execution
 restrictions: BetExplorer remains an aggregate research-only lane.
@@ -210,24 +214,26 @@ to apply. These are material issues, not style preferences.
 
 ### Phase 0 — source evidence and retention follow-up
 
-The official `aba_liga` adapter is active for canonical discovery, reconciled
-results, pending-final rechecks, and resumable season/game-number history. The
-remaining operational follow-up is compact: retain allowed current calendar and
-detail captures; record source automation/storage/reuse terms; verify
-postponement/correction behavior and historical limits; and retain a durable
-completeness receipt outside Git. Do not commit raw archives, browser exports,
-or price history.
+The `aba_liga` adapter targeting the externally referenced official route is
+active for canonical discovery, reconciled results, pending-final rechecks, and
+resumable season/game-number history. The remaining operational follow-up is
+compact: retain allowed current calendar and detail captures; record source
+automation/storage/reuse terms; verify postponement/correction behavior and
+historical limits; and retain a durable completeness receipt outside Git. Do
+not commit raw archives, browser exports, or price history.
 
 ### Phase 1 — canonical-history operation
 
 The active path covers scheduled-game discovery, detail-page team identity,
 period reconciliation, coverage gaps, provider-health cursors, and existing
 per-league DuckDB/CSV materialization. A malformed result stops the cursor at
-the last successful game, so it is retried instead of skipped. The hermetic
-suite covers DST, scope/identity contradictions, missing/reconciled periods,
-and cursor advancement. These facts establish data acquisition only; they do
-not establish model calibration, prediction quality, price permission, ROI, or
-ticket eligibility.
+the last successful game, so it is retried instead of skipped; a changed
+current-season calendar-final count triggers bounded replay from game zero.
+Synthetic hermetic tests cover DST, scope/identity contradictions,
+missing/reconciled periods, metadata-only tip corrections, and cursor/completeness
+behavior. These facts establish implementation behavior only; they do not
+establish live-source validation, model calibration, prediction quality, price
+permission, ROI, or ticket eligibility.
 
 ### Phase 2 — transparent unpriced empirical forecasts
 

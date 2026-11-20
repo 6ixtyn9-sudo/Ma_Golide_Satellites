@@ -151,11 +151,14 @@ class InMemoryStore(Store):
                 and existing.status is GameStatus.FINAL
                 and existing.actual is not None
                 and game.actual is None
-                and game.scheduled_utc == existing.scheduled_utc
                 and game.status in {GameStatus.SCHEDULED, GameStatus.LIVE, GameStatus.FINAL}
             ):
                 # Schedule rediscovery is not an official result correction;
                 # never erase a reconciled final with a metadata-only payload.
+                # A later calendar tip correction must preserve that actual and
+                # record its former tip rather than silently downgrading it.
+                if game.scheduled_utc != existing.scheduled_utc and not game.rescheduled_from:
+                    game.rescheduled_from = existing.scheduled_utc
                 game.actual = existing.actual
                 game.status = GameStatus.FINAL
             self.games[game.game_id] = game

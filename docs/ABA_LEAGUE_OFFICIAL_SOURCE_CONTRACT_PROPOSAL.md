@@ -12,14 +12,14 @@ bank, receipt, or execution price lane.
 ## Why this exists
 
 An independently maintained MIT-licensed adapter repository documented a
-candidate official ABA League contract using its own captures from 2026-10-12.
-That work is a useful interface-design reference, but it is not Ma Golide's
-capture, source-use clearance, or live validation. We did not copy its source
-page fixtures or parser implementation. The Ma Golide tests use small,
-synthetic HTML examples written only to exercise the proposed invariants.
+candidate official ABA League contract using its own reported 2026-10-12
+captures. That work is a useful interface-design reference, but it is not a Ma
+Golide capture, source-use clearance, or live validation. We did not copy its
+source page fixtures or parser implementation. The Ma Golide tests use small,
+synthetic HTML examples written only to exercise the contract invariants.
 
-The canonical source is the official domain `www.aba-liga.com`, with these
-contract routes:
+The active adapter targets the official domain `www.aba-liga.com`, with these
+externally referenced contract routes:
 
 | Role | Proposed route | Required scope |
 | --- | --- | --- |
@@ -39,9 +39,11 @@ minimal contract:
 2. **Fixture identity:** the calendar provides the event number, home/away
    display names, final-present indicator, and local wall-clock date/time.
    Calendar names are not used as immutable team IDs.
-3. **Clock semantics:** the site display is reported as `CET` year-round. The
-   parser reads its wall-clock time in `Europe/Belgrade`, including DST, before
-   converting it to UTC. A fixed `+01:00` conversion is rejected by tests.
+3. **Clock semantics:** the external reference reports a `CET` year-round site
+   display. The parser interprets the reported wall-clock time in
+   `Europe/Belgrade`, including DST, before converting it to UTC; this is a
+   contract assumption pending first-party summer and winter captures. A fixed
+   `+01:00` conversion is rejected by tests.
 4. **Detail scope and identity:** the match page must echo `match_data_id`,
    `match_data_sez`, and `match_data_lea`; expose two scoped team links with
    distinct official team IDs; repeat the calendar home/away order; and agree
@@ -56,12 +58,15 @@ minimal contract:
    array-order inference.
 7. **History:** season results are enumerated from the complete calendar in
    ascending `(game_no)` order. The helper returns attempted game numbers and
-   stops on a malformed detail page so the pipeline cursor cannot falsely
-   advance past an unwritten result.
+   the full calendar-final count. A malformed detail stops the cursor at the
+   last written game; after a completed current-season scan, a changed calendar
+   final count triggers a bounded replay rather than a silent late-result hole.
 
-`tests/test_aba_liga.py` covers normal discovery/result parsing, DST, scope and
-team/time contradiction refusal, period-total refusal, malformed calendar
-refusal, and bounded history behavior.
+`tests/test_aba_liga.py` uses synthetic contract examples to cover normal
+discovery/result parsing, DST interpretation, scope and team/time contradiction
+refusal, regulation and multi-OT reconciliation, malformed calendar refusal,
+and bounded history/completeness-replay behavior. It is not live-source
+verification.
 
 ## Operational guardrails currently in code
 
@@ -70,7 +75,9 @@ rechecks, and bounded history. It still fails closed at every page boundary:
 
 - `is_enabled()` is `True`; live retrieval uses the official text pages.
 - Hermetic tests inject response text without changing live behavior.
-- The evidence string is `CONTRACT_CAPTURE_REFERENCED`, not `LIVE_VERIFIED`.
+- The evidence string is `ROUTE_CONTRACT_REFERENCED`, not `LIVE_VERIFIED`;
+  it explicitly states that source captures are external references and tests
+  are synthetic.
 - The module acquires no price data and cannot affect the existing BetExplorer
   aggregate-consensus research lane.
 - The adaptive gate fails open rather than duplicating a whole-season HTML

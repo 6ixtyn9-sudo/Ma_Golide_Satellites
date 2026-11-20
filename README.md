@@ -19,7 +19,7 @@ receipts, and audit state; DuckDB remains the canonical sports system of record.
 | EuroLeague | Q1–Q4 | Euroleague Basketball | Predixsport | BetExplorer aggregate-consensus research board only; no validated named-book ticket lane |
 | EuroLeague Women (`EUROLEAGUE_W`) | Q1–Q4 + official OT | FIBA GDAP schedule + FIBA game-page detail | No independently validated pre-tip provider yet | No validated named-book adapter; intentionally unpriced |
 | CBA | Q1–Q4 | CBA public data service | Empirical team history after reconciled-history thresholds | BetExplorer aggregate research only; no validated named-book lane |
-| ABA League (`ABA_LEAGUE`) | Q1–Q4 + official OT | Official ABA League calendar + reconciled match detail | Empirical team history only after reconciled-history thresholds | BetExplorer aggregate research only; no validated named-book lane |
+| ABA League (`ABA_LEAGUE`) | Q1–Q4 + official OT | Externally referenced aba-liga.com calendar + reconciled match detail; no Ma Golide first-party capture | Empirical team history only after reconciled-history thresholds | BetExplorer aggregate research only; no validated named-book lane |
 | NCAA_M | H1/H2 | ESPN men's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI* |
 | NCAA_W | Q1–Q4; event-declared legacy H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI* |
 | NBA G League (`NBA_G_LEAGUE`) | Q1–Q4 | ESPN `basketball/nba-development` scoreboard + summary | No external pre-tip provider validated; empirical-history forecasts only after reconciled-history thresholds | No validated named-book lane; intentionally unpriced |

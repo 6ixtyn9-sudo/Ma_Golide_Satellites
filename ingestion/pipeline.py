@@ -1559,10 +1559,10 @@ class Pipeline:
         return base
 
     def _backfill_aba_liga_history(self) -> Dict[str, Any]:
-        """Backfill official ABA finals with a season/game-number cursor.
+        """Backfill ABA finals from the externally referenced route contract.
 
-        The official calendar is the complete season index, while each final's
-        detail page supplies scoped team IDs and reconciled periods. The cursor
+        The calendar is the complete season index, while each final's detail
+        page supplies scoped team IDs and reconciled periods. The cursor
         advances only through games actually written; an invalid detail blocks
         the next game number instead of silently jumping a corrupted result.
         """
@@ -1594,17 +1594,88 @@ class Pipeline:
         current = aba_liga.season_end_year(target_day)
         season = min(int(cursor.get("next_season") or current), current)
         after_game_no = int(cursor.get("last_game_no") or 0)
+        last_completed_season = cursor.get("last_completed_season")
+        last_completed_final_count = cursor.get("last_completed_final_count")
         remaining_events = event_budget
         remaining_seasons = season_budget
         ledger_dates: set = set()
-        failures = 0
+
+        def cursor_coverage(next_season: int, last_game_no: int) -> Dict[str, Any]:
+            coverage: Dict[str, Any] = {
+                "next_season": next_season,
+                "last_game_no": last_game_no,
+                "floor_season": aba_liga.FIRST_SEASON_END_YEAR,
+            }
+            if last_completed_season is not None:
+                coverage["last_completed_season"] = int(last_completed_season)
+                coverage["last_completed_final_count"] = int(last_completed_final_count or 0)
+            return coverage
+
+        # Once the current season was fully scanned, the monotonic history
+        # cursor moves to older seasons. Re-read only its lightweight calendar
+        # index before doing so: a late-posted final below the old cursor must
+        # trigger a bounded replay, never become a silent permanent hole.
+        if int(last_completed_season or 0) == current:
+            try:
+                indexed_count = aba_liga.calendar_final_count(
+                    current, text_fetch=self._aba_text_fetch()
+                )
+            except Exception as exc:
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=None,
+                        required_field="aba_liga_season_completeness",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider=aba_liga.PROVIDER,
+                        detail=f"{current}: {str(exc)[:180]}",
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                return {
+                    **base,
+                    "status": "provider_error_cursor_retained",
+                    "cursor": cursor,
+                }
+            stored_count = sum(
+                game.status is GameStatus.FINAL
+                and game.actual is not None
+                and game.actual.reconciles()[0]
+                and int((game.evidence.get(aba_liga.PROVIDER) or {}).get("season_end_year") or 0)
+                == current
+                for game in self.store.list_games(league=League.ABA_LEAGUE)
+            )
+            if indexed_count != stored_count:
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=None,
+                        required_field="aba_liga_season_completeness",
+                        reason=CoverageState.MISSING,
+                        provider=aba_liga.PROVIDER,
+                        detail=(
+                            f"season {current}: calendar has {indexed_count} final row(s), "
+                            f"store has {stored_count} reconciled final(s); replaying from game 0"
+                        ),
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                base["completeness_repair"] = {
+                    "season_end_year": current,
+                    "calendar_final_count": indexed_count,
+                    "stored_reconciled_final_count": stored_count,
+                }
+                season, after_game_no = current, 0
+                # Do not repeatedly reset a bounded repair to zero. Subsequent
+                # successful batches retain the normal current-season cursor
+                # until it reaches a fresh complete receipt below.
+                last_completed_season = None
+                last_completed_final_count = None
         while (
             remaining_events > 0
             and remaining_seasons > 0
             and season >= aba_liga.FIRST_SEASON_END_YEAR
         ):
             try:
-                games, attempted, exhausted = aba_liga.season_finals(
+                games, attempted, exhausted, calendar_final_count = aba_liga.season_finals(
                     season,
                     start_after_game_no=after_game_no,
                     limit=remaining_events,
@@ -1625,7 +1696,6 @@ class Pipeline:
                 break
             adapter_gaps = aba_liga.last_gaps()
             self.gaps.extend(adapter_gaps)
-            failures += len(adapter_gaps)
             for game in games:
                 self.store.upsert_game(game)
                 base["events_acquired"] += 1
@@ -1636,6 +1706,7 @@ class Pipeline:
                 {
                     "season_end_year": season,
                     "attempted_game_numbers": attempted,
+                    "calendar_final_count": calendar_final_count,
                     "finals_written": len(games),
                     "exhausted": exhausted,
                     "quarantined_rows": len(adapter_gaps),
@@ -1649,46 +1720,32 @@ class Pipeline:
                 if games:
                     after_game_no = int(games[-1].evidence[aba_liga.PROVIDER]["game_no"])
                     self._record_history_cursor(
-                        "aba-liga-history",
-                        {
-                            "next_season": season,
-                            "last_game_no": after_game_no,
-                            "floor_season": aba_liga.FIRST_SEASON_END_YEAR,
-                        },
+                        "aba-liga-history", cursor_coverage(season, after_game_no)
                     )
                 base["status"] = (
                     "partial_provider_error" if games else "provider_error_cursor_retained"
                 )
                 break
             if exhausted:
+                if season == current:
+                    last_completed_season = season
+                    last_completed_final_count = calendar_final_count
                 season -= 1
                 after_game_no = 0
                 remaining_seasons -= 1
                 self._record_history_cursor(
-                    "aba-liga-history",
-                    {
-                        "next_season": season,
-                        "last_game_no": after_game_no,
-                        "floor_season": aba_liga.FIRST_SEASON_END_YEAR,
-                    },
+                    "aba-liga-history", cursor_coverage(season, after_game_no)
                 )
                 continue
             # A bounded successful batch: resume at the last canonical write.
             if games:
                 after_game_no = int(games[-1].evidence[aba_liga.PROVIDER]["game_no"])
                 self._record_history_cursor(
-                    "aba-liga-history",
-                    {
-                        "next_season": season,
-                        "last_game_no": after_game_no,
-                        "floor_season": aba_liga.FIRST_SEASON_END_YEAR,
-                    },
+                    "aba-liga-history", cursor_coverage(season, after_game_no)
                 )
             break
         base["cursor"] = self._history_cursor("aba-liga-history")
         base["ledger_dates"] = sorted(ledger_dates)
-        if failures and base["status"] == "acquired":
-            base["status"] = "partial_provider_error"
         if season < aba_liga.FIRST_SEASON_END_YEAR and base["status"] == "acquired":
             base["status"] = "complete_to_contract_floor"
         return base
