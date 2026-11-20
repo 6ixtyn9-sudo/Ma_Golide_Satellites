@@ -85,8 +85,13 @@ def test_final_expansion_is_typed_and_registry_backed_everywhere():
                 "espn",
                 "espn",
             )
+        elif league is League.ABA_LEAGUE:
+            assert (spec.schedule_source, spec.results_source, spec.gate_schedule_source) == (
+                "aba_liga",
+                "aba_liga",
+                "aba_liga",
+            )
         else:
-            # No unverified endpoint is represented as a functional adapter.
             assert spec.schedule_source == "source_unavailable"
             assert spec.results_source == "source_unavailable"
 
@@ -101,6 +106,9 @@ def test_adaptive_gate_schedules_every_registry_lane_and_fails_open_for_unavaila
     unsupported = gate_by_league[League.SPAIN_ACB.value]
     with pytest.raises(GateUncertain, match="no gate schedule source"):
         list(fetch_schedule(unsupported, "2026-11-19"))
+    aba = gate_by_league[League.ABA_LEAGUE.value]
+    with pytest.raises(GateUncertain, match="ABA League has no independent date-bounded gate source"):
+        list(fetch_schedule(aba, "2026-11-19"))
 
 
 def test_legacy_and_short_boundary_aliases_normalise_to_canonical_leagues():
