@@ -1,0 +1,26 @@
+{
+  "decision_policy": "0900_sast_or_first_slate_tip_minus_60_minutes",
+  "decision_status": "due",
+  "frozen_at": "2026-11-20T07:21:38Z",
+  "league": "EUROLEAGUE",
+  "planned_cutoff_utc": "2026-11-20T07:00:00Z",
+  "price_contract": {
+    "book": "average",
+    "operational_validation": "probation",
+    "price_provenance": "aggregate_consensus",
+    "provider": "betexplorer",
+    "source_permission": "unresolved"
+  },
+  "schema_version": "magolide.euroleague_consensus_paper_roster",
+  "selection_policy": {
+    "full_game_moneyline_only": true,
+    "maximum_picks": 3,
+    "minimum_developing_calibration_samples": 10,
+    "minimum_model_consensus_edge": 0.03,
+    "no_stake": true,
+    "no_ticket_receipt_bank_roi_or_pnl": true,
+    "one_selection_per_fixture": true
+  },
+  "selections": [],
+  "target_date": "2026-11-20"
+}
