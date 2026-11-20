@@ -1,19 +1,22 @@
-"""Official ABA League schedule/result adapter.
+"""ABA League schedule/result adapter for an externally referenced route contract.
 
 Contract reference
 ------------------
-The league's own server-rendered PHP pages are the canonical source. This
-adapter is based on the publicly documented, fixture-backed contract captured
-from ``www.aba-liga.com`` on 2026-10-12 by SportsDataverse
-(``sportsdataverse-py`` commit ``2fdd061``):
+This adapter targets the league's own server-rendered PHP pages. Its route and
+markup contract is referenced from SportsDataverse documentation describing
+third-party captures from ``www.aba-liga.com`` on 2026-10-12
+(``sportsdataverse-py`` commit ``2fdd061``); Ma Golide retains no first-party
+source response in this repository:
 
 * ``/calendar/{sez}/1/`` is a complete ABA League season calendar. ``sez`` is
   the season start year minus 2000 (25 means 2025-26); game numbers restart
   every season.
 * ``/match/{game_no}/{sez}/1/Overview`` carries stable team IDs, final score,
   Q1--Q4 and any OT periods for completed games.
-* The site labels all wall-clock times ``CET`` even during daylight saving;
-  parsing therefore uses ``Europe/Belgrade``, never a fixed UTC offset.
+* The external reference reports that the site labels wall-clock times ``CET``
+  even during daylight saving. The parser treats those values as
+  ``Europe/Belgrade`` wall-clock time, never as a fixed UTC offset; this remains
+  subject to first-party capture confirmation.
 
 The source's automation/reuse terms remain unresolved, as they are for several
 existing public schedule adapters. That fact remains explicit in provenance and
@@ -44,8 +47,9 @@ SITE_TZ = "Europe/Belgrade"
 LEAGUE_ID = 1
 FIRST_SEASON_END_YEAR = 2002
 EVIDENCE = (
-    "CONTRACT_CAPTURE_REFERENCED (official ABA page contract replayed against "
-    "documented 2026-10-12 captures; source terms unreviewed)"
+    "ROUTE_CONTRACT_REFERENCED (external SportsDataverse documentation describes "
+    "2026-10-12 captures; no Ma Golide first-party capture retained; tests are "
+    "synthetic; source terms unreviewed)"
 )
 
 TextFetch = Callable[[str], str]
@@ -473,6 +477,18 @@ def _calendar(season: int, fetch: TextFetch) -> List[CalendarGame]:
     return parse_calendar(fetch(calendar_url(season)), season)
 
 
+def calendar_final_count(
+    season: int,
+    fetch_factory=None,
+    *,
+    text_fetch: Optional[TextFetch] = None,
+) -> int:
+    """Count final-marked rows in one scoped calendar without fetching details."""
+
+    del fetch_factory
+    return sum(item.has_final for item in _calendar(season, _text_fetch(text_fetch)))
+
+
 def discover_games(
     date_yyyymmdd: str,
     fetch_factory=None,
@@ -537,23 +553,23 @@ def season_finals(
     limit: Optional[int] = None,
     fetch_factory=None,
     text_fetch: Optional[TextFetch] = None,
-) -> tuple[List[Game], List[int], bool]:
+) -> tuple[List[Game], List[int], bool, int]:
     """Fetch a bounded, monotonically ordered batch of official season finals.
 
-    Returns ``(games, attempted_game_numbers, exhausted)``. The caller owns the
-    durable cursor and advances it only after canonical writes; one malformed
-    game therefore cannot silently skip future evidence.
+    Returns ``(games, attempted_game_numbers, exhausted, calendar_final_count)``.
+    The caller owns the durable cursor and advances it only after canonical
+    writes; one malformed game therefore cannot silently skip future evidence.
+    ``calendar_final_count`` covers the whole selected calendar, including
+    final rows below a resumed cursor, so callers can detect a late-posted
+    result instead of silently treating a completed season as immutable.
     """
     del fetch_factory
     _reset_gaps()
     if start_after_game_no < 0:
         raise ValueError("start_after_game_no must be non-negative")
     fetch = _text_fetch(text_fetch)
-    candidates = [
-        item
-        for item in _calendar(season, fetch)
-        if item.has_final and item.game_no > start_after_game_no
-    ]
+    completed = [item for item in _calendar(season, fetch) if item.has_final]
+    candidates = [item for item in completed if item.game_no > start_after_game_no]
     candidates.sort(key=lambda item: item.game_no)
     batch = candidates if limit is None else candidates[: max(0, int(limit))]
     games: List[Game] = []
@@ -567,7 +583,7 @@ def season_finals(
             _gap(_game_ref(season, calendar.game_no), "historical_official_result", str(exc))
             stopped_on_error = True
             break
-    return games, attempted, not stopped_on_error and len(batch) == len(candidates)
+    return games, attempted, not stopped_on_error and len(batch) == len(candidates), len(completed)
 
 
 def smoke(
@@ -604,6 +620,7 @@ __all__ = [
     "LEAGUE_ID",
     "PROVIDER",
     "SITE_TZ",
+    "calendar_final_count",
     "calendar_url",
     "discover_games",
     "fetch_recent_results",

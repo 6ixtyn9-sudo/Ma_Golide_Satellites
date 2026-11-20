@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 
 from ingestion.duckdb_store import DuckDBStore
-from ingestion.models import GameStatus, League
+from ingestion.models import FinalStatus, GameStatus, League
 from ingestion.pipeline import Pipeline, PipelineConfig
 from ingestion.providers import IdentityError
 from ingestion.providers import aba_liga as aba
@@ -121,6 +121,31 @@ def test_result_contract_reconciles_all_quarters_before_canonical_final():
     assert actual.reconciles() == (True, "")
 
 
+def test_ot_final_with_two_overtime_periods_aggregates_and_reconciles():
+    overtime_match = (
+        MATCH.replace("93 : 97", "103 : 108", 1)
+        .replace(
+            "<tr><td>Q1</td><td>Q2</td><td>Q3</td><td>Q4</td></tr>",
+            "<tr><td>Q1</td><td>Q2</td><td>Q3</td><td>Q4</td><td>OT1</td><td>OT2</td></tr>",
+        )
+        .replace(
+            "<tr><td>21 : 24</td><td>25 : 24</td><td>20 : 23</td><td>27 : 26</td></tr>",
+            "<tr><td>20 : 20</td><td>20 : 20</td><td>20 : 20</td><td>20 : 20</td><td>10 : 10</td><td>13 : 18</td></tr>",
+        )
+    )
+
+    def fetch(url: str) -> str:
+        return CALENDAR if "/calendar/" in url else overtime_match
+
+    final = aba.fetch_recent_results("2025-10-05", text_fetch=fetch)[0]
+    assert final.actual is not None
+    assert final.actual.home_overtime == 23.0
+    assert final.actual.away_overtime == 28.0
+    assert final.actual.overtime_periods == 2
+    assert final.actual.reconciles() == (True, "")
+    assert final.final_status() is FinalStatus.AOT
+
+
 def test_result_refuses_scope_drift_and_does_not_emit_a_final():
     out_of_scope = MATCH.replace('id="match_data_sez" value="25"', 'id="match_data_sez" value="24"')
 
@@ -171,10 +196,11 @@ def test_history_batch_stops_at_bad_game_and_does_not_claim_it_was_written():
             return broken  # scope passes, header teams/time do not
         raise AssertionError(url)
 
-    games, attempted, exhausted = aba.season_finals(2026, text_fetch=fetch)
+    games, attempted, exhausted, calendar_final_count = aba.season_finals(2026, text_fetch=fetch)
     assert [game.game_id for game in games] == ["aba_liga:25:1:6"]
     assert attempted == [6, 8]
     assert exhausted is False
+    assert calendar_final_count == 2
     assert aba.last_gaps()[0].required_field == "historical_official_result"
 
 
@@ -202,6 +228,8 @@ def test_pipeline_history_writes_reconciled_final_and_advances_game_cursor(tmp_p
         assert deep["cursor"] == {
             "floor_season": 2002,
             "last_game_no": 0,
+            "last_completed_season": 2026,
+            "last_completed_final_count": 1,
             "next_season": 2025,
         }
         stored = store.get_game("aba_liga:25:1:6")
@@ -209,6 +237,64 @@ def test_pipeline_history_writes_reconciled_final_and_advances_game_cursor(tmp_p
         assert stored.actual.reconciles() == (True, "")
         health = store.get_provider_health("aba-liga-history", League.ABA_LEAGUE)
         assert health is not None and health.coverage == deep["cursor"]
+    finally:
+        store.close()
+
+
+def test_history_replays_current_season_when_a_late_final_appears_below_cursor(tmp_path):
+    late_calendar = CALENDAR.replace(
+        "<td></td><td>Friday, 10.10.2025 20:00 CET</td>",
+        "<td>80 : 60</td><td>Friday, 10.10.2025 20:00 CET</td>",
+    )
+    late_match = (
+        MATCH.replace('id="match_data_id" value="6"', 'id="match_data_id" value="7"')
+        .replace("Sunday, 05.10.2025 19:30 CET", "Friday, 10.10.2025 20:00 CET")
+        .replace("Spartak Office Shoes", "FMP")
+        .replace("93 : 97", "80 : 60")
+        .replace(
+            "<tr><td>21 : 24</td><td>25 : 24</td><td>20 : 23</td><td>27 : 26</td></tr>",
+            "<tr><td>20 : 15</td><td>20 : 15</td><td>20 : 15</td><td>20 : 15</td></tr>",
+        )
+    )
+
+    def fetch(calendar: str):
+        def _fetch(url: str) -> str:
+            if "/calendar/" in url:
+                return calendar
+            if "/match/6/" in url:
+                return MATCH
+            if "/match/7/" in url:
+                return late_match
+            raise AssertionError(url)
+
+        return _fetch
+
+    config = PipelineConfig(
+        league="ABA_LEAGUE",
+        date_yyyymmdd="20251006",
+        history_days=0,
+        history_request_budget=1,
+        deep_history_event_budget=5,
+        fixture_now_utc="2025-10-06T12:00:00Z",
+    )
+    store = DuckDBStore(str(tmp_path / "aba-repair" / "warehouse.duckdb"), persist=True)
+    try:
+        first = Pipeline(config, store, fetch=fetch(CALENDAR), allow_writes=True).backfill()
+        first_cursor = first["backfill"]["deep_history"]["cursor"]
+        assert first_cursor["last_completed_season"] == 2026
+        assert first_cursor["last_completed_final_count"] == 1
+
+        second = Pipeline(config, store, fetch=fetch(late_calendar), allow_writes=True).backfill()
+        deep = second["backfill"]["deep_history"]
+        assert deep["completeness_repair"] == {
+            "season_end_year": 2026,
+            "calendar_final_count": 2,
+            "stored_reconciled_final_count": 1,
+        }
+        repaired = store.get_game("aba_liga:25:1:7")
+        assert repaired is not None and repaired.actual is not None
+        assert repaired.actual.reconciles() == (True, "")
+        assert deep["cursor"]["last_completed_final_count"] == 2
     finally:
         store.close()
 

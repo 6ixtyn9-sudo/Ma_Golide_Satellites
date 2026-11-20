@@ -490,6 +490,24 @@ def test_schedule_rediscovery_does_not_erase_official_final():
     assert loaded.actual.home_final == 100
 
 
+def test_schedule_tip_correction_does_not_erase_official_final():
+    store = InMemoryStore()
+    final = _game()
+    final.status = GameStatus.FINAL
+    final.actual = _actual()
+    store.upsert_game(final)
+
+    rediscovered = _game()
+    rediscovered.scheduled_utc = "2026-11-07T22:01:00Z"
+    store.upsert_game(rediscovered)
+
+    loaded = store.get_game(final.game_id)
+    assert loaded.status is GameStatus.FINAL
+    assert loaded.actual is not None and loaded.actual.reconciles()[0]
+    assert loaded.scheduled_utc == "2026-11-07T22:01:00Z"
+    assert loaded.rescheduled_from == "2026-11-07T22:00:00Z"
+
+
 def test_nonfinite_or_negative_prediction_expectations_are_rejected():
     for field in ("expected_home_score", "expected_away_score", "expected_total"):
         for value in (float("nan"), float("inf"), -1.0):
