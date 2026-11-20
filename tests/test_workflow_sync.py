@@ -50,6 +50,7 @@ def test_gitignore_allows_every_git_durable_operator_artifact():
         "localdata/nba/picks_2026-11-18.txt",
         "localdata/nba/pick_lifecycle_state.json",
         "localdata/nba/coverage_gap_2026-11-18.json",
+        "localdata/nba/archive_manifest.json",
         "localdata/nba/auto_tickets_2026-11-18_decision.json",
         "localdata/aba_league/history_receipts.json",
         "localdata/euroleague/euroleague_consensus_paper_2026-11-18_roster.json",
@@ -250,6 +251,26 @@ def test_only_named_automated_triggers_can_publish_a_durable_operator_decision()
         assert "needs.gate.outputs.run_any == 'true'" in publish
         assert "workflow_dispatch" not in publish
         assert "Manual dispatch uploads artifacts but cannot publish." in publish
+
+
+def test_workflow_uses_verified_release_checkpoint_for_cold_cache_recovery_and_compacts_git_state():
+    repo = Path(__file__).resolve().parents[1]
+    for path in (
+        repo / "workflows" / "ingestion.yml",
+        repo / ".github" / "workflows" / "ingestion.yml",
+    ):
+        text = path.read_text()
+        assert "Restore verified canonical checkpoint after a cold cache" in text
+        assert "python scripts/release_archive.py restore" in text
+        assert "ALLOW_MAGOLIDE_WRITES=true python scripts/recover_warehouse.py" in text
+        assert "Build compact canonical release checkpoints" in text
+        assert "python scripts/release_archive.py build" in text
+        assert "Upload verified checkpoints to GitHub Releases" in text
+        assert "magolide-state-current" in text
+        assert "gh release upload" in text
+        assert "Compact historical Git state after checkpoint upload" in text
+        assert "--compact-existing" in text
+        assert "steps.release-checkpoints.outputs.available == 'true'" in text
 
 
 def test_evidence_verified_cache_epoch_applies_to_every_league():

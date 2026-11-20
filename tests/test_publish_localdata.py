@@ -69,7 +69,10 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
     report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
 
     assert report["copied_count"] == 5
-    assert (repo / "localdata" / "nba" / "picks_2026-11-12.txt").read_bytes() == b"picks\n"
+    compact_pick_card = (repo / "localdata" / "nba" / "picks_2026-11-12.txt").read_text()
+    assert "Ma Golide compact pick lifecycle marker" in compact_pick_card
+    assert "target_date=2026-11-12" in compact_pick_card
+    assert "detailed_card_sha256=" in compact_pick_card
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12_decision.json").read_bytes() == b"receipt\n"
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12.txt").read_bytes() == b"frozen-ticket-card\n"
     # A pre-cutoff card is a mutable published preview, not a receipt or date lock.
@@ -266,7 +269,9 @@ def test_publisher_keeps_structured_pick_json_artifact_only_globally(tmp_path):
     destination = repo / "localdata" / "nba"
     assert not (destination / dated_json_name).exists()
     assert not (destination / retired_freeze_name).exists()
-    assert (destination / "picks_2026-11-18.txt").read_bytes() == b"draft one\n"
+    compact_pick_card = (destination / "picks_2026-11-18.txt").read_text()
+    assert "Ma Golide compact pick lifecycle marker" in compact_pick_card
+    assert "detailed_card_sha256=" in compact_pick_card
     persisted = json.loads((destination / "pick_lifecycle_state.json").read_text())
     assert persisted["frozen_by_date"]["2026-11-18"]["game-1"]["rows"] == [{"id": 1}]
 
@@ -275,13 +280,180 @@ def test_publisher_keeps_structured_pick_json_artifact_only_globally(tmp_path):
     second = merge_downloaded_localdata(tmp_path / "artifacts", repo)
     assert second["copied"] == ["localdata/nba/picks_2026-11-18.txt"]
     assert not (destination / dated_json_name).exists()
-    assert (destination / "picks_2026-11-18.txt").read_bytes() == b"draft two\n"
+    second_marker = (destination / "picks_2026-11-18.txt").read_text()
+    assert "Ma Golide compact pick lifecycle marker" in second_marker
+    assert "detailed_card_sha256=" in second_marker
 
     artifact_file(
         tmp_path, "nba-artifact", "nba", "pick_lifecycle_state.json", lifecycle_state([{"id": 2}])
     )
     with pytest.raises(ValueError, match="immutable inline pick freeze differs"):
         merge_downloaded_localdata(tmp_path / "artifacts", repo)
+
+
+def test_publisher_compacts_frozen_fixture_and_ticket_evidence_without_changing_identity(tmp_path):
+    full_row = {
+        "forecast_id": "forecast-1",
+        "pick_id": "pick-1",
+        "game_id": "game-1",
+        "league": "NBA",
+        "date": "2026-11-18",
+        "scheduled_utc": "2026-11-18T20:00:00Z",
+        "home": "Home",
+        "away": "Away",
+        "market": "moneyline",
+        "period": "full_game",
+        "selection": "home",
+        "line": None,
+        "raw_probability": 0.64,
+        "calibrated_probability": 0.62,
+        "push_probability": 0.0,
+        "model": "team_history_empirical",
+        "model_version": "model-v1",
+        "role": "champion",
+        "bucket": "ELIGIBLE_CLEAN",
+        "price_evidence": "NAMED_BOOKMAKER_PRICE",
+        "paper_only": True,
+        "alternative_probabilities": {"away": 0.36},
+        "explanation": {"very_large": "x" * 10_000},
+        "team_history": {"rows": list(range(100))},
+        "context": {"verbose": True},
+        "calibration": {
+            "status": "calibrated",
+            "n": 40,
+            "minimum_samples": 30,
+            "sufficient_for_accas": True,
+            "verbose": "x" * 1_000,
+        },
+        "eligibility": {"acca_eligible": True, "reasons": [], "verbose": "x" * 1_000},
+        "prediction": {"provider": "espn", "observed_utc": "2026-11-18T18:00:00Z"},
+        "book": {
+            "provider": "theoddsapi",
+            "book": "DraftKings",
+            "observed_utc": "2026-11-18T18:00:00Z",
+            "selected_decimal_price": 1.8,
+            "selected_opposite_decimal_price": 2.1,
+            "price_provenance": "named_book",
+            "source_permission": "unresolved",
+            "operational_validation": "unverified",
+            "verbose": "x" * 1_000,
+        },
+        "paper_roi_band": {
+            "market": "moneyline",
+            "period": "full_game",
+            "historical_pick_count": 18,
+            "observed_roi": 0.12,
+            "adjusted_roi": 0.08,
+            "qualifies": True,
+            "verbose": "x" * 1_000,
+        },
+    }
+    lifecycle = {
+        "schema_version": "magolide.pick_lifecycle_state",
+        "league": "NBA",
+        "pending_frozen_games": [["game-1", "2026-11-18T20:00:00Z"]],
+        "dated_reports": {"2026-11-18": {"frozen_fixtures": 1}},
+        "frozen_by_date": {
+            "2026-11-18": {
+                "game-1": {
+                    "schema_version": "magolide.pick_freeze",
+                    "target_date": "2026-11-18",
+                    "league": "NBA",
+                    "game_id": "game-1",
+                    "scheduled_utc": "2026-11-18T20:00:00Z",
+                    "decision_cutoff_utc": "2026-11-18T19:00:00Z",
+                    "frozen_at": "2026-11-18T19:00:00Z",
+                    "rows": [full_row],
+                }
+            }
+        },
+    }
+    receipt = {
+        "schema_version": "magolide.paper_ticket_receipt",
+        "date": "2026-11-18",
+        "league": "NBA",
+        "decision_id": "decision-1",
+        "status": "frozen",
+        "paper_only": True,
+        "captured_at": "2026-11-18T19:00:00Z",
+        "frozen_at": "2026-11-18T19:00:00Z",
+        "stake_units_per_acca": 1.0,
+        "stake_units_per_position": 1.0,
+        "accas": [
+            {
+                "ticket_id": "ticket-1",
+                "ticket_type": "acca",
+                "publication_index": 1,
+                "leg_count": 1,
+                "combined_decimal_odds": 1.8,
+                "stake_units": 1.0,
+                "estimated_joint_win_probability": 0.62,
+                "paper_only": True,
+                "legs": [full_row],
+                "individual_pick_filter": {
+                    "status": "qualified",
+                    "candidate_pick_count": 20,
+                    "qualifying_pick_count": 1,
+                    "qualifying_band_count": 1,
+                    "historical_unique_pick_count": 40,
+                    "candidate_band_details": {
+                        "forecast-1": full_row["paper_roi_band"],
+                        "other": {"verbose": "x" * 1_000},
+                    },
+                    "bands": [{"verbose": "x" * 1_000}],
+                },
+            }
+        ],
+        "singles": [],
+    }
+    artifact_file(
+        tmp_path,
+        "nba-artifact",
+        "nba",
+        "pick_lifecycle_state.json",
+        json.dumps(lifecycle).encode(),
+    )
+    artifact_file(
+        tmp_path,
+        "nba-artifact",
+        "nba",
+        "auto_tickets_2026-11-18_decision.json",
+        json.dumps(receipt).encode(),
+    )
+
+    repo = tmp_path / "repo"
+    first = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    state = json.loads((repo / "localdata/nba/pick_lifecycle_state.json").read_text())
+    compact_row = state["frozen_by_date"]["2026-11-18"]["game-1"]["rows"][0]
+    assert compact_row["evidence_schema"] == "magolide.frozen_forecast_evidence.v1"
+    assert compact_row["book"]["selected_decimal_price"] == 1.8
+    assert compact_row["book"]["source_permission"] == "unresolved"
+    assert compact_row["eligibility"] == {"acca_eligible": True, "reasons": []}
+    assert "explanation" not in compact_row
+    assert "team_history" not in compact_row
+    assert len(json.dumps(compact_row)) < len(json.dumps(full_row)) / 3
+    # The normal operator can still rebuild a gradeable forecast from the
+    # compact inline evidence restored from Git on a later run.
+    from forecasting.operator import _forecast_from_row
+
+    restored_forecast = _forecast_from_row(compact_row)
+    assert restored_forecast.selection == "home"
+    assert restored_forecast.book is not None
+    assert restored_forecast.book.price_for("home") == 1.8
+
+    compact_receipt = json.loads(
+        (repo / "localdata/nba/auto_tickets_2026-11-18_decision.json").read_text()
+    )
+    compact_position = compact_receipt["accas"][0]
+    assert "bands" not in compact_position["individual_pick_filter"]
+    assert set(compact_position["individual_pick_filter"]["candidate_band_details"]) == {"forecast-1"}
+    assert "explanation" not in compact_position["legs"][0]
+
+    # A later full artifact is semantically the same immutable receipt/freeze,
+    # so the compact Git form is accepted without a conflict.
+    repeated = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert repeated["status"] == "no_changes"
+    assert first["copied_count"] == 2
 
 
 def test_interrupted_lane_artifact_can_publish_only_durable_pick_lifecycle_evidence(tmp_path):
@@ -320,7 +492,9 @@ def test_interrupted_lane_artifact_can_publish_only_durable_pick_lifecycle_evide
 
     destination = tmp_path / "repo" / "localdata" / "nba"
     assert not (destination / dated_json_name).exists()
-    assert (destination / "picks_2026-11-18.txt").read_bytes() == b"draft card\n"
+    assert "Ma Golide compact pick lifecycle marker" in (
+        destination / "picks_2026-11-18.txt"
+    ).read_text()
     assert not (destination / retired_freeze_name).exists()
     assert (destination / "pick_lifecycle_state.json").read_bytes() == (
         json.dumps(json.loads(lifecycle_state), indent=2, sort_keys=True) + "\n"

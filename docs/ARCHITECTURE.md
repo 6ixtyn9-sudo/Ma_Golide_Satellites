@@ -38,8 +38,11 @@ TheOddsAPI                       v
 ```
 
 No component requires a browser application, spreadsheet, external database,
-or JSON-file store. The only long-lived sports state is DuckDB plus CSV.GZ and
-immutable audit ledgers.
+or JSON-file store. DuckDB is the live canonical state; CSV.GZ is its portable
+recovery form. Bounded Actions caches accelerate the live lane, while a
+checksummed compact GitHub Release checkpoint per league carries canonical CSV
+and verbose run evidence across cold-cache recovery. Git itself retains only
+code, compact manifests, and current operator evidence—not the data warehouse.
 
 ## Package boundaries
 
@@ -119,6 +122,26 @@ warehouse or temporary destination and requires the normal write opt-in.
 Restoring into a nonempty warehouse is rejected, preventing accidental merges
 of unrelated evidence.
 
+### Compact release checkpoints
+
+A successful league lane materializes its canonical CSV.GZ files, then the
+publisher builds a deterministic `magolide-state-<league>.tar.gz` asset on the
+rolling `magolide-state-current` GitHub Release. Each asset has a content
+manifest with per-file SHA-256 digests; the compact
+`localdata/<league>/archive_manifest.json` committed to Git records the release
+tag, asset name, byte count, and archive digest.
+
+On a cold runner, the workflow restores Git-authoritative compact state first.
+If no DuckDB warehouse is available and an archive manifest exists, it downloads
+the named release asset, verifies the archive checksum and every canonical CSV
+entry, restores only `csv/*.csv.gz`, and rebuilds a new DuckDB warehouse using
+the normal recovery tool. A missing or corrupt asset for an existing manifest
+fails closed rather than starting an empty history.
+
+Release archives may contain bounded verbose run evidence needed for review,
+but never raw provider pages, credentials, arbitrary workspace files, or a
+DuckDB binary. The archive builder uses an explicit filename allowlist.
+
 ## Derived research views
 
 `ingestion.warehouse.connect` opens DuckDB read-only by default and creates
@@ -187,18 +210,21 @@ saves `localdata/` as a cache and uploads run reports/ledgers as artifacts. That
 cadence supports the operator's 60-minute pre-tip ticket decision window.
 Disabled canonical writes still run live acquisition as a dry run; they do not
 create or modify canonical DuckDB/CSV state. Manual live dry runs force the
-full all-league rehearsal path.
+full all-league rehearsal path. The GitHub Actions cache and 14-day artifacts
+are operational acceleration and short-term review only; the verified GitHub
+Release checkpoint is the cold-cache recovery boundary for canonical CSV.
 
 After the league matrix, one publisher commits immutable ticket/no-bet decisions,
-compact state/settlement summaries, dated text cards, and immutable per-fixture
-snapshots nested in `pick_lifecycle_state.json` to `localdata/<league>` on
-`main`. Each snapshot carries the selection, price/line, source/evidence
-timestamps, scheduled tip, and actual freeze time; settlement reads that
-evidence rather than a later scan. Structured
-dated pick JSON, detailed dated lifecycle renders, `picks_today.json`, and
-expanded audits remain in the active league cache and bounded Actions artifacts.
-Existing Git-durable history is retained and conflicting immutable receipts or freezes fail closed. Git wins
-over stale cached operator state on the next run.
+compact state/settlement summaries, small dated lifecycle markers, and
+immutable per-fixture snapshots nested in `pick_lifecycle_state.json` to
+`localdata/<league>` on `main`. Each snapshot carries the selection, price/line,
+source/evidence timestamps, scheduled tip, actual freeze time, decision gates,
+and a hash of the verbose freeze record; settlement reads that evidence rather
+than a later scan. Structured dated pick JSON, full forecast boards, detailed
+lifecycle renders, `picks_today.json`, and expanded audits remain in the active
+league cache, bounded Actions artifacts, and release checkpoint evidence.
+Existing Git-durable history is retained and conflicting immutable receipts or
+freezes fail closed. Git wins over stale cached operator state on the next run.
 
 A CI cache is an operational optimization, not an archival guarantee. Export
 and retain CSV.GZ/ledger artifacts according to the desired recovery policy.

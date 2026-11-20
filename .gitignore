@@ -27,6 +27,8 @@ localdata/*/picks_audit_*.md
 # date/game; reject stale cache sidecars explicitly.
 localdata/*/pick_freeze_*.json
 !localdata/*/coverage_gap_*.json
+# Checksum/asset pointer for the compact GitHub Release canonical checkpoint.
+!localdata/*/archive_manifest.json
 !localdata/*/picks_*.txt
 !localdata/*/auto_tickets_*.json
 !localdata/*/auto_tickets_*.txt

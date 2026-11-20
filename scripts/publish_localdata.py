@@ -18,6 +18,7 @@ withdrawn receipt.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import os
 from pathlib import Path
@@ -228,35 +229,268 @@ def _merge_aba_history_receipts(destination: Path, incoming_raw: bytes, *, relat
     return (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode()
 
 
-def _git_durable_bytes(source: Path) -> bytes:
-    """Return the compact, durable form of one publishable operator file.
+COMPACT_FORECAST_EVIDENCE_SCHEMA = "magolide.frozen_forecast_evidence.v1"
 
-    Dated text cards and inline immutable fixture snapshots in lifecycle state
-    are Git durable. Structured dated pick JSON and detailed lifecycle renders
-    remain artifact-only. The two compact ticket summaries
-    below still contain scan clocks that are operational telemetry,
-    not evidence needed to reconstruct tickets. Removing only those volatile
-    fields prevents no-op runs from producing new Git blobs while receipts and
-    date locks remain complete.
+
+def _canonical_hash(value: object) -> str:
+    """Return a content hash for an artifact-only detailed evidence record."""
+
+    encoded = json.dumps(value, sort_keys=True, separators=(",", ":"), default=str).encode()
+    return hashlib.sha256(encoded).hexdigest()
+
+
+def _subset(value: object, fields: tuple[str, ...]) -> dict[str, Any]:
+    return {field: value[field] for field in fields if isinstance(value, dict) and field in value}
+
+
+def _compact_roi_band(value: object) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
+        return None
+    return _subset(
+        value,
+        (
+            "market",
+            "period",
+            "probability_band",
+            "individual_odds_band",
+            "historical_pick_count",
+            "wins",
+            "losses",
+            "pushes",
+            "observed_roi",
+            "adjusted_roi",
+            "recency_weighted_roi",
+            "qualifies",
+        ),
+    )
+
+
+def _compact_frozen_forecast(row: object) -> object:
+    """Reduce a frozen forecast to settlement and decision-critical evidence.
+
+    The full model explanation, historical features, alternative probabilities,
+    and broad candidate-band grids remain in the bounded run artifact and the
+    release archive. Git retains the fields needed to prove a frozen selection,
+    its price/source status, its decision gates, and later official grading.
     """
-    raw = source.read_bytes()
-    if source.name not in {
+
+    if not isinstance(row, dict):
+        return row
+    if row.get("evidence_schema") == COMPACT_FORECAST_EVIDENCE_SCHEMA:
+        return row
+    required = {
+        "game_id",
+        "league",
+        "scheduled_utc",
+        "home",
+        "away",
+        "market",
+        "period",
+        "selection",
+        "raw_probability",
+    }
+    if not required <= set(row):
+        # Keep deliberately minimal legacy/test fixtures unchanged. Production
+        # rows have the complete canonical identity above.
+        return row
+
+    compact: dict[str, Any] = {
+        "evidence_schema": COMPACT_FORECAST_EVIDENCE_SCHEMA,
+        "detailed_evidence_sha256": _canonical_hash(row),
+        **_subset(
+            row,
+            (
+                "forecast_id",
+                "pick_id",
+                "game_id",
+                "league",
+                "date",
+                "scheduled_utc",
+                "home",
+                "away",
+                "market",
+                "period",
+                "selection",
+                "line",
+                "raw_probability",
+                "calibrated_probability",
+                "push_probability",
+                "model",
+                "model_version",
+                "calibration_version",
+                "role",
+                "bucket",
+                "price_evidence",
+                "paper_only",
+                "paper_roi_band_eligible",
+                "outcome",
+                "grade_status",
+            ),
+        ),
+    }
+    compact["book"] = _subset(
+        row.get("book"),
+        (
+            "provider",
+            "book",
+            "observed_utc",
+            "source_modified_utc",
+            "pre_match",
+            "main_line",
+            "frozen",
+            "selected_decimal_price",
+            "selected_opposite_decimal_price",
+            "price_provenance",
+            "source_permission",
+            "operational_validation",
+            "game_id",
+            "market",
+            "period",
+            "line",
+        ),
+    )
+    if not compact["book"]:
+        compact.pop("book")
+    compact["prediction"] = _subset(
+        row.get("prediction"),
+        ("provider", "observed_utc", "frozen", "model", "model_version", "produced_by"),
+    )
+    if not compact["prediction"]:
+        compact.pop("prediction")
+    compact["calibration"] = _subset(
+        row.get("calibration"),
+        ("status", "n", "minimum_samples", "sufficient_for_accas"),
+    )
+    compact["eligibility"] = _subset(
+        row.get("eligibility"),
+        ("acca_eligible", "reasons", "status"),
+    )
+    band = _compact_roi_band(row.get("paper_roi_band"))
+    if band:
+        compact["paper_roi_band"] = band
+    return compact
+
+
+def _compact_pick_filter(value: object, legs: object) -> dict[str, Any] | None:
+    if not isinstance(value, dict):
+        return None
+    compact = _subset(
+        value,
+        (
+            "status",
+            "candidate_pick_count",
+            "qualifying_pick_count",
+            "qualifying_band_count",
+            "historical_unique_pick_count",
+            "history_source",
+            "history_fallback",
+        ),
+    )
+    selected_ids = {
+        str(leg.get("forecast_id"))
+        for leg in (legs if isinstance(legs, list) else [])
+        if isinstance(leg, dict) and leg.get("forecast_id")
+    }
+    detailed = value.get("candidate_band_details")
+    if isinstance(detailed, dict) and selected_ids:
+        compact_details = {
+            forecast_id: band
+            for forecast_id, raw_band in detailed.items()
+            if forecast_id in selected_ids and (band := _compact_roi_band(raw_band))
+        }
+        if compact_details:
+            compact["candidate_band_details"] = compact_details
+    return compact or None
+
+
+def _compact_ticket_receipt(data: dict[str, Any]) -> dict[str, Any]:
+    """Compact immutable ticket receipts without changing ticket semantics."""
+
+    schema = str(data.get("schema_version") or "")
+    if re.sub(r"\.v\d+$", "", schema) != "magolide.paper_ticket_receipt":
+        return data
+    compact = dict(data)
+    for collection in ("accas", "singles"):
+        positions = compact.get(collection)
+        if not isinstance(positions, list):
+            continue
+        compact_positions = []
+        for position in positions:
+            if not isinstance(position, dict):
+                compact_positions.append(position)
+                continue
+            reduced = dict(position)
+            legs = position.get("legs")
+            if isinstance(legs, list):
+                reduced["legs"] = [_compact_frozen_forecast(leg) for leg in legs]
+            pick_filter = _compact_pick_filter(position.get("individual_pick_filter"), legs)
+            if pick_filter is None:
+                reduced.pop("individual_pick_filter", None)
+            else:
+                reduced["individual_pick_filter"] = pick_filter
+            compact_positions.append(reduced)
+        compact[collection] = compact_positions
+    return compact
+
+
+def _compact_pick_card(raw: bytes, *, name: str, source: Path) -> bytes:
+    """Publish a small dated lifecycle marker instead of a full forecast board.
+
+    The full, readable board remains in the Actions artifact and the compact
+    release archive. Named-price diagnostics remain on the dated ticket card,
+    not this all-forecast lifecycle marker.
+    """
+
+    try:
+        raw.decode("utf-8")
+    except UnicodeDecodeError as exc:
+        raise ValueError(f"dated pick card is not UTF-8: {source}") from exc
+    target_date = name.removeprefix("picks_").removesuffix(".txt")
+    state_key = source.parent.name
+    return (
+        "Ma Golide compact pick lifecycle marker\n"
+        f"league_state={state_key}\n"
+        f"target_date={target_date}\n"
+        "full_forecast_board=Actions artifact and GitHub Release archive\n"
+        f"detailed_card_sha256={hashlib.sha256(raw).hexdigest()}\n"
+    ).encode()
+
+
+def _git_durable_bytes_from_raw(raw: bytes, *, name: str, source: Path) -> bytes:
+    """Return the compact Git form for a publisher-allowlisted file."""
+
+    if re.fullmatch(rf"picks_{DATE}\.txt", name):
+        return _compact_pick_card(raw, name=name, source=source)
+    if name not in {
         "auto_tickets_state.json",
         "auto_tickets_performance.json",
-    }:
+    } and not DECISION_RECEIPT_NAME.fullmatch(name):
         return raw
     try:
         data = json.loads(raw)
     except json.JSONDecodeError as exc:
+        # Preserve existing publisher compatibility for a syntactically
+        # opaque immutable receipt; its byte-for-byte conflict guard still
+        # applies. Real receipts are structured JSON and are compacted below.
+        if DECISION_RECEIPT_NAME.fullmatch(name):
+            return raw
         raise ValueError(f"invalid operator JSON: {source}") from exc
     if not isinstance(data, dict):
         raise ValueError(f"operator JSON must be an object: {source}")
-    if source.name == "auto_tickets_state.json":
+    if name == "auto_tickets_state.json":
         data.pop("scans", None)
         data.pop("last_generated_utc", None)
-    else:
+    elif name == "auto_tickets_performance.json":
         data.pop("generated_utc", None)
+    else:
+        data = _compact_ticket_receipt(data)
     return (json.dumps(data, indent=2, sort_keys=True, default=str) + "\n").encode()
+
+
+def _git_durable_bytes(source: Path) -> bytes:
+    """Return the compact, durable form of one publishable operator file."""
+
+    return _git_durable_bytes_from_raw(source.read_bytes(), name=source.name, source=source)
 
 
 def _pick_lifecycle_state(raw: bytes, *, description: str) -> dict[str, Any]:
@@ -295,6 +529,24 @@ def _pick_lifecycle_state(raw: bytes, *, description: str) -> dict[str, Any]:
     return state
 
 
+def _compact_pick_lifecycle_state(state: dict[str, Any]) -> dict[str, Any]:
+    """Keep inline immutable fixture evidence while removing repeated model bulk."""
+
+    compact = dict(state)
+    frozen_by_date = state.get("frozen_by_date") or {}
+    compact_locks: dict[str, dict[str, Any]] = {}
+    for target_date, by_game in frozen_by_date.items():
+        compact_locks[target_date] = {}
+        for game_id, freeze in by_game.items():
+            reduced = dict(freeze)
+            rows = freeze.get("rows") if isinstance(freeze, dict) else None
+            if isinstance(rows, list):
+                reduced["rows"] = [_compact_frozen_forecast(row) for row in rows]
+            compact_locks[target_date][game_id] = reduced
+    compact["frozen_by_date"] = compact_locks
+    return compact
+
+
 def _pick_lifecycle_state_bytes(state: dict[str, Any]) -> bytes:
     return (json.dumps(state, indent=2, sort_keys=True, default=str) + "\n").encode()
 
@@ -309,10 +561,14 @@ def _merge_pick_lifecycle_state(
     their existing pending entry is retained until a current lane regrades it.
     """
 
-    incoming = _pick_lifecycle_state(incoming_raw, description=relative)
+    incoming = _compact_pick_lifecycle_state(
+        _pick_lifecycle_state(incoming_raw, description=relative)
+    )
     if not destination.exists():
         return _pick_lifecycle_state_bytes(incoming)
-    existing = _pick_lifecycle_state(destination.read_bytes(), description=str(destination))
+    existing = _compact_pick_lifecycle_state(
+        _pick_lifecycle_state(destination.read_bytes(), description=str(destination))
+    )
     if existing["league"] != incoming["league"]:
         raise ValueError(f"pick lifecycle state league differs from repository evidence: {relative}")
 
@@ -458,6 +714,42 @@ def _artifact_league_dirs(
             yield state_dir.name, state_dir, artifact.name
 
 
+def compact_repository_localdata(repo: Path) -> Dict[str, Any]:
+    """Migrate existing Git-visible operator files to the compact schema.
+
+    The publisher calls this only after the workflow has uploaded the same
+    detailed state to a verified release checkpoint. It is idempotent and
+    never removes an inline fixture, ticket selection, source-permission flag,
+    named price, or immutable receipt identity.
+    """
+
+    repo = repo.resolve()
+    changed: list[str] = []
+    saved_bytes = 0
+    for state_dir in sorted((repo / "localdata").glob("*")):
+        if not state_dir.is_dir() or state_dir.name not in STATE_KEYS:
+            continue
+        for path in sorted(state_dir.iterdir()):
+            if path.is_symlink() or not path.is_file() or not allowed_operator_file(path.name):
+                continue
+            if path.name == ABA_HISTORY_RECEIPTS_FILE and state_dir.name != "aba_league":
+                continue
+            previous = path.read_bytes()
+            if path.name == "pick_lifecycle_state.json":
+                compact = _compact_pick_lifecycle_state(
+                    _pick_lifecycle_state(previous, description=str(path))
+                )
+                raw = _pick_lifecycle_state_bytes(compact)
+            else:
+                raw = _git_durable_bytes_from_raw(previous, name=path.name, source=path)
+            if raw == previous:
+                continue
+            _atomic_write(path, raw)
+            changed.append(path.relative_to(repo).as_posix())
+            saved_bytes += len(previous) - len(raw)
+    return {"changed": changed, "changed_count": len(changed), "bytes_saved": saved_bytes}
+
+
 def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
     """Overlay eligible recovered files without deleting repository history."""
     artifacts = artifacts.resolve()
@@ -520,7 +812,8 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
             if relative in seen_destinations:
                 raise ValueError(f"duplicate recovered operator destination: {relative}")
             seen_destinations.add(relative)
-            raw = _git_durable_bytes(source)
+            source_raw = source.read_bytes()
+            raw = _git_durable_bytes_from_raw(source_raw, name=source.name, source=source)
             if source.name == "pick_lifecycle_state.json":
                 raw = _merge_pick_lifecycle_state(destination, raw, relative=relative)
             elif source.name == ABA_HISTORY_RECEIPTS_FILE:
@@ -535,16 +828,24 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                     continue
             if destination.exists():
                 previous = destination.read_bytes()
-                if _would_regress_settled_card(destination, raw):
+                if _would_regress_settled_card(destination, source_raw):
                     settled_card_regressions_skipped.append(relative)
                     continue
-                if IMMUTABLE_NAMES.fullmatch(source.name) and previous != raw:
-                    kind = (
-                        "immutable ticket receipt"
-                        if DECISION_RECEIPT_NAME.fullmatch(source.name)
-                        else "immutable EuroLeague consensus-paper roster"
+                if IMMUTABLE_NAMES.fullmatch(source.name):
+                    # The first compact-state publication can replace an older
+                    # detailed receipt only when both reduce to identical
+                    # selection/price/settlement evidence. Any factual change
+                    # remains a hard conflict.
+                    durable_previous = _git_durable_bytes_from_raw(
+                        previous, name=source.name, source=destination
                     )
-                    raise ValueError(f"{kind} differs from repository evidence: {relative}")
+                    if durable_previous != raw:
+                        kind = (
+                            "immutable ticket receipt"
+                            if DECISION_RECEIPT_NAME.fullmatch(source.name)
+                            else "immutable EuroLeague consensus-paper roster"
+                        )
+                        raise ValueError(f"{kind} differs from repository evidence: {relative}")
                 if previous == raw:
                     unchanged.append(relative)
                     if IMMUTABLE_NAMES.fullmatch(source.name):
@@ -573,8 +874,15 @@ def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--artifacts", type=Path, required=True)
     parser.add_argument("--repo", type=Path, default=Path.cwd())
+    parser.add_argument(
+        "--compact-existing",
+        action="store_true",
+        help="compact existing Git-visible state after a verified archive upload",
+    )
     args = parser.parse_args()
     report = merge_downloaded_localdata(args.artifacts, args.repo)
+    if args.compact_existing:
+        report["repository_compaction"] = compact_repository_localdata(args.repo)
     print(json.dumps(report, indent=2, sort_keys=True))
     return 0
 
