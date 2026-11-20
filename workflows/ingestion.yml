@@ -7,8 +7,9 @@
 # - Named external-dispatch runs persist canonical state; manual dispatch
 #   remains a live read-only rehearsal so it cannot advance state.
 # Immutable decisions, compact ticket state, settlement summaries, dated text
-# cards, and inline per-fixture snapshots in lifecycle state may be committed to
-# localdata/<league>.
+# lifecycle markers, and inline per-fixture snapshots in lifecycle state may be
+# committed to localdata/<league>. Full canonical CSV and verbose evidence live
+# in checksummed GitHub Release checkpoint assets, not Git history.
 # Structured dated pick JSON, detailed lifecycle renders, raw current-scan
 # forecast JSON, and expanded audits remain cache/artifact-only.
 # Install as .github/workflows/ingestion.yml (editing that path requires the
@@ -133,6 +134,7 @@ jobs:
       matrix: ${{ fromJSON(needs.gate.outputs.matrix) }}
     name: ${{ matrix.label }}
     env:
+      STATE_KEY: ${{ matrix.state_key }}
       LOCALDATA: localdata/${{ matrix.state_key }}
       MAGOLIDE_WAREHOUSE: localdata/${{ matrix.state_key }}/warehouse.duckdb
       # Optional credentials. Empty GitHub secrets stay empty and the adapter
@@ -213,6 +215,7 @@ jobs:
                   rf"picks_{date}\.txt",
                   r"pick_lifecycle_state\.json",
                   rf"coverage_gap_{date}\.json",
+                  r"archive_manifest\.json",
                   r"auto_tickets_state\.json",
                   r"auto_tickets_performance\.json",
                   r"auto_tickets_performance\.txt",
@@ -241,6 +244,56 @@ jobs:
           if git cat-file -e "${MAIN_REF}:${STATE_DIR}" 2>/dev/null; then
             git restore --source="$MAIN_REF" --worktree -- "$STATE_DIR"
           fi
+
+      - name: Restore verified canonical checkpoint after a cold cache
+        if: steps.capability.outputs.available == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # The release checkpoint is only a cold-cache recovery source. A
+          # warm cache's DuckDB is newer and therefore wins; never overwrite it
+          # with a monthly/current release asset.
+          if [ -f "$MAGOLIDE_WAREHOUSE" ]; then
+            echo "Warm warehouse restored; release checkpoint not needed."
+            exit 0
+          fi
+          MANIFEST="$LOCALDATA/archive_manifest.json"
+          if [ ! -f "$MANIFEST" ]; then
+            echo "No compact release checkpoint has been published for $STATE_KEY yet."
+            exit 0
+          fi
+          ASSET=$(python - "$MANIFEST" <<'PY'
+          import json
+          import sys
+          with open(sys.argv[1], encoding="utf-8") as handle:
+              manifest = json.load(handle)
+          print(manifest["asset_name"])
+          PY
+          )
+          TAG=$(python - "$MANIFEST" <<'PY'
+          import json
+          import sys
+          with open(sys.argv[1], encoding="utf-8") as handle:
+              manifest = json.load(handle)
+          print(manifest["release_tag"])
+          PY
+          )
+          ARCHIVE_DIR="$RUNNER_TEMP/magolide-release-$STATE_KEY"
+          mkdir -p "$ARCHIVE_DIR"
+          # A manifest in latest main is a durability promise. Do not silently
+          # replace it with an empty warehouse if its checked release asset is
+          # unavailable or corrupt.
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern "$ASSET" --dir "$ARCHIVE_DIR" --clobber
+          python scripts/release_archive.py restore \
+            --archive "$ARCHIVE_DIR/$ASSET" \
+            --state-key "$STATE_KEY" \
+            --destination "$LOCALDATA" \
+            --expected-manifest "$MANIFEST"
+          ALLOW_MAGOLIDE_WRITES=true python scripts/recover_warehouse.py \
+            --warehouse "$MAGOLIDE_WAREHOUSE" \
+            --csv-dir "$LOCALDATA/csv"
 
       - name: Recover retained artifact-only pick ledgers after a cold cache
         if: steps.capability.outputs.available == 'true'
@@ -459,6 +512,55 @@ jobs:
           python scripts/publish_localdata.py \
             --artifacts "${{ runner.temp }}/magolide-artifacts" \
             --repo .
+
+      - name: Build compact canonical release checkpoints
+        env:
+          ARCHIVE_DIR: ${{ runner.temp }}/magolide-release
+          ARCHIVE_TAG: magolide-state-current
+        run: |
+          set -euo pipefail
+          python scripts/release_archive.py build \
+            --artifacts "${{ runner.temp }}/magolide-artifacts" \
+            --repo . \
+            --output "$ARCHIVE_DIR" \
+            --release-tag "$ARCHIVE_TAG"
+
+      - name: Upload verified checkpoints to GitHub Releases
+        id: release-checkpoints
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARCHIVE_DIR: ${{ runner.temp }}/magolide-release
+          ARCHIVE_TAG: magolide-state-current
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          assets=("$ARCHIVE_DIR"/magolide-state-*.tar.gz)
+          if [ "${#assets[@]}" -eq 0 ]; then
+            echo "No successful canonical CSV artifacts to checkpoint."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! gh release view "$ARCHIVE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$ARCHIVE_TAG" --repo "$GITHUB_REPOSITORY" \
+              --target main \
+              --title "Ma Golide compact canonical checkpoint" \
+              --notes "Rolling, checksummed canonical checkpoint assets. Git retains only compact manifests."
+          fi
+          gh release upload "$ARCHIVE_TAG" "${assets[@]}" --repo "$GITHUB_REPOSITORY" --clobber
+          gh release upload "$ARCHIVE_TAG" "$ARCHIVE_DIR/release-index.json" \
+            --repo "$GITHUB_REPOSITORY" --clobber
+          echo "available=true" >> "$GITHUB_OUTPUT"
+
+      - name: Compact historical Git state after checkpoint upload
+        # Existing detailed cards are retained in the verified release asset
+        # before this idempotent migration reduces the Git working tree.
+        if: steps.release-checkpoints.outputs.available == 'true'
+        run: |
+          set -euo pipefail
+          python scripts/publish_localdata.py \
+            --artifacts "${{ runner.temp }}/magolide-artifacts" \
+            --repo . \
+            --compact-existing
 
       - name: Commit and publish durable localdata
         run: |
