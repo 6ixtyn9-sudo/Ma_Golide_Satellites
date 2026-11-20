@@ -46,13 +46,17 @@ HOST = "https://www.aba-liga.com"
 SITE_TZ = "Europe/Belgrade"
 LEAGUE_ID = 1
 FIRST_SEASON_END_YEAR = 2002
-# 2008-09 is explicitly outside the historical-completeness target. Its
-# legacy calendar layout has no verified canonical parser contract, so the
-# pipeline records a visible policy exclusion rather than fabricating rows or
-# silently stepping around the season. Other problematic historical variants
-# are deliberately NOT covered by this exclusion.
+# These seasons are explicitly outside the historical-completeness target.
+# Their known row variants lack a verified canonical parser contract, so the
+# pipeline records visible policy exclusions rather than fabricating rows or
+# silently stepping around them. Other problematic historical variants are
+# deliberately NOT covered by this exclusion.
 HISTORY_EXCLUDED_SEASONS = {
     2009: "operator policy excludes 2008-09 pending a verified legacy calendar contract",
+    2020: (
+        "operator policy excludes 2019-20: the COVID-cancelled season retains "
+        "an official unregistered awarded-score row without reconcilable periods"
+    ),
 }
 EVIDENCE = (
     "ROUTE_CONTRACT_REFERENCED (external SportsDataverse documentation describes "
@@ -63,6 +67,26 @@ EVIDENCE = (
 TextFetch = Callable[[str], str]
 
 _LAST_GAPS: List[CoverageGap] = []
+_LAST_ADMINISTRATIVE_DISPOSITIONS: List["AdministrativeDisposition"] = []
+_LAST_HISTORY_PROGRESS_GAME_NO = 0
+
+
+@dataclass(frozen=True)
+class AdministrativeDisposition:
+    """A league-recorded administrative outcome, never a played-game final.
+
+    ABA's official archive can register a FIBA-default 20:0/0:20 result for a
+    forfeit, withdrawal, disqualification, or a played game later annulled.
+    This compact record is event-scoped, contains no team-name exception, and
+    must not be persisted as a ``Game`` or used in result/model/ROI history.
+    """
+
+    season_end_year: int
+    game_no: int
+    game_id: str
+    calendar_score: tuple[int, int]
+    disposition_kind: str
+    calendar_has_exact_tip: bool
 
 
 @dataclass
@@ -167,8 +191,23 @@ def last_gaps() -> List[CoverageGap]:
     return list(_LAST_GAPS)
 
 
+def last_administrative_dispositions() -> List[AdministrativeDisposition]:
+    """Administrative rows classified during the latest adapter operation."""
+
+    return list(_LAST_ADMINISTRATIVE_DISPOSITIONS)
+
+
+def last_history_progress_game_no() -> int:
+    """Highest ordered terminal history row resolved by the latest batch."""
+
+    return _LAST_HISTORY_PROGRESS_GAME_NO
+
+
 def _reset_gaps() -> None:
+    global _LAST_HISTORY_PROGRESS_GAME_NO
     _LAST_GAPS.clear()
+    _LAST_ADMINISTRATIVE_DISPOSITIONS.clear()
+    _LAST_HISTORY_PROGRESS_GAME_NO = 0
 
 
 def _gap(game_id: Optional[str], field: str, detail: str, *, reason: CoverageState = CoverageState.MISSING) -> None:
@@ -313,9 +352,23 @@ class CalendarGame:
     season: int
     home_name: str
     away_name: str
-    scheduled_utc: str
+    # Administrative awards can be on the official calendar after a fixture
+    # was cancelled and no canonical tip remains. They are never Game records.
+    scheduled_utc: Optional[str]
     phase: str
-    has_final: bool
+    score: Optional[tuple[int, int]]
+
+    @property
+    def has_final(self) -> bool:
+        """Whether the calendar carries a terminal score-shaped result."""
+
+        return self.score is not None
+
+
+def _is_default_forfeit_score(score: Optional[tuple[int, int]]) -> bool:
+    """Recognise FIBA's score convention without treating it as a game final."""
+
+    return score in {(20, 0), (0, 20)}
 
 
 def parse_calendar(html: str, season: int) -> List[CalendarGame]:
@@ -378,16 +431,42 @@ def parse_calendar(html: str, season: int) -> List[CalendarGame]:
                 )
                 continue
             result = cells[1].text()
-            score = re.fullmatch(r"(\d+)\s*:\s*(\d+)", result)
-            if score is None and result:
+            score_match = re.fullmatch(r"(\d+)\s*:\s*(\d+)", result)
+            if score_match is None and result:
                 raise IdentityError(f"{PROVIDER}: calendar result is malformed: {result!r}")
+            score = (
+                (int(score_match.group(1)), int(score_match.group(2)))
+                if score_match is not None
+                else None
+            )
             when = cells[2].text()
             unpinned_kind = None
-            if _is_unpinned_date_range(when):
+            if not when:
+                unpinned_kind = "missing date and time"
+            elif _is_unpinned_date_range(when):
                 unpinned_kind = "date range"
             elif _is_unpinned_date(when):
                 unpinned_kind = "date"
             if unpinned_kind is not None:
+                # A scored but unpinned row stays a hard failure unless it
+                # uses FIBA's explicit default-forfeit score. Such a row is a
+                # terminal administrative candidate, not a game with an
+                # invented tip; its detail page still has to verify scope and
+                # team identity before history can advance past it.
+                if score is not None and _is_default_forfeit_score(score):
+                    home, away = _pair(anchor, "calendar matchup")
+                    games.append(
+                        CalendarGame(
+                            game_no=game_no,
+                            season=season,
+                            home_name=canonical_team_name(home),
+                            away_name=canonical_team_name(away),
+                            scheduled_utc=None,
+                            phase=phase,
+                            score=score,
+                        )
+                    )
+                    continue
                 if score is not None:
                     raise IdentityError(
                         f"{PROVIDER}: completed calendar game {game_no} has an unpinned "
@@ -417,7 +496,7 @@ def parse_calendar(html: str, season: int) -> List[CalendarGame]:
                     away_name=canonical_team_name(away),
                     scheduled_utc=_parse_when(when, f"calendar game {game_no}"),
                     phase=phase,
-                    has_final=score is not None,
+                    score=score,
                 )
             )
     if len(set(game_numbers)) != len(game_numbers):
@@ -509,7 +588,78 @@ def _match_actual(root: _Node, season: int, game_no: int) -> ActualResult:
     return actual
 
 
+def _match_final_score(root: _Node, game_no: int) -> tuple[int, int]:
+    clubs = root.find(tag="div", ident="match_clubs_and_results_info_table")
+    score_cell = clubs.find(tag="td", class_name="gameScore") if clubs else None
+    final = re.fullmatch(r"(\d+)\s*:\s*(\d+)", score_cell.text() if score_cell else "")
+    if final is None:
+        raise IdentityError(f"{PROVIDER}: match {game_no} has no completed final")
+    return int(final.group(1)), int(final.group(2))
+
+
+def _administrative_disposition(html: str, calendar: CalendarGame) -> Optional[AdministrativeDisposition]:
+    """Classify a verified official default award without creating a Game.
+
+    The classifier is intentionally event- and content-based. It contains no
+    club, season, or score-list exception: a 20:0/0:20 merely opens this narrow
+    branch. The page must still prove scope/team identity and either state that
+    a played game was later officially registered or omit the period table
+    entirely, as a non-played default award does. Any other malformed result
+    keeps failing closed through the normal historical-result gap.
+    """
+
+    if not _is_default_forfeit_score(calendar.score):
+        return None
+    root = _dom(html)
+    _match_scope(root, calendar.season, calendar.game_no)
+    if _match_final_score(root, calendar.game_no) != calendar.score:
+        raise IdentityError(
+            f"{PROVIDER}: match {calendar.game_no} final contradicts administrative calendar score"
+        )
+    if calendar.scheduled_utc is not None:
+        match_tip = _match_scheduled_utc(root, calendar.game_no)
+        if match_tip != calendar.scheduled_utc:
+            raise IdentityError(
+                f"{PROVIDER}: match {calendar.game_no} scheduled time contradicts calendar "
+                f"({match_tip} != {calendar.scheduled_utc})"
+            )
+    home_id, home_name, away_id, away_name = _match_teams(root, calendar.season, calendar.game_no)
+    del home_id, away_id
+    if (
+        normalize_team_name(home_name) != normalize_team_name(calendar.home_name)
+        or normalize_team_name(away_name) != normalize_team_name(calendar.away_name)
+    ):
+        raise IdentityError(
+            f"{PROVIDER}: match {calendar.game_no} header team identity contradicts calendar"
+        )
+
+    detail_text = root.text().casefold()
+    if "this match took place, but has been later registered with official result" in detail_text:
+        disposition_kind = "retroactively_registered_official_result"
+    elif root.find(tag="table", ident="match_cetrtine_rezultat") is None:
+        disposition_kind = "official_default_award_without_periods"
+    else:
+        # A 20:0 is not enough on its own. A page that has a period table must
+        # either reconcile as a genuine played final or expose the official
+        # retroactive-registration statement above; malformed periods remain a
+        # blocking integrity error.
+        return None
+    return AdministrativeDisposition(
+        season_end_year=calendar.season,
+        game_no=calendar.game_no,
+        game_id=_game_ref(calendar.season, calendar.game_no),
+        calendar_score=calendar.score,
+        disposition_kind=disposition_kind,
+        calendar_has_exact_tip=calendar.scheduled_utc is not None,
+    )
+
+
 def _match_game(html: str, calendar: CalendarGame, *, require_final: bool) -> Game:
+    if calendar.scheduled_utc is None:
+        raise IdentityError(
+            f"{PROVIDER}: match {calendar.game_no} has no canonical calendar tip; "
+            "administrative handling is required"
+        )
     root = _dom(html)
     _match_scope(root, calendar.season, calendar.game_no)
     match_tip = _match_scheduled_utc(root, calendar.game_no)
@@ -594,7 +744,8 @@ def discover_games(
     candidates = [
         game
         for game in _calendar(season, fetch)
-        if parse_utc(game.scheduled_utc).astimezone(ZoneInfo(SITE_TZ)).date() == target
+        if game.scheduled_utc is not None
+        and parse_utc(game.scheduled_utc).astimezone(ZoneInfo(SITE_TZ)).date() == target
     ]
     games: List[Game] = []
     for calendar in candidates:
@@ -620,6 +771,8 @@ def fetch_recent_results(
     fetch = _text_fetch(text_fetch)
     finals: List[Game] = []
     for calendar in _calendar(season, fetch):
+        if calendar.scheduled_utc is None:
+            continue
         local_day = parse_utc(calendar.scheduled_utc).astimezone(ZoneInfo(SITE_TZ)).date()
         if local_day != target or not calendar.has_final:
             continue
@@ -656,13 +809,31 @@ def season_finals(
     candidates = [item for item in completed if item.game_no > start_after_game_no]
     candidates.sort(key=lambda item: item.game_no)
     batch = candidates if limit is None else candidates[: max(0, int(limit))]
+    global _LAST_HISTORY_PROGRESS_GAME_NO
     games: List[Game] = []
     attempted: List[int] = []
     stopped_on_error = False
     for calendar in batch:
         attempted.append(calendar.game_no)
         try:
-            games.append(_match_game(fetch(match_url(calendar.game_no, season)), calendar, require_final=True))
+            detail = fetch(match_url(calendar.game_no, season))
+            disposition = _administrative_disposition(detail, calendar)
+            if disposition is not None:
+                _LAST_ADMINISTRATIVE_DISPOSITIONS.append(disposition)
+                _gap(
+                    disposition.game_id,
+                    "official_administrative_disposition",
+                    (
+                        f"calendar {disposition.calendar_score[0]}:{disposition.calendar_score[1]} "
+                        f"classified as {disposition.disposition_kind}; "
+                        "excluded from canonical played finals"
+                    ),
+                    reason=CoverageState.NOT_APPLICABLE,
+                )
+                _LAST_HISTORY_PROGRESS_GAME_NO = calendar.game_no
+                continue
+            games.append(_match_game(detail, calendar, require_final=True))
+            _LAST_HISTORY_PROGRESS_GAME_NO = calendar.game_no
         except Exception as exc:
             _gap(_game_ref(season, calendar.game_no), "historical_official_result", str(exc))
             stopped_on_error = True
@@ -697,6 +868,7 @@ def smoke(
 
 
 __all__ = [
+    "AdministrativeDisposition",
     "EVIDENCE",
     "FIRST_SEASON_END_YEAR",
     "HOST",
@@ -709,7 +881,9 @@ __all__ = [
     "discover_games",
     "fetch_recent_results",
     "is_enabled",
+    "last_administrative_dispositions",
     "last_gaps",
+    "last_history_progress_game_no",
     "last_quota",
     "match_url",
     "parse_calendar",

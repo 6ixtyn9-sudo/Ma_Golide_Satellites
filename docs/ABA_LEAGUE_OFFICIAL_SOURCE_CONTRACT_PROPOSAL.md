@@ -54,25 +54,38 @@ minimal contract:
    distinct official team IDs; repeat the calendar home/away order; and agree
    with the calendar tip time. Any drift produces a coverage gap rather than a
    name-only canonical game.
-5. **Finality:** a calendar score only identifies a candidate final. A canonical
-   `ActualResult` requires the individual match page's numeric final and a
-   Q1--Q4 table. Each OT period, if present, is retained as combined overtime
-   only after both sides' values are present.
+5. **Finality:** a calendar score only identifies a candidate terminal row. A
+   canonical played-game `ActualResult` requires the individual match page's
+   numeric final and a Q1--Q4 table. Each OT period, if present, is retained as
+   combined overtime only after both sides' values are present.
 6. **Reconciliation:** regulation plus overtime must exactly add to both final
    scores. There is no final-score-only fallback, derived quarter score, or
    array-order inference.
-7. **History:** season results are enumerated from the complete calendar in
+7. **Administrative dispositions:** a `20:0` or `0:20` is a FIBA default-score
+   *candidate*, never a basketball final by itself. The adapter can classify it
+   as an event-scoped administrative disposition only after the official detail
+   verifies the event scope and team identities and either (a) has no period
+   table, or (b) expressly states that a played match was later registered with
+   an official result. A default-score row with valid reconciling periods stays
+   a played final; a malformed/contradictory period table with no explicit
+   official-registration statement remains a blocking gap. An unpinned default
+   award is never assigned a tip. This is generic logic — no club, season, or
+   hand-maintained event allowlist is used.
+8. **History:** season results are enumerated from the complete calendar in
    ascending `(game_no)` order. The helper returns attempted game numbers and
    the full calendar-final count. A malformed detail stops the cursor at the
    last written game; after a completed current-season scan, a changed calendar
    final count triggers a bounded replay rather than a silent late-result hole.
    A clean exhausted scan also retains a compact per-season receipt in the
-   history provider-health cursor: season, calendar final count, reconciled
-   final count, non-canonical `not_applicable` row count, zero blocking gaps,
+   history provider-health cursor: season, calendar terminal count,
+   period-reconciled played-final count, verified administrative-disposition
+   count, non-canonical `not_applicable` row count, zero blocking gaps,
    evidence label, and completion time. Unpinned rows are telemetry only and
-   are deliberately excluded from the final-count denominator. A receipt is
-   withheld and the cursor rewinds to game zero if the durable reconciled count
-   does not equal the calendar final count. For seasons older than the active
+   are deliberately excluded from both terminal populations. A receipt is
+   withheld and the cursor rewinds to game zero unless
+   `calendar_terminal_count == reconciled_final_count +
+   administrative_disposition_count`. Administrative records are never written
+   as games or used by results/model/ROI paths. For seasons older than the active
    season, the daily publisher additionally merges those count-only receipts
    into `localdata/aba_league/history_receipts.json`. The Git-durable summary
    contains no raw page body, game rows, prices, or ticket evidence. A changed
@@ -82,23 +95,46 @@ minimal contract:
 
 ### Historical-completeness policy
 
-The historical floor remains 2001-02 (`season_end_year=2002`), with one explicit
-operator exclusion: **2008-09** (`season_end_year=2009`). Its legacy calendar
-layout has no verified canonical parser contract, so the pipeline does not fetch
-or fabricate that season. Instead it emits an
-`aba_liga_history_policy / not_applicable` gap, records
-`excluded_by_operator_policy` in the bounded history report, and advances only
-to the next older season. A terminal run therefore reports
+The historical floor remains 2001-02 (`season_end_year=2002`), with two explicit
+operator exclusions:
+
+- **2008-09** (`season_end_year=2009`): legacy calendar layout without a
+  verified canonical parser contract.
+- **2019-20** (`season_end_year=2020`): the season was cancelled by the ABA
+  League due to COVID-19, and its official calendar retains an unregistered
+  awarded-score row without reconcilable periods. The season-level COVID
+  cancellation does not itself validate that individual score as canonical.
+
+The pipeline does not fetch, fabricate, or label either excluded season as
+canonical history. Instead it emits an `aba_liga_history_policy / not_applicable`
+gap, records `excluded_by_operator_policy` in the bounded history report, and
+advances only to the next older season. A terminal run therefore reports
 `complete_to_policy_floor_with_exclusions`, not an unqualified complete-to-floor
-claim. This exclusion does not cover awarded/forfeit rows, scored unpinned rows,
-or any other historical season; those remain hard failures until separately
-approved and evidenced.
+claim. These exclusions do not cover any additional season. Other awarded or
+forfeit rows are handled only by the generic administrative-disposition contract
+above; a score-shaped row that does not meet that first-party detail contract
+remains a hard failure. Ordinary scored unpinned rows still fail closed.
 
 `tests/test_aba_liga.py` uses synthetic contract examples to cover normal
 discovery/result parsing, DST interpretation, scope and team/time contradiction
-refusal, regulation and multi-OT reconciliation, malformed calendar refusal,
-and bounded history/completeness-replay behavior. It is not live-source
-verification.
+refusal, regulation and multi-OT reconciliation, generic administrative
+outcomes, malformed calendar refusal, and bounded history/completeness-replay
+behavior. It is not live-source verification.
+
+### Administrative-outcome evidence boundary
+
+The generic contract was added after direct first-party review of the league's
+2020/21 archive. An ABA notice for an unplayed Round 10 fixture says the game
+would not take place and records the `0:20` award under the league bylaws
+([official notice](https://www.aba-liga.com/news/44251/round-10-game-borac-koper-primorska-will-not-take-place/)).
+The current official match archive can also state that a match took place but
+was later registered with an official result, with player statistics annulled
+([example event](https://www.aba-liga.com/match/63/20/1/Boxscore/q1/1/home/krka-koper-primorska/)).
+
+Those sources establish two *event dispositions*, not a team-specific rule,
+financial-status inference, or approval to import a club's history. The adapter
+retains neither page body nor player statistics; Git-durable receipts retain
+counts only.
 
 ## Operational guardrails currently in code
 

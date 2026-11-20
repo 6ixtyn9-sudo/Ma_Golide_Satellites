@@ -76,6 +76,7 @@ _ABA_RECEIPT_FIELDS = frozenset(
         "season_end_year",
         "calendar_final_count",
         "reconciled_final_count",
+        "administrative_disposition_count",
         "not_applicable_rows",
         "blocking_gap_count",
         "status",
@@ -85,15 +86,28 @@ _ABA_RECEIPT_FIELDS = frozenset(
     }
 )
 _ABA_RECEIPT_IDENTITY_FIELDS = _ABA_RECEIPT_FIELDS - {"completed_at_utc"}
+_ABA_LEGACY_RECEIPT_FIELDS = _ABA_RECEIPT_FIELDS - {"administrative_disposition_count"}
 
 
 def _validated_aba_history_receipt(receipt: object, *, description: str) -> dict[str, Any]:
+    # Receipts written before generic administrative dispositions existed had
+    # only reconciled played finals. Preserve those immutable attestations as a
+    # zero-administrative-count form rather than stranding prior Git evidence.
+    if isinstance(receipt, dict) and set(receipt) == _ABA_LEGACY_RECEIPT_FIELDS:
+        if receipt.get("status") != "calendar_final_count_reconciled":
+            raise ValueError(f"invalid ABA history receipt: {description}")
+        receipt = {
+            **receipt,
+            "administrative_disposition_count": 0,
+            "status": "calendar_terminal_count_reconciled",
+        }
     if not isinstance(receipt, dict) or set(receipt) != _ABA_RECEIPT_FIELDS:
         raise ValueError(f"invalid ABA history receipt: {description}")
     season = receipt["season_end_year"]
     counts = (
         receipt["calendar_final_count"],
         receipt["reconciled_final_count"],
+        receipt["administrative_disposition_count"],
         receipt["not_applicable_rows"],
         receipt["blocking_gap_count"],
     )
@@ -101,9 +115,10 @@ def _validated_aba_history_receipt(receipt: object, *, description: str) -> dict
         isinstance(season, bool)
         or not isinstance(season, int)
         or any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in counts)
-        or receipt["calendar_final_count"] != receipt["reconciled_final_count"]
+        or receipt["calendar_final_count"]
+        != receipt["reconciled_final_count"] + receipt["administrative_disposition_count"]
         or receipt["blocking_gap_count"] != 0
-        or receipt["status"] != "calendar_final_count_reconciled"
+        or receipt["status"] != "calendar_terminal_count_reconciled"
         or receipt["source"] != aba_liga.PROVIDER
         or not isinstance(receipt["evidence"], str)
         or not receipt["evidence"]

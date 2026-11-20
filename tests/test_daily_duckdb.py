@@ -64,10 +64,11 @@ def test_aba_history_receipts_publish_only_completed_historical_seasons(tmp_path
     historical = {
         "season_end_year": 2026,
         "calendar_final_count": 185,
-        "reconciled_final_count": 185,
+        "reconciled_final_count": 183,
+        "administrative_disposition_count": 2,
         "not_applicable_rows": 0,
         "blocking_gap_count": 0,
-        "status": "calendar_final_count_reconciled",
+        "status": "calendar_terminal_count_reconciled",
         "source": "aba_liga",
         "evidence": "ROUTE_CONTRACT_REFERENCED",
         "completed_at_utc": "2026-11-20T13:40:00Z",
@@ -97,7 +98,7 @@ def test_aba_history_receipts_publish_only_completed_historical_seasons(tmp_path
     with pytest.raises(ValueError, match="conflicts with durable evidence"):
         _write_aba_history_receipts(
             tmp_path,
-            [{**historical, "calendar_final_count": 186, "reconciled_final_count": 186}],
+            [{**historical, "calendar_final_count": 186, "reconciled_final_count": 184}],
             current_season_end_year=2027,
         )
 

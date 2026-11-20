@@ -56,6 +56,27 @@ MATCH = """
 </body></html>
 """
 
+ADMINISTRATIVE_CALENDAR = CALENDAR.replace("93 : 97", "20 : 0")
+ADMINISTRATIVE_MATCH = MATCH.replace("93 : 97", "20 : 0").replace(
+    '<table id="match_cetrtine_rezultat"><tbody>\n'
+    '<tr><td>Q1</td><td>Q2</td><td>Q3</td><td>Q4</td></tr>\n'
+    '<tr><td>21 : 24</td><td>25 : 24</td><td>20 : 23</td><td>27 : 26</td></tr>\n'
+    "</tbody></table>\n",
+    "",
+)
+RETROACTIVELY_REGISTERED_MATCH = MATCH.replace("93 : 97", "20 : 0").replace(
+    "</body></html>",
+    "<p>This match took place, but has been later registered with official result. "
+    "Statistics of the players from this match have been annulled.</p></body></html>",
+)
+PLAYED_TWENTY_TO_ZERO_MATCH = (
+    MATCH.replace("93 : 97", "20 : 0")
+    .replace(
+        "<tr><td>21 : 24</td><td>25 : 24</td><td>20 : 23</td><td>27 : 26</td></tr>",
+        "<tr><td>5 : 0</td><td>5 : 0</td><td>5 : 0</td><td>5 : 0</td></tr>",
+    )
+)
+
 
 def _fetch(url: str) -> str:
     if "/calendar/25/1/" in url:
@@ -313,6 +334,86 @@ def test_result_refuses_period_total_mismatch_and_timestamp_drift():
     assert "scheduled time contradicts calendar" in aba.last_gaps()[0].detail
 
 
+def test_default_forfeit_score_requires_and_records_generic_administrative_disposition():
+    def fetch(url: str) -> str:
+        return ADMINISTRATIVE_CALENDAR if "/calendar/" in url else ADMINISTRATIVE_MATCH
+
+    games, attempted, exhausted, calendar_final_count = aba.season_finals(2026, text_fetch=fetch)
+
+    assert games == []
+    assert attempted == [6]
+    assert exhausted is True
+    assert calendar_final_count == 1
+    assert aba.last_administrative_dispositions() == [
+        aba.AdministrativeDisposition(
+            season_end_year=2026,
+            game_no=6,
+            game_id="aba_liga:25:1:6",
+            calendar_score=(20, 0),
+            disposition_kind="official_default_award_without_periods",
+            calendar_has_exact_tip=True,
+        )
+    ]
+    assert aba.last_history_progress_game_no() == 6
+    gap = aba.last_gaps()[0]
+    assert gap.required_field == "official_administrative_disposition"
+    assert gap.reason.value == "not_applicable"
+
+
+def test_retroactively_registered_default_is_administrative_but_a_played_20_to_0_is_not():
+    def retroactive_fetch(url: str) -> str:
+        return ADMINISTRATIVE_CALENDAR if "/calendar/" in url else RETROACTIVELY_REGISTERED_MATCH
+
+    games, _attempted, exhausted, _count = aba.season_finals(2026, text_fetch=retroactive_fetch)
+    assert games == []
+    assert exhausted is True
+    assert aba.last_administrative_dispositions()[0].disposition_kind == (
+        "retroactively_registered_official_result"
+    )
+
+    def played_fetch(url: str) -> str:
+        return ADMINISTRATIVE_CALENDAR if "/calendar/" in url else PLAYED_TWENTY_TO_ZERO_MATCH
+
+    games, _attempted, exhausted, _count = aba.season_finals(2026, text_fetch=played_fetch)
+    assert exhausted is True
+    assert len(games) == 1
+    assert games[0].actual is not None and games[0].actual.reconciles() == (True, "")
+    assert aba.last_administrative_dispositions() == []
+
+
+def test_forfeit_score_alone_or_malformed_periods_do_not_bypass_integrity_checks():
+    malformed_detail = MATCH.replace("93 : 97", "20 : 0")
+
+    def fetch(url: str) -> str:
+        return ADMINISTRATIVE_CALENDAR if "/calendar/" in url else malformed_detail
+
+    games, attempted, exhausted, _count = aba.season_finals(2026, text_fetch=fetch)
+    assert games == []
+    assert attempted == [6]
+    assert exhausted is False
+    assert aba.last_administrative_dispositions() == []
+    assert aba.last_gaps()[0].required_field == "historical_official_result"
+    assert "does not reconcile" in aba.last_gaps()[0].detail
+
+
+def test_undated_default_award_is_not_assigned_an_invented_tip():
+    undated_calendar = ADMINISTRATIVE_CALENDAR.replace(
+        "Sunday, 05.10.2025 19:30 CET", ""
+    )
+
+    def fetch(url: str) -> str:
+        return undated_calendar if "/calendar/" in url else ADMINISTRATIVE_MATCH
+
+    games, attempted, exhausted, calendar_final_count = aba.season_finals(2026, text_fetch=fetch)
+    assert games == []
+    assert attempted == [6]
+    assert exhausted is True
+    assert calendar_final_count == 1
+    disposition = aba.last_administrative_dispositions()[0]
+    assert disposition.calendar_has_exact_tip is False
+    assert disposition.disposition_kind == "official_default_award_without_periods"
+
+
 def test_history_batch_stops_at_bad_game_and_does_not_claim_it_was_written():
     calendar = CALENDAR.replace(
         "</tbody></table></div>",
@@ -379,11 +480,12 @@ def test_pipeline_history_writes_reconciled_final_and_advances_game_cursor(tmp_p
             "season_end_year": 2026,
             "calendar_final_count": 1,
             "reconciled_final_count": 1,
+            "administrative_disposition_count": 0,
             # The unpinned placeholder is visible but not part of the
             # final-score denominator.
             "not_applicable_rows": 1,
             "blocking_gap_count": 0,
-            "status": "calendar_final_count_reconciled",
+            "status": "calendar_terminal_count_reconciled",
             "source": "aba_liga",
             "evidence": aba.EVIDENCE,
             "completed_at_utc": "2025-10-06T12:00:00Z",
@@ -402,6 +504,116 @@ def test_pipeline_history_writes_reconciled_final_and_advances_game_cursor(tmp_p
         assert stored.actual.reconciles() == (True, "")
         health = store.get_provider_health("aba-liga-history", League.ABA_LEAGUE)
         assert health is not None and health.coverage == deep["cursor"]
+    finally:
+        store.close()
+
+
+def test_history_receipt_separates_verified_administrative_dispositions(tmp_path):
+    def fetch(url: str) -> str:
+        if "/calendar/" in url:
+            return ADMINISTRATIVE_CALENDAR
+        if "/match/6/" in url:
+            return ADMINISTRATIVE_MATCH
+        raise AssertionError(url)
+
+    store = DuckDBStore(str(tmp_path / "aba-admin" / "warehouse.duckdb"), persist=True)
+    try:
+        pipeline = Pipeline(
+            PipelineConfig(
+                league="ABA_LEAGUE",
+                date_yyyymmdd="20251006",
+                history_days=0,
+                history_request_budget=1,
+                deep_history_event_budget=5,
+                fixture_now_utc="2025-10-06T12:00:00Z",
+            ),
+            store,
+            fetch=fetch,
+            allow_writes=True,
+        )
+        deep = pipeline.backfill()["backfill"]["deep_history"]
+
+        assert deep["status"] == "acquired"
+        assert deep["events_acquired"] == 0
+        assert deep["final_scores_written"] == 0
+        assert deep["administrative_disposition_count"] == 1
+        assert deep["season_receipts"] == [
+            {
+                "season_end_year": 2026,
+                "calendar_final_count": 1,
+                "reconciled_final_count": 0,
+                "administrative_disposition_count": 1,
+                "not_applicable_rows": 1,
+                "blocking_gap_count": 0,
+                "status": "calendar_terminal_count_reconciled",
+                "source": "aba_liga",
+                "evidence": aba.EVIDENCE,
+                "completed_at_utc": "2025-10-06T12:00:00Z",
+            }
+        ]
+        assert store.get_game("aba_liga:25:1:6") is None
+        assert any(
+            gap.required_field == "official_administrative_disposition"
+            and gap.reason.value == "not_applicable"
+            for gap in pipeline.gaps
+        )
+    finally:
+        store.close()
+
+
+def test_bounded_history_cursor_carries_generic_administrative_count_across_batches(tmp_path):
+    calendar = ADMINISTRATIVE_CALENDAR.replace(
+        "<td></td><td>Friday, 10.10.2025 20:00 CET</td>",
+        "<td>80 : 60</td><td>Friday, 10.10.2025 20:00 CET</td>",
+    )
+    later_played_match = (
+        MATCH.replace('id="match_data_id" value="6"', 'id="match_data_id" value="7"')
+        .replace("Sunday, 05.10.2025 19:30 CET", "Friday, 10.10.2025 20:00 CET")
+        .replace("Spartak Office Shoes", "FMP")
+        .replace("93 : 97", "80 : 60")
+        .replace(
+            "<tr><td>21 : 24</td><td>25 : 24</td><td>20 : 23</td><td>27 : 26</td></tr>",
+            "<tr><td>20 : 15</td><td>20 : 15</td><td>20 : 15</td><td>20 : 15</td></tr>",
+        )
+    )
+
+    def fetch(url: str) -> str:
+        if "/calendar/" in url:
+            return calendar
+        if "/match/6/" in url:
+            return ADMINISTRATIVE_MATCH
+        if "/match/7/" in url:
+            return later_played_match
+        raise AssertionError(url)
+
+    store = DuckDBStore(str(tmp_path / "aba-bounded-admin" / "warehouse.duckdb"), persist=True)
+    config = {
+        "league": "ABA_LEAGUE",
+        "date_yyyymmdd": "20251006",
+        "history_days": 0,
+        "history_request_budget": 1,
+        "fixture_now_utc": "2025-10-06T12:00:00Z",
+    }
+    try:
+        first = Pipeline(
+            PipelineConfig(**config, deep_history_event_budget=1), store, fetch=fetch, allow_writes=True
+        ).backfill()["backfill"]["deep_history"]
+        assert first["events_acquired"] == 0
+        assert first["cursor"] == {
+            "administrative_disposition_count": 1,
+            "floor_season": 2002,
+            "last_game_no": 6,
+            "next_season": 2026,
+        }
+
+        second = Pipeline(
+            PipelineConfig(**config, deep_history_event_budget=5), store, fetch=fetch, allow_writes=True
+        ).backfill()["backfill"]["deep_history"]
+        receipt = second["season_receipts"][0]
+        assert receipt["calendar_final_count"] == 2
+        assert receipt["reconciled_final_count"] == 1
+        assert receipt["administrative_disposition_count"] == 1
+        assert store.get_game("aba_liga:25:1:7") is not None
     finally:
         store.close()
 
@@ -501,7 +713,16 @@ def test_history_withholds_receipt_for_an_all_placeholder_calendar(tmp_path):
         store.close()
 
 
-def test_history_explicitly_excludes_2008_09_without_fetching_or_silent_skip():
+@pytest.mark.parametrize(
+    ("season", "next_season", "expected_text"),
+    (
+        (2009, 2008, "2008-09"),
+        (2020, 2019, "2019-20"),
+    ),
+)
+def test_history_explicitly_excludes_approved_season_without_fetching_or_silent_skip(
+    season, next_season, expected_text
+):
     store = InMemoryStore()
     store.persist = True
     store.upsert_provider_health(
@@ -511,7 +732,7 @@ def test_history_explicitly_excludes_2008_09_without_fetching_or_silent_skip():
             coverage={
                 "floor_season": 2002,
                 "last_game_no": 0,
-                "next_season": 2009,
+                "next_season": season,
             },
         )
     )
@@ -533,21 +754,21 @@ def test_history_explicitly_excludes_2008_09_without_fetching_or_silent_skip():
     deep = pipeline.backfill()["backfill"]["deep_history"]
 
     exclusion = {
-        "season_end_year": 2009,
+        "season_end_year": season,
         "status": "excluded_by_operator_policy",
-        "detail": aba.HISTORY_EXCLUDED_SEASONS[2009],
+        "detail": aba.HISTORY_EXCLUDED_SEASONS[season],
     }
     assert deep["excluded_seasons"] == [exclusion]
     assert deep["seasons"] == [exclusion]
     assert deep["cursor"] == {
         "floor_season": 2002,
         "last_game_no": 0,
-        "next_season": 2008,
+        "next_season": next_season,
     }
     assert any(
         gap.required_field == "aba_liga_history_policy"
         and gap.reason.value == "not_applicable"
-        and "2008-09" in gap.detail
+        and expected_text in gap.detail
         for gap in pipeline.gaps
     )
 
