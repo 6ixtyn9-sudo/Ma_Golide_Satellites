@@ -17,7 +17,7 @@
       "logical_picks": 191
     },
     "2026-11-20": {
-      "frozen_fixtures": 7,
+      "frozen_fixtures": 8,
       "logical_picks": 145
     }
   },
@@ -9708,6 +9708,148 @@
       }
     },
     "2026-11-20": {
+      "401915889": {
+        "decision_cutoff_utc": "2026-11-20T21:00:00Z",
+        "frozen_at": "2026-11-20T21:11:30Z",
+        "game_id": "401915889",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "UNC Asheville Bulldogs",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.49618,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 59,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "fb6ee9ba61a73ce5f54632b7a5d865cef97174318548e9bd180f1b0a960abc25",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b55af068c48759a9358e",
+            "game_id": "401915889",
+            "grade_status": "pending",
+            "home": "Clemson Tigers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "b55af068c48759a9358e",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-20T22:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UNC Asheville Bulldogs",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.927322,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 51,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "da636273cbd71f20fc6983fcfeb24fd78d65c12f22cadb1a334e5fa0e85ceb58",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5a8fc7310f43abe04294",
+            "game_id": "401915889",
+            "grade_status": "pending",
+            "home": "Clemson Tigers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "5a8fc7310f43abe04294",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-20T21:08:47Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9974,
+            "role": null,
+            "scheduled_utc": "2026-11-20T22:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UNC Asheville Bulldogs",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.555172,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 57,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "c27e43efc1d02aea120cd7527deb98320f2dcdecae13c5d0cf1a276b8dac7546",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "93ad8405bfd9e15cf2a8",
+            "game_id": "401915889",
+            "grade_status": "pending",
+            "home": "Clemson Tigers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "93ad8405bfd9e15cf2a8",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.6,
+            "role": null,
+            "scheduled_utc": "2026-11-20T22:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T22:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
       "401916060": {
         "decision_cutoff_utc": "2026-11-20T16:00:00Z",
         "frozen_at": "2026-11-20T16:12:35Z",
@@ -10786,12 +10928,12 @@
   "league": "NCAA_W",
   "pending_frozen_games": [
     [
-      "401917711",
-      "2026-11-20T19:00:00Z"
-    ],
-    [
       "401918511",
       "2026-11-20T21:00:00Z"
+    ],
+    [
+      "401915889",
+      "2026-11-20T22:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"

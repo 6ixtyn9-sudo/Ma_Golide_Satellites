@@ -9,8 +9,8 @@
       "logical_picks": 233
     },
     "2026-11-20": {
-      "frozen_fixtures": 11,
-      "logical_picks": 438
+      "frozen_fixtures": 12,
+      "logical_picks": 444
     }
   },
   "frozen_by_date": {
@@ -17357,6 +17357,495 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
       },
+      "401921723": {
+        "decision_cutoff_utc": "2026-11-20T21:00:00Z",
+        "frozen_at": "2026-11-20T21:12:05Z",
+        "game_id": "401921723",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Manhattan Jaspers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.712813,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 66,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "093d18de70da8d4fa1cb699976cb962f804d4c87299d869dbbeca6b5163ff5ba",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "58b89149032730cf26f6",
+            "game_id": "401921723",
+            "grade_status": "pending",
+            "home": "Miami Hurricanes",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "58b89149032730cf26f6",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.84,
+            "role": null,
+            "scheduled_utc": "2026-11-20T22:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Manhattan Jaspers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.947201,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 39,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "12fa41121d559f822a08840fb48920d4903853a1014c5e15b745d8ed513d961b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "bc75c8bd08c1012b6fe5",
+            "game_id": "401921723",
+            "grade_status": "pending",
+            "home": "Miami Hurricanes",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "bc75c8bd08c1012b6fe5",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-20T21:08:58Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9953,
+            "role": null,
+            "scheduled_utc": "2026-11-20T22:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Manhattan Jaspers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.749687,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 66,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "4ae54fc801fd2e7342ee2e96beb9be9a70bbfb19d9e98ab24ef30b86c9ab1f23",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "dcd034515351e4a49b04",
+            "game_id": "401921723",
+            "grade_status": "pending",
+            "home": "Miami Hurricanes",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "dcd034515351e4a49b04",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.91,
+            "role": null,
+            "scheduled_utc": "2026-11-20T22:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Manhattan Jaspers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921723",
+              "line": -38.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T16:08:37Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.669189,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "72801ddf197ab6ca6274d940d13302d3547912974822d5468d64066bb40cd8f3",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6731ce4c4cdbe91f6ec4",
+            "game_id": "401921723",
+            "grade_status": "pending",
+            "home": "Miami Hurricanes",
+            "league": "NCAA_M",
+            "line": -38.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6731ce4c4cdbe91f6ec4",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.66,
+            "role": null,
+            "scheduled_utc": "2026-11-20T22:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Manhattan Jaspers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921723",
+              "line": -36.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T21:08:48Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.673243,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "df87ebd08dae0b56906fc2694e2fa6c096bd3ce3e18a0e82e581794554b15c32",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "691a3e107e1cd0a92b6f",
+            "game_id": "401921723",
+            "grade_status": "pending",
+            "home": "Miami Hurricanes",
+            "league": "NCAA_M",
+            "line": -36.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "691a3e107e1cd0a92b6f",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.64,
+            "role": null,
+            "scheduled_utc": "2026-11-20T22:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Manhattan Jaspers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921723",
+              "line": -39.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T14:08:34Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.693889,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 6,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "07671b3ee700d608ac1eee40d9349a0c1c67ac53043d5704bfe5b072666e21ac",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "adf077913af3743b87a3",
+            "game_id": "401921723",
+            "grade_status": "pending",
+            "home": "Miami Hurricanes",
+            "league": "NCAA_M",
+            "line": -39.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "adf077913af3743b87a3",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.67,
+            "role": null,
+            "scheduled_utc": "2026-11-20T22:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Manhattan Jaspers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921723",
+              "line": 149.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T14:08:34Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.550263,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "cce1b952e047a108cfc436b35541b2edffa3856b1dbbdc28508f061ee9f9ee50",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "17a0cb27d6a426819b51",
+            "game_id": "401921723",
+            "grade_status": "pending",
+            "home": "Miami Hurricanes",
+            "league": "NCAA_M",
+            "line": 149.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "17a0cb27d6a426819b51",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-20T22:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Manhattan Jaspers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921723",
+              "line": 148.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T05:08:31Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.504063,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 2,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "f9678fd16ce09b527f942c2f60c259894aab06c3a3de74864b97d15b8c53dc9c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "930611bf177879a35426",
+            "game_id": "401921723",
+            "grade_status": "pending",
+            "home": "Miami Hurricanes",
+            "league": "NCAA_M",
+            "line": 148.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "930611bf177879a35426",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-20T22:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Manhattan Jaspers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921723",
+              "line": 150.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T21:08:48Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.527297,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "403af64cb3a5887ae8560a6bc5147c190139d82a9a5769bf0d4d0712e9c8e960",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "cf526a1978b89d0931f3",
+            "game_id": "401921723",
+            "grade_status": "pending",
+            "home": "Miami Hurricanes",
+            "league": "NCAA_M",
+            "line": 150.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "cf526a1978b89d0931f3",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-20T22:00:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-20T22:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
       "401922022": {
         "decision_cutoff_utc": "2026-11-20T20:00:00Z",
         "frozen_at": "2026-11-20T20:13:16Z",
@@ -18144,10 +18633,6 @@
   "league": "NCAA_M",
   "pending_frozen_games": [
     [
-      "401919019",
-      "2026-11-20T19:00:00Z"
-    ],
-    [
       "401916123",
       "2026-11-20T20:00:00Z"
     ],
@@ -18166,6 +18651,10 @@
     [
       "401920066",
       "2026-11-20T21:30:00Z"
+    ],
+    [
+      "401921723",
+      "2026-11-20T22:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
