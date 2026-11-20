@@ -14,12 +14,12 @@ observation; it is not a named-book, ROI, ticket, or canonical-source lane.
 This decision makes no claim about ABA predictive edge, calibration, ticket
 eligibility, return on investment, price availability, or historical coverage.
 
-**Implementation update (2026-11-18):** an inactive, hermetic parser proposal
-for the documented official-site candidate now lives in
+**Implementation update (2026-11-18):** the documented official-site contract
+is now active for canonical ABA schedule/result/history acquisition; the
+implementation and remaining source-use/capture follow-up are in
 [`ABA_LEAGUE_OFFICIAL_SOURCE_CONTRACT_PROPOSAL.md`](ABA_LEAGUE_OFFICIAL_SOURCE_CONTRACT_PROPOSAL.md).
-It does not fetch live pages, alter the registry, or satisfy Phase 0; it makes
-the future contract's scope/identity/finality/reconciliation refusal rules
-reviewable before any source-use approval.
+This change does not relax price, ticket, ROI, bank, receipt, or execution
+restrictions: BetExplorer remains an aggregate research-only lane.
 
 ## 1. Executive comparison
 
@@ -38,10 +38,11 @@ reviewable before any source-use approval.
 The following parts of the two research outputs agree with the checked code and
 are adopted.
 
-1. **ABA is already a typed, isolated lane.** `League.ABA_LEAGUE` has state key
-   `aba_league` and timezone `Europe/Belgrade`, but all three acquisition slots
-   are explicitly `source_unavailable` in `ingestion/league_registry.py`. The
-   current state is an honest coverage gap, not an empty successful slate.
+1. **ABA is a typed, isolated canonical lane.** `League.ABA_LEAGUE` has state
+   key `aba_league`, timezone `Europe/Belgrade`, and the official
+   `aba_liga` schedule/result/history adapter in `ingestion/league_registry.py`.
+   The adapter refuses page scope, identity, clock, finality, and reconciliation
+   drift rather than treating an empty or malformed page as a successful slate.
 
 2. **The system already has the right canonical storage boundary.** An ABA
    warehouse path resolves to `localdata/aba_league/warehouse.duckdb`; canonical
@@ -207,52 +208,26 @@ to apply. These are material issues, not style preferences.
 
 ## 5. Approved ABA path
 
-### Phase 0 — source-contract dossier; no source registration
+### Phase 0 — source evidence and retention follow-up
 
-This is the next permitted action. For each candidate, obtain two or more
-small, legally retainable captures in a permitted research environment and
-record the answers below in a compact source-contract dossier:
+The official `aba_liga` adapter is active for canonical discovery, reconciled
+results, pending-final rechecks, and resumable season/game-number history. The
+remaining operational follow-up is compact: retain allowed current calendar and
+detail captures; record source automation/storage/reuse terms; verify
+postponement/correction behavior and historical limits; and retain a durable
+completeness receipt outside Git. Do not commit raw archives, browser exports,
+or price history.
 
-- competition/season identity and the distinction from ABA 2 or domestic cups;
-- immutable event identifier, stable across schedule and result pages;
-- date-bounded upcoming-fixture route and finished-result route;
-- UTC/DST/timezone semantics verified against `Europe/Belgrade`;
-- final, Q1--Q4, overtime, postponement/cancellation, and correction fields;
-- historical pagination/season cursor, earliest demonstrated season, and rate
-  limits;
-- home/away orientation and team-name/identifier mapping requirements;
-- source ownership, automation/storage/reuse terms, and the approved role
-  (canonical, cross-check, or research-only);
-- one schedule/result reconciliation against an independent official source.
+### Phase 1 — canonical-history operation
 
-Capture only the small hermetic fixtures required to prove the parser contract.
-Do not commit raw multi-season archives, credentials, browser exports, or price
-history.
-
-**Phase-0 exit gate:** a reviewer can identify the canonical event ID, exact
-final fields, data availability, source role, and allowed retention without
-making an inference from a URL or a marketing page. If any answer is missing,
-ABA remains `source_unavailable`.
-
-### Phase 1 — verified canonical schedule/results and resumable history
-
-Only after Phase 0 passes, add one source-specific adapter built around the
-captured contract. Register it in the source slots only in that same reviewed
-change. The implementation must cover all normal lifecycle surfaces:
-
-- scheduled-game discovery;
-- final-result reconciliation and pending-final rechecks;
-- a bounded, resumable archival cursor rather than an ad-hoc day loop;
-- provider-health/coverage gaps for outage, schema drift, invalid identity, and
-  incomplete/non-reconciling results;
-- explicit aliases or provider-team identifiers, with ambiguous matches
-  rejected;
-- per-league DuckDB storage and CSV export using the existing store.
-
-The tests must replay only fixtures, prove an outage does not write finals,
-prove incomplete periods are not invented, test a DST boundary, test identity
-contradictions, and demonstrate cursor idempotence/resumption. Keep
-`source_unavailable` until that change is ready.
+The active path covers scheduled-game discovery, detail-page team identity,
+period reconciliation, coverage gaps, provider-health cursors, and existing
+per-league DuckDB/CSV materialization. A malformed result stops the cursor at
+the last successful game, so it is retried instead of skipped. The hermetic
+suite covers DST, scope/identity contradictions, missing/reconciled periods,
+and cursor advancement. These facts establish data acquisition only; they do
+not establish model calibration, prediction quality, price permission, ROI, or
+ticket eligibility.
 
 ### Phase 2 — transparent unpriced empirical forecasts
 
@@ -305,8 +280,8 @@ or modification of the existing named-book evidence policy.
 
 ## 7. Remaining operator decisions
 
-1. Which official or explicitly approved source may be the canonical ABA
-   schedule/result source?
+1. What source-use and raw-capture retention basis applies to the active
+   official ABA League adapter?
 2. What archive recovery policy retains the ignored DuckDB/CSV source data and
    compact completeness receipts outside Git?
 3. What minimum season depth and competition phases are in scope before any
@@ -319,9 +294,7 @@ or modification of the existing named-book evidence policy.
 
 ## 8. Recommended next action
 
-Do not begin an implementation PR from the supplied five-PR sequence. First
-produce Phase-0 source evidence for one candidate **official or approved** ABA
-schedule/result source and make the source/retention decisions above. Then
-perform a narrow design check against its actual captures. Only a passed source
-contract permits the first code PR: a verified canonical ABA schedule/results
-adapter with bounded history recovery and complete lifecycle integration.
+Operate and observe the active canonical ABA path, record approved current
+captures/retention terms, and let reconciled history accumulate. Only then
+consider the separately gated empirical-replay report. Exact historical
+named-book prices remain a prerequisite for any ROI or ticket work.

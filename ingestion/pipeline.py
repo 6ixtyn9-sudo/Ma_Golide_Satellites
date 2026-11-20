@@ -55,6 +55,7 @@ from .predictions import (
 from .league_registry import SPECS, league_spec, parse_league, price_evidence_policy
 from .leagues import native_periods
 from .providers import (
+    aba_liga,
     betexplorer,
     cbaleague,
     espn,
@@ -150,6 +151,7 @@ class Pipeline:
             if fetch is not None or config.league_enum is not League.EUROLEAGUE_W
             else fiba_euroleague_w.FibaClient()
         )
+        self._injected_fetch = fetch is not None
         self.fetch = fetch or HttpClient().get_json
         cache_dir = None
         store_path = getattr(store, "path", None)
@@ -180,6 +182,16 @@ class Pipeline:
         if self.config.fixture_now_utc:
             return to_utc_iso(parse_utc(self.config.fixture_now_utc))
         return now_utc_iso()
+
+    def _aba_text_fetch(self):
+        """Use an injected fixture transport, else the adapter's text client.
+
+        The ordinary pipeline fetch is JSON-oriented. ABA League publishes
+        server-rendered HTML, so passing the injected transport only preserves
+        hermetic tests while live runs let the adapter select ``get_text``.
+        """
+
+        return self.fetch if self._injected_fetch else None
 
     def _reset_stage(self) -> None:
         """Keep gaps and quota scoped to one command, not cumulative duplicates."""
@@ -298,6 +310,10 @@ class Pipeline:
                     "policy": "empirical_history_only_after_reconciled_history_threshold",
                 }
             report["standings"] = self._standings_smoke()
+            report["bookmakers"] = self._bookmakers_smoke()
+            return report
+        if league == "ABA_LEAGUE":
+            report = aba_liga.smoke(text_fetch=self._aba_text_fetch())
             report["bookmakers"] = self._bookmakers_smoke()
             return report
         if league == "CBA":
@@ -616,6 +632,11 @@ class Pipeline:
                 league,
                 observed_utc=self._now_iso(),
             )
+        elif league is League.ABA_LEAGUE:
+            games = aba_liga.discover_games(
+                self.config.date_yyyymmdd, text_fetch=self._aba_text_fetch()
+            )
+            self.gaps.extend(aba_liga.last_gaps())
         elif league is League.CBA:
             # Public league data from the CBA data-server remains the sole
             # discovery source, preventing duplicate canonical games.
@@ -1537,6 +1558,141 @@ class Pipeline:
         base["ledger_dates"] = sorted(ledger_dates)
         return base
 
+    def _backfill_aba_liga_history(self) -> Dict[str, Any]:
+        """Backfill official ABA finals with a season/game-number cursor.
+
+        The official calendar is the complete season index, while each final's
+        detail page supplies scoped team IDs and reconciled periods. The cursor
+        advances only through games actually written; an invalid detail blocks
+        the next game number instead of silently jumping a corrupted result.
+        """
+
+        event_budget = max(0, int(self.config.deep_history_event_budget))
+        season_budget = max(0, int(self.config.history_request_budget))
+        base: Dict[str, Any] = {
+            "status": "acquired",
+            "event_budget": event_budget,
+            "season_request_budget": season_budget,
+            "seasons": [],
+            "events_acquired": 0,
+            "final_scores_written": 0,
+            "quarantined_rows": 0,
+            "ledger_dates": [],
+            "learning_or_calibration_claimed": False,
+        }
+        if not event_budget or not season_budget:
+            return {**base, "status": "disabled"}
+        if not (self.allow_writes and getattr(self.store, "persist", False)):
+            return {
+                **base,
+                "status": "disabled_canonical_write_required",
+                "detail": "dry runs cannot advance an ABA history cursor",
+            }
+
+        cursor = self._history_cursor("aba-liga-history")
+        target_day = datetime.strptime(self.config.date_yyyymmdd, "%Y%m%d").date()
+        current = aba_liga.season_end_year(target_day)
+        season = min(int(cursor.get("next_season") or current), current)
+        after_game_no = int(cursor.get("last_game_no") or 0)
+        remaining_events = event_budget
+        remaining_seasons = season_budget
+        ledger_dates: set = set()
+        failures = 0
+        while (
+            remaining_events > 0
+            and remaining_seasons > 0
+            and season >= aba_liga.FIRST_SEASON_END_YEAR
+        ):
+            try:
+                games, attempted, exhausted = aba_liga.season_finals(
+                    season,
+                    start_after_game_no=after_game_no,
+                    limit=remaining_events,
+                    text_fetch=self._aba_text_fetch(),
+                )
+            except Exception as exc:
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=None,
+                        required_field="aba_liga_season_calendar",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider=aba_liga.PROVIDER,
+                        detail=f"{season}: {str(exc)[:180]}",
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                base["status"] = "provider_error_cursor_retained"
+                break
+            adapter_gaps = aba_liga.last_gaps()
+            self.gaps.extend(adapter_gaps)
+            failures += len(adapter_gaps)
+            for game in games:
+                self.store.upsert_game(game)
+                base["events_acquired"] += 1
+                base["final_scores_written"] += 1
+                remaining_events -= 1
+                ledger_dates.add(self._ledger_date_for(game))
+            base["seasons"].append(
+                {
+                    "season_end_year": season,
+                    "attempted_game_numbers": attempted,
+                    "finals_written": len(games),
+                    "exhausted": exhausted,
+                    "quarantined_rows": len(adapter_gaps),
+                }
+            )
+            base["quarantined_rows"] += len(adapter_gaps)
+            if adapter_gaps:
+                # The adapter stops on the first bad detail. Retain the prior
+                # successful game in the cursor so that malformed game remains
+                # the next retry, never a silently skipped hole.
+                if games:
+                    after_game_no = int(games[-1].evidence[aba_liga.PROVIDER]["game_no"])
+                    self._record_history_cursor(
+                        "aba-liga-history",
+                        {
+                            "next_season": season,
+                            "last_game_no": after_game_no,
+                            "floor_season": aba_liga.FIRST_SEASON_END_YEAR,
+                        },
+                    )
+                base["status"] = (
+                    "partial_provider_error" if games else "provider_error_cursor_retained"
+                )
+                break
+            if exhausted:
+                season -= 1
+                after_game_no = 0
+                remaining_seasons -= 1
+                self._record_history_cursor(
+                    "aba-liga-history",
+                    {
+                        "next_season": season,
+                        "last_game_no": after_game_no,
+                        "floor_season": aba_liga.FIRST_SEASON_END_YEAR,
+                    },
+                )
+                continue
+            # A bounded successful batch: resume at the last canonical write.
+            if games:
+                after_game_no = int(games[-1].evidence[aba_liga.PROVIDER]["game_no"])
+                self._record_history_cursor(
+                    "aba-liga-history",
+                    {
+                        "next_season": season,
+                        "last_game_no": after_game_no,
+                        "floor_season": aba_liga.FIRST_SEASON_END_YEAR,
+                    },
+                )
+            break
+        base["cursor"] = self._history_cursor("aba-liga-history")
+        base["ledger_dates"] = sorted(ledger_dates)
+        if failures and base["status"] == "acquired":
+            base["status"] = "partial_provider_error"
+        if season < aba_liga.FIRST_SEASON_END_YEAR and base["status"] == "acquired":
+            base["status"] = "complete_to_contract_floor"
+        return base
+
     def _backfill_fiba_euroleague_w_history(self) -> Dict[str, Any]:
         """Ingest bounded, reconciled FIBA ELW finals from the current GDAP edition.
 
@@ -1835,6 +1991,7 @@ class Pipeline:
 
         self._reset_stage()
         if self.config.league_enum not in ESPN_LEAGUES | {
+            League.ABA_LEAGUE,
             League.EUROLEAGUE,
             League.EUROLEAGUE_W,
             League.CBA,
@@ -1985,6 +2142,8 @@ class Pipeline:
                 "ledger_dates": [],
                 "learning_or_calibration_claimed": False,
             }
+        elif self.config.league_enum is League.ABA_LEAGUE:
+            deep = self._backfill_aba_liga_history()
         elif self.config.league_enum is League.EUROLEAGUE:
             deep = self._backfill_euroleague_history()
         elif self.config.league_enum is League.EUROLEAGUE_W:
@@ -2027,6 +2186,12 @@ class Pipeline:
                 league,
                 observed_utc=self._now_iso(),
             )
+        if league is League.ABA_LEAGUE:
+            finals = aba_liga.fetch_recent_results(
+                self.config.date_yyyymmdd, text_fetch=self._aba_text_fetch()
+            )
+            self.gaps.extend(aba_liga.last_gaps())
+            return finals
         if league is League.CBA:
             finals = cbaleague.fetch_recent_results(
                 self.config.date_yyyymmdd, self.fetch, league
@@ -2153,7 +2318,12 @@ class Pipeline:
         if not pending:
             return []
         league = self.config.league_enum
-        if league not in ESPN_LEAGUES | {League.EUROLEAGUE, League.EUROLEAGUE_W, League.CBA}:
+        if league not in ESPN_LEAGUES | {
+            League.ABA_LEAGUE,
+            League.EUROLEAGUE,
+            League.EUROLEAGUE_W,
+            League.CBA,
+        }:
             spec = league_spec(league)
             self._unsupported_source_gap(
                 "pending_results_recheck",
@@ -2189,6 +2359,11 @@ class Pipeline:
                     day = espn.fetch_recent_results(
                         date, self.espn_fetch, league, observed_utc=self._now_iso()
                     )
+                elif league is League.ABA_LEAGUE:
+                    day = aba_liga.fetch_recent_results(
+                        date, text_fetch=self._aba_text_fetch()
+                    )
+                    self.gaps.extend(aba_liga.last_gaps())
                 else:
                     day = cbaleague.fetch_recent_results(date, self.fetch, league)
                     self.gaps.extend(cbaleague.last_gaps())

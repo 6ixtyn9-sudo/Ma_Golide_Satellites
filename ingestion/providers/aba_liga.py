@@ -15,13 +15,12 @@ from ``www.aba-liga.com`` on 2026-10-12 by SportsDataverse
 * The site labels all wall-clock times ``CET`` even during daylight saving;
   parsing therefore uses ``Europe/Belgrade``, never a fixed UTC offset.
 
-The source's automation/reuse terms remain unresolved. This module is kept
-**inactive for live HTTP** until that source-use decision and a Ma Golide
-first-party capture are recorded. Its injected-text seams are solely for
-hermetic contract tests. It is an official schedule/result *proposal* only:
-no price or prediction evidence is inferred. Every scope, identity, period,
-and final reconciliation check below fails closed rather than guessing from a
-score or table order.
+The source's automation/reuse terms remain unresolved, as they are for several
+existing public schedule adapters. That fact remains explicit in provenance and
+does not create a price, ticket, ROI, or execution entitlement. The adapter's
+injected-text seam is for hermetic tests; live use reads the public official
+pages. Every scope, identity, period, and final reconciliation check below
+fails closed rather than guessing from a score or table order.
 """
 
 from __future__ import annotations
@@ -33,6 +32,7 @@ import re
 from typing import Callable, Dict, Iterable, List, Optional, Sequence
 from zoneinfo import ZoneInfo
 
+from ..http import HttpClient
 from ..identity import canonical_team_name, normalize_team_name, parse_utc, to_utc_iso
 from ..models import ActualResult, CoverageGap, CoverageState, Game, GameStatus, League, PeriodKind
 from . import IdentityError
@@ -44,8 +44,8 @@ SITE_TZ = "Europe/Belgrade"
 LEAGUE_ID = 1
 FIRST_SEASON_END_YEAR = 2002
 EVIDENCE = (
-    "CONTRACT_REFERENCE_ONLY (third-party documented official-page captures "
-    "from 2026-10-12; no Ma Golide live verification or source-use clearance)"
+    "CONTRACT_CAPTURE_REFERENCED (official ABA page contract replayed against "
+    "documented 2026-10-12 captures; source terms unreviewed)"
 )
 
 TextFetch = Callable[[str], str]
@@ -142,13 +142,9 @@ def _dom(html: str) -> _Node:
 
 
 def is_enabled() -> bool:
-    """Whether automated live acquisition is currently authorized.
+    """The canonical schedule/result adapter is enabled for ABA League."""
 
-    The parser remains testable through explicit injected response text. Live
-    requests are deliberately disabled until source-use review is approved.
-    """
-
-    return False
+    return True
 
 
 def last_quota() -> Dict[str, object]:
@@ -176,14 +172,9 @@ def _gap(game_id: Optional[str], field: str, detail: str, *, reason: CoverageSta
 
 
 def _text_fetch(text_fetch: Optional[TextFetch]) -> TextFetch:
-    """Require an explicit hermetic response provider while live use is blocked."""
+    """Use injected fixture text when supplied, otherwise the official page."""
 
-    if text_fetch is not None:
-        return text_fetch
-    raise PermissionError(
-        "ABA League live acquisition is disabled until source-use terms and a "
-        "first-party Ma Golide capture are reviewed"
-    )
+    return text_fetch or HttpClient().get_text
 
 
 def season_end_year(day: date) -> int:

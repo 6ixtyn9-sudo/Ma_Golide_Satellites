@@ -9,9 +9,12 @@ from __future__ import annotations
 
 import pytest
 
+from ingestion.duckdb_store import DuckDBStore
 from ingestion.models import GameStatus, League
+from ingestion.pipeline import Pipeline, PipelineConfig
 from ingestion.providers import IdentityError
 from ingestion.providers import aba_liga as aba
+from ingestion.store import InMemoryStore
 
 
 CALENDAR = """
@@ -88,6 +91,24 @@ def test_discovery_requires_detail_team_ids_and_marks_calendar_finality():
     assert game.evidence["aba_liga"]["evidence"] == aba.EVIDENCE
 
 
+def test_pipeline_uses_aba_adapter_for_discovery_and_results_without_fallback_gap():
+    store = InMemoryStore()
+    pipeline = Pipeline(
+        PipelineConfig(league="ABA_LEAGUE", date_yyyymmdd="20251005"),
+        store,
+        fetch=_fetch,
+    )
+
+    games = pipeline._discover_games()
+    assert [game.game_id for game in games] == ["aba_liga:25:1:6"]
+    assert store.get_game("aba_liga:25:1:6") is not None
+    assert not any(gap.required_field == "official_schedule" for gap in pipeline.gaps)
+
+    finals = pipeline._fetch_finals()
+    assert [game.game_id for game in finals] == ["aba_liga:25:1:6"]
+    assert finals[0].actual is not None
+
+
 def test_result_contract_reconciles_all_quarters_before_canonical_final():
     finals = aba.fetch_recent_results("2025-10-05", text_fetch=_fetch)
 
@@ -157,10 +178,47 @@ def test_history_batch_stops_at_bad_game_and_does_not_claim_it_was_written():
     assert aba.last_gaps()[0].required_field == "historical_official_result"
 
 
-def test_live_http_is_disabled_pending_source_use_review():
-    assert aba.is_enabled() is False
-    with pytest.raises(PermissionError, match="source-use"):
-        aba.smoke(season=2026)
+def test_pipeline_history_writes_reconciled_final_and_advances_game_cursor(tmp_path):
+    store = DuckDBStore(str(tmp_path / "aba" / "warehouse.duckdb"), persist=True)
+    try:
+        pipeline = Pipeline(
+            PipelineConfig(
+                league="ABA_LEAGUE",
+                date_yyyymmdd="20251006",
+                history_days=0,
+                history_request_budget=1,
+                deep_history_event_budget=5,
+                fixture_now_utc="2025-10-06T12:00:00Z",
+            ),
+            store,
+            fetch=_fetch,
+            allow_writes=True,
+        )
+        report = pipeline.backfill()
+        deep = report["backfill"]["deep_history"]
+        assert deep["status"] == "acquired"
+        assert deep["events_acquired"] == 1
+        assert deep["final_scores_written"] == 1
+        assert deep["cursor"] == {
+            "floor_season": 2002,
+            "last_game_no": 0,
+            "next_season": 2025,
+        }
+        stored = store.get_game("aba_liga:25:1:6")
+        assert stored is not None and stored.actual is not None
+        assert stored.actual.reconciles() == (True, "")
+        health = store.get_provider_health("aba-liga-history", League.ABA_LEAGUE)
+        assert health is not None and health.coverage == deep["cursor"]
+    finally:
+        store.close()
+
+
+def test_adapter_is_enabled_and_smoke_replays_the_calendar_contract():
+    assert aba.is_enabled() is True
+    report = aba.smoke(text_fetch=_fetch, season=2026)
+    assert report["calendar_games"] == 2
+    assert report["calendar_finals"] == 1
+    assert report["verification"] == aba.EVIDENCE
 
 
 def test_parser_rejects_a_calendar_scope_or_malformed_score():

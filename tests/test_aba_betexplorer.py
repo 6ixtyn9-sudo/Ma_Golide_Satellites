@@ -1,10 +1,9 @@
 """ABA BetExplorer aggregate-price research lane.
 
-The ABA route is deliberately independent of canonical schedule/results: the
-registry continues to report ``source_unavailable`` for those source slots.
-These tests exercise only the already-established aggregate-price adapter shape
-against a hermetic representative table, then prove that the pipeline stamps
-research-only evidence onto a manually canonical ABA fixture.
+The ABA route is deliberately independent of the canonical ABA League
+schedule/result adapter. These tests exercise only the aggregate-price adapter
+shape against a hermetic representative table, then prove that the pipeline
+stamps research-only evidence onto a canonical ABA fixture.
 """
 
 from __future__ import annotations
@@ -20,7 +19,7 @@ from ingestion.models import (
     SourcePermission,
 )
 from ingestion.pipeline import Pipeline, PipelineConfig
-from ingestion.providers import betexplorer
+from ingestion.providers import aba_liga, betexplorer
 from ingestion.store import InMemoryStore
 
 
@@ -54,13 +53,13 @@ def _canonical_aba_game() -> Game:
     )
 
 
-def test_aba_registry_keeps_canonical_sources_unavailable_but_allows_research_prices():
+def test_aba_registry_uses_official_canonical_source_but_keeps_research_prices_separate():
     spec = league_spec(League.ABA_LEAGUE)
     assert (
         spec.schedule_source,
         spec.results_source,
         spec.gate_schedule_source,
-    ) == ("source_unavailable", "source_unavailable", "source_unavailable")
+    ) == ("aba_liga", "aba_liga", "aba_liga")
     assert spec.book_providers == ("betexplorer",)
 
     policy = price_evidence_policy(League.ABA_LEAGUE, "betexplorer")
@@ -101,6 +100,8 @@ def test_aba_pipeline_maps_and_restamps_aggregate_evidence(monkeypatch):
         "_text_fetch",
         lambda _factory, _text_fetch=None: (lambda _url: ABA_FIXTURES_HTML),
     )
+    monkeypatch.setattr(aba_liga, "discover_games", lambda *_args, **_kwargs: [game])
+    monkeypatch.setattr(aba_liga, "last_gaps", lambda: [])
 
     report = Pipeline(
         PipelineConfig(
@@ -124,7 +125,4 @@ def test_aba_pipeline_maps_and_restamps_aggregate_evidence(monkeypatch):
 
     assert report["book_provider_status"]["betexplorer"]["status"] == "fetched"
     assert report["book_provider_status"]["betexplorer"]["snapshots_mapped"] == 1
-    assert any(
-        gap["required_field"] == "official_schedule" and gap["reason"] == "unsupported"
-        for gap in report["gaps"]
-    )
+    assert not any(gap["required_field"] == "official_schedule" for gap in report["gaps"])

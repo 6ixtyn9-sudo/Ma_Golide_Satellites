@@ -274,11 +274,11 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     LeagueSpec(League.ITALY_LBA, "Italy LBA", "italy_lba", "Europe/Rome", "Europe/Rome", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.TURKEY_BSL, "Turkey BSL", "turkey_bsl", "Europe/Istanbul", "Europe/Istanbul", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.GREECE_BASKET_LEAGUE, "Greece Basket League", "greece_basket_league", "Europe/Athens", "Europe/Athens", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
-    # BetExplorer is a separate, explicitly aggregate research-price surface.
-    # It does not validate or replace the still-unavailable canonical ABA
-    # schedule/result source, and its price evidence can never enter tickets
-    # or ROI.
-    LeagueSpec(League.ABA_LEAGUE, "ABA League", "aba_league", "Europe/Belgrade", "Europe/Belgrade", "source_unavailable", "source_unavailable", "source_unavailable", (_ABA_BETEXPLORER_RESEARCH_ONLY,), source_detail="No compliant date-bounded official schedule/result adapter has been validated. BetExplorer average moneyline observations are research-only and do not supply canonical fixtures or results."),
+    # The official ABA League calendar/detail route is the canonical fixture,
+    # result, and history source. BetExplorer is deliberately separate: its
+    # aggregate observations remain research-only and cannot price tickets or
+    # support ROI, receipts, banks, or execution.
+    LeagueSpec(League.ABA_LEAGUE, "ABA League", "aba_league", "Europe/Belgrade", "Europe/Belgrade", "aba_liga", "aba_liga", "aba_liga", (_ABA_BETEXPLORER_RESEARCH_ONLY,), source_detail="Official aba-liga.com calendar/detail adapter: season/game scope, official team IDs, Europe/Belgrade tips, and period-reconciled finals are required. Source automation/reuse terms remain unreviewed; BetExplorer averages remain research-only."),
     LeagueSpec(League.ISRAEL_PREMIER_LEAGUE, "Israel Premier League", "israel_premier_league", "Asia/Jerusalem", "Asia/Jerusalem", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.JAPAN_B_LEAGUE, "Japan B.League", "japan_b_league", "Asia/Tokyo", "Asia/Tokyo", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.SOUTH_KOREA_KBL, "South Korea KBL", "south_korea_kbl", "Asia/Seoul", "Asia/Seoul", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),

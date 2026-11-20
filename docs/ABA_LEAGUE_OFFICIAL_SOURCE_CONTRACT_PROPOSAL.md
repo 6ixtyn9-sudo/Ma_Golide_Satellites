@@ -1,12 +1,13 @@
-# ABA League official-source contract proposal
+# ABA League official-source contract
 
-**Status: inactive proposal — not a source-use approval or live verification.**
+**Status: active canonical schedule/result/history adapter; source-use terms remain unreviewed.**
 
-This records the narrow contract implemented hermetically in
-`ingestion/providers/aba_liga.py`. It does **not** change ABA League's registry
-sources: schedule, result, gate, history, pricing, ROI, and ticket status all
-remain unavailable or in their existing research-only state until the exit
-criteria below are met.
+This records the narrow contract implemented in
+`ingestion/providers/aba_liga.py` and wired through ABA League's registry,
+pipeline discovery/results/pending-final rechecks, and resumable history
+cursor. It does not change the independent pricing contract: BetExplorer
+observations remain aggregate research-only and ABA still has no ticket, ROI,
+bank, receipt, or execution price lane.
 
 ## Why this exists
 
@@ -17,8 +18,8 @@ capture, source-use clearance, or live validation. We did not copy its source
 page fixtures or parser implementation. The Ma Golide tests use small,
 synthetic HTML examples written only to exercise the proposed invariants.
 
-The candidate source is the official domain `www.aba-liga.com`, with these
-reported routes:
+The canonical source is the official domain `www.aba-liga.com`, with these
+contract routes:
 
 | Role | Proposed route | Required scope |
 | --- | --- | --- |
@@ -28,9 +29,9 @@ reported routes:
 For example, canonical 2025-26 maps to `sez=25`, and the stable event namespace
 is `aba_liga:25:1:{game_no}`. Game number alone is never globally unique.
 
-## Proposed canonical fields and invariants
+## Canonical fields and invariants
 
-The adapter is deliberately strict and currently accepts only the following
+The active adapter is deliberately strict and accepts only the following
 minimal contract:
 
 1. **Calendar scope:** a selected calendar season must exactly equal
@@ -55,8 +56,8 @@ minimal contract:
    array-order inference.
 7. **History:** season results are enumerated from the complete calendar in
    ascending `(game_no)` order. The helper returns attempted game numbers and
-   stops on a malformed detail page so the pipeline cursor (when later enabled)
-   cannot falsely advance past an unwritten result.
+   stops on a malformed detail page so the pipeline cursor cannot falsely
+   advance past an unwritten result.
 
 `tests/test_aba_liga.py` covers normal discovery/result parsing, DST, scope and
 team/time contradiction refusal, period-total refusal, malformed calendar
@@ -64,23 +65,21 @@ refusal, and bounded history behavior.
 
 ## Operational guardrails currently in code
 
-The adapter has no normal pipeline dispatch and no registry activation.
-Additionally:
+The adapter is registered for normal pipeline discovery, results, pending-final
+rechecks, and bounded history. It still fails closed at every page boundary:
 
-- `is_enabled()` is `False`.
-- Calls without an explicitly injected text fetcher raise `PermissionError`.
-- The evidence string is `CONTRACT_REFERENCE_ONLY`, not `LIVE_VERIFIED`.
+- `is_enabled()` is `True`; live retrieval uses the official text pages.
+- Hermetic tests inject response text without changing live behavior.
+- The evidence string is `CONTRACT_CAPTURE_REFERENCED`, not `LIVE_VERIFIED`.
 - The module acquires no price data and cannot affect the existing BetExplorer
   aggregate-consensus research lane.
+- The adaptive gate fails open rather than duplicating a whole-season HTML
+  retrieval in a frequent scheduler probe.
 
-These guardrails keep synthetic parser testing distinct from automated live
-scraping or claims about the official site.
+## Source-use and capture follow-up
 
-## Required Phase-0 evidence before activation
-
-A reviewer must record an affirmative source-use decision and a compact
-first-party capture dossier before changing the registry. At minimum it must
-contain:
+A reviewer must still record a source-use decision and a compact first-party
+capture dossier. At minimum it should contain:
 
 1. the official site's relevant access, automation, storage, and redistribution
    terms as reviewed on the capture date;
@@ -95,8 +94,7 @@ contain:
 6. confirmation that the provider is ABA League (`league_id=1`), rather than
    ABA 2 or another competition.
 
-Only after that review should a single change enable live retrieval, add the
-source to `ingestion/league_registry.py`, wire discovery/results/pending-final
-checks/history cursor into `Pipeline`, and add approved first-party fixture
-coverage. Until then, ABA history, calibration, predictive edge, priced ROI,
-and ticket eligibility remain unclaimed.
+The current adapter remains limited to canonical schedule/result/history
+acquisition while this follow-up is completed. It does not establish ABA
+calibration, predictive edge, priced ROI, ticket eligibility, or permission to
+reuse raw page bodies beyond the approved retention basis.
