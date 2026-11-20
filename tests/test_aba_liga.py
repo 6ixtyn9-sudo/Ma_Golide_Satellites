@@ -10,7 +10,7 @@ from __future__ import annotations
 import pytest
 
 from ingestion.duckdb_store import DuckDBStore
-from ingestion.models import FinalStatus, GameStatus, League
+from ingestion.models import FinalStatus, GameStatus, League, ProviderHealth
 from ingestion.pipeline import Pipeline, PipelineConfig
 from ingestion.providers import IdentityError
 from ingestion.providers import aba_liga as aba
@@ -499,6 +499,57 @@ def test_history_withholds_receipt_for_an_all_placeholder_calendar(tmp_path):
         )
     finally:
         store.close()
+
+
+def test_history_explicitly_excludes_2008_09_without_fetching_or_silent_skip():
+    store = InMemoryStore()
+    store.persist = True
+    store.upsert_provider_health(
+        ProviderHealth(
+            provider="aba-liga-history",
+            league=League.ABA_LEAGUE,
+            coverage={
+                "floor_season": 2002,
+                "last_game_no": 0,
+                "next_season": 2009,
+            },
+        )
+    )
+
+    pipeline = Pipeline(
+        PipelineConfig(
+            league="ABA_LEAGUE",
+            date_yyyymmdd="20261120",
+            history_days=0,
+            history_request_budget=1,
+            deep_history_event_budget=5,
+            fixture_now_utc="2026-11-20T12:00:00Z",
+        ),
+        store,
+        fetch=lambda url: (_ for _ in ()).throw(AssertionError(url)),
+        allow_writes=True,
+    )
+
+    deep = pipeline.backfill()["backfill"]["deep_history"]
+
+    exclusion = {
+        "season_end_year": 2009,
+        "status": "excluded_by_operator_policy",
+        "detail": aba.HISTORY_EXCLUDED_SEASONS[2009],
+    }
+    assert deep["excluded_seasons"] == [exclusion]
+    assert deep["seasons"] == [exclusion]
+    assert deep["cursor"] == {
+        "floor_season": 2002,
+        "last_game_no": 0,
+        "next_season": 2008,
+    }
+    assert any(
+        gap.required_field == "aba_liga_history_policy"
+        and gap.reason.value == "not_applicable"
+        and "2008-09" in gap.detail
+        for gap in pipeline.gaps
+    )
 
 
 def test_history_replays_current_season_when_a_late_final_appears_below_cursor(tmp_path):

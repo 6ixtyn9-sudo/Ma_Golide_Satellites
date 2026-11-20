@@ -1578,6 +1578,7 @@ class Pipeline:
             "final_scores_written": 0,
             "quarantined_rows": 0,
             "ledger_dates": [],
+            "excluded_seasons": [],
             "learning_or_calibration_claimed": False,
         }
         if not event_budget or not season_budget:
@@ -1744,6 +1745,32 @@ class Pipeline:
             and remaining_seasons > 0
             and season >= aba_liga.FIRST_SEASON_END_YEAR
         ):
+            exclusion_detail = aba_liga.HISTORY_EXCLUDED_SEASONS.get(season)
+            if exclusion_detail is not None:
+                exclusion = {
+                    "season_end_year": season,
+                    "status": "excluded_by_operator_policy",
+                    "detail": exclusion_detail,
+                }
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=None,
+                        required_field="aba_liga_history_policy",
+                        reason=CoverageState.NOT_APPLICABLE,
+                        provider=aba_liga.PROVIDER,
+                        detail=f"season {season}: {exclusion_detail}",
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                base["excluded_seasons"].append(exclusion)
+                base["seasons"].append(exclusion)
+                season -= 1
+                after_game_no = 0
+                remaining_seasons -= 1
+                self._record_history_cursor(
+                    "aba-liga-history", cursor_coverage(season, after_game_no)
+                )
+                continue
             try:
                 games, attempted, exhausted, calendar_final_count = aba_liga.season_finals(
                     season,
@@ -1872,7 +1899,11 @@ class Pipeline:
         base["cursor"] = self._history_cursor("aba-liga-history")
         base["ledger_dates"] = sorted(ledger_dates)
         if season < aba_liga.FIRST_SEASON_END_YEAR and base["status"] == "acquired":
-            base["status"] = "complete_to_contract_floor"
+            base["status"] = (
+                "complete_to_policy_floor_with_exclusions"
+                if aba_liga.HISTORY_EXCLUDED_SEASONS
+                else "complete_to_contract_floor"
+            )
         return base
 
     def _backfill_fiba_euroleague_w_history(self) -> Dict[str, Any]:

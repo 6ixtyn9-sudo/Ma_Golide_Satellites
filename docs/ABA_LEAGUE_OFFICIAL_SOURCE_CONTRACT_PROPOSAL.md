@@ -80,6 +80,20 @@ minimal contract:
    overwrite the prior durable attestation; the still-active season remains in
    the warehouse/provider-health cursor because its calendar total can change.
 
+### Historical-completeness policy
+
+The historical floor remains 2001-02 (`season_end_year=2002`), with one explicit
+operator exclusion: **2008-09** (`season_end_year=2009`). Its legacy calendar
+layout has no verified canonical parser contract, so the pipeline does not fetch
+or fabricate that season. Instead it emits an
+`aba_liga_history_policy / not_applicable` gap, records
+`excluded_by_operator_policy` in the bounded history report, and advances only
+to the next older season. A terminal run therefore reports
+`complete_to_policy_floor_with_exclusions`, not an unqualified complete-to-floor
+claim. This exclusion does not cover awarded/forfeit rows, scored unpinned rows,
+or any other historical season; those remain hard failures until separately
+approved and evidenced.
+
 `tests/test_aba_liga.py` uses synthetic contract examples to cover normal
 discovery/result parsing, DST interpretation, scope and team/time contradiction
 refusal, regulation and multi-OT reconciliation, malformed calendar refusal,

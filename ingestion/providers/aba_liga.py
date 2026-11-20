@@ -46,6 +46,14 @@ HOST = "https://www.aba-liga.com"
 SITE_TZ = "Europe/Belgrade"
 LEAGUE_ID = 1
 FIRST_SEASON_END_YEAR = 2002
+# 2008-09 is explicitly outside the historical-completeness target. Its
+# legacy calendar layout has no verified canonical parser contract, so the
+# pipeline records a visible policy exclusion rather than fabricating rows or
+# silently stepping around the season. Other problematic historical variants
+# are deliberately NOT covered by this exclusion.
+HISTORY_EXCLUDED_SEASONS = {
+    2009: "operator policy excludes 2008-09 pending a verified legacy calendar contract",
+}
 EVIDENCE = (
     "ROUTE_CONTRACT_REFERENCED (external SportsDataverse documentation describes "
     "2026-10-12 captures; no Ma Golide first-party capture retained; tests are "
