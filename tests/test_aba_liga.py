@@ -181,6 +181,36 @@ def test_calendar_records_an_unlinked_unscored_untimed_row_as_not_applicable():
     )
 
 
+def test_calendar_ignores_score_like_related_text_outside_official_columns():
+    placeholder = """
+<tr>
+<td>Bracket slot pending <span class="related-score">Earlier matchup 84 : 80</span></td>
+<td></td><td></td><td></td>
+</tr>
+"""
+    calendar = CALENDAR.replace("</tbody>", f"{placeholder}</tbody>")
+
+    games = aba.parse_calendar(calendar, 2026)
+
+    assert [game.game_no for game in games] == [6, 7]
+    assert any(
+        gap.game_id is None
+        and gap.required_field == "official_schedule_identity"
+        and gap.reason.value == "not_applicable"
+        for gap in aba.last_gaps()
+    )
+
+
+def test_calendar_rejects_an_unlinked_one_cell_row_with_score_or_time():
+    malformed = """
+<tr><td>FMP <span>:</span> IGO 20 : 0</td></tr>
+"""
+    calendar = CALENDAR.replace("</tbody>", f"{malformed}</tbody>")
+
+    with pytest.raises(IdentityError, match="unlinked scored or timed row"):
+        aba.parse_calendar(calendar, 2026)
+
+
 @pytest.mark.parametrize(
     "result, when",
     (
