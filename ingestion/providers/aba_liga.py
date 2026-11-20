@@ -247,7 +247,11 @@ def _pair(anchor: _Node, label: str) -> tuple[str, str]:
 
 def _parse_when(value: str, label: str) -> str:
     text = re.sub(r"\s+", " ", value or "").strip()
-    match = re.fullmatch(r"(?:[A-Za-z]+, )?(\d{2})\.(\d{2})\.(\d{4}) (\d{2}):(\d{2}) CET", text)
+    match = re.fullmatch(
+        r"(?:[A-Za-z]+, )?(\d{2})\.(\d{2})\.(\d{4}) (\d{2}):(\d{2}) "
+        r"(?:CET|CEST)(?: \([^()]+\))?",
+        text,
+    )
     if match is None:
         raise IdentityError(f"{PROVIDER}: {label} has no readable CET/CEST timestamp: {text!r}")
     try:
@@ -275,6 +279,13 @@ def _is_unpinned_date_range(value: str) -> bool:
             text,
         )
     )
+
+
+def _is_unpinned_date(value: str) -> bool:
+    """Recognize a future calendar row that has a day but no exact tip time."""
+
+    text = re.sub(r"\s+", " ", value or "").strip()
+    return bool(re.fullmatch(r"(?:[A-Za-z]+, )?\d{2}\.\d{2}\.\d{4}", text))
 
 
 def _scope_calendar(root: _Node, season: int) -> None:
@@ -337,29 +348,38 @@ def parse_calendar(html: str, season: int) -> List[CalendarGame]:
             if (sez, lea) != expected:
                 raise IdentityError(f"{PROVIDER}: calendar link {sez}/{lea} is outside requested scope")
             game_numbers.append(game_no)
-            home, away = _pair(anchor, "calendar matchup")
             result = cells[1].text()
             score = re.fullmatch(r"(\d+)\s*:\s*(\d+)", result)
             if score is None and result:
                 raise IdentityError(f"{PROVIDER}: calendar result is malformed: {result!r}")
             when = cells[2].text()
+            unpinned_kind = None
             if _is_unpinned_date_range(when):
+                unpinned_kind = "date range"
+            elif _is_unpinned_date(when):
+                unpinned_kind = "date"
+            if unpinned_kind is not None:
                 if score is not None:
                     raise IdentityError(
-                        f"{PROVIDER}: completed calendar game {game_no} has a date range but no exact tip"
+                        f"{PROVIDER}: completed calendar game {game_no} has an unpinned "
+                        f"{unpinned_kind} but no exact tip"
                     )
                 unpinned_rows += 1
                 # The calendar can publish a future pairing's multi-day window
-                # before selecting one game tip. It is not a canonical fixture:
-                # retain a visible, non-fatal coverage record and do not invent
-                # a tip or attempt its match detail.
+                # or a day-only fixture before selecting one game tip. It is
+                # not a canonical fixture: retain a visible, non-fatal coverage
+                # record and do not invent a tip or attempt match detail. This
+                # check intentionally precedes team parsing because future
+                # bracket placeholders can have no assigned teams either.
                 _gap(
                     _game_ref(season, game_no),
                     "official_schedule_time",
-                    f"calendar game {game_no} has an unpinned date range {when!r}; no canonical game emitted",
+                    f"calendar game {game_no} has an unpinned {unpinned_kind} {when!r}; "
+                    "no canonical game emitted",
                     reason=CoverageState.NOT_APPLICABLE,
                 )
                 continue
+            home, away = _pair(anchor, "calendar matchup")
             games.append(
                 CalendarGame(
                     game_no=game_no,
@@ -412,7 +432,7 @@ def _match_scheduled_utc(root: _Node, game_no: int) -> str:
     venue = info.find(tag="div", class_name="dateAndVenue_container") if info else None
     text = venue.text() if venue else ""
     match = re.search(
-        r"(?:[A-Za-z]+, )?(\d{2}\.\d{2}\.\d{4} \d{2}:\d{2} CET)", text
+        r"(?:[A-Za-z]+, )?(\d{2}\.\d{2}\.\d{4} \d{2}:\d{2} (?:CET|CEST))", text
     )
     if match is None:
         raise IdentityError(f"{PROVIDER}: match {game_no} has no readable scheduled timestamp")
