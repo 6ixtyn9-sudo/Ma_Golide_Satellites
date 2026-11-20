@@ -117,6 +117,63 @@ def test_official_calendar_contract_uses_belgrade_dst_not_fixed_cet():
     assert aba.match_url(6, 2026).endswith("/match/6/25/1/Overview")
 
 
+def test_calendar_uses_a_scoped_match_route_outside_legacy_hidden_xs_wrapper():
+    calendar = CALENDAR.replace(
+        '<p class="hidden-xs"><a href=',
+        '<div class="calendar-event"><a href=',
+    ).replace("</a></p>", "</a></div>")
+
+    games = aba.parse_calendar(calendar, 2026)
+
+    assert [game.game_no for game in games] == [6, 7]
+
+
+def test_calendar_rejects_ambiguous_scoped_match_links_in_one_event_cell():
+    calendar = CALENDAR.replace(
+        "Spartak Office Shoes</a>",
+        'Spartak Office Shoes</a><a href="/match/8/25/1/Overview">Other fixture</a>',
+        1,
+    )
+
+    with pytest.raises(IdentityError, match="ambiguous scoped match links"):
+        aba.parse_calendar(calendar, 2026)
+
+
+def test_calendar_records_an_unlinked_unscored_untimed_row_as_not_applicable():
+    placeholder = """
+<tr><td>Bracket slot pending</td><td></td><td>Saturday, 05.02.2033</td><td></td></tr>
+"""
+    calendar = CALENDAR.replace("</tbody>", f"{placeholder}</tbody>")
+
+    games = aba.parse_calendar(calendar, 2026)
+
+    assert [game.game_no for game in games] == [6, 7]
+    assert any(
+        gap.game_id is None
+        and gap.required_field == "official_schedule_identity"
+        and gap.reason.value == "not_applicable"
+        and "unlinked, unscored, untimed row" in gap.detail
+        for gap in aba.last_gaps()
+    )
+
+
+@pytest.mark.parametrize(
+    "result, when",
+    (
+        ("20 : 0", ""),
+        ("", "Saturday, 05.02.2033 20:00 CET"),
+    ),
+)
+def test_calendar_rejects_an_unlinked_scored_or_timed_row(result, when):
+    malformed = f"""
+<tr><td>Unlinked fixture</td><td>{result}</td><td>{when}</td><td></td></tr>
+"""
+    calendar = CALENDAR.replace("</tbody>", f"{malformed}</tbody>")
+
+    with pytest.raises(IdentityError, match="unlinked scored or timed row"):
+        aba.parse_calendar(calendar, 2026)
+
+
 def test_discovery_requires_detail_team_ids_and_marks_calendar_finality():
     games = aba.discover_games("20251005", text_fetch=_fetch)
 
