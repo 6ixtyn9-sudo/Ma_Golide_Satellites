@@ -12,7 +12,10 @@ source response in this repository:
   the season start year minus 2000 (25 means 2025-26); game numbers restart
   every season.
 * ``/match/{game_no}/{sez}/1/Overview`` carries stable team IDs, final score,
-  Q1--Q4 and any OT periods for completed games.
+  Q1--Q4 and any OT periods for completed games. A current calendar can expose
+  the same numeric event identity through ``/match-live/{game_no}/{sez}/1/``;
+  the adapter accepts either calendar-route form and retains the stable detail
+  path for subsequent identity verification.
 * The external reference reports that the site labels wall-clock times ``CET``
   even during daylight saving. The parser treats those values as
   ``Europe/Belgrade`` wall-clock time, never as a fixed UTC offset; this remains
@@ -376,9 +379,11 @@ def _is_default_forfeit_score(score: Optional[tuple[int, int]]) -> bool:
 def _calendar_match_ref(cell: _Node) -> Optional[tuple[_Node, int, int, int]]:
     """Return the sole official match route exposed by a calendar event cell.
 
-    The historic calendar contract put this link in ``p.hidden-xs``.  The
-    route itself is the identity authority, not that presentation wrapper, so
-    accept its relocation within the same event cell.  Multiple route-shaped
+    The historic calendar contract put this link in ``p.hidden-xs``.  Current
+    fixtures may use a ``match-live`` route with the same numeric identity.
+    The route itself is the identity authority, not that presentation wrapper,
+    so accept either route form when relocated within the same event cell.
+    Multiple route-shaped
     anchors to distinct routes remain ambiguous and fail closed.  Responsive
     markup may repeat a link to the *same* route; those are presentation
     duplicates, not competing event identities.
@@ -387,7 +392,7 @@ def _calendar_match_ref(cell: _Node) -> Optional[tuple[_Node, int, int, int]]:
     matches: List[tuple[_Node, int, int, int]] = []
     for anchor in cell.find_all(tag="a"):
         href = anchor.attrs.get("href", "")
-        match = re.search(r"/match/(\d+)/(\d+)/(\d+)/Overview", href)
+        match = re.search(r"/match(?:-live)?/(\d+)/(\d+)/(\d+)/Overview", href)
         if match is not None:
             game_no, season_key_value, league_id = (int(value) for value in match.groups())
             matches.append((anchor, game_no, season_key_value, league_id))
