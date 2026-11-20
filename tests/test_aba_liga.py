@@ -166,6 +166,55 @@ def test_calendar_skips_date_only_nameless_placeholder_before_team_parsing():
     assert gaps[0].reason.value == "not_applicable"
 
 
+def test_calendar_skips_unscored_undated_placeholder_before_team_parsing():
+    placeholder = """
+<tr><td><p class="hidden-xs"><a href="/match/8/25/1/Overview">SCD <span>:</span> KRK</a></p></td></tr>
+"""
+    calendar = CALENDAR.replace("</tbody>", f"{placeholder}</tbody>")
+
+    games = aba.parse_calendar(calendar, 2026)
+
+    assert [game.game_no for game in games] == [6, 7]
+    assert any(
+        gap.game_id == "aba_liga:25:1:8"
+        and gap.required_field == "official_schedule_time"
+        and gap.reason.value == "not_applicable"
+        and "unscored undated placeholder" in gap.detail
+        for gap in aba.last_gaps()
+    )
+
+
+@pytest.mark.parametrize(
+    "cell_text",
+    (
+        "SCD : KRK 20 : 0",
+        "SCD : KRK 05.02.2033",
+        "SCD : KRK 20:00 CET",
+    ),
+)
+def test_calendar_rejects_scored_or_timed_undated_single_cell_row(cell_text):
+    placeholder = f"""
+<tr><td><p class="hidden-xs"><a href="/match/8/25/1/Overview">{cell_text}</a></p></td></tr>
+"""
+    calendar = CALENDAR.replace("</tbody>", f"{placeholder}</tbody>")
+
+    with pytest.raises(IdentityError, match="incomplete scored or timed row"):
+        aba.parse_calendar(calendar, 2026)
+
+
+def test_calendar_rejects_scored_three_cell_row_without_a_timestamp():
+    malformed = """
+<tr>
+<td><p class="hidden-xs"><a href="/match/8/25/1/Overview">FMP <span>:</span> OLI</a></p></td>
+<td>64 : 63</td><td></td>
+</tr>
+"""
+    calendar = CALENDAR.replace("</tbody>", f"{malformed}</tbody>")
+
+    with pytest.raises(IdentityError, match="calendar row width 3 != 4"):
+        aba.parse_calendar(calendar, 2026)
+
+
 def test_calendar_with_only_unpinned_future_rows_is_a_visible_empty_slate():
     calendar = (
         CALENDAR.replace("93 : 97", "")
@@ -403,6 +452,53 @@ def test_history_withholds_receipt_and_rewinds_when_a_final_was_not_persisted():
         and "receipt withheld" in gap.detail
         for gap in pipeline.gaps
     )
+
+
+def test_history_withholds_receipt_for_an_all_placeholder_calendar(tmp_path):
+    calendar = (
+        CALENDAR.replace("93 : 97", "")
+        .replace("Sunday, 05.10.2025 19:30 CET", UNPINNED_DATE_RANGE)
+        .replace("Friday, 10.10.2025 20:00 CET", UNPINNED_DATE)
+    )
+
+    def fetch(url: str) -> str:
+        if "/calendar/" in url:
+            return calendar
+        raise AssertionError(url)
+
+    store = DuckDBStore(str(tmp_path / "aba-empty" / "warehouse.duckdb"), persist=True)
+    try:
+        pipeline = Pipeline(
+            PipelineConfig(
+                league="ABA_LEAGUE",
+                date_yyyymmdd="20251006",
+                history_days=0,
+                history_request_budget=1,
+                deep_history_event_budget=5,
+                fixture_now_utc="2025-10-06T12:00:00Z",
+            ),
+            store,
+            fetch=fetch,
+            allow_writes=True,
+        )
+
+        deep = pipeline.backfill()["backfill"]["deep_history"]
+
+        assert deep["status"] == "provider_error_cursor_retained"
+        assert deep["season_receipts"] == []
+        assert deep["cursor"] == {
+            "floor_season": 2002,
+            "last_game_no": 0,
+            "next_season": 2026,
+        }
+        assert any(
+            gap.required_field == "aba_liga_season_receipt"
+            and gap.reason.value == "missing"
+            and "no final rows" in gap.detail
+            for gap in pipeline.gaps
+        )
+    finally:
+        store.close()
 
 
 def test_history_replays_current_season_when_a_late_final_appears_below_cursor(tmp_path):

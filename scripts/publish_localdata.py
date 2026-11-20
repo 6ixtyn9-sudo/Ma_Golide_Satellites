@@ -36,6 +36,22 @@ from ingestion.league_registry import SPECS  # noqa: E402
 # second hand-maintained allow-list forgot its state key.
 STATE_KEYS = frozenset(spec.state_key for spec in SPECS)
 DATE = r"\d{4}-\d{2}-\d{2}"
+ABA_HISTORY_RECEIPTS_FILE = "history_receipts.json"
+ABA_HISTORY_RECEIPTS_SCHEMA = "magolide.aba_history_receipts"
+_ABA_HISTORY_RECEIPT_FIELDS = frozenset(
+    {
+        "season_end_year",
+        "calendar_final_count",
+        "reconciled_final_count",
+        "not_applicable_rows",
+        "blocking_gap_count",
+        "status",
+        "source",
+        "evidence",
+        "completed_at_utc",
+    }
+)
+_ABA_HISTORY_RECEIPT_IDENTITY_FIELDS = _ABA_HISTORY_RECEIPT_FIELDS - {"completed_at_utc"}
 LIFECYCLE_RECOVERY_ARTIFACT_PREFIX = "MaGolide-lifecycle-"
 LIFECYCLE_RECOVERY_NAMES = tuple(
     re.compile(pattern)
@@ -64,6 +80,9 @@ ALLOWED_NAMES = tuple(
         rf"auto_tickets_{DATE}\.txt",
         rf"auto_tickets_{DATE}_decision\.json",
         rf"auto_tickets_{DATE}_withdrawn\.json",
+        # Compact ABA season-count attestations are the only non-ticket
+        # evidence summary admitted to Git. Raw source pages remain excluded.
+        r"history_receipts\.json",
         # This card is mutable only for official-result grades. The companion
         # roster below is the immutable, no-stake selection snapshot.
         rf"euroleague_consensus_paper_{DATE}\.txt",
@@ -108,6 +127,88 @@ def _atomic_write(path: Path, raw: bytes) -> None:
     temporary = path.with_name(path.name + ".publish-tmp")
     temporary.write_bytes(raw)
     os.replace(temporary, path)
+
+
+def _validated_aba_history_receipt(receipt: object, *, description: str) -> dict[str, Any]:
+    if not isinstance(receipt, dict) or set(receipt) != _ABA_HISTORY_RECEIPT_FIELDS:
+        raise ValueError(f"invalid ABA history receipt: {description}")
+    season = receipt["season_end_year"]
+    counts = (
+        receipt["calendar_final_count"],
+        receipt["reconciled_final_count"],
+        receipt["not_applicable_rows"],
+        receipt["blocking_gap_count"],
+    )
+    if (
+        isinstance(season, bool)
+        or not isinstance(season, int)
+        or any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in counts)
+        or receipt["calendar_final_count"] != receipt["reconciled_final_count"]
+        or receipt["blocking_gap_count"] != 0
+        or receipt["status"] != "calendar_final_count_reconciled"
+        or receipt["source"] != "aba_liga"
+        or not isinstance(receipt["evidence"], str)
+        or not receipt["evidence"]
+        or not isinstance(receipt["completed_at_utc"], str)
+        or not receipt["completed_at_utc"]
+    ):
+        raise ValueError(f"invalid ABA history receipt: {description}")
+    return dict(receipt)
+
+
+def _load_aba_history_receipts(raw: bytes, *, description: str) -> dict[str, dict[str, Any]]:
+    try:
+        data = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid ABA history receipt summary: {description}") from exc
+    if (
+        not isinstance(data, dict)
+        or data.get("schema_version") != ABA_HISTORY_RECEIPTS_SCHEMA
+        or data.get("league") != "ABA_LEAGUE"
+        or data.get("provider") != "aba_liga"
+        or not isinstance(data.get("receipts"), dict)
+    ):
+        raise ValueError(f"invalid ABA history receipt summary: {description}")
+    receipts: dict[str, dict[str, Any]] = {}
+    for season, receipt in data["receipts"].items():
+        if not isinstance(season, str) or not season.isdigit():
+            raise ValueError(f"invalid ABA history receipt season: {description}")
+        validated = _validated_aba_history_receipt(receipt, description=f"{description}:{season}")
+        if validated["season_end_year"] != int(season):
+            raise ValueError(f"ABA history receipt season mismatch: {description}:{season}")
+        receipts[season] = validated
+    return receipts
+
+
+def _merge_aba_history_receipts(destination: Path, incoming_raw: bytes, *, relative: str) -> bytes:
+    """Union immutable historical ABA count attestations without raw evidence.
+
+    A repeated receipt with the same count semantics is idempotent. A changed
+    historical count must be reviewed rather than letting a stale artifact
+    overwrite Git-durable evidence silently.
+    """
+
+    incoming = _load_aba_history_receipts(incoming_raw, description=relative)
+    existing = (
+        _load_aba_history_receipts(destination.read_bytes(), description=str(destination))
+        if destination.exists()
+        else {}
+    )
+    merged = dict(existing)
+    for season, receipt in incoming.items():
+        previous = merged.get(season)
+        if previous is None:
+            merged[season] = receipt
+            continue
+        if any(previous[field] != receipt[field] for field in _ABA_HISTORY_RECEIPT_IDENTITY_FIELDS):
+            raise ValueError(f"ABA history receipt conflicts with durable evidence: {relative}:{season}")
+    payload = {
+        "schema_version": ABA_HISTORY_RECEIPTS_SCHEMA,
+        "league": "ABA_LEAGUE",
+        "provider": "aba_liga",
+        "receipts": {key: merged[key] for key in sorted(merged, key=int)},
+    }
+    return (json.dumps(payload, indent=2, sort_keys=True) + "\n").encode()
 
 
 def _git_durable_bytes(source: Path) -> bytes:
@@ -368,7 +469,9 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
             if lifecycle_recovery and not allowed_lifecycle_recovery_file(source.name):
                 recovery_files_skipped.append((source_dir / source.name).as_posix())
                 continue
-            if not allowed_operator_file(source.name):
+            if not allowed_operator_file(source.name) or (
+                source.name == ABA_HISTORY_RECEIPTS_FILE and state != "aba_league"
+            ):
                 continue
             # Every dated auto-ticket text card is a mutable public view: it
             # shows the single dated card (including its pre-cutoff draft
@@ -403,6 +506,8 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
             raw = _git_durable_bytes(source)
             if source.name == "pick_lifecycle_state.json":
                 raw = _merge_pick_lifecycle_state(destination, raw, relative=relative)
+            elif source.name == ABA_HISTORY_RECEIPTS_FILE:
+                raw = _merge_aba_history_receipts(destination, raw, relative=relative)
             if DECISION_RECEIPT_NAME.fullmatch(source.name) and withdrawn_decision_ids:
                 try:
                     candidate = json.loads(raw)

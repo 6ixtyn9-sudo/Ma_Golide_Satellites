@@ -38,11 +38,11 @@ minimal contract:
    `{sez}/1/`. Every match link must repeat the same `sez` and `league_id`.
 2. **Fixture identity:** the calendar provides the event number, home/away
    display names, final-present indicator, and local wall-clock date/time.
-   Calendar names are not used as immutable team IDs. A future date range or
-   date-only row without a single tip is a non-canonical placeholder: it is
-   skipped with explicit coverage telemetry, never assigned an invented
-   timestamp. This check occurs before team-name parsing because future bracket
-   placeholders can also have no assigned teams.
+   Calendar names are not used as immutable team IDs. A future date range,
+   date-only row, or one-cell unscored/undated pairing without a single tip is
+   a non-canonical placeholder: it is skipped with explicit coverage telemetry,
+   never assigned an invented timestamp. This check occurs before team-name
+   parsing because future bracket placeholders can also have no assigned teams.
 3. **Clock semantics:** the external reference reports a `CET` year-round site
    display. The parser interprets `CET` or `CEST` wall-clock values in
    `Europe/Belgrade`, including DST, before converting them to UTC; an optional
@@ -72,7 +72,13 @@ minimal contract:
    evidence label, and completion time. Unpinned rows are telemetry only and
    are deliberately excluded from the final-count denominator. A receipt is
    withheld and the cursor rewinds to game zero if the durable reconciled count
-   does not equal the calendar final count.
+   does not equal the calendar final count. For seasons older than the active
+   season, the daily publisher additionally merges those count-only receipts
+   into `localdata/aba_league/history_receipts.json`. The Git-durable summary
+   contains no raw page body, game rows, prices, or ticket evidence. A changed
+   historical count conflicts visibly instead of allowing a stale artifact to
+   overwrite the prior durable attestation; the still-active season remains in
+   the warehouse/provider-health cursor because its calendar total can change.
 
 `tests/test_aba_liga.py` uses synthetic contract examples to cover normal
 discovery/result parsing, DST interpretation, scope and team/time contradiction
@@ -110,9 +116,11 @@ capture dossier. At minimum it should contain:
    timestamp, final, and periods agree across the documented pages;
 5. a documented historical floor, page/rate limits, and acceptable retention
    plan for raw source bodies versus compact durable coverage receipts. The
-   current count-only season receipts survive with provider health in the
-   canonical warehouse/cache but are not a substitute for an approved
-   Git-independent long-term retention policy; and
+   current season receipt survives with provider health in the canonical
+   warehouse/cache until its count is stable; completed historical seasons are
+   also retained as count-only Git summaries, but that does not grant a basis
+   to retain raw page bodies or replace an approved long-term source-retention
+   policy; and
 6. confirmation that the provider is ABA League (`league_id=1`), rather than
    ABA 2 or another competition.
 

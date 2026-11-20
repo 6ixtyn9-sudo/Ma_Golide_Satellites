@@ -36,6 +36,7 @@ from ingestion.ledger import write_canonical_ledger  # noqa: E402
 from ingestion.league_registry import cli_league_choices, league_spec, parse_league  # noqa: E402
 from ingestion.mining import mine_prediction_assay, write_assay  # noqa: E402
 from ingestion.pipeline import ACQUISITION_TZ, Pipeline, PipelineConfig  # noqa: E402
+from ingestion.providers import aba_liga  # noqa: E402
 from ingestion.warehouse import DEFAULT_WAREHOUSE  # noqa: E402
 from ingestion.write_guards import assert_fixture_write_isolation  # noqa: E402
 
@@ -65,6 +66,126 @@ def _write_run_report(localdata: Path, run_id: str, report: dict) -> str:
     temporary = target.with_suffix(".json.tmp")
     temporary.write_text(json.dumps(report, indent=2, sort_keys=True, default=str) + "\n")
     os.replace(temporary, target)
+    return str(target)
+
+
+ABA_HISTORY_RECEIPTS_FILE = "history_receipts.json"
+ABA_HISTORY_RECEIPTS_SCHEMA = "magolide.aba_history_receipts"
+_ABA_RECEIPT_FIELDS = frozenset(
+    {
+        "season_end_year",
+        "calendar_final_count",
+        "reconciled_final_count",
+        "not_applicable_rows",
+        "blocking_gap_count",
+        "status",
+        "source",
+        "evidence",
+        "completed_at_utc",
+    }
+)
+_ABA_RECEIPT_IDENTITY_FIELDS = _ABA_RECEIPT_FIELDS - {"completed_at_utc"}
+
+
+def _validated_aba_history_receipt(receipt: object, *, description: str) -> dict[str, Any]:
+    if not isinstance(receipt, dict) or set(receipt) != _ABA_RECEIPT_FIELDS:
+        raise ValueError(f"invalid ABA history receipt: {description}")
+    season = receipt["season_end_year"]
+    counts = (
+        receipt["calendar_final_count"],
+        receipt["reconciled_final_count"],
+        receipt["not_applicable_rows"],
+        receipt["blocking_gap_count"],
+    )
+    if (
+        isinstance(season, bool)
+        or not isinstance(season, int)
+        or any(isinstance(value, bool) or not isinstance(value, int) or value < 0 for value in counts)
+        or receipt["calendar_final_count"] != receipt["reconciled_final_count"]
+        or receipt["blocking_gap_count"] != 0
+        or receipt["status"] != "calendar_final_count_reconciled"
+        or receipt["source"] != aba_liga.PROVIDER
+        or not isinstance(receipt["evidence"], str)
+        or not receipt["evidence"]
+        or not isinstance(receipt["completed_at_utc"], str)
+        or not receipt["completed_at_utc"]
+    ):
+        raise ValueError(f"invalid ABA history receipt: {description}")
+    return dict(receipt)
+
+
+def _load_aba_history_receipts(path: Path) -> dict[str, dict[str, Any]]:
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"invalid ABA history receipt summary: {path}") from exc
+    if (
+        not isinstance(data, dict)
+        or data.get("schema_version") != ABA_HISTORY_RECEIPTS_SCHEMA
+        or data.get("league") != "ABA_LEAGUE"
+        or data.get("provider") != aba_liga.PROVIDER
+        or not isinstance(data.get("receipts"), dict)
+    ):
+        raise ValueError(f"invalid ABA history receipt summary: {path}")
+    receipts: dict[str, dict[str, Any]] = {}
+    for season, receipt in data["receipts"].items():
+        if not isinstance(season, str) or not season.isdigit():
+            raise ValueError(f"invalid ABA history receipt season: {path}")
+        validated = _validated_aba_history_receipt(receipt, description=f"{path}:{season}")
+        if validated["season_end_year"] != int(season):
+            raise ValueError(f"ABA history receipt season mismatch: {path}:{season}")
+        receipts[season] = validated
+    return receipts
+
+
+def _write_aba_history_receipts(
+    localdata: Path,
+    receipts: object,
+    *,
+    current_season_end_year: int,
+) -> str | None:
+    """Persist only immutable completed ABA season-count attestations.
+
+    The current season's count can legitimately change as new finals post, so
+    it remains in the warehouse/provider-health cursor. Completed historical
+    seasons are merged into one Git-durable, count-only summary; raw source
+    pages, game rows, prices, and ticket evidence never enter this file.
+    """
+
+    target = localdata / ABA_HISTORY_RECEIPTS_FILE
+    existing = _load_aba_history_receipts(target) if target.exists() else {}
+    if not isinstance(receipts, list):
+        raise ValueError("ABA history receipt batch must be a list")
+    merged = dict(existing)
+    changed = False
+    for index, raw_receipt in enumerate(receipts):
+        receipt = _validated_aba_history_receipt(raw_receipt, description=f"batch[{index}]")
+        season = receipt["season_end_year"]
+        if season >= current_season_end_year:
+            continue
+        key = str(season)
+        previous = merged.get(key)
+        if previous is not None:
+            if any(previous[field] != receipt[field] for field in _ABA_RECEIPT_IDENTITY_FIELDS):
+                raise ValueError(
+                    f"ABA history receipt conflicts with durable evidence for season {season}"
+                )
+            continue
+        merged[key] = receipt
+        changed = True
+    if not merged:
+        return None
+    if changed or not target.exists():
+        payload = {
+            "schema_version": ABA_HISTORY_RECEIPTS_SCHEMA,
+            "league": "ABA_LEAGUE",
+            "provider": aba_liga.PROVIDER,
+            "receipts": {key: merged[key] for key in sorted(merged, key=int)},
+        }
+        raw = json.dumps(payload, indent=2, sort_keys=True) + "\n"
+        temporary = target.with_name(target.name + ".tmp")
+        temporary.write_text(raw, encoding="utf-8")
+        os.replace(temporary, target)
     return str(target)
 
 
@@ -197,6 +318,17 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
         )
 
         backfill_report = pipeline.backfill()
+        deep_history = backfill_report["backfill"].get("deep_history") or {}
+        history_receipts_path = None
+        if config.league_enum.value == "ABA_LEAGUE":
+            current_aba_season = aba_liga.season_end_year(
+                datetime.strptime(config.date_yyyymmdd, "%Y%m%d").date()
+            )
+            history_receipts_path = _write_aba_history_receipts(
+                localdata,
+                deep_history.get("season_receipts") or [],
+                current_season_end_year=current_aba_season,
+            )
         backfill_ledgers: Dict[str, Any] = {}
         if backfill_report["backfill"]["status"] not in {"disabled", "unsupported_league"}:
             store.record_run(run_id, "backfill", args.date, backfill_report)
@@ -307,6 +439,7 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             "finished_utc": _utc_now(),
             "backfill": backfill_report,
             "backfill_ledgers": backfill_ledgers,
+            "history_receipts_path": history_receipts_path,
             "commands": reports,
             "markets": market_report,
             "market_report_path": market_report_path,

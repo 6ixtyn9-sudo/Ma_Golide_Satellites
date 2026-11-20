@@ -1802,6 +1802,27 @@ class Pipeline:
                 )
                 break
             if exhausted:
+                if calendar_final_count == 0:
+                    # An all-placeholder index has no canonical result
+                    # evidence. It is not a historical-completeness receipt,
+                    # even though an empty store would trivially satisfy a
+                    # zero-to-zero count comparison.
+                    self.gaps.append(
+                        CoverageGap(
+                            game_id=None,
+                            required_field="aba_liga_season_receipt",
+                            reason=CoverageState.MISSING,
+                            provider=aba_liga.PROVIDER,
+                            detail=(
+                                f"season {season}: calendar has no final rows; "
+                                "receipt withheld and replay retained at game 0"
+                            ),
+                            observed_utc=self._now_iso(),
+                        )
+                    )
+                    self._record_history_cursor("aba-liga-history", cursor_coverage(season, 0))
+                    base["status"] = "provider_error_cursor_retained"
+                    break
                 reconciled_final_count = stored_reconciled_final_count(season)
                 if reconciled_final_count != calendar_final_count:
                     # A complete index traversal with fewer durable finals is
