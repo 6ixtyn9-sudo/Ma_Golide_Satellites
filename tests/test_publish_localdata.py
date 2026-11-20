@@ -99,10 +99,11 @@ def test_publisher_unions_aba_history_receipts_and_rejects_count_conflicts(tmp_p
     receipt = {
         "season_end_year": 2026,
         "calendar_final_count": 185,
-        "reconciled_final_count": 185,
+        "reconciled_final_count": 183,
+        "administrative_disposition_count": 2,
         "not_applicable_rows": 0,
         "blocking_gap_count": 0,
-        "status": "calendar_final_count_reconciled",
+        "status": "calendar_terminal_count_reconciled",
         "source": "aba_liga",
         "evidence": "ROUTE_CONTRACT_REFERENCED",
         "completed_at_utc": "2026-11-20T13:40:00Z",
@@ -148,7 +149,7 @@ def test_publisher_unions_aba_history_receipts_and_rejects_count_conflicts(tmp_p
         "aba-artifact",
         "aba_league",
         "history_receipts.json",
-        payload({**receipt, "calendar_final_count": 186, "reconciled_final_count": 186}),
+        payload({**receipt, "calendar_final_count": 186, "reconciled_final_count": 184}),
     )
     with pytest.raises(ValueError, match="ABA history receipt conflicts"):
         merge_downloaded_localdata(tmp_path / "artifacts", repo)

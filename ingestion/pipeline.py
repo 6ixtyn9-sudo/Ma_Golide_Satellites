@@ -1576,6 +1576,7 @@ class Pipeline:
             "seasons": [],
             "events_acquired": 0,
             "final_scores_written": 0,
+            "administrative_disposition_count": 0,
             "quarantined_rows": 0,
             "ledger_dates": [],
             "excluded_seasons": [],
@@ -1621,6 +1622,28 @@ class Pipeline:
         current = aba_liga.season_end_year(target_day)
         season = min(int(cursor.get("next_season") or current), current)
         after_game_no = int(cursor.get("last_game_no") or 0)
+        raw_administrative_count = cursor.get("administrative_disposition_count", 0)
+        if (
+            isinstance(raw_administrative_count, bool)
+            or not isinstance(raw_administrative_count, int)
+            or raw_administrative_count < 0
+        ):
+            self.gaps.append(
+                CoverageGap(
+                    game_id=None,
+                    required_field="aba_liga_administrative_disposition",
+                    reason=CoverageState.PROVIDER_ERROR,
+                    provider=aba_liga.PROVIDER,
+                    detail="stored administrative-disposition count is invalid; cursor retained",
+                    observed_utc=self._now_iso(),
+                )
+            )
+            return {
+                **base,
+                "status": "provider_error_cursor_retained",
+                "cursor": cursor,
+            }
+        administrative_disposition_count = raw_administrative_count
         last_completed_season = cursor.get("last_completed_season")
         last_completed_final_count = cursor.get("last_completed_final_count")
         remaining_events = event_budget
@@ -1634,6 +1657,8 @@ class Pipeline:
                 "last_game_no": last_game_no,
                 "floor_season": aba_liga.FIRST_SEASON_END_YEAR,
             }
+            if administrative_disposition_count:
+                coverage["administrative_disposition_count"] = administrative_disposition_count
             if last_completed_season is not None:
                 coverage["last_completed_season"] = int(last_completed_season)
                 coverage["last_completed_final_count"] = int(last_completed_final_count or 0)
@@ -1655,14 +1680,15 @@ class Pipeline:
             covered_season: int,
             calendar_final_count: int,
             reconciled_final_count: int,
+            administrative_count: int,
             adapter_gaps: List[CoverageGap],
         ) -> None:
             """Record a count-only receipt after a clean complete calendar scan.
 
-            Calendar final rows and unpinned schedule placeholders are separate
-            populations: only the former enter the final-count reconciliation.
-            The latter remain visible telemetry and must never be added to a
-            canonical-final denominator.
+            A calendar terminal row is either a period-reconciled played final
+            or a separately verified official administrative disposition.
+            Unpinned schedule placeholders are separate visible telemetry and
+            never enter either denominator.
             """
 
             key = str(covered_season)
@@ -1670,11 +1696,12 @@ class Pipeline:
                 "season_end_year": covered_season,
                 "calendar_final_count": calendar_final_count,
                 "reconciled_final_count": reconciled_final_count,
+                "administrative_disposition_count": administrative_count,
                 "not_applicable_rows": sum(
                     gap.reason is CoverageState.NOT_APPLICABLE for gap in adapter_gaps
                 ),
                 "blocking_gap_count": 0,
-                "status": "calendar_final_count_reconciled",
+                "status": "calendar_terminal_count_reconciled",
                 "source": aba_liga.PROVIDER,
                 "evidence": aba_liga.EVIDENCE,
             }
@@ -1715,7 +1742,32 @@ class Pipeline:
                     "cursor": cursor,
                 }
             stored_count = stored_reconciled_final_count(current)
-            if indexed_count != stored_count:
+            current_receipt = season_receipts.get(str(current), {})
+            stored_administrative_count = current_receipt.get(
+                "administrative_disposition_count", 0
+            )
+            if (
+                isinstance(stored_administrative_count, bool)
+                or not isinstance(stored_administrative_count, int)
+                or stored_administrative_count < 0
+            ):
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=None,
+                        required_field="aba_liga_season_completeness",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider=aba_liga.PROVIDER,
+                        detail=f"season {current}: stored administrative-disposition count is invalid",
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                return {
+                    **base,
+                    "status": "provider_error_cursor_retained",
+                    "cursor": cursor,
+                }
+            stored_terminal_count = stored_count + stored_administrative_count
+            if indexed_count != stored_terminal_count:
                 self.gaps.append(
                     CoverageGap(
                         game_id=None,
@@ -1723,8 +1775,10 @@ class Pipeline:
                         reason=CoverageState.MISSING,
                         provider=aba_liga.PROVIDER,
                         detail=(
-                            f"season {current}: calendar has {indexed_count} final row(s), "
-                            f"store has {stored_count} reconciled final(s); replaying from game 0"
+                            f"season {current}: calendar has {indexed_count} terminal row(s), "
+                            f"store has {stored_count} reconciled final(s) and "
+                            f"{stored_administrative_count} administrative disposition(s); "
+                            "replaying from game 0"
                         ),
                         observed_utc=self._now_iso(),
                     )
@@ -1734,7 +1788,12 @@ class Pipeline:
                     "calendar_final_count": indexed_count,
                     "stored_reconciled_final_count": stored_count,
                 }
+                if stored_administrative_count:
+                    base["completeness_repair"]["stored_administrative_disposition_count"] = (
+                        stored_administrative_count
+                    )
                 season, after_game_no = current, 0
+                administrative_disposition_count = 0
                 # Do not repeatedly reset a bounded repair to zero. Subsequent
                 # successful batches retain the normal current-season cursor
                 # until it reaches a fresh complete receipt below.
@@ -1766,6 +1825,7 @@ class Pipeline:
                 base["seasons"].append(exclusion)
                 season -= 1
                 after_game_no = 0
+                administrative_disposition_count = 0
                 remaining_seasons -= 1
                 self._record_history_cursor(
                     "aba-liga-history", cursor_coverage(season, after_game_no)
@@ -1792,6 +1852,9 @@ class Pipeline:
                 base["status"] = "provider_error_cursor_retained"
                 break
             adapter_gaps = aba_liga.last_gaps()
+            administrative_dispositions = aba_liga.last_administrative_dispositions()
+            administrative_disposition_count += len(administrative_dispositions)
+            base["administrative_disposition_count"] += len(administrative_dispositions)
             self.gaps.extend(adapter_gaps)
             blocking_gaps = [
                 gap for gap in adapter_gaps if gap.reason is not CoverageState.NOT_APPLICABLE
@@ -1808,24 +1871,26 @@ class Pipeline:
                     "attempted_game_numbers": attempted,
                     "calendar_final_count": calendar_final_count,
                     "finals_written": len(games),
+                    "administrative_disposition_count": len(administrative_dispositions),
                     "exhausted": exhausted,
                     "quarantined_rows": len(adapter_gaps),
                 }
             )
             base["quarantined_rows"] += len(adapter_gaps)
             if blocking_gaps:
-                # The adapter stops on the first bad detail. Retain the prior
-                # successful game in the cursor so that malformed game remains
-                # the next retry, never a silently skipped hole. Benign
-                # unpinned future date ranges are visible gaps but do not
-                # prevent completed-result history from advancing.
-                if games:
-                    after_game_no = int(games[-1].evidence[aba_liga.PROVIDER]["game_no"])
+                # The adapter stops on the first bad detail. Retain the last
+                # fully resolved terminal row (played or administrative) so a
+                # malformed row remains the next retry, never a silent hole.
+                resolved_game_no = aba_liga.last_history_progress_game_no()
+                if resolved_game_no > after_game_no:
+                    after_game_no = resolved_game_no
                     self._record_history_cursor(
                         "aba-liga-history", cursor_coverage(season, after_game_no)
                     )
                 base["status"] = (
-                    "partial_provider_error" if games else "provider_error_cursor_retained"
+                    "partial_provider_error"
+                    if games or administrative_dispositions
+                    else "provider_error_cursor_retained"
                 )
                 break
             if exhausted:
@@ -1851,11 +1916,11 @@ class Pipeline:
                     base["status"] = "provider_error_cursor_retained"
                     break
                 reconciled_final_count = stored_reconciled_final_count(season)
-                if reconciled_final_count != calendar_final_count:
-                    # A complete index traversal with fewer durable finals is
-                    # not a completed season. Rewind this season rather than
-                    # moving the cursor to an older one and hiding a local
-                    # persistence hole behind a successful fetch.
+                terminal_count = reconciled_final_count + administrative_disposition_count
+                if terminal_count != calendar_final_count:
+                    # A complete index traversal with an unclassified terminal
+                    # row is not a completed season. Rewind it rather than
+                    # hiding a persistence hole or a missing adjudication.
                     self.gaps.append(
                         CoverageGap(
                             game_id=None,
@@ -1863,8 +1928,9 @@ class Pipeline:
                             reason=CoverageState.MISSING,
                             provider=aba_liga.PROVIDER,
                             detail=(
-                                f"season {season}: calendar has {calendar_final_count} final row(s), "
-                                f"store has {reconciled_final_count} reconciled final(s); "
+                                f"season {season}: calendar has {calendar_final_count} terminal row(s), "
+                                f"store has {reconciled_final_count} reconciled final(s) and "
+                                f"{administrative_disposition_count} administrative disposition(s); "
                                 "receipt withheld and replay retained at game 0"
                             ),
                             observed_utc=self._now_iso(),
@@ -1877,6 +1943,7 @@ class Pipeline:
                     season,
                     calendar_final_count,
                     reconciled_final_count,
+                    administrative_disposition_count,
                     adapter_gaps,
                 )
                 if season == current:
@@ -1884,14 +1951,18 @@ class Pipeline:
                     last_completed_final_count = calendar_final_count
                 season -= 1
                 after_game_no = 0
+                administrative_disposition_count = 0
                 remaining_seasons -= 1
                 self._record_history_cursor(
                     "aba-liga-history", cursor_coverage(season, after_game_no)
                 )
                 continue
-            # A bounded successful batch: resume at the last canonical write.
-            if games:
-                after_game_no = int(games[-1].evidence[aba_liga.PROVIDER]["game_no"])
+            # A bounded successful batch resumes after the last resolved
+            # terminal row, including an administrative disposition that never
+            # becomes a canonical Game.
+            resolved_game_no = aba_liga.last_history_progress_game_no()
+            if resolved_game_no > after_game_no:
+                after_game_no = resolved_game_no
                 self._record_history_cursor(
                     "aba-liga-history", cursor_coverage(season, after_game_no)
                 )
