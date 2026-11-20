@@ -103,6 +103,41 @@ def test_aba_history_receipts_publish_only_completed_historical_seasons(tmp_path
         )
 
 
+def test_aba_legacy_receipt_cannot_hide_an_administrative_count_conflict(tmp_path):
+    legacy = {
+        "season_end_year": 2026,
+        "calendar_final_count": 185,
+        "reconciled_final_count": 185,
+        "not_applicable_rows": 0,
+        "blocking_gap_count": 0,
+        "status": "calendar_final_count_reconciled",
+        "source": "aba_liga",
+        "evidence": "ROUTE_CONTRACT_REFERENCED",
+        "completed_at_utc": "2026-11-20T13:40:00Z",
+    }
+    (tmp_path / "history_receipts.json").write_text(
+        json.dumps(
+            {
+                "schema_version": "magolide.aba_history_receipts",
+                "league": "ABA_LEAGUE",
+                "provider": "aba_liga",
+                "receipts": {"2026": legacy},
+            }
+        )
+    )
+    incoming = {
+        **legacy,
+        "reconciled_final_count": 183,
+        "administrative_disposition_count": 2,
+        "status": "calendar_terminal_count_reconciled",
+    }
+
+    with pytest.raises(ValueError, match="conflicts with durable evidence"):
+        _write_aba_history_receipts(
+            tmp_path, [incoming], current_season_end_year=2027
+        )
+
+
 def test_daily_dry_run_creates_no_warehouse_and_builds_market_report(tmp_path):
     summary = run_daily(_args(tmp_path))
     assert summary["mode"] == "dry_run"

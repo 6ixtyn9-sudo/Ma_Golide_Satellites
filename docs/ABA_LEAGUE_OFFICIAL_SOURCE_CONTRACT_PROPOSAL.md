@@ -43,17 +43,21 @@ minimal contract:
    a non-canonical placeholder: it is skipped with explicit coverage telemetry,
    never assigned an invented timestamp. This check occurs before team-name
    parsing because future bracket placeholders can also have no assigned teams.
-3. **Clock semantics:** the external reference reports a `CET` year-round site
-   display. The parser interprets `CET` or `CEST` wall-clock values in
-   `Europe/Belgrade`, including DST, before converting them to UTC; an optional
-   trailing parenthetical local-time annotation is informational only. This is
-   a contract assumption pending retained first-party summer and winter
-   captures. A fixed `+01:00` conversion is rejected by tests.
+3. **Clock semantics:** `CET`, `CEST`, and the source's `Local time` suffix
+   are wall-clock values in `Europe/Belgrade`, including DST, before conversion
+   to UTC; an optional trailing parenthetical local-time annotation is
+   informational only. `Local time` is a displayed source label, not permission
+   to infer a missing timestamp. A fixed `+01:00` conversion is rejected by
+   tests.
 4. **Detail scope and identity:** the match page must echo `match_data_id`,
    `match_data_sez`, and `match_data_lea`; expose two scoped team links with
-   distinct official team IDs; repeat the calendar home/away order; and agree
-   with the calendar tip time. Any drift produces a coverage gap rather than a
-   name-only canonical game.
+   distinct official team IDs; repeat the calendar home/away display names; and
+   agree with the calendar tip time. All of that remains mandatory for a
+   canonical played game. An administrative disposition is not a game record:
+   it anchors identity to the scoped event ID and distinct official team-ID pair
+   because historical city/sponsor display suffixes can drift while the event
+   remains the same. Any unresolved scope/ID/tip contradiction produces a
+   coverage gap.
 5. **Finality:** a calendar score only identifies a candidate terminal row. A
    canonical played-game `ActualResult` requires the individual match page's
    numeric final and a Q1--Q4 table. Each OT period, if present, is retained as
@@ -64,13 +68,16 @@ minimal contract:
 7. **Administrative dispositions:** a `20:0` or `0:20` is a FIBA default-score
    *candidate*, never a basketball final by itself. The adapter can classify it
    as an event-scoped administrative disposition only after the official detail
-   verifies the event scope and team identities and either (a) has no period
-   table, or (b) expressly states that a played match was later registered with
-   an official result. A default-score row with valid reconciling periods stays
-   a played final; a malformed/contradictory period table with no explicit
+   verifies the scoped event and distinct team IDs and either (a) has no period
+   cells (an empty retained table shell is equivalent), or (b) expressly states
+   in match content that a played match was later registered with an official
+   result. A default-score row with valid reconciling periods stays a played
+   final; a malformed/contradictory non-empty period table with no explicit
    official-registration statement remains a blocking gap. An unpinned default
-   award is never assigned a tip. This is generic logic — no club, season, or
-   hand-maintained event allowlist is used.
+   award is never assigned a tip. Administrative classification is history-only:
+   discovery and current-result paths continue to fail closed rather than emit a
+   tipped default score as a live canonical game. This is generic logic — no
+   club, season, or hand-maintained event allowlist is used.
 8. **History:** season results are enumerated from the complete calendar in
    ascending `(game_no)` order. The helper returns attempted game numbers and
    the full calendar-final count. A malformed detail stops the cursor at the
@@ -79,9 +86,10 @@ minimal contract:
    A clean exhausted scan also retains a compact per-season receipt in the
    history provider-health cursor: season, calendar terminal count,
    period-reconciled played-final count, verified administrative-disposition
-   count, non-canonical `not_applicable` row count, zero blocking gaps,
-   evidence label, and completion time. Unpinned rows are telemetry only and
-   are deliberately excluded from both terminal populations. A receipt is
+   count, non-canonical schedule-only `not_applicable` row count, zero blocking
+   gaps, evidence label, and completion time. Administrative dispositions have
+   their own count and do not inflate the schedule-placeholder telemetry.
+   Unpinned rows are deliberately excluded from both terminal populations. A receipt is
    withheld and the cursor rewinds to game zero unless
    `calendar_terminal_count == reconciled_final_count +
    administrative_disposition_count`. Administrative records are never written
@@ -130,6 +138,11 @@ would not take place and records the `0:20` award under the league bylaws
 The current official match archive can also state that a match took place but
 was later registered with an official result, with player statistics annulled
 ([example event](https://www.aba-liga.com/match/63/20/1/Boxscore/q1/1/home/krka-koper-primorska/)).
+Direct review on 2026-11-20 also observed that the latter archive page displays
+its historical tip as `Local time`, while an ordinary 2020/21 played final
+continues to display `CET`; the former's score is administrative despite retained
+unofficial statistics. These are page-contract observations only: no raw source
+body is retained in this repository.
 
 Those sources establish two *event dispositions*, not a team-specific rule,
 financial-status inference, or approval to import a club's history. The adapter

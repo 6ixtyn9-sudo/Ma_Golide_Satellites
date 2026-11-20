@@ -296,11 +296,13 @@ def _parse_when(value: str, label: str) -> str:
     text = re.sub(r"\s+", " ", value or "").strip()
     match = re.fullmatch(
         r"(?:[A-Za-z]+, )?(\d{2})\.(\d{2})\.(\d{4}) (\d{2}):(\d{2}) "
-        r"(?:CET|CEST)(?: \([^()]+\))?",
+        r"(?:CET|CEST|Local time)(?: \([^()]+\))?",
         text,
     )
     if match is None:
-        raise IdentityError(f"{PROVIDER}: {label} has no readable CET/CEST timestamp: {text!r}")
+        raise IdentityError(
+            f"{PROVIDER}: {label} has no readable CET/CEST/Local time timestamp: {text!r}"
+        )
     try:
         local = datetime(
             int(match.group(3)),
@@ -540,7 +542,8 @@ def _match_scheduled_utc(root: _Node, game_no: int) -> str:
     venue = info.find(tag="div", class_name="dateAndVenue_container") if info else None
     text = venue.text() if venue else ""
     match = re.search(
-        r"(?:[A-Za-z]+, )?(\d{2}\.\d{2}\.\d{4} \d{2}:\d{2} (?:CET|CEST))", text
+        r"(?:[A-Za-z]+, )?(\d{2}\.\d{2}\.\d{4} \d{2}:\d{2} (?:CET|CEST|Local time))",
+        text,
     )
     if match is None:
         raise IdentityError(f"{PROVIDER}: match {game_no} has no readable scheduled timestamp")
@@ -597,15 +600,49 @@ def _match_final_score(root: _Node, game_no: int) -> tuple[int, int]:
     return int(final.group(1)), int(final.group(2))
 
 
+def _period_data_is_absent(root: _Node) -> bool:
+    """Whether official match detail has no period cells at all.
+
+    The historical archive can retain the quarter-table shell for an
+    administrative award. Empty rows/cells mean no period data; labels or any
+    non-empty period cell still go through strict final reconciliation.
+    """
+
+    table = root.find(tag="table", ident="match_cetrtine_rezultat")
+    if table is None:
+        return True
+    body = table.find(tag="tbody")
+    rows = (body.direct("tr") if body else []) or table.direct("tr")
+    return not any(
+        cell.text()
+        for row in rows
+        for cell in row.direct("td", "th")
+    )
+
+
+def _has_retroactive_registration_marker(root: _Node) -> bool:
+    """Find the official annulment sentence in a match-content paragraph."""
+
+    marker = "this match took place, but has been later registered with official result"
+    return any(
+        marker in node.text().casefold()
+        for node in root.find_all(tag="p")
+    )
+
+
 def _administrative_disposition(html: str, calendar: CalendarGame) -> Optional[AdministrativeDisposition]:
     """Classify a verified official default award without creating a Game.
 
     The classifier is intentionally event- and content-based. It contains no
     club, season, or score-list exception: a 20:0/0:20 merely opens this narrow
-    branch. The page must still prove scope/team identity and either state that
-    a played game was later officially registered or omit the period table
-    entirely, as a non-played default award does. Any other malformed result
-    keeps failing closed through the normal historical-result gap.
+    branch. The page must still prove event scope, a distinct in-scope team-ID
+    pair, and either state that a played game was later officially registered
+    or retain no period cells, as a non-played default award does. Display-name
+    equality remains mandatory for canonical played games; administrative
+    history instead anchors identity to the official scoped event and team IDs
+    so city/sponsor suffix drift cannot fabricate a blocking alias problem.
+    Any other malformed result keeps failing closed through the normal
+    historical-result gap.
     """
 
     if not _is_default_forfeit_score(calendar.score):
@@ -623,20 +660,13 @@ def _administrative_disposition(html: str, calendar: CalendarGame) -> Optional[A
                 f"{PROVIDER}: match {calendar.game_no} scheduled time contradicts calendar "
                 f"({match_tip} != {calendar.scheduled_utc})"
             )
-    home_id, home_name, away_id, away_name = _match_teams(root, calendar.season, calendar.game_no)
-    del home_id, away_id
-    if (
-        normalize_team_name(home_name) != normalize_team_name(calendar.home_name)
-        or normalize_team_name(away_name) != normalize_team_name(calendar.away_name)
-    ):
-        raise IdentityError(
-            f"{PROVIDER}: match {calendar.game_no} header team identity contradicts calendar"
-        )
+    home_id, _home_name, away_id, _away_name = _match_teams(root, calendar.season, calendar.game_no)
+    if home_id == away_id:  # Defensive: _match_teams already rejects this.
+        raise IdentityError(f"{PROVIDER}: match {calendar.game_no} has non-distinct team IDs")
 
-    detail_text = root.text().casefold()
-    if "this match took place, but has been later registered with official result" in detail_text:
+    if _has_retroactive_registration_marker(root):
         disposition_kind = "retroactively_registered_official_result"
-    elif root.find(tag="table", ident="match_cetrtine_rezultat") is None:
+    elif _period_data_is_absent(root):
         disposition_kind = "official_default_award_without_periods"
     else:
         # A 20:0 is not enough on its own. A page that has a period table must
