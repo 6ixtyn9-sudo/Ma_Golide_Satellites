@@ -26,6 +26,13 @@ receipts, and audit state; DuckDB remains the canonical sports system of record.
 
 * The Odds API is the only configured direct named-book lane for NBA, WNBA, NCAA_M, and NCAA_W. A scheduled run receives `THE_ODDS_API_KEY` only after a durable three-credit permit; it requests date-bounded full-game `h2h,totals,spreads` from the named DraftKings group. Without that key/permit, the system reports an explicit deferred or disabled named-book source. ESPN observations remain relayed and unresolved/unverified audit evidence, never a replacement for the direct The Odds API acquisition contract.
 
+The current The Odds API routine priority is a shared-provider quota policy, not
+an exclusion of other leagues from future compliant adoption. The
+[league readiness and source-adoption roadmap](docs/LEAGUE-ADOPTION-ROADMAP.md)
+defines the evidence-first path from a league contract to visible unpriced
+normal-lane output, bounded price validation, and only then a prospective
+paper-ticket path.
+
 The canonical registry also includes EuroCup, Basketball Champions League,
 Basketball Africa League, Australia NBL, Spain ACB, France LNB Pro A, Germany
 BBL, Italy LBA, Turkey BSL, Greece Basket League, ABA League, Israel Premier

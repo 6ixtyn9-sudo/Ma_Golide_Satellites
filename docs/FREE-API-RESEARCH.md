@@ -48,6 +48,10 @@ Candidate providers below are discovery leads, **not** approved integrations.
 No provider may be added to the registry or promoted to ticket evidence until a
 free-key smoke records the exact live schema, competition coverage, source
 terms, rate limits, event identity, and result/price reconciliation behavior.
+The [league readiness and source-adoption roadmap](LEAGUE-ADOPTION-ROADMAP.md)
+sets the implementation order: candidate discovery first records a source role
+and evidence contract, but does not grant a secret, an adapter, an automated
+request, or ticket-price authority.
 
 ### International discovery leads that were not promoted
 
