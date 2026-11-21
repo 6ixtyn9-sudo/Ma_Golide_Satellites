@@ -215,14 +215,14 @@ are operational acceleration and short-term review only; the verified GitHub
 Release checkpoint is the cold-cache recovery boundary for canonical CSV.
 
 After the league matrix, one publisher commits immutable ticket/no-bet decisions,
-compact state/settlement summaries, small dated lifecycle markers, and
-immutable per-fixture snapshots nested in `pick_lifecycle_state.json` to
+compact state/settlement summaries, readable dated pick cards, and immutable
+per-fixture snapshots nested in `pick_lifecycle_state.json` to
 `localdata/<league>` on `main`. Each snapshot carries the selection, price/line,
 source/evidence timestamps, scheduled tip, actual freeze time, decision gates,
 and a hash of the verbose freeze record; settlement reads that evidence rather
-than a later scan. Structured dated pick JSON, full forecast boards, detailed
-lifecycle renders, `picks_today.json`, and expanded audits remain in the active
-league cache, bounded Actions artifacts, and release checkpoint evidence.
+than a later scan. Structured dated pick JSON, detailed lifecycle renders,
+`picks_today.json`, and expanded audits remain in the active league cache,
+bounded Actions artifacts, and release checkpoint evidence.
 Existing Git-durable history is retained and conflicting immutable receipts or
 freezes fail closed. Git wins over stale cached operator state on the next run.
 

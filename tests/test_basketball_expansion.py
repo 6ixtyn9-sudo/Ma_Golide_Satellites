@@ -268,11 +268,11 @@ def test_registry_price_policy_is_provider_specific_and_fail_closed():
     assert nba_direct.source_permission is SourcePermission.CLEARED
     assert nba_direct.operational_validation is OperationalValidation.VALIDATED
 
-    euroleague_consensus = price_evidence_policy(League.EUROLEAGUE, "betexplorer")
-    assert euroleague_consensus.price_provenance is PriceProvenance.AGGREGATE_CONSENSUS
-    assert euroleague_consensus.source_permission is SourcePermission.UNRESOLVED
-    assert euroleague_consensus.operational_validation is OperationalValidation.PROBATION
-    assert "research-board" in euroleague_consensus.detail
+    euroleague_aggregate = price_evidence_policy(League.EUROLEAGUE, "betexplorer")
+    assert euroleague_aggregate.price_provenance is PriceProvenance.AGGREGATE_CONSENSUS
+    assert euroleague_aggregate.source_permission is SourcePermission.UNRESOLVED
+    assert euroleague_aggregate.operational_validation is OperationalValidation.PROBATION
+    assert "pick reporting only" in euroleague_aggregate.detail
 
     unknown = price_evidence_policy(League.NBA, "future-unreviewed-provider")
     assert unknown.source_permission is SourcePermission.UNRESOLVED

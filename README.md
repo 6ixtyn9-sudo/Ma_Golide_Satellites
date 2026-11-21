@@ -16,7 +16,7 @@ receipts, and audit state; DuckDB remains the canonical sports system of record.
 | --- | --- | --- | --- | --- |
 | NBA | Q1–Q4 | ESPN | ESPN BPI, Hardwood, Predixsport | ESPN scoreboard, TheRundown, SportsGameOdds, TheOddsAPI* |
 | WNBA | Event-declared H1/H2 or Q1–Q4 | ESPN | ESPN BPI | ESPN scoreboard* |
-| EuroLeague | Q1–Q4 | Euroleague Basketball | Predixsport | BetExplorer aggregate-consensus research board only; no validated named-book ticket lane |
+| EuroLeague | Q1–Q4 | Euroleague Basketball | Predixsport | BetExplorer aggregate research only; no validated named-book ticket lane |
 | EuroLeague Women (`EUROLEAGUE_W`) | Q1–Q4 + official OT | FIBA GDAP schedule + FIBA game-page detail | No independently validated pre-tip provider yet | No validated named-book adapter; intentionally unpriced |
 | CBA | Q1–Q4 | CBA public data service | Empirical team history after reconciled-history thresholds | BetExplorer aggregate research only; no validated named-book lane |
 | ABA League (`ABA_LEAGUE`) | Q1–Q4 + official OT | Externally referenced aba-liga.com calendar + reconciled match detail; no Ma Golide first-party capture | Empirical team history only after reconciled-history thresholds | BetExplorer aggregate research only; no validated named-book lane |
@@ -177,28 +177,6 @@ with `--localdata`) when it contains usable settled individual picks; this is
 read-only. If the audit is absent, empty, or has no usable priced rows, it falls
 back to past-only prequential settled individual forecasts and reports that
 cold-start fallback explicitly.
-
-### EuroLeague consensus-price paper league
-
-EuroLeague also has a separate, deliberately non-execution **consensus-price
-paper league**. It uses only the exact pre-tip representative average captured
-by BetExplorer, stored as `aggregate_consensus` with `unresolved` source
-permission and `probation` operational validation. It is **not** a bookmaker
-quote and is never admitted to the strict named-book ticket lane.
-
-At the same 09:00 SAST-or-earlier-safety cutoff,
-`localdata/euroleague/euroleague_consensus_paper_YYYY-MM-DD_roster.json` can
-time-lock up to three full-game-moneyline research selections. A row must retain
-all ordinary model-quality gates, have either a full calibration or a disclosed
-developing calibration sample of at least 10, and clear a 3%
-model-versus-displayed-consensus threshold. The matching `.txt` card reports
-the exact average price, calibrated probability, quality tier, strict-lane
-blockers, and later official-result accuracy/Brier tracking.
-
-This board is isolated from tickets: it creates **no stake, ticket, receipt,
-paper-bank movement, ROI/P&L, or real-money instruction**. The time-locked
-roster preserves its selection/evidence data unchanged; only text-card grades
-refresh after official reconciled results.
 
 ### Point-in-time model-versus-market evaluation
 

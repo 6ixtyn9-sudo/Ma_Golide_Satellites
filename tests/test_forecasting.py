@@ -1683,26 +1683,25 @@ def test_euroleague_priced_paper_filter_requires_positive_ev_and_ten_past_roi_ba
         assert late_quote_report["status"] == "no_point_in_time_priced_candidates"
 
 
-def test_euroleague_service_publishes_a_stricter_priced_paper_lane_without_changing_forecasts():
-    before = MarketForecastService(populated_store(), League.EUROLEAGUE).build_report(
+def test_euroleague_service_keeps_the_strict_named_book_lane_without_a_consensus_board():
+    report = MarketForecastService(populated_store(), League.EUROLEAGUE).build_report(
         as_of_utc=iso(AS_OF)
     )
-    lane = before["accas"]["paper_lane"]
-    policy = before["accas"]["paper_pick_filter"]
+    lane = report["accas"]["paper_lane"]
+    policy = report["accas"]["paper_pick_filter"]
 
+    assert report["capabilities"]["league_operator_policy"] == "euroleague_strict_named_book_ticket_lane"
     assert lane["name"] == "EUROLEAGUE_STRICT_NAMED_BOOK_VALUE_TICKET_LANE"
     assert lane["requires_named_book_quote"] is True
-    consensus_lane = before["accas"]["consensus_paper_lane"]
-    assert consensus_lane["name"] == "EUROLEAGUE_AGGREGATE_CONSENSUS_PRICE_PAPER_LEAGUE"
-    assert consensus_lane["no_ticket_receipt_bank_roi_or_pnl"] is True
     assert lane["requires_exact_selected_side_pre_tip_price"] is True
     assert lane["requires_positive_calibrated_expected_value"] is True
     assert lane["minimum_prior_settled_picks_in_matching_roi_band"] == 10
     assert policy["minimum_historical_pick_count_for_band"] == 10
     assert policy["require_positive_expected_value"] is True
     assert policy["require_point_in_time_price"] is True
-    assert before["execution"]["external_betting_writes"] is False
-    assert before["forecast_count"] == 0
+    assert "consensus_paper_lane" not in report["accas"]
+    assert report["execution"]["external_betting_writes"] is False
+    assert report["forecast_count"] == 0
 
 
 def test_service_generates_separate_forecasts_from_every_visible_provider_prediction():
