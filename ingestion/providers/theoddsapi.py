@@ -23,8 +23,7 @@ until then. Documented contract used here:
   never fabricated).
 - ``oddsFormat=decimal`` is requested explicitly, so prices are ALREADY
   decimal and are stored AS-IS — ``books.american_to_decimal`` must NOT be
-  applied (it would corrupt decimal prices; American conversion belongs to
-  the TheRundown adapter).
+  applied (it would corrupt decimal prices; American conversion belongs only to adapters that receive American-format odds).
 - Market keys: ``h2h`` → MONEYLINE (home/away resolved by matching the
   outcome name to the event's ``home_team``/``away_team`` — never by array
   order; an outcome matching neither side is skipped with a gap, never
@@ -41,7 +40,7 @@ until then. Documented contract used here:
 FetchFn convention: ``fetch_factory(provider)`` returns a ``FetchFn``
 (``Callable[[str], Any]``) returning parsed JSON; an envelope dict
 ``{"json": ..., "headers": ...}`` is unwrapped so response headers can be
-reported (see therundown module docstring).
+reported through the shared provider fetch convention.
 """
 
 from __future__ import annotations

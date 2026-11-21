@@ -47,7 +47,7 @@ def _pred(provider, observed, complete=True, tip="2026-11-07T22:00:00Z", **kw):
     return Prediction(**base)
 
 
-def _snap(provider="therundown", observed="2026-11-07T19:00:00Z", book="fanduel"):
+def _snap(provider="theoddsapi", observed="2026-11-07T19:00:00Z", book="draftkings"):
     return BookSnapshot(
         game_id="g1",
         provider=provider,
@@ -245,8 +245,8 @@ def test_odds_none_without_prediction_or_market():
     assert odds_for_prediction(_snap(), None) is None
     total_snap = BookSnapshot(
         game_id="g1",
-        provider="therundown",
-        book="fanduel",
+        provider="theoddsapi",
+        book="draftkings",
         market=Market.TOTAL,
         period=Period.FULL_GAME,
         observed_utc=NOW,

@@ -9,7 +9,6 @@ import pytest
 from ingestion import books
 from ingestion.books import (
     BookConfig,
-    PROVIDERS_BLOCKED_FROM_QUARTERS,
     american_to_decimal,
     newest_snapshot,
     quarter_coverage,
@@ -104,14 +103,6 @@ def test_moneyline_filter_separates_full_game_and_first_half():
     assert select_moneyline_snapshots([full, half], _config(), Period.H1) == [half]
     assert half.moneyline_for_side("draw") == 11.0
 
-
-def test_therundown_is_blocked_only_from_non_full_game_markets():
-    blocked = [_snap(provider="therundown", period=Period.Q1)]
-    config = BookConfig(provider="therundown")
-    assert select_total_snapshots(blocked, config, Period.Q1) == []
-    full = [_snap(provider="therundown", line=232.5, period=Period.FULL_GAME)]
-    assert select_total_snapshots(full, config, Period.FULL_GAME) == full
-    assert "therundown" in PROVIDERS_BLOCKED_FROM_QUARTERS
 
 
 def test_newest_snapshot_uses_instants_not_string_order():

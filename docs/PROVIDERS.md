@@ -174,7 +174,6 @@ prices remain missing.
 | BetExplorer | Representative average two-way moneyline prices | Full game | EuroLeague and CBA are `LIVE_VERIFIED` from captured 2026-11-16 pages. ABA League uses the same route as a probationary aggregate research observation, separate from its `aba_liga` schedule/result adapter, whose route is externally referenced rather than Ma Golide live-verified. Every active BetExplorer quote is `aggregate_consensus` with `unresolved` permission / `probation` validation, never a named-book ticket quote. No BetExplorer quote can enter tickets, receipts, banks, ROI/P&L, or real-money execution. Pre-tip rows only; no historical archive or per-book prices in this adapter. |
 | TheOddsAPI | h2h, totals, spreads; half markets use native H1/H2 | NBA: full game, Q1–Q4, H1 h2h; NCAA_M/NCAA_W: full game and H1/H2 markets; WNBA: full game and provider-offered quarter markets | NBA, WNBA, NCAA_M, NCAA_W; `THE_ODDS_API_KEY`. Australia NBL is a documented but `probation` mapping pending credentialed region/bookmaker coverage. |
 | SportsGameOdds | Totals only | Full game and Q1–Q4 | NBA; `SPORTSGAMEODDS_API_KEY` |
-| TheRundown | Moneyline and totals | Full game only | NBA; `THERUNDOWN_API_KEY` |
 
 Important restrictions:
 
@@ -184,9 +183,6 @@ Important restrictions:
   pipeline stamps these relayed observations from the central league registry,
   not from adapter defaults, and they remain ticket-ineligible until the
   registry records cleared reuse permission and validated operation.
-- TheRundown has no code path that can emit quarter or half markets. Its
-  requested spread reference data is deliberately not mapped to canonical
-  bets.
 - SportsGameOdds does not infer quarter coverage from an oddID pattern alone;
   only literal documented total IDs in a response are parsed.
 - TheOddsAPI quarter/half markets come from the per-event endpoint. H1 is not
