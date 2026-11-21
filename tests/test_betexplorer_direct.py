@@ -115,6 +115,40 @@ AH_ODDS = json.dumps(
     }
 )
 
+# Captured basketball response shape: the visible active-nav id is a stale
+# cross-sport template value and not one of the source's actual table lines.
+# Such a marker must never manufacture a main line.
+STALE_NAV_OU = json.dumps(
+    {
+        "odds": '''
+        <ul class="bestOddsComparison">
+          <li id="2.50" class="oddsComparison__activeSubLi">2.5</li>
+        </ul>
+        <table data-handicap="133.50"><tbody>
+          <tr><td><span class="in-bookmaker-logo" title="BetMGM.us"></span></td>
+          <td data-odd="1.91"></td><td data-odd="1.91"></td></tr>
+        </tbody></table>
+        '''
+    }
+)
+STALE_NAV_AH = json.dumps(
+    {
+        "odds": '''
+        <ul class="bestOddsComparison">
+          <li id="-0.50" class="oddsComparison__activeSubLi">-0.5</li>
+        </ul>
+        <table data-handicap="-14.50"><tbody>
+          <tr><td><span class="in-bookmaker-logo" title="BetMGM.us"></span></td>
+          <td data-odd="1.91"></td><td data-odd="1.91"></td></tr>
+        </tbody></table>
+        <table data-handicap="-13.50"><tbody>
+          <tr><td><span class="in-bookmaker-logo" title="Stake.com"></span></td>
+          <td data-odd="1.91"></td><td data-odd="1.91"></td></tr>
+        </tbody></table>
+        '''
+    }
+)
+
 
 def _game() -> Game:
     return Game(
@@ -188,6 +222,40 @@ def test_day_board_and_named_row_parsers_refuse_other_sports_averages_and_unname
     ]
     assert betexplorer_direct._source_active_line(json.loads(OU_ODDS)["odds"]) == 143.5
     assert betexplorer_direct._source_active_line(json.loads(AH_ODDS)["odds"]) == -0.5
+
+
+def test_stale_cross_sport_active_nav_id_cannot_invent_a_basketball_main_line(monkeypatch):
+    ou_html = json.loads(STALE_NAV_OU)["odds"]
+    ah_html = json.loads(STALE_NAV_AH)["odds"]
+    assert betexplorer_direct._response_lines(ou_html) == {133.5}
+    assert betexplorer_direct._response_lines(ah_html) == {-14.5, -13.5}
+    assert betexplorer_direct._source_active_line(ou_html) is None
+    assert betexplorer_direct._source_active_line(ah_html) is None
+
+    calls: list[str] = []
+    monkeypatch.setattr(betexplorer_direct, "MIN_REQUEST_INTERVAL_SECONDS", 0.0)
+
+    def fetch(url: str) -> str:
+        calls.append(url)
+        if "/basketball/results/" in url:
+            return BOARD
+        if f"/match-odds/{EVENT_ID}/1/ha/bestOdds/" in url:
+            return HA_ODDS
+        if f"/match-odds/{EVENT_ID}/1/ou/bestOdds/" in url:
+            return STALE_NAV_OU
+        if f"/match-odds/{EVENT_ID}/1/ah/bestOdds/" in url:
+            return STALE_NAV_AH
+        raise AssertionError(f"unexpected direct BetExplorer URL: {url}")
+
+    snapshots = betexplorer_direct.fetch_odds(
+        "NBA", DATE, now_utc=OBSERVED, games=[_game()], text_fetch=fetch
+    )
+    assert not any(
+        snapshot.main_line for snapshot in snapshots if snapshot.market in {Market.TOTAL, Market.SPREAD}
+    )
+    receipt = betexplorer_direct.last_receipt()["fixture_receipts"][0]
+    assert [market["main_line"] for market in receipt["markets"]] == [None, None, None]
+    assert all("/1x2/" not in call for call in calls)
 
 
 def test_direct_fallback_emits_exact_named_moneyline_total_and_spread_rows_with_receipt(monkeypatch):
@@ -268,6 +336,41 @@ def test_direct_fallback_recovers_the_page_supplied_ha_comparison_parameter(monk
     assert receipt["fixture_receipts"][0]["match_page_sha256"] is not None
 
 
+def test_direct_fallback_recovers_page_from_response_nav_without_match_page(monkeypatch):
+    calls: list[str] = []
+    monkeypatch.setattr(betexplorer_direct, "MIN_REQUEST_INTERVAL_SECONDS", 0.0)
+
+    def fetch(url: str) -> str:
+        calls.append(url)
+        if "/basketball/results/" in url:
+            return BOARD
+        if f"/match-odds/{EVENT_ID}/1/ha/bestOdds/" in url:
+            return json.dumps(
+                {
+                    "odds": (
+                        "<li onclick=\"match_change_bettype_best(2, 'AbCdEf12', 'ha', "
+                        "'basketball', false, this, 'en', 1);\">H/A</li>"
+                    )
+                }
+            )
+        if f"/match-odds/{EVENT_ID}/2/ha/bestOdds/" in url:
+            return HA_ODDS
+        if f"/match-odds/{EVENT_ID}/2/ou/bestOdds/" in url:
+            return OU_ODDS
+        if f"/match-odds/{EVENT_ID}/2/ah/bestOdds/" in url:
+            return AH_ODDS
+        raise AssertionError(f"unexpected direct BetExplorer URL: {url}")
+
+    snapshots = betexplorer_direct.fetch_odds(
+        "NBA", DATE, now_utc=OBSERVED, games=[_game()], text_fetch=fetch
+    )
+
+    assert len(snapshots) == 7
+    assert len(calls) == 5
+    assert not any(url.endswith(f"/{EVENT_ID}/") for url in calls)
+    assert betexplorer_direct.last_receipt()["fixture_receipts"][0]["comparison_page_param"] == "2"
+
+
 def test_direct_fallback_stops_the_run_after_a_source_refusal(monkeypatch):
     calls: list[str] = []
     monkeypatch.setattr(betexplorer_direct, "MIN_REQUEST_INTERVAL_SECONDS", 0.0)
@@ -283,6 +386,44 @@ def test_direct_fallback_stops_the_run_after_a_source_refusal(monkeypatch):
     ) == []
     receipt = betexplorer_direct.last_receipt()
     assert receipt["status"] == "http_429_cooldown"
+    assert receipt["cooldown"] is True
+    assert receipt["requests"] == 2
+    assert len(calls) == 2
+    assert any(gap.required_field == "source_access" for gap in betexplorer_direct.last_gaps())
+
+
+def test_direct_fallback_keeps_partial_prices_and_stops_at_request_cap(monkeypatch):
+    calls: list[str] = []
+    monkeypatch.setattr(betexplorer_direct, "MIN_REQUEST_INTERVAL_SECONDS", 0.0)
+    monkeypatch.setattr(betexplorer_direct, "MAX_REQUESTS_PER_RUN", 3)
+
+    snapshots = betexplorer_direct.fetch_odds(
+        "NBA", DATE, now_utc=OBSERVED, games=[_game()], text_fetch=_fetch(calls)
+    )
+
+    assert {snapshot.market for snapshot in snapshots} == {Market.MONEYLINE, Market.TOTAL}
+    receipt = betexplorer_direct.last_receipt()
+    assert receipt["status"] == "request_cap_reached"
+    assert receipt["requests"] == 3
+    assert len(calls) == 3
+    assert any(gap.required_field == "request_budget" for gap in betexplorer_direct.last_gaps())
+
+
+def test_direct_fallback_stops_after_a_challenge_surface(monkeypatch):
+    calls: list[str] = []
+    monkeypatch.setattr(betexplorer_direct, "MIN_REQUEST_INTERVAL_SECONDS", 0.0)
+
+    def fetch(url: str) -> str:
+        calls.append(url)
+        if "/basketball/results/" in url:
+            return BOARD
+        return "<html><title>Attention Required</title><div>Checking your browser</div></html>"
+
+    assert betexplorer_direct.fetch_odds(
+        "NBA", DATE, now_utc=OBSERVED, games=[_game()], text_fetch=fetch
+    ) == []
+    receipt = betexplorer_direct.last_receipt()
+    assert receipt["status"] == "source_challenge"
     assert receipt["cooldown"] is True
     assert receipt["requests"] == 2
     assert len(calls) == 2
@@ -381,6 +522,7 @@ def test_pipeline_skips_direct_request_only_when_all_named_core_markets_exist(mo
             line=221.5,
             over_price_decimal=1.91,
             under_price_decimal=1.91,
+            main_line=False,
             **shared,
         )
     )
@@ -390,6 +532,7 @@ def test_pipeline_skips_direct_request_only_when_all_named_core_markets_exist(mo
             line=-4.5,
             home_price_decimal=1.91,
             away_price_decimal=1.91,
+            main_line=False,
             **shared,
         )
     )

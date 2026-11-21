@@ -99,6 +99,14 @@ _PAGE_PARAM_RE = re.compile(
     r"match_load_tabs\('\w+',\s*'ha',\s*'[^']*',\s*'[^']*',\s*'(?P<page>[^']+)'",
     re.I,
 )
+# Comparison responses themselves carry a source-supplied page value in every
+# tab's navigation callback.  Prefer it over an extra match-page request when
+# a comparison response unexpectedly has no named rows.
+_ODDS_NAV_PAGE_PARAM_RE = re.compile(
+    r"match_change_bettype_best\(\s*(?P<page>[1-9][0-9]{0,3})\s*,\s*['\"][^'\"]+['\"]\s*,\s*"
+    r"['\"](?P<tab>ha|ou|ah)['\"]",
+    re.I,
+)
 _ALL_BOOK_ROW_RE = re.compile(
     r'<div\b[^>]*class=["\'][^"\']*oddsComparisonAll__rowBookie[^"\']*["\'][^>]*>'
     r'(?P<body>.*?)(?=<div\b[^>]*class=["\'][^"\']*oddsComparisonAll__rowBookie|\Z)',
@@ -111,6 +119,17 @@ _ACTIVE_LINE_RE = re.compile(
     re.I | re.S,
 )
 _ID_RE = re.compile(r'id=["\'](?P<line>[+-]?[0-9]+(?:\.[0-9]+)?)["\']', re.I)
+# A verification page is not an empty BetExplorer market.  These deliberately
+# specific markers cover the source's common challenge interstitials without
+# treating ordinary odds prose as a refusal.
+_CHALLENGE_MARKERS = (
+    "captcha",
+    "checking your browser",
+    "verify you are human",
+    "attention required",
+    "cf-chl-",
+    "challenge-platform",
+)
 
 _last_gaps: List[CoverageGap] = []
 _last_receipt: Dict[str, Any] = {}
@@ -250,6 +269,17 @@ def _fetch_text(fetch: TextFetch, url: str, *, throttle: bool) -> str:
         raise
     if not isinstance(body, str):
         raise TypeError("BetExplorer transport must return text")
+    lowered = body.casefold()
+    if any(marker in lowered for marker in _CHALLENGE_MARKERS):
+        _last_receipt["cooldown"] = True
+        _last_receipt["status"] = "source_challenge"
+        _record_gap(
+            None,
+            "source_access",
+            "BetExplorer challenge/verification surface; no further requests this run",
+            CoverageState.PROVIDER_ERROR,
+        )
+        raise RuntimeError("BetExplorer returned a challenge/verification surface")
     encoded = body.encode("utf-8", "replace")
     if len(encoded) > 1_500_000:
         raise ValueError("BetExplorer response exceeds 1.5 MB bound")
@@ -399,15 +429,31 @@ def parse_named_line_rows(odds_html: str) -> List[Dict[str, Any]]:
     return list(rows.values())[:MAX_BOOKS_PER_FIXTURE]
 
 
-def _source_active_line(odds_html: str) -> Optional[float]:
-    """Return only the source-designated active O/U or AH line, if present.
+def _response_lines(odds_html: str) -> set[float]:
+    """Return the exact O/U or AH lines that the response actually carries."""
 
-    The comparison navigation marks its current source line with
-    ``oddsComparison__activeSubLi``.  It would be misleading to manufacture a
-    ``main_line`` by averaging, choosing a midpoint, or counting bookmakers,
-    so an absent/invalid source marker deliberately leaves all rows non-main.
+    lines: set[float] = set()
+    for value in _HANDICAP_RE.findall(odds_html or ""):
+        try:
+            line = float(value)
+        except ValueError:
+            continue
+        if math.isfinite(line):
+            lines.add(line)
+    return lines
+
+
+def _source_active_line(odds_html: str) -> Optional[float]:
+    """Return a source-active O/U or AH line only when it is actually carried.
+
+    Basketball comparison responses can expose stale cross-sport navigation
+    ids, for example an active ``2.50`` alongside a total table at ``133.50``.
+    A marker that does not match a table ``data-handicap`` is therefore not an
+    active basketball line.  No average, midpoint, or book-count substitute is
+    invented when the source has no trustworthy marker.
     """
 
+    carried_lines = _response_lines(odds_html)
     for item in _ACTIVE_LINE_RE.finditer(odds_html or ""):
         line_match = _ID_RE.search(item.group("attrs"))
         if line_match is None:
@@ -416,7 +462,7 @@ def _source_active_line(odds_html: str) -> Optional[float]:
             line = float(line_match.group("line"))
         except ValueError:
             continue
-        if math.isfinite(line):
+        if math.isfinite(line) and line in carried_lines:
             return line
     return None
 
@@ -431,6 +477,16 @@ def _response_odds_html(body: str) -> str:
     if isinstance(payload, dict) and isinstance(payload.get("odds"), str):
         return payload["odds"]
     return ""
+
+
+def _odds_nav_page_param(odds_html: str, tab: str) -> Optional[str]:
+    """Read an exact tab's page value from its response navigation callback."""
+
+    expected_tab = str(tab or "").casefold()
+    for match in _ODDS_NAV_PAGE_PARAM_RE.finditer(odds_html or ""):
+        if match.group("tab").casefold() == expected_tab:
+            return match.group("page")
+    return None
 
 
 def _comparison_page_param(match_page: str) -> str:
@@ -589,14 +645,17 @@ def fetch_odds(
                 if market is Market.MONEYLINE
                 else parse_named_line_rows(odds_html)
             )
-            if not rows and not _last_receipt.get("cooldown") and match_page is None:
-                # The match page supplies the comparison tab parameter.  Read
-                # it only as a targeted rescue for a tab with no named rows,
-                # then share the recovered value with the remaining tabs.
+            if not rows and not _last_receipt.get("cooldown"):
+                # A comparison response already carries the source's own page
+                # parameter in its nav callback.  Prefer this no-extra-page
+                # recovery, then use the guarded match-page read only when it
+                # supplies a page that this tab has not already tried.
+                attempted_pages = {page_param}
                 try:
-                    match_page = _fetch_text(fetch, fixture["match_url"], throttle=throttled)
-                    page_param = _comparison_page_param(match_page)
-                    if page_param != "1":
+                    nav_page = _odds_nav_page_param(odds_html, tab)
+                    if nav_page is not None and nav_page not in attempted_pages:
+                        page_param = nav_page
+                        attempted_pages.add(page_param)
                         odds_url = _ODDS_URL.format(
                             event_id=fixture["event_id"], page=page_param, tab=tab
                         )
@@ -607,6 +666,22 @@ def fetch_odds(
                             if market is Market.MONEYLINE
                             else parse_named_line_rows(odds_html)
                         )
+                    if not rows and match_page is None:
+                        match_page = _fetch_text(fetch, fixture["match_url"], throttle=throttled)
+                        recovered_page = _comparison_page_param(match_page)
+                        if recovered_page not in attempted_pages:
+                            page_param = recovered_page
+                            attempted_pages.add(page_param)
+                            odds_url = _ODDS_URL.format(
+                                event_id=fixture["event_id"], page=page_param, tab=tab
+                            )
+                            response_body = _fetch_text(fetch, odds_url, throttle=throttled)
+                            odds_html = _response_odds_html(response_body)
+                            rows = (
+                                parse_named_moneyline_rows(odds_html)
+                                if market is Market.MONEYLINE
+                                else parse_named_line_rows(odds_html)
+                            )
                 except Exception as exc:
                     if not _last_receipt.get("cooldown"):
                         _record_gap(
