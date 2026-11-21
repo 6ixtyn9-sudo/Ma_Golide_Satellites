@@ -211,6 +211,10 @@ def fetch_upcoming(
             # validate_orientation rejects sums that are not ~1 — both
             # quarantine the entry via the gap below.
             prediction = Prediction(
+                # ``game_id`` is the provider's event identity at this adapter
+                # boundary.  The pipeline joins it to one canonical game only
+                # by an existing provider ID or by strict home/away/UTC-tip
+                # identity, then preserves this ID in ``auxiliary_metrics``.
                 game_id=str(match_id),
                 provider=PROVIDER,
                 observed_utc=now_utc_iso(),
@@ -220,6 +224,12 @@ def fetch_upcoming(
                 prob_home=p_home,
                 prob_away=p_away,
                 expected_margin=_num(row.get("predicted_point_diff")),
+                auxiliary_metrics={
+                    "source_match_id": str(match_id),
+                    "source_home_name": row.get("home"),
+                    "source_away_name": row.get("away"),
+                    "source_tipoff_utc": row.get("tipoff_utc"),
+                },
             )
             prediction.validate_orientation()
             out.append(prediction)

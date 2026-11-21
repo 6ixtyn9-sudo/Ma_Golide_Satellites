@@ -231,6 +231,7 @@ class Pipeline:
         # response from a provider that was intentionally unavailable because
         # its optional credential was not configured.
         self.book_provider_status: Dict[str, Dict[str, Any]] = {}
+        self.prediction_provider_status: Dict[str, Dict[str, Any]] = {}
 
     def _now_iso(self) -> str:
         if self.config.fixture_now_utc:
@@ -254,6 +255,7 @@ class Pipeline:
         self.quota = {}
         self.context_report = {}
         self.book_provider_status = {}
+        self.prediction_provider_status = {}
 
     def _stamp_book_evidence(self, snapshot: BookSnapshot) -> BookSnapshot:
         """Apply the registry evidence contract to every acquired price quote.
@@ -483,6 +485,7 @@ class Pipeline:
                 "predictions_selected": _count_by(
                     [s.provider for s in selections.values() if s.provider]
                 ),
+                "prediction_provider_status": self.prediction_provider_status,
                 "book_provider_status": self.book_provider_status,
                 "espn_context": self.context_report,
             },
@@ -980,6 +983,13 @@ class Pipeline:
                     )
                 )
 
+        # Predixsport publishes a league list, not a canonical-game keyed
+        # endpoint. Fetch that list once per relevant league run, then apply a
+        # strict ID-or-home/away/UTC-tip join. Calling it once per game both
+        # wastes the configured provider allowance and could create different
+        # source observations inside the same slate.
+        predix_by_game = self._predixsport_candidates_for_games(games)
+
         for game in games:
             # Stored pre-tip observations compete with fresh observations. A
             # transient provider failure must not blank a still-fresh bundle.
@@ -1010,8 +1020,13 @@ class Pipeline:
                     )
                 if league is League.NBA and artifact is not None:
                     candidates.extend(_hardwood_candidates(game, artifact, self.fetch, self.gaps))
-            elif league is League.EUROLEAGUE:
-                candidates.extend(_predixsport_candidates(game, self.fetch_factory))
+
+            # NBA must not bypass this independent provider just because ESPN
+            # BPI is also available. Provider priority continues to make the
+            # validated complete ESPN/Hardwood bundle the selected forecast;
+            # a matching Predixsport observation is retained as a coherent
+            # shadow for prospective diagnostics.
+            candidates.extend(predix_by_game.get(game.game_id, ()))
 
             selection = select_prediction(
                 candidates,
@@ -1037,6 +1052,93 @@ class Pipeline:
             selections[game.game_id] = selection
             self.gaps.extend(selection.gaps)
         return selections
+
+    def _predixsport_candidates_for_games(
+        self, games: List[Game]
+    ) -> Dict[str, List[Prediction]]:
+        """Fetch and strictly join one Predixsport upcoming list for a slate.
+
+        The adapter's source ID is preserved in each returned prediction, but
+        it cannot be used as a canonical game ID until it matches an existing
+        recorded provider ID or a unique home/away/UTC-tip identity. Ambiguous
+        or incomplete source rows become visible coverage gaps; they are never
+        guessed into a fixture.
+        """
+
+        output: Dict[str, List[Prediction]] = {game.game_id: [] for game in games}
+        league = self.config.league_enum
+        if not games or league not in {League.NBA, League.EUROLEAGUE}:
+            return output
+
+        from .providers import predixsport
+
+        if not predixsport.is_enabled():
+            self.prediction_provider_status["predixsport"] = {
+                "enabled": False,
+                "status": "disabled_missing_credential",
+                "records_returned": 0,
+                "records_matched": 0,
+            }
+            return output
+
+        source_gaps: List[CoverageGap] = []
+        try:
+            predictions = predixsport.fetch_upcoming(
+                "nba" if league is League.NBA else "euroleague",
+                7,
+                self.fetch_factory,
+                gaps=source_gaps,
+            )
+        except Exception as exc:
+            self.prediction_provider_status["predixsport"] = {
+                "enabled": True,
+                "status": "provider_error",
+                "records_returned": 0,
+                "records_matched": 0,
+                "detail": f"{type(exc).__name__}: {str(exc)[:160]}",
+            }
+            self.gaps.append(
+                CoverageGap(
+                    game_id=None,
+                    required_field="predixsport_upcoming_predictions",
+                    reason=CoverageState.PROVIDER_ERROR,
+                    provider="predixsport",
+                    detail=f"{type(exc).__name__}: {str(exc)[:180]}",
+                    observed_utc=self._now_iso(),
+                )
+            )
+            return output
+
+        self.gaps.extend(source_gaps)
+        matched = 0
+        unmatched = 0
+        for prediction in predictions:
+            game, reason = _match_predixsport_prediction(prediction, games)
+            if game is None:
+                unmatched += 1
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=None,
+                        required_field="predixsport_prediction_identity",
+                        reason=CoverageState.MISSING,
+                        provider="predixsport",
+                        detail=reason,
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            output[game.game_id].append(replace(prediction, game_id=game.game_id))
+            matched += 1
+
+        self.prediction_provider_status["predixsport"] = {
+            "enabled": True,
+            "status": "fetched",
+            "records_returned": len(predictions),
+            "records_matched": matched,
+            "records_unmatched": unmatched,
+            "records_rejected": len(source_gaps),
+        }
+        return output
 
     def _book_provider_options(self, provider: str) -> Dict[str, Any]:
         """Pass deterministic acquisition context to providers when available."""
@@ -3072,25 +3174,65 @@ def _hardwood_candidates(game: Game, artifact, fetch, gaps: List[CoverageGap]) -
     return output
 
 
-def _predixsport_candidates(game: Game, fetch_factory) -> List[Prediction]:
-    from .providers import predixsport
+def _match_predixsport_prediction(
+    prediction: Prediction, games: Sequence[Game]
+) -> tuple[Optional[Game], str]:
+    """Resolve one provider prediction to exactly one canonical fixture.
 
-    if not predixsport.is_enabled():
-        return []
-    try:
-        predictions = predixsport.fetch_upcoming(
-            "nba" if game.league is League.NBA else "euroleague", 7, fetch_factory
+    A known Predixsport event ID is sufficient because it was previously
+    bound to the canonical game map. Otherwise require both ordered teams and
+    a UTC tip within the existing strict cross-provider tolerance. The helper
+    deliberately has no fuzzy-name, date-only, or array-position fallback.
+    """
+
+    source = prediction.auxiliary_metrics or {}
+    source_match_id = str(source.get("source_match_id") or prediction.game_id).strip()
+    direct = [
+        game
+        for game in games
+        if source_match_id
+        and str(game.provider_ids.get("predixsport") or "").strip() == source_match_id
+    ]
+    if len(direct) == 1:
+        return direct[0], ""
+    if len(direct) > 1:
+        return None, f"Predixsport ID {source_match_id!r} maps to multiple canonical games"
+
+    home = source.get("source_home_name")
+    away = source.get("source_away_name")
+    tip = source.get("source_tipoff_utc")
+    if not all(isinstance(value, str) and value.strip() for value in (home, away, tip)):
+        return (
+            None,
+            f"Predixsport prediction {source_match_id!r} lacks provider ID mapping and home/away/UTC-tip identity",
         )
-    except Exception as exc:
-        logger.warning("predixsport upcoming failed: %s", exc)
-        return []
-    for prediction in predictions:
-        if prediction.game_id in {
-            game.provider_ids.get("predixsport"),
-            game.game_id,
-        }:
-            return [prediction]
-    return []
+
+    matches: List[Game] = []
+    for game in games:
+        try:
+            same_teams = (
+                canonical_team_key(str(home)) == canonical_team_key(game.home_name)
+                and canonical_team_key(str(away)) == canonical_team_key(game.away_name)
+            )
+            if same_teams and times_within(str(tip), game.scheduled_utc):
+                matches.append(game)
+        except (TypeError, ValueError):
+            return (
+                None,
+                f"Predixsport prediction {source_match_id!r} has an invalid UTC tip {tip!r}",
+            )
+
+    if len(matches) == 1:
+        return matches[0], ""
+    if not matches:
+        return (
+            None,
+            f"Predixsport prediction {source_match_id!r} has no exact home/away/UTC-tip match",
+        )
+    return (
+        None,
+        f"Predixsport prediction {source_match_id!r} matches multiple canonical games",
+    )
 
 
 def _iso(date_yyyymmdd: str) -> str:
