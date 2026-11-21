@@ -152,7 +152,6 @@ def test_workflow_keeps_keyless_fallback_and_wires_optional_provider_secrets():
         assert 'ALLOW_NOTIFICATION_WRITES: "false"' in text
         optional_provider_secrets = {
             "THE_ODDS_API_KEY",
-            "SPORTSGAMEODDS_API_KEY",
             "PREDIXSPORT_API_KEY",
         }
         wired_secrets = set(re.findall(r"secrets\.([A-Z0-9_]+)", text))

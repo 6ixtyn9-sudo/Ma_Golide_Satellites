@@ -20,7 +20,7 @@ from ingestion.models import BookSnapshot, Market, Period
 
 
 def _snap(
-    provider: str = "sportsgameodds",
+    provider: str = "theoddsapi",
     book: str = "DraftKings",
     market: Market = Market.TOTAL,
     period: Period = Period.Q1,
@@ -42,7 +42,7 @@ def _snap(
 
 
 def _config() -> BookConfig:
-    return BookConfig(provider="sportsgameodds", book="DraftKings")
+    return BookConfig(provider="theoddsapi", book="DraftKings")
 
 
 @pytest.mark.parametrize(
