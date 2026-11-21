@@ -13,8 +13,8 @@
       "logical_picks": 462
     },
     "2026-11-21": {
-      "frozen_fixtures": 25,
-      "logical_picks": 415
+      "frozen_fixtures": 26,
+      "logical_picks": 416
     }
   },
   "frozen_by_date": {
@@ -42825,6 +42825,468 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
       },
+      "401911278": {
+        "decision_cutoff_utc": "2026-11-21T19:30:00Z",
+        "frozen_at": "2026-11-21T19:45:29Z",
+        "game_id": "401911278",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Army Black Knights",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.557861,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 143,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "77124e5cdeeca230006748d90506134c63e307d01e071d721dce19a66b15f5fe",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a04a21ea2b2c2e5f0232",
+            "game_id": "401911278",
+            "grade_status": "pending",
+            "home": "Binghamton Bearcats",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "a04a21ea2b2c2e5f0232",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.64,
+            "role": null,
+            "scheduled_utc": "2026-11-21T20:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Army Black Knights",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401911278",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T19:39:00Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8333333333333335,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.450786,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 95,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "0a6428ff117158a57de24dc0b516934f1b0674b337da538da7a429e0acdf127a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4e2bd1d3102f75c2a0b6",
+            "game_id": "401911278",
+            "grade_status": "pending",
+            "home": "Binghamton Bearcats",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "4e2bd1d3102f75c2a0b6",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-21T19:39:11Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.5353,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-21T20:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Army Black Knights",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401911278",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T19:39:00Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 2.0,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.635029,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 143,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "48621fc261d7627f3992873e61541efa6eb409758072381e43cbb857f5428efb",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "ed2df404f0f4e4d5758e",
+            "game_id": "401911278",
+            "grade_status": "pending",
+            "home": "Binghamton Bearcats",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "ed2df404f0f4e4d5758e",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.72,
+            "role": null,
+            "scheduled_utc": "2026-11-21T20:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Army Black Knights",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401911278",
+              "line": 1.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T19:39:00Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 2.02,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.471475,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 31,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "0d86208c846050e80a86a94038f70c55bc813c5e016bdc6256698526d2ca4250",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "57129c947c709c8d8ef9",
+            "game_id": "401911278",
+            "grade_status": "pending",
+            "home": "Binghamton Bearcats",
+            "league": "NCAA_M",
+            "line": 1.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "57129c947c709c8d8ef9",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-21T20:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Army Black Knights",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401911278",
+              "line": 136.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T18:09:01Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.538197,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 31,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "51889fead9f9bd61c7fdf31840a9ce933e9722bab5c4541413d13119ed4bf7d5",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0cd1506ad3b29e5fe59d",
+            "game_id": "401911278",
+            "grade_status": "pending",
+            "home": "Binghamton Bearcats",
+            "league": "NCAA_M",
+            "line": 136.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "0cd1506ad3b29e5fe59d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-21T20:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Army Black Knights",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401911278",
+              "line": 135.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T15:09:27Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.554407,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "1b5535cc6b7a505b9fc0e9bce5eeb8aeda31e9d9629e389008bfcee04aa4491a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5b26b4e547cbaec9c856",
+            "game_id": "401911278",
+            "grade_status": "pending",
+            "home": "Binghamton Bearcats",
+            "league": "NCAA_M",
+            "line": 135.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "5b26b4e547cbaec9c856",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-21T20:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Army Black Knights",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401911278",
+              "line": 137.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T19:39:00Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.546333,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 30,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "1cbb07b73ecc626266b77fc5e6ef1330119cbe9f90a878d2a612aa0b4e2c4223",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "87b57848e1efb73749a8",
+            "game_id": "401911278",
+            "grade_status": "pending",
+            "home": "Binghamton Bearcats",
+            "league": "NCAA_M",
+            "line": 137.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "87b57848e1efb73749a8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-21T20:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Army Black Knights",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401911278",
+              "line": 138.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T06:09:32Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.509074,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "f5db549e3c41b5da162fd7943bbd97bb3e01756738e625d0f1de98d7c26f9e18",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d225daadefa218762d3d",
+            "game_id": "401911278",
+            "grade_status": "pending",
+            "home": "Binghamton Bearcats",
+            "league": "NCAA_M",
+            "line": 138.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "d225daadefa218762d3d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-21T20:30:00Z",
+            "selection": "over"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T20:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      },
       "401917953": {
         "decision_cutoff_utc": "2026-11-21T19:00:00Z",
         "frozen_at": "2026-11-21T19:14:07Z",
@@ -51424,10 +51886,6 @@
   "league": "NCAA_M",
   "pending_frozen_games": [
     [
-      "401923402",
-      "2026-11-21T17:00:00Z"
-    ],
-    [
       "401920948",
       "2026-11-21T18:00:00Z"
     ],
@@ -51510,6 +51968,10 @@
     [
       "401927365",
       "2026-11-21T20:00:00Z"
+    ],
+    [
+      "401911278",
+      "2026-11-21T20:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
