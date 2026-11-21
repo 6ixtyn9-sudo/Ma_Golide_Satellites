@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 12,
+  "awaiting_game_legs": 9,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -362,20 +362,20 @@
       "wins": 1
     },
     {
-      "awaiting_game_legs": 12,
-      "bank_units": 106.33161741750128,
+      "awaiting_game_legs": 9,
+      "bank_units": 105.33161741750128,
       "date": "2026-11-20",
       "decision_id": "44692592280_ncaa_m_1_attempt_1",
       "frozen_at": "2026-11-20T07:11:31Z",
       "league": "NCAA_M",
-      "losses": 1,
-      "pending_accas": 4,
-      "pending_positions": 4,
+      "losses": 2,
+      "pending_accas": 3,
+      "pending_positions": 3,
       "pending_singles": 0,
-      "pending_units": 4.0,
+      "pending_units": 3.0,
       "positions": [
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
@@ -385,7 +385,7 @@
           "grade_status": "pending",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "win",
             null,
             "win"
           ],
@@ -396,12 +396,12 @@
               "book_provider": "espn",
               "forecast_id": "8922456d281c429446ec",
               "game_id": "401909709",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Pittsburgh Panthers",
               "market": "moneyline",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "8922456d281c429446ec",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-21T00:00:00Z",
               "selected_decimal_price": 1.02,
               "selection": "home"
@@ -449,10 +449,10 @@
           "stake_units": 1.0,
           "ticket_id": "dd83512446b2c4ae5e76",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
@@ -464,7 +464,7 @@
           "leg_outcomes": [
             null,
             null,
-            null
+            "win"
           ],
           "legs": [
             {
@@ -505,12 +505,12 @@
               "book_provider": "espn",
               "forecast_id": "68f08ed38729d65c0bb3",
               "game_id": "401921007",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Iona Gaels",
               "market": "moneyline",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "68f08ed38729d65c0bb3",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-21T00:00:00Z",
               "selected_decimal_price": 1.5208333333333335,
               "selection": "home"
@@ -526,7 +526,7 @@
           "stake_units": 1.0,
           "ticket_id": "b66f4bebf317b4e47481",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         },
         {
           "awaiting_game_legs": 2,
@@ -607,18 +607,18 @@
           "unresolved_legs": 2
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 6.7316,
           "effective_decimal_odds": 6.731639011412168,
           "estimated_joint_win_probability": 0.19917723,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
             null,
-            null,
+            "loss",
             null
           ],
           "legs": [
@@ -645,13 +645,13 @@
               "book_provider": "espn",
               "forecast_id": "ec8d9edc98a8fe8ba9d0",
               "game_id": "401926134",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Purdue Boilermakers",
               "line": -23.5,
               "market": "spread",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "ec8d9edc98a8fe8ba9d0",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-21T00:00:00Z",
               "selected_decimal_price": 1.8695652173913042,
               "selection": "away"
@@ -675,6 +675,7 @@
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 3,
           "provisional_sample_gate_bypassed": true,
           "publication_index": 4,
@@ -684,7 +685,7 @@
           "stake_units": 1.0,
           "ticket_id": "abe84641233438a1bbfb",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         },
         {
           "awaiting_game_legs": 2,
@@ -768,41 +769,41 @@
           "unresolved_legs": 2
         }
       ],
-      "profit_units": -1.0,
+      "profit_units": -2.0,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-20_decision.json",
       "result_unresolvable_legs": 0,
       "returned_units": 0.0,
-      "settled_accas": 1,
-      "settled_positions": 1,
+      "settled_accas": 2,
+      "settled_positions": 2,
       "settled_singles": 0,
-      "staked_units": 1.0,
-      "unresolved_result_legs": 12,
+      "staked_units": 2.0,
+      "unresolved_result_legs": 9,
       "wins": 0
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.6,
+  "hit_rate": 0.5,
   "league": "NCAA_M",
-  "losses": 2,
-  "paper_bank_units": 106.33161741750126,
-  "paper_committed_units": 4.0,
+  "losses": 3,
+  "paper_bank_units": 105.33161741750126,
+  "paper_committed_units": 3.0,
   "paper_free_units": 102.33161741750126,
   "paper_only": true,
-  "pending_accas": 4,
-  "pending_positions": 4,
+  "pending_accas": 3,
+  "pending_positions": 3,
   "pending_singles": 0,
-  "profit_units": 6.331617417501268,
+  "profit_units": 5.331617417501268,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": 1.2663234835002535,
+  "roi": 0.8886029029168779,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.14882006896484617,
-  "settled_accas": 4,
-  "settled_positions": 5,
+  "selected_leg_brier_score": 0.14975357261,
+  "settled_accas": 5,
+  "settled_positions": 6,
   "settled_singles": 1,
-  "settled_stake_units": 5.0,
+  "settled_stake_units": 6.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 12,
+  "unresolved_result_legs": 9,
   "wins": 3
 }

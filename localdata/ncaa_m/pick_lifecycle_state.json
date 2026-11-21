@@ -9,7 +9,7 @@
       "logical_picks": 233
     },
     "2026-11-20": {
-      "frozen_fixtures": 57,
+      "frozen_fixtures": 58,
       "logical_picks": 462
     }
   },
@@ -33616,6 +33616,836 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
       },
+      "401925664": {
+        "decision_cutoff_utc": "2026-11-21T02:00:00Z",
+        "frozen_at": "2026-11-21T02:13:02Z",
+        "game_id": "401925664",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Alabama State Hornets",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.535351,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 84,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "bbe32ebbcc0a0c4828dabf980cd3376d4e9a7bc918acbf14110b2c752f8c530c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "eb9dc1a5b32741487541",
+            "game_id": "401925664",
+            "grade_status": "pending",
+            "home": "Fresno State Bulldogs",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "eb9dc1a5b32741487541",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.68,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Alabama State Hornets",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925664",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T02:08:47Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.1869158878504673,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.795717,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 48,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "b66a7bd6b99ccee87589c476c8c2cd7505cf396e93c5806d58bedd6c8b9c34fb",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7bd493bd292c694143aa",
+            "game_id": "401925664",
+            "grade_status": "pending",
+            "home": "Fresno State Bulldogs",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.01014,
+              "historical_pick_count": 2,
+              "individual_odds_band": "1.00-<1.20",
+              "losses": 0,
+              "market": "moneyline",
+              "observed_roi": 0.167582,
+              "period": "full_game",
+              "probability_band": "0.70-<0.80",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": 0.164487,
+              "wins": 2
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "7bd493bd292c694143aa",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-21T02:08:49Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.8669,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Alabama State Hornets",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925664",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T02:08:47Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.1869158878504673,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.561404,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 84,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "f3ce2e0bc9693019bd1bbcf0f8c88fdec8f9c7a9030161434760afdc4d4d004e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d00be9e5c65a5f970255",
+            "game_id": "401925664",
+            "grade_status": "pending",
+            "home": "Fresno State Bulldogs",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "d00be9e5c65a5f970255",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.72,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Alabama State Hornets",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925664",
+              "line": -10.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T02:08:47Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.673571,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 12,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "6defbe8e589facfbb3216b64f1224763d893fc0fc2bd05b3b73090359ff96f26",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0efe624d782cfed39dd8",
+            "game_id": "401925664",
+            "grade_status": "pending",
+            "home": "Fresno State Bulldogs",
+            "league": "NCAA_M",
+            "line": -10.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "0efe624d782cfed39dd8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.64,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Alabama State Hornets",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925664",
+              "line": -9.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T22:08:52Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.67525,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 10,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "f86d2d8e6ef06d2bdba97cff5a1d44b4256aaa97c9ad2ba76dd9f73fabb9d2aa",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "30245abaf05abcc56f5d",
+            "game_id": "401925664",
+            "grade_status": "pending",
+            "home": "Fresno State Bulldogs",
+            "league": "NCAA_M",
+            "line": -9.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "30245abaf05abcc56f5d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.61,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Alabama State Hornets",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925664",
+              "line": -8.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T21:38:27Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.665128,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 9,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "bbee641304e14fdeee3f4091585ab25a5d64bb543cbab4ca06830c6410641e7b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "659229870ceb605beb63",
+            "game_id": "401925664",
+            "grade_status": "pending",
+            "home": "Fresno State Bulldogs",
+            "league": "NCAA_M",
+            "line": -8.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "659229870ceb605beb63",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.61,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Alabama State Hornets",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925664",
+              "line": 146.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T02:08:47Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.492195,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 11,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "5fe9d4632725a6916d6ee6e4ecc50f88a4bd5db0bbbf5714f4cf981c153db2dc",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "2fc146b77d48fee204da",
+            "game_id": "401925664",
+            "grade_status": "pending",
+            "home": "Fresno State Bulldogs",
+            "league": "NCAA_M",
+            "line": 146.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "2fc146b77d48fee204da",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Alabama State Hornets",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925664",
+              "line": 145.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T00:08:40Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.4825,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 10,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "a4f8fb5ad58a7477183ccf2b158ac567f0c534f9d9c8964fc599b739cf60a391",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "64396a89ed8b5ce2eb4b",
+            "game_id": "401925664",
+            "grade_status": "pending",
+            "home": "Fresno State Bulldogs",
+            "league": "NCAA_M",
+            "line": 145.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "64396a89ed8b5ce2eb4b",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Alabama State Hornets",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925664",
+              "line": 148.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T05:38:33Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.473824,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 4,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "7de73d00c99d273c948c9b4366880483396999061fa277e66deae648e3210a32",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "95deb3253e43c060ae28",
+            "game_id": "401925664",
+            "grade_status": "pending",
+            "home": "Fresno State Bulldogs",
+            "league": "NCAA_M",
+            "line": 148.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "95deb3253e43c060ae28",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Alabama State Hornets",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925664",
+              "line": 148.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T13:08:26Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.500263,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "8648c8010fb6bd5392d649e70c15516162b7adbe765b31a36f178a0acc912b2c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "23ccf61bfced9ed9776e",
+            "game_id": "401925664",
+            "grade_status": "pending",
+            "home": "Fresno State Bulldogs",
+            "league": "NCAA_M",
+            "line": 148.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "23ccf61bfced9ed9776e",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Alabama State Hornets",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925664",
+              "line": 147.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T15:38:41Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.508947,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "bf4f628b6fef3d663a0465203f7f69a53b48e20b7221a7d920ba574b992a44cd",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6351ff2dfbd18088229d",
+            "game_id": "401925664",
+            "grade_status": "pending",
+            "home": "Fresno State Bulldogs",
+            "league": "NCAA_M",
+            "line": 147.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6351ff2dfbd18088229d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Alabama State Hornets",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925664",
+              "line": 145.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T19:08:52Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.487179,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 9,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "02505b404c4a741de31f8826dde36d0bcb7bd96d3b45aaee6e2d3a20c1cb0f7f",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "79a9e8d7072a1f5337c3",
+            "game_id": "401925664",
+            "grade_status": "pending",
+            "home": "Fresno State Bulldogs",
+            "league": "NCAA_M",
+            "line": 145.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "79a9e8d7072a1f5337c3",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Alabama State Hornets",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925664",
+              "line": 146.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T16:08:36Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.508947,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "87447edd6aa47347dd0a796b39d2dd6bcbfdc848bc9166b4fe75f8b5d4c0cf17",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "933b15dbf06a9f28c1a0",
+            "game_id": "401925664",
+            "grade_status": "pending",
+            "home": "Fresno State Bulldogs",
+            "league": "NCAA_M",
+            "line": 146.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "933b15dbf06a9f28c1a0",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Alabama State Hornets",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925664",
+              "line": 150.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T13:38:38Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.497568,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "59b72d6573c8c2651576295e6d9281e2f373f682a75347893eade031f99c72d8",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "aed8d2aa58b07f61c6f1",
+            "game_id": "401925664",
+            "grade_status": "pending",
+            "home": "Fresno State Bulldogs",
+            "league": "NCAA_M",
+            "line": 150.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "aed8d2aa58b07f61c6f1",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T03:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
       "401925740": {
         "decision_cutoff_utc": "2026-11-21T00:00:00Z",
         "frozen_at": "2026-11-21T00:13:00Z",
@@ -39606,39 +40436,7 @@
   "league": "NCAA_M",
   "pending_frozen_games": [
     [
-      "401925828",
-      "2026-11-20T23:30:00Z"
-    ],
-    [
-      "401906852",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401909709",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401916299",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
       "401917903",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401920195",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401920357",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401920427",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401920818",
       "2026-11-21T00:00:00Z"
     ],
     [
@@ -39646,43 +40444,7 @@
       "2026-11-21T00:00:00Z"
     ],
     [
-      "401921007",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401921107",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401921692",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401924736",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
       "401924844",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401925927",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401926134",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401926782",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401927396",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401929353",
       "2026-11-21T00:00:00Z"
     ],
     [
@@ -39760,6 +40522,10 @@
     [
       "401921691",
       "2026-11-21T02:30:00Z"
+    ],
+    [
+      "401925664",
+      "2026-11-21T03:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"

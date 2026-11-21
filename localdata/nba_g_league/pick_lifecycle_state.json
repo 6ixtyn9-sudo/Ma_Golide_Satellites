@@ -5,7 +5,7 @@
       "logical_picks": 12
     },
     "2026-11-20": {
-      "frozen_fixtures": 7,
+      "frozen_fixtures": 9,
       "logical_picks": 27
     }
   },
@@ -1497,6 +1497,276 @@
         "scheduled_utc": "2026-11-21T01:30:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
+      },
+      "401914582": {
+        "decision_cutoff_utc": "2026-11-21T02:00:00Z",
+        "frozen_at": "2026-11-21T02:08:29Z",
+        "game_id": "401914582",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Stockton Kings",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.392857,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "4eccc0f4af880bacf22d28f39aa2d4f8559f5f80405ed2cb18a2653f2af2325a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "3896d0704558e121cbde",
+            "game_id": "401914582",
+            "grade_status": "pending",
+            "home": "Coachella Valley Lakers",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "3896d0704558e121cbde",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.392857,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "Q4"
+          },
+          {
+            "away": "Stockton Kings",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.607143,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "d1c9ba905c7b81061b9a9b8ff97b94ff87babc22575db4c2e6aea55dee862f4f",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5fd2c02ae07da5a48094",
+            "game_id": "401914582",
+            "grade_status": "pending",
+            "home": "Coachella Valley Lakers",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "5fd2c02ae07da5a48094",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.607143,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Stockton Kings",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.589286,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "0e5bfb8ef259751e272e0d5d6341e4a3703c6f24069b6cdccac2a4811fc5336b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1bd7ceeca5015942c1ee",
+            "game_id": "401914582",
+            "grade_status": "pending",
+            "home": "Coachella Valley Lakers",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "1bd7ceeca5015942c1ee",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.589286,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T03:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
+      "401914583": {
+        "decision_cutoff_utc": "2026-11-21T02:00:00Z",
+        "frozen_at": "2026-11-21T02:08:29Z",
+        "game_id": "401914583",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Valley Suns",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.4,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "ca558002f201f03dc224acfaa380638acd8f3450502d841e9c1f7c323224875b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "f65ff7c6ce34d3e3af23",
+            "game_id": "401914583",
+            "grade_status": "pending",
+            "home": "San Diego Clippers",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "f65ff7c6ce34d3e3af23",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.4,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "Q4"
+          },
+          {
+            "away": "Valley Suns",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.589286,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "383c2c044cd8c61e23890a711dba12db173926dc9aacf7b9b5613753e19d41aa",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "da148f662702e2defd92",
+            "game_id": "401914583",
+            "grade_status": "pending",
+            "home": "San Diego Clippers",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "da148f662702e2defd92",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.589286,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Valley Suns",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.571429,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "b206f78570f5ef3992e6787649dc2cc9fb4a11c43d07d1870f20050c36fbebda",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "22e211ff41aa1fa81d0a",
+            "game_id": "401914583",
+            "grade_status": "pending",
+            "home": "San Diego Clippers",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "22e211ff41aa1fa81d0a",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.571429,
+            "role": null,
+            "scheduled_utc": "2026-11-21T03:00:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T03:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
       }
     }
   },
@@ -1504,14 +1774,6 @@
   "pending_frozen_games": [
     [
       "401914575",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401914576",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
-      "401914577",
       "2026-11-21T00:00:00Z"
     ],
     [
@@ -1529,6 +1791,14 @@
     [
       "401914581",
       "2026-11-21T01:30:00Z"
+    ],
+    [
+      "401914582",
+      "2026-11-21T03:00:00Z"
+    ],
+    [
+      "401914583",
+      "2026-11-21T03:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
