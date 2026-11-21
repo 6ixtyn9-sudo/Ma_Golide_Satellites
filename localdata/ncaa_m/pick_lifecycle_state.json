@@ -13,8 +13,8 @@
       "logical_picks": 462
     },
     "2026-11-21": {
-      "frozen_fixtures": 8,
-      "logical_picks": 406
+      "frozen_fixtures": 9,
+      "logical_picks": 413
     }
   },
   "frozen_by_date": {
@@ -41041,6 +41041,539 @@
       }
     },
     "2026-11-21": {
+      "401919828": {
+        "decision_cutoff_utc": "2026-11-21T17:30:00Z",
+        "frozen_at": "2026-11-21T17:47:03Z",
+        "game_id": "401919828",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Western Illinois Leathernecks",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.657283,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 143,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "cf5a72209a2c214ced696a4fdda1ff662bb38825811b844765aac85ba7e62123",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "100425afef89fccbbc20",
+            "game_id": "401919828",
+            "grade_status": "pending",
+            "home": "Mercyhurst Lakers",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "100425afef89fccbbc20",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.74,
+            "role": null,
+            "scheduled_utc": "2026-11-21T18:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Western Illinois Leathernecks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401919828",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T17:38:52Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.4081632653061225,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.591286,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 95,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "92f8db822abfac462af998f42addae9ff7eb4d115a3a26bff68c43043689cb59",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1f812b034404a34ad965",
+            "game_id": "401919828",
+            "grade_status": "pending",
+            "home": "Mercyhurst Lakers",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.37428,
+              "historical_pick_count": 1,
+              "individual_odds_band": "1.20-<1.50",
+              "losses": 1,
+              "market": "moneyline",
+              "observed_roi": -1.0,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -1.0,
+              "wins": 0
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "1f812b034404a34ad965",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-21T17:39:03Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.6758,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-21T18:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Western Illinois Leathernecks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401919828",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T17:38:52Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.4081632653061225,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.640058,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 143,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "3556ca042979fde07df32b07658c05f4c995c00b7fbb64703d4b49b21ca4cc9f",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "f06cfb9e2a2b73724e3e",
+            "game_id": "401919828",
+            "grade_status": "pending",
+            "home": "Mercyhurst Lakers",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "f06cfb9e2a2b73724e3e",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.72,
+            "role": null,
+            "scheduled_utc": "2026-11-21T18:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Western Illinois Leathernecks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401919828",
+              "line": -5.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T17:38:52Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.522097,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 32,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "777521f256c46bf4e211592a2c0f4a9aeb1c2ded94691996477084e4c5bc8e5b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "8b9beb7073222e80d966",
+            "game_id": "401919828",
+            "grade_status": "pending",
+            "home": "Mercyhurst Lakers",
+            "league": "NCAA_M",
+            "line": -5.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "8b9beb7073222e80d966",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-21T18:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Western Illinois Leathernecks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401919828",
+              "line": -6.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T12:39:04Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.517288,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "5819853fa0f47fbba1e662aae3623aa6f4534c45548cbad0a6b0c267ea0119b7",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a8dd7dbf679816f17b9b",
+            "game_id": "401919828",
+            "grade_status": "pending",
+            "home": "Mercyhurst Lakers",
+            "league": "NCAA_M",
+            "line": -6.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "a8dd7dbf679816f17b9b",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-21T18:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Western Illinois Leathernecks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401919828",
+              "line": 130.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T14:09:13Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.556379,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 28,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "6ae1bf7d02e74aa517070ef2b9ca57b4ff3e1e429f81077c752ecdbb2460db18",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "455c9dbed1436db51b67",
+            "game_id": "401919828",
+            "grade_status": "pending",
+            "home": "Mercyhurst Lakers",
+            "league": "NCAA_M",
+            "line": 130.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "455c9dbed1436db51b67",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-21T18:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Western Illinois Leathernecks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401919828",
+              "line": 129.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T17:38:52Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.556,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 30,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "1cfe3bd2ed011c98aaaca3c707266b37beab20becec3b7760e1372636a7c02e9",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "45bc114706b9424aaa31",
+            "game_id": "401919828",
+            "grade_status": "pending",
+            "home": "Mercyhurst Lakers",
+            "league": "NCAA_M",
+            "line": 129.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "45bc114706b9424aaa31",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-21T18:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Western Illinois Leathernecks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401919828",
+              "line": 133.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T07:08:47Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.518519,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "3fd631dc239f5af1923a28e73747c5dde95f8a6d93316bcb8dd3db4fc24bb897",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6b51a34c72ed29d38a95",
+            "game_id": "401919828",
+            "grade_status": "pending",
+            "home": "Mercyhurst Lakers",
+            "league": "NCAA_M",
+            "line": 133.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6b51a34c72ed29d38a95",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-21T18:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Western Illinois Leathernecks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401919828",
+              "line": 134.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T07:38:45Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.526727,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 25,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "68f7540add950db62104e2b4bc9c5a45cefe6fcafbbfcb1fa8942ddc86b2479e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "9fe2b4887dfcb40a6ad8",
+            "game_id": "401919828",
+            "grade_status": "pending",
+            "home": "Mercyhurst Lakers",
+            "league": "NCAA_M",
+            "line": 134.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "9fe2b4887dfcb40a6ad8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-21T18:30:00Z",
+            "selection": "over"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T18:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      },
       "401920948": {
         "decision_cutoff_utc": "2026-11-21T17:00:00Z",
         "frozen_at": "2026-11-21T17:14:24Z",
@@ -44665,6 +45198,10 @@
     [
       "401923312",
       "2026-11-21T18:00:00Z"
+    ],
+    [
+      "401919828",
+      "2026-11-21T18:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
