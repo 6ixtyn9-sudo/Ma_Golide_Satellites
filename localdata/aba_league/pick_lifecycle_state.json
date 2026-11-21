@@ -9,7 +9,7 @@
       "logical_picks": 12
     },
     "2026-11-21": {
-      "frozen_fixtures": 0,
+      "frozen_fixtures": 1,
       "logical_picks": 6
     }
   },
@@ -411,9 +411,154 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
       }
+    },
+    "2026-11-21": {
+      "aba_liga:26:1:83": {
+        "decision_cutoff_utc": "2026-11-21T15:30:00Z",
+        "frozen_at": "2026-11-21T15:41:37Z",
+        "game_id": "aba_liga:26:1:83",
+        "league": "ABA_LEAGUE",
+        "rows": [
+          {
+            "away": "Slovan Bratislava",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.268537,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 11,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "6ceea6e7f71351cf6eaa4937a387ada3b29a5e598bbad4dfb796a9064c47de30",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1a4c1b3df3c65a11016b",
+            "game_id": "aba_liga:26:1:83",
+            "grade_status": "pending",
+            "home": "Cedevita Olimpija",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "1a4c1b3df3c65a11016b",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.31,
+            "role": null,
+            "scheduled_utc": "2026-11-21T16:30:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "Slovan Bratislava",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.623171,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 11,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "77f3bcdaa925e58b3c7f951ed1427e87f481ca66cdf69bd94003b06676ffc1d1",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "123248c570bad047438f",
+            "game_id": "aba_liga:26:1:83",
+            "grade_status": "pending",
+            "home": "Cedevita Olimpija",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "123248c570bad047438f",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-21T16:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Slovan Bratislava",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.630732,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 11,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "8179799f95884fc7b32af62b35c2a5d86c82939dc2817eb72a912f5686a29f41",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "071e64aaef6cf81885db",
+            "game_id": "aba_liga:26:1:83",
+            "grade_status": "pending",
+            "home": "Cedevita Olimpija",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "071e64aaef6cf81885db",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.62,
+            "role": null,
+            "scheduled_utc": "2026-11-21T16:30:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T16:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      }
     }
   },
   "league": "ABA_LEAGUE",
-  "pending_frozen_games": [],
+  "pending_frozen_games": [
+    [
+      "aba_liga:26:1:83",
+      "2026-11-21T16:30:00Z"
+    ]
+  ],
   "schema_version": "magolide.pick_lifecycle_state"
 }
