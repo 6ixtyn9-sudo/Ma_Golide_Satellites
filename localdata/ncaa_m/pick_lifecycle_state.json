@@ -13,8 +13,8 @@
       "logical_picks": 462
     },
     "2026-11-21": {
-      "frozen_fixtures": 2,
-      "logical_picks": 388
+      "frozen_fixtures": 4,
+      "logical_picks": 394
     }
   },
   "frozen_by_date": {
@@ -41461,6 +41461,367 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
       },
+      "401923402": {
+        "decision_cutoff_utc": "2026-11-21T16:00:00Z",
+        "frozen_at": "2026-11-21T16:15:02Z",
+        "game_id": "401923402",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Columbia Lions",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.642105,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 141,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "b83351a71823427e75a77e1c06fe1712fc48a747ac81af4b0b78cf20ceac9444",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a5be1bb613b65eb22f98",
+            "game_id": "401923402",
+            "grade_status": "pending",
+            "home": "Boston University Terriers",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "a5be1bb613b65eb22f98",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.73,
+            "role": null,
+            "scheduled_utc": "2026-11-21T17:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Columbia Lions",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923402",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T16:08:54Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.518586,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 95,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "2b0266c1b7a2281fc94bc11a4f2505dc81f65d63c4914bf9029556ee7166aece",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "9a7667199427064e819f",
+            "game_id": "401923402",
+            "grade_status": "pending",
+            "home": "Boston University Terriers",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.063374,
+              "historical_pick_count": 9,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 3,
+              "market": "moneyline",
+              "observed_roi": 0.132712,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.150816,
+              "wins": 6
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "9a7667199427064e819f",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-21T16:09:10Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.6031,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-21T17:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Columbia Lions",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923402",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T16:08:54Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.586433,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 141,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "82f098f8eb7e42a05409b9869d93b6362a9bc26db859acff9249df572f91e95e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e48f89e6b5d4a9e97de7",
+            "game_id": "401923402",
+            "grade_status": "pending",
+            "home": "Boston University Terriers",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "e48f89e6b5d4a9e97de7",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.67,
+            "role": null,
+            "scheduled_utc": "2026-11-21T17:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Columbia Lions",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923402",
+              "line": 1.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T16:08:54Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 2.05,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.484098,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 31,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "19e52143f19e32bb245fb71b5fc060d6e8bb068bb5de0b9c1760dd97bcb099e8",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "dd48604ca4d096c448c9",
+            "game_id": "401923402",
+            "grade_status": "pending",
+            "home": "Boston University Terriers",
+            "league": "NCAA_M",
+            "line": 1.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "dd48604ca4d096c448c9",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-21T17:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Columbia Lions",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923402",
+              "line": 143.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T14:38:51Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.497627,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "ae37601c49840ae33ffe0aa702509fc97c65c8d4aea35d3d79e8c343a24bb797",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "40893d9235252b2e25e1",
+            "game_id": "401923402",
+            "grade_status": "pending",
+            "home": "Boston University Terriers",
+            "league": "NCAA_M",
+            "line": 143.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "40893d9235252b2e25e1",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-21T17:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Columbia Lions",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923402",
+              "line": 142.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T16:08:54Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.516333,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 30,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "aeedda1cf4ece2cfa66910de34a51aa290be308165d6935d763f26c2df9884d8",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5e633d396cd5c5d3306c",
+            "game_id": "401923402",
+            "grade_status": "pending",
+            "home": "Boston University Terriers",
+            "league": "NCAA_M",
+            "line": 142.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "5e633d396cd5c5d3306c",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-21T17:00:00Z",
+            "selection": "over"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T17:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      },
       "401924884": {
         "decision_cutoff_utc": "2026-11-21T15:00:00Z",
         "frozen_at": "2026-11-21T15:16:39Z",
@@ -42001,6 +42362,378 @@
         "scheduled_utc": "2026-11-21T16:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
+      },
+      "401925756": {
+        "decision_cutoff_utc": "2026-11-21T16:00:00Z",
+        "frozen_at": "2026-11-21T16:15:02Z",
+        "game_id": "401925756",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Detroit Mercy Titans",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.792105,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 141,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "35579ec87a2d3b5622a9b8b996a1272241b5076dcc0baee0c54b19bce0f643d6",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "37f52ccfca03a7979c44",
+            "game_id": "401925756",
+            "grade_status": "pending",
+            "home": "Michigan State Spartans",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "37f52ccfca03a7979c44",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.88,
+            "role": null,
+            "scheduled_utc": "2026-11-21T17:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Detroit Mercy Titans",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.912586,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 95,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "29424fd8277a5d37ea7f3541771acd06bae4995dcce5f09bd8a9a57b6f597cf0",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "039f640fa1b2b483d9c7",
+            "game_id": "401925756",
+            "grade_status": "pending",
+            "home": "Michigan State Spartans",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "039f640fa1b2b483d9c7",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-21T16:09:10Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9971,
+            "role": null,
+            "scheduled_utc": "2026-11-21T17:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Detroit Mercy Titans",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.876433,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 141,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "a960e6b39739551455b7d3b47351d8a6b717e2f8d7b7871cf9cf0c5167bd9382",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "37bdc9be6bd197df1c8c",
+            "game_id": "401925756",
+            "grade_status": "pending",
+            "home": "Michigan State Spartans",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "37bdc9be6bd197df1c8c",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.96,
+            "role": null,
+            "scheduled_utc": "2026-11-21T17:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Detroit Mercy Titans",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925756",
+              "line": -40.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T16:08:55Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.554098,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 31,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "14b8a587d3b596bb1eb47cfaceef8005e3a2c84e0268b0bf05c543ffae2d9879",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6fd97cac98d6ac4178e7",
+            "game_id": "401925756",
+            "grade_status": "pending",
+            "home": "Michigan State Spartans",
+            "league": "NCAA_M",
+            "line": -40.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6fd97cac98d6ac4178e7",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.63,
+            "role": null,
+            "scheduled_utc": "2026-11-21T17:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Detroit Mercy Titans",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925756",
+              "line": -41.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T14:38:58Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.554918,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 31,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "407148cf40c511fcc314d18510b68e3fd1151aaae651c74b4104269f89c98867",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "ec27a2e9a350451c95ce",
+            "game_id": "401925756",
+            "grade_status": "pending",
+            "home": "Michigan State Spartans",
+            "league": "NCAA_M",
+            "line": -41.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "ec27a2e9a350451c95ce",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.63,
+            "role": null,
+            "scheduled_utc": "2026-11-21T17:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Detroit Mercy Titans",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925756",
+              "line": 150.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T16:08:55Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.476333,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 30,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "a5d4fa841f51b6489e05927d64bce1ef4eeb31a8de09427f9172e0022aa5d365",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "20ecc8d0fc5bef18ec8d",
+            "game_id": "401925756",
+            "grade_status": "pending",
+            "home": "Michigan State Spartans",
+            "league": "NCAA_M",
+            "line": 150.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "20ecc8d0fc5bef18ec8d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-21T17:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Detroit Mercy Titans",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401925756",
+              "line": 150.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T05:39:03Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.456923,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 22,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "bb9bee2c0190f73647982ccb90d43ba1a99d16adb4d55c1c2b7e31bc39ba774e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "57b3004cca07e09d2407",
+            "game_id": "401925756",
+            "grade_status": "pending",
+            "home": "Michigan State Spartans",
+            "league": "NCAA_M",
+            "line": 150.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "57b3004cca07e09d2407",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-21T17:00:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T17:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
       }
     }
   },
@@ -42013,6 +42746,14 @@
     [
       "401924884",
       "2026-11-21T16:00:00Z"
+    ],
+    [
+      "401923402",
+      "2026-11-21T17:00:00Z"
+    ],
+    [
+      "401925756",
+      "2026-11-21T17:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
