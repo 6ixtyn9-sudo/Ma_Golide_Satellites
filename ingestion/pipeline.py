@@ -427,21 +427,27 @@ class Pipeline:
         if self.config.acquire_book_lines:
             self._acquire_book_lines(games)
         else:
+            # A no-paid-provider window must not suppress the keyless direct
+            # fallback.  The workflow's existing flag protects The Odds API
+            # credits, while this bounded source can still fill exact named
+            # full-game moneyline gaps in its live read-only rehearsal.
+            self._acquire_book_lines(games, direct_fallback_only=True)
             self.book_provider_status["policy"] = {
                 "enabled": False,
-                "status": "deferred_until_ticket_acquisition_window",
+                "status": "paid_sources_deferred_direct_fallback_attempted",
                 "detail": (
-                    "named-book acquisition was not authorised for this pipeline reason; "
-                    "retained pre-tip evidence remains visible but no provider request was made"
+                    "paid named-book acquisition was deferred outside the ticket window; "
+                    "the bounded direct BetExplorer fallback was still attempted for games "
+                    "without a fresh named full-game moneyline"
                 ),
             }
             self.gaps.append(
                 CoverageGap(
                     game_id=None,
-                    required_field="named_book_price",
+                    required_field="paid_named_book_price",
                     reason=CoverageState.NOT_APPLICABLE,
                     provider="price_budget",
-                    detail="price acquisition deferred outside the dated ticket-acquisition window",
+                    detail="paid provider acquisition deferred outside the dated ticket-acquisition window",
                     observed_utc=self._now_iso(),
                 )
             )
@@ -1196,7 +1202,9 @@ class Pipeline:
             return options
         return {}
 
-    def _acquire_book_lines(self, games: List[Game]) -> Dict[str, List[BookSnapshot]]:
+    def _acquire_book_lines(
+        self, games: List[Game], *, direct_fallback_only: bool = False
+    ) -> Dict[str, List[BookSnapshot]]:
         """Acquire and reconcile configured book sources with explicit health states.
 
         Missing optional credentials, an empty provider response, an identity
@@ -1207,7 +1215,9 @@ class Pipeline:
         """
 
         raw_snapshots: List[BookSnapshot] = []
-        providers = _book_providers(self.config.league)
+        providers = (
+            ("betexplorer_direct",) if direct_fallback_only else _book_providers(self.config.league)
+        )
         if not providers:
             self.book_provider_status["policy"] = {
                 "enabled": False,

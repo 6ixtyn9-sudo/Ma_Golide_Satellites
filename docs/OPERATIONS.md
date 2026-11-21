@@ -324,13 +324,15 @@ files):
 
 The workflow injects Predixsport as a process environment variable. It withholds
 The Odds API key unless the automated budget job has first committed a matching,
-three-credit permit for the current league/date. A missing secret or permit is
-safe: no request is made and the pregame report records a disabled/deferred
-source state rather than presenting it as an empty market response. The GitHub
-job summary also includes selected-side price coverage by market/period and the
-redacted source status, so a no-price result can be separated into a
-provider-capability gap, a disabled credential, an identity rejection, a budget
-deferral, or a true empty response.
+three-credit permit for the current league/date. That permit controls only the
+paid API lane: a missing secret or permit still runs the bounded direct
+BetExplorer fallback for canonical games lacking a fresh named full-game
+moneyline. The pregame report records both statuses rather than presenting a
+no-price result as an empty market response. The GitHub job summary also
+includes selected-side price coverage by market/period and the redacted source
+status, so a no-price result can be separated into a provider-capability gap, a
+disabled credential, an identity rejection, a budget deferral, or a true empty
+response.
 
 Safety behavior is deliberate:
 

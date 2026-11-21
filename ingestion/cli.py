@@ -103,7 +103,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         command_parser.add_argument(
             "--book-provider",
             default="none",
-            choices=["none", "theoddsapi", "espn"],
+            choices=["none", "theoddsapi", "betexplorer_direct", "espn"],
             help="restrict book evidence to one provider",
         )
         command_parser.add_argument(

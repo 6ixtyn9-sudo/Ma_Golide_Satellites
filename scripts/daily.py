@@ -580,7 +580,8 @@ def main() -> int:
         "--skip-book-acquisition",
         action="store_true",
         help=(
-            "do not contact named-price providers during pregame; use retained pre-tip evidence only"
+            "defer paid named-price providers during pregame; the bounded direct "
+            "BetExplorer fallback still fills missing full-game moneylines"
         ),
     )
     parser.add_argument("--acca-legs", type=int, default=3)
@@ -594,6 +595,7 @@ def main() -> int:
             "none",
             "theoddsapi",
             "betexplorer",
+            "betexplorer_direct",
             "espn",
         ],
     )
