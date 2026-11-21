@@ -63,7 +63,8 @@ minimal contract:
    legacy clubs/result header. During a direct 2026-11-20 review of the live
    views for events 84 and 90, the requested `/match/...` detail resolved to
    `/match-live/...` and omitted that legacy header. The live alternative is
-   accepted only if all of these independent, explicit signals are present:
+   used only when that header is absent, and is accepted only if all of these
+   independent, explicit signals are present:
    exactly one visible label link ending `#home_stats_live`, exactly one ending
    `#guest_stats_live`, and exactly two **image-only** scoped `/team/{id}/{sez}/1/`
    links in document left-to-right home/away order (the direct review displayed

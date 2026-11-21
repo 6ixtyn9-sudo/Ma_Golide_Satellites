@@ -203,6 +203,29 @@ def test_discovery_accepts_a_stable_detail_url_that_resolves_to_live_contract_ma
     ]
 
 
+def test_settled_detail_header_takes_precedence_over_retained_live_navigation():
+    settled_header = """
+<div id="match_clubs_and_results_info_table"><table><tr>
+<td class="hidden-xs"><span class="club"><a href="/team/12/25/1/0/buducnost/">Budućnost VOLI</a></span></td>
+<td class="gameScore">93 : 97</td>
+<td class="hidden-xs"><span class="club"><a href="/team/91/25/1/0/spartak/">Spartak Office Shoes</a></span></td>
+</tr></table></div>
+"""
+    # A completed view can retain live-fragment navigation in its source. The
+    # direct clubs/result header is the completed-detail contract; its scoped
+    # team names must not be overwritten by that navigation.
+    settled = LIVE_MATCH.replace('<table id="live_score_header">', settled_header + '<table id="live_score_header">').replace(
+        ">Budućnost VOLI</a>\n<a href=\"/match-live/6/25/1/Overview/#guest_stats_live\"",
+        ">Budućnost</a>\n<a href=\"/match-live/6/25/1/Overview/#guest_stats_live\"",
+    )
+
+    def fetch(url: str) -> str:
+        return CALENDAR if "/calendar/" in url else settled
+
+    games = aba.discover_games("20251005", text_fetch=fetch)
+    assert [(game.home_name, game.away_name) for game in games] == [("Budućnost VOLI", "Spartak Office Shoes")]
+
+
 def test_live_detail_refuses_missing_explicit_home_or_guest_label():
     def fetch(url: str) -> str:
         return CALENDAR if "/calendar/" in url else LIVE_MATCH.replace("#guest_stats_live", "#other")
