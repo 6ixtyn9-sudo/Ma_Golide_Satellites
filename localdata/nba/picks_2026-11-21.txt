@@ -1,5 +1,503 @@
-Ma Golide compact pick lifecycle marker
-league_state=nba
-target_date=2026-11-21
-full_forecast_board=Actions artifact and GitHub Release archive
-detailed_card_sha256=f9f6b980620389c0489a1a94321ff439f53cf472f680d00f7e0678f890cfab6c
+Ma Golide Picks — NBA 2026-11-21
+========================================================================
+Generated at: 2026-11-21 12:04 SAST
+PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
+Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
+Only FROZEN rows are immutable settlement evidence; all final grades use official results.
+Started and settled games are retained separately as archive status.
+
+
+ELIGIBLE CLEAN PICKS
+========================================================================
+  [team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
+      MONEYLINE full_game -> AWAY · p=76.9% (raw 71.0%) @1.133 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=83 · reasons=none · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [team_history_empirical/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      MONEYLINE full_game -> HOME · p=76.9% (raw 71.0%) @1.068 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=83 · reasons=none · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [team_history_empirical/team_history_empirical] Philadelphia 76ers vs Milwaukee Bucks · KO 2026-11-21 20:00 SAST
+      MONEYLINE full_game -> HOME · p=67.9% (raw 62.0%) @1.154 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=83 · reasons=none · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      MONEYLINE full_game -> HOME · p=65.9% (raw 60.0%) @1.448 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=83 · reasons=none · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [team_history_empirical/team_history_empirical] New York Knicks vs Portland Trail Blazers · KO 2026-11-22 02:30 SAST
+      MONEYLINE full_game -> HOME · p=64.9% (raw 59.0%) @1.498 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=83 · reasons=none · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [team_history_empirical/team_history_empirical] Dallas Mavericks vs Los Angeles Clippers · KO 2026-11-22 03:00 SAST
+      MONEYLINE full_game -> AWAY · p=59.9% (raw 54.0%) @2.710 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=83 · reasons=none · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=2 · recency ROI -100.0% / adjusted -64.6%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+
+CAUTION PICKS
+========================================================================
+  [provider:espn/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      MONEYLINE full_game -> HOME · p=92.4% (raw 90.5%) @1.068 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=13 · reasons=insufficient_walk_forward_samples · prediction=espn
+      PAPER SINGLE · moneyline full_game · p 0.90-1.00 · odds 1.00-<1.20 · n=1 · recency ROI +9.8% / adjusted +10.3%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:07Z
+  [provider:espn/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
+      MONEYLINE full_game -> AWAY · p=92.2% (raw 90.3%) @1.133 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=13 · reasons=insufficient_walk_forward_samples · prediction=espn
+      PAPER SINGLE · moneyline full_game · p 0.90-1.00 · odds 1.00-<1.20 · n=1 · recency ROI +9.8% / adjusted +10.3%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:07Z
+  [provider:hardwood/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      MONEYLINE full_game -> HOME · p=90.4% (raw 91.0%) @1.068 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=9 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [provider:espn/team_history_empirical] Philadelphia 76ers vs Milwaukee Bucks · KO 2026-11-21 20:00 SAST
+      MONEYLINE full_game -> HOME · p=87.7% (raw 85.9%) @1.154 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=13 · reasons=insufficient_walk_forward_samples · prediction=espn
+      PAPER SINGLE · moneyline full_game · p 0.80-<0.90 · odds 1.00-<1.20 · n=1 · recency ROI +11.2% / adjusted +10.6%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:07Z
+  [provider:hardwood/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
+      MONEYLINE full_game -> AWAY · p=85.1% (raw 85.7%) @1.133 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=9 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [provider:hardwood/team_history_empirical] Philadelphia 76ers vs Milwaukee Bucks · KO 2026-11-21 20:00 SAST
+      MONEYLINE full_game -> HOME · p=82.3% (raw 82.9%) @1.154 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=9 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [context_availability+team_history_empirical/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      SPREAD full_game +17.5 -> AWAY · p=80.9% (raw 85.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · spread full_game · p 0.80-<0.90 · odds 1.50-<2.00 · n=2 · recency ROI +88.1% / adjusted +22.6%
+  [context_availability+team_history_empirical/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      SPREAD full_game +16.5 -> AWAY · p=80.2% (raw 85.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=10 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · spread full_game · p 0.80-<0.90 · odds 1.50-<2.00 · n=2 · recency ROI +88.1% / adjusted +25.1%
+      archived_revisions=2 · latest_evidence_utc=2026-11-21T05:38:00Z
+  [team_history_empirical/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      SPREAD full_game +17.5 -> AWAY · p=78.0% (raw 78.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      SPREAD full_game +16.5 -> AWAY · p=76.7% (raw 76.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=9 · reasons=insufficient_walk_forward_samples · prediction=history
+      archived_revisions=2 · latest_evidence_utc=2026-11-21T05:38:00Z
+  [context_availability+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
+      MONEYLINE full_game -> AWAY · p=74.5% (raw 81.0%) @1.133 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [provider:espn/team_history_empirical] Dallas Mavericks vs Los Angeles Clippers · KO 2026-11-22 03:00 SAST
+      MONEYLINE full_game -> HOME · p=74.3% (raw 72.4%) @1.488 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=13 · reasons=insufficient_walk_forward_samples · prediction=espn
+      PAPER SINGLE · moneyline full_game · p 0.70-<0.80 · odds 1.20-<1.50 · n=1 · recency ROI +37.9% / adjusted +17.2%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:07Z
+  [provider:espn/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      MONEYLINE full_game -> HOME · p=72.7% (raw 70.8%) @1.448 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=13 · reasons=insufficient_walk_forward_samples · prediction=espn
+      PAPER SINGLE · moneyline full_game · p 0.70-<0.80 · odds 1.20-<1.50 · n=1 · recency ROI +37.9% / adjusted +17.2%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:07Z
+  [team_history_empirical/team_history_empirical] Dallas Mavericks vs Los Angeles Clippers · KO 2026-11-22 03:00 SAST
+      SPREAD full_game +5.5 -> AWAY · p=72.0% (raw 72.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=2 · recency ROI -6.2% / adjusted +4.1%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [team_history_empirical/team_history_empirical] Philadelphia 76ers vs Milwaukee Bucks · KO 2026-11-21 20:00 SAST
+      SPREAD full_game +11.5 -> AWAY · p=70.0% (raw 70.0%) @1.971 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=2 · recency ROI -6.2% / adjusted +4.1%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [context_availability+team_history_empirical/team_history_empirical] Philadelphia 76ers vs Milwaukee Bucks · KO 2026-11-21 20:00 SAST
+      TOTAL full_game 229.5 -> UNDER · p=69.5% (raw 76.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=12 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=9 · recency ROI +7.2% / adjusted +7.8%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [provider:espn+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
+      SPREAD full_game -12.5 -> AWAY · p=68.8% (raw 66.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:07Z
+  [provider:espn/team_history_empirical] New York Knicks vs Portland Trail Blazers · KO 2026-11-22 02:30 SAST
+      MONEYLINE full_game -> HOME · p=67.0% (raw 65.1%) @1.498 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=13 · reasons=insufficient_walk_forward_samples · prediction=espn
+      PAPER SINGLE · moneyline full_game · p 0.60-<0.70 · odds 1.20-<1.50 · n=1 · recency ROI +46.1% / adjusted +18.9%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:07Z
+  [provider:hardwood/team_history_empirical] New York Knicks vs Portland Trail Blazers · KO 2026-11-22 02:30 SAST
+      MONEYLINE full_game -> HOME · p=66.8% (raw 67.4%) @1.498 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=9 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [provider:hardwood/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      MONEYLINE full_game -> HOME · p=65.2% (raw 65.8%) @1.448 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=9 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
+      SPREAD full_game +12.5 -> HOME · p=64.0% (raw 64.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=2 · recency ROI +90.6% / adjusted +42.0%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [context_availability+team_history_empirical/team_history_empirical] Philadelphia 76ers vs Milwaukee Bucks · KO 2026-11-21 20:00 SAST
+      MONEYLINE full_game -> HOME · p=62.5% (raw 69.0%) @1.154 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [context_availability+team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 227.5 -> UNDER · p=61.0% (raw 67.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=10 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=7 · recency ROI +10.0% / adjusted +7.8%
+      archived_revisions=2 · latest_evidence_utc=2026-11-21T05:38:00Z
+  [context_availability+team_history_empirical/team_history_empirical] Philadelphia 76ers vs Milwaukee Bucks · KO 2026-11-21 20:00 SAST
+      SPREAD full_game +11.5 -> AWAY · p=58.9% (raw 63.0%) @1.971 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [provider:espn+team_history_empirical/team_history_empirical] Philadelphia 76ers vs Milwaukee Bucks · KO 2026-11-21 20:00 SAST
+      SPREAD full_game -11.5 -> HOME · p=57.8% (raw 55.0%) @1.855 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=5 · recency ROI -22.0% / adjusted -11.2%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:07Z
+  [context_availability+team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 226.5 -> UNDER · p=56.5% (raw 63.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=12 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=8 · recency ROI -5.3% / adjusted -1.1%
+  [provider:espn+team_history_empirical/team_history_empirical] Dallas Mavericks vs Los Angeles Clippers · KO 2026-11-22 03:00 SAST
+      SPREAD full_game -5.5 -> HOME · p=55.8% (raw 53.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=5 · recency ROI -22.0% / adjusted -11.2%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:07Z
+  [provider:espn+team_history_empirical/team_history_empirical] New York Knicks vs Portland Trail Blazers · KO 2026-11-22 02:30 SAST
+      SPREAD full_game +5.5 -> AWAY · p=55.8% (raw 53.0%) @1.855 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=5 · recency ROI -22.0% / adjusted -11.2%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:07Z
+  [context_availability+team_history_empirical/team_history_empirical] Dallas Mavericks vs Los Angeles Clippers · KO 2026-11-22 03:00 SAST
+      MONEYLINE full_game -> HOME · p=55.5% (raw 62.0%) @1.488 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [provider:espn+team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      SPREAD full_game -5.5 -> HOME · p=54.8% (raw 52.0%) @1.877 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=5 · recency ROI -22.0% / adjusted -11.2%
+      archived_revisions=2 · latest_evidence_utc=2026-11-21T10:02:07Z
+  [provider:espn+team_history_empirical/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      SPREAD full_game +17.5 -> AWAY · p=54.8% (raw 52.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      SPREAD full_game +5.5 -> AWAY · p=54.0% (raw 54.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=4 · recency ROI -6.8% / adjusted +0.9%
+      archived_revisions=2 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [team_history_empirical/team_history_empirical] New York Knicks vs Portland Trail Blazers · KO 2026-11-22 02:30 SAST
+      SPREAD full_game +5.5 -> AWAY · p=54.0% (raw 54.0%) @1.855 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      SPREAD full_game +4.5 -> AWAY · p=53.7% (raw 53.0%) @1.980 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=9 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=3 · recency ROI +24.4% / adjusted +19.1%
+  [provider:hardwood+team_history_empirical/team_history_empirical] Philadelphia 76ers vs Milwaukee Bucks · KO 2026-11-21 20:00 SAST
+      TOTAL full_game 229.5 -> UNDER · p=53.7% (raw 58.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [context_availability+team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      MONEYLINE full_game -> HOME · p=53.5% (raw 60.0%) @1.448 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [context_availability+team_history_empirical/team_history_empirical] New York Knicks vs Portland Trail Blazers · KO 2026-11-22 02:30 SAST
+      TOTAL full_game 217.5 -> UNDER · p=53.5% (raw 60.0%) @1.893 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=12 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=8 · recency ROI -5.3% / adjusted -1.1%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [provider:espn+team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      SPREAD full_game -4.5 -> HOME · p=53.2% (raw 54.0%) @1.840 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=5 · recency ROI -22.0% / adjusted -11.6%
+  [context_availability+team_history_empirical/team_history_empirical] Dallas Mavericks vs Los Angeles Clippers · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 229.5 -> UNDER · p=53.0% (raw 59.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=10 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=8 · recency ROI -5.3% / adjusted -3.0%
+      archived_revisions=2 · latest_evidence_utc=2026-11-21T05:38:00Z
+  [context_availability+team_history_empirical/team_history_empirical] Dallas Mavericks vs Los Angeles Clippers · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 228.5 -> UNDER · p=52.5% (raw 59.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=12 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=8 · recency ROI -5.3% / adjusted -1.1%
+  [context_availability+team_history_empirical/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 227.5 -> UNDER · p=52.5% (raw 59.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=12 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=8 · recency ROI -5.3% / adjusted -1.1%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
+      TOTAL full_game 217.5 -> OVER · p=52.4% (raw 60.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=10 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=4 · recency ROI -53.4% / adjusted -36.8%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [provider:hardwood+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
+      SPREAD full_game -12.5 -> AWAY · p=52.3% (raw 53.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [context_availability+team_history_empirical/team_history_empirical] New York Knicks vs Portland Trail Blazers · KO 2026-11-22 02:30 SAST
+      MONEYLINE full_game -> HOME · p=51.5% (raw 58.0%) @1.498 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 226.5 -> OVER · p=51.4% (raw 59.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=10 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=4 · recency ROI -53.4% / adjusted -36.8%
+  [team_history_empirical/team_history_empirical] New York Knicks vs Portland Trail Blazers · KO 2026-11-22 02:30 SAST
+      TOTAL full_game 217.5 -> OVER · p=51.4% (raw 59.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=10 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=4 · recency ROI -53.4% / adjusted -36.8%
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [team_history_empirical/team_history_empirical] Philadelphia 76ers vs Milwaukee Bucks · KO 2026-11-21 20:00 SAST
+      TOTAL full_game 229.5 -> UNDER · p=51.4% (raw 59.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=10 · reasons=insufficient_walk_forward_samples · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [provider:hardwood+team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      SPREAD full_game +5.5 -> AWAY · p=51.3% (raw 52.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=2 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [provider:hardwood+team_history_empirical/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      SPREAD full_game +17.5 -> AWAY · p=51.3% (raw 52.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:espn+team_history_empirical/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      SPREAD full_game -16.5 -> HOME · p=51.2% (raw 52.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=5 · recency ROI -22.0% / adjusted -11.6%
+      archived_revisions=2 · latest_evidence_utc=2026-11-21T05:38:02Z
+  [provider:hardwood+team_history_empirical/team_history_empirical] New York Knicks vs Portland Trail Blazers · KO 2026-11-22 02:30 SAST
+      SPREAD full_game -5.5 -> HOME · p=50.3% (raw 51.0%) @1.962 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=4 · recency ROI -4.2% / adjusted -4.4%
+  [provider:hardwood+team_history_empirical/team_history_empirical] Philadelphia 76ers vs Milwaukee Bucks · KO 2026-11-21 20:00 SAST
+      SPREAD full_game -11.5 -> HOME · p=50.3% (raw 51.0%) @1.855 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+
+WATCHLIST — NO MATCHED ODDS
+========================================================================
+  [team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
+      MONEYLINE H1 -> AWAY · p=69.9% (raw 66.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=84 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      MONEYLINE H1 -> HOME · p=65.9% (raw 62.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=84 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Philadelphia 76ers vs Milwaukee Bucks · KO 2026-11-21 20:00 SAST
+      MONEYLINE H1 -> HOME · p=62.9% (raw 59.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=84 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Dallas Mavericks vs Los Angeles Clippers · KO 2026-11-22 03:00 SAST
+      MONEYLINE H1 -> AWAY · p=60.9% (raw 57.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=84 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      MONEYLINE H1 -> HOME · p=58.9% (raw 55.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=84 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] New York Knicks vs Portland Trail Blazers · KO 2026-11-22 02:30 SAST
+      MONEYLINE H1 -> HOME · p=56.9% (raw 53.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=84 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Dallas Mavericks vs Los Angeles Clippers · KO 2026-11-22 03:00 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=41.6% (raw 40.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=84 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Philadelphia 76ers vs Milwaukee Bucks · KO 2026-11-21 20:00 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=40.6% (raw 39.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=84 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=39.6% (raw 38.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=84 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=37.6% (raw 36.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=84 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=34.6% (raw 33.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=84 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] New York Knicks vs Portland Trail Blazers · KO 2026-11-22 02:30 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=33.6% (raw 32.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=84 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+
+WATCHLIST — INSUFFICIENT CONTEXT
+========================================================================
+  [context_availability+team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      SPREAD full_game +5.5 -> AWAY · p=49.9% (raw 54.0%) @1.943 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+      archived_revisions=2 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [context_availability+team_history_empirical/team_history_empirical] New York Knicks vs Portland Trail Blazers · KO 2026-11-22 02:30 SAST
+      SPREAD full_game +5.5 -> AWAY · p=49.9% (raw 54.0%) @1.855 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [provider:hardwood+team_history_empirical/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 227.5 -> OVER · p=49.7% (raw 54.0%) @1.870 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=hardwood
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [context_availability+team_history_empirical/team_history_empirical] Dallas Mavericks vs Los Angeles Clippers · KO 2026-11-22 03:00 SAST
+      SPREAD full_game +5.5 -> AWAY · p=48.9% (raw 53.0%) @1.909 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [provider:hardwood+team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 226.5 -> OVER · p=48.7% (raw 53.0%) @1.909 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] New York Knicks vs Portland Trail Blazers · KO 2026-11-22 02:30 SAST
+      TOTAL full_game 217.5 -> OVER · p=48.7% (raw 53.0%) @1.926 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=hardwood
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [provider:hardwood+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
+      TOTAL full_game 217.5 -> OVER · p=48.7% (raw 53.0%) @1.909 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=hardwood
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 227.5 -> OVER · p=48.3% (raw 56.0%) @1.952 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+      archived_revisions=2 · latest_evidence_utc=2026-11-21T05:38:00Z
+  [context_availability+team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      SPREAD full_game +4.5 -> AWAY · p=48.2% (raw 53.0%) @1.980 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=10 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [provider:espn+team_history_empirical/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 227.5 -> OVER · p=47.3% (raw 60.0%) @1.870 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=13 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:07Z
+  [context_availability+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
+      SPREAD full_game +12.5 -> HOME · p=46.9% (raw 51.0%) @1.943 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      MONEYLINE full_game -> HOME · p=46.5% (raw 53.0%) @1.068 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [team_history_empirical/team_history_empirical] Dallas Mavericks vs Los Angeles Clippers · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 228.5 -> OVER · p=46.4% (raw 54.0%) @1.893 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=10 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] San Antonio Spurs vs New Orleans Pelicans · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 227.5 -> OVER · p=46.4% (raw 54.0%) @1.870 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=10 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [context_availability+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
+      TOTAL full_game 217.5 -> OVER · p=45.5% (raw 52.0%) @1.909 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=12 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:06Z
+  [provider:espn+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
+      TOTAL full_game 217.5 -> OVER · p=45.3% (raw 58.0%) @1.909 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=13 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:07Z
+  [team_history_empirical/team_history_empirical] Dallas Mavericks vs Los Angeles Clippers · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 229.5 -> OVER · p=45.3% (raw 53.0%) @1.943 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=8 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+      archived_revisions=2 · latest_evidence_utc=2026-11-21T05:38:00Z
+  [provider:espn+team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 227.5 -> OVER · p=44.8% (raw 54.0%) @1.952 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=10 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+      archived_revisions=2 · latest_evidence_utc=2026-11-21T05:38:02Z
+  [provider:espn+team_history_empirical/team_history_empirical] Minnesota Timberwolves vs Memphis Grizzlies · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 226.5 -> OVER · p=42.3% (raw 55.0%) @1.909 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=13 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Dallas Mavericks vs Los Angeles Clippers · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 229.5 -> UNDER · p=41.8% (raw 51.0%) @1.870 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=10 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+      archived_revisions=2 · latest_evidence_utc=2026-11-21T05:38:01Z
+  [provider:espn+team_history_empirical/team_history_empirical] Dallas Mavericks vs Los Angeles Clippers · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 228.5 -> OVER · p=39.3% (raw 52.0%) @1.893 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=13 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] New York Knicks vs Portland Trail Blazers · KO 2026-11-22 02:30 SAST
+      TOTAL full_game 217.5 -> OVER · p=39.3% (raw 52.0%) @1.926 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=13 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+      archived_revisions=3 · latest_evidence_utc=2026-11-21T10:02:07Z
+
+SKIPPED — INELIGIBLE
+========================================================================
+  (none)
+
+IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
+========================================================================
+  (none)
+
+SETTLED PICKS — ARCHIVE ONLY
+========================================================================
+  (none)
+
+Active summary: ELIGIBLE_CLEAN=6 CAUTION=52 WATCHLIST_NO_ODDS=12 WATCHLIST_INSUFFICIENT_CONTEXT=22 SKIPPED_INELIGIBLE=0
+ROI-qualified individual paper singles: 12
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=0
+Logical picks shown: 92 · superseded observations: 113
+Total archived pick evidence rows: 205
+Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
+Bet only what you can afford to lose.

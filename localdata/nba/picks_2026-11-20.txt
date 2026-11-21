@@ -1,6 +1,6 @@
 Ma Golide Picks — NBA 2026-11-20
 ========================================================================
-Generated at: 2026-11-20 07:09 SAST
+Generated at: 2026-11-21 12:04 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -9,550 +9,19 @@ Started and settled games are retained separately as archive status.
 
 ELIGIBLE CLEAN PICKS
 ========================================================================
-  [team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
-      MONEYLINE full_game -> HOME · p=69.0% (raw 63.0%) @1.096 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=none · prediction=history
-  [team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
-      MONEYLINE full_game -> AWAY · p=68.0% (raw 62.0%) @1.461 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=none · prediction=history
-  [team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
-      MONEYLINE full_game -> HOME · p=66.0% (raw 60.0%) @1.407 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=none · prediction=history
-  [team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
-      MONEYLINE full_game -> HOME · p=64.0% (raw 58.0%) @1.192 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=none · prediction=history
-  [team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
-      MONEYLINE full_game -> AWAY · p=64.0% (raw 58.0%) @1.556 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=none · prediction=history
-  [team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
-      MONEYLINE full_game -> HOME · p=62.0% (raw 56.0%) @1.344 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=none · prediction=history
-  [team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
-      MONEYLINE full_game -> AWAY · p=60.0% (raw 54.0%) @2.010 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=none · prediction=history
-      ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 2.00+ · n=0 · recency ROI n/a / adjusted n/a
-  [team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
-      MONEYLINE full_game -> AWAY · p=59.0% (raw 53.0%) @2.940 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=none · prediction=history
-      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=1 · recency ROI -100.0% / adjusted -59.0%
-  [team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
-      MONEYLINE full_game -> HOME · p=59.0% (raw 53.0%) @1.704 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=none · prediction=history
+  (none)
 
 CAUTION PICKS
 ========================================================================
-  [provider:espn/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
-      MONEYLINE full_game -> HOME · p=89.4% (raw 88.9%) @1.192 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · moneyline full_game · p 0.80-<0.90 · odds 1.00-<1.20 · n=0 · recency ROI n/a / adjusted n/a
-  [provider:espn/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
-      MONEYLINE full_game -> HOME · p=88.2% (raw 87.6%) @1.096 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · moneyline full_game · p 0.80-<0.90 · odds 1.00-<1.20 · n=0 · recency ROI n/a / adjusted n/a
-  [provider:hardwood/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
-      MONEYLINE full_game -> HOME · p=84.2% (raw 83.9%) @1.096 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [provider:hardwood/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
-      MONEYLINE full_game -> HOME · p=81.8% (raw 81.5%) @1.192 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [provider:espn/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
-      MONEYLINE full_game -> HOME · p=81.1% (raw 80.6%) @1.407 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · moneyline full_game · p 0.80-<0.90 · odds 1.20-<1.50 · n=0 · recency ROI n/a / adjusted n/a
-  [context_availability+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
-      TOTAL full_game 240.5 -> UNDER · p=76.3% (raw 81.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · total full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -32.7%
-  [context_availability+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
-      SPREAD full_game +14.5 -> AWAY · p=75.7% (raw 75.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · spread full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
-  [provider:espn/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
-      MONEYLINE full_game -> HOME · p=75.5% (raw 75.0%) @1.426 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · moneyline full_game · p 0.70-<0.80 · odds 1.20-<1.50 · n=0 · recency ROI n/a / adjusted n/a
-  [context_availability+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
-      SPREAD full_game +7.5 -> AWAY · p=74.7% (raw 74.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · spread full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
-  [provider:hardwood/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
-      MONEYLINE full_game -> HOME · p=74.2% (raw 73.9%) @1.344 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-      ROI-BAND BLOCKED · moneyline full_game · p 0.70-<0.80 · odds 1.20-<1.50 · n=0 · recency ROI n/a / adjusted n/a
-  [team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
-      SPREAD full_game +14.5 -> AWAY · p=73.6% (raw 74.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=history
-  [context_availability+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
-      SPREAD full_game +11.5 -> AWAY · p=72.7% (raw 72.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · spread full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
-  [provider:hardwood/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
-      MONEYLINE full_game -> HOME · p=72.6% (raw 72.3%) @1.407 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [context_availability+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
-      TOTAL full_game 230.5 -> UNDER · p=72.3% (raw 77.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · total full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -32.7%
-  [provider:espn/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
-      MONEYLINE full_game -> HOME · p=71.8% (raw 71.3%) @1.344 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-  [context_availability+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
-      MONEYLINE full_game -> HOME · p=71.8% (raw 70.0%) @1.704 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · moneyline full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
-  [team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
-      SPREAD full_game +11.5 -> AWAY · p=71.6% (raw 72.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=history
-  [context_availability+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
-      TOTAL full_game 228.5 -> UNDER · p=70.3% (raw 75.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · total full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -32.7%
-  [team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
-      TOTAL full_game 215.5 -> OVER · p=68.9% (raw 73.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -46.4%
-  [context_availability+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
-      SPREAD full_game +6.5 -> AWAY · p=68.7% (raw 68.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI -36.9% / adjusted -16.5%
-  [provider:hardwood/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
-      MONEYLINE full_game -> AWAY · p=68.6% (raw 68.4%) @1.461 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-      ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.20-<1.50 · n=0 · recency ROI n/a / adjusted n/a
-  [team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
-      SPREAD full_game +6.5 -> AWAY · p=67.6% (raw 68.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=history
-  [provider:espn/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
-      MONEYLINE full_game -> AWAY · p=66.8% (raw 66.3%) @1.461 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-  [context_availability+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
-      SPREAD full_game +8.5 -> AWAY · p=66.7% (raw 66.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI -36.9% / adjusted -16.5%
-  [team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
-      SPREAD full_game +8.5 -> AWAY · p=65.6% (raw 66.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=history
-  [provider:hardwood/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
-      MONEYLINE full_game -> HOME · p=65.3% (raw 65.0%) @1.426 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [provider:hardwood+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
-      TOTAL full_game 215.5 -> OVER · p=65.1% (raw 69.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [provider:hardwood/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
-      MONEYLINE full_game -> AWAY · p=64.9% (raw 64.7%) @1.556 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-      ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
-  [context_availability+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
-      TOTAL full_game 234.5 -> UNDER · p=64.3% (raw 69.0%) @1.943 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      PAPER SINGLE · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +30.2% / adjusted +9.8%
-  [context_availability+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
-      MONEYLINE full_game -> HOME · p=63.8% (raw 62.0%) @1.096 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-  [provider:hardwood/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
-      MONEYLINE full_game -> HOME · p=63.3% (raw 63.0%) @1.704 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
-      TOTAL full_game 218.5 -> OVER · p=62.9% (raw 67.0%) @1.943 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -46.4%
-  [context_availability+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
-      SPREAD full_game +4.5 -> HOME · p=62.7% (raw 62.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI -36.9% / adjusted -16.5%
-  [provider:espn/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
-      MONEYLINE full_game -> AWAY · p=62.4% (raw 61.8%) @1.556 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-  [team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
-      TOTAL full_game 240.5 -> UNDER · p=61.9% (raw 66.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-  [context_availability+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
-      SPREAD full_game +1.5 -> AWAY · p=60.7% (raw 60.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI -36.9% / adjusted -16.5%
-  [context_availability+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
-      TOTAL full_game 224.5 -> UNDER · p=60.3% (raw 65.0%) @1.943 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      PAPER SINGLE · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +30.2% / adjusted +9.8%
-  [provider:espn/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
-      MONEYLINE full_game -> HOME · p=58.9% (raw 58.4%) @1.704 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-  [context_availability+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
-      MONEYLINE full_game -> AWAY · p=58.8% (raw 57.0%) @2.010 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-  [context_availability+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
-      MONEYLINE full_game -> HOME · p=58.8% (raw 57.0%) @1.192 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-  [context_availability+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
-      SPREAD full_game -3.5 -> HOME · p=58.7% (raw 58.0%) @1.943 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      PAPER SINGLE · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=1 · recency ROI +98.0% / adjusted +27.2%
-  [team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
-      SPREAD full_game +7.5 -> AWAY · p=58.6% (raw 59.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=history
-  [provider:hardwood+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
-      TOTAL full_game 234.5 -> UNDER · p=58.1% (raw 62.0%) @1.943 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [context_availability+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
-      MONEYLINE full_game -> AWAY · p=57.8% (raw 56.0%) @1.461 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-  [context_availability+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
-      MONEYLINE full_game -> HOME · p=57.8% (raw 56.0%) @1.344 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-  [team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
-      SPREAD full_game +1.5 -> AWAY · p=57.6% (raw 58.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=history
-  [context_availability+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
-      TOTAL full_game 223.5 -> UNDER · p=57.3% (raw 62.0%) @1.943 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
-  [context_availability+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
-      MONEYLINE full_game -> AWAY · p=56.8% (raw 55.0%) @3.030 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=0 · recency ROI n/a / adjusted n/a
-  [context_availability+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
-      SPREAD full_game +5.5 -> HOME · p=56.7% (raw 56.0%) @1.943 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      PAPER SINGLE · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=1 · recency ROI +98.0% / adjusted +27.2%
-  [provider:hardwood+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
-      TOTAL full_game 240.5 -> UNDER · p=56.1% (raw 60.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
-      TOTAL full_game 234.5 -> UNDER · p=54.9% (raw 59.0%) @1.943 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-  [context_availability+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
-      MONEYLINE full_game -> AWAY · p=54.8% (raw 53.0%) @2.940 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-  [provider:espn+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
-      SPREAD full_game -11.5 -> HOME · p=54.7% (raw 58.0%) @1.943 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -100.0% / adjusted -69.3%
-  [team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
-      SPREAD full_game +3.5 -> AWAY · p=54.6% (raw 55.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
-  [provider:espn+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
-      TOTAL full_game 218.5 -> OVER · p=54.3% (raw 58.0%) @1.943 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-  [provider:espn+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
-      TOTAL full_game 234.5 -> UNDER · p=54.3% (raw 58.0%) @1.943 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-  [provider:espn+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
-      TOTAL full_game 215.5 -> OVER · p=54.3% (raw 58.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-  [provider:espn+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
-      TOTAL full_game 226.5 -> OVER · p=54.3% (raw 58.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -10.6%
-  [context_availability+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
-      TOTAL full_game 218.5 -> UNDER · p=54.3% (raw 59.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
-  [provider:hardwood+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
-      TOTAL full_game 226.5 -> UNDER · p=54.1% (raw 58.0%) @1.943 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -55.5%
-  [provider:hardwood+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
-      SPREAD full_game +6.5 -> AWAY · p=54.1% (raw 56.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [provider:hardwood+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
-      SPREAD full_game +1.5 -> AWAY · p=54.1% (raw 56.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [provider:hardwood+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
-      SPREAD full_game +14.5 -> AWAY · p=54.1% (raw 56.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [provider:espn+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
-      TOTAL full_game 228.5 -> UNDER · p=53.3% (raw 57.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-  [context_availability+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
-      TOTAL full_game 226.5 -> UNDER · p=53.3% (raw 58.0%) @1.943 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
-  [provider:hardwood+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
-      TOTAL full_game 224.5 -> UNDER · p=53.1% (raw 57.0%) @1.943 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [provider:espn+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
-      SPREAD full_game -7.5 -> HOME · p=52.7% (raw 56.0%) @1.943 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -100.0% / adjusted -69.3%
-  [provider:espn+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
-      SPREAD full_game +1.5 -> AWAY · p=52.7% (raw 56.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-  [provider:espn+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
-      SPREAD full_game +8.5 -> AWAY · p=52.7% (raw 56.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-  [provider:espn+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
-      SPREAD full_game +3.5 -> AWAY · p=51.7% (raw 55.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-  [team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
-      SPREAD full_game +4.5 -> HOME · p=51.6% (raw 52.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=history
-  [provider:espn/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
-      MONEYLINE full_game -> HOME · p=51.1% (raw 50.6%) @1.833 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
-  [provider:hardwood+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
-      SPREAD full_game -5.5 -> AWAY · p=51.1% (raw 53.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -52.1%
-  [provider:hardwood+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
-      SPREAD full_game +7.5 -> AWAY · p=51.1% (raw 53.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [provider:hardwood+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
-      SPREAD full_game +8.5 -> AWAY · p=51.1% (raw 53.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [provider:hardwood+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
-      SPREAD full_game +11.5 -> AWAY · p=51.1% (raw 53.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [provider:hardwood+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
-      SPREAD full_game -4.5 -> AWAY · p=51.1% (raw 53.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -52.1%
-  [provider:hardwood/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
-      MONEYLINE full_game -> AWAY · p=50.7% (raw 50.4%) @2.010 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-  [provider:espn+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
-      TOTAL full_game 240.5 -> OVER · p=50.3% (raw 54.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -10.6%
-  [provider:espn+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
-      TOTAL full_game 230.5 -> OVER · p=50.3% (raw 54.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
-      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -10.6%
-  [provider:hardwood+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
-      SPREAD full_game +3.5 -> AWAY · p=50.1% (raw 52.0%) @1.877 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  (none)
 
 WATCHLIST — NO MATCHED ODDS
 ========================================================================
-  [team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
-      MONEYLINE H1 -> AWAY · p=67.1% (raw 62.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=no_exact_bookmaker_market · prediction=history
-  [team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
-      MONEYLINE H1 -> AWAY · p=65.1% (raw 60.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=no_exact_bookmaker_market · prediction=history
-  [team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
-      MONEYLINE H1 -> AWAY · p=62.1% (raw 57.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=no_exact_bookmaker_market · prediction=history
-  [team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
-      MONEYLINE H1 -> AWAY · p=62.1% (raw 57.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=no_exact_bookmaker_market · prediction=history
-  [team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
-      MONEYLINE H1 -> HOME · p=61.1% (raw 56.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=no_exact_bookmaker_market · prediction=history
-  [team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
-      MONEYLINE H1 -> HOME · p=59.1% (raw 54.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=no_exact_bookmaker_market · prediction=history
-  [team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
-      MONEYLINE H1 -> HOME · p=57.1% (raw 52.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=no_exact_bookmaker_market · prediction=history
-  [team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
-      MONEYLINE H1 -> HOME · p=57.1% (raw 52.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=no_exact_bookmaker_market · prediction=history
-  [team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
-      MONEYLINE H1 -> HOME · p=56.1% (raw 51.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=78 · reasons=no_exact_bookmaker_market · prediction=history
-  [team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=43.7% (raw 42.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=77 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=42.7% (raw 41.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=77 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=40.7% (raw 39.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=77 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=40.7% (raw 39.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=77 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=38.7% (raw 37.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=77 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=38.7% (raw 37.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=77 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=37.7% (raw 36.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=77 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=36.7% (raw 35.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=77 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=31.7% (raw 30.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=77 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  (none)
 
 WATCHLIST — INSUFFICIENT CONTEXT
 ========================================================================
-  [team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
-      TOTAL full_game 223.5 -> OVER · p=49.9% (raw 54.0%) @1.909 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
-      TOTAL full_game 224.5 -> OVER · p=49.9% (raw 54.0%) @1.877 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
-  [provider:espn+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
-      SPREAD full_game -5.5 -> AWAY · p=49.7% (raw 53.0%) @1.877 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
-  [provider:espn+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
-      SPREAD full_game +14.5 -> AWAY · p=49.7% (raw 53.0%) @1.909 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
-  [provider:espn+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
-      SPREAD full_game -4.5 -> AWAY · p=49.7% (raw 53.0%) @1.909 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
-  [provider:hardwood+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
-      TOTAL full_game 230.5 -> OVER · p=49.1% (raw 53.0%) @1.909 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=hardwood
-  [provider:espn+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
-      TOTAL full_game 223.5 -> UNDER · p=48.3% (raw 52.0%) @1.943 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
-  [provider:hardwood+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
-      TOTAL full_game 218.5 -> OVER · p=48.1% (raw 52.0%) @1.943 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=hardwood
-  [provider:hardwood+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
-      TOTAL full_game 223.5 -> UNDER · p=48.1% (raw 52.0%) @1.943 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=hardwood
-  [team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
-      TOTAL full_game 230.5 -> UNDER · p=47.9% (raw 52.0%) @1.909 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
-  [provider:espn+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
-      SPREAD full_game -6.5 -> HOME · p=47.7% (raw 51.0%) @1.943 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
-  [provider:espn+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
-      TOTAL full_game 224.5 -> UNDER · p=47.3% (raw 51.0%) @1.943 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
-  [context_availability+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
-      TOTAL full_game 215.5 -> UNDER · p=47.3% (raw 52.0%) @1.943 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
-  [provider:hardwood+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
-      TOTAL full_game 228.5 -> UNDER · p=47.1% (raw 51.0%) @1.909 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=hardwood
-  [team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
-      TOTAL full_game 228.5 -> UNDER · p=46.9% (raw 51.0%) @1.909 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
-      TOTAL full_game 226.5 -> UNDER · p=46.9% (raw 51.0%) @1.943 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  (none)
 
 SKIPPED — INELIGIBLE
 ========================================================================
@@ -564,12 +33,961 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
-  (none)
+  [provider:espn/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      MONEYLINE full_game -> HOME · p=89.5% (raw 89.0%) @1.209 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · moneyline full_game · p 0.80-<0.90 · odds 1.20-<1.50 · n=0 · recency ROI n/a / adjusted n/a
+  [provider:espn/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      MONEYLINE full_game -> HOME · p=88.2% (raw 87.6%) @1.112 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · moneyline full_game · p 0.80-<0.90 · odds 1.00-<1.20 · n=0 · recency ROI n/a / adjusted n/a
+  [provider:hardwood/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      MONEYLINE full_game -> HOME · p=83.9% (raw 83.9%) @1.112 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [context_availability+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      SPREAD full_game +11.5 -> AWAY · p=81.7% (raw 81.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · spread full_game · p 0.80-<0.90 · odds 1.50-<2.00 · n=1 · recency ROI +89.3% / adjusted +24.2%
+  [provider:espn/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      MONEYLINE full_game -> HOME · p=81.6% (raw 81.1%) @1.461 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · moneyline full_game · p 0.80-<0.90 · odds 1.20-<1.50 · n=0 · recency ROI n/a / adjusted n/a
+  [provider:hardwood/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      MONEYLINE full_game -> HOME · p=81.5% (raw 81.5%) @1.209 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [context_availability+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 240.5 -> UNDER · p=76.3% (raw 81.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -32.7%
+  [team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      SPREAD full_game +14.5 -> AWAY · p=76.1% (raw 75.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [context_availability+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      SPREAD full_game +14.5 -> AWAY · p=75.7% (raw 75.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [provider:espn/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      MONEYLINE full_game -> HOME · p=75.5% (raw 74.9%) @1.379 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · moneyline full_game · p 0.70-<0.80 · odds 1.20-<1.50 · n=0 · recency ROI n/a / adjusted n/a
+  [context_availability+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      SPREAD full_game +7.5 -> AWAY · p=74.7% (raw 74.0%) @1.877 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      SPREAD full_game +7.5 -> AWAY · p=74.1% (raw 73.0%) @1.917 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [provider:hardwood/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      MONEYLINE full_game -> HOME · p=73.9% (raw 73.9%) @1.379 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [context_availability+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      SPREAD full_game +7.5 -> AWAY · p=73.7% (raw 73.0%) @1.917 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      SPREAD full_game +5.5 -> AWAY · p=73.7% (raw 73.0%) @1.935 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [context_availability+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      MONEYLINE full_game -> HOME · p=72.5% (raw 71.0%) @1.769 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [context_availability+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      MONEYLINE full_game -> HOME · p=72.5% (raw 71.0%) @1.379 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.70-<0.80 · odds 1.20-<1.50 · n=0 · recency ROI n/a / adjusted n/a
+  [provider:hardwood/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      MONEYLINE full_game -> HOME · p=72.3% (raw 72.3%) @1.461 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [context_availability+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 229.5 -> UNDER · p=72.3% (raw 77.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -32.1%
+  [context_availability+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 230.5 -> UNDER · p=72.3% (raw 77.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.70-<0.80 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -32.7%
+  [provider:espn/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      MONEYLINE full_game -> HOME · p=71.1% (raw 70.5%) @1.379 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [provider:hardwood+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 215.5 -> OVER · p=70.0% (raw 70.0%) @1.885 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      MONEYLINE full_game -> AWAY · p=69.5% (raw 63.0%) @1.379 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=calibrated n=74 · reasons=none · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.20-<1.50 · n=0 · recency ROI n/a / adjusted n/a
+  [team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      MONEYLINE H1 -> AWAY · p=69.3% (raw 65.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 228.5 -> UNDER · p=69.3% (raw 74.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +30.2% / adjusted +9.3%
+  [context_availability+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      SPREAD full_game +6.5 -> HOME · p=68.7% (raw 68.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI -36.9% / adjusted -16.2%
+  [team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      MONEYLINE full_game -> HOME · p=68.5% (raw 62.0%) @1.112 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=calibrated n=74 · reasons=none · prediction=history
+  [provider:hardwood/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      MONEYLINE full_game -> AWAY · p=68.3% (raw 68.3%) @1.379 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      SPREAD full_game +11.5 -> AWAY · p=68.1% (raw 67.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      SPREAD full_game -1.5 -> HOME · p=67.7% (raw 67.0%) @1.840 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI -36.9% / adjusted -16.2%
+  [team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      MONEYLINE full_game -> HOME · p=67.5% (raw 61.0%) @1.209 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=calibrated n=74 · reasons=none · prediction=history
+  [provider:hardwood+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 216.5 -> OVER · p=67.0% (raw 67.0%) @1.935 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [context_availability+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      SPREAD full_game +6.5 -> AWAY · p=66.8% (raw 66.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI -36.9% / adjusted -16.3%
+  [provider:espn/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      MONEYLINE full_game -> AWAY · p=66.8% (raw 66.2%) @1.379 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [context_availability+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      SPREAD full_game +8.5 -> AWAY · p=66.7% (raw 66.0%) @1.877 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI -36.9% / adjusted -16.5%
+  [team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 216.5 -> OVER · p=65.9% (raw 70.0%) @1.935 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -45.8%
+  [team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 215.5 -> OVER · p=65.9% (raw 70.0%) @1.885 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -45.9%
+  [team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      SPREAD full_game +8.5 -> AWAY · p=65.6% (raw 66.0%) @1.877 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      MONEYLINE full_game -> AWAY · p=65.5% (raw 59.0%) @1.521 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=calibrated n=74 · reasons=none · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [context_availability+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      MONEYLINE full_game -> HOME · p=65.5% (raw 64.0%) @1.112 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      MONEYLINE H1 -> AWAY · p=65.3% (raw 61.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 238.5 -> UNDER · p=65.3% (raw 70.0%) @1.893 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +30.2% / adjusted +9.3%
+  [context_availability+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 233.5 -> UNDER · p=65.2% (raw 67.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +30.2% / adjusted +9.4%
+  [provider:hardwood/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      MONEYLINE full_game -> HOME · p=65.0% (raw 65.0%) @1.379 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [context_availability+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      SPREAD full_game +5.5 -> HOME · p=64.7% (raw 64.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI -36.9% / adjusted -16.3%
+  [context_availability+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      SPREAD full_game -2.5 -> HOME · p=64.7% (raw 64.0%) @1.971 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI -36.9% / adjusted -16.2%
+  [provider:hardwood/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      MONEYLINE full_game -> AWAY · p=64.7% (raw 64.7%) @1.521 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      MONEYLINE full_game -> HOME · p=64.5% (raw 58.0%) @1.461 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=calibrated n=74 · reasons=none · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 234.5 -> UNDER · p=64.3% (raw 69.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +30.2% / adjusted +9.3%
+  [team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      SPREAD full_game +6.5 -> AWAY · p=64.2% (raw 66.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      MONEYLINE H1 -> HOME · p=63.3% (raw 59.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      MONEYLINE H1 -> HOME · p=63.3% (raw 59.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 237.5 -> UNDER · p=63.3% (raw 68.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +30.2% / adjusted +9.3%
+  [provider:hardwood/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      MONEYLINE full_game -> HOME · p=63.0% (raw 63.0%) @1.769 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      MONEYLINE full_game -> HOME · p=62.5% (raw 56.0%) @1.379 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=calibrated n=74 · reasons=none · prediction=history
+  [provider:espn/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      MONEYLINE full_game -> AWAY · p=62.1% (raw 61.6%) @1.521 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      SPREAD full_game +6.5 -> AWAY · p=62.1% (raw 61.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=1 · recency ROI +88.5% / adjusted +28.8%
+  [team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 240.5 -> UNDER · p=61.9% (raw 66.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [provider:hardwood+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 234.5 -> UNDER · p=61.0% (raw 61.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 228.5 -> UNDER · p=61.0% (raw 61.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      MONEYLINE full_game -> HOME · p=60.5% (raw 54.0%) @1.769 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=calibrated n=74 · reasons=none · prediction=history
+  [team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      MONEYLINE H1 -> AWAY · p=60.3% (raw 56.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 224.5 -> UNDER · p=60.3% (raw 65.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · total full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +30.2% / adjusted +9.8%
+  [provider:hardwood+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 227.5 -> UNDER · p=60.0% (raw 60.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      MONEYLINE H1 -> HOME · p=59.3% (raw 55.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market · prediction=history
+  [provider:hardwood+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 238.5 -> UNDER · p=59.0% (raw 59.0%) @1.893 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 226.5 -> UNDER · p=59.0% (raw 59.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [context_availability+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      SPREAD full_game -3.5 -> HOME · p=58.7% (raw 58.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=1 · recency ROI +98.0% / adjusted +27.2%
+  [team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      SPREAD full_game +7.5 -> AWAY · p=58.6% (raw 59.0%) @1.877 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      MONEYLINE full_game -> AWAY · p=58.5% (raw 52.0%) @3.170 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=calibrated n=74 · reasons=none · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=1 · recency ROI -100.0% / adjusted -58.0%
+  [team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      MONEYLINE full_game -> AWAY · p=58.5% (raw 52.0%) @1.833 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=calibrated n=74 · reasons=none · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -57.9%
+  [context_availability+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 228.5 -> UNDER · p=58.3% (raw 63.0%) @1.877 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [provider:hardwood+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 228.5 -> OVER · p=58.0% (raw 58.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      TOTAL full_game 218.5 -> OVER · p=57.9% (raw 62.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -19.2%
+  [provider:espn+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      SPREAD full_game -5.5 -> HOME · p=57.8% (raw 61.0%) @1.885 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -100.0% / adjusted -68.3%
+  [context_availability+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      MONEYLINE full_game -> AWAY · p=57.6% (raw 56.0%) @1.543 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      MONEYLINE full_game -> AWAY · p=57.5% (raw 56.0%) @2.800 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=0 · recency ROI n/a / adjusted n/a
+  [provider:espn+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      TOTAL full_game 224.5 -> OVER · p=57.4% (raw 61.0%) @1.885 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -10.7%
+  [team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      MONEYLINE H1 -> AWAY · p=57.3% (raw 53.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market · prediction=history
+  [provider:espn/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      MONEYLINE full_game -> HOME · p=57.1% (raw 56.6%) @1.769 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      SPREAD full_game +1.5 -> AWAY · p=57.1% (raw 56.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [context_availability+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      SPREAD full_game +1.5 -> AWAY · p=56.7% (raw 56.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [provider:espn+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 237.5 -> OVER · p=56.5% (raw 60.0%) @1.893 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -10.7%
+  [provider:espn+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 228.5 -> OVER · p=56.5% (raw 60.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -10.7%
+  [context_availability+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      TOTAL full_game 219.5 -> UNDER · p=56.3% (raw 61.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [context_availability+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 224.5 -> UNDER · p=56.3% (raw 61.0%) @1.893 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [context_availability+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 223.5 -> UNDER · p=56.3% (raw 61.0%) @1.917 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [context_availability+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 227.5 -> UNDER · p=56.3% (raw 61.0%) @1.935 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [context_availability+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 229.5 -> UNDER · p=56.3% (raw 61.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      SPREAD full_game +5.5 -> AWAY · p=56.1% (raw 55.0%) @1.935 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [provider:hardwood+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 240.5 -> UNDER · p=56.1% (raw 60.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      SPREAD full_game +7.5 -> AWAY · p=56.0% (raw 56.0%) @1.917 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      SPREAD full_game -1.5 -> HOME · p=56.0% (raw 56.0%) @1.840 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      SPREAD full_game +14.5 -> AWAY · p=56.0% (raw 56.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [context_availability+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      SPREAD full_game +6.5 -> AWAY · p=55.9% (raw 55.0%) @1.962 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      TOTAL full_game 219.5 -> OVER · p=55.9% (raw 60.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -19.2%
+  [provider:espn+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      SPREAD full_game -11.5 -> HOME · p=55.8% (raw 59.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -100.0% / adjusted -68.3%
+  [provider:hardwood+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 233.5 -> UNDER · p=55.7% (raw 61.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:espn+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      TOTAL full_game 218.5 -> OVER · p=55.5% (raw 59.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 238.5 -> OVER · p=55.5% (raw 59.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -10.7%
+  [provider:espn+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 228.5 -> UNDER · p=55.5% (raw 59.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -10.7%
+  [provider:espn+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 215.5 -> OVER · p=55.5% (raw 59.0%) @1.885 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      TOTAL full_game 225.5 -> OVER · p=55.5% (raw 59.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -10.8%
+  [team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      MONEYLINE H1 -> HOME · p=55.3% (raw 51.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      MONEYLINE H1 -> HOME · p=55.3% (raw 51.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      TOTAL full_game 218.5 -> UNDER · p=55.3% (raw 60.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [provider:hardwood+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      SPREAD full_game +6.5 -> AWAY · p=55.0% (raw 55.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 237.5 -> UNDER · p=55.0% (raw 55.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      SPREAD full_game +1.5 -> AWAY · p=55.0% (raw 55.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 229.5 -> OVER · p=55.0% (raw 55.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 237.5 -> UNDER · p=54.9% (raw 59.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 238.5 -> UNDER · p=54.9% (raw 59.0%) @1.893 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 234.5 -> UNDER · p=54.9% (raw 59.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 233.5 -> UNDER · p=54.8% (raw 59.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      SPREAD full_game +3.5 -> AWAY · p=54.6% (raw 55.0%) @1.877 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [provider:espn+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 234.5 -> UNDER · p=54.5% (raw 58.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 227.5 -> UNDER · p=54.5% (raw 58.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -10.8%
+  [provider:espn+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 229.5 -> OVER · p=54.5% (raw 58.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -10.8%
+  [provider:espn+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 229.5 -> UNDER · p=54.5% (raw 58.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [context_availability+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 228.5 -> UNDER · p=54.3% (raw 59.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 215.5 -> OVER · p=54.3% (raw 59.0%) @1.885 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [provider:espn+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      TOTAL full_game 226.5 -> OVER · p=54.3% (raw 58.0%) @1.877 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -10.6%
+  [team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      SPREAD full_game -5.5 -> AWAY · p=54.1% (raw 53.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [provider:hardwood+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      TOTAL full_game 226.5 -> UNDER · p=54.1% (raw 58.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -55.5%
+  [provider:hardwood+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 224.5 -> UNDER · p=54.0% (raw 54.0%) @1.893 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 227.5 -> OVER · p=54.0% (raw 54.0%) @1.885 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      TOTAL full_game 225.5 -> UNDER · p=54.0% (raw 54.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      TOTAL full_game 225.5 -> OVER · p=53.9% (raw 58.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      SPREAD full_game +4.5 -> HOME · p=53.8% (raw 53.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=1 · recency ROI +98.0% / adjusted +26.5%
+  [context_availability+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      MONEYLINE full_game -> AWAY · p=53.5% (raw 52.0%) @3.170 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      MONEYLINE full_game -> HOME · p=53.5% (raw 52.0%) @3.110 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=0 · recency ROI n/a / adjusted n/a
+  [context_availability+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      MONEYLINE full_game -> AWAY · p=53.5% (raw 52.0%) @1.833 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      MONEYLINE full_game -> HOME · p=53.5% (raw 52.0%) @1.209 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      MONEYLINE full_game -> AWAY · p=53.5% (raw 52.0%) @4.680 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=0 · recency ROI n/a / adjusted n/a
+  [context_availability+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      MONEYLINE full_game -> HOME · p=53.5% (raw 52.0%) @2.540 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=0 · recency ROI n/a / adjusted n/a
+  [context_availability+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 227.5 -> UNDER · p=53.3% (raw 58.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 216.5 -> OVER · p=53.3% (raw 58.0%) @1.935 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      TOTAL full_game 226.5 -> UNDER · p=53.3% (raw 58.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      SPREAD full_game +6.5 -> HOME · p=53.1% (raw 52.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      SPREAD full_game +2.5 -> AWAY · p=53.1% (raw 52.0%) @1.855 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      SPREAD full_game +4.5 -> HOME · p=53.1% (raw 52.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [provider:hardwood+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 224.5 -> UNDER · p=53.1% (raw 57.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      TOTAL full_game 218.5 -> OVER · p=53.0% (raw 53.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 228.5 -> OVER · p=53.0% (raw 53.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [context_availability+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      SPREAD full_game -6.5 -> HOME · p=52.7% (raw 52.0%) @1.893 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      PAPER SINGLE · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=1 · recency ROI +98.0% / adjusted +26.3%
+  [context_availability+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      MONEYLINE full_game -> AWAY · p=52.7% (raw 51.0%) @1.389 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [provider:espn+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      SPREAD full_game -7.5 -> HOME · p=52.7% (raw 56.0%) @1.943 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -100.0% / adjusted -69.3%
+  [context_availability+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      MONEYLINE full_game -> HOME · p=52.7% (raw 51.0%) @1.833 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [provider:espn+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      SPREAD full_game +8.5 -> AWAY · p=52.7% (raw 56.0%) @1.877 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      TOTAL full_game 219.5 -> OVER · p=52.5% (raw 56.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 216.5 -> OVER · p=52.5% (raw 56.0%) @1.935 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [provider:hardwood+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      SPREAD full_game -2.5 -> HOME · p=52.0% (raw 52.0%) @1.971 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      SPREAD full_game -5.5 -> HOME · p=52.0% (raw 52.0%) @1.885 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      SPREAD full_game +1.5 -> HOME · p=52.0% (raw 52.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      SPREAD full_game -6.5 -> HOME · p=52.0% (raw 52.0%) @1.893 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      SPREAD full_game +11.5 -> AWAY · p=52.0% (raw 52.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      SPREAD full_game -4.5 -> AWAY · p=52.0% (raw 52.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:espn+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      SPREAD full_game +1.5 -> AWAY · p=51.8% (raw 55.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      SPREAD full_game +3.5 -> AWAY · p=51.7% (raw 55.0%) @1.877 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [context_availability+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 216.5 -> UNDER · p=51.7% (raw 55.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [provider:espn/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      MONEYLINE full_game -> HOME · p=51.5% (raw 51.0%) @2.010 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=0 · recency ROI n/a / adjusted n/a
+  [context_availability+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      TOTAL full_game 225.5 -> OVER · p=51.2% (raw 53.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [provider:hardwood+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      SPREAD full_game -5.5 -> AWAY · p=51.1% (raw 53.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      SPREAD full_game +7.5 -> AWAY · p=51.1% (raw 53.0%) @1.877 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      SPREAD full_game +8.5 -> AWAY · p=51.1% (raw 53.0%) @1.877 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      TOTAL full_game 219.5 -> OVER · p=51.0% (raw 51.0%) @1.952 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      SPREAD full_game -6.5 -> AWAY · p=51.0% (raw 51.0%) @1.893 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      TOTAL full_game 224.5 -> OVER · p=50.8% (raw 55.0%) @1.885 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      SPREAD full_game -4.5 -> AWAY · p=50.8% (raw 51.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [provider:espn+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      SPREAD full_game +2.5 -> AWAY · p=50.8% (raw 54.0%) @1.855 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 224.5 -> UNDER · p=50.5% (raw 54.0%) @1.893 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 226.5 -> UNDER · p=50.5% (raw 54.0%) @1.926 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -10.7%
+  [provider:espn+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 228.5 -> UNDER · p=50.5% (raw 54.0%) @1.877 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+  [provider:hardwood/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      MONEYLINE full_game -> AWAY · p=50.4% (raw 50.4%) @1.833 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [provider:espn+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 240.5 -> OVER · p=50.3% (raw 54.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -10.6%
+  [provider:espn+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 230.5 -> OVER · p=50.3% (raw 54.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples · prediction=espn
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=2 · recency ROI -4.5% / adjusted -10.6%
+  [provider:hardwood+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      SPREAD full_game +3.5 -> AWAY · p=50.1% (raw 52.0%) @1.877 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+  [team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 224.5 -> OVER · p=49.9% (raw 54.0%) @1.877 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 228.5 -> UNDER · p=49.9% (raw 54.0%) @1.870 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 229.5 -> UNDER · p=49.9% (raw 54.0%) @1.870 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 227.5 -> OVER · p=49.9% (raw 54.0%) @1.885 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [provider:hardwood+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 223.5 -> UNDER · p=49.8% (raw 52.0%) @1.885 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=hardwood
+  [provider:hardwood+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      TOTAL full_game 224.5 -> UNDER · p=49.8% (raw 52.0%) @1.935 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=3 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=hardwood
+  [provider:espn+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      SPREAD full_game -5.5 -> AWAY · p=49.6% (raw 53.0%) @1.870 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+  [context_availability+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 226.5 -> UNDER · p=49.3% (raw 54.0%) @1.926 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [context_availability+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      TOTAL full_game 225.5 -> UNDER · p=49.2% (raw 51.0%) @1.870 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [provider:hardwood+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 230.5 -> OVER · p=49.1% (raw 53.0%) @1.909 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=hardwood
+  [team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 226.5 -> OVER · p=48.9% (raw 53.0%) @1.893 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 228.5 -> OVER · p=48.9% (raw 53.0%) @1.943 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 228.5 -> UNDER · p=48.8% (raw 53.0%) @1.952 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [provider:espn+team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      SPREAD full_game +1.5 -> AWAY · p=48.8% (raw 52.0%) @1.980 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      SPREAD full_game +1.5 -> HOME · p=48.8% (raw 52.0%) @1.909 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      SPREAD full_game +6.5 -> AWAY · p=48.8% (raw 52.0%) @1.926 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      SPREAD full_game -4.5 -> AWAY · p=48.8% (raw 52.0%) @1.870 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 223.5 -> UNDER · p=48.2% (raw 52.0%) @1.885 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+  [team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 230.5 -> UNDER · p=47.9% (raw 52.0%) @1.909 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 223.5 -> OVER · p=47.9% (raw 52.0%) @1.901 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [provider:espn+team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      SPREAD full_game +14.5 -> AWAY · p=47.8% (raw 51.0%) @1.870 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      SPREAD full_game +7.5 -> AWAY · p=47.7% (raw 51.0%) @1.862 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      SPREAD full_game -6.5 -> AWAY · p=47.7% (raw 51.0%) @1.901 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      SPREAD full_game -6.5 -> HOME · p=47.7% (raw 51.0%) @1.870 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 233.5 -> UNDER · p=47.4% (raw 51.0%) @1.943 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+  [provider:espn+team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 224.5 -> UNDER · p=47.3% (raw 51.0%) @1.943 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
+  [context_availability+team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 215.5 -> UNDER · p=47.3% (raw 52.0%) @1.943 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [provider:hardwood+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      TOTAL full_game 228.5 -> UNDER · p=47.1% (raw 51.0%) @1.909 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=provisional n=2 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=hardwood
+  [team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      TOTAL full_game 226.5 -> UNDER · p=46.9% (raw 51.0%) @1.943 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      TOTAL full_game 224.5 -> OVER · p=46.8% (raw 51.0%) @1.935 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      TOTAL full_game 229.5 -> OVER · p=46.8% (raw 51.0%) @1.926 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=provisional n=4 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Cleveland Cavaliers vs Indiana Pacers · KO 2026-11-21 02:30 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=45.1% (raw 43.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Denver Nuggets vs Houston Rockets · KO 2026-11-21 05:00 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=45.1% (raw 43.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Chicago Bulls vs Washington Wizards · KO 2026-11-21 03:00 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=41.1% (raw 39.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Oklahoma City Thunder vs New Orleans Pelicans · KO 2026-11-21 03:00 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=40.1% (raw 38.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T00:10:09Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Utah Jazz vs Phoenix Suns · KO 2026-11-21 04:30 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=40.1% (raw 38.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T01:40:08Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Detroit Pistons vs Toronto Raptors · KO 2026-11-21 02:30 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=39.1% (raw 37.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Atlanta Hawks vs Charlotte Hornets · KO 2026-11-21 02:00 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=38.1% (raw 36.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:09:42Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=35.1% (raw 33.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Brooklyn Nets vs Orlando Magic · KO 2026-11-21 02:30 SAST
+      HIGHEST QUARTER full_game -> Q2 · p=33.7% (raw 32.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-20T23:40:12Z
+      calibration=calibrated n=80 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=31.1% (raw 29.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=calibrated n=75 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Los Angeles Lakers vs Sacramento Kings · KO 2026-11-21 05:00 SAST
+      HIGHEST QUARTER full_game -> Q2 · p=29.5% (raw 29.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T02:10:17Z
+      calibration=calibrated n=80 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
 
-Active summary: ELIGIBLE_CLEAN=9 CAUTION=81 WATCHLIST_NO_ODDS=18 WATCHLIST_INSUFFICIENT_CONTEXT=16 SKIPPED_INELIGIBLE=0
-ROI-qualified individual paper singles: 4
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=0
-Logical picks shown: 124 · superseded observations: 0
-Total archived pick evidence rows: 124
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 WATCHLIST_NO_ODDS=0 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
+ROI-qualified individual paper singles: 0
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=219
+Logical picks shown: 219 · superseded observations: 0
+Total archived pick evidence rows: 219
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.
