@@ -35,7 +35,12 @@ from ingestion.duckdb_store import DuckDBStore  # noqa: E402
 from ingestion.ledger import write_canonical_ledger  # noqa: E402
 from ingestion.league_registry import cli_league_choices, league_spec, parse_league  # noqa: E402
 from ingestion.mining import mine_prediction_assay, write_assay  # noqa: E402
-from ingestion.pipeline import ACQUISITION_TZ, Pipeline, PipelineConfig  # noqa: E402
+from ingestion.pipeline import (  # noqa: E402
+    ACQUISITION_TZ,
+    Pipeline,
+    PipelineConfig,
+    default_history_backfill_plan,
+)
 from ingestion.providers import aba_liga  # noqa: E402
 from ingestion.warehouse import DEFAULT_WAREHOUSE  # noqa: E402
 from ingestion.write_guards import assert_fixture_write_isolation  # noqa: E402
@@ -306,13 +311,20 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
     ledgers: Dict[str, Any] = {}
     try:
         fetch, fetch_factory = _offline_fixture_fetch() if args.offline_fixture else (None, None)
+        history_plan = default_history_backfill_plan(
+            parse_league(args.league),
+            history_days=getattr(args, "history_days", None),
+            history_request_budget=getattr(args, "history_requests", None),
+        )
         config = PipelineConfig(
             league=args.league,
             date_yyyymmdd=args.date.replace("-", ""),
             tz_name=args.tz,
             freshness_hours=args.freshness_hours,
-            history_days=(0 if args.offline_fixture else getattr(args, "history_days", 7)),
-            history_request_budget=getattr(args, "history_requests", 7),
+            history_days=(0 if args.offline_fixture else int(history_plan["history_days"])),
+            history_request_budget=(
+                0 if args.offline_fixture else int(history_plan["history_request_budget"])
+            ),
             deep_history_event_budget=(
                 0 if args.offline_fixture else getattr(args, "deep_history_events", 25)
             ),
@@ -453,6 +465,12 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             "warehouse": args.warehouse,
             "started_utc": args.started_utc,
             "finished_utc": _utc_now(),
+            "acquisition_plan": {
+                **history_plan,
+                "enabled": not args.offline_fixture,
+                "effective_history_days": config.history_days,
+                "effective_history_request_budget": config.history_request_budget,
+            },
             "backfill": backfill_report,
             "backfill_ledgers": backfill_ledgers,
             "history_receipts_path": history_receipts_path,
@@ -535,14 +553,20 @@ def main() -> int:
     parser.add_argument(
         "--history-days",
         type=int,
-        default=21,
-        help="rolling ESPN result lookback (offline fixtures disable backfill)",
+        default=None,
+        help=(
+            "rolling ESPN result lookback (default: 21 days; NBA G League: "
+            "56-day date-bounded empirical bootstrap; offline fixtures disable backfill)"
+        ),
     )
     parser.add_argument(
         "--history-requests",
         type=int,
-        default=21,
-        help="maximum historical scoreboard requests per league run",
+        default=None,
+        help=(
+            "maximum historical scoreboard requests per league run (default "
+            "matches --history-days; an explicit lower value caps the lookback)"
+        ),
     )
     parser.add_argument(
         "--deep-history-events",

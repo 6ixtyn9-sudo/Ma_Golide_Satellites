@@ -88,6 +88,56 @@ ESPN_LEAGUES = {spec.league for spec in SPECS if spec.schedule_source == "espn"}
 ESPN_DEEP_HISTORY_LEAGUES = frozenset(espn.HISTORY_FLOORS)
 ESPN_BPI_LEAGUES = espn.BPI_LEAGUES
 
+# Most ESPN lanes can lean on a separately validated deep-history index. NBA G
+# League cannot: only its date-bounded scoreboard/result contract is approved.
+# A cold lane therefore needs a wider *bounded calendar* bootstrap before the
+# empirical model can accumulate both residual and team-history evidence. This
+# is intentionally an acquisition plan, not a ForecastConfig override: it does
+# not loosen a prediction, calibration, price, or paper-ticket gate.
+DEFAULT_RECENT_HISTORY_DAYS = 21
+NBA_G_LEAGUE_BOOTSTRAP_HISTORY_DAYS = 56
+
+
+def default_history_backfill_plan(
+    league: League,
+    *,
+    history_days: Optional[int] = None,
+    history_request_budget: Optional[int] = None,
+) -> Dict[str, int | str]:
+    """Return the bounded scoreboard-history plan for one operator run.
+
+    The wider NBA G League plan uses the existing ESPN ``nba-development``
+    date endpoint only. It neither probes ESPN's unvalidated core event index
+    nor asserts complete historical coverage. Explicit CLI/operator values
+    always win; when only ``history_days`` is supplied, its request budget
+    follows that value so an intended override is not silently clipped.
+    """
+
+    default_days = (
+        NBA_G_LEAGUE_BOOTSTRAP_HISTORY_DAYS
+        if league is League.NBA_G_LEAGUE
+        else DEFAULT_RECENT_HISTORY_DAYS
+    )
+    if history_days is None and history_request_budget is None:
+        return {
+            "history_days": default_days,
+            "history_request_budget": default_days,
+            "policy": (
+                "nba_g_league_date_bounded_empirical_history_bootstrap"
+                if league is League.NBA_G_LEAGUE
+                else "default_recent_scoreboard_backfill"
+            ),
+        }
+    resolved_days = default_days if history_days is None else int(history_days)
+    resolved_budget = (
+        resolved_days if history_request_budget is None else int(history_request_budget)
+    )
+    return {
+        "history_days": resolved_days,
+        "history_request_budget": resolved_budget,
+        "policy": "operator_override",
+    }
+
 
 def _book_providers(league: str) -> Sequence[str]:
     parsed = parse_league(league)

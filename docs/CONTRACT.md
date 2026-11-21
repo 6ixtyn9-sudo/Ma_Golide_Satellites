@@ -235,6 +235,34 @@ strict mode uses champion `calibrated_probability` and the existing eligibility
 flag; the service's paper-only mode also checks champion calibration status and
 eligibility reasons solely to recognize the sample-only exception.
 
+### NBA G League empirical readiness
+
+NBA G League has a narrower approved evidence path: date-bounded ESPN
+`basketball/nba-development` schedule/results, no validated external pre-tip
+predictor, ESPN BPI, deep event-index history, or named-book price lane. Its
+normal CLI acquisition plan requests at most 56 preceding calendar days and 56
+scoreboard requests to bootstrap retained reconciled results after a cold start.
+That plan uses only the approved date endpoint; it is not proof of complete
+history and does not change `ForecastConfig`, calibration weights, sample
+minimums, eligibility, paper-ticket policy, or any accuracy claim.
+
+For that lane only, reports include `empirical_lane_readiness`. It makes the
+existing evidence boundary inspectable: reconciled final count, the nominal
+`min_history_games + min_residual_games` floor before a first empirical
+forecast can be produced, current forecasts with sufficient team history,
+current forecasts with a sufficient exact-segment calibration profile, graded
+prequential empirical rows, and explicit blockers. With the defaults, the
+first two sequential history gates have a 40-final floor, each team still needs
+at least eight effective games, and calibration still needs 30 non-push
+prequential samples in the exact versioned segment. Schedule density,
+reconciliation, result availability, and team participation mean the 56-day
+acquisition bound is never a promise that those gates will clear.
+
+The readiness object is monitoring only. Use the ordinary `walk_forward` raw
+and prequential-calibrated Brier/log-loss diagnostics once observations exist;
+do not turn a rendered unpriced watchlist card, a larger history fetch, or a
+readiness count into an accuracy, value, ROI, or ticket claim.
+
 ## 6. Acca eligibility and ranking
 
 A current forecast is **strictly eligible** to supply an acca leg only if:

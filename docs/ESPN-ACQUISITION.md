@@ -17,7 +17,12 @@ canonical fixture identity, UTC tip, terminal status, and reconciled four
 quarter results. They do **not** validate ESPN BPI, the deep core-event index,
 or a named-book execution lane. It can emit only empirical-history forecast
 cards after the normal reconciled-history threshold; missing external
-prediction evidence is not synthesized.
+prediction evidence is not synthesized. To bootstrap that approved empirical
+surface from a cold canonical store, the normal CLI requests the preceding 56
+calendar dates with the same date-bounded scoreboard endpoint (and a matching
+56-request budget). This operational default can be explicitly overridden; it
+is not a deep-index probe, complete-history assertion, model change, or gate
+relaxation.
 
 The acquisition layer provides bounded requests, retries/backoff, a bounded
 redacted run-receipt list, response hashes, cooldowns for recent failures, and
@@ -106,19 +111,25 @@ backfill therefore uses individual dates.
 Conservative acquisition floors are NBA 1947, WNBA 1997, NCAA_M 2001, and
 NCAA_W 2001. NBA G League deliberately has **no** deep-index floor: its
 scoreboard/summary capture validates only date-bounded recent results, so the
-pipeline does not advance a core-index history cursor for that lane. An empty
+pipeline does not advance a core-index history cursor for that lane. Its
+56-day normal-run bootstrap is an intentionally bounded sequence of those same
+validated date scoreboards, not evidence for a core-index floor. An empty
 earlier query does **not** prove that no older data exists anywhere in ESPN.
 These floors may be revised only after another validated probe; they are not
 represented as absolute historical minima.
 
 ## Bounded backfill algorithm
 
-Each write-enabled league run performs two independent jobs:
+Each write-enabled ESPN lane performs bounded history work:
 
-1. **Recent results:** at most 21 individual past scoreboard dates. Public
-   payloads use the durable cache for 24 hours while retaining their original
-   observation timestamps.
-2. **Deep history:** at most 50 indexed event summaries by default. The season
+1. **Recent results:** at most 21 individual past scoreboard dates by standard
+   default. The NBA G League normal CLI plan is a separately documented 56
+   date/56 request bootstrap on its validated `nba-development` scoreboard
+   route; explicit operator flags can lower or otherwise override either bound.
+   Public payloads use the durable cache for 24 hours while retaining their
+   original observation timestamps.
+2. **Deep history:** at most 50 indexed event summaries by default for NBA,
+   WNBA, NCAA_M, and NCAA_W only. The season
    index is cached for seven days. Historical summaries are sanitized into
    canonical evidence rather than retained indefinitely as large raw cache
    files. The durable cursor prevents normal refetching; an already-persisted

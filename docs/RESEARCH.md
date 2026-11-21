@@ -58,7 +58,13 @@ certificates. Pushes are reported separately and excluded from win/loss
 calibration.
 
 History-model calibration segments include a stable fingerprint of the model
-revision and prediction-affecting `ForecastConfig`. Every valid latest-per-provider
+revision and prediction-affecting `ForecastConfig`. NBA G League intentionally
+has no league-specific `ForecastConfig` override: its date-bounded ESPN history
+is a data-acquisition bootstrap, not backtest evidence. Its
+`empirical_lane_readiness` report is therefore a monitoring surface for the
+existing reconciled-final, team-history, and exact-segment prequential gates;
+only the regular walk-forward Brier/log-loss outputs can evaluate probability
+quality once enough graded rows accrue. Every valid latest-per-provider
 record visible at a target cutoff now emits its own provider forecast stream;
 provider order no longer suppresses other sources, and provider probabilities
 are not naively averaged. Provider score/total/margin expectations create

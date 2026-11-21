@@ -256,6 +256,20 @@ def test_g_league_emits_empirical_forecast_cards_only_after_reconciled_history()
     )
     assert report["accas"]["pricing_evidence_status"] == "unpriced_no_validated_named_book_lane"
     assert report["accas"]["strict_result_count"] == 0
+    readiness = report["empirical_lane_readiness"]
+    assert readiness["status"] == "monitoring_only"
+    assert readiness["purpose"] == "empirical_evidence_readiness_not_accuracy_or_value_claim"
+    assert readiness["source_contract"] == "espn_date_bounded_schedule_and_reconciled_results_only"
+    assert readiness["model_change"] == (
+        "none_no_g_league_specific_override_without_walk_forward_evidence"
+    )
+    assert readiness["named_book_or_ticket_lane"] == "not_validated_unpriced_only"
+    assert readiness["reconciled_finals_as_of"] == 40
+    assert readiness["minimum_reconciled_finals_for_first_empirical_forecast"] == 40
+    assert readiness["current_empirical_forecasts"] == len(cards)
+    assert readiness["current_empirical_forecasts_with_sufficient_team_history"] == len(cards)
+    assert readiness["graded_prequential_empirical_forecasts"] == 0
+    assert "no_graded_prequential_empirical_forecasts_yet" in readiness["blockers"]
 
 
 def test_registry_price_policy_is_provider_specific_and_fail_closed():

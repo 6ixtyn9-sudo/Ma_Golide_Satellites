@@ -65,7 +65,12 @@ Useful options:
 - `--acca-legs 3` requests exact three-leg combinations (allowed: 2–6).
 - `--acca-limit 5` bounds returned combinations.
 - `--freshness-hours 24` controls prediction freshness.
-- `--history-days 21` and `--history-requests 21` bound recent daily backfill.
+- `--history-days N` and `--history-requests N` bound recent daily backfill.
+  Their standard default is 21. NBA G League defaults to a 56-day/56-request
+  **date-bounded ESPN scoreboard bootstrap** because its approved route has no
+  deep event-index contract; an explicit value overrides that plan, and an
+  explicitly lower request budget caps the requested day range. The bootstrap
+  does not loosen forecast, calibration, price, or ticket gates.
 - `--deep-history-events 50` bounds indexed historical summaries per
   write-enabled league run; dry runs never advance that cursor.
 - `--book draftkings` and `--book-provider theoddsapi` restrict book evidence.
