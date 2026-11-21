@@ -192,6 +192,71 @@ def test_publisher_does_not_regress_settled_pick_or_ticket_card_to_pending(tmp_p
     assert "WIN" in settled_ticket.read_text()
 
 
+def test_publisher_accepts_progressive_settlement_with_a_late_pending_card_line(tmp_path):
+    artifact_file(
+        tmp_path,
+        "newer-nba-artifact",
+        "nba",
+        "auto_tickets_2026-11-18.txt",
+        (
+            "[PAPER 3-LEG ACCA #1] · ❌ LOSS\n"
+            "Early game · ✅ WIN\n"
+            "Middle game · ❌ LOSS\n"
+            "Late game · ⏳ PENDING\n"
+        ).encode(),
+    )
+    repo = tmp_path / "repo"
+    card = repo / "localdata" / "nba" / "auto_tickets_2026-11-18.txt"
+    card.parent.mkdir(parents=True)
+    card.write_text(
+        "[PAPER 3-LEG ACCA #1] · ⏳ PENDING\n"
+        "Early game · ✅ WIN\n"
+        "Middle game · ⏳ PENDING\n"
+        "Late game · ⏳ PENDING\n"
+    )
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+
+    assert report["settled_card_regressions_skipped"] == []
+    assert report["copied"] == ["localdata/nba/auto_tickets_2026-11-18.txt"]
+    assert card.read_text() == (
+        "[PAPER 3-LEG ACCA #1] · ❌ LOSS\n"
+        "Early game · ✅ WIN\n"
+        "Middle game · ❌ LOSS\n"
+        "Late game · ⏳ PENDING\n"
+    )
+
+
+def test_publisher_rejects_a_same_line_settlement_downgrade_despite_other_progress(tmp_path):
+    artifact_file(
+        tmp_path,
+        "stale-nba-artifact",
+        "nba",
+        "auto_tickets_2026-11-18.txt",
+        (
+            "First game · ⏳ PENDING\n"
+            "Second game · ❌ LOSS\n"
+            "Late game · ✅ WIN\n"
+        ).encode(),
+    )
+    repo = tmp_path / "repo"
+    card = repo / "localdata" / "nba" / "auto_tickets_2026-11-18.txt"
+    card.parent.mkdir(parents=True)
+    original = (
+        "First game · ✅ WIN\n"
+        "Second game · ❌ LOSS\n"
+        "Late game · ⏳ PENDING\n"
+    )
+    card.write_text(original)
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+
+    assert report["settled_card_regressions_skipped"] == [
+        "localdata/nba/auto_tickets_2026-11-18.txt"
+    ]
+    assert card.read_text() == original
+
+
 def test_publisher_state_keys_follow_the_central_registry_and_publish_expansion_lanes(tmp_path):
     assert STATE_KEYS == {spec.state_key for spec in SPECS}
     artifact_file(

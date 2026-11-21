@@ -18,6 +18,7 @@ withdrawn receipt.
 from __future__ import annotations
 
 import argparse
+from collections import Counter
 import hashlib
 import json
 import os
@@ -106,6 +107,10 @@ CALIBRATION_EPOCH = "2026-11-10"
 PENDING_GRADE_RE = re.compile(r"(?:grade=|\[\s*)PENDING\b|⏳\s+PENDING\b")
 SETTLED_GRADE_RE = re.compile(
     r"(?:grade=|\[\s*)?(?:✅\s+WIN|❌\s+LOSS|➖\s+PUSH|⚪\s+VOID)\b|lifecycle=SETTLED"
+)
+_CARD_GRADE_TOKEN_RE = re.compile(
+    r"lifecycle=SETTLED(?:_[A-Z_]+)?|"
+    r"(?:grade=)?(?:[✅❌➖⚪⏳]\s+)?(?:PENDING|WIN|LOSS|PUSH|VOID)\b"
 )
 MAX_FILE_BYTES = 25 * 1024 * 1024
 MAX_TOTAL_BYTES = 100 * 1024 * 1024
@@ -614,14 +619,40 @@ def _merge_pick_lifecycle_state(
     return _pick_lifecycle_state_bytes(merged)
 
 
-def _would_regress_settled_card(destination: Path, artifact_bytes: bytes) -> bool:
-    """Return whether a stale artifact would re-open settled public evidence.
+def _card_grade_entries(text: str) -> list[tuple[str, str]]:
+    """Return stable line fingerprints for unambiguous rendered grade states.
 
-    Text cards are mutable lifecycle views, but an authoritative settled grade
-    is never allowed to become ``PENDING`` merely because an older matrix job
-    reached its publisher after a newer main commit. An empty/current draft
-    still updates normally: this guard applies only when the repository view
-    actually contains rendered settled evidence.
+    A dated card can legitimately contain both settled early games and a late
+    pending game.  The publisher must therefore compare the state of each
+    rendered line rather than treating *any* pending badge as a whole-card
+    rollback.  Summary lines are harmless extra entries; exact line matching
+    plus the settled-count fallback below keeps the guard conservative for
+    older, less structured card formats.
+    """
+
+    entries: list[tuple[str, str]] = []
+    for line in text.splitlines():
+        is_pending = PENDING_GRADE_RE.search(line) is not None
+        is_settled = SETTLED_GRADE_RE.search(line) is not None
+        if is_pending == is_settled:
+            # Ignore ungraded text and deliberately ambiguous aggregate lines.
+            continue
+        fingerprint = _CARD_GRADE_TOKEN_RE.sub("", line)
+        fingerprint = re.sub(r"[\[\]]", "", fingerprint)
+        fingerprint = " ".join(fingerprint.split())
+        if fingerprint:
+            entries.append(("pending" if is_pending else "settled", fingerprint))
+    return entries
+
+
+def _would_regress_settled_card(destination: Path, artifact_bytes: bytes) -> bool:
+    """Return whether an artifact explicitly re-opens settled public evidence.
+
+    A settled line can never become ``PENDING`` because an older matrix job
+    reaches the publisher after newer main state.  In contrast, a card with a
+    late live game must be able to publish its newer, progressively settled
+    lines while that one game remains pending.  A count fallback preserves the
+    legacy no-identity guard for simple cards that cannot be line-matched.
     """
 
     if not destination.name.endswith(".txt"):
@@ -633,10 +664,22 @@ def _would_regress_settled_card(destination: Path, artifact_bytes: bytes) -> boo
         # Text-card publication must not silently reinterpret non-UTF-8 data;
         # the regular write path will preserve existing validation behavior.
         return False
-    return (
-        SETTLED_GRADE_RE.search(current) is not None
-        and PENDING_GRADE_RE.search(incoming) is not None
+
+    current_entries = _card_grade_entries(current)
+    incoming_entries = _card_grade_entries(incoming)
+    settled = Counter(fingerprint for state, fingerprint in current_entries if state == "settled")
+    if not settled:
+        return False
+    incoming_pending = Counter(
+        fingerprint for state, fingerprint in incoming_entries if state == "pending"
     )
+    # Same rendered subject, explicitly downgraded to pending: always reject.
+    if settled.keys() & incoming_pending.keys():
+        return True
+    incoming_settled = sum(state == "settled" for state, _fingerprint in incoming_entries)
+    # Older cards do not always expose a stable per-row subject.  Never accept
+    # fewer rendered settled entries than the repository already has.
+    return incoming_settled < sum(settled.values())
 
 
 def _withdrawn_decision_ids(localdata: Path) -> frozenset[str]:
