@@ -9,7 +9,7 @@
       "logical_picks": 12
     },
     "2026-11-21": {
-      "frozen_fixtures": 1,
+      "frozen_fixtures": 2,
       "logical_picks": 6
     }
   },
@@ -550,6 +550,141 @@
         "scheduled_utc": "2026-11-21T16:30:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
+      },
+      "aba_liga:26:1:89": {
+        "decision_cutoff_utc": "2026-11-21T17:00:00Z",
+        "frozen_at": "2026-11-21T17:11:46Z",
+        "game_id": "aba_liga:26:1:89",
+        "league": "ABA_LEAGUE",
+        "rows": [
+          {
+            "away": "BC Vienna",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.278049,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 11,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "0ebb955329bddefbd89ac9a28ebf0be2a2f9d278a02ebc26cf5dfb5d2a023230",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "bac7964ad00267a35094",
+            "game_id": "aba_liga:26:1:89",
+            "grade_status": "pending",
+            "home": "Spartak Office Shoes",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "bac7964ad00267a35094",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.32,
+            "role": null,
+            "scheduled_utc": "2026-11-21T18:00:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "BC Vienna",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.632927,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 11,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "6fb787ebd34e36b9ab531002037ef6e8fcaca39f4a2e6737bf60eeb0ce606653",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "ecba58a0f634f648b39c",
+            "game_id": "aba_liga:26:1:89",
+            "grade_status": "pending",
+            "home": "Spartak Office Shoes",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "ecba58a0f634f648b39c",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-21T18:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "BC Vienna",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.660976,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 11,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "f547236dce87eb2dc406d2dfc31786c03dfafe89c04d9f8e4603fc934b49f3a2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "06fd594493056ebfca17",
+            "game_id": "aba_liga:26:1:89",
+            "grade_status": "pending",
+            "home": "Spartak Office Shoes",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "06fd594493056ebfca17",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.65,
+            "role": null,
+            "scheduled_utc": "2026-11-21T18:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T18:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
       }
     }
   },
@@ -558,6 +693,10 @@
     [
       "aba_liga:26:1:83",
       "2026-11-21T16:30:00Z"
+    ],
+    [
+      "aba_liga:26:1:89",
+      "2026-11-21T18:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
