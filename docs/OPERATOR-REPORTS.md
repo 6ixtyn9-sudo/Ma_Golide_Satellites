@@ -59,6 +59,39 @@ profitability.
 
 The daily summary's `operator` object lists the generated paths and counts.
 
+### Legacy compact-marker recovery
+
+Readable dated cards are Git-published directly. The temporary compact-marker
+format used during the 2026-11-20/21 archive transition is recoverable with
+`scripts/restore_pick_cards.py`; it is an operator migration tool, not a normal
+forecast or ticket stage. The tool is dry-run by default and only replaces a
+registered `picks_YYYY-MM-DD.txt` marker after validation:
+
+- a release-archive card must pass the Git-published archive checksum, content
+  manifest, member digest, state/date identity, readable-card shape, **and**
+  the marker's detailed-card SHA-256;
+- a deliberately selected pre-compaction Git snapshot may restore its readable
+  historical version when the marker's later artifact revision is unavailable;
+  the report labels that source as `git_snapshot` rather than claiming an exact
+  marker-hash recovery; and
+- an unavailable source leaves the marker untouched and is reported. Use
+  `--require-complete` when a migration must fail rather than publish a partial
+  result.
+
+For example, an operator first downloads a retained release asset with its
+original `magolide-state-<state>.tar.gz` name, then runs:
+
+```bash
+python scripts/restore_pick_cards.py --repo . \
+  --snapshot-ref <pre-compaction-commit> \
+  --archive /safe/path/magolide-state-nba.tar.gz \
+  --apply --require-complete
+```
+
+This restores report presentation only. It does not create tickets, alter
+frozen selections, relax bookmaker-evidence rules, or modify paper-bank,
+ROI, stake, or settlement state.
+
 To keep Git history bounded, the rolling performance JSON contains only compact
 financial/settlement fields and minimal leg identifiers, outcome, selected price,
 and bookmaker. It does not duplicate prediction, calibration, team-history, or

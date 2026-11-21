@@ -140,7 +140,13 @@ fails closed rather than starting an empty history.
 
 Release archives may contain bounded verbose run evidence needed for review,
 but never raw provider pages, credentials, arbitrary workspace files, or a
-DuckDB binary. The archive builder uses an explicit filename allowlist.
+DuckDB binary. The archive builder uses an explicit filename allowlist. The
+one-time `scripts/restore_pick_cards.py` migration can additionally read a
+locally downloaded release asset to restore a compact dated-card marker, but
+only when the Git-published archive manifest, content-manifest digest, member
+digest, state/date identity, readable-card shape, and marker-card SHA-256 all
+agree. This is report restoration only; it cannot write tickets or change
+canonical settlement evidence.
 
 ## Derived research views
 

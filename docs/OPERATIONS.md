@@ -148,6 +148,8 @@ conditions holds:
 - a receipt-backed settlement card is missing or still displays `PENDING` after
   its compact performance history has no pending/result-reconciliation counts;
   or
+- a legacy compact pick-card marker needs its bounded report-only readable-card
+  restoration; or
 - state/receipt validation or schedule retrieval is unavailable, malformed, or
   otherwise uncertain.
 

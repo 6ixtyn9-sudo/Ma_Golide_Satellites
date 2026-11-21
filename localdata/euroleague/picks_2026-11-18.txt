@@ -1,5 +1,57 @@
-Ma Golide compact pick lifecycle marker
-league_state=euroleague
-target_date=2026-11-18
-full_forecast_board=Actions artifact and GitHub Release archive
-detailed_card_sha256=f31f394c5755ce1a07b206e8052399d1f80252208d8a18fbc4ffca9e1b9f82ce
+Ma Golide Picks — EUROLEAGUE 2026-11-18
+========================================================================
+Generated at: 2026-11-19 14:53 SAST
+PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
+Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
+Only FROZEN rows are immutable settlement evidence; all final grades use official results.
+Started and settled games are retained separately as archive status.
+
+Reconciled official final: Besiktas Istanbul 83–79 Real Madrid · quarters 18–15, 27–22, 19–17, 19–25.
+
+ELIGIBLE CLEAN PICKS
+========================================================================
+  (none)
+
+CAUTION PICKS
+========================================================================
+  (none)
+
+WATCHLIST — NO MATCHED ODDS
+========================================================================
+  (none)
+
+WATCHLIST — INSUFFICIENT CONTEXT
+========================================================================
+  (none)
+
+SKIPPED — INELIGIBLE
+========================================================================
+  (none)
+
+IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
+========================================================================
+  (none)
+
+SETTLED PICKS — ARCHIVE ONLY
+========================================================================
+  [team_history_empirical/team_history_empirical] Besiktas Istanbul vs Real Madrid · KO 2026-11-18 19:00 SAST
+      MONEYLINE full_game -> AWAY · p=56.7% (raw 52.0%) @1.340 average
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED_UNFROZEN
+      calibration=provisional n=12 · reasons=insufficient_walk_forward_samples · prediction=history
+      archived_revisions=4 · latest_evidence_utc=2026-11-18T08:28:48Z
+  [team_history_empirical/team_history_empirical] Besiktas Istanbul vs Real Madrid · KO 2026-11-18 19:00 SAST
+      MONEYLINE H1 -> AWAY · p=59.4% (raw 53.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED_UNFROZEN
+      calibration=provisional n=13 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Besiktas Istanbul vs Real Madrid · KO 2026-11-18 19:00 SAST
+      HIGHEST QUARTER full_game -> Q2 · p=31.4% (raw 29.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED_UNFROZEN
+      calibration=provisional n=13 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 WATCHLIST_NO_ODDS=0 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
+ROI-qualified individual paper singles: 0
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=3
+Logical picks shown: 3 · superseded observations: 3
+Total archived pick evidence rows: 6
+Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
+Bet only what you can afford to lose.
