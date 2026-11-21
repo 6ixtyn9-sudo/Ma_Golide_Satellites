@@ -30,7 +30,6 @@ Optional provider credentials:
 PREDIXSPORT_API_KEY
 THE_ODDS_API_KEY
 SPORTSGAMEODDS_API_KEY
-THERUNDOWN_API_KEY
 ```
 
 Optional notification credentials and gates:
@@ -264,7 +263,6 @@ files):
 | Secret | Implemented adapter coverage (verify live) | Use it for |
 | --- | --- | --- |
 | `THE_ODDS_API_KEY` | NBA/WNBA/NCAA_M/NCAA_W full-game markets; NBA quarters and H1; NCAA H1/H2 where the provider offers them; probationary Australia NBL sport-key lane | The first supplemental source to validate, especially for NCAA_W; an NBL account/region/bookmaker smoke is required before ticket eligibility |
-| `THERUNDOWN_API_KEY` | NBA full-game moneyline and totals | A second named NBA source |
 | `SPORTSGAMEODDS_API_KEY` | NBA full-game and Q1–Q4 totals | NBA quarter-total coverage |
 | `PREDIXSPORT_API_KEY` | NBA and EuroLeague predictions | Personal/non-commercial free tier only; adapter remains documentation-only until an authenticated smoke succeeds |
 
@@ -306,8 +304,7 @@ coverage classes, verified index floors, and cache policy are documented in
 not satisfy pre-tip prediction/book requirements or establish calibration.
 
 Configure only permanently-free provider secrets as needed:
-`PREDIXSPORT_API_KEY`, `THERUNDOWN_API_KEY`, `SPORTSGAMEODDS_API_KEY`, and
-`THE_ODDS_API_KEY`. Missing credentials disable only the affected provider and
+`PREDIXSPORT_API_KEY`, `SPORTSGAMEODDS_API_KEY`, and `THE_ODDS_API_KEY`. Missing credentials disable only the affected provider and
 remain visible as coverage gaps; they do not fabricate substitute evidence.
 Predixsport and NCAA provider coverage is `DOCUMENTATION_ONLY` until
 an authenticated smoke succeeds.

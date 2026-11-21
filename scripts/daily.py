@@ -560,7 +560,6 @@ def main() -> int:
         default="none",
         choices=[
             "none",
-            "therundown",
             "sportsgameodds",
             "theoddsapi",
             "betexplorer",

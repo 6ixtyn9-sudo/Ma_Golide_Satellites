@@ -14,7 +14,7 @@ receipts, and audit state; DuckDB remains the canonical sports system of record.
 
 | League | Native regulation periods | Schedule / results | Independent predictions | Books |
 | --- | --- | --- | --- | --- |
-| NBA | Q1–Q4 | ESPN | ESPN BPI, Hardwood, Predixsport | ESPN scoreboard, TheRundown, SportsGameOdds, TheOddsAPI* |
+| NBA | Q1–Q4 | ESPN | ESPN BPI, Hardwood, Predixsport | ESPN scoreboard, SportsGameOdds, TheOddsAPI* |
 | WNBA | Event-declared H1/H2 or Q1–Q4 | ESPN | ESPN BPI | ESPN scoreboard* |
 | EuroLeague | Q1–Q4 | Euroleague Basketball | Predixsport | BetExplorer aggregate research only; no validated named-book ticket lane |
 | EuroLeague Women (`EUROLEAGUE_W`) | Q1–Q4 + official OT | FIBA GDAP schedule + FIBA game-page detail | No independently validated pre-tip provider yet | No validated named-book adapter; intentionally unpriced |
@@ -129,8 +129,7 @@ book observations remain research-only and cannot create a ticket. NCAA book
 acquisition uses the permanently-free tier of `THE_ODDS_API_KEY`; a missing key
 disables that provider rather than inventing book evidence. In GitHub Actions,
 optional permanently-free provider credentials are supplied as Actions secrets
-(`THE_ODDS_API_KEY`, `THERUNDOWN_API_KEY`, `SPORTSGAMEODDS_API_KEY`, and
-`PREDIXSPORT_API_KEY`); without them the report explicitly marks the adapter as
+(`THE_ODDS_API_KEY`, `SPORTSGAMEODDS_API_KEY`, and `PREDIXSPORT_API_KEY`); without them the report explicitly marks the adapter as
 disabled. See [Operations: optional odds-provider credentials](docs/OPERATIONS.md#optional-odds-provider-credentials)
 for league/market coverage and safe rollout steps.
 

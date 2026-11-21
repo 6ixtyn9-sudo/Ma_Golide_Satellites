@@ -74,7 +74,7 @@ _CLOSED_STATUSES = frozenset({GameStatus.POSTPONED, GameStatus.CANCELLED, GameSt
 # is added and prevents a second hand-maintained timezone matrix.
 DEFAULT_TZ = {spec.league.value: spec.timezone for spec in SPECS}
 ACQUISITION_TZ = {spec.league.value: spec.acquisition_timezone for spec in SPECS}
-BOOK_PROVIDERS = ("therundown", "sportsgameodds", "theoddsapi")
+BOOK_PROVIDERS = ("sportsgameodds", "theoddsapi")
 # Explicit per-league tuples are retained as a public compatibility surface,
 # but their values now come from the registry.  Empty means intentionally
 # unpriced, not a fallback to an unrelated men's competition provider.
@@ -2967,14 +2967,6 @@ def _default_fetch_factory(provider: str):
             if key
             else HttpClient().get_json
         )
-    if provider == "therundown":
-        from .providers import therundown
-
-        return (
-            HttpClient(default_headers=therundown.auth_headers()).get_json
-            if therundown.is_enabled()
-            else HttpClient().get_json
-        )
     if provider == "sportsgameodds":
         key = os.environ.get("SPORTSGAMEODDS_API_KEY", "")
         return (
@@ -2986,11 +2978,10 @@ def _default_fetch_factory(provider: str):
 
 
 def _book_module(provider: str):
-    from .providers import sportsgameodds, theoddsapi, therundown
+    from .providers import sportsgameodds, theoddsapi
 
     return {
         "betexplorer": betexplorer,
-        "therundown": therundown,
         "sportsgameodds": sportsgameodds,
         "theoddsapi": theoddsapi,
     }[provider]

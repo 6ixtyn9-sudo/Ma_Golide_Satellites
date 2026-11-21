@@ -35,7 +35,7 @@ Documented contract used here:
 FetchFn convention: ``fetch_factory(provider)`` returns a ``FetchFn``
 (``Callable[[str], Any]``) returning parsed JSON; an envelope dict
 ``{"json": ..., "headers": ...}`` is unwrapped so response headers can be
-reported (see therundown module docstring).
+reported through the shared provider fetch convention.
 """
 
 from __future__ import annotations

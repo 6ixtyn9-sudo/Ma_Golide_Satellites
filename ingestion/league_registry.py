@@ -182,7 +182,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
         "espn",
         "espn",
         "espn",
-        (_ESPN_RELAY_ONLY, *(_validated_named_book(provider) for provider in ("therundown", "sportsgameodds", "theoddsapi"))),
+        (_ESPN_RELAY_ONLY, *(_validated_named_book(provider) for provider in ("sportsgameodds", "theoddsapi"))),
     ),
     LeagueSpec(
         League.WNBA,

@@ -13,10 +13,6 @@ from typing import Dict, Iterable, List, Optional
 from .identity import parse_utc
 from .models import BookSnapshot, Market, Period
 
-# TheRundown Free has no quarter markets by contract. Keep a second guard here
-# even if an adapter is changed incorrectly.
-PROVIDERS_BLOCKED_FROM_QUARTERS = {"therundown"}
-
 
 @dataclass(frozen=True)
 class BookConfig:
@@ -93,9 +89,6 @@ def select_total_snapshots(
         and snapshot.period is period
         and snapshot.line is not None
         and _matches_common(snapshot, config)
-        and not (
-            period is not Period.FULL_GAME and snapshot.provider in PROVIDERS_BLOCKED_FROM_QUARTERS
-        )
     ]
 
 
@@ -112,9 +105,6 @@ def select_spread_snapshots(
         and snapshot.period is period
         and snapshot.line is not None
         and _matches_common(snapshot, config)
-        and not (
-            period is not Period.FULL_GAME and snapshot.provider in PROVIDERS_BLOCKED_FROM_QUARTERS
-        )
     ]
 
 
