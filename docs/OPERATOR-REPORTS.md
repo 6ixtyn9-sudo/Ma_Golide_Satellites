@@ -10,13 +10,12 @@ raw-dump storage approach:
 - the league Actions cache retains working forecast archives and audit inputs
   across active runs; downloaded Actions artifacts retain the raw picks JSON,
   dated Markdown, operational reports, and recovery evidence for 14 days;
-- Git tracks immutable ticket/no-bet decisions, human-readable cards for
-  receipt-backed tickets, compact date locks (including inline immutable
-  per-fixture pick snapshots), compact performance state, and dated text cards;
-- structured dated pick JSON, detailed dated lifecycle renders,
-  `picks_today.json`, rolling/dated expanded audits, and other scan payloads
-  remain cache/artifact-only so volatile or expanded detail does not become
-  permanent Git history.
+- Git tracks immutable ticket/no-bet decisions, human-readable ticket and pick
+  cards, compact date locks (including inline immutable per-fixture pick
+  snapshots), and compact performance state;
+- structured dated pick JSON, detailed dated lifecycle renders, `picks_today.json`,
+  rolling/dated expanded audits, and other scan payloads remain cache/artifact-only
+  so volatile structured detail does not become permanent Git history.
 
 A dated pick card begins as a mutable draft. At each fixture's scheduled tip
 minus 60 minutes, the operator writes one immutable fixture snapshot inline in
@@ -48,7 +47,7 @@ profitability.
 | `picks_YYYY-MM-DD.json` | Structured dated draft evidence; cache/Actions-artifact only for every league, never Git-published |
 | `pick_lifecycle_state.json` | Git-published lifecycle state with immutable per-fixture evidence nested by date and fixture, captured at the 60-minute cutoff: selections, prices/lines, source/evidence timestamps, scheduled tip, and freeze timestamp; no per-fixture sidecar is published |
 | `picks_YYYY-MM-DD_lifecycle.json` | Detailed mutable lifecycle view; grades frozen evidence against reconciled official finals and labels draft/frozen/settled state. Cache/Actions-artifact only for every league, never Git-published. |
-| `picks_YYYY-MM-DD.txt` | Git-published compact human card rendered from the lifecycle view |
+| `picks_YYYY-MM-DD.txt` | Git-published human-readable pick card rendered from the lifecycle view |
 | `picks_audit_rolling.json` | Thirty-day logical and settled ledgers; cache/artifact only, not Git |
 | `picks_audit_YYYY-MM-DD.md` | Expanded rolling summary; cache/artifact only, not Git |
 | `auto_tickets_YYYY-MM-DD_decision.json` | Immutable publication receipt for that date's paper singles and accas |

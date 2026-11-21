@@ -69,10 +69,7 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
     report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
 
     assert report["copied_count"] == 5
-    compact_pick_card = (repo / "localdata" / "nba" / "picks_2026-11-12.txt").read_text()
-    assert "Ma Golide compact pick lifecycle marker" in compact_pick_card
-    assert "target_date=2026-11-12" in compact_pick_card
-    assert "detailed_card_sha256=" in compact_pick_card
+    assert (repo / "localdata" / "nba" / "picks_2026-11-12.txt").read_bytes() == b"picks\n"
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12_decision.json").read_bytes() == b"receipt\n"
     assert (repo / "localdata" / "nba" / "auto_tickets_2026-11-12.txt").read_bytes() == b"frozen-ticket-card\n"
     # A pre-cutoff card is a mutable published preview, not a receipt or date lock.
@@ -334,9 +331,7 @@ def test_publisher_keeps_structured_pick_json_artifact_only_globally(tmp_path):
     destination = repo / "localdata" / "nba"
     assert not (destination / dated_json_name).exists()
     assert not (destination / retired_freeze_name).exists()
-    compact_pick_card = (destination / "picks_2026-11-18.txt").read_text()
-    assert "Ma Golide compact pick lifecycle marker" in compact_pick_card
-    assert "detailed_card_sha256=" in compact_pick_card
+    assert (destination / "picks_2026-11-18.txt").read_bytes() == b"draft one\n"
     persisted = json.loads((destination / "pick_lifecycle_state.json").read_text())
     assert persisted["frozen_by_date"]["2026-11-18"]["game-1"]["rows"] == [{"id": 1}]
 
@@ -345,9 +340,7 @@ def test_publisher_keeps_structured_pick_json_artifact_only_globally(tmp_path):
     second = merge_downloaded_localdata(tmp_path / "artifacts", repo)
     assert second["copied"] == ["localdata/nba/picks_2026-11-18.txt"]
     assert not (destination / dated_json_name).exists()
-    second_marker = (destination / "picks_2026-11-18.txt").read_text()
-    assert "Ma Golide compact pick lifecycle marker" in second_marker
-    assert "detailed_card_sha256=" in second_marker
+    assert (destination / "picks_2026-11-18.txt").read_bytes() == b"draft two\n"
 
     artifact_file(
         tmp_path, "nba-artifact", "nba", "pick_lifecycle_state.json", lifecycle_state([{"id": 2}])
@@ -557,9 +550,7 @@ def test_interrupted_lane_artifact_can_publish_only_durable_pick_lifecycle_evide
 
     destination = tmp_path / "repo" / "localdata" / "nba"
     assert not (destination / dated_json_name).exists()
-    assert "Ma Golide compact pick lifecycle marker" in (
-        destination / "picks_2026-11-18.txt"
-    ).read_text()
+    assert (destination / "picks_2026-11-18.txt").read_bytes() == b"draft card\n"
     assert not (destination / retired_freeze_name).exists()
     assert (destination / "pick_lifecycle_state.json").read_bytes() == (
         json.dumps(json.loads(lifecycle_state), indent=2, sort_keys=True) + "\n"
@@ -828,48 +819,3 @@ def test_cli_reports_json(tmp_path, capsys, monkeypatch):
     output = json.loads(capsys.readouterr().out)
     assert output["copied_count"] == 0
     assert not (tmp_path / "repo" / "localdata" / "nba" / "picks_today.json").exists()
-
-
-def test_publisher_preserves_time_locked_euroleague_consensus_roster(tmp_path):
-    roster_name = "euroleague_consensus_paper_2026-11-18_roster.json"
-    card_name = "euroleague_consensus_paper_2026-11-18.txt"
-    roster = artifact_file(
-        tmp_path,
-        "euroleague-artifact",
-        "euroleague",
-        roster_name,
-        b'{"frozen": true, "selections": []}\n',
-    )
-    artifact_file(
-        tmp_path,
-        "euroleague-artifact",
-        "euroleague",
-        card_name,
-        b"initial consensus grades\n",
-    )
-
-    first = merge_downloaded_localdata(tmp_path / "artifacts", tmp_path / "repo")
-    assert set(first["copied"]) == {
-        f"localdata/euroleague/{roster_name}",
-        f"localdata/euroleague/{card_name}",
-    }
-    assert allowed_operator_file(roster_name)
-    assert allowed_operator_file(card_name)
-    assert allowed_lifecycle_recovery_file(roster_name)
-    assert not allowed_lifecycle_recovery_file(card_name)
-
-    # The text card is a mutable official-result view, while the no-stake
-    # roster is the immutable selection/evidence record.
-    artifact_file(
-        tmp_path,
-        "euroleague-artifact",
-        "euroleague",
-        card_name,
-        b"refreshed consensus grades\n",
-    )
-    second = merge_downloaded_localdata(tmp_path / "artifacts", tmp_path / "repo")
-    assert second["copied"] == [f"localdata/euroleague/{card_name}"]
-
-    roster.write_bytes(b'{"frozen": true, "selections": ["replacement"]}\n')
-    with pytest.raises(ValueError, match="immutable EuroLeague consensus-paper roster differs"):
-        merge_downloaded_localdata(tmp_path / "artifacts", tmp_path / "repo")

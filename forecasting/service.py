@@ -674,11 +674,9 @@ class MarketForecastService:
                 "require_positive_expected_value": True,
                 "require_point_in_time_price": True,
             }
-        elif self.league in self._UNPRICED_EMPIRICAL_LEAGUES:
-            # This source contract has no validated named-book feed, so it
-            # must never inherit a priced-value paper lane from another league.
-            paper_lane_options = {}
         else:
+            # These source contracts have no validated named-book feed, so they
+            # never inherit a priced-value paper lane from another league.
             paper_lane_options = {}
         paper_candidates, paper_pick_filter = filter_paper_candidate_picks(
             current,
@@ -771,7 +769,7 @@ class MarketForecastService:
             },
             "capabilities": {
                 "league_operator_policy": (
-                    "euroleague_strict_named_book_tickets_plus_separate_aggregate_consensus_paper_research"
+                    "euroleague_strict_named_book_ticket_lane"
                     if self.league is League.EUROLEAGUE
                     else "fiba_elw_empirical_history_only_no_validated_named_book_lane"
                     if self.league is League.EUROLEAGUE_W
@@ -904,20 +902,6 @@ class MarketForecastService:
                             "candidate_positive_expected_value_count"
                         ],
                         "qualifying_picks": paper_pick_filter["qualifying_pick_count"],
-                    }
-                    if self.league is League.EUROLEAGUE
-                    else None
-                ),
-                "consensus_paper_lane": (
-                    {
-                        "name": "EUROLEAGUE_AGGREGATE_CONSENSUS_PRICE_PAPER_LEAGUE",
-                        "role": "separate no-stake research board; never feeds strict tickets",
-                        "price_source": "BetExplorer representative average",
-                        "price_provenance": "aggregate_consensus",
-                        "source_permission": "unresolved",
-                        "operational_validation": "probation",
-                        "no_ticket_receipt_bank_roi_or_pnl": True,
-                        "selection_surface": "operator time-locked daily consensus-paper roster",
                     }
                     if self.league is League.EUROLEAGUE
                     else None

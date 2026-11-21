@@ -139,14 +139,8 @@ _ABA_BETEXPLORER_RESEARCH_ONLY = _aggregate_research_only(
 )
 
 
-def _euroleague_aggregate_consensus_paper_only(provider: str) -> PriceSourcePolicy:
-    """Allow a visibly separate no-stake research board, never ticket pricing.
-
-    This does not relax any evidence axis. The operator may preserve the exact
-    representative aggregate as a EuroLeague consensus-paper observation, but
-    source permission/validation remain unresolved/probationary and strict
-    tickets, receipts, bank, ROI, and real-money execution remain unavailable.
-    """
+def _euroleague_aggregate_research_only(provider: str) -> PriceSourcePolicy:
+    """Retain aggregate observations for ordinary pick reporting, never tickets."""
 
     return PriceSourcePolicy(
         provider,
@@ -154,8 +148,8 @@ def _euroleague_aggregate_consensus_paper_only(provider: str) -> PriceSourcePoli
         SourcePermission.UNRESOLVED,
         OperationalValidation.PROBATION,
         detail=(
-            "EuroLeague aggregate-consensus research-board price only; never a "
-            "named-book ticket or execution quote."
+            "EuroLeague representative aggregate observation for research and "
+            "pick reporting only; never a named-book ticket or execution quote."
         ),
     )
 
@@ -210,7 +204,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
         "euroleague",
         "euroleague",
         "euroleague",
-        (_euroleague_aggregate_consensus_paper_only("betexplorer"),),
+        (_euroleague_aggregate_research_only("betexplorer"),),
     ),
     LeagueSpec(
         League.EUROLEAGUE_W,

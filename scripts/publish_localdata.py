@@ -64,10 +64,6 @@ LIFECYCLE_RECOVERY_NAMES = tuple(
     for pattern in (
         rf"picks_{DATE}\.txt",
         r"pick_lifecycle_state\.json",
-        # A time-locked EuroLeague research roster is non-financial but still
-        # immutable selection evidence, so an interrupted successful freeze
-        # must be recoverable without allowing mutable cards/tickets through.
-        rf"euroleague_consensus_paper_{DATE}_roster\.json",
     )
 )
 ALLOWED_NAMES = tuple(
@@ -89,15 +85,10 @@ ALLOWED_NAMES = tuple(
         # Compact ABA season-count attestations are the only non-ticket
         # evidence summary admitted to Git. Raw source pages remain excluded.
         r"history_receipts\.json",
-        # This card is mutable only for official-result grades. The companion
-        # roster below is the immutable, no-stake selection snapshot.
-        rf"euroleague_consensus_paper_{DATE}\.txt",
-        rf"euroleague_consensus_paper_{DATE}_roster\.json",
     )
 )
 IMMUTABLE_NAMES = re.compile(
-    rf"(?:auto_tickets_{DATE}_decision|"
-    rf"euroleague_consensus_paper_{DATE}_roster)\.json"
+    rf"auto_tickets_{DATE}_decision\.json"
 )
 DECISION_RECEIPT_NAME = re.compile(rf"auto_tickets_({DATE})_decision\.json")
 CALIBRATION_EPOCH = "2026-11-10"
@@ -438,34 +429,9 @@ def _compact_ticket_receipt(data: dict[str, Any]) -> dict[str, Any]:
     return compact
 
 
-def _compact_pick_card(raw: bytes, *, name: str, source: Path) -> bytes:
-    """Publish a small dated lifecycle marker instead of a full forecast board.
-
-    The full, readable board remains in the Actions artifact and the compact
-    release archive. Named-price diagnostics remain on the dated ticket card,
-    not this all-forecast lifecycle marker.
-    """
-
-    try:
-        raw.decode("utf-8")
-    except UnicodeDecodeError as exc:
-        raise ValueError(f"dated pick card is not UTF-8: {source}") from exc
-    target_date = name.removeprefix("picks_").removesuffix(".txt")
-    state_key = source.parent.name
-    return (
-        "Ma Golide compact pick lifecycle marker\n"
-        f"league_state={state_key}\n"
-        f"target_date={target_date}\n"
-        "full_forecast_board=Actions artifact and GitHub Release archive\n"
-        f"detailed_card_sha256={hashlib.sha256(raw).hexdigest()}\n"
-    ).encode()
-
-
 def _git_durable_bytes_from_raw(raw: bytes, *, name: str, source: Path) -> bytes:
-    """Return the compact Git form for a publisher-allowlisted file."""
+    """Return the Git-durable form for a publisher-allowlisted file."""
 
-    if re.fullmatch(rf"picks_{DATE}\.txt", name):
-        return _compact_pick_card(raw, name=name, source=source)
     if name not in {
         "auto_tickets_state.json",
         "auto_tickets_performance.json",
@@ -758,12 +724,12 @@ def _artifact_league_dirs(
 
 
 def compact_repository_localdata(repo: Path) -> Dict[str, Any]:
-    """Migrate existing Git-visible operator files to the compact schema.
+    """Compact mutable state summaries without altering published pick cards.
 
     The publisher calls this only after the workflow has uploaded the same
     detailed state to a verified release checkpoint. It is idempotent and
     never removes an inline fixture, ticket selection, source-permission flag,
-    named price, or immutable receipt identity.
+    named price, immutable receipt identity, or readable dated pick card.
     """
 
     repo = repo.resolve()

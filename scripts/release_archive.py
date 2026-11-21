@@ -134,8 +134,6 @@ def _archive_artifact_file(relative: str) -> bool:
         return True
     if re.fullmatch(rf"auto_tickets_{DATE}(?:_(?:decision|withdrawn))?\.(?:json|txt)", name):
         return True
-    if re.fullmatch(rf"euroleague_consensus_paper_{DATE}(?:_roster)?\.(?:json|txt)", name):
-        return True
     # Explicitly do not archive unknown payloads if artifact upload patterns
     # are widened later. This prevents accidental raw-page/credential capture.
     return False
