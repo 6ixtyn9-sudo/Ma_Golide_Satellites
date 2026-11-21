@@ -10,6 +10,7 @@ from ingestion.adaptive_gate import (
     GateUncertain,
     LEAGUES,
     ScheduleGame,
+    _ticket_decision_cutoff,
     evaluate_gate,
     evaluate_league,
     fetch_schedule,
@@ -71,13 +72,13 @@ def test_gate_skips_a_valid_idle_league(tmp_path: Path):
     nba = LEAGUES[0]
     _operator_state(tmp_path, nba, date="2026-11-18")
 
-    before_morning_cutoff = NOW - timedelta(hours=7)  # 07:00 SAST
+    before_midday_cutoff = NOW - timedelta(hours=7)  # 07:00 SAST
     decision = evaluate_league(
         nba,
         state_root=tmp_path,
-        now=before_morning_cutoff,
+        now=before_midday_cutoff,
         schedule_fetcher=_schedule(
-            ScheduleGame(before_morning_cutoff + timedelta(hours=4), "scheduled"),
+            ScheduleGame(before_midday_cutoff + timedelta(hours=4), "scheduled"),
         ),
     )
 
@@ -136,12 +137,15 @@ def test_gate_wakes_for_prior_pick_and_shadow_cards_with_rendered_pending_grades
 def test_gate_publishes_an_identified_fixture_draft_before_its_freeze_window(tmp_path: Path):
     nba = LEAGUES[0]
     _operator_state(tmp_path, nba, date="2026-11-18")
+    before_midday_cutoff = NOW - timedelta(hours=3)  # 11:00 SAST
 
     decision = evaluate_league(
         nba,
         state_root=tmp_path,
-        now=NOW,
-        schedule_fetcher=_schedule(ScheduleGame(NOW + timedelta(hours=4), "scheduled", "game-1")),
+        now=before_midday_cutoff,
+        schedule_fetcher=_schedule(
+            ScheduleGame(before_midday_cutoff + timedelta(hours=4), "scheduled", "game-1")
+        ),
     )
 
     assert decision.should_run
@@ -168,17 +172,20 @@ def test_gate_runs_for_an_unfrozen_fixture_freeze_window(tmp_path: Path):
     )
 
 
-def test_gate_wakes_at_the_1800_sast_nba_ticket_cutoff(tmp_path: Path):
-    nba = LEAGUES[0]
-    _operator_state(tmp_path, nba, date="2026-11-18")
-    nba_cutoff = datetime(2026, 11, 18, 16, 0, tzinfo=timezone.utc)
+@pytest.mark.parametrize("league_key", ("NBA", "EUROLEAGUE"))
+def test_gate_wakes_at_the_universal_midday_sast_ticket_cutoff(
+    tmp_path: Path, league_key: str
+):
+    league = next(config for config in LEAGUES if config.league_key == league_key)
+    _operator_state(tmp_path, league, date="2026-11-18")
+    midday_cutoff = datetime(2026, 11, 18, 10, 0, tzinfo=timezone.utc)
 
     decision = evaluate_league(
-        nba,
+        league,
         state_root=tmp_path,
-        now=nba_cutoff,
+        now=midday_cutoff,
         schedule_fetcher=_schedule(
-            ScheduleGame(nba_cutoff + timedelta(hours=13), "scheduled"),
+            ScheduleGame(midday_cutoff + timedelta(hours=13), "scheduled"),
         ),
     )
 
@@ -186,22 +193,15 @@ def test_gate_wakes_at_the_1800_sast_nba_ticket_cutoff(tmp_path: Path):
     assert decision.reasons == ("ticket_creation_or_acquisition_due",)
 
 
-def test_gate_keeps_the_0900_sast_ticket_cutoff_for_non_nba_leagues(tmp_path: Path):
-    euroleague = next(config for config in LEAGUES if config.league_key == "EUROLEAGUE")
-    _operator_state(tmp_path, euroleague, date="2026-11-18")
-    default_cutoff = datetime(2026, 11, 18, 7, 0, tzinfo=timezone.utc)
-
-    decision = evaluate_league(
-        euroleague,
-        state_root=tmp_path,
-        now=default_cutoff,
-        schedule_fetcher=_schedule(
-            ScheduleGame(default_cutoff + timedelta(hours=13), "scheduled"),
-        ),
+@pytest.mark.parametrize("league", LEAGUES)
+def test_every_league_uses_the_universal_midday_ticket_cutoff(league):
+    cutoff = _ticket_decision_cutoff(
+        league,
+        "2026-11-18",
+        [ScheduleGame(datetime(2026, 11, 18, 23, 0, tzinfo=timezone.utc), "scheduled")],
     )
 
-    assert decision.should_run
-    assert decision.reasons == ("ticket_creation_or_acquisition_due",)
+    assert cutoff == datetime(2026, 11, 18, 10, 0, tzinfo=timezone.utc)
 
 
 def test_gate_runs_for_an_unfrozen_slate_inside_the_ticket_window(tmp_path: Path):

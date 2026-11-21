@@ -94,27 +94,25 @@ UNPRICED_SPREAD_TICKET_MIN_DECISIONS_EXCLUSIVE = 10
 UNPRICED_SPREAD_TICKET_MIN_COVER_RATE = 0.70
 BASE_PAPER_UNITS = 100.0
 STAKE_UNITS_PER_ACCA = 1.0
-# Keep this compact NBA exception aligned with ingestion.adaptive_gate: NBA
-# cards publish at 18:00 SAST so the North-American board can mature; other
-# leagues retain the established 09:00 window. An earlier fixture still wins.
+# A dated paper-ticket decision is universal across every league: midday in
+# Johannesburg.  An earlier fixture still wins through the ordinary 60-minute
+# pre-tip safety cutoff below; no policy may create a post-tip position.
 TICKET_DECISION_LEAD_TIME = timedelta(hours=1)
 TICKET_PUBLICATION_TIMEZONE = "Africa/Johannesburg"
-DEFAULT_TICKET_PUBLICATION_LOCAL_TIME = time(hour=9)
-NBA_TICKET_PUBLICATION_LOCAL_TIME = time(hour=18)
-DEFAULT_TICKET_DECISION_POLICY = "0900_sast_or_first_slate_tip_minus_60_minutes"
-NBA_TICKET_DECISION_POLICY = "1800_sast_or_first_slate_tip_minus_60_minutes"
+TICKET_PUBLICATION_LOCAL_TIME = time(hour=12)
+TICKET_DECISION_POLICY = "1200_sast_or_first_slate_tip_minus_60_minutes"
 
 
-def _ticket_publication_local_time(league: League) -> time:
-    return (
-        NBA_TICKET_PUBLICATION_LOCAL_TIME
-        if league is League.NBA
-        else DEFAULT_TICKET_PUBLICATION_LOCAL_TIME
-    )
+def _ticket_publication_local_time(_league: League) -> time:
+    """Return the single universal dated-ticket publication time."""
+
+    return TICKET_PUBLICATION_LOCAL_TIME
 
 
-def _ticket_decision_policy(league: League) -> str:
-    return NBA_TICKET_DECISION_POLICY if league is League.NBA else DEFAULT_TICKET_DECISION_POLICY
+def _ticket_decision_policy(_league: League) -> str:
+    """Return the single universal dated-ticket decision policy."""
+
+    return TICKET_DECISION_POLICY
 BUCKET_ORDER = [
     "ELIGIBLE_CLEAN",
     "CAUTION",
@@ -256,13 +254,12 @@ def _ticket_decision_window(
     generated_utc: str,
     slate_timezone_name: str,
 ) -> Dict[str, Any]:
-    """Describe the immutable per-league decision point for a dated slate.
+    """Describe the immutable universal decision point for a dated slate.
 
-    NBA cards publish at 18:00 SAST so their evening board can mature. Other
-    leagues retain the established 09:00 SAST window. A genuinely earlier game
-    cannot be deferred to the normal publication time: its ordinary
-    tip-minus-60-minute safety cutoff takes precedence. Fixture-level pick
-    snapshots remain their own tip-minus-60-minute evidence lifecycle.
+    Every league publishes at 12:00 SAST. A genuinely earlier game cannot be
+    deferred to that normal publication time: its ordinary tip-minus-60-minute
+    safety cutoff takes precedence. Fixture-level pick snapshots remain their
+    own tip-minus-60-minute evidence lifecycle.
     """
     try:
         target_day = datetime.strptime(target_date, "%Y-%m-%d").date()
@@ -4274,7 +4271,7 @@ def _render_named_price_draft_section(
 
     The strict ticket receipt and its bank remain unchanged. This section keeps
     current named-price candidates on the single dated card before its
-    league-specific SAST publication cutoff (or earlier first-tip safety). It
+    universal midday SAST publication cutoff (or earlier first-tip safety). It
     never reaches a terminal
     receipt or no-bet card.
     """
@@ -4445,7 +4442,7 @@ def _render_empty_ticket_scan(
             publication = ticket_decision.get("publication_cutoff_utc") or ticket_decision.get(
                 "morning_publication_cutoff_utc"
             )
-            publication_time = ticket_decision.get("publication_local_time") or "09:00"
+            publication_time = ticket_decision.get("publication_local_time") or "12:00"
             safety = ticket_decision.get("pre_tip_safety_cutoff_utc")
             if cutoff and earliest:
                 policy_detail = (

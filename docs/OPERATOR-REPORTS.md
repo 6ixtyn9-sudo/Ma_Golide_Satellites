@@ -274,9 +274,9 @@ separate tickets may still win simultaneously. Strict `accas.results` rankings
 are unchanged and may overlap.
 
 A scan does **not** freeze the first non-empty ticket it sees. It remains
-candidate evidence until the dated card's league-specific Johannesburg
-publication time: **18:00** for NBA and **09:00** for every other league.
-The first scheduled fixture on the league's acquisition-timezone slate can
+candidate evidence until the dated card's universal Johannesburg publication
+time: **12:00** for every league. The first scheduled fixture on the league's
+acquisition-timezone slate can
 supply an earlier 60-minute pre-tip safety cutoff. The first successful scan at
 that cutoff freezes all currently valid candidates whose every leg is
 still pre-tip. It records the policy, planned cutoff, source timezone, actual
