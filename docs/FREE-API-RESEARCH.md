@@ -9,12 +9,11 @@ policy. A free key does not by itself make a source ticket eligible: the source
 must still pass rights, live-schema, identity, coverage, freshness, and
 operational-validation review.
 
-The repository keeps three optional authenticated providers under this policy:
+The repository keeps two optional authenticated providers under this policy:
 
 | Provider | Credential | Ongoing free allowance | Current role |
 | --- | --- | --- | --- |
 | The Odds API | `THE_ODDS_API_KEY` | 500 credits/month | Direct named-book odds for configured NBA/WNBA/NCAA lanes, subject to sport/region/market coverage |
-| SportsGameOdds | `SPORTSGAMEODDS_API_KEY` | 2,500 objects/month | NBA full-game and quarter totals |
 | Predixsport | `PREDIXSPORT_API_KEY` | 200 shared calls/month for personal, non-commercial use | Optional NBA/EuroLeague prediction input; still documentation-only pending an authenticated schema smoke |
 
 Trial-only or contract-only integrations are deliberately absent:
@@ -63,7 +62,7 @@ terms, rate limits, event identity, and result/price reconciliation behavior.
 | Candidate | Advertised free allowance | Potential use | Current decision |
 | --- | --- | --- | --- |
 | [OddsPapi](https://oddspapi.io/blog/free-sports-data-api/) | 250 requests/month | A very-low-volume schedule/odds smoke across international books | Not suitable for the 30-minute all-lane workflow at this quota. Require direct terms, live key, and named-book identity verification before adding an adapter. |
-| Existing The Odds API / SportsGameOdds | See policy table above | Current approved free-tier integration paths | Retain and test first; no new adapter is needed to diagnose their real account coverage. |
+| Existing The Odds API | See policy table above | Current approved free-tier integration path | Retain and test first; no new adapter is needed to diagnose its real account coverage. |
 
 The multilingual search produced several directories and unofficial examples,
 but no additional primary-source, permanently-free, direct named-book basketball

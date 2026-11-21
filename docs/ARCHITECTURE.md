@@ -10,7 +10,7 @@ ESPN / EuroLeague                      ESPN BPI / Hardwood / Predixsport
                   ------ canonical adapters --
                                 |
 Optional book adapters ----------+------------ identity and UTC validation
-SportsGameOdds / TheOddsAPI       v
+TheOddsAPI                       v
                     ingestion.pipeline.Pipeline
                                 |
                     +-----------+------------+

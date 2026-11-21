@@ -116,7 +116,7 @@ def test_pregame_uses_only_fresh_exact_book_evidence():
     store.upsert_book_snapshot(
         BookSnapshot(
             game_id="401909938",
-            provider="sportsgameodds",
+            provider="theoddsapi",
             book="draftkings",
             market=Market.TOTAL,
             period=Period.Q1,
@@ -129,7 +129,7 @@ def test_pregame_uses_only_fresh_exact_book_evidence():
     store.upsert_book_snapshot(
         BookSnapshot(
             game_id="401909938",
-            provider="sportsgameodds",
+            provider="theoddsapi",
             book="draftkings",
             market=Market.TOTAL,
             period=Period.Q2,
@@ -137,11 +137,11 @@ def test_pregame_uses_only_fresh_exact_book_evidence():
             line=999.0,
         )
     )
-    config = _config(book=BookConfig(provider="sportsgameodds", book="draftkings"))
+    config = _config(book=BookConfig(provider="theoddsapi", book="draftkings"))
     report = Pipeline(config, store, fetch=_nba_fetch()).pregame()
     row = report["rows"][0]
     assert row["quarters"]["Q1"] == 58.5
-    assert row["book_evidence"]["Q1"]["provider"] == "sportsgameodds"
+    assert row["book_evidence"]["Q1"]["provider"] == "theoddsapi"
     assert row["quarters"]["Q2"] is None
     assert row["book_evidence"]["Q2"] is None
 
@@ -240,7 +240,7 @@ def test_freeze_then_results_uses_frozen_pre_tip_prediction_and_price():
     store.upsert_book_snapshot(
         BookSnapshot(
             game_id=scheduled.game_id,
-            provider="sportsgameodds",
+            provider="theoddsapi",
             book="draftkings",
             market=Market.MONEYLINE,
             period=Period.FULL_GAME,
@@ -256,7 +256,7 @@ def test_freeze_then_results_uses_frozen_pre_tip_prediction_and_price():
 
     config = _config(
         fixture_now_utc="2026-11-08T00:00:00Z",
-        book=BookConfig(provider="sportsgameodds", book="draftkings"),
+        book=BookConfig(provider="theoddsapi", book="draftkings"),
     )
     pipeline = OfflinePipeline(config, store)
     frozen = pipeline.freeze()
@@ -299,7 +299,7 @@ def test_coverage_counts_only_reconciled_finals_and_real_quarter_lines():
     store.upsert_book_snapshot(
         BookSnapshot(
             game_id="401909938",
-            provider="sportsgameodds",
+            provider="theoddsapi",
             book="draftkings",
             market=Market.TOTAL,
             period=Period.Q1,
