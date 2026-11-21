@@ -21,8 +21,8 @@
       "logical_picks": 146
     },
     "2026-11-21": {
-      "frozen_fixtures": 43,
-      "logical_picks": 165
+      "frozen_fixtures": 44,
+      "logical_picks": 166
     }
   },
   "frozen_by_date": {
@@ -19464,6 +19464,147 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
       },
+      "401915965": {
+        "decision_cutoff_utc": "2026-11-21T22:00:00Z",
+        "frozen_at": "2026-11-21T22:18:41Z",
+        "game_id": "401915965",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Grand Canyon Lopes",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.549,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 140,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "0e2df24b12b70a34494dfd7a82342de51d46f7606c16da2488237bd114952cdb",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "835d5c5666c925feb230",
+            "game_id": "401915965",
+            "grade_status": "pending",
+            "home": "SMU Mustangs",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "835d5c5666c925feb230",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-21T23:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Grand Canyon Lopes",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.663872,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 102,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "ef8a55f1a18b10e8536e9bc4955f37faac4d72a8898561f09d93ec73de449935",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4959f437782862074dcc",
+            "game_id": "401915965",
+            "grade_status": "pending",
+            "home": "SMU Mustangs",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "4959f437782862074dcc",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-21T22:10:04Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.6965,
+            "role": null,
+            "scheduled_utc": "2026-11-21T23:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Grand Canyon Lopes",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.624464,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 138,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "c173a779539144207743af49ae4fadee9da9ada7b408f7fe3f2215a057aa0ff4",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "98c6759308c189dbb30e",
+            "game_id": "401915965",
+            "grade_status": "pending",
+            "home": "SMU Mustangs",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "98c6759308c189dbb30e",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.62,
+            "role": null,
+            "scheduled_utc": "2026-11-21T23:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T23:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      },
       "401916155": {
         "decision_cutoff_utc": "2026-11-21T20:00:00Z",
         "frozen_at": "2026-11-21T20:17:09Z",
@@ -23401,18 +23542,6 @@
   "league": "NCAA_W",
   "pending_frozen_games": [
     [
-      "401913049",
-      "2026-11-21T20:00:00Z"
-    ],
-    [
-      "401919413",
-      "2026-11-21T20:00:00Z"
-    ],
-    [
-      "401920277",
-      "2026-11-21T20:00:00Z"
-    ],
-    [
       "401929020",
       "2026-11-21T20:30:00Z"
     ],
@@ -23443,6 +23572,10 @@
     [
       "401918036",
       "2026-11-21T22:00:00Z"
+    ],
+    [
+      "401915965",
+      "2026-11-21T23:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"

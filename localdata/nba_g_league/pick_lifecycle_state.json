@@ -1,16 +1,14 @@
 {
   "dated_reports": {
     "2026-11-19": {
-      "frozen_fixtures": 4,
-      "logical_picks": 12
+      "frozen_fixtures": 4
     },
     "2026-11-20": {
-      "frozen_fixtures": 9,
-      "logical_picks": 27
+      "frozen_fixtures": 9
     },
     "2026-11-21": {
-      "frozen_fixtures": 0,
-      "logical_picks": 19
+      "frozen_fixtures": 1,
+      "logical_picks": 17
     }
   },
   "frozen_by_date": {
@@ -1772,9 +1770,151 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
       }
+    },
+    "2026-11-21": {
+      "401914584": {
+        "decision_cutoff_utc": "2026-11-21T22:00:00Z",
+        "frozen_at": "2026-11-21T22:09:26Z",
+        "game_id": "401914584",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Santa Cruz Warriors",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.384615,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "54a83373fabcd33c36cf4e9e0c27acc41cc2dd426e3248a3dcdc94affa95187d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "09fc64bef06ca21938ce",
+            "game_id": "401914584",
+            "grade_status": "pending",
+            "home": "Rip City Remix",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "09fc64bef06ca21938ce",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.384615,
+            "role": null,
+            "scheduled_utc": "2026-11-21T23:00:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "Santa Cruz Warriors",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.553846,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "4a9aed4124a6f93c6e987b8e1a79b20f0547f183d851f3ec4e0f4296506cce5c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "56ae03094bdfcbc940b7",
+            "game_id": "401914584",
+            "grade_status": "pending",
+            "home": "Rip City Remix",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "56ae03094bdfcbc940b7",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.553846,
+            "role": null,
+            "scheduled_utc": "2026-11-21T23:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Santa Cruz Warriors",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.553846,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "1099a497ebf12a2b42a98373e7b18972c524bc259c9735d6a52bf32ea291dd61",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b48929a46e740f4e40d3",
+            "game_id": "401914584",
+            "grade_status": "pending",
+            "home": "Rip City Remix",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "b48929a46e740f4e40d3",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.553846,
+            "role": null,
+            "scheduled_utc": "2026-11-21T23:00:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T23:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      }
     }
   },
   "league": "NBA_G_LEAGUE",
-  "pending_frozen_games": [],
+  "pending_frozen_games": [
+    [
+      "401914584",
+      "2026-11-21T23:00:00Z"
+    ]
+  ],
   "schema_version": "magolide.pick_lifecycle_state"
 }
