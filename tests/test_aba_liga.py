@@ -7,6 +7,9 @@ source-use permission or live verification.
 
 from __future__ import annotations
 
+import json
+import re
+
 import pytest
 
 from ingestion.duckdb_store import DuckDBStore
@@ -1241,3 +1244,265 @@ def test_parser_rejects_a_calendar_scope_or_malformed_score():
         )
     with pytest.raises(IdentityError, match="calendar matchup has an unresolved team"):
         aba.parse_calendar(CALENDAR.replace("Budućnost VOLI <span>:</span> FMP", "<span>:</span>"), 2026)
+
+
+# --- Compact-code vs full-name calendar presentation precedence -------------
+#
+# The live calendar renders one event cell as two same-route anchors: a
+# compact p.visible-xs club-code line for small viewports, followed by the
+# full-name p.hidden-xs matchup line that the detail page's header mirrors.
+# The route matcher must prefer the full-name presentation; codes are
+# viewport abbreviations and can never match a scoped detail header.
+
+
+DUAL_PRESENTATION_CELL = (
+    "<td>"
+    '<p class="visible-xs"><a href="/match/6/25/1/Overview">BUD <span>:</span> SPO</a></p>'
+    '<p class="hidden-xs"><a href="/match/6/25/1/Overview">'
+    "Budućnost VOLI <span>:</span> Spartak Office Shoes</a></p>"
+    "</td>"
+)
+
+LEGACY_CELL = (
+    '<td><p class="hidden-xs"><a href="/match/6/25/1/Overview/q1/1/home/buducnost-spartak/">'
+    "Budućnost VOLI <span>:</span> Spartak Office Shoes</a></p></td>"
+)
+
+
+def test_calendar_prefers_full_name_matchup_over_compact_code_presentation():
+    calendar = CALENDAR.replace(LEGACY_CELL, DUAL_PRESENTATION_CELL)
+
+    games = aba.parse_calendar(calendar, 2026)
+
+    assert (games[0].home_name, games[0].away_name) == (
+        "Budućnost VOLI",
+        "Spartak Office Shoes",
+    )
+    assert games[0].scheduled_utc == "2025-10-05T17:30:00Z"
+
+
+def test_match11_style_dual_presentation_calendar_reconciles_scoped_detail_header():
+    calendar = CALENDAR.replace(LEGACY_CELL, DUAL_PRESENTATION_CELL)
+    games = aba.parse_calendar(calendar, 2026)
+
+    game = aba._match_game(MATCH, games[0], require_final=True)
+
+    assert game.home_name == "Budućnost VOLI"
+    assert game.away_name == "Spartak Office Shoes"
+    assert game.home_team_id == "aba_liga:team:12"
+    assert game.away_team_id == "aba_liga:team:91"
+    assert game.scheduled_utc == "2025-10-05T17:30:00Z"
+    assert game.actual is not None
+    assert game.actual.reconciles() == (True, "")
+
+
+def test_compact_code_only_calendar_still_contradicts_full_name_detail():
+    codes_only = CALENDAR.replace(
+        LEGACY_CELL,
+        '<td><p class="visible-xs"><a href="/match/6/25/1/Overview">BUD <span>:</span> SPO</a></p></td>',
+    )
+    games = aba.parse_calendar(codes_only, 2026)
+    assert (games[0].home_name, games[0].away_name) == ("BUD", "SPO")
+
+    with pytest.raises(IdentityError, match="header team identity contradicts calendar"):
+        aba._match_game(MATCH, games[0], require_final=True)
+
+
+def test_dual_presentation_with_genuinely_wrong_header_still_quarantines_and_retains_cursor(
+    tmp_path,
+):
+    calendar = CALENDAR.replace(LEGACY_CELL, DUAL_PRESENTATION_CELL)
+    contradictory = (
+        MATCH.replace("Budućnost VOLI", "Cedevita Olimpija")
+        .replace("Spartak Office Shoes", "Slovan Bratislava")
+        .replace("/team/12/25/1/0/buducnost/", "/team/66/25/1/0/olimpija/")
+        .replace("/team/91/25/1/0/spartak/", "/team/110/25/1/0/slovan/")
+    )
+
+    def fetch(url: str) -> str:
+        if "/calendar/" in url:
+            return calendar
+        if "/match/6/" in url:
+            return contradictory
+        raise AssertionError(url)
+
+    store = DuckDBStore(str(tmp_path / "aba-contradiction" / "warehouse.duckdb"), persist=True)
+    try:
+        pipeline = Pipeline(
+            PipelineConfig(
+                league="ABA_LEAGUE",
+                date_yyyymmdd="20251006",
+                history_days=0,
+                history_request_budget=1,
+                deep_history_event_budget=5,
+                fixture_now_utc="2025-10-06T12:00:00Z",
+            ),
+            store,
+            fetch=fetch,
+            allow_writes=True,
+        )
+        report = pipeline.backfill()
+        deep = report["backfill"]["deep_history"]
+        assert deep["status"] == "provider_error_cursor_retained"
+        assert deep["events_acquired"] == 0
+        assert deep["final_scores_written"] == 0
+        assert deep["quarantined_rows"] == 1
+        assert deep["seasons"][0]["attempted_game_numbers"] == [6]
+        assert deep["seasons"][0]["exhausted"] is False
+        assert any(
+            gap.required_field == "historical_official_result"
+            and gap.reason.value == "missing"
+            and "header team identity contradicts calendar" in gap.detail
+            for gap in pipeline.gaps
+        )
+        assert store.get_game("aba_liga:25:1:6") is None
+        # No cursor progress was recorded, so no batch position was durably
+        # advanced past the contradictory row.
+        assert deep["cursor"].get("last_game_no", 0) == 0
+    finally:
+        store.close()
+
+
+# --- Anchored header extraction and bounded rejection diagnostics -----------
+#
+# The authoritative detail header is the block row whose single
+# ``td.gameScore`` cell is flanked by the two displayed ``hidden-xs`` club
+# slots. Responsive duplicates, navigation fragments and extra rows must not
+# participate in identity, and a rejection leaves only bounded, allowlisted
+# structural evidence from the fetched response.
+
+
+RESPONSIVE_DUPLICATE_HEADER = MATCH.replace(
+    '<td class="hidden-xs"><span class="club"><a href="/team/12/25/1/0/buducnost/">Budućnost VOLI</a></span></td>',
+    '<td class="hidden-xs"><span class="club"><a href="/team/55/25/1/0/cibona/">KK Cibona</a></span></td>'
+    '<td class="hidden-xs"><span class="club"><a href="/team/12/25/1/0/buducnost/">Budućnost VOLI</a></span></td>',
+)
+
+
+def test_responsive_duplicate_team_cells_cannot_override_the_displayed_header():
+    # A navigation/responsive duplicate club cell precedes the displayed home
+    # cell. Descendant first-two collection would pair it with the home team
+    # and fabricate a contradiction; the anchored score-flanked slots ignore it.
+    calendar = CALENDAR
+    games = aba.parse_calendar(calendar, 2026)
+
+    game = aba._match_game(RESPONSIVE_DUPLICATE_HEADER, games[0], require_final=True)
+
+    assert (game.home_name, game.away_name) == ("Budućnost VOLI", "Spartak Office Shoes")
+    assert game.home_team_id == "aba_liga:team:12"
+    assert game.away_team_id == "aba_liga:team:91"
+    assert game.actual is not None and game.actual.reconciles() == (True, "")
+
+
+def test_header_without_score_flanked_club_slots_fails_closed():
+    # No single gameScore cell in the block: there is no displayed home/away
+    # order to trust, so extraction refuses instead of scanning descendants.
+    broken = MATCH.replace('<td class="gameScore">93 : 97</td>', "")
+    calendar = CALENDAR
+    games = aba.parse_calendar(calendar, 2026)
+
+    with pytest.raises(
+        IdentityError, match="header lacks the score-flanked club slots"
+    ) as excinfo:
+        aba._match_game(broken, games[0], require_final=True)
+
+    diagnostics = aba.last_rejected_page_diagnostics()
+    assert diagnostics is not None
+    assert diagnostics["score_flanked_shape_present"] is False
+    assert diagnostics["reason"] == str(excinfo.value)
+
+
+def test_multiple_score_bearing_header_rows_fail_closed_as_ambiguous():
+    # A second score-bearing row is not a tiebreaker opportunity. It can be a
+    # responsive/navigation duplicate, and its document order must never pick
+    # the source of canonical team identity. Even identical rows are ambiguous.
+    header_row = """<tr>
+<td class="hidden-xs"><span class="club"><a href="/team/12/25/1/0/buducnost/">Budućnost VOLI</a></span></td>
+<td class="gameScore">93 : 97</td>
+<td class="hidden-xs"><span class="club"><a href="/team/91/25/1/0/spartak/">Spartak Office Shoes</a></span></td>
+</tr>"""
+    assert header_row in MATCH
+    duplicate_score_row = MATCH.replace(header_row, header_row + header_row, 1)
+    games = aba.parse_calendar(CALENDAR, 2026)
+
+    with pytest.raises(
+        IdentityError, match="header lacks the score-flanked club slots"
+    ) as excinfo:
+        aba._match_game(duplicate_score_row, games[0], require_final=True)
+
+    diagnostics = aba.last_rejected_page_diagnostics()
+    assert diagnostics is not None
+    assert diagnostics["header_row_cells"] == 0
+    assert diagnostics["score_flanked_shape_present"] is False
+    assert diagnostics["reason"] == str(excinfo.value)
+
+
+def test_rejection_diagnostics_are_bounded_and_allowlisted():
+    codes_only = CALENDAR.replace(
+        LEGACY_CELL,
+        '<td><p class="visible-xs"><a href="/match/6/25/1/Overview">BUD <span>:</span> SPO</a></p></td>',
+    )
+    games = aba.parse_calendar(codes_only, 2026)
+
+    with pytest.raises(IdentityError) as excinfo:
+        aba._match_game(MATCH, games[0], require_final=True)
+
+    diagnostics = excinfo.value.diagnostics
+    assert diagnostics == aba.last_rejected_page_diagnostics()
+    assert set(diagnostics) == {
+        "game_no",
+        "season_end_year",
+        "season_key",
+        "league_id",
+        "response_sha256",
+        "header_block_present",
+        "header_row_cells",
+        "score_flanked_shape_present",
+        "candidate_team_anchor_paths",
+        "candidate_canonical_team_labels",
+        "reason",
+        "notice",
+    }
+    assert re.fullmatch(r"[0-9a-f]{64}", diagnostics["response_sha256"])
+    assert diagnostics["game_no"] == 6 and diagnostics["season_end_year"] == 2026
+    assert diagnostics["header_block_present"] is True
+    assert diagnostics["score_flanked_shape_present"] is True
+    assert diagnostics["candidate_team_anchor_paths"] == [
+        "/team/12/25/1/0/buducnost/",
+        "/team/91/25/1/0/spartak/",
+    ]
+    assert diagnostics["candidate_canonical_team_labels"] == [
+        "Budućnost VOLI",
+        "Spartak Office Shoes",
+    ]
+    assert len(diagnostics["reason"]) <= 200
+    # No page markup, cookies, headers or arbitrary text: every captured
+    # string is an allowlisted path, canonical label, hash or fixed notice.
+    assert "<" not in json.dumps(diagnostics)
+    assert "Budućnost VOLI <span>" not in json.dumps(diagnostics)
+
+
+def test_successful_parsing_never_produces_diagnostics():
+    aba._reset_gaps()
+    games = aba.parse_calendar(CALENDAR, 2026)
+
+    game = aba._match_game(MATCH, games[0], require_final=True)
+
+    assert game.actual is not None
+    assert aba.last_rejected_page_diagnostics() is None
+
+
+def test_diagnostics_reset_between_runs():
+    games = aba.parse_calendar(CALENDAR, 2026)
+    with pytest.raises(IdentityError):
+        aba._match_game(
+            MATCH.replace("Budućnost VOLI", "Cedevita Olimpija").replace(
+                "/team/12/25/1/0/buducnost/", "/team/66/25/1/0/olimpija/"
+            ),
+            games[0],
+            require_final=True,
+        )
+    assert aba.last_rejected_page_diagnostics() is not None
+
+    aba._reset_gaps()
+    assert aba.last_rejected_page_diagnostics() is None

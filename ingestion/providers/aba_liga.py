@@ -36,8 +36,9 @@ from __future__ import annotations
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from html.parser import HTMLParser
+import hashlib
 import re
-from typing import Callable, Dict, Iterable, List, Optional, Sequence
+from typing import Any, Callable, Dict, Iterable, List, Optional, Sequence
 from zoneinfo import ZoneInfo
 
 from ..http import HttpClient
@@ -72,6 +73,7 @@ EVIDENCE = (
 TextFetch = Callable[[str], str]
 
 _LAST_GAPS: List[CoverageGap] = []
+_LAST_REJECTED_PAGE_DIAGNOSTICS: Optional[Dict[str, Any]] = None
 _LAST_ADMINISTRATIVE_DISPOSITIONS: List["AdministrativeDisposition"] = []
 _LAST_HISTORY_PROGRESS_GAME_NO = 0
 
@@ -209,10 +211,96 @@ def last_history_progress_game_no() -> int:
 
 
 def _reset_gaps() -> None:
-    global _LAST_HISTORY_PROGRESS_GAME_NO
+    global _LAST_HISTORY_PROGRESS_GAME_NO, _LAST_REJECTED_PAGE_DIAGNOSTICS
     _LAST_GAPS.clear()
     _LAST_ADMINISTRATIVE_DISPOSITIONS.clear()
     _LAST_HISTORY_PROGRESS_GAME_NO = 0
+    _LAST_REJECTED_PAGE_DIAGNOSTICS = None
+
+
+def last_rejected_page_diagnostics() -> Optional[Dict[str, Any]]:
+    """Bounded structural facts about the most recently rejected detail page.
+
+    Derived only from the already-fetched response and replaced on each new
+    rejection. Purely evidential: it never influences whether a page is
+    accepted, and normal parsing neither requires nor produces it.
+    """
+
+    return dict(_LAST_REJECTED_PAGE_DIAGNOSTICS) if _LAST_REJECTED_PAGE_DIAGNOSTICS else None
+
+
+_TEAM_LINK_RE = re.compile(r"^/team/\d+/\d+/\d+(?:/\d+)?/[a-z0-9_-]*/?$")
+
+
+def _rejected_page_diagnostics(
+    root: _Node,
+    html: str,
+    season: int,
+    game_no: int,
+    reason: str,
+) -> Dict[str, Any]:
+    """Collect a bounded, allowlisted description of a rejected detail page.
+
+    Modeled on bounded structural-diagnostics practice: only facts needed to
+    distinguish an official layout change from a genuine identity
+    contradiction are retained — scope numbers, a response hash, candidate
+    scoped team-anchor paths and their canonical labels, and the anchored
+    header shape. No HTML, cookies, headers, arbitrary page text or values
+    from unrelated page regions are captured, and nothing here can make a
+    page accepted.
+    """
+
+    block = root.find(tag="div", ident="match_clubs_and_results_info_table")
+    cells = _header_row_cells(root)
+    slots = _flanking_club_slots(cells)
+    anchor_paths: List[str] = []
+    labels: List[str] = []
+    if block is not None:
+        for cell in block.find_all(tag="td", class_name="hidden-xs"):
+            club = cell.find(tag="span", class_name="club")
+            anchor = club.find(tag="a") if club else None
+            if anchor is None:
+                continue
+            href = anchor.attrs.get("href", "")
+            path = href.split("?", 1)[0].split("#", 1)[0]
+            if _TEAM_LINK_RE.fullmatch(path) and path not in anchor_paths and len(anchor_paths) < 8:
+                anchor_paths.append(path)
+            label = canonical_team_name(anchor.text())[:120]
+            if label and label not in labels and len(labels) < 8:
+                labels.append(label)
+    return {
+        "game_no": game_no,
+        "season_end_year": season,
+        "season_key": season_key(season),
+        "league_id": LEAGUE_ID,
+        "response_sha256": hashlib.sha256(html.encode("utf-8")).hexdigest(),
+        "header_block_present": block is not None,
+        "header_row_cells": len(cells),
+        "score_flanked_shape_present": slots is not None,
+        "candidate_team_anchor_paths": anchor_paths,
+        "candidate_canonical_team_labels": labels,
+        "reason": reason[:200],
+        "notice": (
+            "Bounded structural evidence from the fetched response; not an "
+            "identity, orientation or settlement assertion."
+        ),
+    }
+
+
+def _reject_identity(
+    exc: IdentityError,
+    root: _Node,
+    html: str,
+    season: int,
+    game_no: int,
+) -> IdentityError:
+    """Attach bounded diagnostics to an identity rejection and remember it."""
+
+    global _LAST_REJECTED_PAGE_DIAGNOSTICS
+    diagnostics = _rejected_page_diagnostics(root, html, season, game_no, str(exc))
+    _LAST_REJECTED_PAGE_DIAGNOSTICS = diagnostics
+    exc.diagnostics = diagnostics  # type: ignore[attr-defined]
+    return exc
 
 
 def _gap(game_id: Optional[str], field: str, detail: str, *, reason: CoverageState = CoverageState.MISSING) -> None:
@@ -378,6 +466,25 @@ def _is_default_forfeit_score(score: Optional[tuple[int, int]]) -> bool:
     return score in {(20, 0), (0, 20)}
 
 
+def _is_full_matchup_presentation(anchor: _Node, cell: _Node) -> bool:
+    """Whether this anchor is the event cell's authoritative full-name line.
+
+    The official calendar renders one event cell as two same-route anchors: a
+    compact ``p.visible-xs`` club-code line for small viewports and the
+    full-name ``p.hidden-xs`` matchup line that the detail page's header
+    mirrors. Viewport codes are presentation abbreviations, not club
+    identities, so the calendar-to-detail identity comparison must read the
+    full-name line.
+    """
+
+    node = anchor.parent
+    while node is not None and node is not cell:
+        if node.tag == "p" and "hidden-xs" in node.classes():
+            return True
+        node = node.parent
+    return False
+
+
 def _calendar_match_ref(cell: _Node) -> Optional[tuple[_Node, int, int, int]]:
     """Return the sole official match route exposed by a calendar event cell.
 
@@ -388,7 +495,10 @@ def _calendar_match_ref(cell: _Node) -> Optional[tuple[_Node, int, int, int]]:
     Multiple route-shaped
     anchors to distinct routes remain ambiguous and fail closed.  Responsive
     markup may repeat a link to the *same* route; those are presentation
-    duplicates, not competing event identities.
+    duplicates, not competing event identities.  Among same-route duplicates
+    the full-name ``p.hidden-xs`` matchup line takes precedence: the compact
+    ``p.visible-xs`` club-code twin would otherwise supply viewport codes as
+    the calendar's home/away names and contradict the detail header.
     """
 
     matches: List[tuple[_Node, int, int, int]] = []
@@ -413,7 +523,13 @@ def _calendar_match_ref(cell: _Node) -> Optional[tuple[_Node, int, int, int]]:
     }
     if len(identities) > 1:
         raise IdentityError(f"{PROVIDER}: calendar row has ambiguous scoped match links")
-    return candidates[0] if candidates else None
+    full_name_candidates = [
+        candidate
+        for candidate in candidates
+        if _is_full_matchup_presentation(candidate[0], cell)
+    ]
+    preferred = full_name_candidates or candidates
+    return preferred[0] if preferred else None
 
 
 def _unlinked_calendar_row_signal(cells: Sequence[_Node]) -> Optional[str]:
@@ -644,6 +760,62 @@ def _live_match_teams(root: _Node, season: int, game_no: int) -> Optional[tuple[
     return team_ids[0], labels["home"][0], team_ids[1], labels["away"][0]
 
 
+def _header_row_cells(root: _Node) -> List[_Node]:
+    """Return the direct cells of the block's authoritative clubs/score row.
+
+    The official clubs/results block renders one row whose single
+    ``td.gameScore`` cell sits between the displayed home and away club
+    cells. Anchoring the header on the score cell and reading only its two
+    immediate flanking neighbours keeps responsive duplicates, navigation
+    fragments and future extra cells out of the identity comparison.
+    """
+
+    block = root.find(tag="div", ident="match_clubs_and_results_info_table")
+    if block is None:
+        return []
+    candidates: List[List[_Node]] = []
+    for table in block.find_all(tag="table"):
+        for row in table.direct("tr"):
+            cells = row.direct("td", "th")
+            score_positions = [
+                index for index, cell in enumerate(cells) if "gameScore" in cell.classes()
+            ]
+            if len(score_positions) == 1:
+                candidates.append(cells)
+    # A second score-bearing row could be a responsive or navigation duplicate.
+    # Its position does not establish authority, even if it happens to repeat
+    # the same teams, so reject the whole shape rather than selecting first.
+    return candidates[0] if len(candidates) == 1 else []
+
+
+def _flanking_club_slots(cells: List[_Node]) -> Optional[tuple[_Node, _Node]]:
+    """Return the two ``hidden-xs`` club cells flanking the score cell."""
+
+    score_index = next(
+        (index for index, cell in enumerate(cells) if "gameScore" in cell.classes()), None
+    )
+    if score_index is None or score_index == 0 or score_index + 1 >= len(cells):
+        return None
+    home_cell, away_cell = cells[score_index - 1], cells[score_index + 1]
+    if "hidden-xs" not in home_cell.classes() or "hidden-xs" not in away_cell.classes():
+        return None
+    return home_cell, away_cell
+
+
+def _slot_team(cell: _Node, expected: tuple[int, int], game_no: int) -> Optional[tuple[str, str]]:
+    """Extract one scoped official team identity from a header club slot."""
+
+    club = cell.find(tag="span", class_name="club")
+    anchor = club.find(tag="a") if club else None
+    match = re.search(r"/team/(\d+)/(\d+)/(\d+)/", anchor.attrs.get("href", "") if anchor else "")
+    if anchor is None or match is None:
+        return None
+    team_id, sez, lea = (int(value) for value in match.groups())
+    if (sez, lea) != expected:
+        raise IdentityError(f"{PROVIDER}: match {game_no} team is outside requested scope")
+    return str(team_id), canonical_team_name(anchor.text())
+
+
 def _match_teams(root: _Node, season: int, game_no: int) -> tuple[str, str, str, str]:
     # A settled detail page has the original explicit clubs/result header. It
     # remains authoritative when present: completed pages can retain unrelated
@@ -657,17 +829,21 @@ def _match_teams(root: _Node, season: int, game_no: int) -> tuple[str, str, str,
             return live_teams
         raise IdentityError(f"{PROVIDER}: match {game_no} has no clubs/result header")
     expected = (season_key(season), LEAGUE_ID)
+    cells = _header_row_cells(root)
+    slots = _flanking_club_slots(cells)
+    if slots is None:
+        # Fail closed: without the anchored score-flanked shape there is no
+        # displayed home/away order to trust, so descendant scanning stays
+        # forbidden however many team cells the page happens to contain.
+        raise IdentityError(
+            f"{PROVIDER}: match {game_no} header lacks the score-flanked club slots"
+        )
     teams: List[tuple[str, str]] = []
-    for cell in block.find_all(tag="td", class_name="hidden-xs"):
-        club = cell.find(tag="span", class_name="club")
-        anchor = club.find(tag="a") if club else None
-        match = re.search(r"/team/(\d+)/(\d+)/(\d+)/", anchor.attrs.get("href", "") if anchor else "")
-        if match is None or anchor is None:
-            continue
-        team_id, sez, lea = (int(value) for value in match.groups())
-        if (sez, lea) != expected:
-            raise IdentityError(f"{PROVIDER}: match {game_no} team is outside requested scope")
-        teams.append((str(team_id), canonical_team_name(anchor.text())))
+    for cell in slots:
+        team = _slot_team(cell, expected, game_no)
+        if team is None:
+            break
+        teams.append(team)
     if len(teams) != 2 or teams[0][0] == teams[1][0]:
         raise IdentityError(f"{PROVIDER}: match {game_no} has unresolved home/away team IDs")
     return teams[0][0], teams[0][1], teams[1][0], teams[1][1]
@@ -877,21 +1053,28 @@ def _match_game(html: str, calendar: CalendarGame, *, require_final: bool) -> Ga
             "administrative handling is required"
         )
     root = _dom(html)
-    _match_scope(root, calendar.season, calendar.game_no)
-    match_tip = _match_scheduled_utc(root, calendar.game_no)
-    if match_tip != calendar.scheduled_utc:
-        raise IdentityError(
-            f"{PROVIDER}: match {calendar.game_no} scheduled time contradicts calendar "
-            f"({match_tip} != {calendar.scheduled_utc})"
+    try:
+        _match_scope(root, calendar.season, calendar.game_no)
+        match_tip = _match_scheduled_utc(root, calendar.game_no)
+        if match_tip != calendar.scheduled_utc:
+            raise IdentityError(
+                f"{PROVIDER}: match {calendar.game_no} scheduled time contradicts calendar "
+                f"({match_tip} != {calendar.scheduled_utc})"
+            )
+        home_id, home_name, away_id, away_name = _match_teams(
+            root, calendar.season, calendar.game_no
         )
-    home_id, home_name, away_id, away_name = _match_teams(root, calendar.season, calendar.game_no)
-    if (
-        normalize_team_name(home_name) != normalize_team_name(calendar.home_name)
-        or normalize_team_name(away_name) != normalize_team_name(calendar.away_name)
-    ):
-        raise IdentityError(
-            f"{PROVIDER}: match {calendar.game_no} header team identity contradicts calendar"
-        )
+        if (
+            normalize_team_name(home_name) != normalize_team_name(calendar.home_name)
+            or normalize_team_name(away_name) != normalize_team_name(calendar.away_name)
+        ):
+            raise IdentityError(
+                f"{PROVIDER}: match {calendar.game_no} header team identity contradicts calendar"
+            )
+    except IdentityError as exc:
+        # Bounded structural evidence for the rejection; it changes nothing
+        # about the acceptance decision already made above.
+        raise _reject_identity(exc, root, html, calendar.season, calendar.game_no) from exc
     actual = _match_actual(root, calendar.season, calendar.game_no) if require_final else None
     return Game(
         game_id=_game_ref(calendar.season, calendar.game_no),
