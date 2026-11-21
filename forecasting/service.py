@@ -368,6 +368,82 @@ class MarketForecastService:
         )
         return [record for record in records if parse_utc(record.scheduled_utc) <= cutoff]
 
+    def _empirical_lane_readiness(
+        self,
+        *,
+        finals: Sequence[Game],
+        upcoming: Sequence[Game],
+        current: Sequence[Forecast],
+        replay_records: Sequence[Forecast],
+        profiles: Dict[tuple, Any],
+    ) -> Optional[Dict[str, Any]]:
+        """Expose unpriced empirical-lane evidence without changing forecasts.
+
+        NBA G League has a valid schedule/result route but no validated
+        pre-tip prediction or named-book contract. Its most useful operational
+        signal is therefore whether retained reconciled finals have reached the
+        existing history and prequential-calibration gates—not a fabricated
+        accuracy, value, or ticket recommendation. Keep this separate from the
+        generic walk-forward payload so operators do not mistake a visible
+        watchlist card for a calibrated selection.
+        """
+
+        if self.league is not League.NBA_G_LEAGUE:
+            return None
+        empirical = [forecast for forecast in current if forecast.source == MODEL_VERSION]
+        with_team_history = [
+            forecast
+            for forecast in empirical
+            if (forecast.team_history or {}).get("sufficient_for_accas") is True
+        ]
+        calibrated = [
+            forecast
+            for forecast in empirical
+            if forecast.calibration.get("status") == "calibrated"
+        ]
+        profile_n = {
+            forecast.versioned_segment_key: profiles[forecast.versioned_segment_key].n
+            for forecast in empirical
+            if forecast.versioned_segment_key in profiles
+        }
+        first_forecast_floor = (
+            self.forecast_config.min_history_games + self.forecast_config.min_residual_games
+        )
+        blockers: List[str] = []
+        if len(finals) < first_forecast_floor:
+            blockers.append("reconciled_final_history_below_empirical_baseline_and_residual_floor")
+        if upcoming and not empirical:
+            blockers.append("no_current_empirical_forecasts_generated")
+        if empirical and len(with_team_history) < len(empirical):
+            blockers.append("one_or_more_current_forecasts_lack_sufficient_team_history")
+        if empirical and not calibrated:
+            blockers.append("no_current_empirical_segment_has_sufficient_prequential_calibration")
+        if not replay_records:
+            blockers.append("no_graded_prequential_empirical_forecasts_yet")
+        return {
+            "status": "monitoring_only",
+            "purpose": "empirical_evidence_readiness_not_accuracy_or_value_claim",
+            "source_contract": "espn_date_bounded_schedule_and_reconciled_results_only",
+            "model_change": "none_no_g_league_specific_override_without_walk_forward_evidence",
+            "named_book_or_ticket_lane": "not_validated_unpriced_only",
+            "reconciled_finals_as_of": len(finals),
+            "minimum_reconciled_finals_for_first_empirical_forecast": first_forecast_floor,
+            "minimum_history_games": self.forecast_config.min_history_games,
+            "minimum_residual_samples": self.forecast_config.min_residual_games,
+            "required_effective_games_per_team": self.forecast_config.team_prior_games,
+            "minimum_prequential_samples_per_exact_segment": self.calibration_config.min_samples,
+            "upcoming_games": len(upcoming),
+            "current_empirical_forecasts": len(empirical),
+            "current_empirical_forecasts_with_sufficient_team_history": len(with_team_history),
+            "current_empirical_forecasts_with_sufficient_calibration": len(calibrated),
+            "graded_prequential_empirical_forecasts": len(replay_records),
+            "current_segment_profile_n": {
+                "|".join(key): profile_n[key] for key in sorted(profile_n)
+            },
+            "blockers": blockers,
+            "metrics_location": "walk_forward.raw_metrics_and_prequential_calibrated_metrics",
+        }
+
     def build_report(
         self,
         *,
@@ -755,6 +831,13 @@ class MarketForecastService:
             candidate_contexts=espn_player_context_candidates,
             result_delay_hours=self.forecast_config.result_available_after_hours,
         )
+        empirical_lane_readiness = self._empirical_lane_readiness(
+            finals=finals,
+            upcoming=upcoming,
+            current=current,
+            replay_records=records,
+            profiles=current_profiles,
+        )
         return {
             "schema_version": "magolide.market_forecasts",
             "status": "decision_support_only",
@@ -812,6 +895,11 @@ class MarketForecastService:
             "forecast_count": len(current),
             "forecasts_by_market": dict(sorted(market_counts.items())),
             "uncovered_games": uncovered,
+            **(
+                {"empirical_lane_readiness": empirical_lane_readiness}
+                if empirical_lane_readiness is not None
+                else {}
+            ),
             "feature_use_audit": {
                 "team_history_empirical": [
                     "reconciled pre-tip historical team scores and period scores",

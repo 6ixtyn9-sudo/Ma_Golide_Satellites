@@ -22,7 +22,7 @@ receipts, and audit state; DuckDB remains the canonical sports system of record.
 | ABA League (`ABA_LEAGUE`) | Q1–Q4 + official OT | Externally referenced aba-liga.com calendar + reconciled match detail; no Ma Golide first-party capture | Empirical team history only after reconciled-history thresholds | BetExplorer aggregate research only; no validated named-book lane |
 | NCAA_M | H1/H2 | ESPN men's Division-I endpoint | ESPN BPI | ESPN scoreboard (relay only), The Odds API* |
 | NCAA_W | Q1–Q4; event-declared legacy H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | ESPN scoreboard (relay only), The Odds API* |
-| NBA G League (`NBA_G_LEAGUE`) | Q1–Q4 | ESPN `basketball/nba-development` scoreboard + summary | No external pre-tip provider validated; empirical-history forecasts only after reconciled-history thresholds | No validated named-book lane; intentionally unpriced |
+| NBA G League (`NBA_G_LEAGUE`) | Q1–Q4 | ESPN `basketball/nba-development` scoreboard + summary; normal CLI uses a 56-day date-bounded history bootstrap | No external pre-tip provider validated; empirical-history forecasts only after reconciled-history thresholds | No validated named-book lane; intentionally unpriced |
 
 * The Odds API is the only configured direct named-book lane for NBA, WNBA, NCAA_M, and NCAA_W. A scheduled run receives `THE_ODDS_API_KEY` only after a durable three-credit permit; it requests date-bounded full-game `h2h,totals,spreads` from the named DraftKings group. Without that key/permit, the system reports an explicit deferred or disabled named-book source. ESPN observations remain relayed and unresolved/unverified audit evidence, never a replacement for the direct The Odds API acquisition contract.
 
@@ -44,9 +44,14 @@ run emits an explicit unsupported-source `CoverageGap`; it does not invent a
 fixture, final, probability, or price. NBA G League is the current exception:
 its captured ESPN source contract enables date-bounded canonical fixtures and
 reconciled results, but not ESPN BPI, deep ESPN-index history, or a named-book
-execution lane. Australia NBL has a probationary The Odds API sport-key mapping
-only: credentialed region/bookmaker coverage must be observed before it can be
-treated as a validated named-book lane.
+execution lane. To make the approved empirical lane useful after a cold start,
+the normal CLI defaults it to a bounded 56-day scoreboard-history bootstrap;
+this is still only date-bounded ESPN acquisition, not a deep-history claim or a
+model/calibration override. The report's `empirical_lane_readiness` object shows
+whether reconciled history, team evidence, and prequential calibration have
+actually reached their existing gates. Australia NBL has a probationary The Odds
+API sport-key mapping only: credentialed region/bookmaker coverage must be
+observed before it can be treated as a validated named-book lane.
 
 NCAA men's halves are never relabelled as quarters. Modern NCAA women's
 results are four quarters, while an explicitly declared older two-half event
@@ -126,12 +131,14 @@ python scripts/daily.py --auto-once --date 2026-11-07 --league CBA
 python scripts/daily.py --auto-once --date 2026-11-07 --league NCAA_W
 ```
 
-Write-enabled runs also ingest a bounded deep-history batch from ESPN's
-season/event indexes. Durable per-league cursors currently begin at verified
-nonempty index years (NBA 1947, WNBA 1997, NCAA 2001), while preserving old
-final-only scores and event-declared halves without claiming exhaustive
-coverage. A versioned one-time NCAAW reparse repairs rows previously stored as
-two halves plus fake overtime. See
+Write-enabled NBA, WNBA, NCAA_M, and NCAA_W runs also ingest a bounded
+deep-history batch from ESPN's season/event indexes. Durable per-league cursors
+currently begin at verified nonempty index years (NBA 1947, WNBA 1997, NCAA
+2001), while preserving old final-only scores and event-declared halves without
+claiming exhaustive coverage. NBA G League is deliberately excluded from that
+index route; its bounded 56-day normal-run bootstrap uses only the separately
+validated date scoreboard/results path. A versioned one-time NCAAW reparse
+repairs rows previously stored as two halves plus fake overtime. See
 [ESPN acquisition and history](docs/ESPN-ACQUISITION.md).
 
 CBA schedule/result acquisition uses the public CBA data service; its aggregate
