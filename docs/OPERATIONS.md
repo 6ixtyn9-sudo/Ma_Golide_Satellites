@@ -295,25 +295,28 @@ using it as history.
 
 ELW has no dedicated named-book API integration, but a future canonical fixture
 now receives the bounded `betexplorer_direct` fallback attempt. A response can
-supply only a full-game named-moneyline row; its direct-page provenance remains
-`unresolved` / `probation`, and an empty or unmatched comparison row remains
-explicitly unpriced. The standalone `scripts/build_markets.py` defaults `--tz`
-to the selected league's acquisition timezone (Europe/Paris for ELW), not UTC;
-pass `--tz` explicitly only when deliberately inspecting another local slate.
+supply a full-game named H/A moneyline, O/U total with its explicit line and
+sides, or Asian Handicap spread with its explicit home-oriented line and sides;
+its direct-page provenance remains `unresolved` / `probation`, and an empty or
+unmatched comparison row remains explicitly unpriced. The standalone
+`scripts/build_markets.py` defaults `--tz` to the selected league's acquisition
+timezone (Europe/Paris for ELW), not UTC; pass `--tz` explicitly only when
+deliberately inspecting another local slate.
 
-NBA G League has the same direct fallback for displayed full-game named
-moneylines. It still has no validated external pre-tip prediction source, so
-its empirical history forecast requires the normal reconciled-history and
-residual gates; the fallback cannot manufacture prices for half, quarter, or
-highest-quarter forecasts.
+NBA G League has the same direct fallback for displayed full-game moneyline,
+total, and spread rows. It still has no validated external pre-tip prediction
+source, so its empirical history forecast requires the normal reconciled-history
+and residual gates; the fallback cannot manufacture prices for half, quarter,
+or highest-quarter forecasts.
 
 ### Optional odds-provider credentials
 
 The public feeds remain useful without credentials, but they do **not** provide
 uniform odds coverage: ESPN's public scoreboard is full-game-only when it
-includes a book at all, BetExplorer is full-game moneyline-only, and NCAA_W
-moneyline coverage is known to be absent from the ESPN free surface. To enable
-the already-implemented supplemental adapters in GitHub Actions, set the
+includes a book at all, BetExplorer's bounded direct fallback covers only its
+displayed full-game H/A, O/U, and Asian Handicap rows, and NCAA_W moneyline
+coverage is known to be absent from the ESPN free surface. To enable the
+already-implemented supplemental adapters in GitHub Actions, set the
 corresponding **Actions secrets** (never repository variables or checked-in
 files):
 
@@ -326,8 +329,8 @@ The workflow injects Predixsport as a process environment variable. It withholds
 The Odds API key unless the automated budget job has first committed a matching,
 three-credit permit for the current league/date. That permit controls only the
 paid API lane: a missing secret or permit still runs the bounded direct
-BetExplorer fallback for canonical games lacking a fresh named full-game
-moneyline. The pregame report records both statuses rather than presenting a
+BetExplorer fallback for canonical games lacking a fresh named full-game core
+market. The pregame report records both statuses rather than presenting a
 no-price result as an empty market response. The GitHub job summary also
 includes selected-side price coverage by market/period and the redacted source
 status, so a no-price result can be separated into a provider-capability gap, a

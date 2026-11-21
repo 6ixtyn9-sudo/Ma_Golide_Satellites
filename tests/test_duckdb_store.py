@@ -90,6 +90,50 @@ def _snapshot(**changes) -> BookSnapshot:
     return BookSnapshot(**values)
 
 
+def test_book_storage_preserves_distinct_exact_total_lines_and_freezes_the_market(tmp_path):
+    path = tmp_path / "line-ladder.duckdb"
+    store = DuckDBStore(str(path))
+    first = _snapshot(line=220.5)
+    second = _snapshot(line=221.5)
+    store.upsert_book_snapshot(first)
+    store.upsert_book_snapshot(second)
+    assert {snapshot.line for snapshot in store.get_book_snapshots("espn-1")} == {220.5, 221.5}
+
+    # The pipeline freezes every existing exact line.  Once one full-game
+    # market is frozen, a later pre-match source line cannot be added.
+    store.upsert_book_snapshot(first, frozen=True)
+    store.upsert_book_snapshot(second, frozen=True)
+    store.close()
+
+    loaded = DuckDBStore(str(path), persist=False)
+    try:
+        assert {snapshot.line for snapshot in loaded.get_book_snapshots("espn-1")} == {220.5, 221.5}
+        with pytest.raises(FrozenWriteError):
+            loaded.upsert_book_snapshot(_snapshot(line=222.5))
+    finally:
+        loaded.close()
+
+
+def test_duckdb_migrates_legacy_market_only_book_slot_to_exact_line_slot(tmp_path):
+    path = tmp_path / "legacy-line-slot.duckdb"
+    store = DuckDBStore(str(path))
+    store.upsert_book_snapshot(_snapshot(line=220.5))
+    store._con.execute(
+        "UPDATE book_snapshots SET slot = ? WHERE game_id = ?",
+        ["theoddsapi|draftkings|total|full_game|pre", "espn-1"],
+    )
+    store.close()
+
+    migrated = DuckDBStore(str(path))
+    try:
+        assert [snapshot.line for snapshot in migrated.get_book_snapshots("espn-1")] == [220.5]
+        assert migrated.table_rows("book_snapshots")[0]["slot"] == (
+            "theoddsapi|draftkings|total|full_game|line:220.5|pre"
+        )
+    finally:
+        migrated.close()
+
+
 def test_duckdb_roundtrip_preserves_all_canonical_records(tmp_path):
     path = tmp_path / "warehouse.duckdb"
     store = DuckDBStore(str(path))
@@ -170,7 +214,7 @@ def test_first_half_draw_price_roundtrip_and_schema_migration(tmp_path):
             migrated._con.execute(
                 "select value from schema_meta where key='schema_version'"
             ).fetchone()[0]
-            == "4"
+            == "5"
         )
     finally:
         migrated.close()

@@ -25,6 +25,7 @@ from .models import BookSnapshot, Game, League, Prediction, ProviderHealth
 from .store import (
     InMemoryStore,
     _book_from_dict,
+    _book_market_slot_key,
     _book_slot_key,
     _book_to_dict,
     _game_from_dict,
@@ -36,7 +37,7 @@ from .store import (
     _prediction_to_dict,
 )
 
-SCHEMA_VERSION = "4"
+SCHEMA_VERSION = "5"
 EXPORT_TABLES = (
     "games",
     "predictions",
@@ -253,6 +254,7 @@ class DuckDBStore(InMemoryStore):
                 "WHERE provider <> 'betexplorer' AND "
                 "json_extract_string(payload_json, '$.source_permission') IS NULL"
             )
+            self._migrate_book_line_slots()
             self._con.execute(
                 "INSERT OR REPLACE INTO schema_meta(key, value) VALUES ('schema_version', ?)",
                 [SCHEMA_VERSION],
@@ -270,6 +272,59 @@ class DuckDBStore(InMemoryStore):
 
     # -- loading ------------------------------------------------------------
 
+    def _migrate_book_line_slots(self) -> None:
+        """Give historical full-game total/spread rows their exact-line slot.
+
+        Pre-v5 storage keyed a bookmaker only by market and period.  That
+        silently replaced one displayed O/U or Asian-Handicap line with another.
+        The line-aware key is payload-derived so the migration remains safe for
+        every provider and can repair an interrupted earlier run.  The unlikely
+        legacy/new collision retains the newer observation and a frozen marker
+        from either record.
+        """
+
+        rows = self._con.execute(
+            "SELECT game_id, slot, frozen, observed_utc, payload_json FROM book_snapshots"
+        ).fetchall()
+        for game_id, old_slot, frozen, observed_utc, payload in rows:
+            snapshot = _book_from_dict(json.loads(payload))
+            new_slot = _book_slot_key(snapshot)
+            if old_slot == new_slot:
+                continue
+            existing = self._con.execute(
+                "SELECT frozen, observed_utc FROM book_snapshots WHERE game_id = ? AND slot = ?",
+                [game_id, new_slot],
+            ).fetchone()
+            if existing is None:
+                self._con.execute(
+                    "UPDATE book_snapshots SET slot = ? WHERE game_id = ? AND slot = ?",
+                    [new_slot, game_id, old_slot],
+                )
+                continue
+
+            target_frozen, target_observed_utc = existing
+            keep_current = str(observed_utc) >= str(target_observed_utc)
+            combined_frozen = bool(frozen) or bool(target_frozen)
+            if keep_current:
+                self._con.execute(
+                    "DELETE FROM book_snapshots WHERE game_id = ? AND slot = ?",
+                    [game_id, new_slot],
+                )
+                self._con.execute(
+                    "UPDATE book_snapshots SET slot = ?, frozen = ? WHERE game_id = ? AND slot = ?",
+                    [new_slot, combined_frozen, game_id, old_slot],
+                )
+            else:
+                if combined_frozen != bool(target_frozen):
+                    self._con.execute(
+                        "UPDATE book_snapshots SET frozen = ? WHERE game_id = ? AND slot = ?",
+                        [combined_frozen, game_id, new_slot],
+                    )
+                self._con.execute(
+                    "DELETE FROM book_snapshots WHERE game_id = ? AND slot = ?",
+                    [game_id, old_slot],
+                )
+
     def _load(self) -> None:
         for row in self._con.execute("SELECT game_id, payload_json FROM games").fetchall():
             self.games[row[0]] = _game_from_dict(json.loads(row[1]))
@@ -284,12 +339,24 @@ class DuckDBStore(InMemoryStore):
             if prediction.pre_tip and frozen:
                 provider_freezes[prediction.provider] = True
 
-        for game_id, slot, frozen, payload in self._con.execute(
+        for game_id, _slot, frozen, payload in self._con.execute(
             "SELECT game_id, slot, frozen, payload_json FROM book_snapshots"
         ).fetchall():
             snapshot = _book_from_dict(json.loads(payload))
+            # A dry-run opens an older warehouse read-only, so it cannot run
+            # the persistent v5 migration.  Use the line-aware derived key in
+            # memory there too; normal writable opens have already repaired
+            # the stored slot above.
+            slot = _book_slot_key(snapshot)
             self.books.setdefault(game_id, {})[slot] = snapshot
-            self.frozen_books.setdefault(game_id, {})[slot] = bool(frozen)
+            frozen_map = self.frozen_books.setdefault(game_id, {})
+            frozen_map[slot] = bool(frozen)
+            if frozen:
+                # The line-specific slot preserves a full displayed ladder;
+                # this broader marker retains the former post-tip rule that a
+                # book/market/period cannot acquire a newly invented pre-match
+                # line after any of its evidence is frozen.
+                frozen_map[_book_market_slot_key(snapshot)] = True
 
         for canonical, variants in self._con.execute(
             "SELECT canonical, variants_json FROM team_aliases"

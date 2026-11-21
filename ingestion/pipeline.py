@@ -430,7 +430,8 @@ class Pipeline:
             # A no-paid-provider window must not suppress the keyless direct
             # fallback.  The workflow's existing flag protects The Odds API
             # credits, while this bounded source can still fill exact named
-            # full-game moneyline gaps in its live read-only rehearsal.
+            # full-game moneyline, total, and spread gaps in its live read-only
+            # rehearsal.
             self._acquire_book_lines(games, direct_fallback_only=True)
             self.book_provider_status["policy"] = {
                 "enabled": False,
@@ -1151,13 +1152,13 @@ class Pipeline:
         return output
 
     def _betexplorer_direct_fallback_games(self, games: Sequence[Game]) -> List[Game]:
-        """Return only canonical games that still lack a usable named ML price.
+        """Return games missing an exact named full-game core market.
 
-        An explicitly selected provider other than the direct fallback is an
-        operator filter, not a reason to override it.  With the normal
-        provider-neutral configuration, an existing fresh named full-game
-        moneyline pair means the fallback has done its job without another
-        public-page request.
+        The direct source can provide its displayed moneyline, Over/Under, and
+        Asian Handicap rows.  It is therefore a real fallback for any absent
+        core full-game market, not merely a moneyline rescue.  An explicitly
+        selected provider other than the direct fallback remains an operator
+        filter and is never overridden.
         """
 
         selected_provider = (self.config.book.provider or "").strip().lower()
@@ -1165,19 +1166,38 @@ class Pipeline:
             return []
         if selected_provider == "betexplorer_direct":
             return list(games)
-        candidates: List[Game] = []
-        for game in games:
-            existing = [
-                snapshot
-                for snapshot in self._visible_pregame_books(game)
-                if snapshot.market is Market.MONEYLINE
-                and snapshot.period is Period.FULL_GAME
-                and snapshot.price_provenance is PriceProvenance.NAMED_BOOK
+
+        def has_core_market(snapshot: BookSnapshot, market: Market) -> bool:
+            if (
+                snapshot.market is not market
+                or snapshot.period is not Period.FULL_GAME
+                or snapshot.price_provenance is not PriceProvenance.NAMED_BOOK
+                or not self.config.book.matches_source(snapshot)
+            ):
+                return False
+            if market is Market.MONEYLINE:
+                return snapshot.home_price_decimal is not None and snapshot.away_price_decimal is not None
+            if market is Market.TOTAL:
+                return (
+                    snapshot.main_line
+                    and snapshot.line is not None
+                    and snapshot.over_price_decimal is not None
+                    and snapshot.under_price_decimal is not None
+                )
+            return (
+                snapshot.main_line
+                and snapshot.line is not None
                 and snapshot.home_price_decimal is not None
                 and snapshot.away_price_decimal is not None
-                and self.config.book.matches_source(snapshot)
-            ]
-            if not existing:
+            )
+
+        candidates: List[Game] = []
+        for game in games:
+            visible = self._visible_pregame_books(game)
+            if not all(
+                any(has_core_market(snapshot, market) for snapshot in visible)
+                for market in (Market.MONEYLINE, Market.TOTAL, Market.SPREAD)
+            ):
                 candidates.append(game)
         return candidates
 
@@ -1471,6 +1491,7 @@ class Pipeline:
                 snapshot.book,
                 snapshot.market.value,
                 snapshot.period.value,
+                snapshot.line if snapshot.market in {Market.TOTAL, Market.SPREAD} else None,
             )
             previous = by_key.get(key)
             if previous is None or parse_utc(snapshot.observed_utc) > parse_utc(

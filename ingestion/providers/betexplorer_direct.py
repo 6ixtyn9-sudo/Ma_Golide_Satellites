@@ -2,16 +2,17 @@
 
 This is deliberately separate from :mod:`ingestion.providers.betexplorer`.
 That adapter records the fixture table's representative *average* as research
-only.  This adapter reads the named bookmaker rows displayed in the
-BetExplorer comparison response and emits one full-game moneyline observation
-per displayed bookmaker.
+only.  This adapter reads the named bookmaker rows displayed in BetExplorer's
+full-game comparison responses: Home/Away two-way moneyline, Over/Under
+totals, and Asian Handicap spreads.
 
 The route is an operator-authorised, direct public-page fallback for this
 single-user project.  It is intentionally conservative operationally:
 
 * one date-board fetch per run, followed only by matched candidate fixtures;
-* a single 1x2 comparison response per fixture (no browser, proxy, relay,
-  login, or alternate egress path);
+* at most the source's three exact full-game comparison tabs (``ha``, ``ou``,
+  and ``ah``) per matched fixture — no browser, proxy, relay, login, or
+  alternate egress path;
 * a three-second minimum request interval, hard request cap, and run-scoped
   403/429 cooldown; and
 * strict ordered home/away and slate-date matching before a price is emitted.
@@ -51,10 +52,11 @@ from ..models import (
 
 PROVIDER = "betexplorer_direct"
 BASE_URL = "https://www.betexplorer.com"
-SITE_TIMEZONE = "Europe/Paris"
 USER_AGENT = "MaGolide BetExplorer fallback/1.0 (single-user price capture)"
 MIN_REQUEST_INTERVAL_SECONDS = 3.0
-MAX_REQUESTS_PER_RUN = int(os.environ.get("BETEXPLORER_DIRECT_MAX_REQUESTS", "50"))
+# One dated board plus three full-game tabs per fixture.  This permits a large
+# NCAA slate while remaining below the bounded 45-minute workflow lane.
+MAX_REQUESTS_PER_RUN = int(os.environ.get("BETEXPLORER_DIRECT_MAX_REQUESTS", "180"))
 MAX_RECEIPT_FIXTURES = 20
 MAX_BOOKS_PER_FIXTURE = 40
 
@@ -64,7 +66,15 @@ TextFetch = Callable[[str], str]
 # exact match page URL/event id for each candidate.  It avoids probing every
 # league endpoint merely to find a price for a canonical slate game.
 _DAY_URL = BASE_URL + "/basketball/results/?year={year}&month={month}&day={day}"
-_ODDS_URL = BASE_URL + "/match-odds/{event_id}/{page}/1x2/bestOdds/?lang=en"
+_ODDS_URL = BASE_URL + "/match-odds/{event_id}/{page}/{tab}/bestOdds/?lang=en"
+# The live basketball comparison response for Aa4XfIcJ (Austin Peay vs UTRGV,
+# captured 2026-11-21) identifies these source tab names.  ``ha`` is the
+# Home/Away moneyline tab; ``ah`` is Asian Handicap.
+_MARKETS = (
+    ("ha", Market.MONEYLINE, "moneyline"),
+    ("ou", Market.TOTAL, "total"),
+    ("ah", Market.SPREAD, "spread"),
+)
 
 _ROW_RE = re.compile(r"<tr\b(?P<attrs>[^>]*)>(?P<body>.*?)</tr>", re.I | re.S)
 _LINK_RE = re.compile(
@@ -86,7 +96,7 @@ _BOOK_LINK_RE = re.compile(
 )
 _BOOK_DATA_RE = re.compile(r'data-bookie=["\'](?P<book>[^"\']+)["\']', re.I)
 _PAGE_PARAM_RE = re.compile(
-    r"match_load_tabs\('\w+',\s*'1x2',\s*'[^']*',\s*'[^']*',\s*'(?P<page>[^']+)'",
+    r"match_load_tabs\('\w+',\s*'ha',\s*'[^']*',\s*'[^']*',\s*'(?P<page>[^']+)'",
     re.I,
 )
 _ALL_BOOK_ROW_RE = re.compile(
@@ -94,6 +104,13 @@ _ALL_BOOK_ROW_RE = re.compile(
     r'(?P<body>.*?)(?=<div\b[^>]*class=["\'][^"\']*oddsComparisonAll__rowBookie|\Z)',
     re.I | re.S,
 )
+_TABLE_RE = re.compile(r"<table\b(?P<attrs>[^>]*)>(?P<body>.*?)</table>", re.I | re.S)
+_HANDICAP_RE = re.compile(r'data-handicap=["\'](?P<line>[+-]?[0-9]+(?:\.[0-9]+)?)["\']', re.I)
+_ACTIVE_LINE_RE = re.compile(
+    r'<li\b(?P<attrs>[^>]*(?:class=["\'][^"\']*oddsComparison__activeSubLi[^"\']*["\'])[^>]*)>',
+    re.I | re.S,
+)
+_ID_RE = re.compile(r'id=["\'](?P<line>[+-]?[0-9]+(?:\.[0-9]+)?)["\']', re.I)
 
 _last_gaps: List[CoverageGap] = []
 _last_receipt: Dict[str, Any] = {}
@@ -323,7 +340,7 @@ def _decimal(value: str) -> Optional[float]:
 
 
 def parse_named_moneyline_rows(odds_html: str) -> List[Dict[str, Any]]:
-    """Return exact named-book 1x2 rows; averages and unnamed rows are ignored."""
+    """Return exact named-book two-way H/A rows; ignore averages and unnamed rows."""
 
     rows: Dict[str, Dict[str, Any]] = {}
     # The compact comparison table uses tr elements.  The response's optional
@@ -347,6 +364,63 @@ def parse_named_moneyline_rows(odds_html: str) -> List[Dict[str, Any]]:
     return list(rows.values())[:MAX_BOOKS_PER_FIXTURE]
 
 
+def parse_named_line_rows(odds_html: str) -> List[Dict[str, Any]]:
+    """Read named two-sided total/spread rows with the source's exact line.
+
+    BetExplorer's basketball ``ou`` and ``ah`` responses put the full-game
+    threshold/handicap in a table ``data-handicap`` attribute.  Each source row
+    supplies the bookmaker name plus the two displayed decimal prices.  No
+    average widget, unnamed row, or guessed line becomes a snapshot.
+    """
+
+    rows: Dict[tuple[str, float], Dict[str, Any]] = {}
+    for table in _TABLE_RE.finditer(odds_html or ""):
+        line_match = _HANDICAP_RE.search(table.group("attrs"))
+        if line_match is None:
+            continue
+        try:
+            line = float(line_match.group("line"))
+        except ValueError:
+            continue
+        if not math.isfinite(line):
+            continue
+        for row in _ROW_RE.finditer(table.group("body")):
+            segment = row.group(0)
+            book = _book_name(segment)
+            odds = [_decimal(value) for value in _ODD_RE.findall(segment)]
+            if not book or len(odds) < 2 or any(value is None for value in odds[:2]):
+                continue
+            rows[(book.casefold(), line)] = {
+                "book": book,
+                "line": line,
+                "first_price_decimal": odds[0],
+                "second_price_decimal": odds[1],
+            }
+    return list(rows.values())[:MAX_BOOKS_PER_FIXTURE]
+
+
+def _source_active_line(odds_html: str) -> Optional[float]:
+    """Return only the source-designated active O/U or AH line, if present.
+
+    The comparison navigation marks its current source line with
+    ``oddsComparison__activeSubLi``.  It would be misleading to manufacture a
+    ``main_line`` by averaging, choosing a midpoint, or counting bookmakers,
+    so an absent/invalid source marker deliberately leaves all rows non-main.
+    """
+
+    for item in _ACTIVE_LINE_RE.finditer(odds_html or ""):
+        line_match = _ID_RE.search(item.group("attrs"))
+        if line_match is None:
+            continue
+        try:
+            line = float(line_match.group("line"))
+        except ValueError:
+            continue
+        if math.isfinite(line):
+            return line
+    return None
+
+
 def _response_odds_html(body: str) -> str:
     """Unwrap the page's comparison JSON without accepting invented shapes."""
 
@@ -360,7 +434,7 @@ def _response_odds_html(body: str) -> str:
 
 
 def _comparison_page_param(match_page: str) -> str:
-    """Read the page-supplied 1x2 tab parameter; a missing value stays at 1."""
+    """Read the page-supplied basketball H/A tab parameter; default to page 1."""
 
     match = _PAGE_PARAM_RE.search(match_page or "")
     return match.group("page") if match and match.group("page") else "1"
@@ -412,9 +486,7 @@ def _match_fixtures(
 def _receipt_fixture(
     fixture: Dict[str, str],
     game: Any,
-    odds_url: str,
-    body: str,
-    rows: List[Dict[str, Any]],
+    markets: List[Dict[str, Any]],
     *,
     page_param: str,
     match_page: Optional[str] = None,
@@ -422,21 +494,23 @@ def _receipt_fixture(
     receipts = _last_receipt.setdefault("fixture_receipts", [])
     if len(receipts) >= MAX_RECEIPT_FIXTURES:
         return
+    all_books = sorted(
+        {book for market in markets for book in market.get("named_books", []) if isinstance(book, str)}
+    )
     receipts.append(
         {
             "event_id": fixture["event_id"],
             "game_id": game.game_id,
             "match_url": fixture["match_url"],
-            "odds_url": odds_url,
             "comparison_page_param": page_param,
-            "response_sha256": hashlib.sha256(body.encode("utf-8", "replace")).hexdigest(),
             "match_page_sha256": (
                 hashlib.sha256(match_page.encode("utf-8", "replace")).hexdigest()
                 if match_page is not None
                 else None
             ),
-            "named_books": [row["book"] for row in rows],
-            "named_book_rows": len(rows),
+            "named_books": all_books,
+            "named_book_rows": sum(int(market.get("named_book_rows", 0)) for market in markets),
+            "markets": markets,
         }
     )
 
@@ -450,7 +524,7 @@ def fetch_odds(
     games: Optional[Iterable[Any]] = None,
     text_fetch: Optional[TextFetch] = None,
 ) -> List[BookSnapshot]:
-    """Fetch direct named-book full-game moneylines for canonical fallback games."""
+    """Fetch direct named-book full-game H/A, total, and spread rows."""
 
     del tz_name  # The dated BetExplorer board is the source-side date boundary.
     observed_utc = now_utc or now_utc_iso()
@@ -489,97 +563,163 @@ def fetch_odds(
     for fixture, game in matched:
         page_param = "1"
         match_page: Optional[str] = None
-        odds_url = _ODDS_URL.format(event_id=fixture["event_id"], page=page_param)
-        try:
-            response_body = _fetch_text(fetch, odds_url, throttle=throttled)
-        except Exception as exc:
-            if not _last_receipt.get("cooldown"):
-                _record_gap(
-                    game.game_id,
-                    "named_book_moneyline",
-                    f"{type(exc).__name__}: {str(exc)[:160]}",
-                    CoverageState.PROVIDER_ERROR,
-                )
-            break
-        rows = parse_named_moneyline_rows(_response_odds_html(response_body))
-        if not rows and not _last_receipt.get("cooldown"):
-            # Most comparison pages use page parameter 1.  When it produces no
-            # named row, port Edge Factory's guarded match-page read to obtain
-            # the parameter that the source page itself supplies, then retry
-            # exactly that one 1x2 response.  This is a rescue for an empty
-            # price surface, not a fan-out into other markets.
+        fixture_markets: List[Dict[str, Any]] = []
+        fixture_has_named_rows = False
+        for tab, market, receipt_name in _MARKETS:
+            odds_url = _ODDS_URL.format(
+                event_id=fixture["event_id"], page=page_param, tab=tab
+            )
             try:
-                match_page = _fetch_text(fetch, fixture["match_url"], throttle=throttled)
-                page_param = _comparison_page_param(match_page)
-                if page_param != "1":
-                    odds_url = _ODDS_URL.format(event_id=fixture["event_id"], page=page_param)
-                    response_body = _fetch_text(fetch, odds_url, throttle=throttled)
-                    rows = parse_named_moneyline_rows(_response_odds_html(response_body))
+                response_body = _fetch_text(fetch, odds_url, throttle=throttled)
             except Exception as exc:
                 if not _last_receipt.get("cooldown"):
                     _record_gap(
                         game.game_id,
-                        "comparison_page_parameter",
+                        f"named_book_{receipt_name}",
                         f"{type(exc).__name__}: {str(exc)[:160]}",
                         CoverageState.PROVIDER_ERROR,
                     )
-        _receipt_fixture(
-            fixture,
-            game,
-            odds_url,
-            response_body,
-            rows,
-            page_param=page_param,
-            match_page=match_page,
-        )
-        if not rows:
-            _record_gap(
-                game.game_id,
-                "named_book_moneyline",
-                "comparison response had no complete named two-way moneyline row",
+                if _last_receipt.get("cooldown"):
+                    break
+                continue
+
+            odds_html = _response_odds_html(response_body)
+            rows = (
+                parse_named_moneyline_rows(odds_html)
+                if market is Market.MONEYLINE
+                else parse_named_line_rows(odds_html)
             )
-            continue
-        _last_receipt["fixtures_with_named_books"] = int(
-            _last_receipt["fixtures_with_named_books"]
-        ) + 1
-        for row in rows:
-            snapshots.append(
-                BookSnapshot(
-                    game_id=f"{PROVIDER}:{fixture['event_id']}",
-                    provider=PROVIDER,
-                    book=row["book"],
-                    market=Market.MONEYLINE,
-                    period=Period.FULL_GAME,
-                    observed_utc=observed_utc,
-                    home_price_decimal=float(row["home_price_decimal"]),
-                    away_price_decimal=float(row["away_price_decimal"]),
-                    pre_match=True,
-                    main_line=True,
-                    payload_hash=payload_hash(
+            if not rows and not _last_receipt.get("cooldown") and match_page is None:
+                # The match page supplies the comparison tab parameter.  Read
+                # it only as a targeted rescue for a tab with no named rows,
+                # then share the recovered value with the remaining tabs.
+                try:
+                    match_page = _fetch_text(fetch, fixture["match_url"], throttle=throttled)
+                    page_param = _comparison_page_param(match_page)
+                    if page_param != "1":
+                        odds_url = _ODDS_URL.format(
+                            event_id=fixture["event_id"], page=page_param, tab=tab
+                        )
+                        response_body = _fetch_text(fetch, odds_url, throttle=throttled)
+                        odds_html = _response_odds_html(response_body)
+                        rows = (
+                            parse_named_moneyline_rows(odds_html)
+                            if market is Market.MONEYLINE
+                            else parse_named_line_rows(odds_html)
+                        )
+                except Exception as exc:
+                    if not _last_receipt.get("cooldown"):
+                        _record_gap(
+                            game.game_id,
+                            "comparison_page_parameter",
+                            f"{type(exc).__name__}: {str(exc)[:160]}",
+                            CoverageState.PROVIDER_ERROR,
+                        )
+
+            fixture_markets.append(
+                {
+                    "market": receipt_name,
+                    "tab": tab,
+                    "url": odds_url,
+                    "response_sha256": hashlib.sha256(
+                        response_body.encode("utf-8", "replace")
+                    ).hexdigest(),
+                    "named_books": [row["book"] for row in rows],
+                    "named_book_rows": len(rows),
+                    "main_line": (
+                        _source_active_line(odds_html) if market is not Market.MONEYLINE else None
+                    ),
+                }
+            )
+            if not rows:
+                _record_gap(
+                    game.game_id,
+                    f"named_book_{receipt_name}",
+                    "comparison response had no complete named source row",
+                )
+                continue
+
+            fixture_has_named_rows = True
+            main_line = _source_active_line(odds_html) if market is not Market.MONEYLINE else None
+            for row in rows:
+                common = {
+                    "game_id": f"{PROVIDER}:{fixture['event_id']}",
+                    "provider": PROVIDER,
+                    "book": row["book"],
+                    "period": Period.FULL_GAME,
+                    "observed_utc": observed_utc,
+                    "pre_match": True,
+                    "main_line": (
+                        True if market is Market.MONEYLINE else float(row["line"]) == main_line
+                    ),
+                    "payload_hash": payload_hash(
                         {
                             "source": "betexplorer_comparison",
                             "event_id": fixture["event_id"],
+                            "tab": tab,
                             "odds_url": odds_url,
                             "book": row["book"],
-                            "home_price_decimal": row["home_price_decimal"],
-                            "away_price_decimal": row["away_price_decimal"],
+                            "line": row.get("line"),
+                            "first_price_decimal": row.get("first_price_decimal"),
+                            "second_price_decimal": row.get("second_price_decimal"),
                         }
                     ),
                     # The central registry re-stamps this direct observation.
                     # Defaults make direct adapter invocation truthful as well.
-                    price_provenance=PriceProvenance.NAMED_BOOK,
-                    source_permission=SourcePermission.UNRESOLVED,
-                    operational_validation=OperationalValidation.PROBATION,
-                    provider_event_id=fixture["event_id"],
-                    home_name=fixture["home_name"],
-                    away_name=fixture["away_name"],
+                    "price_provenance": PriceProvenance.NAMED_BOOK,
+                    "source_permission": SourcePermission.UNRESOLVED,
+                    "operational_validation": OperationalValidation.PROBATION,
+                    "provider_event_id": fixture["event_id"],
+                    "home_name": fixture["home_name"],
+                    "away_name": fixture["away_name"],
                     # The canonical scheduled instant is supplied by the
                     # official/schedule adapter.  The dated public board and
                     # ordered teams bind the BetExplorer event to that game;
                     # no vague page-local clock is converted or guessed.
-                    scheduled_utc=game.scheduled_utc,
-                )
-            )
+                    "scheduled_utc": game.scheduled_utc,
+                }
+                if market is Market.MONEYLINE:
+                    snapshots.append(
+                        BookSnapshot(
+                            market=market,
+                            home_price_decimal=float(row["home_price_decimal"]),
+                            away_price_decimal=float(row["away_price_decimal"]),
+                            **common,
+                        )
+                    )
+                elif market is Market.TOTAL:
+                    snapshots.append(
+                        BookSnapshot(
+                            market=market,
+                            line=float(row["line"]),
+                            over_price_decimal=float(row["first_price_decimal"]),
+                            under_price_decimal=float(row["second_price_decimal"]),
+                            **common,
+                        )
+                    )
+                else:
+                    snapshots.append(
+                        BookSnapshot(
+                            market=market,
+                            line=float(row["line"]),
+                            home_price_decimal=float(row["first_price_decimal"]),
+                            away_price_decimal=float(row["second_price_decimal"]),
+                            **common,
+                        )
+                    )
+        _receipt_fixture(
+            fixture,
+            game,
+            fixture_markets,
+            page_param=page_param,
+            match_page=match_page,
+        )
+        if fixture_has_named_rows:
+            _last_receipt["fixtures_with_named_books"] = int(
+                _last_receipt["fixtures_with_named_books"]
+            ) + 1
+        if _last_receipt.get("cooldown"):
+            break
     _last_receipt["snapshots_emitted"] = len(snapshots)
     if _last_receipt.get("status") == "started":
         _last_receipt["status"] = "success" if snapshots else "no_named_book_prices"
