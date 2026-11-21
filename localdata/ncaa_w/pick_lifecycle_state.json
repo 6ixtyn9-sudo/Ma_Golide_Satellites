@@ -21,7 +21,7 @@
       "logical_picks": 146
     },
     "2026-11-21": {
-      "frozen_fixtures": 30,
+      "frozen_fixtures": 31,
       "logical_picks": 165
     }
   },
@@ -19571,6 +19571,145 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
       },
+      "401918944": {
+        "decision_cutoff_utc": "2026-11-21T18:30:00Z",
+        "frozen_at": "2026-11-21T18:46:53Z",
+        "game_id": "401918944",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Purdue Boilermakers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.853082,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 116,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "1f25385bb25374bf60af0b8c8bc76242e79ae7436e4ef4ea34d23bbe7a632ad3",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6bceb36985bc28298d54",
+            "game_id": "401918944",
+            "grade_status": "pending",
+            "home": "Texas Tech Lady Raiders",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "6bceb36985bc28298d54",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.91,
+            "role": null,
+            "scheduled_utc": "2026-11-21T19:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Purdue Boilermakers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.819603,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 89,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "3009b38bdddaa71312c294a7b79e2753b95f7733493af648fe1388b266043309",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1b2bfc4f22264271fc6c",
+            "game_id": "401918944",
+            "grade_status": "pending",
+            "home": "Texas Tech Lady Raiders",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "1b2bfc4f22264271fc6c",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-21T18:39:28Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.8405,
+            "role": null,
+            "scheduled_utc": "2026-11-21T19:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Purdue Boilermakers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.906,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 115,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "5ba2000d4b1a9f7b4fc0295e83d553bb681c34835ea645e60bf0a77d19e88dc7",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "cd16c104a48612f3364f",
+            "game_id": "401918944",
+            "grade_status": "pending",
+            "home": "Texas Tech Lady Raiders",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "cd16c104a48612f3364f",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.92,
+            "role": null,
+            "scheduled_utc": "2026-11-21T19:30:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T19:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      },
       "401919439": {
         "decision_cutoff_utc": "2026-11-21T17:00:00Z",
         "frozen_at": "2026-11-21T17:16:36Z",
@@ -21413,10 +21552,6 @@
       "2026-11-21T17:00:00Z"
     ],
     [
-      "401918918",
-      "2026-11-21T17:00:00Z"
-    ],
-    [
       "401909687",
       "2026-11-21T18:00:00Z"
     ],
@@ -21523,6 +21658,10 @@
     [
       "401929143",
       "2026-11-21T19:00:00Z"
+    ],
+    [
+      "401918944",
+      "2026-11-21T19:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
