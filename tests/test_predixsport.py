@@ -90,6 +90,31 @@ def px_json(payload, status: int = 200) -> PxFakeResponse:
     return PxFakeResponse(status_code=status, text=json.dumps(payload))
 
 
+def test_http_client_captures_the_odds_last_credit_header():
+    client = http.HttpClient(
+        session=PxFakeSession(
+            [
+                PxFakeResponse(
+                    text="{}",
+                    headers={
+                        "x-requests-remaining": "497",
+                        "x-requests-used": "3",
+                        "x-requests-last": "3",
+                    },
+                )
+            ]
+        ),
+        retries=0,
+        sleep=lambda _s: None,
+    )
+    assert client.get_json("https://example.invalid") == {}
+    assert client.last_quota == {
+        "x-requests-remaining": "497",
+        "x-requests-used": "3",
+        "x-requests-last": "3",
+    }
+
+
 PX_URLS = {
     "upcoming?days": "upcoming_nba.json",
     "px-nba-401909287": "detail_match.json",

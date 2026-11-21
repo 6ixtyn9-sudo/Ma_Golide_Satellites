@@ -1,56 +1,37 @@
-"""The Odds API adapter — targeted full-game and Q1–Q4 total fallback.
+"""The Odds API adapter — bounded routine named-book full-game evidence.
 
-Evidence status: DOCUMENTATION_ONLY (the-odds-api.com
-/sports-odds-data/betting-markets.html and /liveapi/guides/v4/) until an
-authenticated smoke test occurs; every coverage claim is DOCUMENTATION_ONLY
-until then. Documented contract used here:
+Evidence status remains ``DOCUMENTATION_ONLY`` until a credentialed, bounded
+smoke proves actual account, region, bookmaker, identity, and timestamp
+coverage.  Routine scheduled acquisition is intentionally narrow:
 
-- ``GET https://api.the-odds-api.com/v4/sports/{sport_key}/odds/?apiKey=...&regions=us&markets=h2h,totals&bookmakers=draftkings&oddsFormat=decimal``
-  for full-game moneyline/total discovery, plus a per-event call
-  ``GET /v4/sports/{sport_key}/events/{event_id}/odds?apiKey=...&markets=totals_q1,totals_q2,totals_q3,totals_q4&...``
-  for the period markets (quarters are ONLY served per event). Documented
-  credit accounting is ~1 credit per market per region, so one event with
-  h2h+totals plus four quarter markets ≈ 1 + 4 credits — verify at
-  enablement. The key travels as the documented ``apiKey`` query parameter
-  (from ``THE_ODDS_API_KEY``); ``http.redact`` scrubs it from any error
-  text and this module never logs URLs.
-- ``NBA_SPORT_KEY = "basketball_nba"`` is a constant that MUST be verified
-  against GET /sports at enablement. ``basketball_nbl`` is retained only as a
-  documented Australia NBL probationary mapping: a credentialed account,
-  region, and bookmaker smoke must establish usable coverage before it becomes
-  ticket-eligible. NO EuroLeague sport key is assumed to exist — EuroLeague
-  raises ``ValueError("not enabled for this league yet")`` (coverage unproven,
-  never fabricated).
-- ``oddsFormat=decimal`` is requested explicitly, so prices are ALREADY
-  decimal and are stored AS-IS — ``books.american_to_decimal`` must NOT be
-  applied (it would corrupt decimal prices; American conversion belongs only to adapters that receive American-format odds).
-- Market keys: ``h2h`` → MONEYLINE (home/away resolved by matching the
-  outcome name to the event's ``home_team``/``away_team`` — never by array
-  order; an outcome matching neither side is skipped with a gap, never
-  guessed), ``totals`` → FULL_GAME TOTAL, ``totals_q1``..``totals_q4`` →
-  exactly Q1..Q4. The total ``line`` is the outcome ``point`` (e.g. 232.5),
-  never a price; a total without a point yields ``line=None`` and is NOT
-  usable for total forecasts (smoke reports it under ``not_usable``).
-- Quota: ``x-requests-remaining``/``x-requests-used`` headers via
-  :func:`parse_quota`.
-- Date narrowing is applied client-side on ``commence_time`` (UTC calendar
-  date); events that already started keep ``pre_match=False`` (never marked
-  pre-match) and are excluded downstream by the pre-match filters.
+- one documented, date-bounded ``/odds`` request for ``h2h,totals,spreads``;
+- one effective bookmaker group (default: named ``draftkings``);
+- a scheduler-issued three-credit permit in GitHub Actions; and
+- no automatic per-event half/quarter calls.
 
-FetchFn convention: ``fetch_factory(provider)`` returns a ``FetchFn``
-(``Callable[[str], Any]``) returning parsed JSON; an envelope dict
-``{"json": ..., "headers": ...}`` is unwrapped so response headers can be
-reported through the shared provider fetch convention.
+The provider documents current-odds cost as markets times effective bookmaker
+regions.  A named-book filter overrides ``regions`` and up to ten books are one
+effective region; the default three featured markets therefore reserve at most
+three credits.  Native period markets use the charged event-odds endpoint and
+are deliberately not part of the free-tier routine path.
+
+``oddsFormat=decimal`` is requested explicitly, so decimal prices are stored
+as received.  Outcome names are matched to home/away identity; array position
+is never trusted.  ``http.redact`` protects the query-string API key in errors
+and this module never logs request URLs.
 """
 
 from __future__ import annotations
 
+import json
 import os
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 from typing import Any, Callable, Dict, List, Optional, Tuple
 from urllib.parse import urlencode
+from zoneinfo import ZoneInfo
 
 from .. import identity
+from ..odds_budget import BudgetStateError, validate_permit
 from ..models import (
     BookSnapshot,
     CoverageGap,
@@ -68,9 +49,10 @@ PROVIDER = "theoddsapi"
 ENV_KEY = "THE_ODDS_API_KEY"
 BASE_URL = "https://api.the-odds-api.com/v4"
 
-# NBA sport key. Verify against GET /sports at enablement. There is NO
-# EuroLeague key here on purpose: EuroLeague coverage is unproven and the
-# adapter raises for it instead of fabricating a key.
+# Routine mappings remain limited to leagues with an explicit registry price
+# contract. The provider documents a EuroLeague sport key, but EuroLeague is
+# intentionally absent until a credentialed account/region/bookmaker smoke
+# proves usable named-book coverage and the registry explicitly admits it.
 NBA_SPORT_KEY = "basketball_nba"
 SPORT_KEYS = {
     "NBA": NBA_SPORT_KEY,
@@ -109,6 +91,9 @@ SPREAD_MARKET_KEYS: Dict[str, Period] = {
     "spreads_h2": Period.H2,
 }
 FULL_GAME_MARKETS_PARAM = "h2h,totals,spreads"
+# Routine live permits reserve exactly these three featured full-game markets.
+# Native period markets use a per-event endpoint and are intentionally excluded
+# from the free-tier scheduler until an explicit higher-cost approval exists.
 QUARTER_MARKETS_PARAM = (
     "totals_q1,totals_q2,totals_q3,totals_q4,spreads_q1,spreads_q2,spreads_q3,spreads_q4,h2h_h1"
 )
@@ -117,6 +102,8 @@ DEFAULT_REGIONS = "us"
 DEFAULT_BOOKMAKERS = "draftkings"
 
 DOCUMENTATION_ONLY = "DOCUMENTATION_ONLY"
+PERMIT_ENV = "THE_ODDS_API_PERMIT"
+REQUIRE_PERMIT_ENV = "THE_ODDS_API_REQUIRE_PERMIT"
 
 _last_gaps: List[CoverageGap] = []
 _last_quota: Dict[str, Any] = {}
@@ -243,17 +230,82 @@ def _api_key() -> str:
     return os.environ.get(ENV_KEY, "")
 
 
-def _full_game_odds_url(league: str = "NBA") -> str:
-    """Documented list endpoint: full-game h2h + totals, decimal odds."""
+def _permit_required() -> bool:
+    """Whether this runtime requires a scheduler-issued cost permit."""
+
+    return os.environ.get(REQUIRE_PERMIT_ENV, "").strip().lower() == "true"
+
+
+def _permit_for(league: str, date_yyyymmdd: str) -> Dict[str, Any]:
+    """Return a validated routine permit or raise a fail-closed error.
+
+    The workflow sets this requirement before exposing the provider key. Unit
+    fixture callers and deliberate local analysis remain backwards compatible
+    unless they explicitly opt into the same enforcement flag.
+    """
+
+    if not _permit_required():
+        return {}
+    raw = os.environ.get(PERMIT_ENV, "").strip()
+    if not raw:
+        raise BudgetStateError("missing scheduler-issued credit permit")
+    try:
+        parsed = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise BudgetStateError("credit permit is not JSON") from exc
+    normalized = _require_supported_league(league)
+    target_date = str(date_yyyymmdd).replace("-", "")
+    if len(target_date) != 8 or not target_date.isdigit():
+        raise BudgetStateError("credit permit target date is invalid")
+    iso_date = f"{target_date[:4]}-{target_date[4:6]}-{target_date[6:]}"
+    return validate_permit(parsed, league=normalized, target_date=iso_date)
+
+
+def _slate_bounds(date_yyyymmdd: str, tz_name: Optional[str]) -> tuple[str, str]:
+    """Return inclusive UTC bounds for the requested acquisition-day slate."""
+
+    compact = str(date_yyyymmdd).replace("-", "")
+    try:
+        local_day = datetime.strptime(compact, "%Y%m%d").date()
+    except ValueError as exc:
+        raise ValueError("date_yyyymmdd must be YYYYMMDD or YYYY-MM-DD") from exc
+    zone = ZoneInfo(tz_name or "UTC")
+    start = datetime.combine(local_day, datetime.min.time(), tzinfo=zone).astimezone(timezone.utc)
+    # The provider's upper bound is inclusive.  Ending at the final whole
+    # second avoids pulling an adjacent local-day fixture for a date that the
+    # downstream identity policy will intentionally reject.
+    end = start + timedelta(days=1) - timedelta(seconds=1)
+    return (
+        start.strftime("%Y-%m-%dT%H:%M:%SZ"),
+        end.strftime("%Y-%m-%dT%H:%M:%SZ"),
+    )
+
+
+def _full_game_odds_url(
+    league: str = "NBA", date_yyyymmdd: Optional[str] = None, tz_name: Optional[str] = None
+) -> str:
+    """Documented, date-bounded list endpoint for routine full-game markets."""
+
     league = _require_supported_league(league)
+    # A permit represents exactly one named DraftKings group. Do not let an
+    # inherited environment override turn a three-credit reservation into a
+    # multi-group provider request. Local non-permit analysis preserves the
+    # explicit bookmaker override for deliberate operator experimentation.
+    routine_permit = _permit_required()
+    bookmakers = DEFAULT_BOOKMAKERS if routine_permit else _bookmakers()
+    regions = DEFAULT_REGIONS if routine_permit else _regions()
     params = {
         "apiKey": _api_key(),
-        "regions": _regions(),
+        "regions": regions,
         "markets": FULL_GAME_MARKETS_PARAM,
-        "bookmakers": _bookmakers(),
+        "bookmakers": bookmakers,
         "oddsFormat": "decimal",
         "dateFormat": "iso",
     }
+    if date_yyyymmdd:
+        commence_from, commence_to = _slate_bounds(date_yyyymmdd, tz_name)
+        params["commenceTimeFrom"] = commence_from
+        params["commenceTimeTo"] = commence_to
     return f"{BASE_URL}/sports/{SPORT_KEYS[league]}/odds/?{urlencode(params)}"
 
 
@@ -660,24 +712,36 @@ def fetch_odds(
     now_utc: Optional[str] = None,
     tz_name: Optional[str] = None,
 ) -> List[BookSnapshot]:
-    """Fetch normalised pre-match odds for one league/UTC date.
+    """Fetch routine, date-bounded full-game named-book evidence.
 
-    Full-game moneyline/totals come from the documented list endpoint;
-    quarter totals require one per-event call per event (documented credit
-    cost ≈ 1 per market per region — verify at enablement). Returns ``[]``
-    when the provider is disabled (missing key) — the keyless pipeline must
-    not fail. Raises ``ValueError`` for unsupported leagues (EuroLeague has
-    no verified sport key).
+    A scheduler-issued permit authorises only ``h2h,totals,spreads`` for one
+    bookmaker group, with a maximum planned cost of three credits.  Period
+    markets are intentionally not acquired in routine free-tier runs because
+    they require an additional charged request for every event.  Returns ``[]``
+    when disabled or when an enforced permit is absent; callers receive an
+    explicit coverage gap in the latter case.
     """
     _reset_gaps()
     if not is_enabled():
         return []
     league = _require_supported_league(league)
+    try:
+        _permit_for(league, date_yyyymmdd)
+    except BudgetStateError as exc:
+        _record_gap(
+            None,
+            "provider_credit_permit",
+            str(exc),
+            CoverageState.UNSUPPORTED,
+        )
+        return []
     price_provenance, source_permission, operational_validation = _evidence_axes(league)
     fetch = fetch_factory(PROVIDER)
     now = now_utc or identity.now_utc_iso()
     observed_utc = now
-    list_payload, _headers = _call(fetch, _full_game_odds_url(league))
+    list_payload, _headers = _call(
+        fetch, _full_game_odds_url(league, date_yyyymmdd=date_yyyymmdd, tz_name=tz_name)
+    )
     events = [
         e for e in (list_payload if isinstance(list_payload, list) else []) if isinstance(e, dict)
     ]
@@ -710,13 +774,9 @@ def fetch_odds(
             )
             continue
         _extend(parse_event(event, observed_utc, now))
-        # Quarter markets exist only on the per-event endpoint.
-        quarter_payload, _q_headers = _call(fetch, _event_odds_url(game_id, league))
-        _extend(
-            parse_event(
-                quarter_payload if isinstance(quarter_payload, dict) else {}, observed_utc, now
-            )
-        )
+    # Routine free-tier permits intentionally stop here.  Native period markets
+    # require one paid per-event request per fixture and are not silently
+    # fetched while validating full-game named-book evidence.
     return snapshots
 
 
@@ -737,13 +797,12 @@ def smoke(
     now_utc: Optional[str] = None,
     tz_name: Optional[str] = None,
 ) -> Dict[str, Any]:
-    """Coverage smoke for one league (DOCUMENTATION_ONLY until live-verified).
+    """Bounded full-game coverage smoke (DOCUMENTATION_ONLY until verified).
 
-    Reports per-quarter coverage separately (partial quarters are allowed
-    and never backfilled), pre-match vs started counts, the NOT-usable
-    (line-less) total count, and the ``x-requests-*`` quota captured from
-    the response headers via the fetch envelope convention.
-    ``date_yyyymmdd`` defaults to today's UTC date.
+    Reports full-game availability, records that native-period acquisition is
+    intentionally disabled for the routine permit, and exposes only numeric
+    ``x-requests-*`` quota headers. ``date_yyyymmdd`` defaults to today in
+    UTC when no date is supplied.
     """
     _reset_gaps()
     if not is_enabled():
@@ -755,6 +814,17 @@ def smoke(
         }
     league_name = _require_supported_league(league)
     date_yyyymmdd = date_yyyymmdd or datetime.now(timezone.utc).strftime("%Y%m%d")
+    try:
+        _permit_for(league_name, date_yyyymmdd)
+    except BudgetStateError as exc:
+        _record_gap(None, "provider_credit_permit", str(exc), CoverageState.UNSUPPORTED)
+        return {
+            "enabled": False,
+            "provider": PROVIDER,
+            "league": league_name,
+            "verification": DOCUMENTATION_ONLY,
+            "budget_permit": "required_but_missing_or_invalid",
+        }
     fetch = fetch_factory(PROVIDER)
     now = now_utc or identity.now_utc_iso()
     observed_utc = now
@@ -767,7 +837,9 @@ def smoke(
             quota.update(parse_quota(headers))
         return payload
 
-    list_payload = _fetch_and_track(_full_game_odds_url(league_name))
+    list_payload = _fetch_and_track(
+        _full_game_odds_url(league_name, date_yyyymmdd=date_yyyymmdd, tz_name=tz_name)
+    )
     events = [
         e for e in (list_payload if isinstance(list_payload, list) else []) if isinstance(e, dict)
     ]
@@ -801,12 +873,6 @@ def smoke(
         if _event_pre_match(event, now):
             pre_match_count += 1
         _extend(parse_event(event, observed_utc, now))
-        quarter_payload = _fetch_and_track(_event_odds_url(game_id, league_name))
-        _extend(
-            parse_event(
-                quarter_payload if isinstance(quarter_payload, dict) else {}, observed_utc, now
-            )
-        )
 
     presence = _period_presence(snapshots)
     not_usable = sum(1 for s in snapshots if s.market is Market.TOTAL and s.line is None)

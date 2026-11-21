@@ -11,8 +11,8 @@ Binding semantics proven here:
 - h2h outcomes map to home/away by NAME match against home_team/away_team
   (never array order); an outcome matching neither team is skipped with a
   gap, never guessed.
-- totals → FULL_GAME; totals_q1..q4 → exactly Q1..Q4 (quarters come from
-  the documented per-event odds endpoint).
+- Routine acquisition returns only full-game h2h/totals/spreads; period payloads
+  remain parseable but are never fetched automatically by the free-tier path.
 - Decimal prices are stored AS-IS — oddsFormat=decimal is requested and
   american_to_decimal must NOT be applied.
 - The total ``line`` is the outcome "point", never a price.
@@ -138,7 +138,7 @@ def test_h2h_and_totals_mapping():
     # Off-date event in the list is skipped (date narrowing on commence_time).
     assert not any(s.game_id == "odds-evt-offdate" for s in snapshots)
     assert any(g.required_field == "date_window" for g in theoddsapi.last_gaps())
-    assert calls  # per-event quarter calls were made for the on-date event
+    assert len(calls) == 1  # routine permits never fan out into per-event calls
 
 
 def test_decimal_prices_stored_as_is():
@@ -187,12 +187,17 @@ def test_home_away_name_mismatch_raises_or_skips():
 # ---------------------------------------------------------------------------
 
 
-def test_quarter_markets_from_per_event_odds():
-    """totals_q1..q4 from the per-event odds payload map to exactly
-    Q1..Q4; only the quarters present in the payload are emitted."""
+def test_period_payloads_remain_parseable_but_routine_fetch_never_fans_out():
+    """The parser retains native-market semantics without charging per event."""
     factory, calls = _factory(_default_mapping())
-    snapshots = _fetch(factory)
+    routine = _fetch(factory)
+    assert all(snapshot.period is Period.FULL_GAME for snapshot in routine)
+    assert len(calls) == 1
+    assert not any(PER_EVENT_KEY in url for url in calls)
 
+    snapshots = theoddsapi.parse_event(
+        _load("odds_event_quarters.json"), OBSERVED, now_utc=OBSERVED
+    )
     quarters = {
         s.period: s
         for s in snapshots
@@ -200,18 +205,10 @@ def test_quarter_markets_from_per_event_odds():
     }
     assert set(quarters) == {Period.Q1, Period.Q2, Period.Q3, Period.Q4}
     assert quarters[Period.Q1].line == pytest.approx(58.5)
-    assert quarters[Period.Q2].line == pytest.approx(57.5)
-    assert quarters[Period.Q3].line == pytest.approx(56.5)
-    assert quarters[Period.Q4].line == pytest.approx(60.0)
-    assert quarters[Period.Q1].over_price_decimal == 1.87
     assert quarters[Period.Q4].under_price_decimal == 1.95
-    assert all(s.book == "draftkings" for s in quarters.values())
 
-    # Quarters came from the documented per-event endpoint, not the list one.
-    assert any(PER_EVENT_KEY in u for u in calls)
-    assert all(LIST_KEY not in u for u in calls if PER_EVENT_KEY in u)
-
-    # Partial payload: only totals_q1 present → only a Q1 snapshot appears.
+    # A partial documented payload remains partial; the parser never fills a
+    # missing market or infers a period line.
     partial = json.loads(json.dumps(_load("odds_event_quarters.json")))
     partial["bookmakers"][0]["markets"] = [
         market for market in partial["bookmakers"][0]["markets"] if market["key"] == "totals_q1"
@@ -261,28 +258,58 @@ def test_euroleague_not_enabled():
         theoddsapi.smoke("EuroLeague", factory)
 
 
-def test_request_urls_use_documented_params():
-    """List endpoint: /v4/sports/basketball_nba/odds/? with
-    markets=h2h,totals, regions=us, bookmakers=draftkings, oddsFormat=decimal
-    and the apiKey query param. Per-event endpoint: markets=totals_q1..q4."""
+def test_routine_request_is_documented_date_bounded_full_game_only():
     factory, calls = _factory(_default_mapping())
     _fetch(factory)
 
-    list_url = next(u for u in calls if LIST_KEY in u)
+    assert len(calls) == 1
+    list_url = calls[0]
     assert list_url.startswith("https://api.the-odds-api.com/v4/sports/basketball_nba/odds/?")
     assert f"apiKey={API_KEY}" in list_url  # documented query-param auth
     assert "regions=us" in list_url
-    assert "markets=h2h%2Ctotals" in list_url
+    assert "markets=h2h%2Ctotals%2Cspreads" in list_url
     assert "bookmakers=draftkings" in list_url
     assert "oddsFormat=decimal" in list_url
     assert "dateFormat=iso" in list_url
+    assert "commenceTimeFrom=2099-11-07T00%3A00%3A00Z" in list_url
+    assert "commenceTimeTo=2099-11-07T23%3A59%3A59Z" in list_url
+    assert PER_EVENT_KEY not in list_url
 
-    per_event = next(u for u in calls if PER_EVENT_KEY in u)
-    assert per_event.startswith(
-        "https://api.the-odds-api.com/v4/sports/basketball_nba/events/odds-evt-1/odds?"
-    )
-    assert "markets=totals_q1%2Ctotals_q2%2Ctotals_q3%2Ctotals_q4" in per_event
-    assert "oddsFormat=decimal" in per_event
+
+def test_enforced_missing_or_wrong_permit_makes_no_network_call(monkeypatch):
+    monkeypatch.setenv(theoddsapi.REQUIRE_PERMIT_ENV, "true")
+    factory, calls = _factory(_default_mapping())
+    assert _fetch(factory) == []
+    assert calls == []
+    assert any(g.required_field == "provider_credit_permit" for g in theoddsapi.last_gaps())
+
+    permit = {
+        "schema_version": "magolide.theoddsapi_permit",
+        "permit_id": "permit-1",
+        "run_id": "run-1",
+        "league": "NCAA_W",
+        "target_date": "2099-11-07",
+        "issued_utc": OBSERVED,
+        "maximum_credits": 3,
+        "markets": ["h2h", "totals", "spreads"],
+    }
+    monkeypatch.setenv(theoddsapi.PERMIT_ENV, json.dumps(permit))
+    assert _fetch(factory) == []
+    assert calls == []
+    assert any("another league" in g.detail for g in theoddsapi.last_gaps())
+
+    permit["league"] = "NBA"
+    monkeypatch.setenv(theoddsapi.PERMIT_ENV, json.dumps(permit))
+    # Permit-gated execution ignores an inherited bookmaker override. Otherwise
+    # an up-to-ten-book group could exceed the reservation's three-credit cost.
+    monkeypatch.setenv(theoddsapi.ENV_KEY.replace("KEY", "BOOKMAKERS"), "draftkings,fanduel")
+    monkeypatch.setenv(theoddsapi.ENV_KEY.replace("KEY", "REGIONS"), "us,uk")
+    assert _fetch(factory)
+    assert len(calls) == 1
+    assert "bookmakers=draftkings" in calls[0]
+    assert "regions=us" in calls[0]
+    assert "fanduel" not in calls[0]
+    assert "uk" not in calls[0]
 
 
 def test_started_event_not_pre_match():
@@ -317,9 +344,8 @@ def test_started_event_not_pre_match():
     assert books.select_total_snapshots(snapshots, config, Period.FULL_GAME) == []
 
 
-def test_smoke_reports_counts_and_quota():
-    """smoke() reports per-quarter coverage, pre-match vs started counts and
-    the sport_key used for the NBA (verified at enablement)."""
+def test_smoke_reports_full_game_only_counts_and_quota():
+    """Routine smoke exposes full-game evidence and no charged period fan-out."""
     factory, _calls = _factory(_default_mapping())
     result = theoddsapi.smoke("NBA", factory, date_yyyymmdd=FUTURE_DATE, now_utc=OBSERVED)
     assert result["enabled"] is True
@@ -328,10 +354,10 @@ def test_smoke_reports_counts_and_quota():
     assert result["events_checked"] == 1
     assert result["full_game_totals_present"] == 1
     assert result["quarters"] == {
-        "Q1": {"present": 1, "total": 1},
-        "Q2": {"present": 1, "total": 1},
-        "Q3": {"present": 1, "total": 1},
-        "Q4": {"present": 1, "total": 1},
+        "Q1": {"present": 0, "total": 1},
+        "Q2": {"present": 0, "total": 1},
+        "Q3": {"present": 0, "total": 1},
+        "Q4": {"present": 0, "total": 1},
     }
     assert result["pre_match_vs_live"] == {"pre_match": 1, "not_pre_match": 0}
     assert result["not_usable"] == 0

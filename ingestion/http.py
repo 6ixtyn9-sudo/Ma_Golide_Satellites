@@ -33,6 +33,7 @@ QUOTA_HEADERS = [
     "x-datapoints",
     "x-requests-remaining",
     "x-requests-used",
+    "x-requests-last",
     "x-requests-reset",
     "x-ratelimit-remaining",
     "x-ratelimit-limit",

@@ -131,6 +131,54 @@ external token with only the repository access needed to create a repository
 dispatch; never place it in workflow YAML, repository files, artifacts, or job
 logs.
 
+### The Odds API free-tier reservation guard
+
+The Odds API key is a shared monthly provider allowance, not a per-runner
+credential. The provider documents that current-odds cost is the number of
+requested markets times the effective bookmaker-region groups; with a named
+bookmaker filter, up to ten books count as one group. The routine price request
+therefore asks only for `h2h,totals,spreads` from the one named DraftKings group:
+**three credits maximum**. See the provider's [v4 quota
+rules](https://the-odds-api.com/liveapi/guides/v4/).
+
+Before an automated matrix run receives `THE_ODDS_API_KEY`, the serialized
+`odds-budget` job commits a no-secret reservation to
+`localdata/theoddsapi_budget.json`. It is deliberately conservative:
+
+| Guard | Value | Meaning |
+| --- | ---: | --- |
+| Advertised Starter allowance | 500 credits/month | Provider plan, not a promised local balance |
+| Ma Golide reservation cap | 360 credits/month | Never reserve more than this for routine work |
+| Protected provider reserve | 140 credits | Stops a new three-credit permit if provider-reported remaining would fall below this value |
+| Daily reservation cap | 12 credits | At most four routine full-game scans across **all** leagues per SAST date |
+| Routine request | 3 credits maximum | `h2h,totals,spreads` and one effective bookmaker group |
+
+Only NBA, WNBA, NCAA men, and NCAA women can receive a routine permit, ordered
+NCAA women, NBA, NCAA men, then WNBA. The permit is issued only for the gate's
+`ticket_creation_or_acquisition_due` reason, never for draft rendering, settlement,
+results, state uncertainty, a source outage, or a manual rehearsal. A
+reservation remains spent if a worker fails: this prevents a failed publisher or
+parallel runner from repeatedly probing the provider with the same slate.
+
+Routine acquisition is full-game only. The documented native period markets are
+available through a charged per-event endpoint, so the scheduler never fans out
+one request per NCAA half or NBA/WNBA quarter. Period parsing remains strict,
+but period collection requires a future explicit, higher-cost approval. Every
+routine query also fixes `regions=us` and `bookmakers=draftkings`, ignoring
+any local override while permit enforcement is enabled, and uses documented
+`commenceTimeFrom` and `commenceTimeTo` bounds in the league acquisition
+timezone; an off-slate response cannot become a paid catch-all future-events
+scan.
+
+`workflow_dispatch` remains a credential-free rehearsal: it receives no Odds
+API permit or key. Completed automated pregame reports reconcile only the
+provider's numeric `x-requests-remaining`, `x-requests-used`, and
+`x-requests-last` headers into the ledger; the lowest observed remaining value
+wins. Missing or malformed state, a failed reservation commit, a missing permit,
+or a provider balance that would fall below reserve all fail closed for *new*
+named-book requests. They produce an explicit unpriced/deferred report, never inferred
+odds or a post-cutoff ticket.
+
 ### Adaptive tick gate
 
 The 30-minute external event does **not** automatically run every expensive
@@ -261,22 +309,24 @@ files):
 
 | Secret | Implemented adapter coverage (verify live) | Use it for |
 | --- | --- | --- |
-| `THE_ODDS_API_KEY` | NBA/WNBA/NCAA_M/NCAA_W full-game markets; NBA quarters and H1; NCAA H1/H2 where the provider offers them; probationary Australia NBL sport-key lane | The first supplemental source to validate, especially for NCAA_W; an NBL account/region/bookmaker smoke is required before ticket eligibility |
+| `THE_ODDS_API_KEY` | Budget-permitted NBA/WNBA/NCAA_M/NCAA_W full-game `h2h,totals,spreads` only; NCAA_W uses the documented `basketball_wncaab` key | The first supplemental source to validate, especially for NCAA_W. The workflow withholds this key from manual/reconciliation/draft work and from unpermitted or probationary lanes |
 | `PREDIXSPORT_API_KEY` | NBA and EuroLeague predictions | Personal/non-commercial free tier only; adapter remains documentation-only until an authenticated smoke succeeds |
 
-The workflow injects these only as process environment variables. A missing
-secret is safe: its adapter remains disabled and the pregame report records
-`book_provider_status: disabled` rather than presenting that state as an empty
-market response. The GitHub job summary also includes selected-side price
-coverage by market/period and the redacted source status, so a no-price result
-can be separated into a provider-capability gap, a disabled credential, an
-identity rejection, or a true empty response.
+The workflow injects Predixsport as a process environment variable. It withholds
+The Odds API key unless the automated budget job has first committed a matching,
+three-credit permit for the current league/date. A missing secret or permit is
+safe: no request is made and the pregame report records a disabled/deferred
+source state rather than presenting it as an empty market response. The GitHub
+job summary also includes selected-side price coverage by market/period and the
+redacted source status, so a no-price result can be separated into a
+provider-capability gap, a disabled credential, an identity rejection, a budget
+deferral, or a true empty response.
 
 Safety behavior is deliberate:
 
-- Manual dispatch is a live all-league canonical **dry run**. It may consume
-  provider quota but never adds `--write` and never sends notifications, even
-  when `ALLOW_MAGOLIDE_WRITES` is true.
+- Manual dispatch is a live all-league canonical **dry run**. It never receives
+  `THE_ODDS_API_KEY`, never reserves a provider slot, never adds `--write`, and
+  never sends notifications, even when `ALLOW_MAGOLIDE_WRITES` is true.
 - Named external-trigger runs default to `--write`: the workflow falls back to
   `ALLOW_MAGOLIDE_WRITES=true` when the repository variable is unset. Set the
   variable to `false` to disable canonical persistence; runs still acquire

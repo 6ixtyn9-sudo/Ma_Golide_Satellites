@@ -320,6 +320,7 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
                 provider=(None if args.book_provider in (None, "", "none") else args.book_provider),
                 book=args.book,
             ),
+            acquire_book_lines=not getattr(args, "skip_book_acquisition", False),
             fixture_now_utc=(
                 f"{args.date.replace('-', '')}T00:00:00Z" if args.offline_fixture else None
             ),
@@ -551,6 +552,13 @@ def main() -> int:
     )
     parser.add_argument("--skip-results", action="store_true")
     parser.add_argument("--skip-markets", action="store_true")
+    parser.add_argument(
+        "--skip-book-acquisition",
+        action="store_true",
+        help=(
+            "do not contact named-price providers during pregame; use retained pre-tip evidence only"
+        ),
+    )
     parser.add_argument("--acca-legs", type=int, default=3)
     parser.add_argument("--acca-limit", type=int, default=5)
     parser.add_argument("--freshness-hours", type=float, default=12.0)

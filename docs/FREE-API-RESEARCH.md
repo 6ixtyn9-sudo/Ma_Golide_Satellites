@@ -13,8 +13,17 @@ The repository keeps two optional authenticated providers under this policy:
 
 | Provider | Credential | Ongoing free allowance | Current role |
 | --- | --- | --- | --- |
-| The Odds API | `THE_ODDS_API_KEY` | 500 credits/month | Direct named-book odds for configured NBA/WNBA/NCAA lanes, subject to sport/region/market coverage |
+| The Odds API | `THE_ODDS_API_KEY` | 500 credits/month advertised allowance; 360 local routine-reservation cap | Direct named-book full-game `h2h,totals,spreads` for configured NBA/WNBA/NCAA lanes, subject to bounded credentialed smoke and sport/region/bookmaker coverage |
 | Predixsport | `PREDIXSPORT_API_KEY` | 200 shared calls/month for personal, non-commercial use | Optional NBA/EuroLeague prediction input; still documentation-only pending an authenticated schema smoke |
+
+The documented NCAA women's sport key is `basketball_wncaab` (not
+`basketball_ncaaw`). A current-odds request is **not** universally one credit:
+provider cost is requested markets times effective bookmaker-region groups.
+Routine collection is consequently a date-bounded, named-DraftKings group
+request for three full-game markets, with a maximum planned cost of three
+credits. Native period and historical requests have different/higher documented
+cost paths and are outside the routine free-tier contract. The shared key is
+never exposed to manual workflow dispatch or to an unpermitted matrix lane.
 
 Trial-only or contract-only integrations are deliberately absent:
 

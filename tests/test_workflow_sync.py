@@ -47,6 +47,7 @@ def test_workflow_mirror_sync():
 def test_gitignore_allows_every_git_durable_operator_artifact():
     repo = Path(__file__).resolve().parents[1]
     durable_paths = (
+        "localdata/theoddsapi_budget.json",
         "localdata/nba/picks_2026-11-18.txt",
         "localdata/nba/pick_lifecycle_state.json",
         "localdata/nba/coverage_gap_2026-11-18.json",
@@ -156,8 +157,12 @@ def test_workflow_keeps_keyless_fallback_and_wires_optional_provider_secrets():
         }
         wired_secrets = set(re.findall(r"secrets\.([A-Z0-9_]+)", text))
         assert wired_secrets == optional_provider_secrets
-        for secret in optional_provider_secrets:
-            assert f"{secret}: ${{{{ secrets.{secret} }}}}" in text
+        # The direct odds key is deliberately unavailable at job scope. A
+        # scheduler-issued permit step injects it only for an automated,
+        # pre-reserved ticket-acquisition window; manual dispatch gets none.
+        assert "THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}" not in text
+        assert "ODDS_API_SECRET: ${{ secrets.THE_ODDS_API_KEY }}" in text
+        assert "PREDIXSPORT_API_KEY: ${{ secrets.PREDIXSPORT_API_KEY }}" in text
         assert "${{ vars." not in text
         assert "required_secret" not in text
         # The static seven-row matrix is emitted by the read-only adaptive gate,
@@ -196,13 +201,20 @@ def test_adaptive_gate_skips_idle_external_ticks_but_keeps_manual_rehearsals_ful
         assert "latest_main_operator_state_unavailable" in gate
         assert "manual_read_only_rehearsal" in gate
         assert "python scripts/adaptive_gate.py" in gate
-        preflight = text.split("  preflight:\n", 1)[1].split("\n  league:", 1)[0]
+        preflight = text.split("  preflight:\n", 1)[1].split("\n  odds-budget:", 1)[0]
         assert "needs: gate" not in preflight
         assert "if: needs.gate.outputs.run_any" not in preflight
         assert "gate itself cannot start" in preflight
+        budget = text.split("  odds-budget:\n", 1)[1].split("\n  league:", 1)[0]
+        assert "Reserve The Odds API free-tier budget" in budget
+        assert "needs: [gate, preflight]" in budget
+        assert "scripts/odds_budget.py reserve" in budget
+        assert "THE_ODDS_API_KEY" not in budget
         league = text.split("  league:\n", 1)[1].split("\n  publish-localdata:", 1)[0]
-        assert "needs: [gate, preflight]" in league
+        assert "needs: [gate, preflight, odds-budget]" in league
         assert "needs.gate.outputs.run_any == 'true'" in league
+        assert "THE_ODDS_API_REQUIRE_PERMIT=true" in league
+        assert "--skip-book-acquisition" in league
         assert "matrix: ${{ fromJSON(needs.gate.outputs.matrix) }}" in league
 
 
@@ -228,7 +240,7 @@ def test_successful_lanes_publish_despite_a_failed_matrix_sibling():
         assert "auto_tickets_" not in recovery
         assert "euroleague_consensus_paper" not in recovery
         publish = text.split("publish-localdata:", 1)[1].split("runs-on:", 1)[0]
-        assert "needs: [gate, preflight, league]" in text
+        assert "needs: [gate, preflight, odds-budget, league]" in text
         assert "needs.preflight.result == 'success'" in publish
         assert "needs.league.result == 'success'" not in publish
         assert "always()" in publish
