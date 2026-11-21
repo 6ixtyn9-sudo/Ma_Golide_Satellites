@@ -248,6 +248,14 @@ def test_missing_total_leaves_scores_none(monkeypatch):
     assert first.expected_home_score is None
     assert first.expected_away_score is None
     assert first.expected_total is None
+    # Provider identity is retained for the pipeline's strict canonical-game
+    # join; it is not silently assumed to be a canonical ID.
+    assert first.auxiliary_metrics == {
+        "source_match_id": "px-nba-401909287",
+        "source_home_name": "Atlanta Hawks",
+        "source_away_name": "Washington Wizards",
+        "source_tipoff_utc": "2026-11-07T00:00:00Z",
+    }
 
     second = predictions[1]
     assert second.expected_margin == pytest.approx(-9.575)

@@ -4,9 +4,27 @@
 basketball lane a lawful opportunity to collect frozen pre-tip prediction and
 named-book moneyline evidence.
 
-This is an evidence and outreach pack. It does **not** enable a provider, grant
-credentials, create a new paper-ticket lane, make an external request, or relax
-any existing forecast, calibration, identity, pricing, or no-bet gate.
+This is an evidence and outreach pack. It does **not** create a new
+paper-ticket lane or relax any existing forecast, calibration, identity,
+pricing, or no-bet gate.
+
+## Credential correction
+
+`THE_ODDS_API_KEY` and `PREDIXSPORT_API_KEY` are already configured as GitHub
+repository secrets.  They are not outstanding vendor-onboarding tasks.
+
+- The workflow injects `PREDIXSPORT_API_KEY` into each registered league runner.
+  The current technical work is to make its authenticated NBA/EuroLeague list
+  capture observable, bounded to one request per league run, and identity-safe.
+- The workflow injects `THE_ODDS_API_KEY` only after an automated,
+  scheduler-issued The Odds API permit.  Manual dispatch deliberately receives
+  neither the permit nor the key.  This preserves the three-credit request cap
+  and makes current price capture an authorised scheduled action rather than a
+  manual probe.
+
+Accordingly, do **not** send new credential/onboarding enquiries to either
+provider.  The remaining external enquiries concern expansion providers and
+source rights for currently unpriced leagues.
 
 ## Current repository facts
 
@@ -60,11 +78,11 @@ Official sources:
 - <https://the-odds-api.com/sports-odds-data/sports-apis.html>
 - <https://the-odds-api.com/terms-and-conditions.html>
 
-**Repository decision:** this is the first price route worth resolving because
-there is already a narrow adapter and its use terms are documented.  It is
-still not a permission to enable EuroLeague or expand NBL collection.  We need
-written coverage confirmation or an expressly authorised, bounded account
-smoke, then a separately reviewed provider/league policy change.
+**Repository decision:** this is already a bootstrapped price route for the
+four configured permit-eligible lanes. Its next work is operational evidence:
+let the existing scheduled permit path retain real account/book/region/fixture
+observations. EuroLeague remains deliberately disabled and Australia NBL
+remains probationary; neither may be enabled merely because the key exists.
 
 ### 2. Broad named-book price lead: OpticOdds
 
@@ -147,11 +165,11 @@ Official sources:
 - <https://www.predixsport.com/api-access>
 - <https://www.predixsport.com/terms>
 
-**Repository decision:** seek a narrow written licence for NBA/EuroLeague only.
-Do not use a personal/free plan, later-recomputed values, or date-only archives
-as price-aware assay evidence.  A positive answer would be useful for
-prospective retained observations and possibly historical calibration only if it
-explicitly guarantees original, immutable pre-tip values with timestamps.
+**Repository decision:** the NBA/EuroLeague credential path is already
+bootstrapped. Capture one authenticated upcoming list per relevant league run,
+join only exact provider-ID or home/away/UTC-tip matches, and retain matching
+pre-tip observations prospectively. Do not treat later-recomputed values or
+date-only archives as frozen historical assay evidence.
 
 ### 6. ABA League and Japan B.League rights paths
 
@@ -180,8 +198,9 @@ until it supplies written scope and terms.
 
 ## Required contract answers
 
-No provider can be implemented until its written reply or signed agreement
-answers every applicable item below.
+These questions apply to a **new** provider, source role, or league expansion.
+They do not block the two already-bootstrapped secret paths; those require real
+scheduled observations under their existing narrow repository policies.
 
 ### Prediction evidence
 
@@ -214,10 +233,11 @@ answers every applicable item below.
 
 ## Ready-to-send inquiries
 
-The account owner must send these through their normal business channel; this
-workspace has no connected mail application.  The wording intentionally says
-"evaluating" rather than falsely claiming that a live production feed is
-already in use.
+The account owner must send the remaining external enquiries through their
+normal business channel; this workspace has no connected mail application.
+The wording intentionally says "evaluating" rather than falsely claiming that
+a new live production feed is already in use. The Odds API and Predixsport are
+explicitly excluded here because their credential paths are already bootstrapped.
 
 ### A. Sportradar — global basketball probabilities and archive
 
@@ -326,65 +346,21 @@ For each supported competition, please confirm:
 We will not redistribute the raw feed or use it to place bets. Thank you.
 ```
 
-### D. The Odds API — EuroLeague/NBL coverage confirmation
+### D. Existing The Odds API and Predixsport paths — no outreach required
 
-**Subject:** EuroLeague and Australia NBL named-book coverage and historical availability
+Both credentials are already bootstrapped in repository secrets. The immediate
+work is to retain and inspect evidence from the existing workflow:
 
-```text
-Hello The Odds API team,
+- The Odds API stays limited to its scheduled, permit-gated routine lanes. A
+  secret alone does not promote EuroLeague or Australia NBL.
+- Predixsport is fetched once per NBA/EuroLeague run. Its rows must join exactly
+  before they are retained as forecast observations; unmatched rows are visible
+  coverage gaps rather than guessed fixture mappings.
+- A historical-provider backfill request remains separate from prospective
+  capture. It must not be added unless the provider explicitly supplies
+  original pre-tip snapshots and their immutable timestamps.
 
-We are evaluating whether your documented basketball_euroleague and
-basketball_nbl keys can become narrowly authorised pre-game research lanes. We
-would use only full-game h2h/moneyline quotes from identified fixed-odds
-bookmakers and respect all plan/quota limits.
-
-Could you confirm:
-
-1. Which named bookmakers and regions currently cover EuroLeague and Australia
-   NBL, and whether coverage is reasonably available through their seasons;
-2. Whether each quoted moneyline has bookmaker identity and a usable market
-   last-update timestamp;
-3. Historical coverage start dates and whether the historical endpoint retains
-   the specific bookmaker/market for each sport key;
-4. The appropriate paid plan and any request-cost considerations for a small,
-   bounded historical validation; and
-5. Whether the intended use — internal retention, calibration, and publication
-   of derived non-commercial research, without raw-feed resale — is within your
-   current terms.
-
-We are only evaluating coverage and will make no production request until our
-internal approval process is complete. Thank you.
-```
-
-### E. Predixsport — NBA/EuroLeague prediction provenance and backfill
-
-**Subject:** Licence enquiry — NBA/EuroLeague pre-tip prediction timestamps and historical archive
-
-```text
-Hello Predixsport team,
-
-We are evaluating your NBA and EuroLeague prediction API for a non-commercial,
-paper-only research project. We need to distinguish genuine pre-tip forecasts
-from later recomputation.
-
-Please confirm:
-
-1. Whether each NBA and EuroLeague forecast carries an immutable provider
-   publication/generated timestamp, event ID, scheduled UTC tip, home/away
-   team mapping, and model/version identity;
-2. Whether archived predictions are the exact values first published before a
-   game, rather than later refreshed or result-conditioned values;
-3. The archive's historical date range and query granularity;
-4. Whether a production/non-commercial research licence permits automated
-   retrieval, durable internal retention, calibration, and publication of
-   derived analysis with required attribution; and
-5. Whether WNBA or NCAA basketball coverage exists or is planned.
-
-We will not use the service for betting execution or raw-data redistribution.
-Thank you.
-```
-
-### F. ABA League — official data-rights inquiry
+### E. ABA League — official data-rights inquiry
 
 **To:** `info@aba-liga.com` (copy `headoffice@aba-liga.com` if appropriate)
 
@@ -413,7 +389,7 @@ We are not asking to scrape or reuse the public website without permission.
 Thank you for your guidance.
 ```
 
-### G. Data Stadium — B.League official/research data inquiry (Japanese)
+### F. Data Stadium — B.League official/research data inquiry (Japanese)
 
 **Subject:** B.LEAGUEデータの研究利用・自動取得に関するお問い合わせ
 
