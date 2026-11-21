@@ -170,8 +170,9 @@ prices remain missing.
 
 | Provider | Implemented markets | Periods | League / key |
 | --- | --- | --- | --- |
-| ESPN scoreboard | Moneyline, totals, spreads when explicitly offered | Full game | NBA, WNBA, NCAA_M, NCAA_W, NBA G League; named-book observations are independently timestamped but relayed by ESPN, so registry policy preserves `unresolved` / `unverified` audit metadata. An exact current named-book quote can enter the paper lane only after the ordinary model, calibration, and ROI gates pass. NBA G League remains intentionally unpriced because it has no configured book acquisition lane. |
-| BetExplorer | Representative average two-way moneyline prices | Full game | EuroLeague and CBA are `LIVE_VERIFIED` from captured 2026-11-16 pages. ABA League uses the same route as a probationary aggregate research observation, separate from its `aba_liga` schedule/result adapter, whose route is externally referenced rather than Ma Golide live-verified. Every active BetExplorer quote is `aggregate_consensus` with `unresolved` permission / `probation` validation, never a named-book ticket quote. No BetExplorer quote can enter tickets, receipts, banks, ROI/P&L, or real-money execution. Pre-tip rows only; no historical archive or per-book prices in this adapter. |
+| ESPN scoreboard | Moneyline, totals, spreads when explicitly offered | Full game | NBA, WNBA, NCAA_M, NCAA_W, NBA G League; named-book observations are independently timestamped but relayed by ESPN, so registry policy preserves `unresolved` / `unverified` audit metadata. An exact current named-book quote can enter the paper lane only after the ordinary model, calibration, and ROI gates pass. |
+| BetExplorer aggregate (`betexplorer`) | Representative average two-way moneyline prices | Full game | EuroLeague and CBA are `LIVE_VERIFIED` from captured 2026-11-16 pages. ABA League uses the same route as a probationary aggregate research observation, separate from its `aba_liga` schedule/result adapter. Every aggregate adapter quote is `aggregate_consensus` with `unresolved` permission / `probation` validation, never a named-book ticket quote. |
+| BetExplorer direct (`betexplorer_direct`) | Explicit, response-labelled bookmaker two-way moneylines | Full game | Universal fallback for canonical future basketball fixtures. It reads one dated basketball board then one `1x2` comparison response per strict ordered-team match. Each emitted price retains the response's bookmaker label and a capped URL/SHA-256 receipt. It is operator-authorised for this single-user project and marked `named_book` with `unresolved` permission / `probation` validation; no average, cross-book best price, relay, proxy, browser automation, login, or post-tip quote is used. |
 | The Odds API | `h2h`, totals, spreads | Routine acquisition: full game only | NBA, WNBA, NCAA_M, NCAA_W; a scheduled runner receives `THE_ODDS_API_KEY` only with a matching three-credit permit for date-bounded named-DraftKings collection. Australia NBL remains a documented but `probation` mapping and receives no automated permit pending credentialed region/bookmaker coverage. |
 
 The Odds API adapter remains `DOCUMENTATION_ONLY` until a bounded authenticated
@@ -200,17 +201,22 @@ Important restrictions:
   relabelled or substituted for a half/quarter market. For NCAAW, official
   quarter results may still derive the corresponding H1/H2 scores for
   settlement when a valid native half ticket exists.
-- BetExplorer's fixture table exposes only a representative average moneyline
-  pair in the observed HTML. This adapter skips rows with missing quotes or a
-  tip time already passed; it does not retain post-tip, opening/closing, or
-  historical prices, nor per-bookmaker, spread, or total markets. CBA future
-  fixtures had no prices in the 2026-11-16 capture, so CBA quote availability
-  has not been demonstrated there.
-- BetExplorer's and the CBA data site's reuse/automation terms have not been
-  reviewed. Public/keyless access does not establish a right to store or
-  redistribute data. Do not treat either source as cleared for unattended
-  production reuse until terms are checked; the `LIVE_VERIFIED` labels describe
-  endpoint/parser observations only, not rights clearance.
+- The original BetExplorer fixture-table adapter exposes only a representative
+  average moneyline pair. It remains separate from `betexplorer_direct`, skips
+  missing/post-tip table rows, and never emits a named-book ticket price.
+- The direct BetExplorer fallback is deliberately full-game-moneyline-only. It
+  makes no more than the configured number of direct requests, waits at least
+  three seconds between live requests, and stops for the rest of the run after
+  403/429. It captures only a dated board and comparison pages for canonical,
+  ordered-team matches; ambiguous, reversed, unmatched, empty, malformed, or
+  post-tip rows stay visible as receipt/gap diagnostics. It does not use a
+  proxy, relay, browser automation, login, or alternate endpoint.
+- BetExplorer's and the CBA data site's reuse/automation terms remain
+  `unresolved`; public/keyless access does not make either source a cleared API
+  integration. `LIVE_VERIFIED` labels describe endpoint/parser observations,
+  not rights clearance. The direct fallback's named-book classification means
+  only that the comparison response explicitly labels the bookmaker—it never
+  relabels the fixture-table average or a cross-book best price.
 - No current book adapter supplies highest-quarter prices. Highest-quarter
   forecasts therefore remain research-only.
 - Full-game spread observations may be stored from The Odds API, but the

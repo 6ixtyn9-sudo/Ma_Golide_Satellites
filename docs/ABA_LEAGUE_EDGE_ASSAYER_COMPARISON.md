@@ -188,13 +188,12 @@ to apply. These are material issues, not style preferences.
    The stated test must use `ingestion.providers` and exercise a pipeline path
    to prove registry evidence axes.
 
-8. **The unpriced-forecast PR is more than one membership line.** Adding ABA to
-   `_UNPRICED_EMPIRICAL_LEAGUES` would set part of the acca-policy behavior, but
-   `MarketForecastService` also has explicit capability labels for the two
-   current leagues. The proposed `Forecast.to_dict()` assertion for
-   `pricing_status` cannot pass: that field does not exist. Tests should assert
-   the report-level capability and `accas.pricing_evidence_status`, along with
-   absent/ineligible price evidence.
+8. **Historical unpriced-forecast proposal.** This comparison predates the
+   universal `betexplorer_direct` named-book fallback, so its suggested
+   `_UNPRICED_EMPIRICAL_LEAGUES` change is no longer a current implementation
+   path. `Forecast.to_dict()` still has no `pricing_status` field; tests must
+   assert report-level capability and `accas.pricing_evidence_status`, together
+   with the actual named-book or absent-price evidence for the fixture.
 
 9. **The assay PR targets the wrong data model and wrong function contract.**
    `mine_prediction_assay` returns `sample` and `edges`, not `outcome_rows`, and

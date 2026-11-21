@@ -41,6 +41,7 @@ from .models import (
     League,
     Period,
     Prediction,
+    PriceProvenance,
     ProviderHealth,
     payload_hash,
 )
@@ -57,6 +58,7 @@ from .leagues import native_periods
 from .providers import (
     aba_liga,
     betexplorer,
+    betexplorer_direct,
     cbaleague,
     espn,
     euroleague,
@@ -74,10 +76,11 @@ _CLOSED_STATUSES = frozenset({GameStatus.POSTPONED, GameStatus.CANCELLED, GameSt
 # is added and prevents a second hand-maintained timezone matrix.
 DEFAULT_TZ = {spec.league.value: spec.timezone for spec in SPECS}
 ACQUISITION_TZ = {spec.league.value: spec.acquisition_timezone for spec in SPECS}
-BOOK_PROVIDERS = ("theoddsapi",)
-# Explicit per-league tuples are retained as a public compatibility surface,
-# but their values now come from the registry.  Empty means intentionally
-# unpriced, not a fallback to an unrelated men's competition provider.
+BOOK_PROVIDERS = ("theoddsapi", "betexplorer_direct")
+# Explicit per-league tuples are retained as a public compatibility surface and
+# include the operator-approved BetExplorer direct fallback.  A source-limited
+# league still sends no request unless its canonical schedule produced a future
+# candidate fixture for the fallback to match.
 BOOK_PROVIDERS_BY_LEAGUE = {spec.league.value: spec.book_providers for spec in SPECS}
 
 # Registry declares which leagues have a validated ESPN schedule/result route.
@@ -142,8 +145,9 @@ def default_history_backfill_plan(
 def _book_providers(league: str) -> Sequence[str]:
     parsed = parse_league(league)
     # Preserve the existing overrideable NBA global for fixture/regression
-    # harnesses and local operator experiments.  Other lanes are explicitly
-    # registry-scoped so a new league never falls back to NBA providers.
+    # harnesses and local operator experiments.  The global includes the same
+    # direct fallback advertised by every registry lane; other lanes remain
+    # explicitly registry-scoped.
     if parsed is League.NBA:
         return BOOK_PROVIDERS
     return BOOK_PROVIDERS_BY_LEAGUE.get(parsed.value, ())
@@ -1140,15 +1144,56 @@ class Pipeline:
         }
         return output
 
-    def _book_provider_options(self, provider: str) -> Dict[str, Any]:
-        """Pass deterministic acquisition context to providers when available."""
+    def _betexplorer_direct_fallback_games(self, games: Sequence[Game]) -> List[Game]:
+        """Return only canonical games that still lack a usable named ML price.
+
+        An explicitly selected provider other than the direct fallback is an
+        operator filter, not a reason to override it.  With the normal
+        provider-neutral configuration, an existing fresh named full-game
+        moneyline pair means the fallback has done its job without another
+        public-page request.
+        """
+
+        selected_provider = (self.config.book.provider or "").strip().lower()
+        if selected_provider and selected_provider not in {"none", "betexplorer_direct"}:
+            return []
+        if selected_provider == "betexplorer_direct":
+            return list(games)
+        candidates: List[Game] = []
+        for game in games:
+            existing = [
+                snapshot
+                for snapshot in self._visible_pregame_books(game)
+                if snapshot.market is Market.MONEYLINE
+                and snapshot.period is Period.FULL_GAME
+                and snapshot.price_provenance is PriceProvenance.NAMED_BOOK
+                and snapshot.home_price_decimal is not None
+                and snapshot.away_price_decimal is not None
+                and self.config.book.matches_source(snapshot)
+            ]
+            if not existing:
+                candidates.append(game)
+        return candidates
+
+    def _book_provider_options(
+        self, provider: str, games: Optional[Sequence[Game]] = None
+    ) -> Dict[str, Any]:
+        """Pass deterministic, bounded acquisition context to book providers."""
         if provider == "theoddsapi":
             return {"tz_name": self.config.timezone}
         if provider == "betexplorer" and self.config.fixture_now_utc:
-            # Recorded BetExplorer pages include relative Today/Tomorrow labels.
+            # Recorded fixture-table pages include relative Today/Tomorrow labels.
             # Pin fixture replays to their configured observation time instead
             # of the wall clock so results remain stable across calendar days.
             return {"now_utc": self.config.fixture_now_utc}
+        if provider == "betexplorer_direct":
+            # The direct fallback receives only canonical scheduled fixtures;
+            # it discovers one dated board and fetches comparison rows only for
+            # strict ordered-team matches, never a league-wide page crawl.
+            options: Dict[str, Any] = {"now_utc": self.config.fixture_now_utc or self._now_iso()}
+            if games is not None:
+                options["games"] = list(games)
+            return options
         return {}
 
     def _acquire_book_lines(self, games: List[Game]) -> Dict[str, List[BookSnapshot]]:
@@ -1196,7 +1241,20 @@ class Pipeline:
                 }
                 continue
             try:
-                options = self._book_provider_options(provider)
+                provider_games: Sequence[Game] = games
+                if provider == "betexplorer_direct":
+                    provider_games = self._betexplorer_direct_fallback_games(games)
+                    if not provider_games:
+                        self.book_provider_status[provider] = {
+                            "enabled": True,
+                            "status": "fallback_not_needed",
+                            "snapshots_fetched": 0,
+                            "snapshots_mapped": 0,
+                            "identity_rejections": 0,
+                            "detail": "a fresh named full-game moneyline already exists for every slate game",
+                        }
+                        continue
+                options = self._book_provider_options(provider, provider_games)
                 provider_snapshots = module.fetch_odds(
                     self.config.league_enum.value,
                     self.config.date_yyyymmdd,
@@ -1221,6 +1279,12 @@ class Pipeline:
                     "snapshots_mapped": 0,
                     "identity_rejections": 0,
                 }
+                if hasattr(module, "last_receipt"):
+                    # The direct BetExplorer fallback publishes its bounded
+                    # source URLs/digests and identity census here.  Keep that
+                    # receipt with the report rather than hiding a no-price
+                    # result behind a generic empty-provider label.
+                    self.book_provider_status[provider]["receipt"] = module.last_receipt()
             except Exception as exc:
                 logger.warning("%s fetch failed: %s", provider, exc)
                 self.book_provider_status[provider] = {
@@ -3160,8 +3224,9 @@ def _book_module(provider: str):
 
     return {
         "betexplorer": betexplorer,
+        "betexplorer_direct": betexplorer_direct,
         "theoddsapi": theoddsapi,
-    }[provider]
+    }.get(provider)
 
 
 def _hardwood_candidates(game: Game, artifact, fetch, gaps: List[CoverageGap]) -> List[Prediction]:

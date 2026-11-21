@@ -60,7 +60,7 @@ def test_aba_registry_uses_official_canonical_source_but_keeps_research_prices_s
         spec.results_source,
         spec.gate_schedule_source,
     ) == ("aba_liga", "aba_liga", "aba_liga")
-    assert spec.book_providers == ("betexplorer",)
+    assert spec.book_providers == ("betexplorer", "betexplorer_direct")
 
     policy = price_evidence_policy(League.ABA_LEAGUE, "betexplorer")
     assert policy.price_provenance is PriceProvenance.AGGREGATE_CONSENSUS

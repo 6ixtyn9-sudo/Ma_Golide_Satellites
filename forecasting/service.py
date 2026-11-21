@@ -61,14 +61,6 @@ class MarketForecastService:
     _ESPN_CONTEXT_LEAGUES = frozenset(
         {League.NBA, League.WNBA, League.NCAA_M, League.NCAA_W}
     )
-    # These lanes can render transparent team-history forecasts after their
-    # reconciled-history gate, but have no validated named-book execution lane.
-    # Keep this explicit: an ESPN schedule/result source or unvalidated relayed
-    # odds observation must not make a price/value/ticket claim.
-    _UNPRICED_EMPIRICAL_LEAGUES = frozenset(
-        {League.EUROLEAGUE_W, League.NBA_G_LEAGUE}
-    )
-
     def __init__(
         self,
         store,
@@ -425,7 +417,7 @@ class MarketForecastService:
             "purpose": "empirical_evidence_readiness_not_accuracy_or_value_claim",
             "source_contract": "espn_date_bounded_schedule_and_reconciled_results_only",
             "model_change": "none_no_g_league_specific_override_without_walk_forward_evidence",
-            "named_book_or_ticket_lane": "not_validated_unpriced_only",
+            "named_book_or_ticket_lane": "betexplorer_direct_fallback_when_response_has_named_book",
             "reconciled_finals_as_of": len(finals),
             "minimum_reconciled_finals_for_first_empirical_forecast": first_forecast_floor,
             "minimum_history_games": self.forecast_config.min_history_games,
@@ -854,9 +846,9 @@ class MarketForecastService:
                 "league_operator_policy": (
                     "euroleague_strict_named_book_ticket_lane"
                     if self.league is League.EUROLEAGUE
-                    else "fiba_elw_empirical_history_only_no_validated_named_book_lane"
+                    else "fiba_elw_empirical_history_with_betexplorer_direct_fallback"
                     if self.league is League.EUROLEAGUE_W
-                    else "nba_g_league_empirical_history_only_no_validated_named_book_lane"
+                    else "nba_g_league_empirical_history_with_betexplorer_direct_fallback"
                     if self.league is League.NBA_G_LEAGUE
                     else "standard_policy"
                 ),
@@ -934,11 +926,7 @@ class MarketForecastService:
             "forecasts": [forecast.to_dict() for forecast in current],
             "accas": {
                 "mode": "paper_only",
-                "pricing_evidence_status": (
-                    "unpriced_no_validated_named_book_lane"
-                    if self.league in self._UNPRICED_EMPIRICAL_LEAGUES
-                    else "priced_lane_policy_applies"
-                ),
+                "pricing_evidence_status": "priced_lane_policy_applies",
                 "paper_policy": (
                     "admits a provisional segment only with at least one graded non-push "
                     "sample when insufficient samples are the sole blocker; exact price, "
@@ -953,9 +941,6 @@ class MarketForecastService:
                         "positive calibrated expected value, and at least ten prior settled picks "
                         "in the matching model/market/period/probability/odds band"
                         if self.league is League.EUROLEAGUE
-                        else "; this league has no validated named-book lane: paper counts are unpriced "
-                        "decision-support candidates, never value/EV claims"
-                        if self.league in self._UNPRICED_EMPIRICAL_LEAGUES
                         else ""
                     )
                 ),
