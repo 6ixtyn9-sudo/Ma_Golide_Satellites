@@ -1,6 +1,6 @@
 Ma Golide Picks — ABA_LEAGUE 2026-11-21
 ========================================================================
-Generated at: 2026-11-21 13:09 SAST
+Generated at: 2026-11-21 13:40 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -25,20 +25,20 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE full_game -> HOME · p=63.1% (raw 62.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=11 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Spartak Office Shoes vs BC Vienna · KO 2026-11-21 20:00 SAST
-      MONEYLINE H1 -> HOME · p=61.2% (raw 58.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=10 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] Cedevita Olimpija vs Slovan Bratislava · KO 2026-11-21 18:30 SAST
-      MONEYLINE H1 -> HOME · p=60.2% (raw 57.0%) @n/a no matched book
+      MONEYLINE H1 -> HOME · p=62.3% (raw 58.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=10 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      calibration=provisional n=11 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Spartak Office Shoes vs BC Vienna · KO 2026-11-21 20:00 SAST
-      HIGHEST QUARTER full_game -> Q2 · p=28.7% (raw 33.0%) @n/a no matched book
+      MONEYLINE H1 -> HOME · p=62.3% (raw 58.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=11 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Spartak Office Shoes vs BC Vienna · KO 2026-11-21 20:00 SAST
+      HIGHEST QUARTER full_game -> Q2 · p=27.8% (raw 32.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=11 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Cedevita Olimpija vs Slovan Bratislava · KO 2026-11-21 18:30 SAST
-      HIGHEST QUARTER full_game -> Q2 · p=27.7% (raw 32.0%) @n/a no matched book
+      HIGHEST QUARTER full_game -> Q2 · p=26.8% (raw 31.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=11 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
 
