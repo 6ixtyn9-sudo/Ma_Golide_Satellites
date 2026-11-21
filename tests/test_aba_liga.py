@@ -851,7 +851,13 @@ def test_pipeline_history_writes_reconciled_final_and_advances_game_cursor(tmp_p
         assert deep["status"] == "acquired"
         assert deep["events_acquired"] == 1
         assert deep["final_scores_written"] == 1
-        assert deep["quarantined_rows"] == 1
+        # The future placeholder remains explicit, but it is not a parser or
+        # reconciliation quarantine. The two report totals must not conflate
+        # it with a rejected terminal result.
+        assert deep["not_applicable_rows"] == 1
+        assert deep["quarantined_rows"] == 0
+        assert deep["seasons"][0]["not_applicable_rows"] == 1
+        assert deep["seasons"][0]["quarantined_rows"] == 0
         assert any(
             gap.required_field == "official_schedule_time" and gap.reason.value == "not_applicable"
             for gap in pipeline.gaps
@@ -917,6 +923,12 @@ def test_history_receipt_separates_verified_administrative_dispositions(tmp_path
         assert deep["events_acquired"] == 0
         assert deep["final_scores_written"] == 0
         assert deep["administrative_disposition_count"] == 1
+        # Administrative dispositions are explicit non-played outcomes, not
+        # generic placeholders or quarantined result-parser failures.
+        assert deep["not_applicable_rows"] == 0
+        assert deep["quarantined_rows"] == 0
+        assert deep["seasons"][0]["not_applicable_rows"] == 0
+        assert deep["seasons"][0]["quarantined_rows"] == 0
         assert deep["season_receipts"] == [
             {
                 "season_end_year": 2026,
@@ -1346,7 +1358,10 @@ def test_dual_presentation_with_genuinely_wrong_header_still_quarantines_and_ret
         assert deep["status"] == "provider_error_cursor_retained"
         assert deep["events_acquired"] == 0
         assert deep["final_scores_written"] == 0
+        assert deep["not_applicable_rows"] == 0
         assert deep["quarantined_rows"] == 1
+        assert deep["seasons"][0]["not_applicable_rows"] == 0
+        assert deep["seasons"][0]["quarantined_rows"] == 1
         assert deep["seasons"][0]["attempted_game_numbers"] == [6]
         assert deep["seasons"][0]["exhausted"] is False
         assert any(

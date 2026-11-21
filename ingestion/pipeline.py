@@ -1577,6 +1577,10 @@ class Pipeline:
             "events_acquired": 0,
             "final_scores_written": 0,
             "administrative_disposition_count": 0,
+            # A visible calendar placeholder is not a quarantine. Keep the
+            # provider-error total separate so a high count cannot be read as
+            # a parser/reconciliation failure in an otherwise clean batch.
+            "not_applicable_rows": 0,
             "quarantined_rows": 0,
             "ledger_dates": [],
             "excluded_seasons": [],
@@ -1858,9 +1862,19 @@ class Pipeline:
             administrative_disposition_count += len(administrative_dispositions)
             base["administrative_disposition_count"] += len(administrative_dispositions)
             self.gaps.extend(adapter_gaps)
+            # ``NOT_APPLICABLE`` makes an intentional, visible statement
+            # about a placeholder or an administrative result; it is never a
+            # quarantined provider failure. Administrative dispositions have
+            # their own total above, so keep them out of generic
+            # placeholder telemetry as well.
             blocking_gaps = [
                 gap for gap in adapter_gaps if gap.reason is not CoverageState.NOT_APPLICABLE
             ]
+            not_applicable_rows = sum(
+                gap.reason is CoverageState.NOT_APPLICABLE
+                and gap.required_field != "official_administrative_disposition"
+                for gap in adapter_gaps
+            )
             for game in games:
                 self.store.upsert_game(game)
                 base["events_acquired"] += 1
@@ -1874,11 +1888,13 @@ class Pipeline:
                     "calendar_final_count": calendar_final_count,
                     "finals_written": len(games),
                     "administrative_disposition_count": len(administrative_dispositions),
+                    "not_applicable_rows": not_applicable_rows,
                     "exhausted": exhausted,
-                    "quarantined_rows": len(adapter_gaps),
+                    "quarantined_rows": len(blocking_gaps),
                 }
             )
-            base["quarantined_rows"] += len(adapter_gaps)
+            base["not_applicable_rows"] += not_applicable_rows
+            base["quarantined_rows"] += len(blocking_gaps)
             if blocking_gaps:
                 # The adapter stops on the first bad detail. Retain the last
                 # fully resolved terminal row (played or administrative) so a
