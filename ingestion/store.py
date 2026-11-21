@@ -40,14 +40,39 @@ def _pred_slot_key(prediction: Prediction) -> str:
     return f"{prediction.provider}|{'pre' if prediction.pre_tip else 'post'}"
 
 
-def _book_natural_key(snapshot: BookSnapshot) -> str:
-    """Book/market identity without its pre/post-match observation slot."""
+def _book_market_key(snapshot: BookSnapshot) -> str:
+    """Provider/book/market/period identity, before an offered line is added."""
+
     return f"{snapshot.provider}|{snapshot.book}|{snapshot.market.value}|{snapshot.period.value}"
+
+
+def _book_natural_key(snapshot: BookSnapshot) -> str:
+    """Book/market identity, preserving distinct exact total/spread lines.
+
+    A named book can display several full-game O/U or Asian-Handicap lines at
+    once.  Those are distinct source observations and must not overwrite each
+    other just because they share book, market, and period.  Moneylines carry
+    no source line and retain their historical key shape.
+    """
+
+    base = _book_market_key(snapshot)
+    if snapshot.market not in {Market.TOTAL, Market.SPREAD}:
+        return base
+    if snapshot.line is None:
+        return f"{base}|line:none"
+    return f"{base}|line:{float(snapshot.line):.12g}"
 
 
 def _book_slot_key(snapshot: BookSnapshot) -> str:
     """Keep live/post-match observations from displacing pre-match state."""
+
     return f"{_book_natural_key(snapshot)}|{'pre' if snapshot.pre_match else 'post'}"
+
+
+def _book_market_slot_key(snapshot: BookSnapshot) -> str:
+    """Pre/post scope used to stop later writes after a market is frozen."""
+
+    return f"{_book_market_key(snapshot)}|{'pre' if snapshot.pre_match else 'post'}"
 
 
 def _same(a, b) -> bool:
@@ -216,16 +241,24 @@ class InMemoryStore(Store):
     def upsert_book_snapshot(self, snapshot: BookSnapshot, frozen: bool = False) -> None:
         with self._lock:
             key = _book_slot_key(snapshot)
+            market_key = _book_market_slot_key(snapshot)
             per_game = self.books.setdefault(snapshot.game_id, {})
             frozen_map = self.frozen_books.setdefault(snapshot.game_id, {})
-            if frozen_map.get(key):
-                existing = per_game.get(key)
-                if existing is not None and _same(existing, snapshot):
+            existing = per_game.get(key)
+            exact_frozen = bool(frozen_map.get(key))
+            market_frozen = bool(frozen_map.get(market_key))
+            if exact_frozen or market_frozen:
+                # While freezing a tip-passed game, each already-stored exact
+                # line must receive its own frozen marker.  A new/revised line
+                # remains forbidden once this book/market/period is frozen.
+                if existing is None or not _same(existing, snapshot):
+                    raise FrozenWriteError(f"book snapshot for {snapshot.game_id}/{key} is frozen")
+                if not frozen:
                     return
-                raise FrozenWriteError(f"book snapshot for {snapshot.game_id}/{key} is frozen")
             per_game[key] = snapshot
             if frozen:
                 frozen_map[key] = True
+                frozen_map[market_key] = True
 
     def get_book_snapshots(self, game_id: str) -> List[BookSnapshot]:
         return list(self.books.get(game_id, {}).values())

@@ -172,7 +172,7 @@ prices remain missing.
 | --- | --- | --- | --- |
 | ESPN scoreboard | Moneyline, totals, spreads when explicitly offered | Full game | NBA, WNBA, NCAA_M, NCAA_W, NBA G League; named-book observations are independently timestamped but relayed by ESPN, so registry policy preserves `unresolved` / `unverified` audit metadata. An exact current named-book quote can enter the paper lane only after the ordinary model, calibration, and ROI gates pass. |
 | BetExplorer aggregate (`betexplorer`) | Representative average two-way moneyline prices | Full game | EuroLeague and CBA are `LIVE_VERIFIED` from captured 2026-11-16 pages. ABA League uses the same route as a probationary aggregate research observation, separate from its `aba_liga` schedule/result adapter. Every aggregate adapter quote is `aggregate_consensus` with `unresolved` permission / `probation` validation, never a named-book ticket quote. |
-| BetExplorer direct (`betexplorer_direct`) | Explicit, response-labelled bookmaker two-way moneylines | Full game | Universal fallback for canonical future basketball fixtures. It reads one dated basketball board then one `1x2` comparison response per strict ordered-team match. Each emitted price retains the response's bookmaker label and a capped URL/SHA-256 receipt. It is operator-authorised for this single-user project and marked `named_book` with `unresolved` permission / `probation` validation; no average, cross-book best price, relay, proxy, browser automation, login, or post-tip quote is used. |
+| BetExplorer direct (`betexplorer_direct`) | Response-labelled bookmaker H/A moneyline, O/U totals, and Asian Handicap spreads | Full game | Universal fallback for canonical future basketball fixtures. It reads one dated basketball board then up to three exact comparison responses per strict ordered-team match: `ha` for the two-way H/A moneyline, `ou` for line-specific Over/Under prices, and `ah` for home-oriented spread prices. Each emitted price retains the response's bookmaker label, exact source line/side order, source-designated main line when present, and a capped URL/SHA-256 receipt. It is operator-authorised for this single-user project and marked `named_book` with `unresolved` permission / `probation` validation; no average, cross-book best price, relay, proxy, browser automation, login, or post-tip quote is used. |
 | The Odds API | `h2h`, totals, spreads | Routine acquisition: full game only | NBA, WNBA, NCAA_M, NCAA_W; a scheduled runner receives `THE_ODDS_API_KEY` only with a matching three-credit permit for date-bounded named-DraftKings collection. Australia NBL remains a documented but `probation` mapping and receives no automated permit pending credentialed region/bookmaker coverage. |
 
 The Odds API adapter remains `DOCUMENTATION_ONLY` until a bounded authenticated
@@ -204,13 +204,18 @@ Important restrictions:
 - The original BetExplorer fixture-table adapter exposes only a representative
   average moneyline pair. It remains separate from `betexplorer_direct`, skips
   missing/post-tip table rows, and never emits a named-book ticket price.
-- The direct BetExplorer fallback is deliberately full-game-moneyline-only. It
-  makes no more than the configured number of direct requests, waits at least
-  three seconds between live requests, and stops for the rest of the run after
-  403/429. It captures only a dated board and comparison pages for canonical,
-  ordered-team matches; ambiguous, reversed, unmatched, empty, malformed, or
-  post-tip rows stay visible as receipt/gap diagnostics. It does not use a
-  proxy, relay, browser automation, login, or alternate endpoint.
+- The direct BetExplorer fallback uses only exact full-game source surfaces:
+  H/A (`ha`) for its two-way moneyline, O/U (`ou`) with the table's explicit
+  total threshold and Over/Under order, and Asian Handicap (`ah`) with the
+  table's explicit home-oriented handicap and home/away order. It emits a
+  main-line flag only where the response marks an active source line; it never
+  manufactures one from an average or cross-book calculation. It makes no more
+  than the configured number of direct requests, waits at least three seconds
+  between live requests, and stops for the rest of the run after 403/429. It
+  captures only a dated board and comparison pages for canonical, ordered-team
+  matches; ambiguous, reversed, unmatched, empty, malformed, or post-tip rows
+  stay visible as receipt/gap diagnostics. It does not use a proxy, relay,
+  browser automation, login, or alternate endpoint.
 - BetExplorer's and the CBA data site's reuse/automation terms remain
   `unresolved`; public/keyless access does not make either source a cleared API
   integration. `LIVE_VERIFIED` labels describe endpoint/parser observations,

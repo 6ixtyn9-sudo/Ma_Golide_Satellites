@@ -38,7 +38,10 @@ BOARD = f'''<table class="table-main">
 </tr>
 </table>'''
 
-ODDS = json.dumps(
+# Basketball H/A is the two-way full-game moneyline surface.  These use the
+# compact and all-book comparison shapes so the parser can prove it ignores the
+# surrounding aggregate price widgets and unnamed rows.
+HA_ODDS = json.dumps(
     {
         "odds": '''
         <div class="oddsComparisonAll__average_text" data-odd="1.64"></div>
@@ -66,6 +69,52 @@ ODDS = json.dumps(
     }
 )
 
+# O/U records the total threshold and the price order directly from the source:
+# first column Over, second column Under.  The active source navigation picks
+# the only main line; the 142.5 row remains present but non-main.
+OU_ODDS = json.dumps(
+    {
+        "odds": '''
+        <ul class="bestOddsComparison">
+          <li id="142.50">142.5</li>
+          <li id="143.50" class="oddsComparison__activeSubLi">143.5</li>
+        </ul>
+        <table data-handicap="142.50"><tbody>
+          <tr><td><span class="in-bookmaker-logo" title="BetMGM.us"></span></td>
+          <td data-odd="1.91"></td><td data-odd="1.91"></td></tr>
+        </tbody></table>
+        <table data-handicap="143.50"><tbody>
+          <tr><td><span class="in-bookmaker-logo" title="BetMGM.us"></span></td>
+          <td data-odd="1.83"></td><td data-odd="2.00"></td></tr>
+          <tr><td><span class="in-bookmaker-logo" title="Stake.com"></span></td>
+          <td data-odd="1.85"></td><td data-odd="1.95"></td></tr>
+          <tr><td>unnamed</td><td data-odd="1.90"></td><td data-odd="1.90"></td></tr>
+        </tbody></table>
+        '''
+    }
+)
+
+# AH uses the same two source columns as H/A: first price is home at the
+# source's home-oriented handicap, second price is away.
+AH_ODDS = json.dumps(
+    {
+        "odds": '''
+        <ul class="bestOddsComparison">
+          <li id="-0.50" class="oddsComparison__activeSubLi">-0.5</li>
+          <li id="-1.50">-1.5</li>
+        </ul>
+        <table data-handicap="-0.50"><tbody>
+          <tr><td><a class="in-bookmaker-logo-link" href="/bookmaker/365/">Bet365</a></td>
+          <td data-odd="1.92"></td><td data-odd="1.90"></td></tr>
+        </tbody></table>
+        <table data-handicap="-1.50"><tbody>
+          <tr><td><span class="in-bookmaker-logo" title="Pinnacle"></span></td>
+          <td data-odd="2.15"></td><td data-odd="1.70"></td></tr>
+        </tbody></table>
+        '''
+    }
+)
+
 
 def _game() -> Game:
     return Game(
@@ -86,14 +135,18 @@ def _fetch(calls: list[str]):
         calls.append(url)
         if "/basketball/results/" in url:
             return BOARD
-        if f"/match-odds/{EVENT_ID}/1/1x2/bestOdds/" in url:
-            return ODDS
+        if f"/match-odds/{EVENT_ID}/1/ha/bestOdds/" in url:
+            return HA_ODDS
+        if f"/match-odds/{EVENT_ID}/1/ou/bestOdds/" in url:
+            return OU_ODDS
+        if f"/match-odds/{EVENT_ID}/1/ah/bestOdds/" in url:
+            return AH_ODDS
         raise AssertionError(f"unexpected direct BetExplorer URL: {url}")
 
     return fetch
 
 
-def test_day_board_and_named_row_parsers_refuse_other_sports_and_averages():
+def test_day_board_and_named_row_parsers_refuse_other_sports_averages_and_unnamed_rows():
     fixtures = betexplorer_direct.parse_day_board(BOARD)
     assert fixtures == [
         {
@@ -108,47 +161,83 @@ def test_day_board_and_named_row_parsers_refuse_other_sports_and_averages():
         }
     ]
 
-    rows = betexplorer_direct.parse_named_moneyline_rows(json.loads(ODDS)["odds"])
-    assert rows == [
+    moneyline_rows = betexplorer_direct.parse_named_moneyline_rows(json.loads(HA_ODDS)["odds"])
+    assert moneyline_rows == [
         {"book": "Bet365", "home_price_decimal": 1.72, "away_price_decimal": 2.18},
         {"book": "Pinnacle", "home_price_decimal": 1.74, "away_price_decimal": 2.16},
     ]
+    assert betexplorer_direct.parse_named_line_rows(json.loads(OU_ODDS)["odds"]) == [
+        {
+            "book": "BetMGM.us",
+            "line": 142.5,
+            "first_price_decimal": 1.91,
+            "second_price_decimal": 1.91,
+        },
+        {
+            "book": "BetMGM.us",
+            "line": 143.5,
+            "first_price_decimal": 1.83,
+            "second_price_decimal": 2.0,
+        },
+        {
+            "book": "Stake.com",
+            "line": 143.5,
+            "first_price_decimal": 1.85,
+            "second_price_decimal": 1.95,
+        },
+    ]
+    assert betexplorer_direct._source_active_line(json.loads(OU_ODDS)["odds"]) == 143.5
+    assert betexplorer_direct._source_active_line(json.loads(AH_ODDS)["odds"]) == -0.5
 
 
-def test_direct_fallback_emits_only_explicit_named_book_rows_with_a_receipt(monkeypatch):
+def test_direct_fallback_emits_exact_named_moneyline_total_and_spread_rows_with_receipt(monkeypatch):
     calls: list[str] = []
     monkeypatch.setattr(betexplorer_direct, "MIN_REQUEST_INTERVAL_SECONDS", 0.0)
     snapshots = betexplorer_direct.fetch_odds(
-        "NBA",
-        DATE,
-        now_utc=OBSERVED,
-        games=[_game()],
-        text_fetch=_fetch(calls),
+        "NBA", DATE, now_utc=OBSERVED, games=[_game()], text_fetch=_fetch(calls)
     )
 
-    assert len(snapshots) == 2
-    by_book = {snapshot.book: snapshot for snapshot in snapshots}
-    assert set(by_book) == {"Bet365", "Pinnacle"}
-    assert (
-        by_book["Bet365"].home_price_decimal,
-        by_book["Bet365"].away_price_decimal,
-    ) == (1.72, 2.18)
-    assert by_book["Pinnacle"].scheduled_utc == "2026-11-20T19:00:00Z"
+    assert len(snapshots) == 7
+    moneylines = [snapshot for snapshot in snapshots if snapshot.market is Market.MONEYLINE]
+    totals = [snapshot for snapshot in snapshots if snapshot.market is Market.TOTAL]
+    spreads = [snapshot for snapshot in snapshots if snapshot.market is Market.SPREAD]
+    assert {(snapshot.book, snapshot.home_price_decimal, snapshot.away_price_decimal) for snapshot in moneylines} == {
+        ("Bet365", 1.72, 2.18),
+        ("Pinnacle", 1.74, 2.16),
+    }
+    assert {(snapshot.book, snapshot.line, snapshot.over_price_decimal, snapshot.under_price_decimal) for snapshot in totals} == {
+        ("BetMGM.us", 142.5, 1.91, 1.91),
+        ("BetMGM.us", 143.5, 1.83, 2.0),
+        ("Stake.com", 143.5, 1.85, 1.95),
+    }
+    assert {(snapshot.book, snapshot.line, snapshot.home_price_decimal, snapshot.away_price_decimal) for snapshot in spreads} == {
+        ("Bet365", -0.5, 1.92, 1.9),
+        ("Pinnacle", -1.5, 2.15, 1.7),
+    }
+    assert all(snapshot.period is Period.FULL_GAME for snapshot in snapshots)
     assert all(snapshot.provider == "betexplorer_direct" for snapshot in snapshots)
     assert all(snapshot.price_provenance is PriceProvenance.NAMED_BOOK for snapshot in snapshots)
     assert all(snapshot.source_permission is SourcePermission.UNRESOLVED for snapshot in snapshots)
     assert all(snapshot.operational_validation is OperationalValidation.PROBATION for snapshot in snapshots)
+    assert {snapshot.line for snapshot in totals if snapshot.main_line} == {143.5}
+    assert {snapshot.line for snapshot in spreads if snapshot.main_line} == {-0.5}
 
     receipt = betexplorer_direct.last_receipt()
     assert receipt["status"] == "success"
-    assert receipt["requests"] == 2
+    assert receipt["requests"] == 4
     assert receipt["fixtures_matched"] == 1
-    assert receipt["snapshots_emitted"] == 2
-    assert receipt["fixture_receipts"][0]["odds_url"] in calls
-    assert receipt["fixture_receipts"][0]["named_books"] == ["Bet365", "Pinnacle"]
+    assert receipt["snapshots_emitted"] == 7
+    fixture = receipt["fixture_receipts"][0]
+    assert fixture["named_books"] == ["Bet365", "BetMGM.us", "Pinnacle", "Stake.com"]
+    assert [(market["market"], market["tab"]) for market in fixture["markets"]] == [
+        ("moneyline", "ha"),
+        ("total", "ou"),
+        ("spread", "ah"),
+    ]
+    assert all(market["url"] in calls for market in fixture["markets"])
 
 
-def test_direct_fallback_recovers_the_page_supplied_comparison_parameter(monkeypatch):
+def test_direct_fallback_recovers_the_page_supplied_ha_comparison_parameter(monkeypatch):
     calls: list[str] = []
     monkeypatch.setattr(betexplorer_direct, "MIN_REQUEST_INTERVAL_SECONDS", 0.0)
 
@@ -156,21 +245,25 @@ def test_direct_fallback_recovers_the_page_supplied_comparison_parameter(monkeyp
         calls.append(url)
         if "/basketball/results/" in url:
             return BOARD
-        if f"/match-odds/{EVENT_ID}/1/1x2/bestOdds/" in url:
+        if f"/match-odds/{EVENT_ID}/1/ha/bestOdds/" in url:
             return json.dumps({"odds": "<div>no named rows at page one</div>"})
         if url.endswith(f"/{EVENT_ID}/"):
-            return "match_load_tabs('basketball', '1x2', '', '', '2')"
-        if f"/match-odds/{EVENT_ID}/2/1x2/bestOdds/" in url:
-            return ODDS
+            return "match_load_tabs('basketball', 'ha', '', '', '2')"
+        if f"/match-odds/{EVENT_ID}/2/ha/bestOdds/" in url:
+            return HA_ODDS
+        if f"/match-odds/{EVENT_ID}/2/ou/bestOdds/" in url:
+            return OU_ODDS
+        if f"/match-odds/{EVENT_ID}/2/ah/bestOdds/" in url:
+            return AH_ODDS
         raise AssertionError(f"unexpected direct BetExplorer URL: {url}")
 
     snapshots = betexplorer_direct.fetch_odds(
         "NBA", DATE, now_utc=OBSERVED, games=[_game()], text_fetch=fetch
     )
 
-    assert {snapshot.book for snapshot in snapshots} == {"Bet365", "Pinnacle"}
+    assert len(snapshots) == 7
     receipt = betexplorer_direct.last_receipt()
-    assert receipt["requests"] == 4
+    assert receipt["requests"] == 6
     assert receipt["fixture_receipts"][0]["comparison_page_param"] == "2"
     assert receipt["fixture_receipts"][0]["match_page_sha256"] is not None
 
@@ -249,29 +342,55 @@ def test_registry_exposes_direct_fallback_for_every_league_and_pipeline_keeps_re
     pipeline._acquire_book_lines([game])
 
     snapshots = store.get_book_snapshots(game.game_id)
-    assert {snapshot.book for snapshot in snapshots} == {"Bet365", "Pinnacle"}
+    assert len(snapshots) == 7
+    assert {snapshot.market for snapshot in snapshots} == {
+        Market.MONEYLINE,
+        Market.TOTAL,
+        Market.SPREAD,
+    }
     status = pipeline.book_provider_status["betexplorer_direct"]
     assert status["status"] == "fetched"
-    assert status["snapshots_mapped"] == 2
+    assert status["snapshots_mapped"] == 7
     assert status["receipt"]["fixtures_matched"] == 1
 
 
-def test_pipeline_skips_direct_request_when_a_named_moneyline_already_exists(monkeypatch):
+def test_pipeline_skips_direct_request_only_when_all_named_core_markets_exist(monkeypatch):
     monkeypatch.setattr(theoddsapi, "is_enabled", lambda: False)
     store = InMemoryStore()
     game = _game()
     store.upsert_game(game)
+    shared = {
+        "game_id": game.game_id,
+        "provider": "espn",
+        "book": "DraftKings",
+        "period": Period.FULL_GAME,
+        "observed_utc": "2026-11-20T11:00:00Z",
+        "scheduled_utc": game.scheduled_utc,
+    }
     store.upsert_book_snapshot(
         BookSnapshot(
-            game_id=game.game_id,
-            provider="espn",
-            book="DraftKings",
             market=Market.MONEYLINE,
-            period=Period.FULL_GAME,
-            observed_utc="2026-11-20T11:00:00Z",
             home_price_decimal=1.70,
             away_price_decimal=2.20,
-            scheduled_utc=game.scheduled_utc,
+            **shared,
+        )
+    )
+    store.upsert_book_snapshot(
+        BookSnapshot(
+            market=Market.TOTAL,
+            line=221.5,
+            over_price_decimal=1.91,
+            under_price_decimal=1.91,
+            **shared,
+        )
+    )
+    store.upsert_book_snapshot(
+        BookSnapshot(
+            market=Market.SPREAD,
+            line=-4.5,
+            home_price_decimal=1.91,
+            away_price_decimal=1.91,
+            **shared,
         )
     )
     monkeypatch.setattr(
