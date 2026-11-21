@@ -1179,14 +1179,12 @@ class Pipeline:
                 return snapshot.home_price_decimal is not None and snapshot.away_price_decimal is not None
             if market is Market.TOTAL:
                 return (
-                    snapshot.main_line
-                    and snapshot.line is not None
+                    snapshot.line is not None
                     and snapshot.over_price_decimal is not None
                     and snapshot.under_price_decimal is not None
                 )
             return (
-                snapshot.main_line
-                and snapshot.line is not None
+                snapshot.line is not None
                 and snapshot.home_price_decimal is not None
                 and snapshot.away_price_decimal is not None
             )

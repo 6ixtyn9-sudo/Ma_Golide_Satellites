@@ -207,15 +207,21 @@ Important restrictions:
 - The direct BetExplorer fallback uses only exact full-game source surfaces:
   H/A (`ha`) for its two-way moneyline, O/U (`ou`) with the table's explicit
   total threshold and Over/Under order, and Asian Handicap (`ah`) with the
-  table's explicit home-oriented handicap and home/away order. It emits a
-  main-line flag only where the response marks an active source line; it never
-  manufactures one from an average or cross-book calculation. It makes no more
-  than the configured number of direct requests, waits at least three seconds
-  between live requests, and stops for the rest of the run after 403/429. It
-  captures only a dated board and comparison pages for canonical, ordered-team
-  matches; ambiguous, reversed, unmatched, empty, malformed, or post-tip rows
-  stay visible as receipt/gap diagnostics. It does not use a proxy, relay,
-  browser automation, login, or alternate endpoint.
+  table's explicit home-oriented handicap and home/away order. It retains each
+  exact source line in the displayed ladder. A total/spread receives a
+  main-line flag only when an active source-nav marker names a
+  `data-handicap` line actually carried in that same response: basketball
+  responses can expose stale cross-sport nav ids, so a marker alone is not
+  evidence. It never manufactures a line from an average or cross-book
+  calculation. It makes no more than the configured number of direct requests,
+  waits at least three seconds between live requests, and stops for the rest of
+  the run after 403/429 or a challenge/verification surface. It reads a
+  source-supplied comparison-nav page parameter before falling back to the
+  guarded match-page parameter read. It captures only a dated board and
+  comparison pages for canonical, ordered-team matches; ambiguous, reversed,
+  unmatched, empty, malformed, or post-tip rows stay visible as receipt/gap
+  diagnostics. It does not use a proxy, relay, browser automation, login, or
+  alternate endpoint.
 - BetExplorer's and the CBA data site's reuse/automation terms remain
   `unresolved`; public/keyless access does not make either source a cleared API
   integration. `LIVE_VERIFIED` labels describe endpoint/parser observations,

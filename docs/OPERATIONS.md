@@ -296,12 +296,15 @@ using it as history.
 ELW has no dedicated named-book API integration, but a future canonical fixture
 now receives the bounded `betexplorer_direct` fallback attempt. A response can
 supply a full-game named H/A moneyline, O/U total with its explicit line and
-sides, or Asian Handicap spread with its explicit home-oriented line and sides;
-its direct-page provenance remains `unresolved` / `probation`, and an empty or
-unmatched comparison row remains explicitly unpriced. The standalone
-`scripts/build_markets.py` defaults `--tz` to the selected league's acquisition
-timezone (Europe/Paris for ELW), not UTC; pass `--tz` explicitly only when
-deliberately inspecting another local slate.
+sides, or Asian Handicap spread with its explicit home-oriented line and sides.
+Basketball source navigation can lack a trustworthy active total/spread line;
+exact named rows are still stored and receipted, but the ordinary downstream
+main-line preference is deliberately not relaxed. Its direct-page provenance
+remains `unresolved` / `probation`, and an empty or unmatched comparison row
+remains explicitly unpriced. The standalone `scripts/build_markets.py` defaults
+`--tz` to the selected league's acquisition timezone (Europe/Paris for ELW),
+not UTC; pass `--tz` explicitly only when deliberately inspecting another local
+slate.
 
 NBA G League has the same direct fallback for displayed full-game moneyline,
 total, and spread rows. It still has no validated external pre-tip prediction
