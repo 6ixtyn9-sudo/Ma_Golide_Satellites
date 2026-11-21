@@ -7,6 +7,7 @@ source-use permission or live verification.
 
 from __future__ import annotations
 
+from copy import deepcopy
 import json
 import re
 
@@ -1221,6 +1222,95 @@ def test_history_replays_current_season_when_a_late_final_appears_below_cursor(t
         assert deep["cursor"]["last_completed_final_count"] == 2
     finally:
         store.close()
+
+
+def test_history_skips_receipted_older_season_without_skipping_current_completeness_check():
+    """A historical receipt frees the batch for the next incomplete season.
+
+    The cursor deliberately retains a nonzero old-game position to mirror the
+    pre-skip batches: a valid receipt must dominate that stale partial replay,
+    but the completed current season still has to re-read its calendar first.
+    """
+
+    config = PipelineConfig(
+        league="ABA_LEAGUE",
+        date_yyyymmdd="20251006",
+        history_days=0,
+        history_request_budget=1,
+        deep_history_event_budget=5,
+        fixture_now_utc="2025-10-06T12:00:00Z",
+    )
+    store = InMemoryStore()
+    store.persist = True
+    initial = Pipeline(config, store, fetch=_fetch, allow_writes=True).backfill()["backfill"][
+        "deep_history"
+    ]
+    current_receipt = initial["season_receipts"][0]
+
+    # Seed the already-receipted older final so the skip verifies canonical
+    # storage as well as the receipt before it avoids an official source read.
+    stored_current_game = store.get_game("aba_liga:25:1:6")
+    assert stored_current_game is not None
+    older_game = deepcopy(stored_current_game)
+    older_game.game_id = "aba_liga:24:1:6"
+    older_game.season = "2024/25"
+    older_game.evidence[aba.PROVIDER]["season_end_year"] = 2025
+    store.upsert_game(older_game)
+    older_receipt = {**current_receipt, "season_end_year": 2025}
+    cursor = {
+        **initial["cursor"],
+        "next_season": 2025,
+        # This cursor was left by an old bounded batch after it unnecessarily
+        # started a replay beneath an existing complete receipt.
+        "last_game_no": 6,
+        "season_receipts": {
+            "2026": current_receipt,
+            "2025": older_receipt,
+        },
+    }
+    store.upsert_provider_health(
+        ProviderHealth(
+            provider="aba-liga-history",
+            league=League.ABA_LEAGUE,
+            coverage=cursor,
+        )
+    )
+
+    calendar_2024 = CALENDAR.replace("25/1/", "23/1/")
+    match_2024 = MATCH.replace('value="25"', 'value="23"').replace("/25/1/", "/23/1/")
+    calls = []
+
+    def fetch(url: str) -> str:
+        calls.append(url)
+        if "/calendar/25/1/" in url:  # Current 2025/26 calendar recheck.
+            return CALENDAR
+        if "/calendar/23/1/" in url:  # Next incomplete historical season.
+            return calendar_2024
+        if "/match/6/23/1/" in url:
+            return match_2024
+        raise AssertionError(f"unexpected ABA contract URL: {url}")
+
+    deep = Pipeline(config, store, fetch=fetch, allow_writes=True).backfill()["backfill"][
+        "deep_history"
+    ]
+
+    skipped = {
+        "season_end_year": 2025,
+        "status": "receipt_complete_skipped",
+        "calendar_final_count": 1,
+        "reconciled_final_count": 1,
+        "administrative_disposition_count": 0,
+        "not_applicable_rows": 0,
+    }
+    assert deep["receipt_complete_seasons_skipped"] == [skipped]
+    assert deep["seasons"][0] == skipped
+    # Receipt skipping is not a source request: the single configured season
+    # request is spent on 2024, retaining the full batch event budget.
+    assert deep["events_acquired"] == 1
+    assert any("/calendar/25/1/" in url for url in calls)
+    assert any("/calendar/23/1/" in url for url in calls)
+    assert not any("/calendar/24/1/" in url for url in calls)
+    assert deep["cursor"]["next_season"] == 2023
 
 
 def test_adapter_is_enabled_and_smoke_replays_the_calendar_contract():

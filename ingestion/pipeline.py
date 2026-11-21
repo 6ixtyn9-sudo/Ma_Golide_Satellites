@@ -1584,6 +1584,10 @@ class Pipeline:
             "quarantined_rows": 0,
             "ledger_dates": [],
             "excluded_seasons": [],
+            # Receipts are durable historical-completeness attestations. A
+            # receipt-complete older season is reported when skipped so the
+            # cursor never silently burns an event budget replaying it.
+            "receipt_complete_seasons_skipped": [],
             "learning_or_calibration_claimed": False,
         }
         if not event_budget or not season_budget:
@@ -1721,6 +1725,57 @@ class Pipeline:
             season_receipts[key] = receipt
             base["season_receipts"].append(dict(receipt))
 
+        def completed_receipt(covered_season: int) -> Optional[Dict[str, Any]]:
+            """Return a trustworthy immutable receipt for a prior season.
+
+            Cursor coverage is operational state and can outlive code/schema
+            changes, so merely finding a dictionary under ``season_receipts``
+            is not enough to skip source acquisition. Only the exact
+            zero-blocking-gap attestation emitted above is eligible. Anything
+            malformed or stale falls through to the normal fail-closed replay.
+            """
+
+            receipt = season_receipts.get(str(covered_season))
+            required_fields = {
+                "season_end_year",
+                "calendar_final_count",
+                "reconciled_final_count",
+                "administrative_disposition_count",
+                "not_applicable_rows",
+                "blocking_gap_count",
+                "status",
+                "source",
+                "evidence",
+                "completed_at_utc",
+            }
+            if not isinstance(receipt, dict) or set(receipt) != required_fields:
+                return None
+            counts = (
+                receipt.get("calendar_final_count"),
+                receipt.get("reconciled_final_count"),
+                receipt.get("administrative_disposition_count"),
+                receipt.get("not_applicable_rows"),
+                receipt.get("blocking_gap_count"),
+            )
+            if (
+                receipt.get("season_end_year") != covered_season
+                or any(
+                    isinstance(value, bool) or not isinstance(value, int) or value < 0
+                    for value in counts
+                )
+                or receipt["calendar_final_count"] <= 0
+                or receipt["calendar_final_count"]
+                != receipt["reconciled_final_count"] + receipt["administrative_disposition_count"]
+                or receipt["blocking_gap_count"] != 0
+                or receipt.get("status") != "calendar_terminal_count_reconciled"
+                or receipt.get("source") != aba_liga.PROVIDER
+                or receipt.get("evidence") != aba_liga.EVIDENCE
+                or not isinstance(receipt.get("completed_at_utc"), str)
+                or not receipt["completed_at_utc"]
+            ):
+                return None
+            return dict(receipt)
+
         # Once the current season was fully scanned, the monotonic history
         # cursor moves to older seasons. Re-read only its lightweight calendar
         # index before doing so: a late-posted final below the old cursor must
@@ -1810,6 +1865,42 @@ class Pipeline:
             and remaining_seasons > 0
             and season >= aba_liga.FIRST_SEASON_END_YEAR
         ):
+            # Historical receipts are immutable count attestations. Do not
+            # spend a later batch's detail-event budget replaying a season
+            # that was already fully reconciled, even if an older batch left
+            # a stale partial game cursor below it. The active season remains
+            # deliberately exempt: the calendar recheck above must continue
+            # to detect finals posted late below its cursor.
+            receipt = completed_receipt(season) if season < current else None
+            if receipt is not None:
+                stored_count = stored_reconciled_final_count(season)
+                expected_terminal_count = receipt["calendar_final_count"]
+                if (
+                    stored_count + receipt["administrative_disposition_count"]
+                    == expected_terminal_count
+                ):
+                    skipped = {
+                        "season_end_year": season,
+                        "status": "receipt_complete_skipped",
+                        "calendar_final_count": expected_terminal_count,
+                        "reconciled_final_count": receipt["reconciled_final_count"],
+                        "administrative_disposition_count": receipt[
+                            "administrative_disposition_count"
+                        ],
+                        "not_applicable_rows": receipt["not_applicable_rows"],
+                    }
+                    base["receipt_complete_seasons_skipped"].append(skipped)
+                    base["seasons"].append(skipped)
+                    season -= 1
+                    after_game_no = 0
+                    administrative_disposition_count = 0
+                    # This is no source request, so do not consume the season
+                    # request budget. Use the available batch to continue at
+                    # the next incomplete historical season instead.
+                    self._record_history_cursor(
+                        "aba-liga-history", cursor_coverage(season, after_game_no)
+                    )
+                    continue
             exclusion_detail = aba_liga.HISTORY_EXCLUDED_SEASONS.get(season)
             if exclusion_detail is not None:
                 exclusion = {
