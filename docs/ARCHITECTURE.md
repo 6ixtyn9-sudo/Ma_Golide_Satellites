@@ -10,7 +10,7 @@ ESPN / EuroLeague                      ESPN BPI / Hardwood / Predixsport
                   ------ canonical adapters --
                                 |
 Optional book adapters ----------+------------ identity and UTC validation
-TheOddsAPI                       v
+The Odds API (permit-gated)      v
                     ingestion.pipeline.Pipeline
                                 |
                     +-----------+------------+
@@ -38,8 +38,11 @@ TheOddsAPI                       v
 
 No component requires a browser application, spreadsheet, external database,
 or JSON-file store. DuckDB is the live canonical state; CSV.GZ is its portable
-recovery form. Bounded Actions caches accelerate the live lane, while a
-checksummed compact GitHub Release checkpoint per league carries canonical CSV
+recovery form. The Odds API is the exception to ordinary optional-adapter
+activation: its shared free-tier key reaches only an automated lane with a
+persisted, maximum-cost permit; manual and unpermitted work reports a deferred
+named-book gap instead of querying. Bounded Actions caches accelerate the live
+lane, while a checksummed compact GitHub Release checkpoint per league carries canonical CSV
 and verbose run evidence across cold-cache recovery. Git itself retains only
 code, compact manifests, and current operator evidence—not the data warehouse.
 

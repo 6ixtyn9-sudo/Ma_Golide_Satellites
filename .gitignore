@@ -14,6 +14,9 @@ service-account*.json
 # Actions artifacts, not Git history. Compact human cards, paper-ticket receipts,
 # write-once ticket state, and performance summaries remain durable evidence.
 localdata/*
+# A compact, no-secret global reservation ledger serializes The Odds API's
+# shared free-tier budget before parallel matrix runners receive a credential.
+!localdata/theoddsapi_budget.json
 !localdata/*/
 localdata/*/*
 localdata/*/picks_*.json

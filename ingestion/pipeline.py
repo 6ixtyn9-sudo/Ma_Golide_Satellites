@@ -118,6 +118,10 @@ class PipelineConfig:
     deep_history_start_season: Optional[int] = None
     context_request_budget: int = 40
     http_request_budget: int = 1200
+    # Scheduled result/draft work must not implicitly spend a named-price
+    # provider credit. The workflow enables this only with a budget permit at
+    # the dated ticket-acquisition cutoff.
+    acquire_book_lines: bool = True
     # Used only by committed offline fixtures so replay evidence is stable.
     fixture_now_utc: Optional[str] = None
 
@@ -364,7 +368,27 @@ class Pipeline:
         games = self._discover_games()
         games = self._acquire_context(games)
         selections = self._acquire_predictions(games)
-        self._acquire_book_lines(games)
+        if self.config.acquire_book_lines:
+            self._acquire_book_lines(games)
+        else:
+            self.book_provider_status["policy"] = {
+                "enabled": False,
+                "status": "deferred_until_ticket_acquisition_window",
+                "detail": (
+                    "named-book acquisition was not authorised for this pipeline reason; "
+                    "retained pre-tip evidence remains visible but no provider request was made"
+                ),
+            }
+            self.gaps.append(
+                CoverageGap(
+                    game_id=None,
+                    required_field="named_book_price",
+                    reason=CoverageState.NOT_APPLICABLE,
+                    provider="price_budget",
+                    detail="price acquisition deferred outside the dated ticket-acquisition window",
+                    observed_utc=self._now_iso(),
+                )
+            )
 
         rows = []
         for game in games:
@@ -1029,9 +1053,18 @@ class Pipeline:
                 )
                 raw_snapshots.extend(provider_snapshots)
                 self.quota[provider] = module.last_quota() if hasattr(module, "last_quota") else {}
+                provider_gaps = module.last_gaps() if hasattr(module, "last_gaps") else []
+                self.gaps.extend(provider_gaps)
+                permit_deferred = any(
+                    gap.required_field == "provider_credit_permit" for gap in provider_gaps
+                )
                 self.book_provider_status[provider] = {
                     "enabled": True,
-                    "status": "fetched" if provider_snapshots else "fetched_no_snapshots",
+                    "status": (
+                        "budget_permit_rejected"
+                        if permit_deferred
+                        else "fetched" if provider_snapshots else "fetched_no_snapshots"
+                    ),
                     "snapshots_fetched": len(provider_snapshots),
                     "snapshots_mapped": 0,
                     "identity_rejections": 0,

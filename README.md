@@ -14,17 +14,17 @@ receipts, and audit state; DuckDB remains the canonical sports system of record.
 
 | League | Native regulation periods | Schedule / results | Independent predictions | Books |
 | --- | --- | --- | --- | --- |
-| NBA | Q1–Q4 | ESPN | ESPN BPI, Hardwood, Predixsport | ESPN scoreboard, TheOddsAPI* |
-| WNBA | Event-declared H1/H2 or Q1–Q4 | ESPN | ESPN BPI | ESPN scoreboard* |
+| NBA | Q1–Q4 | ESPN | ESPN BPI, Hardwood, Predixsport | ESPN scoreboard (relay only), The Odds API* |
+| WNBA | Event-declared H1/H2 or Q1–Q4 | ESPN | ESPN BPI | ESPN scoreboard (relay only), The Odds API* |
 | EuroLeague | Q1–Q4 | Euroleague Basketball | Predixsport | BetExplorer aggregate research only; no validated named-book ticket lane |
 | EuroLeague Women (`EUROLEAGUE_W`) | Q1–Q4 + official OT | FIBA GDAP schedule + FIBA game-page detail | No independently validated pre-tip provider yet | No validated named-book adapter; intentionally unpriced |
 | CBA | Q1–Q4 | CBA public data service | Empirical team history after reconciled-history thresholds | BetExplorer aggregate research only; no validated named-book lane |
 | ABA League (`ABA_LEAGUE`) | Q1–Q4 + official OT | Externally referenced aba-liga.com calendar + reconciled match detail; no Ma Golide first-party capture | Empirical team history only after reconciled-history thresholds | BetExplorer aggregate research only; no validated named-book lane |
-| NCAA_M | H1/H2 | ESPN men's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI* |
-| NCAA_W | Q1–Q4; event-declared legacy H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | ESPN scoreboard, TheOddsAPI* |
+| NCAA_M | H1/H2 | ESPN men's Division-I endpoint | ESPN BPI | ESPN scoreboard (relay only), The Odds API* |
+| NCAA_W | Q1–Q4; event-declared legacy H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | ESPN scoreboard (relay only), The Odds API* |
 | NBA G League (`NBA_G_LEAGUE`) | Q1–Q4 | ESPN `basketball/nba-development` scoreboard + summary | No external pre-tip provider validated; empirical-history forecasts only after reconciled-history thresholds | No validated named-book lane; intentionally unpriced |
 
-* TheOddsAPI requires `THE_ODDS_API_KEY`; without it WNBA/NCAA books are ESPN-scoreboard only (ESPN carries no NCAA_W moneyline — live 153/153 ML rows unpriced on free tier).
+* The Odds API is the only configured direct named-book lane for NBA, WNBA, NCAA_M, and NCAA_W. A scheduled run receives `THE_ODDS_API_KEY` only after a durable three-credit permit; it requests date-bounded full-game `h2h,totals,spreads` from the named DraftKings group. Without that key/permit, the system reports an explicit deferred or disabled named-book source. ESPN observations remain relayed and unresolved/unverified audit evidence, never a replacement for the direct The Odds API acquisition contract.
 
 The canonical registry also includes EuroCup, Basketball Champions League,
 Basketball Africa League, Australia NBL, Spain ACB, France LNB Pro A, Germany
@@ -43,11 +43,14 @@ treated as a validated named-book lane.
 
 NCAA men's halves are never relabelled as quarters. Modern NCAA women's
 results are four quarters, while an explicitly declared older two-half event
-remains halves. Supported NCAAW H1/H2 **book markets** remain half markets:
-grading derives H1/H2 from Q1+Q2/Q3+Q4, and does not reuse a full-game line.
-Quarter/highest-quarter products remain disabled for both NCAA leagues. Early
-WNBA two-half games likewise remain halves; current event-declared four-quarter
-games remain quarters. Every ESPN-backed league—NBA, WNBA, NCAA_M, NCAA_W, and
+remains halves. The routine The Odds API path deliberately captures full-game
+markets only: native H1/H2 and quarter payload parsing is retained for supplied
+payloads, but scheduled collection would require charged per-event calls and is
+not authorised. Settlement still derives H1/H2 from Q1+Q2/Q3+Q4 where the
+canonical result declares quarters; a full-game line is never substituted for
+either half. Quarter/highest-quarter products remain disabled for both NCAA
+leagues. Early WNBA two-half games likewise remain halves; current
+event-declared four-quarter games remain quarters. Every ESPN-backed league—NBA, WNBA, NCAA_M, NCAA_W, and
 NBA G League—requires a matching event-level ESPN league UID before discovery
 or result reconciliation; missing or contradictory identity is quarantined.
 CBA's public schedule/result source is kept separate from its empirical
@@ -126,11 +129,13 @@ two halves plus fake overtime. See
 
 CBA schedule/result acquisition uses the public CBA data service; its aggregate
 book observations remain research-only and cannot create a ticket. NCAA book
-acquisition uses the permanently-free tier of `THE_ODDS_API_KEY`; a missing key
-disables that provider rather than inventing book evidence. In GitHub Actions,
-optional permanently-free provider credentials are supplied as Actions secrets
-(`THE_ODDS_API_KEY` and `PREDIXSPORT_API_KEY`); without them the report explicitly marks the adapter as
-disabled. See [Operations: optional odds-provider credentials](docs/OPERATIONS.md#optional-odds-provider-credentials)
+acquisition uses the permanently-free tier of `THE_ODDS_API_KEY` only through
+the scheduled reservation guard: a matching permit is committed before the key
+reaches one runner, while manual rehearsal and unpermitted work make no
+named-book request. In GitHub Actions, the permanently-free provider secrets
+are `THE_ODDS_API_KEY` and `PREDIXSPORT_API_KEY`; missing credentials or permits
+are recorded as disabled/deferred source states rather than invented book
+evidence. See [Operations: optional odds-provider credentials](docs/OPERATIONS.md#optional-odds-provider-credentials)
 for league/market coverage and safe rollout steps.
 
 Direct CLI persistence requires both the CLI flag and environment opt-in:

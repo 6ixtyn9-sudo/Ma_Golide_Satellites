@@ -165,8 +165,8 @@ def _bookmaker(markets):
     return {"key": "draftkings", "title": "DraftKings", "markets": markets}
 
 
-def test_ncaa_womens_odds_request_half_book_markets(monkeypatch):
-    """Market selection is independent of modern four-quarter official results."""
+def test_ncaa_womens_routine_odds_are_full_game_only(monkeypatch):
+    """Routine price validation preserves named full-game evidence without fan-out."""
     monkeypatch.setenv("THE_ODDS_API_KEY", "fixture-key")
     event = {
         "id": "w-ncaa-1",
@@ -191,38 +191,10 @@ def test_ncaa_womens_odds_request_half_book_markets(monkeypatch):
             )
         ],
     }
-    period_event = deepcopy(event)
-    period_event["bookmakers"] = [
-        _bookmaker(
-            [
-                {
-                    "key": "totals_h1",
-                    "outcomes": [_outcome("Over", 1.9, 68.5), _outcome("Under", 1.9, 68.5)],
-                },
-                {
-                    "key": "totals_h2",
-                    "outcomes": [_outcome("Over", 1.9, 71.5), _outcome("Under", 1.9, 71.5)],
-                },
-                {
-                    "key": "spreads_h1",
-                    "outcomes": [
-                        _outcome("Home University", 1.9, -2.5),
-                        _outcome("Away College", 1.9, 2.5),
-                    ],
-                },
-                {
-                    "key": "h2h_h2",
-                    "outcomes": [_outcome("Home University", 1.8), _outcome("Away College", 2.1)],
-                },
-            ]
-        )
-    ]
     urls = []
 
     def fetch(url):
         urls.append(url)
-        if "/events/w-ncaa-1/odds" in url:
-            return deepcopy(period_event)
         return [deepcopy(event)]
 
     snapshots = theoddsapi.fetch_odds(
@@ -232,13 +204,15 @@ def test_ncaa_womens_odds_request_half_book_markets(monkeypatch):
         now_utc="2026-11-07T12:00:00Z",
         tz_name="America/New_York",
     )
+    assert len(urls) == 1
     assert "basketball_wncaab" in urls[0]
-    assert "totals_h1" in urls[1]
-    assert "totals_h2" in urls[1]
-    assert "totals_q1" not in urls[1]
-    assert {snapshot.period for snapshot in snapshots} == {Period.FULL_GAME, Period.H1, Period.H2}
+    assert "markets=h2h%2Ctotals%2Cspreads" in urls[0]
+    assert "commenceTimeFrom=2026-11-07T05%3A00%3A00Z" in urls[0]
+    assert "commenceTimeTo=2026-11-08T04%3A59%3A59Z" in urls[0]
+    assert {snapshot.period for snapshot in snapshots} == {Period.FULL_GAME}
     assert not any(
-        snapshot.period in {Period.Q1, Period.Q2, Period.Q3, Period.Q4} for snapshot in snapshots
+        snapshot.period in {Period.H1, Period.H2, Period.Q1, Period.Q2, Period.Q3, Period.Q4}
+        for snapshot in snapshots
     )
 
 

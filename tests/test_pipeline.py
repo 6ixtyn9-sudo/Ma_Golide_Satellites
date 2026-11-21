@@ -111,6 +111,22 @@ def test_pregame_dry_run_returns_canonical_prediction_and_book_gaps():
     assert attached["teams"]["11"][0]["athlete_id"] == "player-1"
 
 
+def test_pregame_defers_named_book_acquisition_outside_ticket_window():
+    store = InMemoryStore()
+    pipeline = Pipeline(
+        _config(acquire_book_lines=False), store, fetch=_nba_fetch(), allow_writes=False
+    )
+    report = pipeline.pregame()
+
+    assert report["book_provider_status"]["policy"]["status"] == (
+        "deferred_until_ticket_acquisition_window"
+    )
+    assert any(
+        gap["provider"] == "price_budget" and gap["required_field"] == "named_book_price"
+        for gap in report["gaps"]
+    )
+
+
 def test_pregame_uses_only_fresh_exact_book_evidence():
     store = InMemoryStore()
     store.upsert_book_snapshot(

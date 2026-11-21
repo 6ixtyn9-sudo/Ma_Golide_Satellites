@@ -118,9 +118,97 @@ jobs:
       - name: Hermetic regression tests
         run: python -m pytest -q
 
-  league:
+  odds-budget:
+    # A provider key is never enough to authorise a price request. This small,
+    # serialized reservation commits the maximum three-credit cost before the
+    # parallel matrix receives any Odds API credential. If it cannot publish a
+    # reservation, downstream price acquisition stays disabled.
+    name: Reserve The Odds API free-tier budget
     needs: [gate, preflight]
     if: needs.gate.outputs.run_any == 'true' && needs.preflight.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    outputs:
+      permits: ${{ steps.reserve.outputs.permits }}
+    steps:
+      - name: Check out latest budget ledger
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Reserve routine full-game permits before matrix fan-out
+        id: reserve
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          GATE_MATRIX: ${{ needs.gate.outputs.matrix }}
+          RUN_ID: ${{ github.run_id }}_${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          # Manual workflow dispatch is intentionally a credential-free,
+          # read-only rehearsal. It must never reserve or spend a quota slot.
+          if [ "$EVENT_NAME:$EVENT_ACTION" != "repository_dispatch:magolide-scheduled-tick" ]; then
+            echo 'permits={}' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          git reset --hard refs/remotes/origin/main
+          STATE_FILE=localdata/theoddsapi_budget.json
+          python scripts/odds_budget.py reserve \
+            --state-file "$STATE_FILE" \
+            --matrix "$GATE_MATRIX" \
+            --run-id "$RUN_ID" \
+            --automated-tick \
+            --output-file odds-permits.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "$STATE_FILE"
+          # The workflow-level concurrency group prevents simultaneous run
+          # writers, but a human/main update can still race this reservation.
+          # Rebase and recompute from the newest durable ledger; never expose
+          # a permit until its reservation has been pushed successfully.
+          PUBLISHED=false
+          for attempt in 1 2 3; do
+            if git diff --cached --quiet; then
+              # A duplicate/no-capacity reservation is already safe in the
+              # durable ledger. It intentionally has no new runner permits.
+              PUBLISHED=true
+              break
+            fi
+            git commit -m "chore: reserve Odds API budget ${RUN_ID}"
+            if git push origin HEAD:main; then
+              PUBLISHED=true
+              break
+            fi
+            if [ "$attempt" = 3 ]; then
+              echo "Could not publish Odds API reservation after three attempts." >&2
+              exit 1
+            fi
+            git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+            git reset --hard refs/remotes/origin/main
+            python scripts/odds_budget.py reserve \
+              --state-file "$STATE_FILE" \
+              --matrix "$GATE_MATRIX" \
+              --run-id "$RUN_ID" \
+              --automated-tick \
+              --output-file odds-permits.json
+            git add -- "$STATE_FILE"
+          done
+          if [ "$PUBLISHED" != true ]; then
+            echo "Odds API reservation was not durably published." >&2
+            exit 1
+          fi
+          echo "permits=$(cat odds-permits.json)" >> "$GITHUB_OUTPUT"
+
+  league:
+    needs: [gate, preflight, odds-budget]
+    if: >-
+      needs.gate.outputs.run_any == 'true' &&
+      needs.preflight.result == 'success' &&
+      needs.odds-budget.result == 'success'
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -137,10 +225,9 @@ jobs:
       STATE_KEY: ${{ matrix.state_key }}
       LOCALDATA: localdata/${{ matrix.state_key }}
       MAGOLIDE_WAREHOUSE: localdata/${{ matrix.state_key }}/warehouse.duckdb
-      # Optional credentials. Empty GitHub secrets stay empty and the adapter
-      # records a disabled status in the pregame report; values are never
-      # printed by the workflow or stored in localdata.
-      THE_ODDS_API_KEY: ${{ secrets.THE_ODDS_API_KEY }}
+      # Predixsport is a prediction-only source. The Odds API key is withheld
+      # here and injected only by the permit step below for an automated,
+      # budget-reserved ticket-acquisition window.
       PREDIXSPORT_API_KEY: ${{ secrets.PREDIXSPORT_API_KEY }}
       ALLOW_MAGOLIDE_WRITES: "true"
       ALLOW_NOTIFICATION_WRITES: "false"
@@ -305,6 +392,41 @@ jobs:
             --state-key "$STATE_KEY" \
             --repository "$GITHUB_REPOSITORY"
 
+      - name: Authorise a cost-bounded Odds API request when reserved
+        if: steps.capability.outputs.available == 'true'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          LEAGUE: ${{ matrix.league }}
+          TARGET_DATE: ${{ matrix.target_date }}
+          PERMITS: ${{ needs.odds-budget.outputs.permits }}
+          ODDS_API_SECRET: ${{ secrets.THE_ODDS_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME:$EVENT_ACTION" != "repository_dispatch:magolide-scheduled-tick" ]; then
+            echo "No Odds API credential on manual rehearsal."
+            exit 0
+          fi
+          PERMIT=$(python - <<'PY'
+          import json
+          import os
+
+          permits = json.loads(os.environ.get("PERMITS") or "{}")
+          key = f"{os.environ['LEAGUE']}|{os.environ['TARGET_DATE']}"
+          permit = permits.get(key)
+          print(json.dumps(permit, sort_keys=True, separators=(",", ":")) if permit else "")
+          PY
+          )
+          if [ -z "$PERMIT" ] || [ -z "$ODDS_API_SECRET" ]; then
+            echo "No reserved Odds API permit or configured credential for this lane."
+            exit 0
+          fi
+          # GITHUB_ENV is not printed. The adapter validates this non-secret
+          # permit again before making the documented paid request.
+          printf 'THE_ODDS_API_KEY=%s\n' "$ODDS_API_SECRET" >> "$GITHUB_ENV"
+          printf 'THE_ODDS_API_PERMIT=%s\n' "$PERMIT" >> "$GITHUB_ENV"
+          echo 'THE_ODDS_API_REQUIRE_PERMIT=true' >> "$GITHUB_ENV"
+
       - name: Execute every available stage automatically
         if: steps.capability.outputs.available == 'true'
         env:
@@ -322,6 +444,12 @@ jobs:
             --localdata "$LOCALDATA"
             --run-id "${GITHUB_RUN_ID}_${LEAGUE,,}_${GITHUB_RUN_ATTEMPT}"
           )
+          # Result reconciliation, draft rendering, uncertainty, and manual
+          # rehearsal reuse retained evidence. They never invoke a paid book
+          # provider without the reservation job's explicit permit.
+          if [ -z "${THE_ODDS_API_PERMIT:-}" ]; then
+            ARGS+=(--skip-book-acquisition)
+          fi
 
           # Only the strictly named external dispatch may persist canonical
           # state. Manual dispatch stays a live, all-league read-only rehearsal.
@@ -462,7 +590,7 @@ jobs:
 
   publish-localdata:
     name: Publish localdata to repository
-    needs: [gate, preflight, league]
+    needs: [gate, preflight, odds-budget, league]
     # Only the strictly named external tick may make live operator evidence
     # durable. Manual dispatch uploads artifacts but cannot publish. The matrix
     # result is deliberately not a global publication veto: only successful-lane
@@ -492,6 +620,16 @@ jobs:
         with:
           pattern: MaGolide-*-${{ github.run_id }}-${{ github.run_attempt }}
           path: ${{ runner.temp }}/magolide-artifacts
+
+      - name: Reconcile authoritative Odds API quota headers
+        # Reservations are intentionally never released on a failed worker.
+        # Completed pregame reports can only tighten the next run's remaining
+        # quota view using provider-returned numeric headers.
+        run: |
+          set -euo pipefail
+          python scripts/odds_budget.py reconcile \
+            --state-file localdata/theoddsapi_budget.json \
+            --artifacts "${{ runner.temp }}/magolide-artifacts"
 
       - name: Merge derived league reports without deleting history
         run: |

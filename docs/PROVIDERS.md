@@ -172,7 +172,17 @@ prices remain missing.
 | --- | --- | --- | --- |
 | ESPN scoreboard | Moneyline, totals, spreads when explicitly offered | Full game | NBA, WNBA, NCAA_M, NCAA_W, NBA G League; named-book observations are independently timestamped but relayed by ESPN, so registry policy preserves `unresolved` / `unverified` audit metadata. An exact current named-book quote can enter the paper lane only after the ordinary model, calibration, and ROI gates pass. NBA G League remains intentionally unpriced because it has no configured book acquisition lane. |
 | BetExplorer | Representative average two-way moneyline prices | Full game | EuroLeague and CBA are `LIVE_VERIFIED` from captured 2026-11-16 pages. ABA League uses the same route as a probationary aggregate research observation, separate from its `aba_liga` schedule/result adapter, whose route is externally referenced rather than Ma Golide live-verified. Every active BetExplorer quote is `aggregate_consensus` with `unresolved` permission / `probation` validation, never a named-book ticket quote. No BetExplorer quote can enter tickets, receipts, banks, ROI/P&L, or real-money execution. Pre-tip rows only; no historical archive or per-book prices in this adapter. |
-| TheOddsAPI | h2h, totals, spreads; half markets use native H1/H2 | NBA: full game, Q1–Q4, H1 h2h; NCAA_M/NCAA_W: full game and H1/H2 markets; WNBA: full game and provider-offered quarter markets | NBA, WNBA, NCAA_M, NCAA_W; `THE_ODDS_API_KEY`. Australia NBL is a documented but `probation` mapping pending credentialed region/bookmaker coverage. |
+| The Odds API | `h2h`, totals, spreads | Routine acquisition: full game only | NBA, WNBA, NCAA_M, NCAA_W; a scheduled runner receives `THE_ODDS_API_KEY` only with a matching three-credit permit for date-bounded named-DraftKings collection. Australia NBL remains a documented but `probation` mapping and receives no automated permit pending credentialed region/bookmaker coverage. |
+
+The Odds API adapter remains `DOCUMENTATION_ONLY` until a bounded authenticated
+smoke verifies account, region, named bookmaker, event identity, pre-tip
+timestamp, and usable quotes. The provider's documented current-odds cost is
+requested markets times effective bookmaker-region groups; the scheduler
+therefore reserves the maximum three-credit cost before it exposes a key. Its
+shared 500-credit allowance is guarded by a 360-credit local reservation cap,
+a 140-credit provider-reported reserve, and a 12-credit SAST daily cap. See
+[Operations](OPERATIONS.md#the-odds-api-free-tier-reservation-guard) for the
+permit and reconciliation contract.
 
 Important restrictions:
 
@@ -180,13 +190,16 @@ Important restrictions:
   values without their own observation timestamps remain context and cannot be
   used as closing-line-value evidence; betting links are discarded. The
   pipeline stamps these relayed observations from the central league registry,
-  not from adapter defaults, and they remain ticket-ineligible until the
-  registry records cleared reuse permission and validated operation.
-- TheOddsAPI quarter/half markets come from the per-event endpoint. H1 is not
-  a Q1 book and Q1 is never relabelled as H1. NCAA requests use the configured
-  H1/H2 book markets and do not request quarter markets. For NCAAW, official
-  quarter results derive the corresponding H1/H2 scores for settlement; a
-  full-game line is never substituted for either half.
+  not from adapter defaults, so their unresolved/unverified audit metadata is
+  retained rather than silently promoted to direct-provider evidence.
+- The Odds API routine uses one date-bounded list request for full-game
+  `h2h,totals,spreads` and the named DraftKings bookmaker group. Native H1/H2
+  and quarter markets require the provider's charged per-event endpoint, so
+  scheduled free-tier work never fans out into per-event calls. Their parsers
+  are retained only for separately supplied payloads; no full-game line is
+  relabelled or substituted for a half/quarter market. For NCAAW, official
+  quarter results may still derive the corresponding H1/H2 scores for
+  settlement when a valid native half ticket exists.
 - BetExplorer's fixture table exposes only a representative average moneyline
   pair in the observed HTML. This adapter skips rows with missing quotes or a
   tip time already passed; it does not retain post-tip, opening/closing, or
@@ -200,7 +213,7 @@ Important restrictions:
   endpoint/parser observations only, not rights clearance.
 - No current book adapter supplies highest-quarter prices. Highest-quarter
   forecasts therefore remain research-only.
-- Full-game spread observations may be stored from TheOddsAPI, but the
+- Full-game spread observations may be stored from The Odds API, but the
   replacement forecast contract currently predicts quarter spreads, not a
   full-game spread pick.
 
