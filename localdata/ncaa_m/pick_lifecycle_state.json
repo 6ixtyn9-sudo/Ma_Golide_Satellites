@@ -9,7 +9,7 @@
       "logical_picks": 233
     },
     "2026-11-20": {
-      "frozen_fixtures": 58,
+      "frozen_fixtures": 59,
       "logical_picks": 462
     }
   },
@@ -16260,6 +16260,610 @@
           }
         ],
         "scheduled_utc": "2026-11-21T01:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
+      "401911252": {
+        "decision_cutoff_utc": "2026-11-21T03:00:00Z",
+        "frozen_at": "2026-11-21T03:14:01Z",
+        "game_id": "401911252",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Saint Louis Billikens",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.546446,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 91,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "1df7b8aee29866d517598f82ac505aee4aa1adeca8535267a186c15f1c6a86b2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "42b50e1805104b26ebeb",
+            "game_id": "401911252",
+            "grade_status": "pending",
+            "home": "Saint Mary's Gaels",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "42b50e1805104b26ebeb",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.68,
+            "role": null,
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Saint Louis Billikens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401911252",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T03:08:49Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.472742,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 54,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "051233e17d147805ca35326faf09b152d7ec92fce9cb92d59fde049346c1f492",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "168e8828b163e9aac3f1",
+            "game_id": "401911252",
+            "grade_status": "pending",
+            "home": "Saint Mary's Gaels",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "168e8828b163e9aac3f1",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-21T03:08:51Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.5654,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Saint Louis Billikens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401911252",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T03:08:49Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.571405,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 91,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "4b0eab3e808d70948655f232ad6eee999efe0d9047c31e2af2999ddbedf8d776",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "92e490011b3badc7f801",
+            "game_id": "401911252",
+            "grade_status": "pending",
+            "home": "Saint Mary's Gaels",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.011752,
+              "historical_pick_count": 2,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 1,
+              "market": "moneyline",
+              "observed_roi": -0.02381,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.003171,
+              "wins": 1
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "92e490011b3badc7f801",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.72,
+            "role": null,
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Saint Louis Billikens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401911252",
+              "line": -1.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T03:08:49Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.847457627118644,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.579545,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 14,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "12e582be34048163e6a4207af3151cdf9fa57670e8e3a740a78a65f9ebdbeaf2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "75d30e211cd6272d57a3",
+            "game_id": "401911252",
+            "grade_status": "pending",
+            "home": "Saint Mary's Gaels",
+            "league": "NCAA_M",
+            "line": -1.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.132678,
+              "historical_pick_count": 71,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 29,
+              "market": "spread",
+              "observed_roi": 0.122519,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.135765,
+              "wins": 42
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "75d30e211cd6272d57a3",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Saint Louis Billikens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401911252",
+              "line": -2.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T13:08:26Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.562162,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "98246e6b12992bb65b7d53a12d90bf1d1eeee0cf52d2c2d9c77251f6d8c05838",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "8bd2ed71f7e1b11e3c53",
+            "game_id": "401911252",
+            "grade_status": "pending",
+            "home": "Saint Mary's Gaels",
+            "league": "NCAA_M",
+            "line": -2.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.223646,
+              "historical_pick_count": 52,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 19,
+              "market": "spread",
+              "observed_roi": 0.203799,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.229588,
+              "wins": 33
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "8bd2ed71f7e1b11e3c53",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Saint Louis Billikens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401911252",
+              "line": 160.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T15:08:41Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.569211,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "ba653b2de15cf6fbf011edc61bbbd4481e9bd0be8d5cd40e32c19dc602fb905b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "073a9b78cc93a3f42935",
+            "game_id": "401911252",
+            "grade_status": "pending",
+            "home": "Saint Mary's Gaels",
+            "league": "NCAA_M",
+            "line": 160.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.311687,
+              "historical_pick_count": 95,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 30,
+              "market": "total",
+              "observed_roi": 0.304721,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.312231,
+              "wins": 65
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "073a9b78cc93a3f42935",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Saint Louis Billikens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401911252",
+              "line": 162.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T03:08:49Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.502045,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 14,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "adb88434d71a6eb4b014aa29e316716ee7fa5c0a27fec02a00badba5243294c6",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "61fb9ef6525223f95fe9",
+            "game_id": "401911252",
+            "grade_status": "pending",
+            "home": "Saint Mary's Gaels",
+            "league": "NCAA_M",
+            "line": 162.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.117866,
+              "historical_pick_count": 120,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 49,
+              "market": "total",
+              "observed_roi": 0.128395,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.118755,
+              "wins": 71
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "61fb9ef6525223f95fe9",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Saint Louis Billikens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401911252",
+              "line": 159.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T14:38:15Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.559474,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 8,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "a45f6cb7595974b23a29039ac63a2709214ad58c6e2143f8952e3e284c29bf23",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "9f8f72d9e8d02c507c49",
+            "game_id": "401911252",
+            "grade_status": "pending",
+            "home": "Saint Mary's Gaels",
+            "league": "NCAA_M",
+            "line": 159.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.311688,
+              "historical_pick_count": 95,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 30,
+              "market": "total",
+              "observed_roi": 0.304721,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.312231,
+              "wins": 65
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "9f8f72d9e8d02c507c49",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Saint Louis Billikens",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401911252",
+              "line": 161.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T00:38:38Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.484103,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 9,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "10ffb13518fe25c3c516ac1a8a5832890cbfc1e2948800ed636e5144465ad09e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "c8ab2ba92d39f976c61c",
+            "game_id": "401911252",
+            "grade_status": "pending",
+            "home": "Saint Mary's Gaels",
+            "league": "NCAA_M",
+            "line": 161.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "c8ab2ba92d39f976c61c",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T04:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
       },
@@ -40436,27 +41040,11 @@
   "league": "NCAA_M",
   "pending_frozen_games": [
     [
-      "401924844",
-      "2026-11-21T00:00:00Z"
-    ],
-    [
       "401906784",
       "2026-11-21T01:00:00Z"
     ],
     [
-      "401909799",
-      "2026-11-21T01:00:00Z"
-    ],
-    [
       "401916125",
-      "2026-11-21T01:00:00Z"
-    ],
-    [
-      "401916290",
-      "2026-11-21T01:00:00Z"
-    ],
-    [
-      "401919784",
       "2026-11-21T01:00:00Z"
     ],
     [
@@ -40465,14 +41053,6 @@
     ],
     [
       "401921757",
-      "2026-11-21T01:00:00Z"
-    ],
-    [
-      "401926755",
-      "2026-11-21T01:00:00Z"
-    ],
-    [
-      "401935675",
       "2026-11-21T01:00:00Z"
     ],
     [
@@ -40498,6 +41078,10 @@
     [
       "401925664",
       "2026-11-21T03:00:00Z"
+    ],
+    [
+      "401911252",
+      "2026-11-21T04:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"

@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 6,
+  "awaiting_game_legs": 4,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -362,17 +362,17 @@
       "wins": 1
     },
     {
-      "awaiting_game_legs": 6,
-      "bank_units": 104.33161741750128,
+      "awaiting_game_legs": 4,
+      "bank_units": 103.33161741750128,
       "date": "2026-11-20",
       "decision_id": "44692592280_ncaa_m_1_attempt_1",
       "frozen_at": "2026-11-20T07:11:31Z",
       "league": "NCAA_M",
-      "losses": 3,
-      "pending_accas": 2,
-      "pending_positions": 2,
+      "losses": 4,
+      "pending_accas": 1,
+      "pending_positions": 1,
       "pending_singles": 0,
-      "pending_units": 2.0,
+      "pending_units": 1.0,
       "positions": [
         {
           "awaiting_game_legs": 1,
@@ -452,17 +452,17 @@
           "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 1.6502,
           "effective_decimal_odds": 1.650209780092593,
           "estimated_joint_win_probability": 0.48843116,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "loss",
             "win",
             "win"
           ],
@@ -473,12 +473,12 @@
               "book_provider": "espn",
               "forecast_id": "f7b212a780f18da63f9b",
               "game_id": "401909799",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Kansas State Wildcats",
               "market": "moneyline",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "f7b212a780f18da63f9b",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-21T01:00:00Z",
               "selected_decimal_price": 1.0416666666666667,
               "selection": "home"
@@ -517,6 +517,7 @@
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 2,
@@ -526,7 +527,7 @@
           "stake_units": 1.0,
           "ticket_id": "b66f4bebf317b4e47481",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
           "awaiting_game_legs": 1,
@@ -689,7 +690,7 @@
           "unresolved_legs": 2
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -699,7 +700,7 @@
           "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "loss",
             "win",
             "loss"
           ],
@@ -710,13 +711,13 @@
               "book_provider": "espn",
               "forecast_id": "4381ceda9114f9cbda8f",
               "game_id": "401916290",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Indiana Hoosiers",
               "line": -2.5,
               "market": "spread",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "4381ceda9114f9cbda8f",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-21T01:00:00Z",
               "selected_decimal_price": 1.9523809523809523,
               "selection": "away"
@@ -767,44 +768,44 @@
           "stake_units": 1.0,
           "ticket_id": "663aeda7711eec92c6a8",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         }
       ],
-      "profit_units": -3.0,
+      "profit_units": -4.0,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-20_decision.json",
       "result_unresolvable_legs": 0,
       "returned_units": 0.0,
-      "settled_accas": 3,
-      "settled_positions": 3,
+      "settled_accas": 4,
+      "settled_positions": 4,
       "settled_singles": 0,
-      "staked_units": 3.0,
-      "unresolved_result_legs": 6,
+      "staked_units": 4.0,
+      "unresolved_result_legs": 4,
       "wins": 0
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.42857142857142855,
+  "hit_rate": 0.375,
   "league": "NCAA_M",
-  "losses": 4,
-  "paper_bank_units": 104.33161741750126,
-  "paper_committed_units": 2.0,
+  "losses": 5,
+  "paper_bank_units": 103.33161741750126,
+  "paper_committed_units": 1.0,
   "paper_free_units": 102.33161741750126,
   "paper_only": true,
-  "pending_accas": 2,
-  "pending_positions": 2,
+  "pending_accas": 1,
+  "pending_positions": 1,
   "pending_singles": 0,
-  "profit_units": 4.331617417501268,
+  "profit_units": 3.331617417501268,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": 0.6188024882144668,
+  "roi": 0.4164521771876585,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.1602162607348421,
-  "settled_accas": 6,
-  "settled_positions": 7,
+  "selected_leg_brier_score": 0.19674511282261906,
+  "settled_accas": 7,
+  "settled_positions": 8,
   "settled_singles": 1,
-  "settled_stake_units": 7.0,
+  "settled_stake_units": 8.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 6,
+  "unresolved_result_legs": 4,
   "wins": 3
 }

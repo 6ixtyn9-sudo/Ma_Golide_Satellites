@@ -17,7 +17,7 @@
       "logical_picks": 191
     },
     "2026-11-20": {
-      "frozen_fixtures": 40,
+      "frozen_fixtures": 41,
       "logical_picks": 146
     }
   },
@@ -11974,6 +11974,478 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
       },
+      "401918467": {
+        "decision_cutoff_utc": "2026-11-21T03:00:00Z",
+        "frozen_at": "2026-11-21T03:12:55Z",
+        "game_id": "401918467",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Baylor Bears",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.59819,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 75,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "6e8fca935485c38253b252ecaf7a79e0f8d80eed4c4b1515427983dcd31ea2bd",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "732a3406249226b8fd05",
+            "game_id": "401918467",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "732a3406249226b8fd05",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.67,
+            "role": null,
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Baylor Bears",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401918467",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T03:08:51Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.1176470588235294,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.626476,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 75,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "dbe1b0b3be699187692e915ae0bb9ad02780a9d6a5d56e99b2f3d14c48fccf77",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b93f5274a2b213f99e53",
+            "game_id": "401918467",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "b93f5274a2b213f99e53",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.65,
+            "role": null,
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Baylor Bears",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401918467",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T03:08:51Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.1176470588235294,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.68781,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 63,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "a8743c6838980da45e4b5aa9340072a8801877253b469e09e55898285e591ffe",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e0e942292773a69ce979",
+            "game_id": "401918467",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.170811,
+              "historical_pick_count": 1,
+              "individual_odds_band": "1.00-<1.20",
+              "losses": 1,
+              "market": "moneyline",
+              "observed_roi": -1.0,
+              "period": "full_game",
+              "probability_band": "0.60-<0.70",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -1.0,
+              "wins": 0
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "e0e942292773a69ce979",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-21T03:08:52Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.7396,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Baylor Bears",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401918467",
+              "line": -13.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T03:08:51Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.578857,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 5,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "9add26fb3d9d1ef5971dec9ae6a4ee7233a815d2d69fede09bbb64bb1fc66e05",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0af70b034d044ea55569",
+            "game_id": "401918467",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_W",
+            "line": -13.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.022657,
+              "historical_pick_count": 16,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 7,
+              "market": "spread",
+              "observed_roi": 0.072849,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.069361,
+              "wins": 9
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "0af70b034d044ea55569",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.63,
+            "role": null,
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Baylor Bears",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401918467",
+              "line": -12.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T00:38:41Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.548286,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 5,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "4de127b617f334834167546f5ef52d10f7d784f80649d9f2b3a94f0062af13e4",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5d732c118c329982c309",
+            "game_id": "401918467",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_W",
+            "line": -12.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.085376,
+              "historical_pick_count": 15,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 6,
+              "market": "spread",
+              "observed_roi": 0.144372,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.144115,
+              "wins": 9
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "5d732c118c329982c309",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.6,
+            "role": null,
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Baylor Bears",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401918467",
+              "line": 148.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T20:08:37Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.597714,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 5,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "f1537a86bba3e26afc5af32801e3c04e21e3886b8e7a64c22494768f7c51aaac",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "479122ae8402aca21a18",
+            "game_id": "401918467",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_W",
+            "line": 148.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.153714,
+              "historical_pick_count": 20,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 11,
+              "market": "total",
+              "observed_roi": -0.147755,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.155094,
+              "wins": 9
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "479122ae8402aca21a18",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Baylor Bears",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401918467",
+              "line": 150.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T03:08:51Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.597714,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 5,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "a6c3feb0fdfb50bfc503ab3c1c776d3c1ae8c0a1604c1effc9f185f6c9b403f6",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "cc202e05b33b07e5d7c7",
+            "game_id": "401918467",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_W",
+            "line": 150.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.196313,
+              "historical_pick_count": 21,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 12,
+              "market": "total",
+              "observed_roi": -0.188338,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.199518,
+              "wins": 9
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "cc202e05b33b07e5d7c7",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-21T04:00:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T04:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
       "401918511": {
         "decision_cutoff_utc": "2026-11-20T20:00:00Z",
         "frozen_at": "2026-11-20T20:13:17Z",
@@ -16453,22 +16925,6 @@
   "league": "NCAA_W",
   "pending_frozen_games": [
     [
-      "401918774",
-      "2026-11-21T01:00:00Z"
-    ],
-    [
-      "401920406",
-      "2026-11-21T01:00:00Z"
-    ],
-    [
-      "401923012",
-      "2026-11-21T01:00:00Z"
-    ],
-    [
-      "401913860",
-      "2026-11-21T01:30:00Z"
-    ],
-    [
       "401916085",
       "2026-11-21T01:30:00Z"
     ],
@@ -16491,6 +16947,10 @@
     [
       "401917712",
       "2026-11-21T03:00:00Z"
+    ],
+    [
+      "401918467",
+      "2026-11-21T04:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
