@@ -645,12 +645,16 @@ def _live_match_teams(root: _Node, season: int, game_no: int) -> Optional[tuple[
 
 
 def _match_teams(root: _Node, season: int, game_no: int) -> tuple[str, str, str, str]:
-    live_teams = _live_match_teams(root, season, game_no)
-    if live_teams is not None:
-        return live_teams
-
+    # A settled detail page has the original explicit clubs/result header. It
+    # remains authoritative when present: completed pages can retain unrelated
+    # live-fragment navigation in their source, whose labels must not override
+    # that header. The live-specific contract below is solely a fallback for
+    # the state transition that removes this header altogether.
     block = root.find(tag="div", ident="match_clubs_and_results_info_table")
     if block is None:
+        live_teams = _live_match_teams(root, season, game_no)
+        if live_teams is not None:
+            return live_teams
         raise IdentityError(f"{PROVIDER}: match {game_no} has no clubs/result header")
     expected = (season_key(season), LEAGUE_ID)
     teams: List[tuple[str, str]] = []
