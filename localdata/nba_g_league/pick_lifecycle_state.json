@@ -5,7 +5,7 @@
       "logical_picks": 12
     },
     "2026-11-20": {
-      "frozen_fixtures": 4,
+      "frozen_fixtures": 6,
       "logical_picks": 27
     }
   },
@@ -1092,6 +1092,276 @@
         "scheduled_utc": "2026-11-21T00:30:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
+      },
+      "401914579": {
+        "decision_cutoff_utc": "2026-11-21T00:00:00Z",
+        "frozen_at": "2026-11-21T00:08:05Z",
+        "game_id": "401914579",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Windy City Bulls",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.392857,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "9c6094b4d55099ef037b52090fc4a75dfafe3e325b107d808e6683aa2b5f11f5",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "3e549aeab3dac3203833",
+            "game_id": "401914579",
+            "grade_status": "pending",
+            "home": "Sioux Falls Skyforce",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "3e549aeab3dac3203833",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.392857,
+            "role": null,
+            "scheduled_utc": "2026-11-21T01:00:00Z",
+            "selection": "Q4"
+          },
+          {
+            "away": "Windy City Bulls",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.589286,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "ef53fd67efc61bfde9ab4bad2d9e1f8e09af520ee593ba4348e3a28b713d8029",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "ae1a7c37a28b42c80f68",
+            "game_id": "401914579",
+            "grade_status": "pending",
+            "home": "Sioux Falls Skyforce",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "ae1a7c37a28b42c80f68",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.589286,
+            "role": null,
+            "scheduled_utc": "2026-11-21T01:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Windy City Bulls",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.589286,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "96a667bac2ebe9a8aaf4b825a2d2e040944dfe7048278ba019f3f402f74cca92",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5e2af7ee55ca4c38f23e",
+            "game_id": "401914579",
+            "grade_status": "pending",
+            "home": "Sioux Falls Skyforce",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "5e2af7ee55ca4c38f23e",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.589286,
+            "role": null,
+            "scheduled_utc": "2026-11-21T01:00:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T01:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
+      "401914580": {
+        "decision_cutoff_utc": "2026-11-21T00:00:00Z",
+        "frozen_at": "2026-11-21T00:08:05Z",
+        "game_id": "401914580",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Santa Cruz Warriors",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.392857,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "e0314ce46e60182b05d2fd2632cf68ab56368139d92b4d52d25300ca37b6dd24",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "54bdfe88c64ddee28b41",
+            "game_id": "401914580",
+            "grade_status": "pending",
+            "home": "Rip City Remix",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "54bdfe88c64ddee28b41",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.392857,
+            "role": null,
+            "scheduled_utc": "2026-11-21T01:00:00Z",
+            "selection": "Q4"
+          },
+          {
+            "away": "Santa Cruz Warriors",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.589286,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "f43303cd810ff951dc113d858e3e8fba7e0140b4c2af4d83bc927b9e29412b1d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0813a14aebe347b261ef",
+            "game_id": "401914580",
+            "grade_status": "pending",
+            "home": "Rip City Remix",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "0813a14aebe347b261ef",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.589286,
+            "role": null,
+            "scheduled_utc": "2026-11-21T01:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Santa Cruz Warriors",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.625,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "fe13bb00bacea6830aaf20a259a1d18fff537299ed96e643d48a08ec9568ecf7",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "f705b1a12244f1b6451f",
+            "game_id": "401914580",
+            "grade_status": "pending",
+            "home": "Rip City Remix",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "f705b1a12244f1b6451f",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.625,
+            "role": null,
+            "scheduled_utc": "2026-11-21T01:00:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T01:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
       }
     }
   },
@@ -1112,6 +1382,14 @@
     [
       "401914578",
       "2026-11-21T00:30:00Z"
+    ],
+    [
+      "401914579",
+      "2026-11-21T01:00:00Z"
+    ],
+    [
+      "401914580",
+      "2026-11-21T01:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
