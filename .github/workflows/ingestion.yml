@@ -6,9 +6,9 @@
 #   support them; an absent secret leaves that adapter explicitly disabled.
 # - Named external-dispatch runs persist canonical state; manual dispatch
 #   remains a live read-only rehearsal so it cannot advance state.
-# Immutable decisions, compact ticket state, settlement summaries, dated text
-# lifecycle markers, and inline per-fixture snapshots in lifecycle state may be
-# committed to localdata/<league>. Full canonical CSV and verbose evidence live
+# Immutable decisions, compact ticket state, settlement summaries, readable dated
+# pick cards, and inline per-fixture snapshots in lifecycle state may be committed
+# to localdata/<league>. Full canonical CSV and structured/expanded evidence live
 # in checksummed GitHub Release checkpoint assets, not Git history.
 # Structured dated pick JSON, detailed lifecycle renders, raw current-scan
 # forecast JSON, and expanded audits remain cache/artifact-only.
@@ -225,11 +225,6 @@ jobs:
                   # One count-only ABA historical receipt summary is Git
                   # durable. It contains no raw source bodies or tickets.
                   r"history_receipts\.json",
-                  # The EuroLeague consensus board has an immutable no-stake
-                  # roster plus a mutable official-result card. Recover both
-                  # from Git before a cache can propose a replacement roster.
-                  rf"euroleague_consensus_paper_{date}\.txt",
-                  rf"euroleague_consensus_paper_{date}_roster\.json",
               )
           )
           if state_dir.is_dir():
@@ -443,8 +438,6 @@ jobs:
             ${{ env.LOCALDATA }}/history_receipts.json
             ${{ env.LOCALDATA }}/auto_tickets_*.json
             ${{ env.LOCALDATA }}/auto_tickets_*.txt
-            ${{ env.LOCALDATA }}/euroleague_consensus_paper_*.json
-            ${{ env.LOCALDATA }}/euroleague_consensus_paper_*.txt
             ${{ env.LOCALDATA }}/csv/*.csv.gz
           if-no-files-found: ignore
           retention-days: 14
@@ -466,10 +459,6 @@ jobs:
             ${{ env.LOCALDATA }}/picks_*.json
             ${{ env.LOCALDATA }}/picks_*.txt
             ${{ env.LOCALDATA }}/pick_lifecycle_state.json
-            # This is a no-stake, immutable research roster. It is safe to
-            # recover after a later matrix-stage failure; mutable board cards
-            # still wait for a successful complete lane.
-            ${{ env.LOCALDATA }}/euroleague_consensus_paper_*_roster.json
           if-no-files-found: ignore
           retention-days: 14
 
@@ -551,9 +540,9 @@ jobs:
             --repo "$GITHUB_REPOSITORY" --clobber
           echo "available=true" >> "$GITHUB_OUTPUT"
 
-      - name: Compact historical Git state after checkpoint upload
-        # Existing detailed cards are retained in the verified release asset
-        # before this idempotent migration reduces the Git working tree.
+      - name: Compact mutable Git state after checkpoint upload
+        # Detailed cards remain Git-visible; this idempotent migration only
+        # compacts mutable state summaries after verified checkpoint upload.
         if: steps.release-checkpoints.outputs.available == 'true'
         run: |
           set -euo pipefail
