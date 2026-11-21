@@ -38,6 +38,9 @@ from ingestion.league_registry import SPECS  # noqa: E402
 # second hand-maintained allow-list forgot its state key.
 STATE_KEYS = frozenset(spec.state_key for spec in SPECS)
 DATE = r"\d{4}-\d{2}-\d{2}"
+# The temporary 2026-11-20/21 compact marker is opaque presentation debt. A
+# stale Actions artifact must never republish it over a readable Git card.
+COMPACT_PICK_CARD_MARKER = b"Ma Golide compact pick lifecycle marker\n"
 ABA_HISTORY_RECEIPTS_FILE = "history_receipts.json"
 ABA_HISTORY_RECEIPTS_SCHEMA = "magolide.aba_history_receipts"
 _ABA_HISTORY_RECEIPT_FIELDS = frozenset(
@@ -110,6 +113,14 @@ MAX_TOTAL_BYTES = 100 * 1024 * 1024
 def allowed_operator_file(name: str) -> bool:
     """Return whether a root-level filename is safe to publish to Git."""
     return any(pattern.fullmatch(name) for pattern in ALLOWED_NAMES)
+
+
+def is_compact_pick_card_marker(raw: bytes, *, name: str) -> bool:
+    """Return whether an artifact carries the retired opaque pick-card marker."""
+
+    return bool(re.fullmatch(rf"picks_{DATE}\.txt", name)) and raw.startswith(
+        COMPACT_PICK_CARD_MARKER
+    )
 
 
 def allowed_lifecycle_recovery_file(name: str) -> bool:
@@ -770,6 +781,7 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
     no_bet_receipts_skipped = []
     skipped_states: list[str] = []
     recovery_files_skipped = []
+    compact_pick_markers_skipped = []
     settled_card_regressions_skipped = []
     total_bytes = 0
     seen_destinations = set()
@@ -822,6 +834,12 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                 raise ValueError(f"duplicate recovered operator destination: {relative}")
             seen_destinations.add(relative)
             source_raw = source.read_bytes()
+            # A marker contains no rows—only a digest/pointer—so it cannot be
+            # a legitimate update to a readable report. This guard also blocks
+            # an in-flight pre-fix worker from undoing a Git-card restoration.
+            if is_compact_pick_card_marker(source_raw, name=source.name):
+                compact_pick_markers_skipped.append(relative)
+                continue
             raw = _git_durable_bytes_from_raw(source_raw, name=source.name, source=source)
             if source.name == "pick_lifecycle_state.json":
                 raw = _merge_pick_lifecycle_state(destination, raw, relative=relative)
@@ -871,6 +889,7 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
         "no_bet_receipts_skipped": no_bet_receipts_skipped,
         "skipped_states": sorted(skipped_states),
         "recovery_files_skipped": sorted(recovery_files_skipped),
+        "compact_pick_markers_skipped": sorted(compact_pick_markers_skipped),
         "settled_card_regressions_skipped": sorted(settled_card_regressions_skipped),
         "copied_count": len(copied),
         "unchanged_count": len(unchanged),

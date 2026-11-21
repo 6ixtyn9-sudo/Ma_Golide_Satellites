@@ -78,6 +78,9 @@ registered `picks_YYYY-MM-DD.txt` marker after validation:
   `--require-complete` when a migration must fail rather than publish a partial
   result.
 
+The normal publisher also rejects an opaque marker from a stale Action artifact;
+it cannot overwrite a readable Git card after this migration.
+
 For example, an operator first downloads a retained release asset with its
 original `magolide-state-<state>.tar.gz` name, then runs:
 

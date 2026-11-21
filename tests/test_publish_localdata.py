@@ -95,6 +95,33 @@ def test_merge_publishes_only_operator_files_and_retains_history(tmp_path):
     assert not (repo / "localdata" / "nba" / "picks_unapproved.json").exists()
 
 
+def test_publisher_never_republishes_a_stale_compact_pick_marker(tmp_path):
+    day = "2026-11-18"
+    artifact_file(
+        tmp_path,
+        "stale-nba-artifact",
+        "nba",
+        f"picks_{day}.txt",
+        (
+            "Ma Golide compact pick lifecycle marker\n"
+            "league_state=nba\n"
+            f"target_date={day}\n"
+            "full_forecast_board=Actions artifact and GitHub Release archive\n"
+            "detailed_card_sha256=" + "a" * 64 + "\n"
+        ).encode(),
+    )
+    repo = tmp_path / "repo"
+    card = repo / "localdata" / "nba" / f"picks_{day}.txt"
+    card.parent.mkdir(parents=True)
+    card.write_text("Ma Golide Picks — NBA 2026-11-18\nreadable card\n")
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+
+    assert report["status"] == "no_changes"
+    assert report["compact_pick_markers_skipped"] == [f"localdata/nba/picks_{day}.txt"]
+    assert card.read_text() == "Ma Golide Picks — NBA 2026-11-18\nreadable card\n"
+
+
 def test_publisher_unions_aba_history_receipts_and_rejects_count_conflicts(tmp_path):
     receipt = {
         "season_end_year": 2026,
