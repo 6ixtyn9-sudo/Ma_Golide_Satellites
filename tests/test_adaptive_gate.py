@@ -86,6 +86,29 @@ def test_gate_skips_a_valid_idle_league(tmp_path: Path):
     assert decision.scheduled_game_count == 1
 
 
+def test_gate_wakes_for_legacy_compact_pick_card_report_recovery(tmp_path: Path):
+    nba = LEAGUES[0]
+    _operator_state(tmp_path, nba, date="2026-11-18")
+    marker = tmp_path / nba.state_key / "picks_2026-11-17.txt"
+    marker.write_text(
+        "Ma Golide compact pick lifecycle marker\n"
+        "league_state=nba\n"
+        "target_date=2026-11-17\n"
+        "full_forecast_board=Actions artifact and GitHub Release archive\n"
+        "detailed_card_sha256=" + "a" * 64 + "\n"
+    )
+
+    decision = evaluate_league(
+        nba,
+        state_root=tmp_path,
+        now=NOW,
+        schedule_fetcher=_schedule(),
+    )
+
+    assert decision.should_run
+    assert decision.reasons == ("legacy_compact_pick_card_restore_due",)
+
+
 def test_gate_wakes_for_prior_pick_and_shadow_cards_with_rendered_pending_grades(tmp_path: Path):
     nba = LEAGUES[0]
     _operator_state(tmp_path, nba, date="2026-11-18")

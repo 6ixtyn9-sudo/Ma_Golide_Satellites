@@ -288,7 +288,7 @@ writes.
   recovery.
 - `localdata/ledgers/`: immutable, content-addressed stage snapshots.
 - `localdata/reports/`: derived operational and market JSON reports.
-- `localdata/<league>/picks_YYYY-MM-DD.txt`: Git-published compact dated
+- `localdata/<league>/picks_YYYY-MM-DD.txt`: Git-published readable dated
   human card. Individual fixture draft evidence stops changing at its own
   60-minute pre-tip cutoff.
 - `localdata/<league>/picks_YYYY-MM-DD.json` and

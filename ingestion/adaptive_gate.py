@@ -68,6 +68,10 @@ HISTORICAL_CARD_RE = re.compile(r"^(picks|auto_tickets)_(\d{4}-\d{2}-\d{2})\.txt
 # Keep this aligned with the recovery utility. It deliberately detects rendered
 # grades only, never explanatory prose mentioning a pending observation.
 PENDING_GRADE_RE = re.compile(r"(?:grade=|\[\s*)PENDING\b|⏳\s+PENDING\b")
+# The temporary 2026-11-20/21 marker format is opaque to Git readers. It is
+# not a ticket or forecast signal, but it must wake the serialized publisher so
+# the bounded report-only recovery can replace it with retained readable text.
+COMPACT_PICK_CARD_MARKER = b"Ma Golide compact pick lifecycle marker\n"
 # Public browser-bundle fallback for the documented CBA data response format;
 # it is not a repository credential. An operator may override it for a rotated
 # public format through CBA_DECRYPT_KEY without exposing the value in reports.
@@ -510,6 +514,27 @@ def _historical_pending_card_reasons(state_dir: Path, *, target_date: str) -> li
     return reasons
 
 
+def _legacy_compact_pick_card_reasons(state_dir: Path) -> list[str]:
+    """Wake the publisher to replace an opaque legacy dated-card marker.
+
+    A compact marker is presentation debt rather than a forecast/ticket input.
+    Its card content is recovered later by the publisher from a selected Git
+    snapshot or a verified release asset; the gate only ensures an otherwise
+    idle external tick reaches that serialized migration.
+    """
+
+    try:
+        cards = sorted(state_dir.glob("picks_*.txt")) if state_dir.is_dir() else []
+        for path in cards:
+            if path.is_symlink() or not path.is_file() or not HISTORICAL_CARD_RE.fullmatch(path.name):
+                continue
+            if path.read_bytes().startswith(COMPACT_PICK_CARD_MARKER):
+                return ["legacy_compact_pick_card_restore_due"]
+    except OSError as exc:
+        raise GateUncertain("cannot read legacy compact pick card") from exc
+    return []
+
+
 def _settlement_view_reasons(state_dir: Path, performance: dict[str, Any]) -> list[str]:
     """Wake a lane when its public receipt card lags settled compact state.
 
@@ -589,6 +614,7 @@ def evaluate_league(
         reasons.extend(_pending_reasons(performance))
         reasons.extend(_settlement_view_reasons(state_dir, performance))
         reasons.extend(_historical_pending_card_reasons(state_dir, target_date=target_date))
+        reasons.extend(_legacy_compact_pick_card_reasons(state_dir))
     except GateUncertain as exc:
         return GateDecision(
             config, target_date, True, (f"state_uncertain: {exc}",), schedule_count

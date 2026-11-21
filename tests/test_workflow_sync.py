@@ -270,6 +270,13 @@ def test_workflow_uses_verified_release_checkpoint_for_cold_cache_recovery_and_c
         assert "Compact mutable Git state after checkpoint upload" in text
         assert "--compact-existing" in text
         assert "steps.release-checkpoints.outputs.available == 'true'" in text
+        assert "Restore retained readable cards from the compact-marker transition" in text
+        assert "scripts/restore_pick_cards.py" in text
+        assert "45fa1fdd01ddfad6084233e17e7a2585e1630f2c" in text
+        assert "--require-complete" in text
+        assert text.index("Restore retained readable cards") < text.index(
+            "Build compact canonical release checkpoints"
+        )
 
 
 def test_evidence_verified_cache_epoch_applies_to_every_league():
