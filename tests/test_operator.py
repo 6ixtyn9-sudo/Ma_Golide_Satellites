@@ -3001,6 +3001,124 @@ def test_unpriced_moneyline_picks_are_shadow_tracked_against_posted_spreads(tmp_
     assert json.loads(Path(settled["performance"]).read_text())["paper_bank_units"] == 100.0
 
 
+def test_derived_spread_lane_issues_future_ticket_with_separate_cover_roi_contract(tmp_path):
+    def named_posted_spread(number, *, game_id, scheduled_utc):
+        row = _posted_spread(
+            number,
+            home_line=-4.5,
+            model_selection="away",
+            side_prices={"home": 1.91, "away": 1.91},
+        )
+        row.update(
+            {
+                "game_id": game_id,
+                "scheduled_utc": scheduled_utc,
+                "forecast_id": f"posted-spread-{game_id}",
+            }
+        )
+        row["book"].update(
+            {
+                "game_id": game_id,
+                "line": -4.5,
+                "observed_utc": scheduled_utc.replace("T20:00:00Z", "T17:00:00Z"),
+                "price_provenance": "named_book",
+                "source_permission": "cleared",
+                "operational_validation": "validated",
+                "ticket_price_eligible": True,
+            }
+        )
+        return row
+
+    # Seed only settled audit evidence. These records are used for the separate
+    # derived contract gate; none can be retroactively issued as a ticket.
+    historical_rows = []
+    historical_games = []
+    for index in range(11):
+        game_id = f"derived-history-{index}"
+        scheduled_utc = f"2026-10-{20 + index:02d}T20:00:00Z"
+        source = _unpriced_moneyline(100 + index, 0.85)
+        source.update(
+            {
+                "game_id": game_id,
+                "scheduled_utc": scheduled_utc,
+                "forecast_id": f"unpriced-source-{game_id}",
+            }
+        )
+        historical_rows.extend(
+            [
+                _pick_row(source, "2026-10-20"),
+                _pick_row(
+                    named_posted_spread(
+                        100 + index, game_id=game_id, scheduled_utc=scheduled_utc
+                    ),
+                    "2026-10-20",
+                ),
+            ]
+        )
+        # Home -4.5 covers each result; the native away spread forecast loses,
+        # proving the cross-market side is graded from its frozen quoted line.
+        historical_games.append(
+            game(
+                100 + index,
+                game_id=game_id,
+                scheduled_utc=scheduled_utc,
+                home_score=100,
+                away_score=90,
+            )
+        )
+    (tmp_path / "picks_2026-10-20.json").write_text(json.dumps(historical_rows))
+
+    source = _unpriced_moneyline(1, 0.90)
+    posted = named_posted_spread(
+        1, game_id="game-1", scheduled_utc="2026-11-07T20:00:00Z"
+    )
+    first = publish(
+        tmp_path,
+        Store([*historical_games, game(1)]),
+        report([source, posted]),
+        generated_utc="2026-11-07T18:00:00Z",
+    )
+
+    assert first["derived_spread_ticket_lane"]["future_only"] is True
+    # The qualifying October examples remain audit-only history: this Nov. 7
+    # prospective decision is the first possible receipt.
+    assert not (tmp_path / "auto_tickets_2026-10-20_decision.json").exists()
+    gate = first["derived_spread_ticket_lane"]["history_gate"]
+    assert gate["qualifies"] is True
+    assert gate["decisions"] == 11
+    assert gate["cover_rate"] == 1.0
+    assert gate["roi"] > 0
+    assert first["ticket_receipt"] is not None
+    receipt = json.loads(Path(first["ticket_receipt"]).read_text())
+    assert receipt["accas"] == []
+    assert len(receipt["singles"]) == 1
+    leg = receipt["singles"][0]["legs"][0]
+    assert leg["derived_spread"]["contract"] == "unpriced_moneyline_spread"
+    assert leg["derived_spread"]["source_moneyline"]["forecast_id"] == source["forecast_id"]
+    assert (
+        leg["derived_spread"]["source_moneyline"]["frozen_forecast"]["forecast_id"]
+        == source["forecast_id"]
+    )
+    assert leg["derived_spread"]["posted_spread_quote"]["forecast_id"] == posted["forecast_id"]
+    assert leg["derived_spread"]["selected_spread_line"] == -4.5
+    assert leg["book"]["selected_decimal_price"] == 1.91
+    assert "source ML p (not cover p)" in Path(first["ticket_text"]).read_text()
+
+    # Settlement uses the frozen -4.5 home spread, and it never treats the
+    # source moneyline probability as a cover-probability Brier observation.
+    settled = publish(
+        tmp_path,
+        Store([*historical_games, game(1, home_score=120, away_score=100)]),
+        report([]),
+        run_id="settle-derived",
+        generated_utc="2026-11-09T03:00:00Z",
+    )
+    performance = json.loads(Path(settled["performance"]).read_text())
+    assert performance["wins"] == 1
+    assert performance["paper_bank_units"] == pytest.approx(100.91)
+    assert performance["selected_leg_brier_score"] is None
+
+
 def test_euroleague_consensus_price_paper_board_is_time_locked_and_has_no_ticket_bank_or_roi(tmp_path):
     rows = []
     for number, probability, price in ((1, 0.62, 1.80), (2, 0.59, 1.85), (3, 0.54, 1.70)):

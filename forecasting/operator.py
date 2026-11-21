@@ -106,6 +106,12 @@ EUROLEAGUE_CONSENSUS_ALLOWED_BLOCKERS = frozenset(
 # No-price full-game moneyline picks at or above this model probability are
 # re-expressed as the same side against the bookmaker's posted full-game spread.
 UNPRICED_SPREAD_SHADOW_MIN_PROBABILITY = 0.70
+# A derived spread is allowed into the future-only paper-ticket fallback only
+# after its own pre-tip shadow history has cleared the same minimum number of
+# settled decisions and cover-rate floor as the no-price audit.  It never
+# becomes an after-the-fact ticket for a previously completed fixture.
+UNPRICED_SPREAD_TICKET_MIN_DECISIONS_EXCLUSIVE = 10
+UNPRICED_SPREAD_TICKET_MIN_COVER_RATE = 0.70
 BASE_PAPER_UNITS = 100.0
 STAKE_UNITS_PER_ACCA = 1.0
 # Keep this compact NBA exception aligned with ingestion.adaptive_gate: NBA
@@ -758,6 +764,8 @@ def _publish_euroleague_consensus_paper(
 
 
 def _bucket(forecast: Dict[str, Any]) -> str:
+    if _is_derived_spread_ticket_row(forecast):
+        return "DERIVED_SPREAD_QUALIFIED"
     book = forecast.get("book") or {}
     price = book.get("selected_decimal_price")
     eligibility = forecast.get("eligibility") or {}
@@ -1027,6 +1035,45 @@ def _pick_row(forecast: Dict[str, Any], target_date: str) -> Dict[str, Any]:
     return row
 
 
+def _is_derived_spread_ticket_row(row: Dict[str, Any]) -> bool:
+    """Whether this frozen row is a pre-tip moneyline-to-spread derivative."""
+
+    derivation = row.get("derived_spread")
+    return isinstance(derivation, dict) and derivation.get("contract") == "unpriced_moneyline_spread"
+
+
+def _derived_spread_grade(row: Dict[str, Any], game: Game) -> Optional[str]:
+    """Grade a derived spread with its selected-side posted line.
+
+    Derived rows retain the source moneyline probability, which must never be
+    interpreted as a spread-cover probability.  The grade instead uses only
+    the frozen full-game quoted spread line and selected side.
+    """
+
+    if game.status is not GameStatus.FINAL or game.actual is None or not game.actual.reconciles()[0]:
+        return None
+    scores = _period_scores(game, Period.FULL_GAME)
+    if scores is None:
+        return None
+    home_score, away_score = scores
+    derivation = row.get("derived_spread")
+    if not isinstance(derivation, dict):
+        return None
+    selected_line = derivation.get("selected_spread_line")
+    selection = str(row.get("selection") or "").lower()
+    if selection not in {"home", "away"} or isinstance(selected_line, bool):
+        return None
+    try:
+        line = float(selected_line)
+    except (TypeError, ValueError, OverflowError):
+        return None
+    if not math.isfinite(line):
+        return None
+    margin = home_score - away_score
+    result = margin + line if selection == "home" else -margin + line
+    return "win" if result > 0 else "loss" if result < 0 else "push"
+
+
 def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
     book_row = row.get("book")
     book = None
@@ -1156,6 +1203,8 @@ def _grade_row(row: Dict[str, Any], games: Dict[str, Game]) -> Optional[str]:
     game = games.get(str(row["game_id"]))
     if game is None or game.status is not GameStatus.FINAL:
         return None
+    if _is_derived_spread_ticket_row(row):
+        return _derived_spread_grade(row, game)
     return grade_forecast(_forecast_from_row(row), game)
 
 
@@ -1190,6 +1239,14 @@ def _selection_label(row: Dict[str, Any]) -> str:
     period = str(row.get("period") or "?")
     selection = str(row.get("selection") or "?").upper()
     line = row.get("line")
+    if _is_derived_spread_ticket_row(row):
+        derivation = row["derived_spread"]
+        selected_line = derivation.get("selected_spread_line")
+        if isinstance(selected_line, (int, float)) and not isinstance(selected_line, bool):
+            line_text = f" {float(selected_line):+g}"
+        else:
+            line_text = ""
+        return f"DERIVED SPREAD {period}{line_text} -> {selection}"
     if market == "SPREAD":
         selected_line = _spread_line_for_selection(row)
         line_text = "" if selected_line is None else f" {selected_line:+g}"
@@ -2824,7 +2881,13 @@ def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict
         for _, position in _receipt_positions(receipt):
             for leg in position["legs"]:
                 identity = (receipt["date"], leg["pick_id"])
-                if identity in seen_legs or leg["outcome"] not in {"win", "loss"}:
+                if (
+                    identity in seen_legs
+                    or leg["outcome"] not in {"win", "loss"}
+                    # A source moneyline probability is deliberately not
+                    # scored as a spread-cover probability.
+                    or _is_derived_spread_ticket_row(leg)
+                ):
                     continue
                 seen_legs.add(identity)
                 probability = leg.get("calibrated_probability")
@@ -3516,6 +3579,7 @@ def _unpriced_spread_shadow_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, A
         record: Dict[str, Any] = {
             "record_type": "unpriced_spread_shadow_candidate",
             "date": str(source.get("date") or "")[:10] or None,
+            "league": source.get("league"),
             "game_id": source.get("game_id"),
             "home": source.get("home"),
             "away": source.get("away"),
@@ -3524,6 +3588,10 @@ def _unpriced_spread_shadow_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, A
             "moneyline_model": source.get("model"),
             "moneyline_probability": _row_probability(source),
             "moneyline_grade_status": str(source.get("grade_status") or "pending"),
+            # Keep the actual no-price source snapshot available to any future
+            # derived receipt. Its side/probability is evidence only; it does
+            # not supply a synthetic spread price or cover probability.
+            "moneyline_evidence": deepcopy(source),
             "selection": selection,
             "posted_spread": None,
             "selected_line": None,
@@ -3549,6 +3617,11 @@ def _unpriced_spread_shadow_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, A
                         "model_selection": str(posted.get("selection") or "").lower(),
                         "model_probability": _row_probability(posted),
                         "observed_utc": book.get("observed_utc"),
+                        # Preserve the complete observed quote rather than
+                        # synthesizing a cross-market price later.  The audit
+                        # renderer uses the compact fields above; the future
+                        # paper lane consumes this frozen evidence verbatim.
+                        "book_evidence": deepcopy(book),
                     },
                     "selected_line": _spread_line_for_selection(posted, selection),
                     "price": price if price is not None and price > 1.0 else None,
@@ -3630,6 +3703,263 @@ def _unpriced_spread_shadow(
         "rolling": _unpriced_spread_shadow_record(history),
         "candidate_records": today,
     }
+
+
+def _derived_spread_named_quote(record: Dict[str, Any]) -> Optional[Dict[str, Any]]:
+    """Return a valid selected-side named-book quote preserved by a shadow.
+
+    This intentionally checks the actual posted-spread snapshot, not the
+    no-price moneyline source.  A source forecast never supplies or implies a
+    price for this derived contract.
+    """
+
+    posted = record.get("posted_spread")
+    if not isinstance(posted, dict):
+        return None
+    book = posted.get("book_evidence")
+    if not isinstance(book, dict):
+        return None
+    price = _finite_float(record.get("price"))
+    if price is None or price <= 1.0:
+        return None
+    if book.get("pre_match") is not True:
+        return None
+    if book.get("price_provenance") != PriceProvenance.NAMED_BOOK.value:
+        return None
+    if book.get("source_permission") == SourcePermission.PROHIBITED.value:
+        return None
+    if not str(book.get("provider") or "").strip() or not str(book.get("book") or "").strip():
+        return None
+    # Exact market identity is part of the price contract.  A similarly named
+    # game, a different period, or a different spread line cannot be reused.
+    if (
+        str(book.get("game_id") or "") != str(record.get("game_id") or "")
+        or str(book.get("market") or "") != "spread"
+        or str(book.get("period") or "") != "full_game"
+        or not _same_line(book.get("line"), posted.get("home_line"))
+    ):
+        return None
+    selection = str(record.get("selection") or "")
+    side_prices = book.get("side_prices")
+    side_price = _finite_float(side_prices.get(selection)) if isinstance(side_prices, dict) else None
+    if side_price is None:
+        if str(posted.get("model_selection") or "") != selection:
+            return None
+        side_price = _finite_float(book.get("selected_decimal_price"))
+    if side_price is None or not math.isclose(side_price, price, rel_tol=0.0, abs_tol=1e-9):
+        return None
+    try:
+        observed = parse_utc(str(book["observed_utc"]))
+        scheduled = parse_utc(str(record["scheduled_utc"]))
+    except (KeyError, TypeError, ValueError):
+        return None
+    if observed >= scheduled:
+        return None
+    frozen_book = deepcopy(book)
+    frozen_book["selected_decimal_price"] = price
+    # Side prices are evidence, but make the selected-side price explicit for
+    # the shared receipt/settlement renderer.
+    side_prices = frozen_book.get("side_prices")
+    if isinstance(side_prices, dict):
+        frozen_book["side_prices"] = dict(side_prices)
+        frozen_book["side_prices"][str(record["selection"])] = price
+    return frozen_book
+
+
+def _derived_spread_ticket_history(records: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Evaluate a dedicated historical cover/ROI gate for derived spreads.
+
+    The sample is deliberately not the native spread model's ROI history, nor
+    is it calibrated moneyline history.  Every qualifying observation has the
+    same cross-market source contract and an exact pre-tip named-book spread
+    quote, and is graded against that quoted selected-side line.
+    """
+
+    eligible = []
+    for record in records:
+        book = _derived_spread_named_quote(record)
+        if book is None:
+            continue
+        status = str(record.get("grade_status") or "").lower()
+        if status not in {"win", "loss", "push"}:
+            continue
+        eligible.append((record, book, status))
+    wins = sum(status == "win" for _, _, status in eligible)
+    losses = sum(status == "loss" for _, _, status in eligible)
+    pushes = sum(status == "push" for _, _, status in eligible)
+    decisions = wins + losses
+    units = sum(
+        float(book["selected_decimal_price"]) - 1.0
+        if status == "win"
+        else -1.0
+        if status == "loss"
+        else 0.0
+        for _, book, status in eligible
+    )
+    cover_rate = wins / decisions if decisions else None
+    roi = units / len(eligible) if eligible else None
+    qualifies = (
+        decisions > UNPRICED_SPREAD_TICKET_MIN_DECISIONS_EXCLUSIVE
+        and cover_rate is not None
+        and cover_rate >= UNPRICED_SPREAD_TICKET_MIN_COVER_RATE
+        and roi is not None
+        and roi > 0.0
+    )
+    return {
+        "contract": "unpriced_moneyline_spread",
+        "history_scope": "derived_spread_named_book_pre_tip_quotes",
+        "wins": wins,
+        "losses": losses,
+        "pushes": pushes,
+        "decisions": decisions,
+        "priced_settled": len(eligible),
+        "cover_rate": round(cover_rate, 6) if cover_rate is not None else None,
+        "units": round(units, 6),
+        "roi": round(roi, 6) if roi is not None else None,
+        "minimum_decisions_exclusive": UNPRICED_SPREAD_TICKET_MIN_DECISIONS_EXCLUSIVE,
+        "minimum_cover_rate": UNPRICED_SPREAD_TICKET_MIN_COVER_RATE,
+        "positive_roi_required": True,
+        "qualifies": qualifies,
+        "status": (
+            "qualified"
+            if qualifies
+            else "insufficient_history"
+            if decisions <= UNPRICED_SPREAD_TICKET_MIN_DECISIONS_EXCLUSIVE
+            else "below_cover_rate"
+            if cover_rate is None or cover_rate < UNPRICED_SPREAD_TICKET_MIN_COVER_RATE
+            else "non_positive_roi"
+        ),
+    }
+
+
+def _derived_spread_ticket_candidates(
+    rows: List[Dict[str, Any]],
+    settled_history: List[Dict[str, Any]],
+    *,
+    generated_utc: str,
+    target_date: str,
+    slate_timezone_name: str,
+) -> tuple[List[Dict[str, Any]], Dict[str, Any]]:
+    """Build future-only derived-spread paper singles from frozen evidence.
+
+    The source selection is a high-confidence, unpriced full-game moneyline
+    forecast.  It contributes only its side and provenance; its win chance is
+    never converted into a spread-cover chance.  The price/line comes entirely
+    from a same-game posted spread snapshot, and this lane has its own rolling
+    cover/ROI admission gate.
+    """
+
+    history = _derived_spread_ticket_history(_unpriced_spread_shadow_rows(settled_history))
+    if not history["qualifies"]:
+        return [], history
+    now = parse_utc(generated_utc)
+    zone = ZoneInfo(slate_timezone_name)
+    candidates = []
+    for record in _unpriced_spread_shadow_rows(rows):
+        book = _derived_spread_named_quote(record)
+        if book is None:
+            continue
+        try:
+            scheduled = parse_utc(str(record["scheduled_utc"]))
+            observed = parse_utc(str(book["observed_utc"]))
+        except (KeyError, TypeError, ValueError):
+            continue
+        # This is the prospective guard: an already started fixture can never
+        # enter the lane, regardless of when audit history becomes available.
+        # Nor may an observation timestamp later than the decision scan be
+        # used as if it had already been known.
+        if (
+            now >= scheduled
+            or observed > now
+            or scheduled.astimezone(zone).date().isoformat() != target_date
+        ):
+            continue
+        source_id = str(record.get("moneyline_forecast_id") or "")
+        posted = record.get("posted_spread")
+        selected_line = _finite_float(record.get("selected_line"))
+        probability = _finite_float(record.get("moneyline_probability"))
+        if not source_id or not isinstance(posted, dict) or selected_line is None or probability is None:
+            continue
+        quote_id = str(posted.get("forecast_id") or "")
+        identity = f"derived-spread|{source_id}|{quote_id}|{record.get('selection')}|{selected_line:g}"
+        forecast_id = hashlib.sha256(identity.encode()).hexdigest()[:20]
+        source_evidence = {
+            "forecast_id": source_id,
+            "market": "moneyline",
+            "period": "full_game",
+            "selection": record["selection"],
+            "probability": probability,
+            "model": record.get("moneyline_model"),
+            "native_price_missing": True,
+            "frozen_forecast": deepcopy(record.get("moneyline_evidence") or {}),
+        }
+        posted_evidence = {
+            "forecast_id": posted.get("forecast_id"),
+            "home_line": posted.get("home_line"),
+            "selected_spread_line": selected_line,
+            "observed_utc": posted.get("observed_utc"),
+            "book": deepcopy(book),
+        }
+        leg = {
+            "forecast_id": forecast_id,
+            "pick_id": forecast_id,
+            "game_id": record["game_id"],
+            "league": record.get("league"),
+            "scheduled_utc": record["scheduled_utc"],
+            "home": record["home"],
+            "away": record["away"],
+            "market": "spread",
+            "period": "full_game",
+            "selection": record["selection"],
+            # The canonical home line remains available for generic renderers;
+            # grading uses the explicit selected-side frozen line below.
+            "line": posted.get("home_line"),
+            "raw_probability": probability,
+            "calibrated_probability": probability,
+            "model": "derived_unpriced_moneyline_spread",
+            "book": book,
+            "eligibility": {
+                "acca_eligible": False,
+                "reasons": ["derived_spread_separate_contract"],
+            },
+            "derived_spread": {
+                "contract": "unpriced_moneyline_spread",
+                "version": 1,
+                "source_moneyline": source_evidence,
+                "posted_spread_quote": posted_evidence,
+                "selected_spread_line": selected_line,
+                "history_gate": deepcopy(history),
+                "frozen_before_tip": True,
+            },
+        }
+        ticket_id = hashlib.sha256(f"paper-derived-spread|{forecast_id}".encode()).hexdigest()[:20]
+        candidates.append(
+            {
+                "ticket_id": ticket_id,
+                "acca_id": ticket_id,
+                "ticket_type": "single",
+                "legs": [leg],
+                "leg_count": 1,
+                "combined_decimal_odds": float(book["selected_decimal_price"]),
+                # This remains source-side evidence, not a cover-probability
+                # forecast; the receipt marks it accordingly.
+                "estimated_win_probability": probability,
+                "estimated_joint_win_probability": probability,
+                "provisional_sample_gate_bypassed": False,
+                "provisional_leg_count": 0,
+                "ranking_status": "paper_only_derived_spread_history_qualified",
+                "individual_pick_filter": {
+                    "status": "qualified_derived_spread_contract",
+                    "contract": "unpriced_moneyline_spread",
+                    "history_gate": deepcopy(history),
+                },
+            }
+        )
+    candidates.sort(key=lambda candidate: (
+        str(candidate["legs"][0].get("scheduled_utc") or ""),
+        str(candidate["legs"][0].get("forecast_id") or ""),
+    ))
+    return candidates, history
 
 
 def _priced_ineligible_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
@@ -4061,7 +4391,16 @@ def _render_ticket_card(
             if ticket_type == "single"
             else f"PAPER {leg_count}-LEG ACCA #{type_index}"
         )
-        probability_label = "estimated p" if ticket_type == "single" else "joint p"
+        derived_spread_position = any(
+            _is_derived_spread_ticket_row(leg) for leg in position.get("legs") or []
+        )
+        probability_label = (
+            "source ML p (not cover p)"
+            if derived_spread_position
+            else "estimated p"
+            if ticket_type == "single"
+            else "joint p"
+        )
         lines.append(
             f"[{ticket_label}]{provisional_label} "
             f"@{position['combined_decimal_odds']:.3f} "
@@ -4116,14 +4455,37 @@ def _render_ticket_card(
             probability = leg.get("calibrated_probability")
             if probability is None:
                 probability = leg["raw_probability"]
+            probability_text = (
+                f"source ML p {probability:.1%} (not cover p)"
+                if _is_derived_spread_ticket_row(leg)
+                else f"ML {probability:.1%}"
+            )
             lines.extend(
                 [
                     f"   {leg['home']} vs {leg['away']} · "
                     f"TIP-OFF {_local_time(leg['scheduled_utc'], timezone_name)}",
                     f"      {_selection_label(leg)} @{float(price):.3f} "
-                    f"· ML {probability:.1%} · {leg['bucket']} · {_grade_badge(leg['grade_status'])}",
+                    f"· {probability_text} · {leg['bucket']} · {_grade_badge(leg['grade_status'])}",
                 ]
             )
+            if _is_derived_spread_ticket_row(leg):
+                derivation = leg["derived_spread"]
+                source = derivation.get("source_moneyline") or {}
+                quote = derivation.get("posted_spread_quote") or {}
+                history_gate = derivation.get("history_gate") or {}
+                quote_book = quote.get("book") or {}
+                lines.append(
+                    "      Derived pre-tip contract: no-price ML source "
+                    f"{source.get('forecast_id')} → posted spread quote {quote.get('forecast_id')} "
+                    f"at {quote_book.get('book', 'unknown')} observed "
+                    f"{_local_time(str(quote.get('observed_utc')), timezone_name)}."
+                )
+                lines.append(
+                    "      Separate derived-spread gate: "
+                    f"{history_gate.get('wins', 0)}W-{history_gate.get('losses', 0)}L-"
+                    f"{history_gate.get('pushes', 0)}P · cover {history_gate.get('cover_rate')} · "
+                    f"ROI {history_gate.get('roi')} (source ML p is not cover p)."
+                )
         lines.append("")
     if priced_ineligible_shadow_picks is None:
         lines.extend(
@@ -4540,6 +4902,27 @@ def _render_empty_ticket_scan(
                 ),
             )
         )
+    derived_history = candidate_funnel.get("derived_spread_history")
+    derived_count = int(candidate_funnel.get("derived_spread_ticket_candidates") or 0)
+    if (
+        isinstance(derived_history, dict)
+        and not historical_archive
+        and withdrawal is None
+        and no_bet_decision is None
+    ):
+        lines.extend(
+            [
+                "",
+                "DERIVED-SPREAD PAPER LANE — FUTURE-ONLY / PRE-TIP",
+                "- A qualifying no-price moneyline side may be re-expressed only at an exact, frozen, named-book posted spread quote for that same game.",
+                "- The source moneyline probability is not a spread-cover probability; this lane uses its own derived-spread cover-rate and ROI history gate.",
+                f"- Historical gate: {derived_history.get('wins', 0)}W-{derived_history.get('losses', 0)}L-"
+                f"{derived_history.get('pushes', 0)}P · cover {derived_history.get('cover_rate')} · "
+                f"ROI {derived_history.get('roi')} · status={derived_history.get('status')}",
+                f"- Current pre-tip derived single candidate(s): {derived_count}. "
+                "They create a flat one-unit paper receipt only if still pre-tip at the immutable decision cutoff.",
+            ]
+        )
     if league is League.EUROLEAGUE:
         lines[3:3] = [
             "EUROLEAGUE STRICT NAMED-BOOK TICKET LANE — exact named-book pre-tip quote; calibrated p × odds > 1.00; "
@@ -4922,6 +5305,24 @@ def publish_operator_reports(
         )
         dated_spread_shadow = _unpriced_spread_shadow(dated_logical_rows, settled_history)
 
+    # This is a generic, future-only fallback lane.  It is intentionally built
+    # from the current pre-tip scan (not from dated ledgers), so settled audit
+    # examples can calibrate the separate contract but can never become new
+    # tickets or change prior paper-bank results.
+    derived_spread_candidates, derived_spread_history = _derived_spread_ticket_candidates(
+        _latest_logical_rows(current),
+        settled_history,
+        generated_utc=generated_utc,
+        target_date=target_date,
+        slate_timezone_name=slate_timezone_name,
+    )
+    # Keep the long-standing native candidate-funnel schema stable on cold
+    # starts. Once the derived lane has any quote-eligible history (or an
+    # actionable current candidate), expose its separately governed details.
+    if derived_spread_history["priced_settled"] or derived_spread_candidates:
+        candidate_funnel["derived_spread_ticket_candidates"] = len(derived_spread_candidates)
+        candidate_funnel["derived_spread_history"] = deepcopy(derived_spread_history)
+
     state = _load_state(localdata)
     acca_report = (market_report or {}).get("accas") or {}
     paper_results = acca_report.get("paper_results")
@@ -4932,6 +5333,10 @@ def publish_operator_reports(
         single_ticket = _single_ticket_candidate(single_rows[0], paper_filter)
         if single_ticket is not None:
             ticket_candidates.append(single_ticket)
+    # Native selections retain their existing service-owned funnel.  Derived
+    # spreads are separately governed and have already passed their own
+    # frozen named-book/cover-rate/ROI contract above.
+    ticket_candidates.extend(deepcopy(derived_spread_candidates))
     pre_tip_ticket_candidates = [
         candidate
         for candidate in ticket_candidates
@@ -4939,6 +5344,8 @@ def publish_operator_reports(
     ]
     ticket_decision["candidate_tickets_seen"] = len(ticket_candidates)
     ticket_decision["candidate_tickets_pre_tip"] = len(pre_tip_ticket_candidates)
+    ticket_decision["derived_spread_candidates_seen"] = len(derived_spread_candidates)
+    ticket_decision["derived_spread_history"] = deepcopy(derived_spread_history)
     ticket_decision["market_report_available"] = market_report is not None
     decision_status = ticket_decision["status"]
     allow_new_decision = market_report is not None and decision_status in {
@@ -4973,6 +5380,7 @@ def publish_operator_reports(
             row.get("ticket_type") == "single" for row in ticket_candidates
         ),
         "fresh_paper_singles": candidate_funnel.get("paper_single_picks", 0),
+        "fresh_derived_spread_singles": len(derived_spread_candidates),
         "receipt_present": receipt is not None,
         "ticket_decision": deepcopy(ticket_decision),
         "no_bet_decision_present": no_bet_decision is not None,
@@ -5212,6 +5620,11 @@ def publish_operator_reports(
         "no_bet_decision": deepcopy(no_bet_decision),
         "unpriced_audit": _unpriced_audit_summary(dated_unpriced_audit),
         "unpriced_spread_shadow": dated_spread_shadow,
+        "derived_spread_ticket_lane": {
+            "candidate_count": len(derived_spread_candidates),
+            "history_gate": derived_spread_history,
+            "future_only": True,
+        },
         "priced_ineligible_shadow": (
             _priced_ineligible_shadow_summary(
                 dated_priced_ineligible,
@@ -5237,6 +5650,7 @@ def publish_operator_reports(
             "settled_singles": performance["settled_singles"],
             "pending_singles": performance["pending_singles"],
             "paper_single_picks": candidate_funnel.get("paper_single_picks", 0),
+            "derived_spread_ticket_candidates": len(derived_spread_candidates),
             "historical_ticket_audit_cards_refreshed": len(historical_ticket_audit_cards),
         },
     }
