@@ -160,6 +160,11 @@ results, state uncertainty, a source outage, or a manual rehearsal. A
 reservation remains spent if a worker fails: this prevents a failed publisher or
 parallel runner from repeatedly probing the provider with the same slate.
 
+This priority is scoped to The Odds API's shared allowance. It is not a global
+league-adoption policy: another league may gain a future compliant source path
+only through its own evidence contract and bounded validation, as described in
+[the league readiness roadmap](LEAGUE-ADOPTION-ROADMAP.md).
+
 Routine acquisition is full-game only. The documented native period markets are
 available through a charged per-event endpoint, so the scheduler never fans out
 one request per NCAA half or NBA/WNBA quarter. Period parsing remains strict,
