@@ -378,6 +378,25 @@ def _is_default_forfeit_score(score: Optional[tuple[int, int]]) -> bool:
     return score in {(20, 0), (0, 20)}
 
 
+def _is_full_matchup_presentation(anchor: _Node, cell: _Node) -> bool:
+    """Whether this anchor is the event cell's authoritative full-name line.
+
+    The official calendar renders one event cell as two same-route anchors: a
+    compact ``p.visible-xs`` club-code line for small viewports and the
+    full-name ``p.hidden-xs`` matchup line that the detail page's header
+    mirrors. Viewport codes are presentation abbreviations, not club
+    identities, so the calendar-to-detail identity comparison must read the
+    full-name line.
+    """
+
+    node = anchor.parent
+    while node is not None and node is not cell:
+        if node.tag == "p" and "hidden-xs" in node.classes():
+            return True
+        node = node.parent
+    return False
+
+
 def _calendar_match_ref(cell: _Node) -> Optional[tuple[_Node, int, int, int]]:
     """Return the sole official match route exposed by a calendar event cell.
 
@@ -388,7 +407,10 @@ def _calendar_match_ref(cell: _Node) -> Optional[tuple[_Node, int, int, int]]:
     Multiple route-shaped
     anchors to distinct routes remain ambiguous and fail closed.  Responsive
     markup may repeat a link to the *same* route; those are presentation
-    duplicates, not competing event identities.
+    duplicates, not competing event identities.  Among same-route duplicates
+    the full-name ``p.hidden-xs`` matchup line takes precedence: the compact
+    ``p.visible-xs`` club-code twin would otherwise supply viewport codes as
+    the calendar's home/away names and contradict the detail header.
     """
 
     matches: List[tuple[_Node, int, int, int]] = []
@@ -413,7 +435,13 @@ def _calendar_match_ref(cell: _Node) -> Optional[tuple[_Node, int, int, int]]:
     }
     if len(identities) > 1:
         raise IdentityError(f"{PROVIDER}: calendar row has ambiguous scoped match links")
-    return candidates[0] if candidates else None
+    full_name_candidates = [
+        candidate
+        for candidate in candidates
+        if _is_full_matchup_presentation(candidate[0], cell)
+    ]
+    preferred = full_name_candidates or candidates
+    return preferred[0] if preferred else None
 
 
 def _unlinked_calendar_row_signal(cells: Sequence[_Node]) -> Optional[str]:

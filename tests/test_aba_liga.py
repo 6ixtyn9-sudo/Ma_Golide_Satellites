@@ -1241,3 +1241,120 @@ def test_parser_rejects_a_calendar_scope_or_malformed_score():
         )
     with pytest.raises(IdentityError, match="calendar matchup has an unresolved team"):
         aba.parse_calendar(CALENDAR.replace("Budućnost VOLI <span>:</span> FMP", "<span>:</span>"), 2026)
+
+
+# --- Compact-code vs full-name calendar presentation precedence -------------
+#
+# The live calendar renders one event cell as two same-route anchors: a
+# compact p.visible-xs club-code line for small viewports, followed by the
+# full-name p.hidden-xs matchup line that the detail page's header mirrors.
+# The route matcher must prefer the full-name presentation; codes are
+# viewport abbreviations and can never match a scoped detail header.
+
+
+DUAL_PRESENTATION_CELL = (
+    "<td>"
+    '<p class="visible-xs"><a href="/match/6/25/1/Overview">BUD <span>:</span> SPO</a></p>'
+    '<p class="hidden-xs"><a href="/match/6/25/1/Overview">'
+    "Budućnost VOLI <span>:</span> Spartak Office Shoes</a></p>"
+    "</td>"
+)
+
+LEGACY_CELL = (
+    '<td><p class="hidden-xs"><a href="/match/6/25/1/Overview/q1/1/home/buducnost-spartak/">'
+    "Budućnost VOLI <span>:</span> Spartak Office Shoes</a></p></td>"
+)
+
+
+def test_calendar_prefers_full_name_matchup_over_compact_code_presentation():
+    calendar = CALENDAR.replace(LEGACY_CELL, DUAL_PRESENTATION_CELL)
+
+    games = aba.parse_calendar(calendar, 2026)
+
+    assert (games[0].home_name, games[0].away_name) == (
+        "Budućnost VOLI",
+        "Spartak Office Shoes",
+    )
+    assert games[0].scheduled_utc == "2025-10-05T17:30:00Z"
+
+
+def test_match11_style_dual_presentation_calendar_reconciles_scoped_detail_header():
+    calendar = CALENDAR.replace(LEGACY_CELL, DUAL_PRESENTATION_CELL)
+    games = aba.parse_calendar(calendar, 2026)
+
+    game = aba._match_game(MATCH, games[0], require_final=True)
+
+    assert game.home_name == "Budućnost VOLI"
+    assert game.away_name == "Spartak Office Shoes"
+    assert game.home_team_id == "aba_liga:team:12"
+    assert game.away_team_id == "aba_liga:team:91"
+    assert game.scheduled_utc == "2025-10-05T17:30:00Z"
+    assert game.actual is not None
+    assert game.actual.reconciles() == (True, "")
+
+
+def test_compact_code_only_calendar_still_contradicts_full_name_detail():
+    codes_only = CALENDAR.replace(
+        LEGACY_CELL,
+        '<td><p class="visible-xs"><a href="/match/6/25/1/Overview">BUD <span>:</span> SPO</a></p></td>',
+    )
+    games = aba.parse_calendar(codes_only, 2026)
+    assert (games[0].home_name, games[0].away_name) == ("BUD", "SPO")
+
+    with pytest.raises(IdentityError, match="header team identity contradicts calendar"):
+        aba._match_game(MATCH, games[0], require_final=True)
+
+
+def test_dual_presentation_with_genuinely_wrong_header_still_quarantines_and_retains_cursor(
+    tmp_path,
+):
+    calendar = CALENDAR.replace(LEGACY_CELL, DUAL_PRESENTATION_CELL)
+    contradictory = (
+        MATCH.replace("Budućnost VOLI", "Cedevita Olimpija")
+        .replace("Spartak Office Shoes", "Slovan Bratislava")
+        .replace("/team/12/25/1/0/buducnost/", "/team/66/25/1/0/olimpija/")
+        .replace("/team/91/25/1/0/spartak/", "/team/110/25/1/0/slovan/")
+    )
+
+    def fetch(url: str) -> str:
+        if "/calendar/" in url:
+            return calendar
+        if "/match/6/" in url:
+            return contradictory
+        raise AssertionError(url)
+
+    store = DuckDBStore(str(tmp_path / "aba-contradiction" / "warehouse.duckdb"), persist=True)
+    try:
+        pipeline = Pipeline(
+            PipelineConfig(
+                league="ABA_LEAGUE",
+                date_yyyymmdd="20251006",
+                history_days=0,
+                history_request_budget=1,
+                deep_history_event_budget=5,
+                fixture_now_utc="2025-10-06T12:00:00Z",
+            ),
+            store,
+            fetch=fetch,
+            allow_writes=True,
+        )
+        report = pipeline.backfill()
+        deep = report["backfill"]["deep_history"]
+        assert deep["status"] == "provider_error_cursor_retained"
+        assert deep["events_acquired"] == 0
+        assert deep["final_scores_written"] == 0
+        assert deep["quarantined_rows"] == 1
+        assert deep["seasons"][0]["attempted_game_numbers"] == [6]
+        assert deep["seasons"][0]["exhausted"] is False
+        assert any(
+            gap.required_field == "historical_official_result"
+            and gap.reason.value == "missing"
+            and "header team identity contradicts calendar" in gap.detail
+            for gap in pipeline.gaps
+        )
+        assert store.get_game("aba_liga:25:1:6") is None
+        # No cursor progress was recorded, so no batch position was durably
+        # advanced past the contradictory row.
+        assert deep["cursor"].get("last_game_no", 0) == 0
+    finally:
+        store.close()
