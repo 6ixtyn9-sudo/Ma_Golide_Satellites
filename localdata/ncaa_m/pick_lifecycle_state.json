@@ -9,7 +9,7 @@
       "logical_picks": 233
     },
     "2026-11-20": {
-      "frozen_fixtures": 56,
+      "frozen_fixtures": 57,
       "logical_picks": 462
     }
   },
@@ -29551,6 +29551,450 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
       },
+      "401921691": {
+        "decision_cutoff_utc": "2026-11-21T01:30:00Z",
+        "frozen_at": "2026-11-21T01:41:59Z",
+        "game_id": "401921691",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Seton Hall Pirates",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.594954,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 79,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "fadb400f6ebc8187cd4462b2460189d16de4eb3605cb0c3d1b6471fcfd1b12ba",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b36f64b1179229e9df0d",
+            "game_id": "401921691",
+            "grade_status": "pending",
+            "home": "NC State Wolfpack",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "b36f64b1179229e9df0d",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.74,
+            "role": null,
+            "scheduled_utc": "2026-11-21T02:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Seton Hall Pirates",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921691",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T01:38:34Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.5555555555555556,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.635031,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 47,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "43595e3eebdd4f7b1a7eeb0cc450b7b7d3e1165925693c3f429d0006e297f04b",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "cc288009a89926f8069f",
+            "game_id": "401921691",
+            "grade_status": "pending",
+            "home": "NC State Wolfpack",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.034299,
+              "historical_pick_count": 3,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 1,
+              "market": "moneyline",
+              "observed_roi": 0.097653,
+              "period": "full_game",
+              "probability_band": "0.60-<0.70",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": 0.051866,
+              "wins": 2
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "cc288009a89926f8069f",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-21T01:38:35Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.7072,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-21T02:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Seton Hall Pirates",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921691",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T01:38:34Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.5555555555555556,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.621468,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 79,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "004deb0889f3afbda7af8c52fd6ebb7e143d22c8bcad1efcae10c617fef88fb5",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d3ab6039d0e8cd848a04",
+            "game_id": "401921691",
+            "grade_status": "pending",
+            "home": "NC State Wolfpack",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "d3ab6039d0e8cd848a04",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.79,
+            "role": null,
+            "scheduled_utc": "2026-11-21T02:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Seton Hall Pirates",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921691",
+              "line": -3.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T01:38:34Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.574524,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 12,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "82ce0d3df9d7f7249e1cffee4609d498359bfb1dd0dd89a430d51aac5c1a4374",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "c090d0b053b67de65c2b",
+            "game_id": "401921691",
+            "grade_status": "pending",
+            "home": "NC State Wolfpack",
+            "league": "NCAA_M",
+            "line": -3.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.131504,
+              "historical_pick_count": 66,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 27,
+              "market": "spread",
+              "observed_roi": 0.12087,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.135046,
+              "wins": 39
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "c090d0b053b67de65c2b",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-21T02:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Seton Hall Pirates",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921691",
+              "line": -2.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-20T17:38:48Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9803921568627452,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.539189,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "46eda90fb55e9e549f2d8503a7b5f381be927e169cd1ce00d013afee9ad016e7",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "c41b09b791b36269ad59",
+            "game_id": "401921691",
+            "grade_status": "pending",
+            "home": "NC State Wolfpack",
+            "league": "NCAA_M",
+            "line": -2.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.223594,
+              "historical_pick_count": 52,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 19,
+              "market": "spread",
+              "observed_roi": 0.203799,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.229588,
+              "wins": 33
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "c41b09b791b36269ad59",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-21T02:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Seton Hall Pirates",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921691",
+              "line": 140.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T01:38:34Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.491667,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 12,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "833ee174b8ac8dfe19e38143220121350746805110634af1485dc639edc88041",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "bf7dd0eb108009a3ccb0",
+            "game_id": "401921691",
+            "grade_status": "pending",
+            "home": "NC State Wolfpack",
+            "league": "NCAA_M",
+            "line": 140.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "bf7dd0eb108009a3ccb0",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-21T02:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Seton Hall Pirates",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921691",
+              "line": 143.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-20T13:38:38Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.487568,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 7,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-20",
+            "detailed_evidence_sha256": "7ed38f6a2a28c844609e72168e649acc6d10e74567af37deb21549fa056d246e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0db446e917b48bd614c5",
+            "game_id": "401921691",
+            "grade_status": "pending",
+            "home": "NC State Wolfpack",
+            "league": "NCAA_M",
+            "line": 143.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "0db446e917b48bd614c5",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-21T02:30:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T02:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-20"
+      },
       "401921692": {
         "decision_cutoff_utc": "2026-11-20T23:00:00Z",
         "frozen_at": "2026-11-20T23:13:22Z",
@@ -39162,10 +39606,6 @@
   "league": "NCAA_M",
   "pending_frozen_games": [
     [
-      "401920298",
-      "2026-11-20T23:00:00Z"
-    ],
-    [
       "401925828",
       "2026-11-20T23:30:00Z"
     ],
@@ -39316,6 +39756,10 @@
     [
       "401928795",
       "2026-11-21T02:00:00Z"
+    ],
+    [
+      "401921691",
+      "2026-11-21T02:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
