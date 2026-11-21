@@ -293,19 +293,19 @@ gap rather than silently treating the game as settled or dropping it from
 operational visibility. Resolve or explicitly quarantine such a game before
 using it as history.
 
-ELW has no validated named bookmaker or point-in-time price source. Market and
-operator reports carry `pricing_evidence_status=unpriced_no_validated_named_book_lane`;
-any paper singles/acca counts are
-unpriced decision-support counts, **not** price, positive-EV, or betting
-recommendations. The standalone `scripts/build_markets.py` defaults `--tz` to
-the selected league's acquisition timezone (Europe/Paris for ELW), not UTC;
+ELW has no dedicated named-book API integration, but a future canonical fixture
+now receives the bounded `betexplorer_direct` fallback attempt. A response can
+supply only a full-game named-moneyline row; its direct-page provenance remains
+`unresolved` / `probation`, and an empty or unmatched comparison row remains
+explicitly unpriced. The standalone `scripts/build_markets.py` defaults `--tz`
+to the selected league's acquisition timezone (Europe/Paris for ELW), not UTC;
 pass `--tz` explicitly only when deliberately inspecting another local slate.
 
-NBA G League has the same no-price boundary: it may publish an empirical
-history forecast only after the normal reconciled-history and residual gates.
-It has no validated external pre-tip prediction source or named-book lane, so
-its reports carry `pricing_evidence_status=unpriced_no_validated_named_book_lane`
-and can never turn a relayed ESPN offer into a price, EV, or ticket claim.
+NBA G League has the same direct fallback for displayed full-game named
+moneylines. It still has no validated external pre-tip prediction source, so
+its empirical history forecast requires the normal reconciled-history and
+residual gates; the fallback cannot manufacture prices for half, quarter, or
+highest-quarter forecasts.
 
 ### Optional odds-provider credentials
 
@@ -324,13 +324,15 @@ files):
 
 The workflow injects Predixsport as a process environment variable. It withholds
 The Odds API key unless the automated budget job has first committed a matching,
-three-credit permit for the current league/date. A missing secret or permit is
-safe: no request is made and the pregame report records a disabled/deferred
-source state rather than presenting it as an empty market response. The GitHub
-job summary also includes selected-side price coverage by market/period and the
-redacted source status, so a no-price result can be separated into a
-provider-capability gap, a disabled credential, an identity rejection, a budget
-deferral, or a true empty response.
+three-credit permit for the current league/date. That permit controls only the
+paid API lane: a missing secret or permit still runs the bounded direct
+BetExplorer fallback for canonical games lacking a fresh named full-game
+moneyline. The pregame report records both statuses rather than presenting a
+no-price result as an empty market response. The GitHub job summary also
+includes selected-side price coverage by market/period and the redacted source
+status, so a no-price result can be separated into a provider-capability gap, a
+disabled credential, an identity rejection, a budget deferral, or a true empty
+response.
 
 Safety behavior is deliberate:
 

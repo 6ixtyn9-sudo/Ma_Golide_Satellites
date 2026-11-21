@@ -14,17 +14,19 @@ receipts, and audit state; DuckDB remains the canonical sports system of record.
 
 | League | Native regulation periods | Schedule / results | Independent predictions | Books |
 | --- | --- | --- | --- | --- |
-| NBA | Q1–Q4 | ESPN | ESPN BPI, Hardwood, Predixsport | ESPN scoreboard (relay only), The Odds API* |
-| WNBA | Event-declared H1/H2 or Q1–Q4 | ESPN | ESPN BPI | ESPN scoreboard (relay only), The Odds API* |
-| EuroLeague | Q1–Q4 | Euroleague Basketball | Predixsport | BetExplorer aggregate research only; no validated named-book ticket lane |
-| EuroLeague Women (`EUROLEAGUE_W`) | Q1–Q4 + official OT | FIBA GDAP schedule + FIBA game-page detail | No independently validated pre-tip provider yet | No validated named-book adapter; intentionally unpriced |
-| CBA | Q1–Q4 | CBA public data service | Empirical team history after reconciled-history thresholds | BetExplorer aggregate research only; no validated named-book lane |
-| ABA League (`ABA_LEAGUE`) | Q1–Q4 + official OT | Externally referenced aba-liga.com calendar + reconciled match detail; no Ma Golide first-party capture | Empirical team history only after reconciled-history thresholds | BetExplorer aggregate research only; no validated named-book lane |
-| NCAA_M | H1/H2 | ESPN men's Division-I endpoint | ESPN BPI | ESPN scoreboard (relay only), The Odds API* |
-| NCAA_W | Q1–Q4; event-declared legacy H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | ESPN scoreboard (relay only), The Odds API* |
-| NBA G League (`NBA_G_LEAGUE`) | Q1–Q4 | ESPN `basketball/nba-development` scoreboard + summary; normal CLI uses a 56-day date-bounded history bootstrap | No external pre-tip provider validated; empirical-history forecasts only after reconciled-history thresholds | No validated named-book lane; intentionally unpriced |
+| NBA | Q1–Q4 | ESPN | ESPN BPI, Hardwood, Predixsport | ESPN scoreboard (relay only), The Odds API*, BetExplorer direct fallback† |
+| WNBA | Event-declared H1/H2 or Q1–Q4 | ESPN | ESPN BPI | ESPN scoreboard (relay only), The Odds API*, BetExplorer direct fallback† |
+| EuroLeague | Q1–Q4 | Euroleague Basketball | Predixsport | BetExplorer aggregate research lane plus direct named-book fallback† |
+| EuroLeague Women (`EUROLEAGUE_W`) | Q1–Q4 + official OT | FIBA GDAP schedule + FIBA game-page detail | No independently validated pre-tip provider yet | BetExplorer direct named-book fallback† |
+| CBA | Q1–Q4 | CBA public data service | Empirical team history after reconciled-history thresholds | BetExplorer aggregate research lane plus direct named-book fallback† |
+| ABA League (`ABA_LEAGUE`) | Q1–Q4 + official OT | Externally referenced aba-liga.com calendar + reconciled match detail; no Ma Golide first-party capture | Empirical team history only after reconciled-history thresholds | BetExplorer aggregate research lane plus direct named-book fallback† |
+| NCAA_M | H1/H2 | ESPN men's Division-I endpoint | ESPN BPI | ESPN scoreboard (relay only), The Odds API*, BetExplorer direct fallback† |
+| NCAA_W | Q1–Q4; event-declared legacy H1/H2 | ESPN women's Division-I endpoint | ESPN BPI | ESPN scoreboard (relay only), The Odds API*, BetExplorer direct fallback† |
+| NBA G League (`NBA_G_LEAGUE`) | Q1–Q4 | ESPN `basketball/nba-development` scoreboard + summary; normal CLI uses a 56-day date-bounded history bootstrap | No external pre-tip provider validated; empirical-history forecasts only after reconciled-history thresholds | BetExplorer direct named-book fallback† |
 
-* The Odds API is the only configured direct named-book lane for NBA, WNBA, NCAA_M, and NCAA_W. A scheduled run receives `THE_ODDS_API_KEY` only after a durable three-credit permit; it requests date-bounded full-game `h2h,totals,spreads` from the named DraftKings group. Without that key/permit, the system reports an explicit deferred or disabled named-book source. ESPN observations remain relayed and unresolved/unverified audit evidence, never a replacement for the direct The Odds API acquisition contract.
+* The Odds API remains the scheduled, permit-gated direct API lane for NBA, WNBA, NCAA_M, and NCAA_W. A scheduled run receives `THE_ODDS_API_KEY` only after a durable three-credit permit; it requests date-bounded full-game `h2h,totals,spreads` from the named DraftKings group. ESPN observations remain relayed and unresolved/unverified audit evidence.
+
+† The BetExplorer fallback is an operator-authorised direct public-page capture for this single-user project, not an API integration. It reads a dated basketball board and then only the matching full-game 1x2 comparison response, retaining the response-supplied bookmaker name, pre-tip observation time, source URL/digest receipt, and strict ordered-team identity. It has a three-second request interval, hard cap, and run-scoped 403/429 stop; it uses no browser automation, relay, proxy, login, or aggregate quote. Its direct-page permission is deliberately labelled `unresolved` / `probation`, while the displayed bookmaker row remains a named-book price for the paper lane. It does not supply halves, quarters, totals, spreads, or highest-quarter prices.
 
 The current The Odds API routine priority is a shared-provider quota policy, not
 an exclusion of other leagues from future compliant adoption. The

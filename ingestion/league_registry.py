@@ -76,9 +76,17 @@ class LeagueSpec:
 
     @property
     def book_providers(self) -> Tuple[str, ...]:
-        """Configured adapter providers, preserving the historic public API."""
+        """Configured price adapters plus the bounded direct BetExplorer fallback.
 
-        return tuple(policy.provider for policy in self.price_sources if policy.acquire)
+        The fallback is universal because it discovers only the canonical
+        scheduled games passed by the pipeline; unsupported schedule lanes
+        still have no candidate game to fetch.  Keeping it here rather than
+        inheriting a different league's bookmaker contract makes its distinct
+        direct-public-page provenance visible in every league report.
+        """
+
+        configured = tuple(policy.provider for policy in self.price_sources if policy.acquire)
+        return configured if "betexplorer_direct" in configured else (*configured, "betexplorer_direct")
 
     @property
     def automated_schedule_supported(self) -> bool:
@@ -118,6 +126,12 @@ def _unresolved_named_book(provider: str) -> PriceSourcePolicy:
         SourcePermission.UNRESOLVED,
         OperationalValidation.PROBATION,
     )
+
+
+# Operator-approved, bounded public-page fallback.  It reads a named bookmaker
+# from BetExplorer's own comparison row and keeps its direct-page acquisition
+# posture explicit rather than promoting it to a cleared API integration.
+_BETEXPLORER_DIRECT_FALLBACK = _unresolved_named_book("betexplorer_direct")
 
 
 def _aggregate_research_only(provider: str, *, detail: str = "") -> PriceSourcePolicy:
@@ -319,6 +333,8 @@ def price_evidence_policy(league: League, provider: str) -> PriceSourcePolicy:
     """
 
     normalized = str(provider or "").strip().lower()
+    if normalized == _BETEXPLORER_DIRECT_FALLBACK.provider:
+        return _BETEXPLORER_DIRECT_FALLBACK
     for policy in league_spec(league).price_sources:
         if policy.provider.lower() == normalized:
             return policy

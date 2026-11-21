@@ -479,7 +479,7 @@ def test_pending_elw_final_aged_out_of_recheck_window_is_reported_as_unresolvabl
     )
 
 
-def test_pipeline_routes_elw_discovery_results_and_unpriced_policy_without_mens_feed():
+def test_pipeline_routes_elw_discovery_results_and_direct_fallback_without_mens_feed():
     store = InMemoryStore()
     pipeline = Pipeline(
         PipelineConfig(
@@ -496,7 +496,8 @@ def test_pipeline_routes_elw_discovery_results_and_unpriced_policy_without_mens_
     results = pipeline.results()
 
     assert pregame["league"] == "EUROLEAGUE_W"
-    assert pregame["book_provider_status"]["policy"]["status"] == "not_configured_for_league"
+    assert "policy" not in pregame["book_provider_status"]
+    assert pregame["book_provider_status"]["betexplorer_direct"]["enabled"] is True
     assert any(gap["required_field"] == "fiba_elw_unassigned_schedule_slots" for gap in pregame["gaps"])
     assert pregame["rows"][0]["prediction_provider"] is None
     assert results["finals_written"] == 1
@@ -514,7 +515,7 @@ def test_elw_forecast_policy_is_explicit_and_never_inherits_mens_price_lane():
         timezone_name="Europe/Paris",
     )
     assert report["capabilities"]["league_operator_policy"] == (
-        "fiba_elw_empirical_history_only_no_validated_named_book_lane"
+        "fiba_elw_empirical_history_with_betexplorer_direct_fallback"
     )
     assert report["accas"]["paper_lane"] is None
-    assert report["accas"]["pricing_evidence_status"] == "unpriced_no_validated_named_book_lane"
+    assert report["accas"]["pricing_evidence_status"] == "priced_lane_policy_applies"

@@ -143,8 +143,8 @@ def test_unavailable_adapter_reports_gap_but_preserves_manually_canonical_lifecy
         gap["required_field"] == "official_schedule" and gap["reason"] == "unsupported"
         for gap in report["gaps"]
     )
-    assert report["book_provider_status"]["policy"]["status"] == "not_configured_for_league"
-    assert any(gap["required_field"] == "named_book_price" for gap in report["gaps"])
+    assert "policy" not in report["book_provider_status"]
+    assert report["book_provider_status"]["betexplorer_direct"]["enabled"] is True
 
     results = pipeline.results()
     assert results["finals_written"] == 0
@@ -252,9 +252,9 @@ def test_g_league_emits_empirical_forecast_cards_only_after_reconciled_history()
     assert all(card["model"] == "team_history_empirical" for card in cards)
     assert all(card["book"] is None for card in cards)
     assert report["capabilities"]["league_operator_policy"] == (
-        "nba_g_league_empirical_history_only_no_validated_named_book_lane"
+        "nba_g_league_empirical_history_with_betexplorer_direct_fallback"
     )
-    assert report["accas"]["pricing_evidence_status"] == "unpriced_no_validated_named_book_lane"
+    assert report["accas"]["pricing_evidence_status"] == "priced_lane_policy_applies"
     assert report["accas"]["strict_result_count"] == 0
     readiness = report["empirical_lane_readiness"]
     assert readiness["status"] == "monitoring_only"
@@ -263,7 +263,9 @@ def test_g_league_emits_empirical_forecast_cards_only_after_reconciled_history()
     assert readiness["model_change"] == (
         "none_no_g_league_specific_override_without_walk_forward_evidence"
     )
-    assert readiness["named_book_or_ticket_lane"] == "not_validated_unpriced_only"
+    assert readiness["named_book_or_ticket_lane"] == (
+        "betexplorer_direct_fallback_when_response_has_named_book"
+    )
     assert readiness["reconciled_finals_as_of"] == 40
     assert readiness["minimum_reconciled_finals_for_first_empirical_forecast"] == 40
     assert readiness["current_empirical_forecasts"] == len(cards)

@@ -1,0 +1,653 @@
+"""Bounded direct BetExplorer named-book fallback for basketball prices.
+
+This is deliberately separate from :mod:`ingestion.providers.betexplorer`.
+That adapter records the fixture table's representative *average* as research
+only.  This adapter reads the named bookmaker rows displayed in the
+BetExplorer comparison response and emits one full-game moneyline observation
+per displayed bookmaker.
+
+The route is an operator-authorised, direct public-page fallback for this
+single-user project.  It is intentionally conservative operationally:
+
+* one date-board fetch per run, followed only by matched candidate fixtures;
+* a single 1x2 comparison response per fixture (no browser, proxy, relay,
+  login, or alternate egress path);
+* a three-second minimum request interval, hard request cap, and run-scoped
+  403/429 cooldown; and
+* strict ordered home/away and slate-date matching before a price is emitted.
+
+Every response is represented in the capped run receipt with its source URL
+and SHA-256 digest.  A named bookmaker is retained only when the response
+itself supplies the bookmaker label; the adapter never attributes a fixture
+average or a cross-book best price to a bookmaker.
+"""
+
+from __future__ import annotations
+
+import hashlib
+import html
+import json
+import math
+import os
+import re
+import time
+from datetime import datetime, timezone
+from typing import Any, Callable, Dict, Iterable, List, Optional
+
+from ..http import HttpClient, HttpError
+from ..identity import canonical_team_key, canonical_team_name, now_utc_iso, parse_utc
+from ..models import (
+    BookSnapshot,
+    CoverageGap,
+    CoverageState,
+    GameStatus,
+    Market,
+    OperationalValidation,
+    Period,
+    PriceProvenance,
+    SourcePermission,
+    payload_hash,
+)
+
+PROVIDER = "betexplorer_direct"
+BASE_URL = "https://www.betexplorer.com"
+SITE_TIMEZONE = "Europe/Paris"
+USER_AGENT = "MaGolide BetExplorer fallback/1.0 (single-user price capture)"
+MIN_REQUEST_INTERVAL_SECONDS = 3.0
+MAX_REQUESTS_PER_RUN = int(os.environ.get("BETEXPLORER_DIRECT_MAX_REQUESTS", "50"))
+MAX_RECEIPT_FIXTURES = 20
+MAX_BOOKS_PER_FIXTURE = 40
+
+TextFetch = Callable[[str], str]
+
+# A daily basketball board has an explicit date parameter and supplies the
+# exact match page URL/event id for each candidate.  It avoids probing every
+# league endpoint merely to find a price for a canonical slate game.
+_DAY_URL = BASE_URL + "/basketball/results/?year={year}&month={month}&day={day}"
+_ODDS_URL = BASE_URL + "/match-odds/{event_id}/{page}/1x2/bestOdds/?lang=en"
+
+_ROW_RE = re.compile(r"<tr\b(?P<attrs>[^>]*)>(?P<body>.*?)</tr>", re.I | re.S)
+_LINK_RE = re.compile(
+    r'<a\b[^>]*href=["\'](?P<href>/basketball/[^"\']+)["\'][^>]*>(?P<body>.*?)</a>',
+    re.I | re.S,
+)
+_SPAN_RE = re.compile(r"<span\b[^>]*>(?P<name>.*?)</span>", re.I | re.S)
+_DATA_DT_RE = re.compile(r'data-dt=["\'](?P<value>[^"\']+)["\']', re.I)
+_ODD_RE = re.compile(r'data-odd=["\'](?P<value>[0-9]+(?:\.[0-9]+)?)["\']', re.I)
+_BOOK_TITLE_RE = re.compile(
+    r'<span\b[^>]*class=["\'][^"\']*in-bookmaker-logo[^"\']*["\'][^>]*'
+    r'title=["\'](?P<book>[^"\']+)["\']',
+    re.I | re.S,
+)
+_BOOK_LINK_RE = re.compile(
+    r'<a\b[^>]*class=["\'][^"\']*in-bookmaker-logo-link[^"\']*["\'][^>]*>'
+    r'(?P<book>.*?)</a>',
+    re.I | re.S,
+)
+_BOOK_DATA_RE = re.compile(r'data-bookie=["\'](?P<book>[^"\']+)["\']', re.I)
+_PAGE_PARAM_RE = re.compile(
+    r"match_load_tabs\('\w+',\s*'1x2',\s*'[^']*',\s*'[^']*',\s*'(?P<page>[^']+)'",
+    re.I,
+)
+_ALL_BOOK_ROW_RE = re.compile(
+    r'<div\b[^>]*class=["\'][^"\']*oddsComparisonAll__rowBookie[^"\']*["\'][^>]*>'
+    r'(?P<body>.*?)(?=<div\b[^>]*class=["\'][^"\']*oddsComparisonAll__rowBookie|\Z)',
+    re.I | re.S,
+)
+
+_last_gaps: List[CoverageGap] = []
+_last_receipt: Dict[str, Any] = {}
+_last_request_at = 0.0
+
+
+def is_enabled() -> bool:
+    """The direct, operator-authorised fallback has no credential gate."""
+
+    return True
+
+
+def last_gaps() -> List[CoverageGap]:
+    """Return gaps recorded by the most recent direct fallback run."""
+
+    return list(_last_gaps)
+
+
+def last_receipt() -> Dict[str, Any]:
+    """Return a compact, source-URL/digest receipt for the latest run."""
+
+    return dict(_last_receipt)
+
+
+def last_quota() -> Dict[str, Any]:
+    """Expose bounded request/cooldown telemetry through the pipeline quota slot."""
+
+    return {
+        key: _last_receipt.get(key)
+        for key in (
+            "status",
+            "requests",
+            "request_cap",
+            "cooldown",
+            "day_rows_seen",
+            "candidate_games",
+            "fixtures_matched",
+            "fixtures_unmatched",
+            "fixtures_with_named_books",
+            "snapshots_emitted",
+        )
+        if key in _last_receipt
+    }
+
+
+def _reset_run(league: str, date_yyyymmdd: str, observed_utc: str) -> None:
+    global _last_gaps, _last_receipt
+    _last_gaps = []
+    _last_receipt = {
+        "provider": PROVIDER,
+        "league": str(league).strip().upper(),
+        "date": _date_text(date_yyyymmdd),
+        "observed_utc": observed_utc,
+        "status": "started",
+        "requests": 0,
+        "request_cap": MAX_REQUESTS_PER_RUN,
+        "cooldown": False,
+        "day_rows_seen": 0,
+        "candidate_games": 0,
+        "fixtures_matched": 0,
+        "fixtures_unmatched": 0,
+        "fixtures_with_named_books": 0,
+        "snapshots_emitted": 0,
+        "identity_rejections": {},
+        "fixture_receipts": [],
+    }
+
+
+def _date_text(value: str) -> str:
+    text = str(value or "").strip().replace("-", "")
+    if len(text) != 8 or not text.isdigit():
+        raise ValueError("date_yyyymmdd must be YYYYMMDD or YYYY-MM-DD")
+    return f"{text[:4]}-{text[4:6]}-{text[6:]}"
+
+
+def _default_text_fetch() -> TextFetch:
+    client = HttpClient(timeout=20.0, retries=0, user_agent=USER_AGENT)
+    return client.get_text
+
+
+def _text_fetch(
+    fetch_factory: Optional[Callable[[str], Callable[[str], Any]]],
+    text_fetch: Optional[TextFetch],
+) -> TextFetch:
+    """Return raw HTML/JSON text transport; fixture callers inject text directly."""
+
+    del fetch_factory  # JSON provider factories cannot safely represent HTML pages.
+    return text_fetch or _default_text_fetch()
+
+
+def _record_gap(
+    game_id: Optional[str], field: str, detail: str, state: CoverageState = CoverageState.MISSING
+) -> None:
+    _last_gaps.append(
+        CoverageGap(
+            game_id=game_id,
+            required_field=field,
+            reason=state,
+            provider=PROVIDER,
+            detail=detail,
+        )
+    )
+
+
+def _count_rejection(reason: str) -> None:
+    counts = _last_receipt.setdefault("identity_rejections", {})
+    counts[reason] = int(counts.get(reason, 0)) + 1
+
+
+def _throttle() -> None:
+    global _last_request_at
+    elapsed = time.monotonic() - _last_request_at
+    if elapsed < MIN_REQUEST_INTERVAL_SECONDS:
+        time.sleep(MIN_REQUEST_INTERVAL_SECONDS - elapsed)
+    _last_request_at = time.monotonic()
+
+
+def _fetch_text(fetch: TextFetch, url: str, *, throttle: bool) -> str:
+    """Fetch one bounded response or trip run cooldown on source refusal."""
+
+    if _last_receipt.get("cooldown"):
+        raise RuntimeError("BetExplorer direct fallback is cooling down after source refusal")
+    if int(_last_receipt.get("requests", 0)) >= MAX_REQUESTS_PER_RUN:
+        _last_receipt["status"] = "request_cap_reached"
+        _record_gap(None, "request_budget", "bounded BetExplorer request cap reached", CoverageState.UNSUPPORTED)
+        raise RuntimeError("BetExplorer direct fallback request cap reached")
+    if throttle:
+        _throttle()
+    _last_receipt["requests"] = int(_last_receipt.get("requests", 0)) + 1
+    try:
+        body = fetch(url)
+    except HttpError as exc:
+        if exc.status in {403, 429}:
+            _last_receipt["cooldown"] = True
+            _last_receipt["status"] = f"http_{exc.status}_cooldown"
+            _record_gap(None, "source_access", f"HTTP {exc.status}; no further requests this run", CoverageState.PROVIDER_ERROR)
+        raise
+    if not isinstance(body, str):
+        raise TypeError("BetExplorer transport must return text")
+    encoded = body.encode("utf-8", "replace")
+    if len(encoded) > 1_500_000:
+        raise ValueError("BetExplorer response exceeds 1.5 MB bound")
+    return body
+
+
+def _visible_text(value: str) -> str:
+    text = re.sub(r"<[^>]+>", " ", value or "")
+    return re.sub(r"\s+", " ", html.unescape(text)).strip()
+
+
+def _event_id(href: str) -> Optional[str]:
+    parts = [part for part in str(href or "").split("?")[0].split("/") if part]
+    if not parts:
+        return None
+    value = parts[-1]
+    return value if re.fullmatch(r"[A-Za-z0-9_-]{4,64}", value) else None
+
+
+def _teams(link_body: str) -> tuple[Optional[str], Optional[str]]:
+    names = [_visible_text(item) for item in _SPAN_RE.findall(link_body)]
+    names = [name for name in names if name]
+    if len(names) == 2:
+        return names[0], names[1]
+    text = _visible_text(link_body)
+    if " - " not in text:
+        return None, None
+    home, away = (part.strip() for part in text.split(" - ", 1))
+    return (home or None), (away or None)
+
+
+def _row_date(attrs: str) -> Optional[str]:
+    match = _DATA_DT_RE.search(attrs)
+    if not match:
+        return None
+    values = [value.strip() for value in match.group("value").split(",")]
+    if len(values) < 3 or not all(value.isdigit() for value in values[:3]):
+        return None
+    day, month, year = (int(value) for value in values[:3])
+    try:
+        return datetime(year, month, day, tzinfo=timezone.utc).strftime("%Y-%m-%d")
+    except ValueError:
+        return None
+
+
+def parse_day_board(body: str) -> List[Dict[str, str]]:
+    """Read only explicit basketball fixture rows from a dated BetExplorer board."""
+
+    fixtures: List[Dict[str, str]] = []
+    for row in _ROW_RE.finditer(body or ""):
+        link = _LINK_RE.search(row.group("body"))
+        if link is None:
+            continue
+        event_id = _event_id(html.unescape(link.group("href")))
+        home, away = _teams(link.group("body"))
+        date = _row_date(row.group("attrs"))
+        if not (event_id and home and away and date):
+            continue
+        fixtures.append(
+            {
+                "event_id": event_id,
+                "home_name": canonical_team_name(home),
+                "away_name": canonical_team_name(away),
+                "date": date,
+                "match_url": BASE_URL + html.unescape(link.group("href")),
+            }
+        )
+    return fixtures
+
+
+def _book_name(segment: str) -> Optional[str]:
+    for pattern in (_BOOK_TITLE_RE, _BOOK_LINK_RE, _BOOK_DATA_RE):
+        match = pattern.search(segment)
+        if match is None:
+            continue
+        name = _visible_text(match.group("book"))
+        if name:
+            return name
+    return None
+
+
+def _decimal(value: str) -> Optional[float]:
+    try:
+        parsed = float(str(value))
+    except (TypeError, ValueError):
+        return None
+    return parsed if math.isfinite(parsed) and parsed >= 1.01 else None
+
+
+def parse_named_moneyline_rows(odds_html: str) -> List[Dict[str, Any]]:
+    """Return exact named-book 1x2 rows; averages and unnamed rows are ignored."""
+
+    rows: Dict[str, Dict[str, Any]] = {}
+    # The compact comparison table uses tr elements.  The response's optional
+    # all-bookmaker view uses div.oddsComparisonAll__rowBookie instead; retain
+    # both shapes without treating the adjacent average widgets as a bookmaker.
+    segments = [row.group(0) for row in _ROW_RE.finditer(odds_html or "")]
+    segments.extend(row.group(0) for row in _ALL_BOOK_ROW_RE.finditer(odds_html or ""))
+    for segment in segments:
+        book = _book_name(segment)
+        odds = [_decimal(value) for value in _ODD_RE.findall(segment)]
+        if not book or len(odds) < 2 or any(value is None for value in odds[:2]):
+            continue
+        # Comparison responses can expose a compact best table followed by an
+        # all-bookmaker block.  The latter occurs later and is the fuller view,
+        # so it intentionally replaces the compact duplicate for one book.
+        rows[book.casefold()] = {
+            "book": book,
+            "home_price_decimal": odds[0],
+            "away_price_decimal": odds[1],
+        }
+    return list(rows.values())[:MAX_BOOKS_PER_FIXTURE]
+
+
+def _response_odds_html(body: str) -> str:
+    """Unwrap the page's comparison JSON without accepting invented shapes."""
+
+    try:
+        payload = json.loads(body)
+    except json.JSONDecodeError:
+        return body
+    if isinstance(payload, dict) and isinstance(payload.get("odds"), str):
+        return payload["odds"]
+    return ""
+
+
+def _comparison_page_param(match_page: str) -> str:
+    """Read the page-supplied 1x2 tab parameter; a missing value stays at 1."""
+
+    match = _PAGE_PARAM_RE.search(match_page or "")
+    return match.group("page") if match and match.group("page") else "1"
+
+
+def _scheduled_candidate_games(
+    games: Optional[Iterable[Any]], observed_utc: str
+) -> List[Any]:
+    observed = parse_utc(observed_utc)
+    output = []
+    for game in games or ():
+        scheduled = getattr(game, "scheduled_utc", None)
+        status = getattr(game, "status", None)
+        if not scheduled or status is not GameStatus.SCHEDULED:
+            continue
+        try:
+            if parse_utc(scheduled) <= observed:
+                continue
+        except (TypeError, ValueError):
+            continue
+        if not (getattr(game, "home_name", None) and getattr(game, "away_name", None)):
+            continue
+        output.append(game)
+    return output
+
+
+def _match_fixtures(
+    fixtures: Iterable[Dict[str, str]], games: Iterable[Any], expected_date: str
+) -> List[tuple[Dict[str, str], Any]]:
+    """Bind an event only when ordered teams and dated board identity are unique."""
+
+    matches: List[tuple[Dict[str, str], Any]] = []
+    for fixture in fixtures:
+        if fixture.get("date") != expected_date:
+            continue
+        candidates = [
+            game
+            for game in games
+            if canonical_team_key(fixture["home_name"]) == canonical_team_key(game.home_name)
+            and canonical_team_key(fixture["away_name"]) == canonical_team_key(game.away_name)
+        ]
+        if len(candidates) == 1:
+            matches.append((fixture, candidates[0]))
+        elif candidates:
+            _count_rejection("ambiguous_ordered_team_pair")
+    return matches
+
+
+def _receipt_fixture(
+    fixture: Dict[str, str],
+    game: Any,
+    odds_url: str,
+    body: str,
+    rows: List[Dict[str, Any]],
+    *,
+    page_param: str,
+    match_page: Optional[str] = None,
+) -> None:
+    receipts = _last_receipt.setdefault("fixture_receipts", [])
+    if len(receipts) >= MAX_RECEIPT_FIXTURES:
+        return
+    receipts.append(
+        {
+            "event_id": fixture["event_id"],
+            "game_id": game.game_id,
+            "match_url": fixture["match_url"],
+            "odds_url": odds_url,
+            "comparison_page_param": page_param,
+            "response_sha256": hashlib.sha256(body.encode("utf-8", "replace")).hexdigest(),
+            "match_page_sha256": (
+                hashlib.sha256(match_page.encode("utf-8", "replace")).hexdigest()
+                if match_page is not None
+                else None
+            ),
+            "named_books": [row["book"] for row in rows],
+            "named_book_rows": len(rows),
+        }
+    )
+
+
+def fetch_odds(
+    league: str,
+    date_yyyymmdd: str,
+    fetch_factory: Optional[Callable[[str], Callable[[str], Any]]] = None,
+    now_utc: Optional[str] = None,
+    tz_name: Optional[str] = None,
+    games: Optional[Iterable[Any]] = None,
+    text_fetch: Optional[TextFetch] = None,
+) -> List[BookSnapshot]:
+    """Fetch direct named-book full-game moneylines for canonical fallback games."""
+
+    del tz_name  # The dated BetExplorer board is the source-side date boundary.
+    observed_utc = now_utc or now_utc_iso()
+    date = _date_text(date_yyyymmdd)
+    _reset_run(league, date, observed_utc)
+    candidates = _scheduled_candidate_games(games, observed_utc)
+    _last_receipt["candidate_games"] = len(candidates)
+    if not candidates:
+        _last_receipt["status"] = "no_future_candidate_games"
+        return []
+
+    fetch = _text_fetch(fetch_factory, text_fetch)
+    throttled = text_fetch is None
+    url = _DAY_URL.format(year=date[:4], month=date[5:7], day=date[8:])
+    try:
+        board_body = _fetch_text(fetch, url, throttle=throttled)
+    except Exception as exc:
+        if not _last_receipt.get("cooldown"):
+            _last_receipt["status"] = "board_fetch_error"
+            _record_gap(None, "daily_board", f"{type(exc).__name__}: {str(exc)[:160]}", CoverageState.PROVIDER_ERROR)
+        return []
+
+    fixtures = parse_day_board(board_body)
+    _last_receipt["day_url"] = url
+    _last_receipt["day_response_sha256"] = hashlib.sha256(
+        board_body.encode("utf-8", "replace")
+    ).hexdigest()
+    _last_receipt["day_rows_seen"] = len(fixtures)
+    matched = _match_fixtures(fixtures, candidates, date)
+    _last_receipt["fixtures_matched"] = len(matched)
+    _last_receipt["fixtures_unmatched"] = max(0, len(candidates) - len(matched))
+    if _last_receipt["fixtures_unmatched"]:
+        _count_rejection("no_unique_ordered_team_pair_on_dated_board")
+
+    snapshots: List[BookSnapshot] = []
+    for fixture, game in matched:
+        page_param = "1"
+        match_page: Optional[str] = None
+        odds_url = _ODDS_URL.format(event_id=fixture["event_id"], page=page_param)
+        try:
+            response_body = _fetch_text(fetch, odds_url, throttle=throttled)
+        except Exception as exc:
+            if not _last_receipt.get("cooldown"):
+                _record_gap(
+                    game.game_id,
+                    "named_book_moneyline",
+                    f"{type(exc).__name__}: {str(exc)[:160]}",
+                    CoverageState.PROVIDER_ERROR,
+                )
+            break
+        rows = parse_named_moneyline_rows(_response_odds_html(response_body))
+        if not rows and not _last_receipt.get("cooldown"):
+            # Most comparison pages use page parameter 1.  When it produces no
+            # named row, port Edge Factory's guarded match-page read to obtain
+            # the parameter that the source page itself supplies, then retry
+            # exactly that one 1x2 response.  This is a rescue for an empty
+            # price surface, not a fan-out into other markets.
+            try:
+                match_page = _fetch_text(fetch, fixture["match_url"], throttle=throttled)
+                page_param = _comparison_page_param(match_page)
+                if page_param != "1":
+                    odds_url = _ODDS_URL.format(event_id=fixture["event_id"], page=page_param)
+                    response_body = _fetch_text(fetch, odds_url, throttle=throttled)
+                    rows = parse_named_moneyline_rows(_response_odds_html(response_body))
+            except Exception as exc:
+                if not _last_receipt.get("cooldown"):
+                    _record_gap(
+                        game.game_id,
+                        "comparison_page_parameter",
+                        f"{type(exc).__name__}: {str(exc)[:160]}",
+                        CoverageState.PROVIDER_ERROR,
+                    )
+        _receipt_fixture(
+            fixture,
+            game,
+            odds_url,
+            response_body,
+            rows,
+            page_param=page_param,
+            match_page=match_page,
+        )
+        if not rows:
+            _record_gap(
+                game.game_id,
+                "named_book_moneyline",
+                "comparison response had no complete named two-way moneyline row",
+            )
+            continue
+        _last_receipt["fixtures_with_named_books"] = int(
+            _last_receipt["fixtures_with_named_books"]
+        ) + 1
+        for row in rows:
+            snapshots.append(
+                BookSnapshot(
+                    game_id=f"{PROVIDER}:{fixture['event_id']}",
+                    provider=PROVIDER,
+                    book=row["book"],
+                    market=Market.MONEYLINE,
+                    period=Period.FULL_GAME,
+                    observed_utc=observed_utc,
+                    home_price_decimal=float(row["home_price_decimal"]),
+                    away_price_decimal=float(row["away_price_decimal"]),
+                    pre_match=True,
+                    main_line=True,
+                    payload_hash=payload_hash(
+                        {
+                            "source": "betexplorer_comparison",
+                            "event_id": fixture["event_id"],
+                            "odds_url": odds_url,
+                            "book": row["book"],
+                            "home_price_decimal": row["home_price_decimal"],
+                            "away_price_decimal": row["away_price_decimal"],
+                        }
+                    ),
+                    # The central registry re-stamps this direct observation.
+                    # Defaults make direct adapter invocation truthful as well.
+                    price_provenance=PriceProvenance.NAMED_BOOK,
+                    source_permission=SourcePermission.UNRESOLVED,
+                    operational_validation=OperationalValidation.PROBATION,
+                    provider_event_id=fixture["event_id"],
+                    home_name=fixture["home_name"],
+                    away_name=fixture["away_name"],
+                    # The canonical scheduled instant is supplied by the
+                    # official/schedule adapter.  The dated public board and
+                    # ordered teams bind the BetExplorer event to that game;
+                    # no vague page-local clock is converted or guessed.
+                    scheduled_utc=game.scheduled_utc,
+                )
+            )
+    _last_receipt["snapshots_emitted"] = len(snapshots)
+    if _last_receipt.get("status") == "started":
+        _last_receipt["status"] = "success" if snapshots else "no_named_book_prices"
+    return snapshots
+
+
+def smoke(
+    league: str,
+    fetch_factory: Optional[Callable[[str], Callable[[str], Any]]] = None,
+    date_yyyymmdd: Optional[str] = None,
+    now_utc: Optional[str] = None,
+    tz_name: Optional[str] = None,
+    text_fetch: Optional[TextFetch] = None,
+) -> Dict[str, Any]:
+    """Bounded read-only board probe; no fixture comparison requests are made."""
+
+    del tz_name
+    observed_utc = now_utc or now_utc_iso()
+    date = _date_text(date_yyyymmdd or observed_utc[:10])
+    _reset_run(league, date, observed_utc)
+    fetch = _text_fetch(fetch_factory, text_fetch)
+    url = _DAY_URL.format(year=date[:4], month=date[5:7], day=date[8:])
+    try:
+        body = _fetch_text(fetch, url, throttle=text_fetch is None)
+    except Exception as exc:
+        if not _last_receipt.get("cooldown"):
+            _last_receipt["status"] = "board_fetch_error"
+        return {
+            "enabled": True,
+            "provider": PROVIDER,
+            "league": str(league).upper(),
+            "verification": "DIRECT_PUBLIC_PAGE_FALLBACK",
+            "status": _last_receipt["status"],
+            "detail": f"{type(exc).__name__}: {str(exc)[:160]}",
+        }
+    fixtures = parse_day_board(body)
+    _last_receipt.update(
+        {
+            "status": "success",
+            "day_url": url,
+            "day_rows_seen": len(fixtures),
+            "day_response_sha256": hashlib.sha256(body.encode("utf-8", "replace")).hexdigest(),
+        }
+    )
+    return {
+        "enabled": True,
+        "provider": PROVIDER,
+        "league": str(league).upper(),
+        "verification": "DIRECT_PUBLIC_PAGE_FALLBACK",
+        "date": date,
+        "daily_board_rows": len(fixtures),
+        "request_cap": MAX_REQUESTS_PER_RUN,
+        "minimum_request_interval_seconds": MIN_REQUEST_INTERVAL_SECONDS,
+        "receipt": last_receipt(),
+    }
+
+
+__all__ = [
+    "BASE_URL",
+    "MAX_REQUESTS_PER_RUN",
+    "MIN_REQUEST_INTERVAL_SECONDS",
+    "PROVIDER",
+    "fetch_odds",
+    "is_enabled",
+    "last_gaps",
+    "last_quota",
+    "last_receipt",
+    "parse_day_board",
+    "parse_named_moneyline_rows",
+    "smoke",
+]

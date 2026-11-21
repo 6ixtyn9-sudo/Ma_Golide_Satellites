@@ -23,8 +23,12 @@ commitment. `FIXTURE_COVERED` means hermetic parser/control-flow coverage only.
 | Automated use, quota, key rotation, storage/redistribution rights | `UNRESOLVED` | A public browser-delivered key and successful read-only calls do not establish these permissions or operational guarantees. |
 
 The full live-vs-fixture distinction and current operational constraints are in
-[PROVIDERS.md](PROVIDERS.md). In particular, ELW has no validated named-book
-lane: any empirical paper counts are explicitly unpriced, not EV/value claims.
+[PROVIDERS.md](PROVIDERS.md). ELW has no dedicated API bookmaker integration,
+but its canonical future fixtures are eligible for the bounded direct
+BetExplorer named-book fallback. That fallback is full-game moneyline-only and
+is explicitly labelled `unresolved` / `probation`; absent a matching displayed
+comparison row, the empirical card remains unpriced rather than making an
+EV/value claim.
 
 ## Clean dependency and test verification
 
