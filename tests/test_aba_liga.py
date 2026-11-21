@@ -1412,6 +1412,31 @@ def test_header_without_score_flanked_club_slots_fails_closed():
     assert diagnostics["reason"] == str(excinfo.value)
 
 
+def test_multiple_score_bearing_header_rows_fail_closed_as_ambiguous():
+    # A second score-bearing row is not a tiebreaker opportunity. It can be a
+    # responsive/navigation duplicate, and its document order must never pick
+    # the source of canonical team identity. Even identical rows are ambiguous.
+    header_row = """<tr>
+<td class="hidden-xs"><span class="club"><a href="/team/12/25/1/0/buducnost/">Budućnost VOLI</a></span></td>
+<td class="gameScore">93 : 97</td>
+<td class="hidden-xs"><span class="club"><a href="/team/91/25/1/0/spartak/">Spartak Office Shoes</a></span></td>
+</tr>"""
+    assert header_row in MATCH
+    duplicate_score_row = MATCH.replace(header_row, header_row + header_row, 1)
+    games = aba.parse_calendar(CALENDAR, 2026)
+
+    with pytest.raises(
+        IdentityError, match="header lacks the score-flanked club slots"
+    ) as excinfo:
+        aba._match_game(duplicate_score_row, games[0], require_final=True)
+
+    diagnostics = aba.last_rejected_page_diagnostics()
+    assert diagnostics is not None
+    assert diagnostics["header_row_cells"] == 0
+    assert diagnostics["score_flanked_shape_present"] is False
+    assert diagnostics["reason"] == str(excinfo.value)
+
+
 def test_rejection_diagnostics_are_bounded_and_allowlisted():
     codes_only = CALENDAR.replace(
         LEGACY_CELL,

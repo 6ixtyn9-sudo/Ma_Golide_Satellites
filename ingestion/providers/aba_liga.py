@@ -773,6 +773,7 @@ def _header_row_cells(root: _Node) -> List[_Node]:
     block = root.find(tag="div", ident="match_clubs_and_results_info_table")
     if block is None:
         return []
+    candidates: List[List[_Node]] = []
     for table in block.find_all(tag="table"):
         for row in table.direct("tr"):
             cells = row.direct("td", "th")
@@ -780,8 +781,11 @@ def _header_row_cells(root: _Node) -> List[_Node]:
                 index for index, cell in enumerate(cells) if "gameScore" in cell.classes()
             ]
             if len(score_positions) == 1:
-                return cells
-    return []
+                candidates.append(cells)
+    # A second score-bearing row could be a responsive or navigation duplicate.
+    # Its position does not establish authority, even if it happens to repeat
+    # the same teams, so reject the whole shape rather than selecting first.
+    return candidates[0] if len(candidates) == 1 else []
 
 
 def _flanking_club_slots(cells: List[_Node]) -> Optional[tuple[_Node, _Node]]:
