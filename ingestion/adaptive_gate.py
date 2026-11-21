@@ -55,12 +55,11 @@ from ingestion.providers.fiba_euroleague_w_contract import (
 
 SCHEMA_VERSION = "magolide.adaptive-gate"
 DECISION_LEAD_MINUTES = 60
-# Keep this compact NBA exception aligned with forecasting.operator. NBA uses
-# 18:00 Johannesburg time; every other league uses 09:00, unless an earlier
-# fixture needs the ordinary 60-minute pre-tip safety cutoff.
+# Keep this universal policy aligned with forecasting.operator. Every dated
+# ticket decision is at midday Johannesburg time, unless an earlier fixture
+# needs the ordinary 60-minute pre-tip safety cutoff.
 TICKET_PUBLICATION_TIMEZONE = "Africa/Johannesburg"
-DEFAULT_TICKET_PUBLICATION_LOCAL_TIME = time(hour=9)
-NBA_TICKET_PUBLICATION_LOCAL_TIME = time(hour=18)
+TICKET_PUBLICATION_LOCAL_TIME = time(hour=12)
 HTTP_TIMEOUT_SECONDS = 15
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 COVERAGE_GAP_MARKER_SCHEMA = "magolide.coverage_gap_marker"
@@ -203,14 +202,9 @@ def _ticket_decision_cutoff(
     ]
     if not tips:
         return None
-    publication_time = (
-        NBA_TICKET_PUBLICATION_LOCAL_TIME
-        if config.league_key == "NBA"
-        else DEFAULT_TICKET_PUBLICATION_LOCAL_TIME
-    )
     publication = datetime.combine(
         target_day,
-        publication_time,
+        TICKET_PUBLICATION_LOCAL_TIME,
         tzinfo=ZoneInfo(TICKET_PUBLICATION_TIMEZONE),
     ).astimezone(timezone.utc)
     return min(publication, min(tips) - timedelta(minutes=DECISION_LEAD_MINUTES))
