@@ -13,7 +13,7 @@
       "logical_picks": 462
     },
     "2026-11-21": {
-      "frozen_fixtures": 38,
+      "frozen_fixtures": 39,
       "logical_picks": 425
     }
   },
@@ -47782,6 +47782,446 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
       },
+      "401920570": {
+        "decision_cutoff_utc": "2026-11-21T21:30:00Z",
+        "frozen_at": "2026-11-21T21:46:33Z",
+        "game_id": "401920570",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Southern Illinois Salukis",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.578095,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 159,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "afaa20844749922479e646bbe1850970d164008fd21b93408b22d6eb0a8821b1",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "3dc29632b65e19bc1465",
+            "game_id": "401920570",
+            "grade_status": "pending",
+            "home": "East Carolina Pirates",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "3dc29632b65e19bc1465",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.65,
+            "role": null,
+            "scheduled_utc": "2026-11-21T22:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Southern Illinois Salukis",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920570",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T21:39:43Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8333333333333335,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.492338,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 99,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "eec0cf5315c4752c1ac7b47edc719b06de04ef065e1775a9f21d5e1ea0bdda30",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "94bf54219a318b7c9b2d",
+            "game_id": "401920570",
+            "grade_status": "pending",
+            "home": "East Carolina Pirates",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "94bf54219a318b7c9b2d",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-21T21:39:54Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.5666,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-21T22:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Southern Illinois Salukis",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920570",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T21:39:43Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 2.0,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.489683,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 159,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "47ac9667d9e57bbd197520424e216913aa36da356cfa24c5bbdd4618be7a40e6",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "be96dff5f348ae2da61b",
+            "game_id": "401920570",
+            "grade_status": "pending",
+            "home": "East Carolina Pirates",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "be96dff5f348ae2da61b",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-21T22:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Southern Illinois Salukis",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920570",
+              "line": -1.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T14:38:51Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.514918,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 31,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "8032fb0cf1b668f98ac0a7e33913de7e485a3c5a324c7e0dfdc4125f60d51d0e",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "05ea9d6e057de0c5aeea",
+            "game_id": "401920570",
+            "grade_status": "pending",
+            "home": "East Carolina Pirates",
+            "league": "NCAA_M",
+            "line": -1.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.041805,
+              "historical_pick_count": 107,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 53,
+              "market": "spread",
+              "observed_roi": -0.041935,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.041016,
+              "wins": 54
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "05ea9d6e057de0c5aeea",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-21T22:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Southern Illinois Salukis",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920570",
+              "line": 1.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T21:39:43Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.514921,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 33,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "429e56c8dff6708905e3b13301be06e5fcba812fda45d6675b0ba113912926d2",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "c1714e87b1f823ea953b",
+            "game_id": "401920570",
+            "grade_status": "pending",
+            "home": "East Carolina Pirates",
+            "league": "NCAA_M",
+            "line": 1.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.042377,
+              "historical_pick_count": 111,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 55,
+              "market": "spread",
+              "observed_roi": -0.042418,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.041535,
+              "wins": 56
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "c1714e87b1f823ea953b",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-21T22:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Southern Illinois Salukis",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920570",
+              "line": 153.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T21:39:43Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.507344,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 34,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "4d3ea83d253fb17d25d7784dc9de4ee0497a2b9131e6b606e7796fe3f2bbc500",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "647f671c90d6aff7db0a",
+            "game_id": "401920570",
+            "grade_status": "pending",
+            "home": "East Carolina Pirates",
+            "league": "NCAA_M",
+            "line": 153.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.122812,
+              "historical_pick_count": 182,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 74,
+              "market": "total",
+              "observed_roi": 0.130314,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.124076,
+              "wins": 108
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "647f671c90d6aff7db0a",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-21T22:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Southern Illinois Salukis",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401920570",
+              "line": 153.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T19:39:00Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.476333,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 30,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "73c4088bae65af3b2c2211f2e333d20c5a6dd2d1fb8a22c97db840ac167e3d07",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0aeb2fafb21843d2d00c",
+            "game_id": "401920570",
+            "grade_status": "pending",
+            "home": "East Carolina Pirates",
+            "league": "NCAA_M",
+            "line": 153.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "0aeb2fafb21843d2d00c",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-21T22:30:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-21T22:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      },
       "401920773": {
         "decision_cutoff_utc": "2026-11-21T18:00:00Z",
         "frozen_at": "2026-11-21T18:15:00Z",
@@ -57185,14 +57625,6 @@
   "league": "NCAA_M",
   "pending_frozen_games": [
     [
-      "401909719",
-      "2026-11-21T19:00:00Z"
-    ],
-    [
-      "401922222",
-      "2026-11-21T19:00:00Z"
-    ],
-    [
       "401917953",
       "2026-11-21T20:00:00Z"
     ],
@@ -57259,6 +57691,10 @@
     [
       "401925709",
       "2026-11-21T22:00:00Z"
+    ],
+    [
+      "401920570",
+      "2026-11-21T22:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
