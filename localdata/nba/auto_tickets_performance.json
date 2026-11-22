@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 15,
+  "awaiting_game_legs": 13,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -1204,7 +1204,7 @@
       "wins": 0
     },
     {
-      "awaiting_game_legs": 15,
+      "awaiting_game_legs": 13,
       "bank_units": 98.7688506008459,
       "date": "2026-11-22",
       "decision_id": "45010842248_nba_1_attempt_1",
@@ -1374,7 +1374,7 @@
           "unresolved_legs": 3
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
@@ -1384,7 +1384,7 @@
           "grade_status": "pending",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "win",
             null,
             null
           ],
@@ -1395,13 +1395,13 @@
               "book_provider": "espn",
               "forecast_id": "9e11e98db624d9935f93",
               "game_id": "401910029",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Atlanta Hawks",
               "line": 2.5,
               "market": "spread",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "9e11e98db624d9935f93",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-22T20:30:00Z",
               "selected_decimal_price": 1.8849557522123894,
               "selection": "home"
@@ -1451,10 +1451,10 @@
           "stake_units": 1.0,
           "ticket_id": "ee4b1f5907ea4f7ca7b7",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
@@ -1464,7 +1464,7 @@
           "grade_status": "pending",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "win",
             null,
             null
           ],
@@ -1475,13 +1475,13 @@
               "book_provider": "espn",
               "forecast_id": "61bbb308022d33a22024",
               "game_id": "401910029",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Atlanta Hawks",
               "line": 225.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "61bbb308022d33a22024",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-22T20:30:00Z",
               "selected_decimal_price": 1.9523809523809523,
               "selection": "under"
@@ -1531,7 +1531,7 @@
           "stake_units": 1.0,
           "ticket_id": "a3d8f8b6531ac30eb45e",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         },
         {
           "awaiting_game_legs": 3,
@@ -1623,7 +1623,7 @@
       "settled_positions": 0,
       "settled_singles": 0,
       "staked_units": 0,
-      "unresolved_result_legs": 15,
+      "unresolved_result_legs": 13,
       "wins": 0
     }
   ],
@@ -1643,12 +1643,12 @@
   "result_unresolvable_legs": 0,
   "roi": -0.08793924279672215,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.29576382755083325,
+  "selected_leg_brier_score": 0.28942476017089463,
   "settled_accas": 11,
   "settled_positions": 14,
   "settled_singles": 3,
   "settled_stake_units": 14.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 15,
+  "unresolved_result_legs": 13,
   "wins": 4
 }
