@@ -13,7 +13,7 @@
       "logical_picks": 462
     },
     "2026-11-21": {
-      "frozen_fixtures": 50,
+      "frozen_fixtures": 51,
       "logical_picks": 435
     }
   },
@@ -62636,6 +62636,480 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
       },
+      "401926217": {
+        "decision_cutoff_utc": "2026-11-21T23:30:00Z",
+        "frozen_at": "2026-11-21T23:48:46Z",
+        "game_id": "401926217",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Presbyterian Blue Hose",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.775773,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 164,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "47cc8c6b26f36b5c4988db47473ff843485496dbe21407999c0d05c7cd9a5a0c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e931cda4b31000892ee2",
+            "game_id": "401926217",
+            "grade_status": "pending",
+            "home": "Tennessee Tech Golden Eagles",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "e931cda4b31000892ee2",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.85,
+            "role": null,
+            "scheduled_utc": "2026-11-22T00:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Presbyterian Blue Hose",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926217",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T23:39:46Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.289855072463768,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.78299,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 164,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "48930a4f37f3bf79eee8d37e3fc7a3b0b426f01c7aed6b77b410b1382927956b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "9c5316c58325177b29d8",
+            "game_id": "401926217",
+            "grade_status": "pending",
+            "home": "Tennessee Tech Golden Eagles",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "9c5316c58325177b29d8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.85,
+            "role": null,
+            "scheduled_utc": "2026-11-22T00:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Presbyterian Blue Hose",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926217",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T23:39:46Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.289855072463768,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.671472,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 116,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "949cd9353fe10be1611e2a9006bcdf9914a033cbfda76da782a197a9bfe6c58e",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "baa0aba0fbe3d6726435",
+            "game_id": "401926217",
+            "grade_status": "pending",
+            "home": "Tennessee Tech Golden Eagles",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.160153,
+              "historical_pick_count": 5,
+              "individual_odds_band": "1.20-<1.50",
+              "losses": 2,
+              "market": "moneyline",
+              "observed_roi": -0.196426,
+              "period": "full_game",
+              "probability_band": "0.60-<0.70",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.170601,
+              "wins": 3
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "baa0aba0fbe3d6726435",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-21T23:39:53Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.7436,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-22T00:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Presbyterian Blue Hose",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926217",
+              "line": -7.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T23:39:46Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.455606,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 36,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "b4c9d30dcbf887b5c22234ce257d463935a84b2186927161adecf52c5e0265be",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "020190db98c2a3ec5dac",
+            "game_id": "401926217",
+            "grade_status": "pending",
+            "home": "Tennessee Tech Golden Eagles",
+            "league": "NCAA_M",
+            "line": -7.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "020190db98c2a3ec5dac",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-22T00:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Presbyterian Blue Hose",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926217",
+              "line": -8.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T22:39:33Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.465606,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 36,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "ba76d0d796008bc14e31639d004298294f6b2905c3c1380464f0c373034180ba",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e9af26aa1a326882eda3",
+            "game_id": "401926217",
+            "grade_status": "pending",
+            "home": "Tennessee Tech Golden Eagles",
+            "league": "NCAA_M",
+            "line": -8.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "e9af26aa1a326882eda3",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-22T00:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Presbyterian Blue Hose",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926217",
+              "line": 163.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T23:39:46Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.563284,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 37,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "88cceb25173a61b4affec0af9c0d01cadc580e2149ac21387a943599b1ab31f1",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "3d52e6954d4c15b8cfb8",
+            "game_id": "401926217",
+            "grade_status": "pending",
+            "home": "Tennessee Tech Golden Eagles",
+            "league": "NCAA_M",
+            "line": 163.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "3d52e6954d4c15b8cfb8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-22T00:30:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Presbyterian Blue Hose",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926217",
+              "line": 164.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T22:39:33Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.563284,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 37,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "544740e9058b3445873cc13db5acb3e7fe4da665ef7bcd65bd98f5b7860d9e71",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "91358c48fc28c586315f",
+            "game_id": "401926217",
+            "grade_status": "pending",
+            "home": "Tennessee Tech Golden Eagles",
+            "league": "NCAA_M",
+            "line": 164.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "91358c48fc28c586315f",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-22T00:30:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Presbyterian Blue Hose",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926217",
+              "line": 165.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T15:39:31Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.516333,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 30,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "eaf752b7f85d7aaa5f25c9f919f9576c17c5218a5e39face49f5670117b8dbc4",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "da12c48365d34c96792d",
+            "game_id": "401926217",
+            "grade_status": "pending",
+            "home": "Tennessee Tech Golden Eagles",
+            "league": "NCAA_M",
+            "line": 165.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "da12c48365d34c96792d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-22T00:30:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T00:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      },
       "401927365": {
         "decision_cutoff_utc": "2026-11-21T19:00:00Z",
         "frozen_at": "2026-11-21T19:14:07Z",
@@ -63341,14 +63815,6 @@
   "league": "NCAA_M",
   "pending_frozen_games": [
     [
-      "401923322",
-      "2026-11-21T21:00:00Z"
-    ],
-    [
-      "401917538",
-      "2026-11-21T21:30:00Z"
-    ],
-    [
       "401911337",
       "2026-11-21T22:00:00Z"
     ],
@@ -63411,6 +63877,10 @@
     [
       "401921776",
       "2026-11-22T00:00:00Z"
+    ],
+    [
+      "401926217",
+      "2026-11-22T00:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
