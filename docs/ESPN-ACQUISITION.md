@@ -108,8 +108,12 @@ For scale, the NBA 2025 index returned 1,412 events across two pages at
 ESPN rejected the tested multi-day scoreboard ranges with HTTP 400; recent
 backfill therefore uses individual dates.
 
-Conservative acquisition floors are NBA 1947, WNBA 1997, NCAA_M 2001, and
-NCAA_W 2001. NBA G League deliberately has **no** deep-index floor: its
+Conservative acquisition floors are NBA 2001, WNBA 1997, NCAA_M 2001, and
+NCAA_W 2001. The NBA floor is capped at 2001 even though the first nonempty NBA
+index year is 1947: the pre-2001 index is sparse, playoff-skewed, and offers no
+acquisition leverage, so a cursor that reaches it is reported complete rather
+than crawled. This is an acquisition floor, not a claim that 1947-2000 games do
+not exist. NBA G League deliberately has **no** deep-index floor: its
 scoreboard/summary capture validates only date-bounded recent results, so the
 pipeline does not advance a core-index history cursor for that lane. Its
 56-day normal-run bootstrap is an intentionally bounded sequence of those same
@@ -141,9 +145,16 @@ Each write-enabled ESPN lane performs bounded history work:
 The cursor is the `provider_health` row with provider `espn-history`. Its
 coverage contains `next_season`, `next_event_index`, `last_index_year`, and
 `floor_season`. It starts at the previous season and works backward. It
-advances only after `DuckDBStore.upsert_game` succeeds, or when that exact
-historical summary is already persisted. A provider/identity error leaves the
-cursor on the failed event. A dry run never advances the deep cursor.
+advances only after `DuckDBStore.upsert_game` succeeds, when that exact
+historical summary is already persisted, or when the event summary returns a
+**permanent** HTTP 404 (`ingestion.http.PERMANENT_STATUS`): a 404 on one indexed
+event means that manifest entry has no summary page, so retaining the cursor
+would wedge every later run on the same event. Such a skip is recorded as a
+`deep_history_event` coverage gap (`missing`, detail `permanent HTTP 404:`),
+counted as `permanent_skips`, and reflected in the run status
+`acquired_with_permanent_skips`. Every transient failure (timeouts, 429, 5xx,
+network errors, exhausted request budget) still leaves the cursor on the failed
+event. A dry run never advances the deep cursor.
 
 The workflow needs no new league/date/mode/write inputs. Its external-trigger
 league matrix runs this same bounded backfill. Cache saves preserve public

@@ -114,7 +114,10 @@ RESULT_PERIOD_PARSER_VERSION = 2
 # Earliest non-empty core event-index years verified live on 2026-11-07.
 # They are acquisition floors, not claims of complete season coverage.
 HISTORY_FLOORS = {
-    League.NBA: 1947,
+    # Capped at the 2001 floor shared by the NCAA lanes: the pre-2001 core
+    # event index is sparse and offers no acquisition leverage, so a cursor
+    # reaching it is treated as complete rather than ingested.
+    League.NBA: 2001,
     League.WNBA: 1997,
     League.NCAA_M: 2001,
     League.NCAA_W: 2001,
