@@ -25,7 +25,7 @@
       "logical_picks": 166
     },
     "2026-11-22": {
-      "frozen_fixtures": 0,
+      "frozen_fixtures": 1,
       "logical_picks": 206
     }
   },
@@ -24882,9 +24882,155 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
       }
+    },
+    "2026-11-22": {
+      "401913767": {
+        "decision_cutoff_utc": "2026-11-22T15:30:00Z",
+        "frozen_at": "2026-11-22T15:53:19Z",
+        "game_id": "401913767",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Pennsylvania Quakers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.554,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 220,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "3398ca724b26151ad595c59ff4b8d0f0c9be30e7d3052e5d3e173a7950e3a816",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "2050a6d26d5d20a1fa4b",
+            "game_id": "401913767",
+            "grade_status": "pending",
+            "home": "Maine Black Bears",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "2050a6d26d5d20a1fa4b",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.62,
+            "role": null,
+            "scheduled_utc": "2026-11-22T16:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Pennsylvania Quakers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.788405,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 141,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "711b55000f087ec44b8a8918223fdef427f057471e383d35fe950819d49b9988",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "428565fe83eea4c4d943",
+            "game_id": "401913767",
+            "grade_status": "pending",
+            "home": "Maine Black Bears",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "428565fe83eea4c4d943",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-22T15:40:07Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.8292,
+            "role": null,
+            "scheduled_utc": "2026-11-22T16:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Pennsylvania Quakers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.69127,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 222,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "49ed941ac6c4eedc4b5d227fcead1e7bee39f4c13d0d074a388446b0e1725252",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a619587720fd5fe1d96b",
+            "game_id": "401913767",
+            "grade_status": "pending",
+            "home": "Maine Black Bears",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "a619587720fd5fe1d96b",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.71,
+            "role": null,
+            "scheduled_utc": "2026-11-22T16:30:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T16:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
+      }
     }
   },
   "league": "NCAA_W",
-  "pending_frozen_games": [],
+  "pending_frozen_games": [
+    [
+      "401913767",
+      "2026-11-22T16:30:00Z"
+    ]
+  ],
   "schema_version": "magolide.pick_lifecycle_state"
 }
