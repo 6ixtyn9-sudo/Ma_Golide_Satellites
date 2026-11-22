@@ -1,6 +1,6 @@
 Ma Golide Picks — NCAA_M 2026-11-21
 ========================================================================
-Generated at: 2026-11-22 02:18 SAST
+Generated at: 2026-11-22 02:46 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -14,40 +14,34 @@ ELIGIBLE CLEAN PICKS
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=165 · reasons=none · prediction=history
       ROI-BAND BLOCKED · moneyline full_game · p 0.80-<0.90 · odds 1.00-<1.20 · n=0 · recency ROI n/a / adjusted n/a
-      archived_revisions=39 · latest_evidence_utc=2026-11-22T00:09:38Z
+      archived_revisions=40 · latest_evidence_utc=2026-11-22T00:39:58Z
   [provider:espn/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
-      MONEYLINE full_game -> HOME · p=89.5% (raw 98.1%) @1.012 DraftKings
+      MONEYLINE full_game -> HOME · p=89.2% (raw 98.1%) @1.012 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=120 · reasons=none · prediction=espn
-      archived_revisions=39 · latest_evidence_utc=2026-11-22T00:09:42Z
-  [provider:espn/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
-      MONEYLINE full_game -> HOME · p=67.1% (raw 74.4%) @1.290 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
-      calibration=calibrated n=116 · reasons=none · prediction=espn
-      ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.20-<1.50 · n=5 · recency ROI -17.1% / adjusted -16.0%
+      calibration=calibrated n=121 · reasons=none · prediction=espn
+      archived_revisions=40 · latest_evidence_utc=2026-11-22T00:40:06Z
   [provider:espn/team_history_empirical] Pacific Tigers vs Bradley Braves · KO 2026-11-22 05:00 SAST
-      MONEYLINE full_game -> HOME · p=66.9% (raw 75.6%) @1.253 DraftKings
+      MONEYLINE full_game -> HOME · p=66.6% (raw 75.6%) @1.253 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=120 · reasons=none · prediction=espn
-      ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.20-<1.50 · n=5 · recency ROI -17.1% / adjusted -16.4%
-      archived_revisions=39 · latest_evidence_utc=2026-11-22T00:09:42Z
+      calibration=calibrated n=121 · reasons=none · prediction=espn
+      ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.20-<1.50 · n=5 · recency ROI -17.1% / adjusted -16.8%
+      archived_revisions=40 · latest_evidence_utc=2026-11-22T00:40:06Z
   [provider:espn/team_history_empirical] Valparaiso Beacons vs Troy Trojans · KO 2026-11-22 03:00 SAST
       MONEYLINE full_game -> HOME · p=59.5% (raw 68.1%) @1.521 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
       calibration=calibrated n=120 · reasons=none · prediction=espn
       PAPER SINGLE · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=11 · recency ROI +26.8% / adjusted +17.0%
   [provider:espn/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
-      MONEYLINE full_game -> HOME · p=56.6% (raw 65.2%) @1.833 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=120 · reasons=none · prediction=espn
-      PAPER SINGLE · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=11 · recency ROI +26.8% / adjusted +17.0%
-      archived_revisions=39 · latest_evidence_utc=2026-11-22T00:09:42Z
+      MONEYLINE full_game -> HOME · p=56.3% (raw 65.2%) @1.833 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
+      calibration=calibrated n=121 · reasons=none · prediction=espn
+      PAPER SINGLE · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=11 · recency ROI +26.8% / adjusted +16.8%
   [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
-      TOTAL full_game 149.5 -> UNDER · p=53.5% (raw 54.0%) @1.909 DraftKings
+      TOTAL full_game 149.5 -> UNDER · p=54.5% (raw 55.0%) @1.909 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=38 · reasons=none · prediction=history
-      PAPER SINGLE · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=212 · recency ROI +8.9% / adjusted +8.8%
-      archived_revisions=6 · latest_evidence_utc=2026-11-22T00:09:38Z
+      PAPER SINGLE · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=216 · recency ROI +6.7% / adjusted +6.7%
+      archived_revisions=7 · latest_evidence_utc=2026-11-22T00:39:58Z
   [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
       SPREAD full_game +24.5 -> AWAY · p=53.2% (raw 60.0%) @1.952 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
@@ -76,10 +70,6 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE full_game -> HOME · p=91.0% (raw 99.7%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
       calibration=calibrated n=120 · reasons=no_exact_bookmaker_market · prediction=espn
-  [team_history_empirical/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
-      MONEYLINE H1 -> HOME · p=77.6% (raw 85.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
-      calibration=calibrated n=164 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
       MONEYLINE H1 -> HOME · p=77.3% (raw 85.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -93,12 +83,12 @@ WATCHLIST — NO MATCHED ODDS
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
       calibration=calibrated n=165 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Pacific Tigers vs Bradley Braves · KO 2026-11-22 05:00 SAST
-      MONEYLINE H1 -> HOME · p=63.3% (raw 71.0%) @n/a no matched book
+      MONEYLINE H1 -> HOME · p=64.3% (raw 72.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=165 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
-      MONEYLINE H1 -> HOME · p=61.3% (raw 69.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      MONEYLINE H1 -> HOME · p=60.3% (raw 68.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
       calibration=calibrated n=165 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Abilene Christian Wildcats vs Southwestern Adventist Knights · KO 2026-11-22 03:00 SAST
       MONEYLINE H1 -> HOME · p=52.3% (raw 60.0%) @n/a no matched book
@@ -123,10 +113,6 @@ SKIPPED — INELIGIBLE
       MONEYLINE full_game -> HOME · p=84.0% (raw 91.0%) @1.521 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
       calibration=calibrated n=165 · reasons=insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
-      MONEYLINE full_game -> HOME · p=78.3% (raw 85.0%) @1.290 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
-      calibration=calibrated n=164 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Pacific Tigers vs Bradley Braves · KO 2026-11-22 05:00 SAST
       TOTAL full_game 126.5 -> OVER · p=56.5% (raw 59.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -137,24 +123,11 @@ SKIPPED — INELIGIBLE
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=29 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
       archived_revisions=3 · latest_evidence_utc=2026-11-21T15:09:27Z
-  [team_history_empirical/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
-      TOTAL full_game 163.5 -> UNDER · p=56.3% (raw 56.0%) @1.926 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
-      calibration=calibrated n=37 · reasons=insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
-      TOTAL full_game 164.5 -> UNDER · p=56.3% (raw 56.0%) @1.893 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
-      calibration=calibrated n=37 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Pacific Tigers vs Bradley Braves · KO 2026-11-22 05:00 SAST
       TOTAL full_game 129.5 -> OVER · p=54.6% (raw 58.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=30 · reasons=insufficient_team_specific_history · prediction=history
       archived_revisions=2 · latest_evidence_utc=2026-11-21T19:08:53Z
-  [team_history_empirical/team_history_empirical] Pacific Tigers vs Bradley Braves · KO 2026-11-22 05:00 SAST
-      TOTAL full_game 130.5 -> OVER · p=54.5% (raw 55.0%) @1.926 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=38 · reasons=insufficient_team_specific_history · prediction=history
-      archived_revisions=10 · latest_evidence_utc=2026-11-22T00:09:38Z
   [team_history_empirical/team_history_empirical] Pacific Tigers vs Bradley Braves · KO 2026-11-22 05:00 SAST
       TOTAL full_game 125.5 -> OVER · p=53.9% (raw 59.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -165,11 +138,11 @@ SKIPPED — INELIGIBLE
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=31 · reasons=insufficient_team_specific_history · prediction=history
       archived_revisions=6 · latest_evidence_utc=2026-11-21T18:09:01Z
-  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
-      TOTAL full_game 154.5 -> UNDER · p=53.5% (raw 54.0%) @1.893 DraftKings
+  [team_history_empirical/team_history_empirical] Pacific Tigers vs Bradley Braves · KO 2026-11-22 05:00 SAST
+      TOTAL full_game 130.5 -> OVER · p=53.5% (raw 54.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=38 · reasons=insufficient_team_specific_history · prediction=history
-      archived_revisions=4 · latest_evidence_utc=2026-11-22T00:09:38Z
+      archived_revisions=11 · latest_evidence_utc=2026-11-22T00:39:58Z
   [team_history_empirical/team_history_empirical] Valparaiso Beacons vs Troy Trojans · KO 2026-11-22 03:00 SAST
       TOTAL full_game 136.5 -> OVER · p=53.5% (raw 54.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
@@ -187,6 +160,15 @@ SKIPPED — INELIGIBLE
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=32 · reasons=insufficient_team_specific_history · prediction=history
       archived_revisions=18 · latest_evidence_utc=2026-11-21T16:39:22Z
+  [team_history_empirical/team_history_empirical] Pacific Tigers vs Bradley Braves · KO 2026-11-22 05:00 SAST
+      MONEYLINE full_game -> HOME · p=53.0% (raw 60.0%) @1.253 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=165 · reasons=insufficient_team_specific_history · prediction=history
+      archived_revisions=40 · latest_evidence_utc=2026-11-22T00:39:58Z
+  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
+      MONEYLINE full_game -> HOME · p=53.0% (raw 60.0%) @1.833 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
+      calibration=calibrated n=165 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
       TOTAL full_game 140.5 -> OVER · p=52.5% (raw 53.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
@@ -195,26 +177,11 @@ SKIPPED — INELIGIBLE
       SPREAD full_game +8.5 -> AWAY · p=52.4% (raw 60.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=37 · reasons=insufficient_team_specific_history · prediction=history
-      archived_revisions=21 · latest_evidence_utc=2026-11-22T00:09:38Z
-  [team_history_empirical/team_history_empirical] Pacific Tigers vs Bradley Braves · KO 2026-11-22 05:00 SAST
-      MONEYLINE full_game -> HOME · p=52.0% (raw 59.0%) @1.253 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=165 · reasons=insufficient_team_specific_history · prediction=history
-      archived_revisions=39 · latest_evidence_utc=2026-11-22T00:09:38Z
-  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
-      MONEYLINE full_game -> HOME · p=52.0% (raw 59.0%) @1.833 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=165 · reasons=insufficient_team_specific_history · prediction=history
-      archived_revisions=39 · latest_evidence_utc=2026-11-22T00:09:38Z
+      archived_revisions=22 · latest_evidence_utc=2026-11-22T00:39:58Z
   [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
       TOTAL full_game 154.5 -> OVER · p=51.7% (raw 52.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
       calibration=calibrated n=34 · reasons=insufficient_team_specific_history · prediction=history
-      archived_revisions=4 · latest_evidence_utc=2026-11-21T21:39:43Z
-  [team_history_empirical/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
-      TOTAL full_game 165.5 -> UNDER · p=51.6% (raw 55.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
-      calibration=calibrated n=30 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Valparaiso Beacons vs Troy Trojans · KO 2026-11-22 03:00 SAST
       TOTAL full_game 138.5 -> OVER · p=51.6% (raw 55.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
@@ -227,23 +194,26 @@ SKIPPED — INELIGIBLE
       TOTAL full_game 141.5 -> OVER · p=50.5% (raw 51.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
       calibration=calibrated n=38 · reasons=insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
+      TOTAL full_game 154.5 -> UNDER · p=50.5% (raw 51.0%) @1.893 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
+      calibration=calibrated n=38 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Valparaiso Beacons vs Troy Trojans · KO 2026-11-22 03:00 SAST
       TOTAL full_game 137.5 -> OVER · p=50.1% (raw 56.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
       calibration=provisional n=29 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
       TOTAL full_game 159.5 -> UNDER · p=49.4% (raw 52.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
       calibration=provisional n=29 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
-      archived_revisions=21 · latest_evidence_utc=2026-11-21T15:09:27Z
   [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
       SPREAD full_game +25.5 -> AWAY · p=49.4% (raw 57.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=37 · reasons=below_calibrated_probability_floor · prediction=history
-      archived_revisions=37 · latest_evidence_utc=2026-11-22T00:09:38Z
+      archived_revisions=38 · latest_evidence_utc=2026-11-22T00:39:58Z
   [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
       TOTAL full_game 157.5 -> UNDER · p=48.6% (raw 52.0%) @1.820 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
       calibration=calibrated n=30 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
       TOTAL full_game 148.5 -> OVER · p=47.7% (raw 51.0%) @1.870 DraftKings
@@ -252,27 +222,16 @@ SKIPPED — INELIGIBLE
       archived_revisions=9 · latest_evidence_utc=2026-11-21T11:09:01Z
   [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
       TOTAL full_game 156.5 -> UNDER · p=47.6% (raw 51.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
       calibration=calibrated n=30 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
-      archived_revisions=2 · latest_evidence_utc=2026-11-21T16:39:22Z
   [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
       TOTAL full_game 155.5 -> UNDER · p=47.6% (raw 51.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
       calibration=calibrated n=30 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
-      archived_revisions=2 · latest_evidence_utc=2026-11-21T17:38:52Z
   [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
       SPREAD full_game +1.5 -> AWAY · p=47.4% (raw 55.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
       calibration=calibrated n=37 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
-      archived_revisions=39 · latest_evidence_utc=2026-11-22T00:09:38Z
-  [team_history_empirical/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
-      SPREAD full_game +8.5 -> AWAY · p=46.6% (raw 55.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
-      calibration=calibrated n=36 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
-      SPREAD full_game +7.5 -> AWAY · p=45.6% (raw 54.0%) @1.952 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
-      calibration=calibrated n=36 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Valparaiso Beacons vs Troy Trojans · KO 2026-11-22 03:00 SAST
       SPREAD full_game +4.5 -> AWAY · p=45.5% (raw 54.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
@@ -313,11 +272,19 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       MONEYLINE H1 -> HOME · p=78.6% (raw 86.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:19:11Z
       calibration=calibrated n=164 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
+      MONEYLINE full_game -> HOME · p=78.3% (raw 85.0%) @1.290 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
+      calibration=calibrated n=164 · reasons=insufficient_team_specific_history · prediction=history
   [provider:espn/team_history_empirical] Norfolk State Spartans vs UNC Wilmington Seahawks · KO 2026-11-22 01:00 SAST
       MONEYLINE full_game -> AWAY · p=78.0% (raw 85.2%) @1.111 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T22:14:43Z
       calibration=calibrated n=103 · reasons=none · prediction=espn
       ROI-BAND BLOCKED · moneyline full_game · p 0.70-<0.80 · odds 1.00-<1.20 · n=5 · recency ROI -8.8% / adjusted -10.8%
+  [team_history_empirical/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
+      MONEYLINE H1 -> HOME · p=77.6% (raw 85.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
+      calibration=calibrated n=164 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Cal Poly Mustangs vs Northern Arizona Lumberjacks · KO 2026-11-22 02:00 SAST
       MONEYLINE full_game -> HOME · p=77.3% (raw 84.0%) @1.267 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:19:11Z
@@ -392,6 +359,11 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       MONEYLINE H1 -> HOME · p=67.6% (raw 75.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:19:11Z
       calibration=calibrated n=164 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
+  [provider:espn/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
+      MONEYLINE full_game -> HOME · p=67.1% (raw 74.4%) @1.290 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
+      calibration=calibrated n=116 · reasons=none · prediction=espn
+      ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.20-<1.50 · n=5 · recency ROI -17.1% / adjusted -16.0%
   [provider:espn/team_history_empirical] Chattanooga Mocs vs Radford Highlanders · KO 2026-11-22 02:00 SAST
       MONEYLINE full_game -> HOME · p=65.6% (raw 72.8%) @1.282 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:19:11Z
@@ -438,6 +410,14 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       TOTAL full_game 137.5 -> OVER · p=56.4% (raw 58.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T22:14:43Z
       calibration=provisional n=28 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
+      TOTAL full_game 163.5 -> UNDER · p=56.3% (raw 56.0%) @1.926 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
+      calibration=calibrated n=37 · reasons=insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
+      TOTAL full_game 164.5 -> UNDER · p=56.3% (raw 56.0%) @1.893 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
+      calibration=calibrated n=37 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Cal Poly Mustangs vs Northern Arizona Lumberjacks · KO 2026-11-22 02:00 SAST
       TOTAL full_game 154.5 -> UNDER · p=56.3% (raw 56.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:19:11Z
@@ -515,6 +495,10 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       SPREAD full_game +12.5 -> AWAY · p=52.5% (raw 60.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:19:11Z
       calibration=calibrated n=31 · reasons=insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
+      TOTAL full_game 165.5 -> UNDER · p=51.6% (raw 55.0%) @1.870 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
+      calibration=calibrated n=30 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Elon Phoenix vs Morehead State Eagles · KO 2026-11-22 02:00 SAST
       SPREAD full_game +11.5 -> AWAY · p=51.6% (raw 60.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:19:11Z
@@ -683,6 +667,10 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       SPREAD full_game +7.5 -> AWAY · p=46.6% (raw 55.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:19:11Z
       calibration=calibrated n=36 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
+      SPREAD full_game +8.5 -> AWAY · p=46.6% (raw 55.0%) @1.870 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
+      calibration=calibrated n=36 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Norfolk State Spartans vs UNC Wilmington Seahawks · KO 2026-11-22 01:00 SAST
       SPREAD full_game -13.5 -> AWAY · p=46.5% (raw 54.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T22:14:43Z
@@ -699,6 +687,10 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       MONEYLINE H1 -> HOME · p=45.6% (raw 53.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:19:11Z
       calibration=calibrated n=164 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Tennessee Tech Golden Eagles vs Presbyterian Blue Hose · KO 2026-11-22 02:30 SAST
+      SPREAD full_game +7.5 -> AWAY · p=45.6% (raw 54.0%) @1.952 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:48:46Z
+      calibration=calibrated n=36 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Vermont Catamounts vs Brown Bears · KO 2026-11-22 02:00 SAST
       SPREAD full_game +4.5 -> AWAY · p=45.6% (raw 54.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-21T23:19:11Z
@@ -1867,10 +1859,10 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T18:15:00Z
       calibration=calibrated n=110 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
 
-Active summary: ELIGIBLE_CLEAN=10 CAUTION=0 WATCHLIST_NO_ODDS=9 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=40
+Active summary: ELIGIBLE_CLEAN=9 CAUTION=0 WATCHLIST_NO_ODDS=8 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=34
 ROI-qualified individual paper singles: 5
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=103 SETTLED=273
-Logical picks shown: 435 · superseded observations: 417
-Total archived pick evidence rows: 852
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=111 SETTLED=273
+Logical picks shown: 435 · superseded observations: 283
+Total archived pick evidence rows: 718
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.

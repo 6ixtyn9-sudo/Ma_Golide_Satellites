@@ -7,7 +7,7 @@
       "frozen_fixtures": 9
     },
     "2026-11-21": {
-      "frozen_fixtures": 5,
+      "frozen_fixtures": 6,
       "logical_picks": 17
     }
   },
@@ -2404,6 +2404,141 @@
         "scheduled_utc": "2026-11-22T01:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
+      },
+      "401914589": {
+        "decision_cutoff_utc": "2026-11-22T00:30:00Z",
+        "frozen_at": "2026-11-22T00:39:06Z",
+        "game_id": "401914589",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Laketown Squadron",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.446154,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "f355f69c0d7188eca41bbb8deabbca432decac1625149839c4993537424a3b1d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6c62d5e154f0354400d3",
+            "game_id": "401914589",
+            "grade_status": "pending",
+            "home": "Rio Grande Valley Vipers",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6c62d5e154f0354400d3",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.446154,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:30:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "Laketown Squadron",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.584615,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "b42d480a15ef2e7efa4625f4e50addedf974bd4982a3ca18c7d93855f3208fa9",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d3f16d2c2d877cf98b7e",
+            "game_id": "401914589",
+            "grade_status": "pending",
+            "home": "Rio Grande Valley Vipers",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "d3f16d2c2d877cf98b7e",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.584615,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Laketown Squadron",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.584615,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "be89223e6ffd14c70db522ea3dfd3488de839f22d857d89faf1faca688b55f10",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "084f6355739817bd0f33",
+            "game_id": "401914589",
+            "grade_status": "pending",
+            "home": "Rio Grande Valley Vipers",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "084f6355739817bd0f33",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.584615,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:30:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T01:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
       }
     }
   },
@@ -2428,6 +2563,10 @@
     [
       "401914588",
       "2026-11-22T01:00:00Z"
+    ],
+    [
+      "401914589",
+      "2026-11-22T01:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
