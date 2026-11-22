@@ -12,6 +12,7 @@ Rules (see docs/CONTRACT.md):
 from __future__ import annotations
 
 import re
+import unicodedata
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
 from typing import Dict, Iterable, List, Optional, Tuple
@@ -147,8 +148,15 @@ def canonical_book_name(name: str | None) -> str:
 
 
 def canonical_team_key(name: str) -> str:
-    """Case-insensitive canonical key using the built-in alias registry."""
-    return normalize_team_name(canonical_team_name(name))
+    """Build a punctuation- and diacritic-insensitive team identity key.
+
+    Display names remain untouched; this key only normalizes spelling-level
+    Unicode and punctuation differences. It does not remove mascots, abbreviate
+    names, reverse home/away, or perform fuzzy matching.
+    """
+    canonical = canonical_team_name(name)
+    decomposed = unicodedata.normalize("NFKD", normalize_team_name(canonical)).casefold()
+    return "".join(character for character in decomposed if character.isalnum())
 
 
 # ---------------------------------------------------------------------------
