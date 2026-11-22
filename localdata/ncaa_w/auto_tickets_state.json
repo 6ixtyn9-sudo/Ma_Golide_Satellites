@@ -140,6 +140,58 @@
           "status": "due"
         }
       }
+    },
+    "2026-11-22": {
+      "decision_cutoff_utc": "2026-11-22T10:00:00Z",
+      "decision_id": "45010842248_ncaa_w_1_attempt_1",
+      "final": true,
+      "frozen_at": "2026-11-22T10:17:14Z",
+      "lock_source": "inline_state_no_bet",
+      "no_bet": true,
+      "no_bet_decision": {
+        "decision_id": "45010842248_ncaa_w_1_attempt_1",
+        "frozen_at": "2026-11-22T10:17:14Z",
+        "league": "NCAA_W",
+        "reason": "no_qualifying_pre_tip_ticket_at_decision_cutoff",
+        "schema_version": "magolide.paper_ticket_no_bet",
+        "status": "frozen_no_bet",
+        "target_date": "2026-11-22",
+        "ticket_decision": {
+          "candidate_tickets_pre_tip": 0,
+          "candidate_tickets_seen": 0,
+          "derived_spread_candidates_seen": 0,
+          "derived_spread_history": {
+            "contract": "unpriced_moneyline_spread",
+            "cover_rate": 0.0,
+            "decisions": 1,
+            "history_scope": "derived_spread_named_book_pre_tip_quotes",
+            "losses": 1,
+            "minimum_cover_rate": 0.7,
+            "minimum_decisions_exclusive": 10,
+            "positive_roi_required": true,
+            "priced_settled": 1,
+            "pushes": 0,
+            "qualifies": false,
+            "roi": -1.0,
+            "status": "insufficient_history",
+            "units": -1.0,
+            "wins": 0
+          },
+          "earliest_slate_tip_utc": "2026-11-22T16:30:00Z",
+          "generated_utc": "2026-11-22T10:17:14Z",
+          "lead_minutes": 60,
+          "market_report_available": true,
+          "planned_cutoff_utc": "2026-11-22T10:00:00Z",
+          "policy": "1200_sast_or_first_slate_tip_minus_60_minutes",
+          "pre_tip_safety_cutoff_utc": "2026-11-22T15:30:00Z",
+          "publication_cutoff_utc": "2026-11-22T10:00:00Z",
+          "publication_local_time": "12:00",
+          "publication_timezone": "Africa/Johannesburg",
+          "slate_time_source": "games",
+          "slate_timezone": "America/New_York",
+          "status": "due"
+        }
+      }
     }
   },
   "paper_bank_units": 100.0,
