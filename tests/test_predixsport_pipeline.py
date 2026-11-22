@@ -82,6 +82,14 @@ def test_predixsport_slate_is_fetched_once_and_joined_by_teams_and_utc_tip(monke
         "records_matched": 2,
         "records_unmatched": 0,
         "records_rejected": 0,
+        # The run receipt now carries the observed response shape, so a future
+        # 200 that yields no rows can be told apart from an empty feed.
+        "response": {
+            "response_type": "dict",
+            "row_source": "matches",
+            "payload_keys": ["matches"],
+            "rows_seen": 2,
+        },
     }
 
 

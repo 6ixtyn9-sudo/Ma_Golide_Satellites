@@ -178,6 +178,7 @@ def fetch_upcoming(
     days: int,
     fetch_factory: FetchFactory,
     gaps: Optional[List[CoverageGap]] = None,
+    diagnostics: Optional[Dict[str, Any]] = None,
 ) -> List[Prediction]:
     """Fetch the upcoming predictions list for ``league``.
 
@@ -187,13 +188,36 @@ def fetch_upcoming(
     entries are skipped defensively and, when the caller passes a ``gaps``
     list, a ``CoverageGap`` is appended for each skip so nothing disappears
     silently.
+
+    ``diagnostics`` (optional dict, filled in place) records the *shape* of
+    the response — top-level key names, the reader used, and the row count —
+    never values.  This exists because the schema has never been observed
+    live: a populated payload delivered under any key other than ``matches``
+    would otherwise be indistinguishable from a genuinely empty feed, and
+    both would report ``records_returned: 0``.
     """
     if not is_enabled():
         return []
     league = _league(league)
     fetch = fetch_factory(PROVIDER)
     payload = fetch(upcoming_url(league, days))
-    rows = payload.get("matches") if isinstance(payload, dict) else payload
+    if isinstance(payload, dict):
+        rows = payload.get("matches")
+        row_source = "matches" if "matches" in payload else "absent"
+        payload_keys: Optional[List[str]] = sorted(str(key) for key in payload.keys())
+    else:
+        rows = payload
+        row_source = "bare_list" if isinstance(payload, list) else "unexpected_type"
+        payload_keys = None
+    if diagnostics is not None:
+        diagnostics.update(
+            {
+                "response_type": type(payload).__name__,
+                "row_source": row_source,
+                "payload_keys": payload_keys,
+                "rows_seen": len(rows) if isinstance(rows, list) else 0,
+            }
+        )
     out: List[Prediction] = []
     for row in rows or []:
         try:

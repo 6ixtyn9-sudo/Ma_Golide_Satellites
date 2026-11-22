@@ -1097,12 +1097,18 @@ class Pipeline:
             return output
 
         source_gaps: List[CoverageGap] = []
+        # Response shape (key names and row count only, never values): the
+        # documented schema has never been seen live, so "the feed is empty"
+        # and "the rows arrived under a key we do not read" both otherwise
+        # surface as a bare records_returned: 0.
+        response_shape: Dict[str, Any] = {}
         try:
             predictions = predixsport.fetch_upcoming(
                 "nba" if league is League.NBA else "euroleague",
                 7,
                 self.fetch_factory,
                 gaps=source_gaps,
+                diagnostics=response_shape,
             )
         except Exception as exc:
             self.prediction_provider_status["predixsport"] = {
@@ -1152,6 +1158,7 @@ class Pipeline:
             "records_matched": matched,
             "records_unmatched": unmatched,
             "records_rejected": len(source_gaps),
+            "response": response_shape,
         }
         return output
 

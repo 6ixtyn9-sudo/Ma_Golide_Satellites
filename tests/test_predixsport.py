@@ -360,3 +360,55 @@ def test_smoke_enabled_surfaces_redacted_error(monkeypatch):
     assert report["upcoming_count"] == 0
     assert "HttpError" in report["error"]
     assert FAKE_KEY not in report["error"]
+
+
+def _px_factory(payload):
+    def factory(_provider):
+        return lambda _url: payload
+
+    return factory
+
+
+def test_diagnostics_record_shape_of_an_empty_feed(monkeypatch):
+    """A 200 with no ``matches`` must not be a bare ``records_returned: 0``.
+
+    The documented schema has never been observed live, so rows delivered
+    under any other top-level key would look identical to an empty feed.
+    The diagnostics dict records key *names* and the row count only.
+    """
+
+    monkeypatch.setenv(px.ENV_KEY, FAKE_KEY)
+    diagnostics: dict = {}
+    rows = px.fetch_upcoming("nba", 7, _px_factory({"matches": []}), diagnostics=diagnostics)
+    assert rows == []
+    assert diagnostics == {
+        "response_type": "dict",
+        "row_source": "matches",
+        "payload_keys": ["matches"],
+        "rows_seen": 0,
+    }
+
+
+def test_diagnostics_expose_rows_returned_under_an_unread_key(monkeypatch):
+    """The failure mode this diagnostic exists for: populated, but unread."""
+
+    monkeypatch.setenv(px.ENV_KEY, FAKE_KEY)
+    diagnostics: dict = {}
+    payload = {"data": [{"match_id": "px-1", "probabilities": {"home": 0.6, "away": 0.4}}]}
+    rows = px.fetch_upcoming("nba", 7, _px_factory(payload), diagnostics=diagnostics)
+    assert rows == []
+    assert diagnostics["row_source"] == "absent"
+    assert diagnostics["payload_keys"] == ["data"]
+    assert diagnostics["rows_seen"] == 0
+
+
+def test_diagnostics_count_rows_of_a_documented_payload(monkeypatch):
+    monkeypatch.setenv(px.ENV_KEY, FAKE_KEY)
+    payload = json.loads((FIXTURES / "upcoming_nba.json").read_text())
+    diagnostics: dict = {}
+    rows = px.fetch_upcoming("nba", 7, _px_factory(payload), diagnostics=diagnostics)
+    assert diagnostics["row_source"] == "matches"
+    assert diagnostics["rows_seen"] == len(payload["matches"]) == 3
+    assert diagnostics["payload_keys"] == ["_evidence", "matches"]
+    # one malformed row is quarantined as a gap, two parse
+    assert len(rows) == 2
