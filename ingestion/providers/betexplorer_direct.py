@@ -546,6 +546,20 @@ def _team_name_words(name: str) -> List[str]:
 _SQUAD_MARKERS = {"b", "ii", "iii", "w", "women", "womens", "ladies", "reserve", "reserves", "res", "youth", "academy"}
 
 
+def _matching_team_tokens(name: str, *, league: str) -> set[str]:
+    """Apply narrowly scoped, deterministic sports-name word equivalences."""
+
+    tokens = _team_name_tokens(name)
+    if str(league or "").strip().upper() in {"NCAA_M", "NCAA_W"}:
+        # In US college team labels, "St." is the conventional abbreviation
+        # for "Saint" (e.g. St. John's / Saint John's). Scope this to NCAA so
+        # unrelated source labels are not rewritten.
+        tokens.discard("st")
+        if "st" in _team_name_words(name):
+            tokens.add("saint")
+    return tokens
+
+
 def _squad_markers(name: str) -> set[str]:
     markers = set()
     for word in _team_name_words(name):
@@ -556,12 +570,50 @@ def _squad_markers(name: str) -> set[str]:
     return markers
 
 
-def _team_names_agree(candidate_name: str, board_name: str, *, league: str) -> tuple[bool, str]:
+_SEASON_SCOPED_NAME_PAIRS = {
+    # Confirmed by the 2026-11-22 NCAA_M board diagnostics. Keep these source-
+    # specific spellings out of global identity aliases and expire after the
+    # 2026-27 season unless re-verified.
+    ("NCAA_M", "2026-27", "alice lloyd eagles", "alice loyd"),
+    ("NCAA_M", "2026-27", "saint marys gaels", "st marys ca"),
+}
+
+
+def _team_names_agree(
+    candidate_name: str,
+    board_name: str,
+    *,
+    league: str,
+    board_date: str = "",
+) -> tuple[bool, str]:
     """Edge-inspired deterministic name agreement; never edit-distance fuzzy."""
 
     candidate = str(candidate_name or "")
     board = str(board_name or "")
     league_key = str(league or "").strip().upper()
+    season_key = ""
+    try:
+        season_year, season_month, _season_day = (int(part) for part in board_date.split("-"))
+        if (season_year == 2026 and season_month >= 7) or (
+            season_year == 2027 and season_month <= 6
+        ):
+            season_key = "2026-27"
+    except (TypeError, ValueError):
+        pass
+    candidate_key = canonical_team_key(candidate)
+    board_key = canonical_team_key(board)
+    for alias_league, alias_season, canonical_name, board_variant in _SEASON_SCOPED_NAME_PAIRS:
+        if (
+            league_key == alias_league
+            and season_key == alias_season
+            and (candidate_key, board_key)
+            in {
+                (canonical_team_key(canonical_name), canonical_team_key(board_variant)),
+                (canonical_team_key(board_variant), canonical_team_key(canonical_name)),
+            }
+        ):
+            return True, "season_scoped_alias"
+
     if league_key == "NCAA_W":
         # BetExplorer labels women's NCAA teams with a terminal W marker;
         # ESPN's NCAA_W schedule lane is already gender-scoped.
@@ -578,8 +630,8 @@ def _team_names_agree(candidate_name: str, board_name: str, *, league: str) -> t
     if candidate_digits and board_digits and candidate_digits != board_digits:
         return False, ""
 
-    candidate_tokens = _team_name_tokens(candidate)
-    board_tokens = _team_name_tokens(board)
+    candidate_tokens = _matching_team_tokens(candidate, league=league_key)
+    board_tokens = _matching_team_tokens(board, league=league_key)
     shared = candidate_tokens & board_tokens
     # Retain Edge's conservative whole-name subset principle: one complete
     # token set must be contained in the other, with at least five shared
@@ -665,14 +717,14 @@ def _match_fixtures(
         compatible_rows = [
             fixture
             for fixture in date_rows
-            if _team_names_agree(game.home_name, fixture["home_name"], league=league)[0]
-            and _team_names_agree(game.away_name, fixture["away_name"], league=league)[0]
+            if _team_names_agree(game.home_name, fixture["home_name"], league=league, board_date=fixture.get("date", ""))[0]
+            and _team_names_agree(game.away_name, fixture["away_name"], league=league, board_date=fixture.get("date", ""))[0]
         ]
         reversed_rows = [
             fixture
             for fixture in date_rows
-            if _team_names_agree(game.home_name, fixture["away_name"], league=league)[0]
-            and _team_names_agree(game.away_name, fixture["home_name"], league=league)[0]
+            if _team_names_agree(game.home_name, fixture["away_name"], league=league, board_date=fixture.get("date", ""))[0]
+            and _team_names_agree(game.away_name, fixture["home_name"], league=league, board_date=fixture.get("date", ""))[0]
         ]
         diagnostics[str(game.game_id)] = {
             "game_id": str(game.game_id),
@@ -702,10 +754,10 @@ def _match_fixtures(
         pair: List[tuple[Any, str]] = []
         for game in same_date:
             home_ok, home_method = _team_names_agree(
-                game.home_name, fixture["home_name"], league=league
+                game.home_name, fixture["home_name"], league=league, board_date=fixture.get("date", "")
             )
             away_ok, away_method = _team_names_agree(
-                game.away_name, fixture["away_name"], league=league
+                game.away_name, fixture["away_name"], league=league, board_date=fixture.get("date", "")
             )
             if home_ok and away_ok:
                 method = (
@@ -1032,6 +1084,9 @@ def fetch_odds(
         if _last_receipt.get("cooldown"):
             break
     _last_receipt["snapshots_emitted"] = len(snapshots)
+    _last_receipt["partial_snapshots_preserved_on_cooldown"] = bool(
+        _last_receipt.get("cooldown") and snapshots
+    )
     if _last_receipt.get("status") == "started":
         _last_receipt["status"] = "success" if snapshots else "no_named_book_prices"
     return snapshots
