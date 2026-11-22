@@ -447,6 +447,9 @@ def test_direct_fallback_does_not_fetch_odds_for_an_unmatched_or_past_fixture(mo
     diagnostic = betexplorer_direct.last_receipt()["candidate_fixture_diagnostics"][0]
     assert diagnostic["game_id"] == wrong_orientation.game_id
     assert diagnostic["reason"] == "ordered_team_pair_not_found_on_board_date"
+    assert diagnostic["board_rows_on_date"] == 1
+    assert diagnostic["ordered_pair_rows"] == 0
+    assert diagnostic["reversed_pair_rows_diagnostic_only"] == 1
 
     calls.clear()
     past = _game()
@@ -485,6 +488,12 @@ def test_direct_fallback_fetches_each_required_paris_board_date(monkeypatch):
             "board_date": "2026-11-21",
             "home": game.home_name,
             "away": game.away_name,
+            "board_rows_on_date": 1,
+            "ordered_pair_rows": 1,
+            "reversed_pair_rows_diagnostic_only": 0,
+            "date_board_name_samples": [
+                {"home": "Los Angeles Lakers", "away": "Boston Celtics"}
+            ],
             "status": "matched",
             "reason": "exact_ordered_pair_on_paris_board_date",
         }
