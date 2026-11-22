@@ -12,15 +12,17 @@ keys/connectors, so callers must not poll each match hourly.
 
 Evidence status: DOCUMENTATION_ONLY
 -----------------------------------
-The endpoints below are documented publicly (OpenAPI / docs), but the
+The endpoints below are documented publicly (OpenAPI / docs). The
 unauthenticated live sweep on 2026-11-06 returned ``Missing Authorization
 header`` — recorded here as evidence that ``Authorization: Bearer <key>`` is
 required.  No AUTHENTICATED live response has ever been observed, so the
 real response schema is unconfirmed and everything in this module stays
 labelled ``DOCUMENTATION_ONLY`` until a real-key smoke test is run and
 recorded.  The committed fixtures under ``tests/fixtures/predixsport/`` are
-SYNTHETIC payloads authored from the documented schema (see that directory's
-README); they are never ``LIVE_VERIFIED`` evidence.
+SYNTHETIC payloads authored from the published documentation — including the
+2026-11-22 quickstart and ``/v1/predictions/nba/{match_id}`` example, which
+return ``home_team`` / ``away_team`` objects with ``win_probability``; they are
+never ``LIVE_VERIFIED`` evidence.
 
 Endpoints consumed (documented schema)
 --------------------------------------
@@ -73,6 +75,17 @@ from ..models import CoverageGap, CoverageState, Prediction
 from . import FetchFn
 
 BASE_URL = "https://api.predixsport.com"
+# Horizon for the upcoming list. The provider documents one day as the correct
+# window — "NBA predictions land on game day (days=1 is the right horizon;
+# days=14 returns 0 matches in steady state)" — so the adapter's former fixed
+# days=7 asked for a window it documents as empty.
+UPCOMING_DAYS = 1
+# Minimum spacing between upstream calls, per league. The free tier is 200
+# SHARED requests per calendar month, so an every-tick call (~32/day observed)
+# exhausts it in about a week. 18h gives ~40 calls/month per league — 80 for
+# NBA + EuroLeague — while still refreshing well inside the 1-day horizon the
+# provider publishes on.
+UPCOMING_WINDOW_HOURS = 18
 ENV_KEY = "PREDIXSPORT_API_KEY"
 PROVIDER = "predixsport"
 PREDICTION_MODEL_VERSION = "adapter:predixsport"
@@ -113,6 +126,18 @@ def _headers() -> Dict[str, str]:
             "'Authorization: Bearer <key>' (unauthenticated calls on "
             "2026-11-06 returned 'Missing Authorization header')"
         )
+    # HTTP header values are latin-1: a pasted placeholder ('…'), a smart
+    # quote, or any other non-ASCII character otherwise surfaces as an
+    # opaque UnicodeEncodeError from deep inside requests/urllib3. Report
+    # the offending position and code point, never the value itself.
+    for index, char in enumerate(key):
+        if ord(char) > 0x7E or ord(char) < 0x21:
+            raise UnauthorizedError(
+                f"{ENV_KEY} contains a non-printable-ASCII character at index "
+                f"{index} (U+{ord(char):04X}); HTTP header values are latin-1, "
+                "so this cannot be sent. Re-paste the key — documentation "
+                "placeholders such as '\u2026' are not credentials."
+            )
     return {"Authorization": f"Bearer {key}"}
 
 
@@ -145,19 +170,63 @@ def _num(value: Any) -> Optional[float]:
         return None
 
 
+def _team_block(row: Dict[str, Any], side: str) -> Dict[str, Any]:
+    """Return the nested ``home_team`` / ``away_team`` object, if present."""
+
+    nested = row.get(f"{side}_team")
+    return nested if isinstance(nested, dict) else {}
+
+
+def _team_name(row: Dict[str, Any], side: str) -> Optional[str]:
+    """Team name from the documented shape, with older flat keys as fallback.
+
+    The published quickstart returns ``home_team`` / ``away_team`` objects
+    carrying ``name`` and ``win_probability``; earlier synthetic fixtures used
+    flat ``home`` / ``away`` strings. Both are read; nothing is invented.
+    """
+
+    direct = row.get(side)
+    if isinstance(direct, str) and direct.strip():
+        return direct
+    if isinstance(direct, dict) and isinstance(direct.get("name"), str):
+        return direct["name"]
+    nested = _team_block(row, side).get("name")
+    return nested if isinstance(nested, str) and nested.strip() else None
+
+
+def _tipoff_utc(row: Dict[str, Any]) -> Optional[str]:
+    """Tip-off timestamp from the documented field names, if any is present.
+
+    The published list/detail examples carry no tip-off, only
+    ``prediction_date``; a date is not a tip-off, so it is never promoted into
+    one. A row without a timestamp keeps ``source_tipoff_utc`` empty and the
+    pipeline's identity join reports a coverage gap instead of guessing.
+    """
+
+    for field in ("tipoff_utc", "commence_time", "start_time", "start_utc"):
+        value = row.get(field)
+        if isinstance(value, str) and value.strip():
+            return value
+    return None
+
+
 def _probabilities(row: Dict[str, Any]) -> Any:
     """Extract (p_home, p_away) in 0..1 from the documented locations.
 
-    Normalised field names (from the synthetic fixtures built on the
-    documented schema): ``probabilities.home`` / ``probabilities.away``, with
-    flat ``p_home`` / ``p_away`` accepted as a fallback.  Anything else stays
-    ``None`` — no invention.
+    Read order: ``probabilities.home`` / ``probabilities.away`` (earlier
+    documented normalisation), then the live-documented
+    ``home_team.win_probability`` / ``away_team.win_probability``, then flat
+    ``p_home`` / ``p_away``. Anything else stays ``None`` — no invention.
     """
     probs = row.get("probabilities")
     p_home = p_away = None
     if isinstance(probs, dict):
         p_home = _num(probs.get("home"))
         p_away = _num(probs.get("away"))
+    if p_home is None:
+        p_home = _num(_team_block(row, "home").get("win_probability"))
+    if p_away is None:
+        p_away = _num(_team_block(row, "away").get("win_probability"))
     if p_home is None:
         p_home = _num(row.get("p_home"))
     if p_away is None:
@@ -178,6 +247,7 @@ def fetch_upcoming(
     days: int,
     fetch_factory: FetchFactory,
     gaps: Optional[List[CoverageGap]] = None,
+    diagnostics: Optional[Dict[str, Any]] = None,
 ) -> List[Prediction]:
     """Fetch the upcoming predictions list for ``league``.
 
@@ -187,13 +257,36 @@ def fetch_upcoming(
     entries are skipped defensively and, when the caller passes a ``gaps``
     list, a ``CoverageGap`` is appended for each skip so nothing disappears
     silently.
+
+    ``diagnostics`` (optional dict, filled in place) records the *shape* of
+    the response — top-level key names, the reader used, and the row count —
+    never values.  This exists because the schema has never been observed
+    live: a populated payload delivered under any key other than ``matches``
+    would otherwise be indistinguishable from a genuinely empty feed, and
+    both would report ``records_returned: 0``.
     """
     if not is_enabled():
         return []
     league = _league(league)
     fetch = fetch_factory(PROVIDER)
     payload = fetch(upcoming_url(league, days))
-    rows = payload.get("matches") if isinstance(payload, dict) else payload
+    if isinstance(payload, dict):
+        rows = payload.get("matches")
+        row_source = "matches" if "matches" in payload else "absent"
+        payload_keys: Optional[List[str]] = sorted(str(key) for key in payload.keys())
+    else:
+        rows = payload
+        row_source = "bare_list" if isinstance(payload, list) else "unexpected_type"
+        payload_keys = None
+    if diagnostics is not None:
+        diagnostics.update(
+            {
+                "response_type": type(payload).__name__,
+                "row_source": row_source,
+                "payload_keys": payload_keys,
+                "rows_seen": len(rows) if isinstance(rows, list) else 0,
+            }
+        )
     out: List[Prediction] = []
     for row in rows or []:
         try:
@@ -226,9 +319,9 @@ def fetch_upcoming(
                 expected_margin=_num(row.get("predicted_point_diff")),
                 auxiliary_metrics={
                     "source_match_id": str(match_id),
-                    "source_home_name": row.get("home"),
-                    "source_away_name": row.get("away"),
-                    "source_tipoff_utc": row.get("tipoff_utc"),
+                    "source_home_name": _team_name(row, "home"),
+                    "source_away_name": _team_name(row, "away"),
+                    "source_tipoff_utc": _tipoff_utc(row),
                 },
             )
             prediction.validate_orientation()
