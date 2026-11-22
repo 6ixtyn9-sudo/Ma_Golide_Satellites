@@ -28,6 +28,26 @@ so live behaviour and the source's automation/reuse terms remain unverified.
 
 Every scope, identity, timestamp, period, and final check fails closed: a body
 that cannot be reconciled becomes a recorded gap, never a fabricated result.
+
+What the 2026-11-22 capture settled
+-----------------------------------
+Committed fixtures are byte-exact for the two JSON bodies (``championships``
+867 bytes, ``calendar`` 11636 bytes; sha256 recorded in
+``tests/fixtures/CAPTURE-PROVENANCE.md`` and asserted by
+``tests/test_capture_fidelity.py``). Two facts changed the adapter:
+
+* ``game_status`` is a numeric code string, not a label: ``"2"`` final,
+  ``"1"`` live, ``"0"`` not started. The same focus day carried live rows with
+  real scores (63-62, 49-48) and a not-started row with ``0``/``0``, so status
+  is read from the code — a score-shaped row is never promoted to a final.
+* one focus day spans a round, not a date: the captured slate ran over
+  2026-11-21 and 2026-11-22, and ``filters.days`` marked the round (id 4494)
+  rather than a day. ``additional_time`` was ``0`` on every captured row, so
+  overtime is detected from the play-by-play period count alone.
+
+The play-by-play bodies themselves are far too large to retain (314 KB each).
+The committed period-end actions are verbatim copies of the captured anchors;
+only the JSON container around them is ours.
 """
 
 from __future__ import annotations
@@ -78,6 +98,25 @@ def _int(value: Any) -> Optional[int]:
         return int(value)
     except (TypeError, ValueError):
         return None
+
+
+_STATUS_BY_CODE = {
+    "0": GameStatus.SCHEDULED,
+    "1": GameStatus.LIVE,
+    "2": GameStatus.FINAL,
+}
+
+
+def _status_from_row(row: Dict[str, Any]) -> GameStatus:
+    """Map the provider's numeric ``game_status`` code to a canonical status.
+
+    An unknown code becomes ``UNKNOWN`` rather than ``FINAL``: the captured
+    focus day served live rows carrying real scores, so inference from the
+    presence of numbers would settle an in-progress game.
+    """
+
+    code = str(row.get("game_status") if row.get("game_status") is not None else "").strip()
+    return _STATUS_BY_CODE.get(code, GameStatus.UNKNOWN)
 
 
 def _iso_utc(value: Any, match_id: str) -> str:
@@ -214,12 +253,12 @@ def _game_from_row(row: Dict[str, Any], season: int, phase: str) -> Game:
     away_id = str(row.get("v_team_id") or "")
     if not home_id or not away_id or home_id == away_id:
         raise IdentityError(f"LBA match {match_id} row lacks distinct team ids")
-    home_final = _int(row.get("home_final_score"))
-    away_final = _int(row.get("visitor_final_score"))
-    status = (
-        GameStatus.FINAL if home_final is not None and away_final is not None
-        else GameStatus.SCHEDULED
-    )
+    status = _status_from_row(row)
+    if status is GameStatus.FINAL:
+        home_final = _int(row.get("home_final_score"))
+        away_final = _int(row.get("visitor_final_score"))
+        if home_final is None or away_final is None:
+            raise ValueError(f"LBA match {match_id} is marked final without a final score")
     return Game(
         game_id=f"LBA-{match_id}",
         league=League.ITALY_LBA,
@@ -288,10 +327,9 @@ def smoke(fetch: FetchFn, start_year: int) -> Dict[str, Any]:
         report["detail"] = str(exc)[:200]
         return report
     report["games_found"] = len(rows)
-    report["games_final"] = sum(
-        1
-        for row in rows
-        if _int(row.get("home_final_score")) is not None
-        and _int(row.get("visitor_final_score")) is not None
+    report["games_final"] = sum(1 for row in rows if _status_from_row(row) is GameStatus.FINAL)
+    report["games_live"] = sum(1 for row in rows if _status_from_row(row) is GameStatus.LIVE)
+    report["games_scheduled"] = sum(
+        1 for row in rows if _status_from_row(row) is GameStatus.SCHEDULED
     )
     return report

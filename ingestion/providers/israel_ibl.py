@@ -23,6 +23,15 @@ automation/reuse terms remain unverified.
   offset is an assumption, never a provider fact. A game whose wall time is
   ambiguous or nonexistent at a DST boundary is refused rather than shifted.
 
+Captured rows (2026-11-22; four board rows committed as
+``tests/fixtures/israel_ibl/board5_captured_rows.json`` and re-tested on every
+run) settle two things: the quarter strings are points-in-period — the probe
+reported all 45 played rows of the full board summing to their finals, and the
+committed double-overtime row is ``21|18|18|18|11|10`` against
+``20|19|21|15|11|17`` — and a row's season is ``year_id`` rather than the
+``cYear`` query parameter. Reading only ``cYear`` left every discovered game with
+an empty season, so a later board refresh refused identity for the whole lane.
+
 Every identity, period, and final check below fails closed.
 """
 
@@ -223,7 +232,28 @@ def _game_ref(row: Dict[str, Any]) -> str:
     return f"{date_text}-{home}-{away}"
 
 
-def _game_from_row(row: Dict[str, Any], phase: str) -> Game:
+def _row_season(row: Dict[str, Any], game_ref: str, hint: Optional[int]) -> int:
+    """Season end year for a board row.
+
+    The captured board publishes ``year_id``; the query parameter is ``cYear``
+    and older or proxied bodies have been seen carrying that name on the row
+    too. A row with neither falls back to the season the board was requested
+    for, and only then is a missing season refused — an empty season made every
+    later result refresh impossible, silently turning the whole lane into gaps.
+    """
+
+    for key in ("year_id", "cYear"):
+        value = _int(row.get(key))
+        if value:
+            return value
+    if hint:
+        return int(hint)
+    raise IdentityError(f"Israel game {game_ref} carries no season for a board refresh")
+
+
+def _game_from_row(
+    row: Dict[str, Any], phase: str, season_hint: Optional[int] = None
+) -> Game:
     game_ref = _game_ref(row)
     home_id, home_name = _team(row, 1)
     away_id, away_name = _team(row, 2)
@@ -236,7 +266,7 @@ def _game_from_row(row: Dict[str, Any], phase: str) -> Game:
     game = Game(
         game_id=f"IBL-{game_ref}",
         league=League.ISRAEL_PREMIER_LEAGUE,
-        season=str(_int(row.get("cYear")) or ""),
+        season=str(_row_season(row, game_ref, season_hint)),
         home_team_id=home_id,
         away_team_id=away_id,
         home_name=home_name,
@@ -303,7 +333,7 @@ def discover_games(
     games: List[Game] = []
     for row in fetch_board(end_year, fetch, board):
         try:
-            game = _game_from_row(row, phase)
+            game = _game_from_row(row, phase, end_year)
         except (IdentityError, ValueError) as exc:
             _record_gap(str(row.get("game_id") or ""), str(exc))
             continue
@@ -325,7 +355,7 @@ def fetch_game_result(game: Game, fetch: FetchFn) -> Game:
     for row in fetch_board(season, fetch):
         if _game_ref(row) != game_ref:
             continue
-        refreshed = _game_from_row(row, game.phase or "Winner League")
+        refreshed = _game_from_row(row, game.phase or "Winner League", season)
         if refreshed.home_name.casefold() != game.home_name.casefold():
             raise IdentityError(
                 f"Israel game {game_ref} now names {refreshed.home_name!r}, "
@@ -348,7 +378,7 @@ def season_results(
     results: List[Game] = []
     for row in fetch_board(end_year, fetch, board):
         try:
-            game = _game_from_row(row, phase)
+            game = _game_from_row(row, phase, end_year)
         except (IdentityError, ValueError) as exc:
             if failures is not None:
                 failures.append({"game_id": str(row.get("game_id") or ""), "error": str(exc)})

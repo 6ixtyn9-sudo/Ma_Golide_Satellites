@@ -5,19 +5,21 @@ or still open — so the remaining work is mechanical rather than speculative. A
 route lead is **not** an integration: a lane leaves `source_unavailable` only
 when its adapter, identity checks, and fixtures exist and pass.
 
-Hosts and endpoint shapes below were read from published documentation and
-third-party client source, not from a Ma Golide capture. Every future adapter
-must stay labelled `referenced route contract` until a first-party capture
-exists, exactly as ABA, EuroCup and ACB do.
+Hosts and endpoint shapes below were read from published documentation,
+third-party client source, and a probe run by the operator's external agent on
+2026-11-22. Where that probe transmitted a whole body it is committed byte-exact
+and is labelled **captured**; where only verbatim excerpts were transmissible the
+fixture says so. Everything else stays a `referenced route contract`. The two
+classes are listed per file in `tests/fixtures/CAPTURE-PROVENANCE.md`.
 
 ## Ready pattern: a documented period-level route exists
 
 | Lane | Host | Documented routes | Notes / blocker |
 | --- | --- | --- | --- |
-| Spain ACB | `api2.acb.com` | `seasondata/Calendar/season-calendar?season={end_year}`, `matchdata/MatchHeader/match-header?matchId=` | **Implemented** in `ingestion/providers/acb.py`, but the header route measured **401** on 2026-11-22, so the lane reports `auth_required` until that route is authorised. |
-| Israel Premier League | `basket.co.il/ws/ws.asmx/Games` | `?cYear=&board_id=5&board_round=0&team_id=0&team_uid=0&game_id=0` | **Implemented** in `ingestion/providers/israel_ibl.py`: pipe-delimited `score_by_q_1/2`, `total_ot`, finals. No UTC offset — `Asia/Jerusalem` applied as a recorded assumption. Browser UA required (Cloudflare 1010). |
-| Italy LBA | `www.legabasket.it/api` | `championships/get-championships?cs_id=1&items=1000&s={first_year}`, `get-championship-match-recap-by-id` | **Probed 2026-11-22:** live. The season key is the **first** year of the pair (2026 = "2026/27"), correcting this page's earlier end-year note. **Implemented** in `ingestion/providers/lba.py`: a focus-day calendar carries ids, UTC-offset timestamps and finals; periods derive from play-by-play `period`/`score` pairs and reconcile (100-86 from 22-20, 26-30, 24-22, 28-14). Day selectors are ignored server-side, so the route cannot enumerate a season — history backfill is not wired. |
-| Japan B.League | `b-league.s3.amazonaws.com/web_json` | `contexts/{schedule_key}` | **Probed 2026-11-22: blocked.** `?list-type=2&prefix=web_json/` answers **403 AccessDenied**, `www.bleague.jp/schedule/` exposes no key strings, and `api.bleague.jp` is unreachable, so the schedule key has no publishable discovery step. Stays `source_unavailable`. |
+| Spain ACB | `api2.acb.com` | `seasondata/Calendar/season-calendar?season={end_year}`, `matchdata/MatchHeader/match-header?matchId=` | **Implemented** in `ingestion/providers/acb.py`, but the header route measured **401 with an empty body, no `WWW-Authenticate`, server Kestrel** on 2026-11-22, so the lane reports `auth_required` until that route is authorised — the response names no scheme to satisfy. |
+| Israel Premier League | `basket.co.il/ws/ws.asmx/Games` | `?cYear=&board_id=5&board_round=0&team_id=0&team_uid=0&game_id=0` | **Implemented** in `ingestion/providers/israel_ibl.py`, now backed by four **captured** rows (2026-11-22): pipe-delimited `score_by_q_1/2` are points-in-period, a double-overtime row is explicit, rows carry `game_id` and `year_id`. No UTC offset — `Asia/Jerusalem` applied as a recorded assumption. Browser UA required (Cloudflare 1010). |
+| Italy LBA | `www.legabasket.it/api` | `championships/get-championships?cs_id=1&items=1000&s={first_year}`, `get-championship-match-recap-by-id` | **Probed 2026-11-22:** live. The season key is the **first** year of the pair (2026 = "2026/27"), correcting this page's earlier end-year note. **Implemented** in `ingestion/providers/lba.py`, now **captured** (2026-11-22): the championships (867 B) and focus-day calendar (11636 B) bodies are committed byte-exact, and the play-by-play period ends for two matches (regulation 100-86 and a real overtime 92-106, `87-87` after regulation) are committed as verbatim actions. `game_status` is a numeric code (`2` final, `1` live, `0` not started) and the captured slate spans two dates while marking one *round* focused. Day selectors are ignored server-side, so the route cannot enumerate a season — history backfill is not wired. |
+| Japan B.League | `b-league.s3.amazonaws.com/web_json` | `contexts/{schedule_key}` | **Probed 2026-11-22: blocked.** `?list-type=2&prefix=web_json/` answers **403 `AccessDenied`** (body captured), `www.bleague.jp/schedule/` exposes no key strings, and `api.bleague.jp` is unreachable, so the schedule key has no publishable discovery step. Stays `source_unavailable`. |
 | South Korea KBL | `api.kbl.or.kr` | `season/list` plus schedule routes; requires `Channel`, `Device` and `TeamCode` headers | **Probed 2026-11-22: rejected for this pipeline.** The schedule is live with finals and stable team codes, but no API route exposes quarter scores, so a reconcilable `ActualResult` is impossible. Stays `source_unavailable`. |
 | Australia NBL | module exists in `sportsdataverse-py` (`nbl_au`) | file path and routes not confirmed from documentation | **Probed 2026-11-22: no route.** The published sdist contains 0 `nbl` files — the module is not shipped — so there is no compliant route to reference. Stays `source_unavailable`; The Odds API NBL key remains probationary and never supplies fixtures. |
 
@@ -63,6 +65,13 @@ Italy LBA. Rejected on evidence: South Korea KBL (no period route), Japan
 B.League (no manifest), Australia NBL (module not shipped), Greece and Turkey
 (no JSON route / blocked SPA).
 
+0. **Open lead, unverified:** `get-championships-matches-by-id?id={championship}`
+   answered 200 (9975 B for the whole season 602 request) and the same route with
+   `id={match}` returns a match detail whose `prev_matches` rows carry ids,
+   scores and UTC timestamps. If that season response really enumerates matches
+   it would remove the one gap that keeps LBA from history — but a 9975-byte body
+   for a 30-round season is more consistent with a page or a summary, and no body
+   was transmitted for it, so nothing is built on it yet.
 1. Basketball Champions League period extraction: GDAP already yields the
    schedule, so only per-game period scores are missing.
 2. Any B.League manifest, if the league ever publishes a listing.
