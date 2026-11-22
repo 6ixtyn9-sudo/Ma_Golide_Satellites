@@ -536,19 +536,47 @@ def _match_fixtures(
     fixture_dates = {fixture.get("date") for fixture in fixture_rows}
     matches: List[tuple[Dict[str, str], Any]] = []
     matched_game_ids: set[str] = set()
-    diagnostics: List[Dict[str, str]] = []
+    diagnostics: List[Dict[str, Any]] = []
+    fixtures_by_date: Dict[str, List[Dict[str, str]]] = {}
+    for fixture in fixture_rows:
+        fixtures_by_date.setdefault(fixture.get("date", ""), []).append(fixture)
     for game in candidates:
+        board_date = _candidate_board_date(game)
+        date_rows = fixtures_by_date.get(board_date, [])
+        home_key = canonical_team_key(game.home_name)
+        away_key = canonical_team_key(game.away_name)
+        ordered_rows = [
+            fixture
+            for fixture in date_rows
+            if canonical_team_key(fixture["home_name"]) == home_key
+            and canonical_team_key(fixture["away_name"]) == away_key
+        ]
+        # Reversed-pair and one-side hits are telemetry only. They never admit
+        # a fixture to matching or authorize a comparison-page request.
+        reversed_rows = [
+            fixture
+            for fixture in date_rows
+            if canonical_team_key(fixture["home_name"]) == away_key
+            and canonical_team_key(fixture["away_name"]) == home_key
+        ]
         diagnostics.append(
             {
                 "game_id": str(game.game_id),
                 "scheduled_utc": str(game.scheduled_utc),
-                "board_date": _candidate_board_date(game),
+                "board_date": board_date,
                 "home": str(game.home_name),
                 "away": str(game.away_name),
+                "board_rows_on_date": len(date_rows),
+                "ordered_pair_rows": len(ordered_rows),
+                "reversed_pair_rows_diagnostic_only": len(reversed_rows),
+                "date_board_name_samples": [
+                    {"home": row["home_name"], "away": row["away_name"]}
+                    for row in date_rows[:3]
+                ],
                 "status": "unmatched",
                 "reason": (
                     "no_fixture_rows_on_paris_board_date"
-                    if _candidate_board_date(game) not in fixture_dates
+                    if board_date not in fixture_dates
                     else "ordered_team_pair_not_found_on_board_date"
                 ),
             }
