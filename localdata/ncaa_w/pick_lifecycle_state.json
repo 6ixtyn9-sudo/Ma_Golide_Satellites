@@ -21,7 +21,7 @@
       "logical_picks": 146
     },
     "2026-11-21": {
-      "frozen_fixtures": 48,
+      "frozen_fixtures": 49,
       "logical_picks": 166
     }
   },
@@ -22163,6 +22163,145 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
       },
+      "401919710": {
+        "decision_cutoff_utc": "2026-11-22T00:00:00Z",
+        "frozen_at": "2026-11-22T00:18:43Z",
+        "game_id": "401919710",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Eastern Illinois Panthers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.780321,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 157,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "84f83d67033c9e91fdc4ca884bd0b8b4f256f5a18f3254aa2494013898d6096d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6e7ac2026505ab981675",
+            "game_id": "401919710",
+            "grade_status": "pending",
+            "home": "Murray State Racers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "6e7ac2026505ab981675",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.84,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Eastern Illinois Panthers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.945842,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 124,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "6f564eecb2aea7a78877104eb931d40b9855bf81f2ef5e17f2ff287cedbee781",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b166deaed3b4284efb70",
+            "game_id": "401919710",
+            "grade_status": "pending",
+            "home": "Murray State Racers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "b166deaed3b4284efb70",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-22T00:09:40Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9772,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Eastern Illinois Panthers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.842634,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 156,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "625488d45f8ab4abb1bb6facf405c755af6338f14d823fec4df240f6aab6a012",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "be573377d37e2e355cfc",
+            "game_id": "401919710",
+            "grade_status": "pending",
+            "home": "Murray State Racers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "be573377d37e2e355cfc",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.85,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T01:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      },
       "401919969": {
         "decision_cutoff_utc": "2026-11-21T18:00:00Z",
         "frozen_at": "2026-11-21T18:15:38Z",
@@ -24279,22 +24418,6 @@
   "league": "NCAA_W",
   "pending_frozen_games": [
     [
-      "401906093",
-      "2026-11-21T22:00:00Z"
-    ],
-    [
-      "401915669",
-      "2026-11-21T22:00:00Z"
-    ],
-    [
-      "401916189",
-      "2026-11-21T22:00:00Z"
-    ],
-    [
-      "401918036",
-      "2026-11-21T22:00:00Z"
-    ],
-    [
       "401915965",
       "2026-11-21T23:00:00Z"
     ],
@@ -24313,6 +24436,10 @@
     [
       "401928067",
       "2026-11-22T00:00:00Z"
+    ],
+    [
+      "401919710",
+      "2026-11-22T01:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"

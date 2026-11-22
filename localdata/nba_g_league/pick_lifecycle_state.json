@@ -7,7 +7,7 @@
       "frozen_fixtures": 9
     },
     "2026-11-21": {
-      "frozen_fixtures": 1,
+      "frozen_fixtures": 5,
       "logical_picks": 17
     }
   },
@@ -1906,6 +1906,504 @@
         "scheduled_utc": "2026-11-21T23:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
+      },
+      "401914585": {
+        "decision_cutoff_utc": "2026-11-22T00:00:00Z",
+        "frozen_at": "2026-11-22T00:09:11Z",
+        "game_id": "401914585",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Motor City Cruise",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.369231,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "c4c63151409d7e1450789dd06829430d7ea4ae821ce14f1812b18cf2294ab9d0",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6f28fefffc444d10f826",
+            "game_id": "401914585",
+            "grade_status": "pending",
+            "home": "Iowa Wolves",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6f28fefffc444d10f826",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.369231,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:00:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "Motor City Cruise",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.615385,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "3e5dd24d487d455da5102967226af2687a0af212a3ccfdbf4d448f474bf5f909",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0ba0d55f0da05455af74",
+            "game_id": "401914585",
+            "grade_status": "pending",
+            "home": "Iowa Wolves",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "0ba0d55f0da05455af74",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.615385,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Motor City Cruise",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.584615,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "05e9b8a65349ed3df0ec13f0e4da89f5f4bc351b9c1c3c710360f750bce465c0",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7a7bbb1813ec3dcc07f0",
+            "game_id": "401914585",
+            "grade_status": "pending",
+            "home": "Iowa Wolves",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "7a7bbb1813ec3dcc07f0",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.584615,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:00:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T01:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      },
+      "401914586": {
+        "decision_cutoff_utc": "2026-11-22T00:00:00Z",
+        "frozen_at": "2026-11-22T00:09:11Z",
+        "game_id": "401914586",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Windy City Bulls",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.369231,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "9326b0fba606a3851f3a403adc56ff2f8d9927508b7486e154ff3d5d992b3756",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "f11371779828e4b81a33",
+            "game_id": "401914586",
+            "grade_status": "pending",
+            "home": "Sioux Falls Skyforce",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "f11371779828e4b81a33",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.369231,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:00:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "Windy City Bulls",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.553846,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "8b15a1baacf8bbacaa7111f513e87c8e40250fe357f17ccfab49f16842905add",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b1d4033430c68f7de575",
+            "game_id": "401914586",
+            "grade_status": "pending",
+            "home": "Sioux Falls Skyforce",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "b1d4033430c68f7de575",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.553846,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Windy City Bulls",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.507692,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "e35d6843923d08aa40489cb6b9cde2d3ba7d6ba9ccbda3b2739c552bceeef885",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b330e6f51eb495b45de9",
+            "game_id": "401914586",
+            "grade_status": "pending",
+            "home": "Sioux Falls Skyforce",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "b330e6f51eb495b45de9",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.507692,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:00:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T01:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      },
+      "401914587": {
+        "decision_cutoff_utc": "2026-11-22T00:00:00Z",
+        "frozen_at": "2026-11-22T00:09:11Z",
+        "game_id": "401914587",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Memphis Hustle",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.4,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "c21e2f92873eec60e172b9b146f6ecf6fa5a533c99c83f499780500209e4e012",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0a5b110ac4295971d4b8",
+            "game_id": "401914587",
+            "grade_status": "pending",
+            "home": "Texas Legends",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "0a5b110ac4295971d4b8",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.4,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:00:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "Memphis Hustle",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.6,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "39ca952838dfbf7a8b02a1b3a084de79ce59fde1a39904389af627fa4c736eb4",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "c890731e2e6a30e2041d",
+            "game_id": "401914587",
+            "grade_status": "pending",
+            "home": "Texas Legends",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "c890731e2e6a30e2041d",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.6,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Memphis Hustle",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.523077,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "701d5d5190b689b53e668909ac19db358037ac75586c96813cd5581aed675544",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "53b3c725eaf4839ecae3",
+            "game_id": "401914587",
+            "grade_status": "pending",
+            "home": "Texas Legends",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "53b3c725eaf4839ecae3",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.523077,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:00:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T01:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      },
+      "401914588": {
+        "decision_cutoff_utc": "2026-11-22T00:00:00Z",
+        "frozen_at": "2026-11-22T00:09:11Z",
+        "game_id": "401914588",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Noblesville Boom",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.553846,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "1f2e0d79265b1e1998de3420af35b68528c452112370557ab06263166c516b0d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1a2a1906e387c6734f78",
+            "game_id": "401914588",
+            "grade_status": "pending",
+            "home": "Wisconsin Herd",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "1a2a1906e387c6734f78",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.553846,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Noblesville Boom",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.507692,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "9a185d7c1a409219f0316f30a5428f93b2f1b99a9e2bc71c4d4e0bd8b7abeda1",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1de4814a418cf326479e",
+            "game_id": "401914588",
+            "grade_status": "pending",
+            "home": "Wisconsin Herd",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "1de4814a418cf326479e",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.507692,
+            "role": null,
+            "scheduled_utc": "2026-11-22T01:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T01:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
       }
     }
   },
@@ -1914,6 +2412,22 @@
     [
       "401914584",
       "2026-11-21T23:00:00Z"
+    ],
+    [
+      "401914585",
+      "2026-11-22T01:00:00Z"
+    ],
+    [
+      "401914586",
+      "2026-11-22T01:00:00Z"
+    ],
+    [
+      "401914587",
+      "2026-11-22T01:00:00Z"
+    ],
+    [
+      "401914588",
+      "2026-11-22T01:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"

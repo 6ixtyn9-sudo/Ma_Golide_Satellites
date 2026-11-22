@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 4,
+  "awaiting_game_legs": 3,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -785,7 +785,7 @@
       "wins": 1
     },
     {
-      "awaiting_game_legs": 4,
+      "awaiting_game_legs": 3,
       "bank_units": 102.40917456035842,
       "date": "2026-11-21",
       "decision_id": "44878721387_ncaa_m_1_attempt_1",
@@ -875,7 +875,7 @@
           "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
@@ -886,7 +886,7 @@
           "leg_count": 3,
           "leg_outcomes": [
             null,
-            null,
+            "win",
             "win"
           ],
           "legs": [
@@ -912,13 +912,13 @@
               "book_provider": "espn",
               "forecast_id": "25690713bfff2aa398af",
               "game_id": "401911337",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "UTSA Roadrunners",
               "line": 172.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "25690713bfff2aa398af",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-21T22:00:00Z",
               "selected_decimal_price": 1.9090909090909092,
               "selection": "under"
@@ -950,7 +950,7 @@
           "stake_units": 1.0,
           "ticket_id": "0749f4be9e9152f9e566",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         },
         {
           "awaiting_game_legs": 1,
@@ -1041,7 +1041,7 @@
       "settled_positions": 1,
       "settled_singles": 0,
       "staked_units": 1.0,
-      "unresolved_result_legs": 4,
+      "unresolved_result_legs": 3,
       "wins": 0
     }
   ],
@@ -1061,12 +1061,12 @@
   "result_unresolvable_legs": 0,
   "roi": 0.24091745603584105,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.20215041128536665,
+  "selected_leg_brier_score": 0.2028002152232903,
   "settled_accas": 9,
   "settled_positions": 10,
   "settled_singles": 1,
   "settled_stake_units": 10.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 4,
+  "unresolved_result_legs": 3,
   "wins": 4
 }
