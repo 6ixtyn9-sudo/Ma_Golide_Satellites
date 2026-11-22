@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 2,
+  "awaiting_game_legs": 0,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -941,31 +941,31 @@
       "wins": 0
     },
     {
-      "awaiting_game_legs": 2,
-      "bank_units": 99.7688506008459,
+      "awaiting_game_legs": 0,
+      "bank_units": 98.7688506008459,
       "date": "2026-11-21",
       "decision_id": "44904801842_nba_1_attempt_1",
       "frozen_at": "2026-11-21T12:39:40Z",
       "league": "NBA",
-      "losses": 2,
-      "pending_accas": 1,
-      "pending_positions": 1,
+      "losses": 3,
+      "pending_accas": 0,
+      "pending_positions": 0,
       "pending_singles": 0,
-      "pending_units": 1.0,
+      "pending_units": 0,
       "positions": [
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 1.3979,
           "effective_decimal_odds": 1.3978979398915972,
           "estimated_joint_win_probability": 0.74729812,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
             "win",
-            null,
+            "loss",
             "win"
           ],
           "legs": [
@@ -991,12 +991,12 @@
               "book_provider": "espn",
               "forecast_id": "03974388f3a5d84856b6",
               "game_id": "401910028",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Sacramento Kings",
               "market": "moneyline",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "03974388f3a5d84856b6",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-22T03:00:00Z",
               "selected_decimal_price": 1.1265822784810127,
               "selection": "away"
@@ -1019,6 +1019,7 @@
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 3,
           "provisional_sample_gate_bypassed": true,
           "publication_index": 1,
@@ -1028,7 +1029,7 @@
           "stake_units": 1.0,
           "ticket_id": "91d3ac8caed312674ddb",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
           "awaiting_game_legs": 0,
@@ -1110,7 +1111,7 @@
           "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -1120,7 +1121,7 @@
           "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "win",
             "win",
             "loss"
           ],
@@ -1131,13 +1132,13 @@
               "book_provider": "espn",
               "forecast_id": "bbbccb84333b8cb75dec",
               "game_id": "401910028",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Sacramento Kings",
               "line": 13.5,
               "market": "spread",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "bbbccb84333b8cb75dec",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-22T03:00:00Z",
               "selected_decimal_price": 1.8849557522123894,
               "selection": "home"
@@ -1187,44 +1188,44 @@
           "stake_units": 1.0,
           "ticket_id": "0dac4ec70b6294050cce",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         }
       ],
-      "profit_units": -2.0,
+      "profit_units": -3.0,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-21_decision.json",
       "result_unresolvable_legs": 0,
       "returned_units": 0.0,
-      "settled_accas": 2,
-      "settled_positions": 2,
+      "settled_accas": 3,
+      "settled_positions": 3,
       "settled_singles": 0,
-      "staked_units": 2.0,
-      "unresolved_result_legs": 2,
+      "staked_units": 3.0,
+      "unresolved_result_legs": 0,
       "wins": 0
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.3076923076923077,
+  "hit_rate": 0.2857142857142857,
   "league": "NBA",
-  "losses": 9,
-  "paper_bank_units": 99.7688506008459,
-  "paper_committed_units": 1.0,
+  "losses": 10,
+  "paper_bank_units": 98.7688506008459,
+  "paper_committed_units": 0,
   "paper_free_units": 98.7688506008459,
   "paper_only": true,
-  "pending_accas": 1,
-  "pending_positions": 1,
+  "pending_accas": 0,
+  "pending_positions": 0,
   "pending_singles": 0,
-  "profit_units": -0.23114939915411004,
+  "profit_units": -1.23114939915411,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": -0.01778072301185462,
+  "roi": -0.08793924279672215,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.2851551469719117,
-  "settled_accas": 10,
-  "settled_positions": 13,
+  "selected_leg_brier_score": 0.29576382755083325,
+  "settled_accas": 11,
+  "settled_positions": 14,
   "settled_singles": 3,
-  "settled_stake_units": 13.0,
+  "settled_stake_units": 14.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 2,
+  "unresolved_result_legs": 0,
   "wins": 4
 }
