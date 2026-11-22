@@ -1212,8 +1212,8 @@ class Pipeline:
             return {"now_utc": self.config.fixture_now_utc}
         if provider == "betexplorer_direct":
             # The direct fallback receives only canonical scheduled fixtures;
-            # it discovers one dated board and fetches comparison rows only for
-            # strict ordered-team matches, never a league-wide page crawl.
+            # it fetches only the distinct Paris-local date boards represented
+            # by those games, then comparison rows for strict ordered matches.
             options: Dict[str, Any] = {"now_utc": self.config.fixture_now_utc or self._now_iso()}
             if games is not None:
                 options["games"] = list(games)

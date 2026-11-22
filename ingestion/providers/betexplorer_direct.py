@@ -9,7 +9,8 @@ totals, and Asian Handicap spreads.
 The route is an operator-authorised, direct public-page fallback for this
 single-user project.  It is intentionally conservative operationally:
 
-* one date-board fetch per run, followed only by matched candidate fixtures;
+* one date-board fetch per distinct candidate Paris-local date, followed only
+  by matched candidate fixtures;
 * at most the source's three exact full-game comparison tabs (``ha``, ``ou``,
   and ``ah``) per matched fixture — no browser, proxy, relay, login, or
   alternate egress path;
@@ -34,6 +35,7 @@ import re
 import time
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Iterable, List, Optional
+from zoneinfo import ZoneInfo
 
 from ..http import HttpClient, HttpError
 from ..identity import canonical_team_key, canonical_team_name, now_utc_iso, parse_utc
@@ -517,25 +519,69 @@ def _scheduled_candidate_games(
     return output
 
 
-def _match_fixtures(
-    fixtures: Iterable[Dict[str, str]], games: Iterable[Any], expected_date: str
-) -> List[tuple[Dict[str, str], Any]]:
-    """Bind an event only when ordered teams and dated board identity are unique."""
+def _candidate_board_date(game: Any) -> str:
+    """Return the BetExplorer-local calendar date for a scheduled game."""
 
+    scheduled = parse_utc(game.scheduled_utc)
+    return scheduled.astimezone(ZoneInfo("Europe/Paris")).date().isoformat()
+
+
+def _match_fixtures(
+    fixtures: Iterable[Dict[str, str]], games: Iterable[Any]
+) -> List[tuple[Dict[str, str], Any]]:
+    """Bind an event only on its Paris-local board date and unique ordered names."""
+
+    candidates = list(games)
+    fixture_rows = list(fixtures)
+    fixture_dates = {fixture.get("date") for fixture in fixture_rows}
     matches: List[tuple[Dict[str, str], Any]] = []
-    for fixture in fixtures:
-        if fixture.get("date") != expected_date:
-            continue
-        candidates = [
+    matched_game_ids: set[str] = set()
+    diagnostics: List[Dict[str, str]] = []
+    for game in candidates:
+        diagnostics.append(
+            {
+                "game_id": str(game.game_id),
+                "scheduled_utc": str(game.scheduled_utc),
+                "board_date": _candidate_board_date(game),
+                "home": str(game.home_name),
+                "away": str(game.away_name),
+                "status": "unmatched",
+                "reason": (
+                    "no_fixture_rows_on_paris_board_date"
+                    if _candidate_board_date(game) not in fixture_dates
+                    else "ordered_team_pair_not_found_on_board_date"
+                ),
+            }
+        )
+    by_id = {item["game_id"]: item for item in diagnostics}
+
+    for fixture in fixture_rows:
+        fixture_date = fixture.get("date")
+        same_date = [game for game in candidates if _candidate_board_date(game) == fixture_date]
+        pair = [
             game
-            for game in games
+            for game in same_date
             if canonical_team_key(fixture["home_name"]) == canonical_team_key(game.home_name)
             and canonical_team_key(fixture["away_name"]) == canonical_team_key(game.away_name)
         ]
-        if len(candidates) == 1:
-            matches.append((fixture, candidates[0]))
-        elif candidates:
+        if len(pair) == 1:
+            game = pair[0]
+            matches.append((fixture, game))
+            matched_game_ids.add(str(game.game_id))
+            by_id[str(game.game_id)].update(
+                status="matched", reason="exact_ordered_pair_on_paris_board_date"
+            )
+        elif pair:
             _count_rejection("ambiguous_ordered_team_pair")
+            for game in pair:
+                by_id[str(game.game_id)].update(status="ambiguous", reason="ambiguous_ordered_team_pair")
+
+    _last_receipt["candidate_fixture_diagnostics"] = [
+        by_id[str(game.game_id)] for game in candidates
+    ][:40]
+    for game in candidates:
+        if str(game.game_id) not in matched_game_ids:
+            _count_rejection(by_id[str(game.game_id)]["reason"])
     return matches
 
 
@@ -582,7 +628,7 @@ def fetch_odds(
 ) -> List[BookSnapshot]:
     """Fetch direct named-book full-game H/A, total, and spread rows."""
 
-    del tz_name  # The dated BetExplorer board is the source-side date boundary.
+    del tz_name  # BetExplorer fixture rows use Europe/Paris wall-clock dates.
     observed_utc = now_utc or now_utc_iso()
     date = _date_text(date_yyyymmdd)
     _reset_run(league, date, observed_utc)
@@ -594,26 +640,46 @@ def fetch_odds(
 
     fetch = _text_fetch(fetch_factory, text_fetch)
     throttled = text_fetch is None
-    url = _DAY_URL.format(year=date[:4], month=date[5:7], day=date[8:])
-    try:
-        board_body = _fetch_text(fetch, url, throttle=throttled)
-    except Exception as exc:
-        if not _last_receipt.get("cooldown"):
-            _last_receipt["status"] = "board_fetch_error"
-            _record_gap(None, "daily_board", f"{type(exc).__name__}: {str(exc)[:160]}", CoverageState.PROVIDER_ERROR)
-        return []
+    board_dates = sorted({_candidate_board_date(game) for game in candidates})
+    fixtures: List[Dict[str, str]] = []
+    day_receipts: List[Dict[str, Any]] = []
+    for board_date in board_dates:
+        year, month, day = board_date.split("-")
+        url = _DAY_URL.format(year=year, month=month, day=day)
+        try:
+            board_body = _fetch_text(fetch, url, throttle=throttled)
+        except Exception as exc:
+            if not _last_receipt.get("cooldown"):
+                _last_receipt["status"] = "board_fetch_error"
+                _record_gap(
+                    None,
+                    "daily_board",
+                    f"{type(exc).__name__}: {str(exc)[:160]}",
+                    CoverageState.PROVIDER_ERROR,
+                )
+            return []
+        parsed = parse_day_board(board_body)
+        fixtures.extend(parsed)
+        day_receipts.append(
+            {
+                "date": board_date,
+                "url": url,
+                "response_sha256": hashlib.sha256(
+                    board_body.encode("utf-8", "replace")
+                ).hexdigest(),
+                "rows_seen": len(parsed),
+            }
+        )
 
-    fixtures = parse_day_board(board_body)
-    _last_receipt["day_url"] = url
-    _last_receipt["day_response_sha256"] = hashlib.sha256(
-        board_body.encode("utf-8", "replace")
-    ).hexdigest()
-    _last_receipt["day_rows_seen"] = len(fixtures)
-    matched = _match_fixtures(fixtures, candidates, date)
+    _last_receipt["board_dates"] = day_receipts
+    # Keep the original single-board receipt fields for existing consumers.
+    if day_receipts:
+        _last_receipt["day_url"] = day_receipts[0]["url"]
+        _last_receipt["day_response_sha256"] = day_receipts[0]["response_sha256"]
+    _last_receipt["day_rows_seen"] = sum(item["rows_seen"] for item in day_receipts)
+    matched = _match_fixtures(fixtures, candidates)
     _last_receipt["fixtures_matched"] = len(matched)
     _last_receipt["fixtures_unmatched"] = max(0, len(candidates) - len(matched))
-    if _last_receipt["fixtures_unmatched"]:
-        _count_rejection("no_unique_ordered_team_pair_on_dated_board")
 
     snapshots: List[BookSnapshot] = []
     for fixture, game in matched:

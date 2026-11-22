@@ -442,8 +442,11 @@ def test_direct_fallback_does_not_fetch_odds_for_an_unmatched_or_past_fixture(mo
     ) == []
     assert len(calls) == 1, "only the dated board is read before identity refusal"
     assert betexplorer_direct.last_receipt()["identity_rejections"] == {
-        "no_unique_ordered_team_pair_on_dated_board": 1
+        "ordered_team_pair_not_found_on_board_date": 1
     }
+    diagnostic = betexplorer_direct.last_receipt()["candidate_fixture_diagnostics"][0]
+    assert diagnostic["game_id"] == wrong_orientation.game_id
+    assert diagnostic["reason"] == "ordered_team_pair_not_found_on_board_date"
 
     calls.clear()
     past = _game()
@@ -453,6 +456,39 @@ def test_direct_fallback_does_not_fetch_odds_for_an_unmatched_or_past_fixture(mo
     ) == []
     assert calls == []
     assert betexplorer_direct.last_receipt()["status"] == "no_future_candidate_games"
+
+
+def test_direct_fallback_fetches_each_required_paris_board_date(monkeypatch):
+    game = _game()
+    game.scheduled_utc = "2026-11-20T23:30:00Z"  # 2026-11-21 00:30 in Paris
+    next_day_board = BOARD.replace('data-dt="20,11,2026,20,00"', 'data-dt="21,11,2026,00,30"')
+    calls: list[str] = []
+    monkeypatch.setattr(betexplorer_direct, "MIN_REQUEST_INTERVAL_SECONDS", 0.0)
+
+    def fetch(url: str) -> str:
+        calls.append(url)
+        if "/basketball/results/" in url:
+            assert "year=2026&month=11&day=21" in url
+            return next_day_board
+        return _fetch([])(url)
+
+    snapshots = betexplorer_direct.fetch_odds(
+        "NBA", DATE, now_utc=OBSERVED, games=[game], text_fetch=fetch
+    )
+    assert snapshots
+    receipt = betexplorer_direct.last_receipt()
+    assert [board["date"] for board in receipt["board_dates"]] == ["2026-11-21"]
+    assert receipt["candidate_fixture_diagnostics"] == [
+        {
+            "game_id": game.game_id,
+            "scheduled_utc": game.scheduled_utc,
+            "board_date": "2026-11-21",
+            "home": game.home_name,
+            "away": game.away_name,
+            "status": "matched",
+            "reason": "exact_ordered_pair_on_paris_board_date",
+        }
+    ]
 
 
 def test_registry_exposes_direct_fallback_for_every_league_and_pipeline_keeps_receipt(monkeypatch):

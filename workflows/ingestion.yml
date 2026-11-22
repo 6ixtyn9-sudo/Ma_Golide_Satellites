@@ -218,7 +218,7 @@ jobs:
       # The gate emits only leagues with due work. One unavailable/failed
       # league never cancels any other selected league.
       fail-fast: false
-      max-parallel: 7
+      max-parallel: 8
       matrix: ${{ fromJSON(needs.gate.outputs.matrix) }}
     name: ${{ matrix.label }}
     env:
