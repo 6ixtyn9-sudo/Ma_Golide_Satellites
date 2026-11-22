@@ -1,6 +1,6 @@
 Ma Golide Picks — NBA 2026-11-21
 ========================================================================
-Generated at: 2026-11-22 03:10 SAST
+Generated at: 2026-11-22 03:40 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -13,7 +13,7 @@ ELIGIBLE CLEAN PICKS
       MONEYLINE full_game -> AWAY · p=78.1% (raw 72.0%) @1.167 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=84 · reasons=none · prediction=history
-      archived_revisions=29 · latest_evidence_utc=2026-11-22T01:09:13Z
+      archived_revisions=30 · latest_evidence_utc=2026-11-22T01:39:08Z
 
 CAUTION PICKS
 ========================================================================
@@ -22,17 +22,17 @@ CAUTION PICKS
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=14 · reasons=insufficient_walk_forward_samples · prediction=espn
       PAPER SINGLE · moneyline full_game · p 0.80-<0.90 · odds 1.00-<1.20 · n=2 · recency ROI +15.3% / adjusted +13.1%
-      archived_revisions=29 · latest_evidence_utc=2026-11-22T01:09:14Z
+      archived_revisions=30 · latest_evidence_utc=2026-11-22T01:39:10Z
   [provider:hardwood/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       MONEYLINE full_game -> AWAY · p=86.1% (raw 85.5%) @1.167 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=1 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-      archived_revisions=29 · latest_evidence_utc=2026-11-22T01:09:13Z
+      archived_revisions=30 · latest_evidence_utc=2026-11-22T01:39:08Z
   [team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       SPREAD full_game +13.5 -> HOME · p=68.7% (raw 68.0%) @1.926 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=12 · reasons=insufficient_walk_forward_samples · prediction=history
-      PAPER SINGLE · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +90.1% / adjusted +55.6%
+      PAPER SINGLE · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +90.1% / adjusted +55.5%
       archived_revisions=17 · latest_evidence_utc=2026-11-21T20:39:07Z
   [context_availability+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       SPREAD full_game +13.5 -> HOME · p=67.9% (raw 71.0%) @1.926 DraftKings
@@ -43,12 +43,12 @@ CAUTION PICKS
       MONEYLINE full_game -> AWAY · p=65.4% (raw 71.0%) @1.167 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=12 · reasons=insufficient_walk_forward_samples · prediction=history
-      archived_revisions=29 · latest_evidence_utc=2026-11-22T01:09:13Z
+      archived_revisions=30 · latest_evidence_utc=2026-11-22T01:39:08Z
   [team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       SPREAD full_game +12.5 -> HOME · p=64.7% (raw 64.0%) @1.862 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=12 · reasons=insufficient_walk_forward_samples · prediction=history
-      PAPER SINGLE · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +90.1% / adjusted +55.6%
+      PAPER SINGLE · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +90.1% / adjusted +55.5%
       archived_revisions=10 · latest_evidence_utc=2026-11-22T00:39:01Z
   [provider:espn+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       SPREAD full_game -13.5 -> AWAY · p=64.4% (raw 63.0%) @1.893 DraftKings
@@ -65,31 +65,31 @@ CAUTION PICKS
       SPREAD full_game +11.5 -> HOME · p=62.7% (raw 62.0%) @1.962 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=12 · reasons=insufficient_walk_forward_samples · prediction=history
-      PAPER SINGLE · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +90.1% / adjusted +55.6%
-      archived_revisions=2 · latest_evidence_utc=2026-11-22T01:09:13Z
+      PAPER SINGLE · spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=3 · recency ROI +90.1% / adjusted +55.5%
+      archived_revisions=3 · latest_evidence_utc=2026-11-22T01:39:08Z
   [context_availability+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       SPREAD full_game +11.5 -> HOME · p=59.9% (raw 63.0%) @1.962 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=12 · reasons=insufficient_walk_forward_samples · prediction=history
-      archived_revisions=2 · latest_evidence_utc=2026-11-22T01:09:13Z
+      archived_revisions=3 · latest_evidence_utc=2026-11-22T01:39:08Z
   [team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       TOTAL full_game 215.5 -> OVER · p=57.1% (raw 66.0%) @1.870 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=11 · reasons=insufficient_walk_forward_samples · prediction=history
       ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=4 · recency ROI -53.4% / adjusted -36.5%
-      archived_revisions=6 · latest_evidence_utc=2026-11-22T01:09:13Z
+      archived_revisions=7 · latest_evidence_utc=2026-11-22T01:39:08Z
   [provider:espn+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       SPREAD full_game -11.5 -> AWAY · p=56.4% (raw 55.0%) @1.862 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=12 · reasons=insufficient_walk_forward_samples · prediction=espn
       ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=6 · recency ROI -35.6% / adjusted -27.5%
-      archived_revisions=6 · latest_evidence_utc=2026-11-22T01:09:14Z
+      archived_revisions=7 · latest_evidence_utc=2026-11-22T01:39:10Z
   [provider:espn+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       SPREAD full_game -12.5 -> AWAY · p=55.4% (raw 54.0%) @1.962 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=12 · reasons=insufficient_walk_forward_samples · prediction=espn
       ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=6 · recency ROI -35.6% / adjusted -27.5%
-      archived_revisions=12 · latest_evidence_utc=2026-11-22T01:09:14Z
+      archived_revisions=13 · latest_evidence_utc=2026-11-22T01:39:10Z
   [team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       TOTAL full_game 216.5 -> OVER · p=54.1% (raw 63.0%) @1.943 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -100,7 +100,7 @@ CAUTION PICKS
       SPREAD full_game -11.5 -> AWAY · p=53.4% (raw 55.0%) @1.862 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=1 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-      archived_revisions=2 · latest_evidence_utc=2026-11-22T01:09:13Z
+      archived_revisions=3 · latest_evidence_utc=2026-11-22T01:39:08Z
   [team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       TOTAL full_game 217.5 -> OVER · p=52.1% (raw 61.0%) @1.870 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -113,16 +113,16 @@ CAUTION PICKS
       calibration=provisional n=1 · reasons=insufficient_walk_forward_samples · prediction=hardwood
       archived_revisions=10 · latest_evidence_utc=2026-11-22T00:39:01Z
   [provider:hardwood+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
-      TOTAL full_game 215.5 -> OVER · p=51.1% (raw 53.0%) @1.870 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=1 · reasons=insufficient_walk_forward_samples · prediction=hardwood
-      archived_revisions=6 · latest_evidence_utc=2026-11-22T01:09:13Z
-  [provider:hardwood+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       TOTAL full_game 217.5 -> UNDER · p=51.1% (raw 53.0%) @1.952 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=1 · reasons=insufficient_walk_forward_samples · prediction=hardwood
       ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=8 · recency ROI -3.5% / adjusted -9.3%
       archived_revisions=6 · latest_evidence_utc=2026-11-21T20:39:07Z
+  [provider:hardwood+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
+      TOTAL full_game 215.5 -> OVER · p=51.1% (raw 53.0%) @1.870 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=1 · reasons=insufficient_walk_forward_samples · prediction=hardwood
+      archived_revisions=7 · latest_evidence_utc=2026-11-22T01:39:08Z
   [provider:hardwood+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       SPREAD full_game +13.5 -> HOME · p=51.0% (raw 51.0%) @1.926 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -150,7 +150,7 @@ WATCHLIST — INSUFFICIENT CONTEXT
       TOTAL full_game 215.5 -> UNDER · p=49.8% (raw 58.0%) @1.952 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=13 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
-      archived_revisions=6 · latest_evidence_utc=2026-11-22T01:09:13Z
+      archived_revisions=7 · latest_evidence_utc=2026-11-22T01:39:08Z
   [context_availability+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       TOTAL full_game 216.5 -> UNDER · p=49.8% (raw 58.0%) @1.870 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -170,7 +170,7 @@ WATCHLIST — INSUFFICIENT CONTEXT
       TOTAL full_game 215.5 -> OVER · p=47.3% (raw 60.0%) @1.870 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=13 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
-      archived_revisions=6 · latest_evidence_utc=2026-11-22T01:09:14Z
+      archived_revisions=7 · latest_evidence_utc=2026-11-22T01:39:10Z
   [context_availability+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       TOTAL full_game 216.5 -> OVER · p=46.5% (raw 53.0%) @1.885 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -185,12 +185,12 @@ WATCHLIST — INSUFFICIENT CONTEXT
       TOTAL full_game 216.5 -> OVER · p=44.3% (raw 57.0%) @1.943 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=13 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
-      archived_revisions=12 · latest_evidence_utc=2026-11-22T01:09:14Z
+      archived_revisions=13 · latest_evidence_utc=2026-11-22T01:39:10Z
   [provider:espn+team_history_empirical/team_history_empirical] Sacramento Kings vs Boston Celtics · KO 2026-11-22 05:00 SAST
       TOTAL full_game 217.5 -> OVER · p=42.3% (raw 55.0%) @1.870 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=13 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=espn
-      archived_revisions=26 · latest_evidence_utc=2026-11-22T01:09:14Z
+      archived_revisions=27 · latest_evidence_utc=2026-11-22T01:39:10Z
 
 SKIPPED — INELIGIBLE
 ========================================================================
@@ -832,7 +832,7 @@ SETTLED PICKS — ARCHIVE ONLY
 Active summary: ELIGIBLE_CLEAN=1 CAUTION=21 WATCHLIST_NO_ODDS=2 WATCHLIST_INSUFFICIENT_CONTEXT=9 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 4
 Archive status: IN_PROGRESS_OR_AWAITING_RESULT=123 SETTLED=21
-Logical picks shown: 177 · superseded observations: 341
-Total archived pick evidence rows: 518
+Logical picks shown: 177 · superseded observations: 356
+Total archived pick evidence rows: 533
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.
