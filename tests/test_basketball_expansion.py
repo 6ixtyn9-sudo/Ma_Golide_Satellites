@@ -91,6 +91,12 @@ def test_final_expansion_is_typed_and_registry_backed_everywhere():
                 "aba_liga",
                 "aba_liga",
             )
+        elif league is League.SPAIN_ACB:
+            assert (spec.schedule_source, spec.results_source, spec.gate_schedule_source) == (
+                "acb",
+                "acb",
+                "acb",
+            )
         elif league is League.EUROCUP:
             # EuroCup rides the validated EuroLeague Basketball adapter with
             # competition code U; it is a referenced route contract, not a
@@ -112,7 +118,7 @@ def test_adaptive_gate_schedules_every_registry_lane_and_fails_open_for_unavaila
         config = gate_by_league[gate_league]
         assert config.state_key == spec.state_key
         assert config.acquisition_timezone == spec.acquisition_timezone
-    unsupported = gate_by_league[League.SPAIN_ACB.value]
+    unsupported = gate_by_league[League.FRANCE_LNB_PRO_A.value]
     with pytest.raises(GateUncertain, match="no gate schedule source"):
         list(fetch_schedule(unsupported, "2026-11-19"))
     aba = gate_by_league[League.ABA_LEAGUE.value]
@@ -133,11 +139,11 @@ def test_legacy_and_short_boundary_aliases_normalise_to_canonical_leagues():
 
 def test_unavailable_adapter_reports_gap_but_preserves_manually_canonical_lifecycle():
     store = InMemoryStore()
-    game = _game(League.SPAIN_ACB)
+    game = _game(League.FRANCE_LNB_PRO_A)
     store.upsert_game(game)
     pipeline = Pipeline(
         PipelineConfig(
-            league="SPAIN_ACB",
+            league="FRANCE_LNB_PRO_A",
             date_yyyymmdd="20261119",
             fixture_now_utc="2026-11-19T12:00:00Z",
         ),

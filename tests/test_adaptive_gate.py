@@ -381,31 +381,31 @@ def test_fiba_elw_gate_uses_official_competition_schedule_and_canonical_utc(monk
 
 
 def test_source_unavailable_lane_runs_once_for_a_durable_coverage_gap_then_skips(tmp_path: Path):
-    acb = next(config for config in LEAGUES if config.league_key == "SPAIN_ACB")
-    _operator_state(tmp_path, acb, date="2026-11-18")
+    lnb = next(config for config in LEAGUES if config.league_key == "FRANCE_LNB_PRO_A")
+    _operator_state(tmp_path, lnb, date="2026-11-18")
 
     def should_not_fetch(_config, _date):
         raise AssertionError("source-unavailable lanes must not fake a schedule fetch")
 
-    first = evaluate_league(acb, state_root=tmp_path, now=NOW, schedule_fetcher=should_not_fetch)
+    first = evaluate_league(lnb, state_root=tmp_path, now=NOW, schedule_fetcher=should_not_fetch)
     assert first.should_run
     assert first.reasons == ("coverage_gap_publication_due",)
 
     _write_json(
-        tmp_path / acb.state_key / "coverage_gap_2026-11-18.json",
+        tmp_path / lnb.state_key / "coverage_gap_2026-11-18.json",
         {
             "schema_version": "magolide.coverage_gap_marker",
-            "league": "SPAIN_ACB",
+            "league": "FRANCE_LNB_PRO_A",
             "target_date": "2026-11-18",
             "schedule_source": "source_unavailable",
         },
     )
-    second = evaluate_league(acb, state_root=tmp_path, now=NOW, schedule_fetcher=should_not_fetch)
+    second = evaluate_league(lnb, state_root=tmp_path, now=NOW, schedule_fetcher=should_not_fetch)
     assert not second.should_run
     assert second.reasons == ("no_work",)
 
-    (tmp_path / acb.state_key / "picks_2026-11-18.txt").write_text("dated pick card\n")
-    lifecycle = evaluate_league(acb, state_root=tmp_path, now=NOW, schedule_fetcher=should_not_fetch)
+    (tmp_path / lnb.state_key / "picks_2026-11-18.txt").write_text("dated pick card\n")
+    lifecycle = evaluate_league(lnb, state_root=tmp_path, now=NOW, schedule_fetcher=should_not_fetch)
     assert lifecycle.should_run
     assert lifecycle.reasons == ("source_unavailable_pick_lifecycle_due",)
 

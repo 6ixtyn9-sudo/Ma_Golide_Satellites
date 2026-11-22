@@ -14,6 +14,7 @@ No live-provider claim should be inferred from a passing offline suite.
 | ESPN | NCAA_M | Division-I men's scoreboard/books, BPI predictions, summaries, two-half/OT results, recent and indexed deep history | Public endpoints | Historical probes and hermetic endpoint/two-half/OT regressions; external-trigger smoke still required |
 | ESPN | NCAA_W | Division-I women's scoreboard/books, BPI predictions, summaries, modern quarters and declared legacy halves, recent and indexed deep history | Public endpoints | Live four-quarter final probe plus hermetic quarter/legacy-half and one-time reparse regressions |
 | ESPN | NBA G League | `basketball/nba-development` date-bounded scoreboard discovery, summaries, reconciled Q1–Q4 results, and bounded recent-result backfill | Public endpoints | Captured public scoreboard and summary on 2026-10-29 plus hermetic identity/status/period reconciliation regressions; BPI, deep core-index history, and named-book pricing are **not** validated |
+| ACB JSON API | Spain ACB (`SPAIN_ACB`) | Liga Endesa season calendar, per-game header with names, status, final score, quarter/OT reconciliation | Public endpoints (`api2.acb.com`) | Route contract referenced from SportsDataverse's generated `acb` module; **no Ma Golide first-party capture**; source automation/reuse terms unverified |
 | EuroLeague | EuroLeague, EuroCup (`EUROCUP`) | Schedule discovery, game results, quarter/OT reconciliation, standings | Public endpoints | EuroLeague: schedule/boxscore live captures 2026-11-06; season schedule scores/partials, empty-season trap, and v3 per-round standings live-verified 2026-11-16. EuroCup: same host and route shape with competition code `U`, fixture-tested only — no Ma Golide first-party capture. Upstream reuse terms not reviewed |
 | FIBA GDAP + game page | EuroLeague Women (`EUROLEAGUE_W`) | Competition schedule, canonical UTC fixtures/status/results, official game-page play-by-play/period scores, player/team detail | Public APIM key shipped in FIBA's web client | Live facts and fixture-only cases are separated below; independent namespace, no men's EuroLeague reuse. Automation/reuse rights and future route/status vocabulary remain unresolved. |
 | CBA | CBA | Official league data API: season/day discovery, Beijing-local UTC times, quarter/OT reconciliation via observed period-score POST endpoint | Public endpoints; AES-128-ECB bodies decrypted with the key constant shipped in the site's own bundle | Live-verified 2026-11-16 from a datacenter IP (decryption, statuses, quarter sums, OT shape); unofficial/undocumented API and terms not reviewed — see caveats |
@@ -50,6 +51,28 @@ verified index floors.
   given.
 - Boxscore results (`live.euroleague.net/api/Boxscore`) remain the deeper
   per-game evidence path for slate results.
+
+### Spain ACB acquisition details (referenced route contract, fixture-tested)
+
+- ``GET https://api2.acb.com/api/seasondata/Calendar/season-calendar?season={end_year}``
+  returns every round of a season with its games: match id, season-team ids,
+  scores, ``startDateTime``, ``matchStatus`` and ``currentQuarter``. The season
+  value is the season **end** year (2027 = 2026-27) and the API's edition id is
+  that year minus 1936; anything below the 1984 floor is refused before a
+  request is built.
+- ``GET https://api2.acb.com/api/matchdata/MatchHeader/match-header?matchId={id}``
+  returns one game's header: team names and stable ids, ``matchStatus``
+  (``FINALIZED`` once over), ``currentHomeScore``/``currentAwayScore`` and
+  ``quarterScores[]`` — points scored *in* each period, with overtime as
+  quarters 5+.
+- The calendar carries no team names, so identity is resolved from the header
+  and a slate costs one calendar request plus one header request per candidate
+  game. A header that fails identity, a timestamp without a UTC offset, or a
+  body without four regulation quarters is recorded as a gap and skipped — never
+  folded, guessed from list order, or treated as missing points.
+- No history backfill is wired: a season of history is one header request per
+  game, so it needs its own bounded plan rather than an unbounded walk.
+- Pricing stays on the universal direct BetExplorer fallback.
 
 ### EuroCup acquisition details (referenced route contract, fixture-tested)
 

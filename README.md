@@ -35,6 +35,8 @@ defines the evidence-first path from a league contract to visible unpriced
 normal-lane output, bounded price validation, and only then a prospective
 paper-ticket path.
 
+Spain ACB (`SPAIN_ACB`) now has a canonical schedule/result lane built on the ACB's own JSON API: a season calendar for fixtures and a per-game header that carries team identity, status, final score and `quarterScores[]` for period reconciliation. It is a *referenced* route contract (no first-party capture) and reconciles only bodies with four regulation quarters plus contiguous overtime.
+
 EuroCup (`EUROCUP`) now has a canonical schedule/result lane: it reuses the
 validated EuroLeague Basketball adapter with competition code `U` (the season
 code itself carries the competition). That is a *referenced* route contract —
