@@ -1,6 +1,6 @@
 Ma Golide Picks — NCAA_M 2026-11-21
 ========================================================================
-Generated at: 2026-11-22 08:08 SAST
+Generated at: 2026-11-22 08:33 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -29,42 +29,7 @@ SKIPPED — INELIGIBLE
 
 IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
-  [provider:espn/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
-      MONEYLINE full_game -> HOME · p=91.9% (raw 98.1%) @1.012 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T03:19:20Z
-      calibration=calibrated n=137 · reasons=none · prediction=espn
-      ROI-BAND BLOCKED · moneyline full_game · p 0.90-1.00 · odds 1.00-<1.20 · n=13 · recency ROI +2.9% / adjusted -0.1%
-  [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
-      MONEYLINE full_game -> HOME · p=89.0% (raw 96.0%) @1.012 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T03:19:20Z
-      calibration=calibrated n=188 · reasons=none · prediction=history
-  [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
-      MONEYLINE H1 -> HOME · p=79.5% (raw 85.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T03:19:20Z
-      calibration=calibrated n=188 · reasons=no_exact_bookmaker_market · prediction=history
-  [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
-      SPREAD full_game +24.5 -> AWAY · p=53.2% (raw 60.0%) @1.952 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T03:19:20Z
-      calibration=calibrated n=32 · reasons=none · prediction=history
-      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=107 · recency ROI -4.1% / adjusted -4.2%
-  [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
-      TOTAL full_game 149.5 -> UNDER · p=52.6% (raw 57.0%) @1.870 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T03:19:20Z
-      calibration=calibrated n=51 · reasons=none · prediction=history
-      PAPER SINGLE · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=241 · recency ROI +10.1% / adjusted +10.0%
-  [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
-      TOTAL full_game 149.5 -> OVER · p=51.7% (raw 52.0%) @1.909 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T03:19:20Z
-      calibration=calibrated n=34 · reasons=none · prediction=history
-      PAPER SINGLE · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=182 · recency ROI +12.4% / adjusted +12.3%
-  [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
-      TOTAL full_game 148.5 -> OVER · p=47.7% (raw 51.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T03:19:20Z
-      calibration=calibrated n=30 · reasons=below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
-      SPREAD full_game +25.5 -> AWAY · p=46.9% (raw 54.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T03:19:20Z
-      calibration=calibrated n=52 · reasons=below_calibrated_probability_floor · prediction=history
+  (none)
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
@@ -76,6 +41,11 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE full_game -> HOME · p=92.1% (raw 100.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T18:15:00Z
       calibration=calibrated n=143 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
+  [provider:espn/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
+      MONEYLINE full_game -> HOME · p=91.9% (raw 98.1%) @1.012 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T03:19:20Z
+      calibration=calibrated n=137 · reasons=none · prediction=espn
+      ROI-BAND BLOCKED · moneyline full_game · p 0.90-1.00 · odds 1.00-<1.20 · n=13 · recency ROI +2.9% / adjusted -0.1%
   [provider:espn/team_history_empirical] Northern Colorado Bears vs Justice Lions · KO 2026-11-21 23:00 SAST
       MONEYLINE full_game -> HOME · p=91.9% (raw 99.8%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T20:15:13Z
@@ -104,6 +74,10 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE full_game -> HOME · p=90.8% (raw 97.9%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T22:14:43Z
       calibration=calibrated n=103 · reasons=no_exact_bookmaker_market · prediction=espn
+  [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
+      MONEYLINE full_game -> HOME · p=89.0% (raw 96.0%) @1.012 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T03:19:20Z
+      calibration=calibrated n=188 · reasons=none · prediction=history
   [team_history_empirical/team_history_empirical] James Madison Dukes vs Virginia Lynchburg Dragons · KO 2026-11-21 21:00 SAST
       MONEYLINE H1 -> HOME · p=88.8% (raw 97.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T18:15:00Z
@@ -139,6 +113,10 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T23:19:11Z
       calibration=calibrated n=116 · reasons=none · prediction=espn
       ROI-BAND BLOCKED · moneyline full_game · p 0.80-<0.90 · odds 1.00-<1.20 · n=19 · recency ROI +0.7% / adjusted -1.6%
+  [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
+      MONEYLINE H1 -> HOME · p=79.5% (raw 85.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T03:19:20Z
+      calibration=calibrated n=188 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical/team_history_empirical] Michigan State Spartans vs Detroit Mercy Titans · KO 2026-11-21 19:00 SAST
       MONEYLINE H1 -> HOME · p=79.2% (raw 88.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T16:15:02Z
@@ -899,6 +877,11 @@ SETTLED PICKS — ARCHIVE ONLY
       TOTAL full_game 145.5 -> UNDER · p=53.3% (raw 53.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T23:19:11Z
       calibration=calibrated n=37 · reasons=insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
+      SPREAD full_game +24.5 -> AWAY · p=53.2% (raw 60.0%) @1.952 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T03:19:20Z
+      calibration=calibrated n=32 · reasons=none · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=107 · recency ROI -4.1% / adjusted -4.2%
   [team_history_empirical/team_history_empirical] North Florida Ospreys vs Little Rock Trojans · KO 2026-11-21 21:00 SAST
       SPREAD full_game -4.5 -> AWAY · p=53.2% (raw 60.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T18:15:00Z
@@ -974,6 +957,11 @@ SETTLED PICKS — ARCHIVE ONLY
       TOTAL full_game 143.5 -> OVER · p=52.6% (raw 56.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T19:14:07Z
       calibration=calibrated n=30 · reasons=insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
+      TOTAL full_game 149.5 -> UNDER · p=52.6% (raw 57.0%) @1.870 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T03:19:20Z
+      calibration=calibrated n=51 · reasons=none · prediction=history
+      PAPER SINGLE · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=241 · recency ROI +10.1% / adjusted +10.0%
   [team_history_empirical/team_history_empirical] Mercer Bears vs Charleston Southern Buccaneers · KO 2026-11-22 02:00 SAST
       SPREAD full_game +9.5 -> AWAY · p=52.6% (raw 61.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T23:19:11Z
@@ -1057,6 +1045,11 @@ SETTLED PICKS — ARCHIVE ONLY
       TOTAL full_game 141.5 -> OVER · p=51.8% (raw 56.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T18:15:00Z
       calibration=calibrated n=31 · reasons=insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
+      TOTAL full_game 149.5 -> OVER · p=51.7% (raw 52.0%) @1.909 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T03:19:20Z
+      calibration=calibrated n=34 · reasons=none · prediction=history
+      PAPER SINGLE · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=182 · recency ROI +12.4% / adjusted +12.3%
   [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
       TOTAL full_game 154.5 -> OVER · p=51.7% (raw 52.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T00:46:45Z
@@ -1532,6 +1525,10 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE full_game -> HOME · p=47.8% (raw 56.0%) @2.050 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T19:14:07Z
       calibration=calibrated n=142 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
+      TOTAL full_game 148.5 -> OVER · p=47.7% (raw 51.0%) @1.870 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T03:19:20Z
+      calibration=calibrated n=30 · reasons=below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] George Mason Patriots vs South Florida Bulls · KO 2026-11-21 23:00 SAST
       TOTAL full_game 146.5 -> OVER · p=47.6% (raw 51.0%) @1.909 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T20:15:13Z
@@ -1640,6 +1637,10 @@ SETTLED PICKS — ARCHIVE ONLY
       SPREAD full_game -2.5 -> AWAY · p=46.9% (raw 53.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T20:15:13Z
       calibration=provisional n=29 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Duke Blue Devils vs Washington State Cougars · KO 2026-11-22 06:00 SAST
+      SPREAD full_game +25.5 -> AWAY · p=46.9% (raw 54.0%) @1.870 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T03:19:20Z
+      calibration=calibrated n=52 · reasons=below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Portland Pilots vs Fordham Rams · KO 2026-11-21 21:00 SAST
       SPREAD full_game -5.5 -> AWAY · p=46.9% (raw 53.0%) @1.980 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T18:15:00Z
@@ -1847,7 +1848,7 @@ SETTLED PICKS — ARCHIVE ONLY
 
 Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 WATCHLIST_NO_ODDS=0 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=8 SETTLED=427
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=435
 Logical picks shown: 435 · superseded observations: 0
 Total archived pick evidence rows: 435
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
