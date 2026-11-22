@@ -13,7 +13,7 @@
       "logical_picks": 6
     },
     "2026-11-22": {
-      "frozen_fixtures": 1,
+      "frozen_fixtures": 2,
       "logical_picks": 15
     }
   },
@@ -692,6 +692,172 @@
       }
     },
     "2026-11-22": {
+      "aba_liga:26:1:81": {
+        "decision_cutoff_utc": "2026-11-22T11:00:00Z",
+        "frozen_at": "2026-11-22T11:16:50Z",
+        "game_id": "aba_liga:26:1:81",
+        "league": "ABA_LEAGUE",
+        "rows": [
+          {
+            "away": "Cibona",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.255349,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 13,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "05394b07b5c09d8f7c377944dd43a01c5c3abb75374bd84fbf2fc7cf6863196c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "43b599bc8a05d8543d26",
+            "game_id": "aba_liga:26:1:81",
+            "grade_status": "pending",
+            "home": "Crvena Zvezda Meridianbet Belgrade",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "43b599bc8a05d8543d26",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.29,
+            "role": null,
+            "scheduled_utc": "2026-11-22T12:00:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "Cibona",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.716279,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 13,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "0fd40579e3267b8c614d46e4d5c20cc09389982167dcc399db57d73292b89cbe",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4a7923da58c44eca614e",
+            "game_id": "aba_liga:26:1:81",
+            "grade_status": "pending",
+            "home": "Crvena Zvezda Meridianbet Belgrade",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "4a7923da58c44eca614e",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.68,
+            "role": null,
+            "scheduled_utc": "2026-11-22T12:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Cibona",
+            "book": {
+              "book": "Stake.com",
+              "frozen": false,
+              "game_id": "aba_liga:26:1:81",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-21T23:10:48Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.06,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.784419,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 13,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "6c484398bdabcf6ac4f6e978847a87b3e5f1109113a458aefa3bdbe427f0d293",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5006c70bfc9216f0da1d",
+            "game_id": "aba_liga:26:1:81",
+            "grade_status": "pending",
+            "home": "Crvena Zvezda Meridianbet Belgrade",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": null,
+              "historical_pick_count": 0,
+              "individual_odds_band": "1.00-<1.20",
+              "losses": 0,
+              "market": "moneyline",
+              "observed_roi": null,
+              "period": "full_game",
+              "probability_band": "0.70-<0.80",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": null,
+              "wins": 0
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "5006c70bfc9216f0da1d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.78,
+            "role": null,
+            "scheduled_utc": "2026-11-22T12:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T12:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
+      },
       "aba_liga:26:1:87": {
         "decision_cutoff_utc": "2026-11-22T10:00:00Z",
         "frozen_at": "2026-11-22T10:15:33Z",
@@ -834,6 +1000,10 @@
     [
       "aba_liga:26:1:87",
       "2026-11-22T11:00:00Z"
+    ],
+    [
+      "aba_liga:26:1:81",
+      "2026-11-22T12:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
