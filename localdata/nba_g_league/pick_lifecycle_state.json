@@ -10,7 +10,7 @@
       "frozen_fixtures": 6
     },
     "2026-11-22": {
-      "frozen_fixtures": 3,
+      "frozen_fixtures": 5,
       "logical_picks": 18
     }
   },
@@ -2949,6 +2949,276 @@
         "scheduled_utc": "2026-11-22T19:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
+      },
+      "401914593": {
+        "decision_cutoff_utc": "2026-11-22T19:00:00Z",
+        "frozen_at": "2026-11-22T19:09:29Z",
+        "game_id": "401914593",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Cleveland Charge",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.478873,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "01211efa466bd2b2fcc2d9ed5dc6c3e10813301a3386c495808bbd375224a096",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "8e21ea90dd1421112a48",
+            "game_id": "401914593",
+            "grade_status": "pending",
+            "home": "Grand Rapids Gold",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "8e21ea90dd1421112a48",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.478873,
+            "role": null,
+            "scheduled_utc": "2026-11-22T20:00:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "Cleveland Charge",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.535211,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "9683af41b7095dccaa5a72567ebad6ef65299e079055c6454dc811ca180039ea",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "414e7a6fa68481c1358b",
+            "game_id": "401914593",
+            "grade_status": "pending",
+            "home": "Grand Rapids Gold",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "414e7a6fa68481c1358b",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.535211,
+            "role": null,
+            "scheduled_utc": "2026-11-22T20:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Cleveland Charge",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.507042,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "f4f3ee1a3e266df7033fa7eb7e9e26a16e8ebcab011a6e51cbb5de6d83e9e6d5",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "85f67e18e594de1f6106",
+            "game_id": "401914593",
+            "grade_status": "pending",
+            "home": "Grand Rapids Gold",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "85f67e18e594de1f6106",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.507042,
+            "role": null,
+            "scheduled_utc": "2026-11-22T20:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T20:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
+      },
+      "401914594": {
+        "decision_cutoff_utc": "2026-11-22T19:00:00Z",
+        "frozen_at": "2026-11-22T19:09:29Z",
+        "game_id": "401914594",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Austin Spurs",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.450704,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "dd89467d798cceb2d70c748fd95357746ca818b4079b85675f23a18dc5918870",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "37f344ebf0b88a309ef3",
+            "game_id": "401914594",
+            "grade_status": "pending",
+            "home": "Oklahoma City Blue",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "37f344ebf0b88a309ef3",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.450704,
+            "role": null,
+            "scheduled_utc": "2026-11-22T20:00:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "Austin Spurs",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.661972,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "229ccc481910771feb738fa49e9a126ac84e407e5e38e83c69ca390024b8032c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d8650473d4eff963ccd4",
+            "game_id": "401914594",
+            "grade_status": "pending",
+            "home": "Oklahoma City Blue",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "d8650473d4eff963ccd4",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.661972,
+            "role": null,
+            "scheduled_utc": "2026-11-22T20:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Austin Spurs",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.633803,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "006fd0995429207cc5df6105db71a15407e2170548a6d812a833c18f5938d39c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "bd14786ef1262f904f99",
+            "game_id": "401914594",
+            "grade_status": "pending",
+            "home": "Oklahoma City Blue",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "bd14786ef1262f904f99",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.633803,
+            "role": null,
+            "scheduled_utc": "2026-11-22T20:00:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T20:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
       }
     }
   },
@@ -2965,6 +3235,14 @@
     [
       "401914592",
       "2026-11-22T19:00:00Z"
+    ],
+    [
+      "401914593",
+      "2026-11-22T20:00:00Z"
+    ],
+    [
+      "401914594",
+      "2026-11-22T20:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
