@@ -263,7 +263,28 @@ _SPECS: Tuple[LeagueSpec, ...] = (
         "espn",
         (_ESPN_RELAY_ONLY, _validated_named_book("theoddsapi")),
     ),
-    LeagueSpec(League.EUROCUP, "EuroCup", "eurocup", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
+    # EuroCup shares the EuroLeague Basketball host and route shape with the
+    # already-validated EuroLeague adapter; only the competition letter differs
+    # (U instead of E). Two independent public clients document that contract,
+    # but Ma Golide still retains no first-party capture for EuroCup itself, so
+    # the lane is labelled as a referenced route contract rather than a live
+    # capture. Pricing stays on the universal direct BetExplorer fallback.
+    LeagueSpec(
+        League.EUROCUP,
+        "EuroCup",
+        "eurocup",
+        "Europe/Paris",
+        "Europe/Paris",
+        "euroleague",
+        "euroleague",
+        "euroleague",
+        source_detail=(
+            "EuroCup schedule/results use the validated EuroLeague Basketball adapter "
+            "with competition code U (api-live.euroleague.net v2 competitions/{E|U}); "
+            "the route shape is referenced from the same provider host and two "
+            "independent public clients, with no Ma Golide first-party capture retained."
+        ),
+    ),
     LeagueSpec(League.BASKETBALL_CHAMPIONS_LEAGUE, "Basketball Champions League", "basketball_champions_league", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     # ESPN's public NBA G League scoreboard and event-summary route were
     # captured with stable event/team identity, UTC tips, terminal status, and

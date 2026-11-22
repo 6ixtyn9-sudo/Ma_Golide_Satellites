@@ -14,7 +14,7 @@ No live-provider claim should be inferred from a passing offline suite.
 | ESPN | NCAA_M | Division-I men's scoreboard/books, BPI predictions, summaries, two-half/OT results, recent and indexed deep history | Public endpoints | Historical probes and hermetic endpoint/two-half/OT regressions; external-trigger smoke still required |
 | ESPN | NCAA_W | Division-I women's scoreboard/books, BPI predictions, summaries, modern quarters and declared legacy halves, recent and indexed deep history | Public endpoints | Live four-quarter final probe plus hermetic quarter/legacy-half and one-time reparse regressions |
 | ESPN | NBA G League | `basketball/nba-development` date-bounded scoreboard discovery, summaries, reconciled Q1–Q4 results, and bounded recent-result backfill | Public endpoints | Captured public scoreboard and summary on 2026-10-29 plus hermetic identity/status/period reconciliation regressions; BPI, deep core-index history, and named-book pricing are **not** validated |
-| EuroLeague | EuroLeague | Schedule discovery, game results, quarter/OT reconciliation, standings | Public endpoints | Schedule/boxscore live captures 2026-11-06; season schedule scores/partials, empty-season trap, and v3 per-round standings live-verified 2026-11-16; upstream reuse terms not reviewed |
+| EuroLeague | EuroLeague, EuroCup (`EUROCUP`) | Schedule discovery, game results, quarter/OT reconciliation, standings | Public endpoints | EuroLeague: schedule/boxscore live captures 2026-11-06; season schedule scores/partials, empty-season trap, and v3 per-round standings live-verified 2026-11-16. EuroCup: same host and route shape with competition code `U`, fixture-tested only — no Ma Golide first-party capture. Upstream reuse terms not reviewed |
 | FIBA GDAP + game page | EuroLeague Women (`EUROLEAGUE_W`) | Competition schedule, canonical UTC fixtures/status/results, official game-page play-by-play/period scores, player/team detail | Public APIM key shipped in FIBA's web client | Live facts and fixture-only cases are separated below; independent namespace, no men's EuroLeague reuse. Automation/reuse rights and future route/status vocabulary remain unresolved. |
 | CBA | CBA | Official league data API: season/day discovery, Beijing-local UTC times, quarter/OT reconciliation via observed period-score POST endpoint | Public endpoints; AES-128-ECB bodies decrypted with the key constant shipped in the site's own bundle | Live-verified 2026-11-16 from a datacenter IP (decryption, statuses, quarter sums, OT shape); unofficial/undocumented API and terms not reviewed — see caveats |
 
@@ -50,6 +50,28 @@ verified index floors.
   given.
 - Boxscore results (`live.euroleague.net/api/Boxscore`) remain the deeper
   per-game evidence path for slate results.
+
+### EuroCup acquisition details (referenced route contract, fixture-tested)
+
+- EuroLeague Basketball serves EuroCup from the same host with an identical
+  route shape; the first letter of the season code selects the competition
+  (`E` EuroLeague, `U` EuroCup). The adapter derives the competition from the
+  season code rather than accepting it as a second, disagreeable parameter, so
+  a EuroCup run cannot silently inherit the men's EuroLeague code. Bare-year
+  and unknown-letter season codes are refused before a request is built.
+- The lane reuses the validated EuroLeague acquisition code paths: one request
+  per season of reconcilable finals, the `euroleague-history` cursor keyed by
+  league, the date-bounded discovery filter, and the boxscore result path.
+  EuroCup canonical game ids are `U{season}-{gameCode}` and cannot collide with
+  EuroLeague ids.
+- Evidence status is honestly limited: the `U` competition code is referenced
+  from the provider host and two independent public clients, but no Ma Golide
+  first-party EuroCup capture exists. Tests use a structural transform of the
+  live-captured EuroLeague schedule fixture (only competition identity is
+  rewritten), which exercises reconciliation against real provider row shapes
+  without claiming a EuroCup capture.
+- Pricing stays on the universal direct BetExplorer fallback; no EuroCup price
+  contract has been validated.
 
 ### FIBA EuroLeague Women acquisition details (observations checked 2026-11-18)
 

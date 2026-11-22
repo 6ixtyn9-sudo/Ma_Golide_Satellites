@@ -197,9 +197,14 @@ def test_euroleague_season_results_quarantine_malformed_rows_and_continue():
 
 
 def test_euroleague_discover_rejects_empty_season_payload():
-    fetch = _mapping_fetch({"seasons/2026/games": lambda: {"data": []}})
+    # A wrong (bare-year) season code answers HTTP 200 with an empty data list;
+    # a bare year is now refused before the request is even built.
+    with pytest.raises(ValueError, match="E2026 or U2026"):
+        euroleague.discover_games(None, lambda url: {"data": []}, "2026")
+
+    fetch = _mapping_fetch({"seasons/E2026/games": lambda: {"data": []}})
     with pytest.raises(ValueError, match="empty"):
-        euroleague.discover_games(None, fetch, "2026")
+        euroleague.discover_games(None, fetch, "E2026")
 
 
 def test_euroleague_standings_v3_parses_and_derives_latest_completed_round():

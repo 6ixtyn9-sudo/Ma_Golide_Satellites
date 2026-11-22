@@ -91,6 +91,15 @@ def test_final_expansion_is_typed_and_registry_backed_everywhere():
                 "aba_liga",
                 "aba_liga",
             )
+        elif league is League.EUROCUP:
+            # EuroCup rides the validated EuroLeague Basketball adapter with
+            # competition code U; it is a referenced route contract, not a
+            # first-party capture, and pricing stays on the direct fallback.
+            assert (spec.schedule_source, spec.results_source, spec.gate_schedule_source) == (
+                "euroleague",
+                "euroleague",
+                "euroleague",
+            )
         else:
             assert spec.schedule_source == "source_unavailable"
             assert spec.results_source == "source_unavailable"

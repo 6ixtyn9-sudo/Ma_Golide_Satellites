@@ -386,10 +386,21 @@ class Pipeline:
             )
             report["bookmakers"] = self._bookmakers_smoke()
             return report
-        if league == "EUROLEAGUE":
-            report = euroleague.smoke(self.fetch)
-            report["standings"] = self._standings_smoke()
-            report["predixsport"] = self._predixsport_smoke()
+        if league in ("EUROLEAGUE", "EUROCUP"):
+            # EuroCup reuses the validated EuroLeague Basketball adapter with
+            # competition code U; a failed probe is reported, never raised.
+            try:
+                report = euroleague.smoke(self.fetch, self._euro_seasoncode())
+            except Exception as exc:
+                report = {
+                    "status": "provider_error",
+                    "provider": "euroleague",
+                    "season_code": self._euro_seasoncode(),
+                    "error_type": type(exc).__name__,
+                }
+            if league == "EUROLEAGUE":
+                report["standings"] = self._standings_smoke()
+                report["predixsport"] = self._predixsport_smoke()
             report["bookmakers"] = self._bookmakers_smoke()
             return report
         if league == "EUROLEAGUE_W":
@@ -734,8 +745,10 @@ class Pipeline:
             # discovery source, preventing duplicate canonical games.
             games = cbaleague.discover_games(self.config.date_yyyymmdd, self.fetch, league)
             self.gaps.extend(cbaleague.last_gaps())
-        elif league is League.EUROLEAGUE:
-            games = euroleague.discover_games(_iso(self.config.date_yyyymmdd), self.fetch)
+        elif league in (League.EUROLEAGUE, League.EUROCUP):
+            games = euroleague.discover_games(
+                _iso(self.config.date_yyyymmdd), self.fetch, self._euro_seasoncode()
+            )
         elif league is League.EUROLEAGUE_W:
             games = fiba_euroleague_w.discover_games(
                 _iso(self.config.date_yyyymmdd), self._fiba_schedule_fetch
@@ -1555,6 +1568,23 @@ class Pipeline:
             if parse_utc(game.scheduled_utc) <= now
         ]
 
+    def _euro_seasoncode(self) -> str:
+        """Season code for the EuroLeague Basketball lanes (E… / U…).
+
+        The provider identifies the competition by the season-code letter, so a
+        EuroCup run must never inherit the EuroLeague code. The season start
+        year follows the same July boundary used by the standings probe.
+        """
+        year = int(self.config.date_yyyymmdd[:4])
+        if int(self.config.date_yyyymmdd[4:6]) < 7:
+            year -= 1
+        competition = (
+            euroleague.COMPETITION_EUROCUP
+            if self.config.league_enum is League.EUROCUP
+            else euroleague.COMPETITION_EUROLEAGUE
+        )
+        return euroleague.season_code(competition, year)
+
     def _default_history_start_season(self) -> int:
         target = datetime.strptime(self.config.date_yyyymmdd, "%Y%m%d").date()
         current = target.year
@@ -1901,9 +1931,14 @@ class Pipeline:
         cursor = self._history_cursor("euroleague-history")
         season = int(cursor.get("next_season") or self._default_history_start_season())
         season = min(season, self._default_history_start_season())
+        competition = (
+            euroleague.COMPETITION_EUROCUP
+            if self.config.league_enum is League.EUROCUP
+            else euroleague.COMPETITION_EUROLEAGUE
+        )
         ledger_dates: set = set()
         while budget > 0 and season > 1900:
-            seasoncode = f"E{season}"
+            seasoncode = euroleague.season_code(competition, season)
             failures: List[Dict[str, str]] = []
             try:
                 results = euroleague.season_results(seasoncode, self.fetch, failures)
@@ -2781,6 +2816,7 @@ class Pipeline:
         if self.config.league_enum not in ESPN_LEAGUES | {
             League.ABA_LEAGUE,
             League.EUROLEAGUE,
+            League.EUROCUP,
             League.EUROLEAGUE_W,
             League.CBA,
         }:
@@ -2932,7 +2968,7 @@ class Pipeline:
             }
         elif self.config.league_enum is League.ABA_LEAGUE:
             deep = self._backfill_aba_liga_history()
-        elif self.config.league_enum is League.EUROLEAGUE:
+        elif self.config.league_enum in (League.EUROLEAGUE, League.EUROCUP):
             deep = self._backfill_euroleague_history()
         elif self.config.league_enum is League.EUROLEAGUE_W:
             deep = self._backfill_fiba_euroleague_w_history()
@@ -2986,7 +3022,7 @@ class Pipeline:
             )
             self.gaps.extend(cbaleague.last_gaps())
             return finals
-        if league is League.EUROLEAGUE:
+        if league in (League.EUROLEAGUE, League.EUROCUP):
             return self._euroleague_finals(self._discover_games())
         if league is League.EUROLEAGUE_W:
             return self._fiba_euroleague_w_finals(self._discover_games())
