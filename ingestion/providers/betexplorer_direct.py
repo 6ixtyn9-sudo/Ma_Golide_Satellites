@@ -546,6 +546,20 @@ def _team_name_words(name: str) -> List[str]:
 _SQUAD_MARKERS = {"b", "ii", "iii", "w", "women", "womens", "ladies", "reserve", "reserves", "res", "youth", "academy"}
 
 
+def _matching_team_tokens(name: str, *, league: str) -> set[str]:
+    """Apply narrowly scoped, deterministic sports-name word equivalences."""
+
+    tokens = _team_name_tokens(name)
+    if str(league or "").strip().upper() in {"NCAA_M", "NCAA_W"}:
+        # In US college team labels, "St." is the conventional abbreviation
+        # for "Saint" (e.g. St. John's / Saint John's). Scope this to NCAA so
+        # unrelated source labels are not rewritten.
+        tokens.discard("st")
+        if "st" in _team_name_words(name):
+            tokens.add("saint")
+    return tokens
+
+
 def _squad_markers(name: str) -> set[str]:
     markers = set()
     for word in _team_name_words(name):
@@ -616,8 +630,8 @@ def _team_names_agree(
     if candidate_digits and board_digits and candidate_digits != board_digits:
         return False, ""
 
-    candidate_tokens = _team_name_tokens(candidate)
-    board_tokens = _team_name_tokens(board)
+    candidate_tokens = _matching_team_tokens(candidate, league=league_key)
+    board_tokens = _matching_team_tokens(board, league=league_key)
     shared = candidate_tokens & board_tokens
     # Retain Edge's conservative whole-name subset principle: one complete
     # token set must be contained in the other, with at least five shared

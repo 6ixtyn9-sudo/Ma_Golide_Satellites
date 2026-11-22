@@ -502,6 +502,15 @@ def test_confirmed_ncaa_name_variants_are_season_scoped_and_ordered():
     )[0]
 
 
+def test_ncaa_st_saint_abbreviation_is_handled_deterministically():
+    assert betexplorer_direct._team_names_agree(
+        "Saint John's Red Storm", "St. John's", league="NCAA_M", board_date="2026-11-22"
+    ) == (True, "ordered_token_subset")
+    assert not betexplorer_direct._team_names_agree(
+        "Saint John's Red Storm", "St. John's", league="NBA", board_date="2026-11-22"
+    )[0]
+
+
 def test_guarded_token_subset_matches_mascot_free_names_in_order():
     game = _game()
     game.home_name = "Texas Longhorns"
