@@ -7,7 +7,50 @@
   "provider": "theoddsapi",
   "provider_monthly_allowance": 500,
   "quota_month": "2026-11",
-  "reservations": [],
+  "reservations": [
+    {
+      "budget_date": "2026-11-22",
+      "issued_utc": "2026-11-22T10:08:44Z",
+      "league": "NCAA_W",
+      "markets": [
+        "h2h",
+        "totals",
+        "spreads"
+      ],
+      "maximum_credits": 3,
+      "permit_id": "c0a17b89b0a0cd4784c2",
+      "run_id": "45010842248_1",
+      "target_date": "2026-11-22"
+    },
+    {
+      "budget_date": "2026-11-22",
+      "issued_utc": "2026-11-22T10:08:44Z",
+      "league": "NBA",
+      "markets": [
+        "h2h",
+        "totals",
+        "spreads"
+      ],
+      "maximum_credits": 3,
+      "permit_id": "10a507f659b55f57273e",
+      "run_id": "45010842248_1",
+      "target_date": "2026-11-22"
+    },
+    {
+      "budget_date": "2026-11-22",
+      "issued_utc": "2026-11-22T10:08:44Z",
+      "league": "NCAA_M",
+      "markets": [
+        "h2h",
+        "totals",
+        "spreads"
+      ],
+      "maximum_credits": 3,
+      "permit_id": "fd156442514a054bc802",
+      "run_id": "45010842248_1",
+      "target_date": "2026-11-22"
+    }
+  ],
   "routine_full_game_cost": 3,
   "schema_version": "magolide.theoddsapi_budget"
 }
