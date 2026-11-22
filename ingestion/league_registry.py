@@ -330,7 +330,28 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     # research-only and cannot price tickets or support ROI, receipts, banks,
     # or execution.
     LeagueSpec(League.ABA_LEAGUE, "ABA League", "aba_league", "Europe/Belgrade", "Europe/Belgrade", "aba_liga", "aba_liga", "aba_liga", (_ABA_BETEXPLORER_RESEARCH_ONLY,), source_detail="Externally referenced aba-liga.com calendar/detail route: season/game scope, official team IDs, Europe/Belgrade tips, and period-reconciled finals are required. Ma Golide retains no first-party capture; live behavior and source automation/reuse terms remain unverified. BetExplorer averages remain research-only."),
-    LeagueSpec(League.ISRAEL_PREMIER_LEAGUE, "Israel Premier League", "israel_premier_league", "Asia/Jerusalem", "Asia/Jerusalem", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
+    # The league's own JSON board route is a referenced contract (basket.co.il
+    # ``ws.asmx/Games``, documented by SportsDataverse hoopR ``ibba_games``).
+    # It carries per-quarter scores as pipe-delimited strings, but no UTC
+    # offset: the adapter applies Asia/Jerusalem explicitly and records that
+    # assumption on every game. No Ma Golide first-party capture is retained.
+    LeagueSpec(
+        League.ISRAEL_PREMIER_LEAGUE,
+        "Israel Premier League",
+        "israel_premier_league",
+        "Asia/Jerusalem",
+        "Asia/Jerusalem",
+        "israel_ibl",
+        "israel_ibl",
+        "israel_ibl",
+        source_detail=(
+            "Winner League schedule/results use the league JSON board route "
+            "(basket.co.il/ws/ws.asmx/Games, board_id=5); route contract referenced from "
+            "league-site and SportsDataverse documentation, no Ma Golide first-party capture. "
+            "Tip times are local wall clock with no offset, so Asia/Jerusalem is applied as a "
+            "recorded assumption rather than a provider fact."
+        ),
+    ),
     LeagueSpec(League.JAPAN_B_LEAGUE, "Japan B.League", "japan_b_league", "Asia/Tokyo", "Asia/Tokyo", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.SOUTH_KOREA_KBL, "South Korea KBL", "south_korea_kbl", "Asia/Seoul", "Asia/Seoul", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.BRAZIL_NBB, "Brazil NBB", "brazil_nbb", "America/Sao_Paulo", "America/Sao_Paulo", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),

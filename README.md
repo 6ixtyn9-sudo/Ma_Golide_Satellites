@@ -35,6 +35,8 @@ defines the evidence-first path from a league contract to visible unpriced
 normal-lane output, bounded price validation, and only then a prospective
 paper-ticket path.
 
+Israel Premier League (`ISRAEL_PREMIER_LEAGUE`) now has a canonical schedule/result lane on the league's own JSON board route, which carries pipe-delimited quarter scores and OT totals. The provider publishes local wall-clock tip times with no offset, so `Asia/Jerusalem` is applied as a recorded assumption on every game rather than presented as a provider fact.
+
 Spain ACB (`SPAIN_ACB`) now has a canonical schedule/result lane built on the ACB's own JSON API: a season calendar for fixtures and a per-game header that carries team identity, status, final score and `quarterScores[]` for period reconciliation. It is a *referenced* route contract (no first-party capture) and reconciles only bodies with four regulation quarters plus contiguous overtime.
 
 EuroCup (`EUROCUP`) now has a canonical schedule/result lane: it reuses the

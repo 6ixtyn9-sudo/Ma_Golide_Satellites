@@ -182,3 +182,23 @@ def test_acb_registry_contract_declares_the_fallback_price_lane():
     assert spec.results_source == "acb"
     assert spec.automated_schedule_supported is True
     assert spec.book_providers == ("betexplorer_direct",)
+
+
+def test_gated_match_header_is_reported_as_auth_required_not_an_empty_season():
+    from ingestion.http import HttpError
+
+    def gated(url: str):
+        if "season-calendar" in url:
+            return _fixture_json("acb/calendar_2027.json")
+        raise HttpError(401, url, "Unauthorized")
+
+    games = acb.discover_games("2026-11-18", gated, 2027)
+    assert games == []
+    gaps = acb.last_gaps()
+    assert len(gaps) == 1  # one clear reason, not one per candidate
+    assert "requires authorisation" in gaps[0]["detail"]
+
+    report = acb.smoke(gated, 2027)
+    assert report["status"] == "auth_required"
+    assert "401/403" in report["detail"]
+    assert len(report["failures"]) == 1
