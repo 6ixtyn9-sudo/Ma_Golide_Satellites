@@ -21,7 +21,7 @@
       "logical_picks": 146
     },
     "2026-11-21": {
-      "frozen_fixtures": 49,
+      "frozen_fixtures": 50,
       "logical_picks": 166
     }
   },
@@ -20481,6 +20481,189 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
       },
+      "401917713": {
+        "decision_cutoff_utc": "2026-11-22T01:15:00Z",
+        "frozen_at": "2026-11-22T01:17:11Z",
+        "game_id": "401917713",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Seattle U Redhawks",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.473222,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 150,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "256aeb8d7798224cc7633358e67f617fc72d4375386febe8a6bd0c4c67bbb05c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d8666eac9aa7b13c621c",
+            "game_id": "401917713",
+            "grade_status": "pending",
+            "home": "Chicago State Cougars",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "d8666eac9aa7b13c621c",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-22T02:15:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Seattle U Redhawks",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.502629,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 164,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "5fb726eb88c167a59a296844219f6515b98b10ddbcdad442183cfd64d3191d30",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "3588747498b5ac88a07c",
+            "game_id": "401917713",
+            "grade_status": "pending",
+            "home": "Chicago State Cougars",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "3588747498b5ac88a07c",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-22T02:15:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Seattle U Redhawks",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.884756,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 128,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "0adea908c1805703c789060ca7c023e8d4d000fd8b37493378e20ec9903d61d2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "09ee9da998e7aa5d9ce8",
+            "game_id": "401917713",
+            "grade_status": "pending",
+            "home": "Chicago State Cougars",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "09ee9da998e7aa5d9ce8",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-22T01:10:14Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9181,
+            "role": null,
+            "scheduled_utc": "2026-11-22T02:15:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Seattle U Redhawks",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.538351,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 164,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "51465b4e2cd035a133fa3e5f3b94f3d501c83063ab098f81f819fb3bc75063bb",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "859a8f6621a6756fea45",
+            "game_id": "401917713",
+            "grade_status": "pending",
+            "home": "Chicago State Cougars",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "859a8f6621a6756fea45",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-22T02:15:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T02:15:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      },
       "401918036": {
         "decision_cutoff_utc": "2026-11-21T21:00:00Z",
         "frozen_at": "2026-11-21T21:14:31Z",
@@ -24418,10 +24601,6 @@
   "league": "NCAA_W",
   "pending_frozen_games": [
     [
-      "401915965",
-      "2026-11-21T23:00:00Z"
-    ],
-    [
       "401915910",
       "2026-11-22T00:00:00Z"
     ],
@@ -24440,6 +24619,10 @@
     [
       "401919710",
       "2026-11-22T01:00:00Z"
+    ],
+    [
+      "401917713",
+      "2026-11-22T02:15:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
