@@ -284,6 +284,8 @@ def test_direct_fallback_emits_exact_named_moneyline_total_and_spread_rows_with_
     }
     assert all(snapshot.period is Period.FULL_GAME for snapshot in snapshots)
     assert all(snapshot.provider == "betexplorer_direct" for snapshot in snapshots)
+    assert all(snapshot.home_name == "Los Angeles Lakers" for snapshot in snapshots)
+    assert all(snapshot.away_name == "Boston Celtics" for snapshot in snapshots)
     assert all(snapshot.price_provenance is PriceProvenance.NAMED_BOOK for snapshot in snapshots)
     assert all(snapshot.source_permission is SourcePermission.UNRESOLVED for snapshot in snapshots)
     assert all(snapshot.operational_validation is OperationalValidation.PROBATION for snapshot in snapshots)
@@ -297,12 +299,51 @@ def test_direct_fallback_emits_exact_named_moneyline_total_and_spread_rows_with_
     assert receipt["snapshots_emitted"] == 7
     fixture = receipt["fixture_receipts"][0]
     assert fixture["named_books"] == ["Bet365", "BetMGM.us", "Pinnacle", "Stake.com"]
+    assert fixture["scheduled_home_name"] == "Los Angeles Lakers"
+    assert fixture["scheduled_away_name"] == "Boston Celtics"
+    assert fixture["board_home_name"] == "Los Angeles Lakers"
+    assert fixture["board_away_name"] == "Boston Celtics"
     assert [(market["market"], market["tab"]) for market in fixture["markets"]] == [
         ("moneyline", "ha"),
         ("total", "ou"),
         ("spread", "ah"),
     ]
     assert all(market["url"] in calls for market in fixture["markets"])
+
+
+def test_direct_match_carries_canonical_game_identity_but_receipts_board_labels(monkeypatch):
+    monkeypatch.setattr(betexplorer_direct, "MIN_REQUEST_INTERVAL_SECONDS", 0.0)
+    game = _game()
+    game.home_name = "Texas Longhorns"
+    game.away_name = "Ohio State Buckeyes"
+    abbreviated_board = BOARD.replace("Los Angeles Lakers", "Texas").replace(
+        "Boston Celtics", "Ohio State"
+    )
+
+    def fetch(url: str) -> str:
+        if "/basketball/results/" in url:
+            return abbreviated_board
+        if f"/match-odds/{EVENT_ID}/1/ha/bestOdds/" in url:
+            return HA_ODDS
+        if f"/match-odds/{EVENT_ID}/1/ou/bestOdds/" in url:
+            return OU_ODDS
+        if f"/match-odds/{EVENT_ID}/1/ah/bestOdds/" in url:
+            return AH_ODDS
+        raise AssertionError(f"unexpected URL: {url}")
+
+    snapshots = betexplorer_direct.fetch_odds(
+        "NCAA_M", DATE, now_utc=OBSERVED, games=[game], text_fetch=fetch
+    )
+
+    assert snapshots
+    assert {(snapshot.home_name, snapshot.away_name) for snapshot in snapshots} == {
+        ("Texas Longhorns", "Ohio State Buckeyes")
+    }
+    fixture = betexplorer_direct.last_receipt()["fixture_receipts"][0]
+    assert fixture["scheduled_home_name"] == "Texas Longhorns"
+    assert fixture["scheduled_away_name"] == "Ohio State Buckeyes"
+    assert fixture["board_home_name"] == "Texas"
+    assert fixture["board_away_name"] == "Ohio State"
 
 
 def test_direct_fallback_recovers_the_page_supplied_ha_comparison_parameter(monkeypatch):
