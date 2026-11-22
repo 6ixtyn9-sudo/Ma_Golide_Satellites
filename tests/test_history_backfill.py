@@ -18,12 +18,16 @@ from ingestion.providers.espn import fetch_historical_event
 from ingestion.store import InMemoryStore
 
 
-def test_deep_backfill_persists_1947_final_only_and_advances_cursor(tmp_path):
+def test_deep_backfill_persists_final_only_and_advances_cursor(tmp_path):
+    # Run on the 2001 NBA floor season: the fixture content (the 1947 finals)
+    # is season-agnostic parser material, while the pipeline mechanics —
+    # cursor advance, ledger date, floor bookkeeping — exercise the capped
+    # floor from tests/test_espn_backfill.py from above, not below.
     calls = []
 
     def fetch(url):
         calls.append(url)
-        if "events?dates=1947" in url:
+        if "events?dates=2001" in url:
             path = "tests/fixtures/espn/core_events_nba_1947.json"
         elif "summary?event=1770402009" in url:
             path = "tests/fixtures/espn/history_nba_1947_final_only.json"
@@ -39,7 +43,7 @@ def test_deep_backfill_persists_1947_final_only_and_advances_cursor(tmp_path):
             date_yyyymmdd="20261107",
             history_days=0,
             deep_history_event_budget=1,
-            deep_history_start_season=1947,
+            deep_history_start_season=2001,
             fixture_now_utc="2026-11-07T18:00:00Z",
         ),
         store,
@@ -52,7 +56,7 @@ def test_deep_backfill_persists_1947_final_only_and_advances_cursor(tmp_path):
     assert deep["events_acquired"] == 1
     assert deep["final_scores_written"] == 1
     assert deep["coverage"] == {"final_score_only": 1}
-    assert deep["cursor"] == {"season": 1946, "event_index": 0}
+    assert deep["cursor"] == {"season": 2000, "event_index": 0}
     assert report["backfill"]["ledger_dates"] == ["19470402"]
     assert report["backfill"]["learning_or_calibration_claimed"] is False
 
@@ -68,15 +72,15 @@ def test_deep_backfill_persists_1947_final_only_and_advances_cursor(tmp_path):
     assert game.evidence["espn"]["history"] == {
         "schema_version": "magolide.espn.history-event",
         "result_period_parser_version": 2,
-        "index_year": 1947,
+        "index_year": 2001,
         "coverage": "final_score_only",
         "period_note": "final score present without native linescores",
         "provider_event_state": "post",
         "regulation_periods": 4,
     }
     health = store.get_provider_health("espn-history", League.NBA)
-    assert health.coverage["next_season"] == 1946
-    assert health.coverage["floor_season"] == 1947
+    assert health.coverage["next_season"] == 2000
+    assert health.coverage["floor_season"] == 2001
     assert any(gap["required_field"] == "native_periods" for gap in report["gaps"])
     store.close()
 
@@ -84,7 +88,7 @@ def test_deep_backfill_persists_1947_final_only_and_advances_cursor(tmp_path):
     try:
         assert reopened.get_game(game.game_id).evidence == game.evidence
         assert (
-            reopened.get_provider_health("espn-history", League.NBA).coverage["next_season"] == 1946
+            reopened.get_provider_health("espn-history", League.NBA).coverage["next_season"] == 2000
         )
     finally:
         reopened.close()

@@ -72,9 +72,11 @@ are not included in any live-coverage claim.
 - timestamped ESPN books independent of predictions, summary context,
   redacted request telemetry, retry/cooldown behavior, request budgets, and
   durable public-cache hits retaining original observation timestamps;
-- core season-index discovery, durable deep-history cursors, the 1947 NBA
-  final-score-only case, early WNBA native halves, DuckDB cursor reopen, and
-  proof that dry runs cannot advance unpersisted history;
+- core season-index discovery, durable deep-history cursors, the NBA
+  final-score-only case (the 1947 fixture driven above the capped 2001 floor),
+  permanent-404 cursor advance with transient-error cursor retention, the
+  capped NBA floor, early WNBA native halves, DuckDB cursor reopen, and proof
+  that dry runs cannot advance unpersisted history;
 - strict timezone-aware timestamps and chronological selection;
 - finite/nonnegative prediction expectations and finite book lines/decimal
   prices, rejecting NaN, Infinity, and invalid odds;

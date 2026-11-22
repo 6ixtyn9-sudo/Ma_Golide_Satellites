@@ -135,8 +135,9 @@ python scripts/daily.py --auto-once --date 2026-11-07 --league NCAA_W
 
 Write-enabled NBA, WNBA, NCAA_M, and NCAA_W runs also ingest a bounded
 deep-history batch from ESPN's season/event indexes. Durable per-league cursors
-currently begin at verified nonempty index years (NBA 1947, WNBA 1997, NCAA
-2001), while preserving old final-only scores and event-declared halves without
+currently begin at conservative acquisition floors (NBA and NCAA 2001, WNBA
+1997; the sparse pre-2001 NBA index is reported complete rather than crawled),
+while preserving old final-only scores and event-declared halves without
 claiming exhaustive coverage. NBA G League is deliberately excluded from that
 index route; its bounded 56-day normal-run bootstrap uses only the separately
 validated date scoreboard/results path. A versioned one-time NCAAW reparse

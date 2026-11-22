@@ -22,7 +22,7 @@ from .books import (
     select_moneyline_snapshots,
     select_total_snapshots,
 )
-from .http import HttpClient
+from .http import HttpClient, HttpError
 from .identity import (
     canonical_team_key,
     now_utc_iso,
@@ -1629,6 +1629,7 @@ class Pipeline:
         coverage_counts: Dict[str, int] = {}
         ledger_dates = set()
         processed = 0
+        permanent_skips = 0
         status = "acquired"
         while event_index < len(event_ids) and processed < budget:
             event_id = event_ids[event_index]
@@ -1660,6 +1661,31 @@ class Pipeline:
                     index_year=season,
                 )
             except Exception as exc:
+                if isinstance(exc, HttpError) and exc.status == 404:
+                    # A 404 on one indexed event is permanent: the manifest
+                    # entry has no summary page, so retaining the cursor would
+                    # wedge every later run on the same event. Record the gap
+                    # and advance like an already-persisted event.
+                    logger.warning(
+                        "ESPN deep history permanent 404 for %s: %s", event_id, exc
+                    )
+                    self.gaps.append(
+                        CoverageGap(
+                            game_id=event_id,
+                            required_field="deep_history_event",
+                            reason=CoverageState.MISSING,
+                            provider="espn",
+                            detail=f"permanent HTTP 404: {str(exc)[:190]}",
+                            observed_utc=self._now_iso(),
+                        )
+                    )
+                    permanent_skips += 1
+                    processed += 1
+                    event_index += 1
+                    self._store_history_cursor(
+                        season, event_index, season, len(event_ids)
+                    )
+                    continue
                 logger.warning("ESPN deep history failed for %s: %s", event_id, exc)
                 self.gaps.append(
                     CoverageGap(
@@ -1716,12 +1742,15 @@ class Pipeline:
             season -= 1
             event_index = 0
             self._store_history_cursor(season, 0, season + 1, len(event_ids))
+        if permanent_skips and status == "acquired":
+            status = "acquired_with_permanent_skips"
         return {
             **base,
             "status": status,
             "events_acquired": acquired,
             "final_scores_written": final_scores,
             "already_persisted": already,
+            "permanent_skips": permanent_skips,
             "coverage": coverage_counts,
             "ledger_dates": sorted(ledger_dates),
             "cursor": {"season": season, "event_index": event_index},
