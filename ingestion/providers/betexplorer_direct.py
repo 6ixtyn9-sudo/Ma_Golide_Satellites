@@ -825,6 +825,10 @@ def _receipt_fixture(
         {
             "event_id": fixture["event_id"],
             "game_id": game.game_id,
+            "scheduled_home_name": game.home_name,
+            "scheduled_away_name": game.away_name,
+            "board_home_name": fixture["home_name"],
+            "board_away_name": fixture["away_name"],
             "match_url": fixture["match_url"],
             "comparison_page_param": page_param,
             "match_page_sha256": (
@@ -1033,8 +1037,12 @@ def fetch_odds(
                     "source_permission": SourcePermission.UNRESOLVED,
                     "operational_validation": OperationalValidation.PROBATION,
                     "provider_event_id": fixture["event_id"],
-                    "home_name": fixture["home_name"],
-                    "away_name": fixture["away_name"],
+                    # The guarded source matcher already bound this event to
+                    # the canonical scheduled game. Carry that identity through
+                    # downstream mapping; preserve raw board labels in the
+                    # fixture receipt for audit instead of re-matching them.
+                    "home_name": game.home_name,
+                    "away_name": game.away_name,
                     # The canonical scheduled instant is supplied by the
                     # official/schedule adapter.  The dated public board and
                     # ordered teams bind the BetExplorer event to that game;
