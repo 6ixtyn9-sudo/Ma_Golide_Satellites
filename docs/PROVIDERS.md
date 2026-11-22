@@ -63,7 +63,13 @@ verified index floors.
   ``score_by_q_2`` (away) — with ``total_ot``/``overtime``, finals in
   ``score_team1``/``score_team2``, and team identity in ``team1``/``team2`` plus
   ``team1_name_eng``/``team2_name_eng``. Quarter values are points scored in
-  that period.
+  that period — an external 2026-11-22 audit of a captured board checked all 45
+  rows and found none cumulative, which is how the adapter already treats them.
+  That audit also confirmed this host publishes a per-game ``game_id`` (read
+  preferentially for identity) and exposes overtime three ways (extra pipe
+  elements, ``total_ot``, ``overtime``); the adapter's stricter "refuse an OT
+  total without a fifth element" rule is deliberate and keeps the lane
+  fail-closed rather than loosening to the source's least reliable channel.
 - The host is Cloudflare-fronted and rejects a non-browser client with error
   1010, so the adapter's own client sends a browser ``User-Agent``. An injected
   fixture transport in tests bypasses it.
