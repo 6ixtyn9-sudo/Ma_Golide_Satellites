@@ -14,12 +14,19 @@ No live-provider claim should be inferred from a passing offline suite.
 | ESPN | NCAA_M | Division-I men's scoreboard/books, BPI predictions, summaries, two-half/OT results, recent and indexed deep history | Public endpoints | Historical probes and hermetic endpoint/two-half/OT regressions; external-trigger smoke still required |
 | ESPN | NCAA_W | Division-I women's scoreboard/books, BPI predictions, summaries, modern quarters and declared legacy halves, recent and indexed deep history | Public endpoints | Live four-quarter final probe plus hermetic quarter/legacy-half and one-time reparse regressions |
 | ESPN | NBA G League | `basketball/nba-development` date-bounded scoreboard discovery, summaries, reconciled Q1–Q4 results, and bounded recent-result backfill | Public endpoints | Captured public scoreboard and summary on 2026-10-29 plus hermetic identity/status/period reconciliation regressions; BPI, deep core-index history, and named-book pricing are **not** validated |
-| Israel Winner League JSON | Israel Premier League (`ISRAEL_PREMIER_LEAGUE`) | Game board with per-quarter scores, OT totals, finals, team ids and English names | `basket.co.il/ws/ws.asmx/Games` (browser UA required) | Route referenced from league-site and SportsDataverse `hoopR` documentation; **no first-party capture**; tip times carry no UTC offset, so `Asia/Jerusalem` is applied as a recorded assumption |
+| Israel Winner League JSON | Israel Premier League (`ISRAEL_PREMIER_LEAGUE`) | Game board with per-quarter scores, OT totals, finals, team ids and English names | `basket.co.il/ws/ws.asmx/Games` (browser UA required) | **Captured 2026-11-22** by the operator's external probe: four rows committed verbatim, confirming points-in-period quarters, a double-overtime row, `game_id`, and the `year_id` season field; tip times carry no UTC offset, so `Asia/Jerusalem` is applied as a recorded assumption |
 | ACB JSON API | Spain ACB (`SPAIN_ACB`) | Liga Endesa season calendar, per-game header with names, status, final score, quarter/OT reconciliation | Public endpoints (`api2.acb.com`) | Route contract referenced from SportsDataverse's generated `acb` module; **no Ma Golide first-party capture**; source automation/reuse terms unverified |
-| LBA JSON API | Italy LBA (`ITALY_LBA`) | Serie A championships list, focus-day calendar with UTC-offset tips and finals, per-match play-by-play reconciled into quarters | Public endpoints (`www.legabasket.it/api`) | Route contract referenced from an external 2026-11-22 probe; **no Ma Golide first-party capture**; the calendar serves only the league's current focus day, so no season enumeration and no history backfill |
+| LBA JSON API | Italy LBA (`ITALY_LBA`) | Serie A championships list, focus-day calendar with UTC-offset tips, finals and status codes, per-match play-by-play reconciled into quarters | Public endpoints (`www.legabasket.it/api`) | **Captured 2026-11-22** by the operator's external probe: the championships (867 B) and focus-day calendar (11636 B) bodies are committed byte-exact and re-hashed in `tests/test_capture_fidelity.py`; play-by-play is committed as verbatim period-end actions. The calendar serves only the league's current focus day, so no season enumeration and no history backfill |
 | EuroLeague | EuroLeague, EuroCup (`EUROCUP`) | Schedule discovery, game results, quarter/OT reconciliation, standings | Public endpoints | EuroLeague: schedule/boxscore live captures 2026-11-06; season schedule scores/partials, empty-season trap, and v3 per-round standings live-verified 2026-11-16. EuroCup: same host and route shape with competition code `U`, fixture-tested only — no Ma Golide first-party capture. Upstream reuse terms not reviewed |
 | FIBA GDAP + game page | EuroLeague Women (`EUROLEAGUE_W`) | Competition schedule, canonical UTC fixtures/status/results, official game-page play-by-play/period scores, player/team detail | Public APIM key shipped in FIBA's web client | Live facts and fixture-only cases are separated below; independent namespace, no men's EuroLeague reuse. Automation/reuse rights and future route/status vocabulary remain unresolved. |
 | CBA | CBA | Official league data API: season/day discovery, Beijing-local UTC times, quarter/OT reconciliation via observed period-score POST endpoint | Public endpoints; AES-128-ECB bodies decrypted with the key constant shipped in the site's own bundle | Live-verified 2026-11-16 from a datacenter IP (decryption, statuses, quarter sums, OT shape); unofficial/undocumented API and terms not reviewed — see caveats |
+
+Negative evidence is captured too: the KBL board, `team-record` and `text-cast`
+bodies were transmitted and contain finals, `gmkey`s and per-action quarter
+labels but **no per-quarter totals**, and `season/list` answers `400` with
+`errorCode -1101` unless the channel headers are sent. B.League's S3 listing
+answers `403 AccessDenied`, and the sportsdataverse sdist ships no `nbl` module
+at all. Those lanes stay refused on that evidence.
 
 Only final, reconciled results enter grading. In-progress scores, inconsistent
 native-period sums, invalid overtime totals, and irreconcilable team identities
@@ -81,6 +88,16 @@ verified index floors.
 - Overtime is reconciled only when its points are actually exposed: a row that
   reports ``total_ot`` without a fifth period is refused, never treated as a
   regulation final.
+- **Captured rows, 2026-11-22:** four board rows are committed verbatim in
+  `tests/fixtures/israel_ibl/board5_captured_rows.json` and are re-tested on
+  every run. The probe reported that all 45 played rows of the full board sum to
+  their finals; the four committed rows re-verify the reading here, including a
+  double-overtime row of ``21|18|18|18|11|10`` against ``20|19|21|15|11|17``
+  (96-103, ``total_ot`` "2"). They also show that a row's season field is
+  ``year_id`` — not the ``cYear`` query parameter. Reading only ``cYear`` left
+  every discovered game with an empty season, so a board refresh refused
+  identity for the whole lane; the row season is now read from ``year_id``,
+  then ``cYear``, then the requested board season.
 - Pricing stays on the universal direct BetExplorer fallback.
 
 ### Italy LBA acquisition details (referenced route contract, fixture-tested)
@@ -104,6 +121,19 @@ verified index floors.
   adapter treats a run's target date as a filter over that one slate, never as a
   date-bounded query. That also means a season cannot be enumerated through this
   route: history backfill is deliberately not wired.
+- ``game_status`` is a numeric code, not a label: ``"2"`` final, ``"1"`` live,
+  ``"0"`` not started. The captured focus day mixed all three and two live rows
+  already carried real scores (63-62, 49-48), so status comes from the code —
+  an unknown code maps to ``UNKNOWN`` and is never promoted to a final.
+- One focus day is a **round**, not a date: the captured slate spanned
+  2026-11-21 and 2026-11-22 while ``filters.days`` marked round 9 as focused.
+  A run's target date filters that one slate; it is not a date-bounded query.
+- ``additional_time`` was ``0`` on every captured row, so overtime is derived
+  from the play-by-play period count alone and is never cross-checked against a
+  field that was never observed to vary.
+- ``get-championships-matches-play-by-play`` answered **500** for one match
+  without play-by-play, not 404 — an unavailable body is a transient provider
+  error and the game stays a recorded gap.
 - The adapter needs its own client with a browser ``User-Agent``; tests inject a
   fixture transport instead.
 - Pricing stays on the universal direct BetExplorer fallback.
@@ -128,11 +158,14 @@ verified index floors.
   folded, guessed from list order, or treated as missing points.
 - No history backfill is wired: a season of history is one header request per
   game, so it needs its own bounded plan rather than an unbounded walk.
-- **Authorsation, measured 2026-11-22:** the season calendar answers publicly,
-  but ``matchdata/MatchHeader/match-header`` answers **401**. Because the
-  calendar carries neither team names nor period scores, a gated header means
-  the lane cannot currently produce a canonical game. That is reported as a
-  distinct ``auth_required`` status with one clear gap, not as an empty season.
+- **Authorisation, measured 2026-11-22:** the season calendar answers publicly,
+  but ``matchdata/MatchHeader/match-header`` answers **401** with an *empty*
+  body (``content-length: 0``), server ``Kestrel``, and **no**
+  ``WWW-Authenticate`` header — so the response names no scheme to satisfy and
+  the gate cannot be cleared from documentation. Because the calendar carries
+  neither team names nor period scores, a gated header means the lane cannot
+  currently produce a canonical game. That is reported as a distinct
+  ``auth_required`` status with one clear gap, not as an empty season.
 - Pricing stays on the universal direct BetExplorer fallback.
 
 ### EuroCup acquisition details (referenced route contract, fixture-tested)
@@ -284,7 +317,7 @@ prices remain missing.
 | --- | --- | --- | --- |
 | ESPN scoreboard | Moneyline, totals, spreads when explicitly offered | Full game | NBA, WNBA, NCAA_M, NCAA_W, NBA G League; named-book observations are independently timestamped but relayed by ESPN, so registry policy preserves `unresolved` / `unverified` audit metadata. An exact current named-book quote can enter the paper lane only after the ordinary model, calibration, and ROI gates pass. |
 | BetExplorer aggregate (`betexplorer`) | Representative average two-way moneyline prices | Full game | EuroLeague and CBA are `LIVE_VERIFIED` from captured 2026-11-16 pages. ABA League uses the same route as a probationary aggregate research observation, separate from its `aba_liga` schedule/result adapter. Every aggregate adapter quote is `aggregate_consensus` with `unresolved` permission / `probation` validation, never a named-book ticket quote. |
-| BetExplorer direct (`betexplorer_direct`) | Response-labelled bookmaker H/A moneyline, O/U totals, and Asian Handicap spreads | Full game | Universal fallback for canonical future basketball fixtures. It reads one dated basketball board then up to three exact comparison responses per strict ordered-team match: `ha` for the two-way H/A moneyline, `ou` for line-specific Over/Under prices, and `ah` for home-oriented spread prices. Each emitted price retains the response's bookmaker label, exact source line/side order, source-designated main line when present, and a capped URL/SHA-256 receipt. It is operator-authorised for this single-user project and marked `named_book` with `unresolved` permission / `probation` validation; no average, cross-book best price, relay, proxy, browser automation, login, or post-tip quote is used. |
+| BetExplorer direct (`betexplorer_direct`) | Response-labelled bookmaker H/A moneyline, O/U totals, and Asian Handicap spreads | Full game | **Named-book per-fixture depth remains unproven (probe 2026-11-22):** the league board and finished-fixture rows carry only *average* odds (`data-odd`), the comparison loads client-side, and the route the site's own bundle uses (`/match-odds/{event}/{page}/{tab}/bestOdds/`) answered **404 with an empty body** to a headerless client for every token order tried (two 429s during rapid probing; the 404 reproduced after backoff), while the match-content fragment returned a shell with an empty `#odds-all`. Our adapter's route shape is that same one, so an unauthorised price fails closed to *unpriced* — never to a guessed price. Universal fallback for canonical future basketball fixtures. It reads one dated basketball board then up to three exact comparison responses per strict ordered-team match: `ha` for the two-way H/A moneyline, `ou` for line-specific Over/Under prices, and `ah` for home-oriented spread prices. Each emitted price retains the response's bookmaker label, exact source line/side order, source-designated main line when present, and a capped URL/SHA-256 receipt. It is operator-authorised for this single-user project and marked `named_book` with `unresolved` permission / `probation` validation; no average, cross-book best price, relay, proxy, browser automation, login, or post-tip quote is used. |
 | The Odds API | `h2h`, totals, spreads | Routine acquisition: full game only | NBA, WNBA, NCAA_M, NCAA_W; a scheduled runner receives `THE_ODDS_API_KEY` only with a matching three-credit permit for date-bounded named-DraftKings collection. Australia NBL remains a documented but `probation` mapping and receives no automated permit pending credentialed region/bookmaker coverage. |
 
 The Odds API adapter remains `DOCUMENTATION_ONLY` until a bounded authenticated

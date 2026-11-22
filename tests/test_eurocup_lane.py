@@ -155,3 +155,26 @@ def test_eurocup_registry_contract_declares_only_the_fallback_price_lane():
     assert spec.automated_schedule_supported is True
     assert spec.automated_results_supported is True
     assert spec.book_providers == ("betexplorer_direct",)
+
+
+def test_captured_u2026_overtime_row_reconciles():
+    """One captured EuroCup row: Maxima Roma 86-84 London Lions after OT.
+
+    ``partials1..4`` are points-in-period and ``extraPeriods`` carries the
+    overtime by index; 76+10 and 76+8 reproduce the 86-84 finals exactly, which
+    is why the row is safe to reconcile rather than merely display.
+    """
+
+    def fetch(url: str) -> Any:
+        assert "competitions/U/seasons/U2026/games" in url, url
+        return _fixture_json("eurocup/U2026_ot_game.json")
+
+    games = euroleague.season_results("U2026", fetch)
+    assert [game.game_id for game in games] == ["U2026-87"]
+    actual = games[0].actual
+    assert actual is not None
+    assert actual.home_quarters == [16.0, 26.0, 21.0, 13.0]
+    assert actual.away_quarters == [22.0, 22.0, 11.0, 21.0]
+    assert (actual.home_overtime, actual.away_overtime) == (10.0, 8.0)
+    assert (actual.home_final, actual.away_final) == (86, 84)
+    assert actual.reconciles() == (True, "")
