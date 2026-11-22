@@ -80,6 +80,12 @@ BASE_URL = "https://api.predixsport.com"
 # days=14 returns 0 matches in steady state)" — so the adapter's former fixed
 # days=7 asked for a window it documents as empty.
 UPCOMING_DAYS = 1
+# Minimum spacing between upstream calls, per league. The free tier is 200
+# SHARED requests per calendar month, so an every-tick call (~32/day observed)
+# exhausts it in about a week. 18h gives ~40 calls/month per league — 80 for
+# NBA + EuroLeague — while still refreshing well inside the 1-day horizon the
+# provider publishes on.
+UPCOMING_WINDOW_HOURS = 18
 ENV_KEY = "PREDIXSPORT_API_KEY"
 PROVIDER = "predixsport"
 PREDICTION_MODEL_VERSION = "adapter:predixsport"

@@ -1096,6 +1096,32 @@ class Pipeline:
             }
             return output
 
+        # Quota window: the free tier is 200 SHARED requests per calendar
+        # month, so an upstream call is only made when the previous one is
+        # older than UPCOMING_WINDOW_HOURS. The window is recorded for every
+        # attempt, including dry runs and failures, because the request has
+        # already been spent upstream either way. Stored pre-tip observations
+        # stay in the candidate pool, so a skipped window loses no evidence.
+        now_iso = self._now_iso()
+        window = self._predixsport_window()
+        next_call = window.get("next_call_utc")
+        if next_call:
+            try:
+                due = parse_utc(next_call) <= parse_utc(now_iso)
+            except ValueError:
+                due = True  # unreadable telemetry must not wedge the lane
+            if not due:
+                self.prediction_provider_status["predixsport"] = {
+                    "enabled": True,
+                    "status": "skipped_quota_window",
+                    "records_returned": 0,
+                    "records_matched": 0,
+                    "window_hours": predixsport.UPCOMING_WINDOW_HOURS,
+                    "last_call_utc": window.get("last_call_utc"),
+                    "next_call_utc": next_call,
+                }
+                return output
+
         source_gaps: List[CoverageGap] = []
         # Response shape (key names and row count only, never values): the
         # documented schema has never been seen live, so "the feed is empty"
@@ -1111,6 +1137,9 @@ class Pipeline:
                 diagnostics=response_shape,
             )
         except Exception as exc:
+            # A failed request still consumed an upstream call, so the window
+            # is recorded before the error is reported.
+            self._record_predixsport_window(now_iso, ok=False)
             self.prediction_provider_status["predixsport"] = {
                 "enabled": True,
                 "status": "provider_error",
@@ -1151,6 +1180,7 @@ class Pipeline:
             output[game.game_id].append(replace(prediction, game_id=game.game_id))
             matched += 1
 
+        self._record_predixsport_window(now_iso, ok=True)
         self.prediction_provider_status["predixsport"] = {
             "enabled": True,
             "status": "fetched",
@@ -1785,6 +1815,53 @@ class Pipeline:
     def _history_cursor(self, provider: str) -> Dict[str, Any]:
         health = self.store.get_provider_health(provider, self.config.league_enum)
         return dict(health.coverage or {}) if health else {}
+
+    def _predixsport_window(self) -> Dict[str, Any]:
+        """Read the upstream quota window for this league (quota telemetry)."""
+        health = self.store.get_provider_health("predixsport", self.config.league_enum)
+        return dict(health.coverage or {}) if health else {}
+
+    def _record_predixsport_window(self, attempted_utc: str, ok: bool) -> None:
+        """Record that an upstream call was spent, and when the next is due.
+
+        This is quota telemetry, not an acquisition cursor: it is written even
+        on a dry run or a failed request, because the shared 200/month
+        allowance has already been consumed by the attempt.
+        """
+        from datetime import timedelta
+
+        from .providers import predixsport
+
+        try:
+            attempted = parse_utc(attempted_utc)
+        except ValueError:  # pragma: no cover - defensive, observed_utc is ours
+            return
+        next_call = attempted + timedelta(hours=predixsport.UPCOMING_WINDOW_HOURS)
+        previous = self._predixsport_window()
+        coverage = {
+            "last_call_utc": to_utc_iso(attempted),
+            "next_call_utc": to_utc_iso(next_call),
+            "window_hours": predixsport.UPCOMING_WINDOW_HOURS,
+            "calls_recorded": int(previous.get("calls_recorded") or 0) + 1,
+            "last_call_ok": bool(ok),
+        }
+        try:
+            self.store.upsert_provider_health(
+                ProviderHealth(
+                    provider="predixsport",
+                    league=self.config.league_enum,
+                    last_attempt_utc=coverage["last_call_utc"],
+                    last_success_utc=coverage["last_call_utc"] if ok else None,
+                    state=CoverageState.OK if ok else CoverageState.PROVIDER_ERROR,
+                    detail=(
+                        f"predixsport upstream quota window "
+                        f"({predixsport.UPCOMING_WINDOW_HOURS}h); not an acquisition cursor"
+                    ),
+                    coverage=coverage,
+                )
+            )
+        except Exception as exc:  # pragma: no cover - telemetry must never wedge a run
+            logger.warning("predixsport quota window not recorded: %s", exc)
 
     def _ledger_date_for(self, game: Game) -> str:
         return (
