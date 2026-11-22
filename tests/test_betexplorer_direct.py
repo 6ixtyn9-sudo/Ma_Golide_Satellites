@@ -392,6 +392,32 @@ def test_direct_fallback_stops_the_run_after_a_source_refusal(monkeypatch):
     assert any(gap.required_field == "source_access" for gap in betexplorer_direct.last_gaps())
 
 
+def test_direct_fallback_preserves_valid_prices_when_later_tab_hits_cooldown(monkeypatch):
+    calls: list[str] = []
+    monkeypatch.setattr(betexplorer_direct, "MIN_REQUEST_INTERVAL_SECONDS", 0.0)
+
+    def fetch(url: str) -> str:
+        calls.append(url)
+        if "/basketball/results/" in url:
+            return BOARD
+        if f"/match-odds/{EVENT_ID}/1/ha/bestOdds/" in url:
+            return HA_ODDS
+        raise HttpError(429, url, "rate limited")
+
+    snapshots = betexplorer_direct.fetch_odds(
+        "NBA", DATE, now_utc=OBSERVED, games=[_game()], text_fetch=fetch
+    )
+
+    assert len(snapshots) == 2
+    assert all(snapshot.market is Market.MONEYLINE for snapshot in snapshots)
+    receipt = betexplorer_direct.last_receipt()
+    assert receipt["status"] == "http_429_cooldown"
+    assert receipt["cooldown"] is True
+    assert receipt["snapshots_emitted"] == 2
+    assert receipt["partial_snapshots_preserved_on_cooldown"] is True
+    assert receipt["fixture_receipts"][0]["markets"][0]["named_book_rows"] == 2
+
+
 def test_direct_fallback_keeps_partial_prices_and_stops_at_request_cap(monkeypatch):
     calls: list[str] = []
     monkeypatch.setattr(betexplorer_direct, "MIN_REQUEST_INTERVAL_SECONDS", 0.0)
@@ -459,6 +485,21 @@ def test_direct_fallback_does_not_fetch_odds_for_an_unmatched_or_past_fixture(mo
     ) == []
     assert calls == []
     assert betexplorer_direct.last_receipt()["status"] == "no_future_candidate_games"
+
+
+def test_confirmed_ncaa_name_variants_are_season_scoped_and_ordered():
+    assert betexplorer_direct._team_names_agree(
+        "Alice Lloyd Eagles", "Alice Loyd", league="NCAA_M", board_date="2026-11-22"
+    ) == (True, "season_scoped_alias")
+    assert betexplorer_direct._team_names_agree(
+        "Saint Mary's Gaels", "St. Marys (CA)", league="NCAA_M", board_date="2026-11-22"
+    ) == (True, "season_scoped_alias")
+    assert not betexplorer_direct._team_names_agree(
+        "Alice Lloyd Eagles", "Alice Loyd", league="NCAA_W", board_date="2026-11-22"
+    )[0]
+    assert not betexplorer_direct._team_names_agree(
+        "Alice Lloyd Eagles", "Alice Loyd", league="NCAA_M", board_date="2027-07-01"
+    )[0]
 
 
 def test_guarded_token_subset_matches_mascot_free_names_in_order():
