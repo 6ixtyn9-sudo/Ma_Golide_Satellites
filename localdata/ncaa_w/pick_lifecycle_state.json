@@ -25,7 +25,7 @@
       "logical_picks": 166
     },
     "2026-11-22": {
-      "frozen_fixtures": 53,
+      "frozen_fixtures": 54,
       "logical_picks": 219
     }
   },
@@ -35276,39 +35276,234 @@
         "scheduled_utc": "2026-11-22T19:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
+      },
+      "401929635": {
+        "decision_cutoff_utc": "2026-11-22T22:00:00Z",
+        "frozen_at": "2026-11-22T22:20:40Z",
+        "game_id": "401929635",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Louisville Cardinals",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.449476,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 256,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "f75a9a699ccb60704c8b613e5b623b90c083d52d9508481ce6a3e1cb001e2b30",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e5a9f27bf1f1386d12ad",
+            "game_id": "401929635",
+            "grade_status": "pending",
+            "home": "Seattle U Redhawks",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "e5a9f27bf1f1386d12ad",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-22T23:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Louisville Cardinals",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.468026,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 198,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "a9910bf14d833a51bbd66089c6dca9c2c0b54421d14369100e530c77bd9c6052",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "281bcf34d5fa18e1359e",
+            "game_id": "401929635",
+            "grade_status": "pending",
+            "home": "Seattle U Redhawks",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "281bcf34d5fa18e1359e",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-22T23:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Louisville Cardinals",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.960565,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 154,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "df910ddf291c39e7eaa8823f306c34b519189b5ebfdadaacf7331a6203fc1d85",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "38144d7f744b1fe46372",
+            "game_id": "401929635",
+            "grade_status": "pending",
+            "home": "Seattle U Redhawks",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "38144d7f744b1fe46372",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-22T22:10:24Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9986,
+            "role": null,
+            "scheduled_utc": "2026-11-22T23:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Louisville Cardinals",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.587238,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 256,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "5c8fa5a00fdca4493b876d8ee7b911ae7d6fc3f0e425be4146c1be17200431dd",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7c78e5920f8d83dfb932",
+            "game_id": "401929635",
+            "grade_status": "pending",
+            "home": "Seattle U Redhawks",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "7c78e5920f8d83dfb932",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.63,
+            "role": null,
+            "scheduled_utc": "2026-11-22T23:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "TBD",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.728711,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 195,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "135bea675b39e9af9d415ec933949ca49a66d1adf39f22702ea2d7d89211cba5",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "8a2d9b41c478bc43bc45",
+            "game_id": "401929635",
+            "grade_status": "pending",
+            "home": "Seattle U Redhawks",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "8a2d9b41c478bc43bc45",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.74,
+            "role": null,
+            "scheduled_utc": "2026-11-22T23:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T23:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
       }
     }
   },
   "league": "NCAA_W",
   "pending_frozen_games": [
-    [
-      "401906967",
-      "2026-11-22T19:30:00Z"
-    ],
-    [
-      "401913739",
-      "2026-11-22T20:00:00Z"
-    ],
-    [
-      "401918858",
-      "2026-11-22T20:00:00Z"
-    ],
-    [
-      "401923333",
-      "2026-11-22T20:00:00Z"
-    ],
-    [
-      "401924634",
-      "2026-11-22T20:00:00Z"
-    ],
-    [
-      "401927019",
-      "2026-11-22T20:00:00Z"
-    ],
-    [
-      "401918004",
-      "2026-11-22T20:30:00Z"
-    ],
     [
       "401909674",
       "2026-11-22T21:00:00Z"
@@ -35356,6 +35551,10 @@
     [
       "401912957",
       "2026-11-22T22:30:00Z"
+    ],
+    [
+      "401929635",
+      "2026-11-22T23:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
