@@ -1,6 +1,6 @@
 Ma Golide Picks — NCAA_W 2026-11-21
 ========================================================================
-Generated at: 2026-11-22 06:18 SAST
+Generated at: 2026-11-22 06:49 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -17,18 +17,7 @@ CAUTION PICKS
 
 WATCHLIST — NO MATCHED ODDS
 ========================================================================
-  [provider:espn/team_history_empirical] Alaska Anchorage Seawolves vs Louisville Cardinals · KO 2026-11-22 06:30 SAST
-      MONEYLINE full_game -> AWAY · p=96.5% (raw 100.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T03:46:47Z
-      calibration=calibrated n=133 · reasons=no_exact_bookmaker_market · prediction=espn
-  [team_history_empirical/team_history_empirical] Alaska Anchorage Seawolves vs Louisville Cardinals · KO 2026-11-22 06:30 SAST
-      MONEYLINE full_game -> AWAY · p=58.8% (raw 60.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T03:46:47Z
-      calibration=calibrated n=170 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Alaska Anchorage Seawolves vs Louisville Cardinals · KO 2026-11-22 06:30 SAST
-      MONEYLINE H1 -> AWAY · p=51.1% (raw 56.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T03:46:47Z
-      calibration=calibrated n=170 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
+  (none)
 
 WATCHLIST — INSUFFICIENT CONTEXT
 ========================================================================
@@ -40,6 +29,10 @@ SKIPPED — INELIGIBLE
 
 IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
+  [provider:espn/team_history_empirical] Alaska Anchorage Seawolves vs Louisville Cardinals · KO 2026-11-22 06:30 SAST
+      MONEYLINE full_game -> AWAY · p=96.5% (raw 100.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T03:46:47Z
+      calibration=calibrated n=133 · reasons=no_exact_bookmaker_market · prediction=espn
   [team_history_empirical/team_history_empirical] San Diego Toreros vs UC Irvine Anteaters · KO 2026-11-22 05:00 SAST
       MONEYLINE full_game -> HOME · p=74.2% (raw 75.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T02:16:39Z
@@ -48,10 +41,18 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       MONEYLINE full_game -> AWAY · p=66.6% (raw 69.7%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T02:16:39Z
       calibration=calibrated n=132 · reasons=no_exact_bookmaker_market · prediction=espn
+  [team_history_empirical/team_history_empirical] Alaska Anchorage Seawolves vs Louisville Cardinals · KO 2026-11-22 06:30 SAST
+      MONEYLINE full_game -> AWAY · p=58.8% (raw 60.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T03:46:47Z
+      calibration=calibrated n=170 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] San Diego Toreros vs UC Irvine Anteaters · KO 2026-11-22 05:00 SAST
       MONEYLINE H1 -> HOME · p=52.9% (raw 57.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T02:16:39Z
       calibration=calibrated n=169 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Alaska Anchorage Seawolves vs Louisville Cardinals · KO 2026-11-22 06:30 SAST
+      MONEYLINE H1 -> AWAY · p=51.1% (raw 56.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T03:46:47Z
+      calibration=calibrated n=170 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
@@ -701,9 +702,9 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T17:47:12Z
       calibration=provisional n=10 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
 
-Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 WATCHLIST_NO_ODDS=3 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 WATCHLIST_NO_ODDS=0 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=3 SETTLED=160
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=6 SETTLED=160
 Logical picks shown: 166 · superseded observations: 0
 Total archived pick evidence rows: 166
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
