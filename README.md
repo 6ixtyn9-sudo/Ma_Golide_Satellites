@@ -39,6 +39,8 @@ Israel Premier League (`ISRAEL_PREMIER_LEAGUE`) now has a canonical schedule/res
 
 Spain ACB (`SPAIN_ACB`) now has a canonical schedule/result lane built on the ACB's own JSON API: a season calendar for fixtures and a per-game header that carries team identity, status, final score and `quarterScores[]` for period reconciliation. It is a *referenced* route contract (no first-party capture) and reconciles only bodies with four regulation quarters plus contiguous overtime.
 
+Italy LBA (`ITALY_LBA`) now has a canonical schedule/result lane on the league's own JSON API: a championships list keyed by the season's first year, a focus-day calendar carrying explicit-offset tip times and finals, and per-match play-by-play whose cumulative period ends are differenced into quarters. It is a *referenced* route contract (no first-party capture) and refuses non-contiguous overtime. Because the probed day selectors are ignored server-side, the calendar only ever serves the league's current focus day: the lane settles that day and cannot enumerate a season, so history backfill stays unwired.
+
 EuroCup (`EUROCUP`) now has a canonical schedule/result lane: it reuses the
 validated EuroLeague Basketball adapter with competition code `U` (the season
 code itself carries the competition). That is a *referenced* route contract —

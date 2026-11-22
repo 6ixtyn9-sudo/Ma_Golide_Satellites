@@ -66,6 +66,7 @@ from .providers import (
     fiba_euroleague_w,
     hardwood,
     israel_ibl,
+    lba,
 )
 
 logger = logging.getLogger(__name__)
@@ -386,6 +387,14 @@ class Pipeline:
             report = cbaleague.schedule_smoke(
                 self.config.date_yyyymmdd, self.fetch, self.config.league_enum
             )
+            report["bookmakers"] = self._bookmakers_smoke()
+            return report
+        if league == "ITALY_LBA":
+            try:
+                report = lba.smoke(self.fetch, self._lba_season_start_year())
+            except Exception as exc:
+                report = {"status": "provider_error", "provider": "lba",
+                          "error_type": type(exc).__name__}
             report["bookmakers"] = self._bookmakers_smoke()
             return report
         if league == "ISRAEL_PREMIER_LEAGUE":
@@ -767,6 +776,21 @@ class Pipeline:
             # discovery source, preventing duplicate canonical games.
             games = cbaleague.discover_games(self.config.date_yyyymmdd, self.fetch, league)
             self.gaps.extend(cbaleague.last_gaps())
+        elif league is League.ITALY_LBA:
+            games = lba.discover_games(
+                _iso(self.config.date_yyyymmdd), self.fetch, self._lba_season_start_year()
+            )
+            for gap in lba.last_gaps():
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=(f"LBA-{gap['game_id']}" if gap.get("game_id") else None),
+                        required_field="schedule_identity",
+                        reason=CoverageState.MISSING,
+                        provider="lba",
+                        detail=str(gap.get("detail", ""))[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
         elif league is League.ISRAEL_PREMIER_LEAGUE:
             games = israel_ibl.discover_games(
                 _iso(self.config.date_yyyymmdd),
@@ -1621,6 +1645,12 @@ class Pipeline:
             for game in self.store.list_games(league=self.config.league_enum)
             if parse_utc(game.scheduled_utc) <= now
         ]
+
+    def _lba_season_start_year(self) -> int:
+        """LBA season FIRST year for this run's target date (2026 == 2026/27)."""
+        from datetime import datetime as _dt
+
+        return lba.season_start_year(_dt.strptime(self.config.date_yyyymmdd, "%Y%m%d"))
 
     def _israel_season_end_year(self) -> int:
         """Season END year for the Israel board route (``cYear``)."""
@@ -3089,6 +3119,8 @@ class Pipeline:
             )
             self.gaps.extend(cbaleague.last_gaps())
             return finals
+        if league is League.ITALY_LBA:
+            return self._lba_finals(self._discover_games())
         if league is League.ISRAEL_PREMIER_LEAGUE:
             return self._israel_ibl_finals(self._discover_games())
         if league is League.SPAIN_ACB:
@@ -3107,6 +3139,50 @@ class Pipeline:
             ),
         )
         return []
+
+    def _lba_finals(self, games: List[Game]) -> List[Game]:
+        """Refresh LBA finals from per-match play-by-play (periods authoritative).
+
+        Play-by-play carries no team names, so identity stays as discovered from
+        the calendar; periods derive from cumulative period ends and must
+        reconcile, or the game stays a recorded gap.
+        """
+        finals: List[Game] = []
+        for game in games:
+            if game.status is not GameStatus.FINAL:
+                continue
+            try:
+                refreshed = lba.fetch_game_result(game, self.fetch)
+            except Exception as exc:
+                logger.warning("lba result failed for %s: %s", game.game_id, exc)
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="actual_result",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider="lba",
+                        detail=str(exc)[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            if refreshed.actual is None:
+                continue
+            ok, reason = refreshed.actual.reconciles()
+            if not ok:
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=refreshed.game_id,
+                        required_field="historical_reconciliation",
+                        reason=CoverageState.MISSING,
+                        provider="lba",
+                        detail=reason[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            finals.append(refreshed)
+        return finals
 
     def _israel_ibl_finals(self, games: List[Game]) -> List[Game]:
         """Refresh Israel finals from the board, keeping failures as gaps."""

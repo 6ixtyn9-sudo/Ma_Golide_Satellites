@@ -91,6 +91,12 @@ def test_final_expansion_is_typed_and_registry_backed_everywhere():
                 "aba_liga",
                 "aba_liga",
             )
+        elif league is League.ITALY_LBA:
+            assert (spec.schedule_source, spec.results_source, spec.gate_schedule_source) == (
+                "lba",
+                "lba",
+                "lba",
+            )
         elif league is League.ISRAEL_PREMIER_LEAGUE:
             assert (spec.schedule_source, spec.results_source, spec.gate_schedule_source) == (
                 "israel_ibl",
