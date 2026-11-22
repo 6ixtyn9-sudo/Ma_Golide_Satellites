@@ -33,6 +33,7 @@ import math
 import os
 import re
 import time
+import unicodedata
 from datetime import datetime, timezone
 from typing import Any, Callable, Dict, Iterable, List, Optional
 from zoneinfo import ZoneInfo
@@ -60,6 +61,8 @@ MIN_REQUEST_INTERVAL_SECONDS = 3.0
 # NCAA slate while remaining below the bounded 45-minute workflow lane.
 MAX_REQUESTS_PER_RUN = int(os.environ.get("BETEXPLORER_DIRECT_MAX_REQUESTS", "180"))
 MAX_RECEIPT_FIXTURES = 20
+MAX_RECEIPT_CANDIDATES = 100
+MAX_DIAGNOSTIC_BOARD_ROWS = 25
 MAX_BOOKS_PER_FIXTURE = 40
 
 TextFetch = Callable[[str], str]
@@ -526,6 +529,45 @@ def _candidate_board_date(game: Any) -> str:
     return scheduled.astimezone(ZoneInfo("Europe/Paris")).date().isoformat()
 
 
+def _team_name_tokens(name: str) -> set[str]:
+    """Tokenize names for diagnostic ranking only; never used to admit a match."""
+
+    decomposed = unicodedata.normalize("NFKD", str(name or "")).casefold()
+    folded = "".join(character for character in decomposed if not unicodedata.combining(character))
+    return set(re.findall(r"[^\W_]+", folded, flags=re.UNICODE))
+
+
+def _nearest_board_rows(
+    game: Any, date_rows: List[Dict[str, str]], limit: int = MAX_DIAGNOSTIC_BOARD_ROWS
+) -> List[Dict[str, Any]]:
+    """Return bounded token-overlap examples for diagnosis, not fixture matching."""
+
+    home_tokens = _team_name_tokens(game.home_name)
+    away_tokens = _team_name_tokens(game.away_name)
+    ranked: List[tuple[int, int, str, List[str], Dict[str, str]]] = []
+    for index, fixture in enumerate(date_rows):
+        row_home = _team_name_tokens(fixture["home_name"])
+        row_away = _team_name_tokens(fixture["away_name"])
+        ordered = sorted(home_tokens & row_home) + sorted(away_tokens & row_away)
+        reversed_names = sorted(home_tokens & row_away) + sorted(away_tokens & row_home)
+        if len(reversed_names) > len(ordered):
+            score, orientation, shared = len(reversed_names), "reversed_diagnostic_only", reversed_names
+        else:
+            score, orientation, shared = len(ordered), "ordered", ordered
+        ranked.append((score, -index, orientation, shared, fixture))
+    ranked.sort(key=lambda item: (item[0], item[1]), reverse=True)
+    return [
+        {
+            "home": fixture["home_name"],
+            "away": fixture["away_name"],
+            "shared_token_count": score,
+            "shared_tokens": shared,
+            "orientation": orientation,
+        }
+        for score, _index, orientation, shared, fixture in ranked[:limit]
+    ]
+
+
 def _match_fixtures(
     fixtures: Iterable[Dict[str, str]], games: Iterable[Any]
 ) -> List[tuple[Dict[str, str], Any]]:
@@ -569,10 +611,7 @@ def _match_fixtures(
                 "board_rows_on_date": len(date_rows),
                 "ordered_pair_rows": len(ordered_rows),
                 "reversed_pair_rows_diagnostic_only": len(reversed_rows),
-                "date_board_name_samples": [
-                    {"home": row["home_name"], "away": row["away_name"]}
-                    for row in date_rows[:3]
-                ],
+                "nearest_board_rows": _nearest_board_rows(game, date_rows),
                 "status": "unmatched",
                 "reason": (
                     "no_fixture_rows_on_paris_board_date"
@@ -606,7 +645,10 @@ def _match_fixtures(
 
     _last_receipt["candidate_fixture_diagnostics"] = [
         by_id[str(game.game_id)] for game in candidates
-    ][:40]
+    ][:MAX_RECEIPT_CANDIDATES]
+    _last_receipt["candidate_fixture_diagnostics_truncated"] = max(
+        0, len(candidates) - MAX_RECEIPT_CANDIDATES
+    )
     for game in candidates:
         if str(game.game_id) not in matched_game_ids:
             _count_rejection(by_id[str(game.game_id)]["reason"])

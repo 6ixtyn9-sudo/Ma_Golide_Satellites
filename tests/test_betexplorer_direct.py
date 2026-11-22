@@ -461,6 +461,26 @@ def test_direct_fallback_does_not_fetch_odds_for_an_unmatched_or_past_fixture(mo
     assert betexplorer_direct.last_receipt()["status"] == "no_future_candidate_games"
 
 
+def test_candidate_diagnostics_rank_name_overlap_not_first_board_rows():
+    assert betexplorer_direct._team_name_tokens("Budućnost") == betexplorer_direct._team_name_tokens("Buducnost")
+    game = _game()
+    rows = [
+        {"home_name": f"Unrelated Home {index}", "away_name": f"Unrelated Away {index}"}
+        for index in range(30)
+    ]
+    rows.append({"home_name": "Los Angeles Lakers", "away_name": "Boston Celtics"})
+
+    nearest = betexplorer_direct._nearest_board_rows(game, rows)
+    assert len(nearest) == 25
+    assert nearest[0] == {
+        "home": "Los Angeles Lakers",
+        "away": "Boston Celtics",
+        "shared_token_count": 5,
+        "shared_tokens": ["angeles", "lakers", "los", "boston", "celtics"],
+        "orientation": "ordered",
+    }
+
+
 def test_direct_fallback_fetches_each_required_paris_board_date(monkeypatch):
     game = _game()
     game.scheduled_utc = "2026-11-20T23:30:00Z"  # 2026-11-21 00:30 in Paris
@@ -491,8 +511,14 @@ def test_direct_fallback_fetches_each_required_paris_board_date(monkeypatch):
             "board_rows_on_date": 1,
             "ordered_pair_rows": 1,
             "reversed_pair_rows_diagnostic_only": 0,
-            "date_board_name_samples": [
-                {"home": "Los Angeles Lakers", "away": "Boston Celtics"}
+            "nearest_board_rows": [
+                {
+                    "home": "Los Angeles Lakers",
+                    "away": "Boston Celtics",
+                    "shared_token_count": 5,
+                    "shared_tokens": ["angeles", "lakers", "los", "boston", "celtics"],
+                    "orientation": "ordered",
+                }
             ],
             "status": "matched",
             "reason": "exact_ordered_pair_on_paris_board_date",
