@@ -360,6 +360,10 @@ class Pipeline:
             report = espn.smoke(self.config.date_yyyymmdd, self.espn_fetch, self.config.league_enum)
             if league == "NBA":
                 report["hardwood"] = self._hardwood_smoke()
+                # Same one-call probe the EuroLeague lane exposes, so the league
+                # that actually has slates can answer "is Predixsport enabled
+                # and returning rows?" without waiting for a scheduled run.
+                report["predixsport"] = self._predixsport_smoke()
             if self.config.league_enum not in ESPN_BPI_LEAGUES:
                 # Schedule/result support has been independently checked, but
                 # no external pre-tip model is represented until that contract

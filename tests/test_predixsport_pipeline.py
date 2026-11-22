@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from ingestion.models import Game, GameStatus, League, Prediction
 from ingestion.pipeline import Pipeline, PipelineConfig, _match_predixsport_prediction
-from ingestion.providers import predixsport
+from ingestion.providers import espn, predixsport
 from ingestion.store import InMemoryStore
 
 
@@ -141,3 +141,27 @@ def test_nba_prediction_acquisition_admits_predixsport_candidate(monkeypatch):
     assert selection.selected is not None
     assert selection.selected.provider == "predixsport"
     assert pipeline.store.get_predictions(game.game_id)[0].provider == "predixsport"
+
+
+def test_nba_smoke_exposes_predixsport_status_without_a_key(monkeypatch):
+    """The NBA smoke probe answers "is Predixsport on?" without a scheduled run.
+
+    Before this, only the EuroLeague branch published a Predixsport smoke
+    record, so the lane that actually has slates could not be probed directly
+    and the provider's state was invisible unless an artifact was downloaded.
+    """
+
+    monkeypatch.delenv(predixsport.ENV_KEY, raising=False)
+    monkeypatch.setattr(espn, "smoke", lambda *args, **kwargs: {"verification": "FIXTURE_VERIFIED"})
+    for name in ("_hardwood_smoke", "_standings_smoke", "_bookmakers_smoke"):
+        monkeypatch.setattr(Pipeline, name, lambda self: {})
+
+    report = Pipeline(
+        PipelineConfig(league="NBA", date_yyyymmdd="20261122"),
+        InMemoryStore(),
+        fetch=lambda _url: {},
+    ).smoke()
+
+    assert report["predixsport"]["enabled"] is False
+    assert report["predixsport"]["verification"] == "UNAUTHORIZED"
+    assert predixsport.ENV_KEY in report["predixsport"]["note"]
