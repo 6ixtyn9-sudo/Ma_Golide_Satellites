@@ -21,7 +21,7 @@
       "logical_picks": 146
     },
     "2026-11-21": {
-      "frozen_fixtures": 51,
+      "frozen_fixtures": 52,
       "logical_picks": 166
     }
   },
@@ -16926,6 +16926,147 @@
       }
     },
     "2026-11-21": {
+      "401906081": {
+        "decision_cutoff_utc": "2026-11-22T03:30:00Z",
+        "frozen_at": "2026-11-22T03:46:47Z",
+        "game_id": "401906081",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Louisville Cardinals",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.51125,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 170,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "607af9462e0f24d1a30e824bb8096370d530eb8b64a211b3278963ab0dea256d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "f81f0fcccbb842856cc9",
+            "game_id": "401906081",
+            "grade_status": "pending",
+            "home": "Alaska Anchorage Seawolves",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "f81f0fcccbb842856cc9",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-22T04:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Louisville Cardinals",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.964778,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 133,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "d7fb95518cd677edcbcb8797ca495d88dea1f215ba0b2a1593f8201eb74160bb",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b89faa3322cb44a2572b",
+            "game_id": "401906081",
+            "grade_status": "pending",
+            "home": "Alaska Anchorage Seawolves",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "b89faa3322cb44a2572b",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-22T03:40:13Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 1.0,
+            "role": null,
+            "scheduled_utc": "2026-11-22T04:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Louisville Cardinals",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.5877,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 170,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "14933401155d9b8ac84aacfefc3638b7856ad3fde938cbb8166e7e325d91e255",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "bb87d5d44f802c52ac38",
+            "game_id": "401906081",
+            "grade_status": "pending",
+            "home": "Alaska Anchorage Seawolves",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "bb87d5d44f802c52ac38",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.6,
+            "role": null,
+            "scheduled_utc": "2026-11-22T04:30:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T04:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      },
       "401906093": {
         "decision_cutoff_utc": "2026-11-21T21:00:00Z",
         "frozen_at": "2026-11-21T21:14:31Z",
@@ -24748,6 +24889,10 @@
     [
       "401917714",
       "2026-11-22T03:00:00Z"
+    ],
+    [
+      "401906081",
+      "2026-11-22T04:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"

@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 2,
+  "awaiting_game_legs": 0,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -785,17 +785,17 @@
       "wins": 1
     },
     {
-      "awaiting_game_legs": 2,
-      "bank_units": 101.40917456035842,
+      "awaiting_game_legs": 0,
+      "bank_units": 100.40917456035842,
       "date": "2026-11-21",
       "decision_id": "44878721387_ncaa_m_1_attempt_1",
       "frozen_at": "2026-11-21T07:15:20Z",
       "league": "NCAA_M",
-      "losses": 2,
-      "pending_accas": 1,
-      "pending_positions": 1,
+      "losses": 3,
+      "pending_accas": 0,
+      "pending_positions": 0,
       "pending_singles": 0,
-      "pending_units": 1.0,
+      "pending_units": 0,
       "positions": [
         {
           "awaiting_game_legs": 0,
@@ -876,17 +876,17 @@
           "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 5.7581,
           "effective_decimal_odds": 5.758064516129033,
           "estimated_joint_win_probability": 0.15440116,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "loss",
             "win",
             "win"
           ],
@@ -897,12 +897,12 @@
               "book_provider": "espn",
               "forecast_id": "34b1d86606f2d34359db",
               "game_id": "401925049",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Texas Southern Tigers",
               "market": "moneyline",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "34b1d86606f2d34359db",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-22T01:30:00Z",
               "selected_decimal_price": 1.8333333333333335,
               "selection": "home"
@@ -942,6 +942,7 @@
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 1,
           "provisional_sample_gate_bypassed": true,
           "publication_index": 2,
@@ -951,10 +952,10 @@
           "stake_units": 1.0,
           "ticket_id": "0749f4be9e9152f9e566",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -966,7 +967,7 @@
           "leg_outcomes": [
             "win",
             "loss",
-            null
+            "win"
           ],
           "legs": [
             {
@@ -1008,12 +1009,12 @@
               "book_provider": "espn",
               "forecast_id": "fa0c180f71daa443336d",
               "game_id": "401925099",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Oral Roberts Golden Eagles",
               "market": "moneyline",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "fa0c180f71daa443336d",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-22T01:00:00Z",
               "selected_decimal_price": 1.6451612903225805,
               "selection": "home"
@@ -1030,44 +1031,44 @@
           "stake_units": 1.0,
           "ticket_id": "c962875a04fb4780af84",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         }
       ],
-      "profit_units": -2.0,
+      "profit_units": -3.0,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-21_decision.json",
       "result_unresolvable_legs": 0,
       "returned_units": 0.0,
-      "settled_accas": 2,
-      "settled_positions": 2,
+      "settled_accas": 3,
+      "settled_positions": 3,
       "settled_singles": 0,
-      "staked_units": 2.0,
-      "unresolved_result_legs": 2,
+      "staked_units": 3.0,
+      "unresolved_result_legs": 0,
       "wins": 0
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.36363636363636365,
+  "hit_rate": 0.3333333333333333,
   "league": "NCAA_M",
-  "losses": 7,
-  "paper_bank_units": 101.40917456035841,
-  "paper_committed_units": 1.0,
+  "losses": 8,
+  "paper_bank_units": 100.40917456035841,
+  "paper_committed_units": 0,
   "paper_free_units": 100.40917456035841,
   "paper_only": true,
-  "pending_accas": 1,
-  "pending_positions": 1,
+  "pending_accas": 0,
+  "pending_positions": 0,
   "pending_singles": 0,
-  "profit_units": 1.4091745603584105,
+  "profit_units": 0.4091745603584105,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": 0.12810677821440095,
+  "roi": 0.03409788002986754,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.20729659169759374,
-  "settled_accas": 10,
-  "settled_positions": 11,
+  "selected_leg_brier_score": 0.2115572689625,
+  "settled_accas": 11,
+  "settled_positions": 12,
   "settled_singles": 1,
-  "settled_stake_units": 11.0,
+  "settled_stake_units": 12.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 2,
+  "unresolved_result_legs": 0,
   "wins": 4
 }

@@ -1,6 +1,6 @@
 Ma Golide Picks — NCAA_M 2026-11-21
 ========================================================================
-Generated at: 2026-11-22 05:19 SAST
+Generated at: 2026-11-22 05:47 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -62,14 +62,6 @@ SKIPPED — INELIGIBLE
 
 IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
-  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
-      MONEYLINE full_game -> HOME · p=84.0% (raw 91.0%) @1.645 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
-      calibration=calibrated n=165 · reasons=insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
-      MONEYLINE H1 -> HOME · p=77.3% (raw 85.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
-      calibration=calibrated n=165 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
   [provider:espn/team_history_empirical] Pacific Tigers vs Bradley Braves · KO 2026-11-22 05:00 SAST
       MONEYLINE full_game -> HOME · p=68.8% (raw 75.6%) @1.253 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T02:18:21Z
@@ -79,10 +71,6 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       MONEYLINE H1 -> HOME · p=63.9% (raw 71.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T02:18:21Z
       calibration=calibrated n=174 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
-      MONEYLINE H1 -> HOME · p=60.3% (raw 68.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
-      calibration=calibrated n=165 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Pacific Tigers vs Bradley Braves · KO 2026-11-22 05:00 SAST
       TOTAL full_game 126.5 -> OVER · p=56.5% (raw 59.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T02:18:21Z
@@ -91,11 +79,6 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       TOTAL full_game 127.5 -> OVER · p=56.4% (raw 59.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T02:18:21Z
       calibration=provisional n=29 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [provider:espn/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
-      MONEYLINE full_game -> HOME · p=56.3% (raw 65.2%) @1.833 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
-      calibration=calibrated n=121 · reasons=none · prediction=espn
-      PAPER SINGLE · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=11 · recency ROI +26.8% / adjusted +16.8%
   [team_history_empirical/team_history_empirical] Pacific Tigers vs Bradley Braves · KO 2026-11-22 05:00 SAST
       TOTAL full_game 129.5 -> OVER · p=54.6% (raw 58.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T02:18:21Z
@@ -112,87 +95,18 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       SPREAD full_game +8.5 -> AWAY · p=53.5% (raw 58.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T02:18:21Z
       calibration=calibrated n=44 · reasons=insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
-      TOTAL full_game 141.5 -> UNDER · p=53.3% (raw 53.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
-      calibration=calibrated n=37 · reasons=insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
-      TOTAL full_game 140.5 -> UNDER · p=53.3% (raw 53.0%) @1.926 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
-      calibration=calibrated n=37 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Pacific Tigers vs Bradley Braves · KO 2026-11-22 05:00 SAST
       SPREAD full_game +9.5 -> AWAY · p=53.2% (raw 60.0%) @1.847 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T02:18:21Z
       calibration=calibrated n=32 · reasons=insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
-      MONEYLINE full_game -> HOME · p=53.0% (raw 60.0%) @1.833 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
-      calibration=calibrated n=165 · reasons=insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
-      TOTAL full_game 140.5 -> OVER · p=52.5% (raw 53.0%) @1.893 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
-      calibration=calibrated n=38 · reasons=insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
-      TOTAL full_game 154.5 -> OVER · p=51.7% (raw 52.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
-      calibration=calibrated n=34 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Pacific Tigers vs Bradley Braves · KO 2026-11-22 05:00 SAST
       MONEYLINE full_game -> HOME · p=51.6% (raw 59.0%) @1.253 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T02:18:21Z
       calibration=calibrated n=174 · reasons=insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
-      TOTAL full_game 139.5 -> OVER · p=51.6% (raw 55.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
-      calibration=calibrated n=30 · reasons=insufficient_team_specific_history · prediction=history
-  [provider:espn/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
-      MONEYLINE full_game -> HOME · p=51.0% (raw 59.7%) @1.645 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
-      calibration=calibrated n=120 · reasons=none · prediction=espn
-      PAPER SINGLE · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=11 · recency ROI +26.8% / adjusted +17.0%
-  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
-      TOTAL full_game 141.5 -> OVER · p=50.5% (raw 51.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
-      calibration=calibrated n=38 · reasons=insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
-      TOTAL full_game 154.5 -> UNDER · p=50.5% (raw 51.0%) @1.893 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
-      calibration=calibrated n=38 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Pacific Tigers vs Bradley Braves · KO 2026-11-22 05:00 SAST
       TOTAL full_game 130.5 -> OVER · p=50.1% (raw 52.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T02:18:21Z
       calibration=calibrated n=45 · reasons=insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
-      TOTAL full_game 159.5 -> UNDER · p=49.4% (raw 52.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
-      calibration=provisional n=29 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
-      TOTAL full_game 157.5 -> UNDER · p=48.6% (raw 52.0%) @1.820 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
-      calibration=calibrated n=30 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
-      TOTAL full_game 156.5 -> UNDER · p=47.6% (raw 51.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
-      calibration=calibrated n=30 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
-      TOTAL full_game 155.5 -> UNDER · p=47.6% (raw 51.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
-      calibration=calibrated n=30 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
-      SPREAD full_game +1.5 -> AWAY · p=47.4% (raw 55.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:46:45Z
-      calibration=calibrated n=37 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
-      SPREAD full_game +2.5 -> AWAY · p=45.5% (raw 53.0%) @1.952 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
-      calibration=calibrated n=31 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
-      SPREAD full_game -3.5 -> HOME · p=45.4% (raw 53.0%) @1.952 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
-      calibration=calibrated n=37 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
-      SPREAD full_game +3.5 -> AWAY · p=44.5% (raw 53.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T00:18:31Z
-      calibration=calibrated n=34 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
@@ -254,6 +168,10 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T17:14:24Z
       calibration=calibrated n=95 · reasons=none · prediction=espn
       ROI-BAND BLOCKED · moneyline full_game · p 0.80-<0.90 · odds 1.00-<1.20 · n=17 · recency ROI +0.6% / adjusted -2.4%
+  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
+      MONEYLINE full_game -> HOME · p=84.0% (raw 91.0%) @1.645 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
+      calibration=calibrated n=165 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Valparaiso Beacons vs Troy Trojans · KO 2026-11-22 03:00 SAST
       MONEYLINE full_game -> HOME · p=84.0% (raw 91.0%) @1.521 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
@@ -297,6 +215,10 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE full_game -> HOME · p=77.3% (raw 84.0%) @1.267 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T23:19:11Z
       calibration=calibrated n=164 · reasons=insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
+      MONEYLINE H1 -> HOME · p=77.3% (raw 85.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
+      calibration=calibrated n=165 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Valparaiso Beacons vs Troy Trojans · KO 2026-11-22 03:00 SAST
       MONEYLINE H1 -> HOME · p=77.3% (raw 85.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
@@ -603,6 +525,10 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T18:15:00Z
       calibration=calibrated n=95 · reasons=none · prediction=espn
       ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=7 · recency ROI -34.8% / adjusted -29.3%
+  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
+      MONEYLINE H1 -> HOME · p=60.3% (raw 68.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T00:46:45Z
+      calibration=calibrated n=165 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Mercer Bears vs Charleston Southern Buccaneers · KO 2026-11-22 02:00 SAST
       MONEYLINE H1 -> HOME · p=59.6% (raw 67.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T23:19:11Z
@@ -732,6 +658,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T23:19:11Z
       calibration=calibrated n=37 · reasons=none · prediction=history
       PAPER SINGLE · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=207 · recency ROI +9.8% / adjusted +9.7%
+  [provider:espn/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
+      MONEYLINE full_game -> HOME · p=56.3% (raw 65.2%) @1.833 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T00:46:45Z
+      calibration=calibrated n=121 · reasons=none · prediction=espn
+      PAPER SINGLE · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=11 · recency ROI +26.8% / adjusted +16.8%
   [team_history_empirical/team_history_empirical] Syracuse Orange vs Lafayette Leopards · KO 2026-11-21 21:00 SAST
       SPREAD full_game +24.5 -> AWAY · p=56.2% (raw 63.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T18:15:00Z
@@ -965,6 +896,14 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T15:16:39Z
       calibration=calibrated n=95 · reasons=none · prediction=espn
       ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 1.20-<1.50 · n=1 · recency ROI -100.0% / adjusted -37.5%
+  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 141.5 -> UNDER · p=53.3% (raw 53.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
+      calibration=calibrated n=37 · reasons=insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 140.5 -> UNDER · p=53.3% (raw 53.0%) @1.926 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
+      calibration=calibrated n=37 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] VMI Keydets vs Gardner-Webb Runnin' Bulldogs · KO 2026-11-22 02:00 SAST
       TOTAL full_game 145.5 -> UNDER · p=53.3% (raw 53.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T23:19:11Z
@@ -999,6 +938,10 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE full_game -> HOME · p=53.1% (raw 61.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T18:15:00Z
       calibration=calibrated n=143 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
+      MONEYLINE full_game -> HOME · p=53.0% (raw 60.0%) @1.833 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T00:46:45Z
+      calibration=calibrated n=165 · reasons=insufficient_team_specific_history · prediction=history
   [provider:espn/team_history_empirical] Jacksonville Dolphins vs Central Arkansas Bears · KO 2026-11-21 23:00 SAST
       MONEYLINE full_game -> AWAY · p=53.0% (raw 60.8%) @1.571 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T20:15:13Z
@@ -1044,6 +987,10 @@ SETTLED PICKS — ARCHIVE ONLY
       SPREAD full_game +8.5 -> AWAY · p=52.6% (raw 61.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T23:19:11Z
       calibration=calibrated n=36 · reasons=insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 140.5 -> OVER · p=52.5% (raw 53.0%) @1.893 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
+      calibration=calibrated n=38 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] East Tennessee State Buccaneers vs Longwood Lancers · KO 2026-11-21 23:00 SAST
       SPREAD full_game +6.5 -> AWAY · p=52.5% (raw 60.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T20:15:13Z
@@ -1115,6 +1062,10 @@ SETTLED PICKS — ARCHIVE ONLY
       TOTAL full_game 141.5 -> OVER · p=51.8% (raw 56.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T18:15:00Z
       calibration=calibrated n=31 · reasons=insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
+      TOTAL full_game 154.5 -> OVER · p=51.7% (raw 52.0%) @1.870 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T00:46:45Z
+      calibration=calibrated n=34 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Mercyhurst Lakers vs Western Illinois Leathernecks · KO 2026-11-21 20:30 SAST
       SPREAD full_game +6.5 -> AWAY · p=51.7% (raw 58.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T17:47:03Z
@@ -1129,6 +1080,10 @@ SETTLED PICKS — ARCHIVE ONLY
       calibration=calibrated n=30 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Valparaiso Beacons vs Troy Trojans · KO 2026-11-22 03:00 SAST
       TOTAL full_game 138.5 -> OVER · p=51.6% (raw 55.0%) @1.952 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
+      calibration=calibrated n=30 · reasons=insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 139.5 -> OVER · p=51.6% (raw 55.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
       calibration=calibrated n=30 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Elon Phoenix vs Morehead State Eagles · KO 2026-11-22 02:00 SAST
@@ -1213,6 +1168,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T23:19:11Z
       calibration=calibrated n=31 · reasons=none · prediction=history
       ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=107 · recency ROI -4.1% / adjusted -4.2%
+  [provider:espn/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
+      MONEYLINE full_game -> HOME · p=51.0% (raw 59.7%) @1.645 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
+      calibration=calibrated n=120 · reasons=none · prediction=espn
+      PAPER SINGLE · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=11 · recency ROI +26.8% / adjusted +17.0%
   [team_history_empirical/team_history_empirical] Binghamton Bearcats vs Army Black Knights · KO 2026-11-21 22:30 SAST
       TOTAL full_game 138.5 -> OVER · p=50.9% (raw 56.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T19:45:29Z
@@ -1281,6 +1241,14 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T23:19:11Z
       calibration=calibrated n=36 · reasons=none · prediction=history
       ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=130 · recency ROI -6.5% / adjusted -6.4%
+  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
+      TOTAL full_game 141.5 -> OVER · p=50.5% (raw 51.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
+      calibration=calibrated n=38 · reasons=insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
+      TOTAL full_game 154.5 -> UNDER · p=50.5% (raw 51.0%) @1.893 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T00:46:45Z
+      calibration=calibrated n=38 · reasons=insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Villanova Wildcats vs Michigan Wolverines · KO 2026-11-22 02:00 SAST
       TOTAL full_game 159.5 -> UNDER · p=50.5% (raw 53.0%) @1.926 DraftKings
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T23:19:11Z
@@ -1409,6 +1377,10 @@ SETTLED PICKS — ARCHIVE ONLY
       TOTAL full_game 157.5 -> UNDER · p=49.4% (raw 52.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T15:16:39Z
       calibration=provisional n=29 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
+      TOTAL full_game 159.5 -> UNDER · p=49.4% (raw 52.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T00:46:45Z
+      calibration=provisional n=29 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] La Salle Explorers vs Pennsylvania Quakers · KO 2026-11-21 23:00 SAST
       TOTAL full_game 159.5 -> UNDER · p=49.4% (raw 52.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T20:15:13Z
@@ -1464,6 +1436,10 @@ SETTLED PICKS — ARCHIVE ONLY
   [team_history_empirical/team_history_empirical] Stonehill Skyhawks vs Northeastern Huskies · KO 2026-11-22 00:00 SAST
       TOTAL full_game 147.5 -> OVER · p=48.6% (raw 52.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T21:18:43Z
+      calibration=calibrated n=30 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
+      TOTAL full_game 157.5 -> UNDER · p=48.6% (raw 52.0%) @1.820 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T00:46:45Z
       calibration=calibrated n=30 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Wofford Terriers vs Winthrop Eagles · KO 2026-11-22 00:00 SAST
       TOTAL full_game 163.5 -> UNDER · p=48.6% (raw 52.0%) @1.893 DraftKings
@@ -1589,6 +1565,10 @@ SETTLED PICKS — ARCHIVE ONLY
       TOTAL full_game 158.5 -> UNDER · p=47.6% (raw 51.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T18:15:00Z
       calibration=calibrated n=30 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
+      TOTAL full_game 156.5 -> UNDER · p=47.6% (raw 51.0%) @1.870 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T00:46:45Z
+      calibration=calibrated n=30 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Wichita State Shockers vs New Mexico Lobos · KO 2026-11-21 21:00 SAST
       TOTAL full_game 157.5 -> UNDER · p=47.6% (raw 51.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T18:15:00Z
@@ -1600,6 +1580,10 @@ SETTLED PICKS — ARCHIVE ONLY
   [team_history_empirical/team_history_empirical] Milwaukee Panthers vs St. Thomas Tommies · KO 2026-11-21 22:00 SAST
       TOTAL full_game 152.5 -> OVER · p=47.6% (raw 51.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T19:14:07Z
+      calibration=calibrated n=30 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
+      TOTAL full_game 155.5 -> UNDER · p=47.6% (raw 51.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T00:46:45Z
       calibration=calibrated n=30 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Wichita State Shockers vs New Mexico Lobos · KO 2026-11-21 21:00 SAST
       TOTAL full_game 156.5 -> UNDER · p=47.6% (raw 51.0%) @1.893 DraftKings
@@ -1625,6 +1609,10 @@ SETTLED PICKS — ARCHIVE ONLY
       SPREAD full_game +3.5 -> AWAY · p=47.5% (raw 55.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T23:19:11Z
       calibration=calibrated n=31 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Texas Southern Tigers vs LSU New Orleans Privateers · KO 2026-11-22 03:30 SAST
+      SPREAD full_game +1.5 -> AWAY · p=47.4% (raw 55.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T00:46:45Z
+      calibration=calibrated n=37 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Stonehill Skyhawks vs Northeastern Huskies · KO 2026-11-22 00:00 SAST
       SPREAD full_game -7.5 -> AWAY · p=47.4% (raw 55.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T21:18:43Z
@@ -1757,6 +1745,10 @@ SETTLED PICKS — ARCHIVE ONLY
       SPREAD full_game +4.5 -> AWAY · p=45.5% (raw 54.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
       calibration=calibrated n=34 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
+      SPREAD full_game +2.5 -> AWAY · p=45.5% (raw 53.0%) @1.952 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
+      calibration=calibrated n=31 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Morgan State Bears vs Cornell Big Red · KO 2026-11-21 21:00 SAST
       SPREAD full_game -6.5 -> AWAY · p=45.5% (raw 53.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T18:15:00Z
@@ -1765,6 +1757,10 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE full_game -> HOME · p=45.4% (raw 52.0%) @2.450 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T23:19:11Z
       calibration=calibrated n=162 · reasons=below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
+      SPREAD full_game -3.5 -> HOME · p=45.4% (raw 53.0%) @1.952 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
+      calibration=calibrated n=37 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Jacksonville Dolphins vs Central Arkansas Bears · KO 2026-11-21 23:00 SAST
       SPREAD full_game -3.5 -> AWAY · p=45.3% (raw 52.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-21T20:15:13Z
@@ -1789,6 +1785,10 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE H1 -> AWAY · p=44.7% (raw 53.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-21T20:48:21Z
       calibration=calibrated n=151 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Oral Roberts Golden Eagles vs Texas A&M-Corpus Christi Islanders · KO 2026-11-22 03:00 SAST
+      SPREAD full_game +3.5 -> AWAY · p=44.5% (raw 53.0%) @1.870 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
+      calibration=calibrated n=34 · reasons=insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Valparaiso Beacons vs Troy Trojans · KO 2026-11-22 03:00 SAST
       SPREAD full_game -4.5 -> HOME · p=44.4% (raw 52.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T00:18:31Z
@@ -1844,7 +1844,7 @@ SETTLED PICKS — ARCHIVE ONLY
 
 Active summary: ELIGIBLE_CLEAN=5 CAUTION=0 WATCHLIST_NO_ODDS=1 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=2
 ROI-qualified individual paper singles: 2
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=32 SETTLED=395
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=11 SETTLED=416
 Logical picks shown: 435 · superseded observations: 0
 Total archived pick evidence rows: 435
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
