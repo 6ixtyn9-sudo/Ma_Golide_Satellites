@@ -25,7 +25,7 @@
       "logical_picks": 166
     },
     "2026-11-22": {
-      "frozen_fixtures": 40,
+      "frozen_fixtures": 41,
       "logical_picks": 219
     }
   },
@@ -27863,6 +27863,521 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
       },
+      "401918004": {
+        "decision_cutoff_utc": "2026-11-22T19:30:00Z",
+        "frozen_at": "2026-11-22T19:53:40Z",
+        "game_id": "401918004",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Utah State Aggies",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.886101,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 247,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "18e7db17ed3530476ef6b42ac6499ee0fb99a6b4f158bb5cc2db002cfc771ba9",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6627b98fad0c61e9d692",
+            "game_id": "401918004",
+            "grade_status": "pending",
+            "home": "TCU Horned Frogs",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "6627b98fad0c61e9d692",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.95,
+            "role": null,
+            "scheduled_utc": "2026-11-22T20:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Utah State Aggies",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.943636,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 245,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "ba5bdbc355eec969c1e21c7bb6f99c5c51fbddb72461db4f4ac2f320aeb980aa",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0765de659a4a9bfe54f0",
+            "game_id": "401918004",
+            "grade_status": "pending",
+            "home": "TCU Horned Frogs",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "0765de659a4a9bfe54f0",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.98,
+            "role": null,
+            "scheduled_utc": "2026-11-22T20:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Utah State Aggies",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.958205,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 141,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "f297d6d15dc6a3b28e43556ef9ba850ef51b79d4a9d47919875ca69569d7e16b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "652e9c609cf81034904d",
+            "game_id": "401918004",
+            "grade_status": "pending",
+            "home": "TCU Horned Frogs",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "652e9c609cf81034904d",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-22T19:39:42Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.999,
+            "role": null,
+            "scheduled_utc": "2026-11-22T20:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Utah State Aggies",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401918004",
+              "line": -42.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-22T19:39:37Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.454783,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 16,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "a011a9e7aa2d65f77800d453ad82ece1473d5f6be0e115ccb685f8a1d843bb40",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "37ebdd13432b3ee8e1ca",
+            "game_id": "401918004",
+            "grade_status": "pending",
+            "home": "TCU Horned Frogs",
+            "league": "NCAA_W",
+            "line": -42.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "37ebdd13432b3ee8e1ca",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-22T20:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Utah State Aggies",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401918004",
+              "line": -37.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-22T13:39:56Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.454783,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 16,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "720b7c39b7308fc8de8453745eec5c659f0a9ee86bb20727e9712b6bf5a4a723",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5680d2de37b434b839a1",
+            "game_id": "401918004",
+            "grade_status": "pending",
+            "home": "TCU Horned Frogs",
+            "league": "NCAA_W",
+            "line": -37.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "5680d2de37b434b839a1",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-22T20:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Utah State Aggies",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401918004",
+              "line": -40.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-22T16:11:46Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.454783,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 16,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "8ce011702e5e3777728bf80a4e0d697733ccd46e1b70c33d81e5d92939606f2d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "91a8770be4cc1bf58630",
+            "game_id": "401918004",
+            "grade_status": "pending",
+            "home": "TCU Horned Frogs",
+            "league": "NCAA_W",
+            "line": -40.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "91a8770be4cc1bf58630",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-22T20:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Utah State Aggies",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401918004",
+              "line": -38.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-22T14:10:13Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.454783,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 16,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "c575e3ff4fcb685ef54dbfeee07e8d2c1bc5939a34e2d55f9a58fd6144ec3c53",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "accbf996552c3289fb44",
+            "game_id": "401918004",
+            "grade_status": "pending",
+            "home": "TCU Horned Frogs",
+            "league": "NCAA_W",
+            "line": -38.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "accbf996552c3289fb44",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-22T20:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Utah State Aggies",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401918004",
+              "line": 136.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T19:39:37Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.546364,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 14,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "1586e8120c0a7fe0724eece54e5d350dd6cbd8242fa84779bf6b29dd4ed7291a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6ef58bb44f9bf45b943e",
+            "game_id": "401918004",
+            "grade_status": "pending",
+            "home": "TCU Horned Frogs",
+            "league": "NCAA_W",
+            "line": 136.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.079439,
+              "historical_pick_count": 29,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 15,
+              "market": "total",
+              "observed_roi": -0.080633,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.07817,
+              "wins": 14
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "6ef58bb44f9bf45b943e",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-22T20:30:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Utah State Aggies",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401918004",
+              "line": 139.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T16:11:46Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.556364,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 14,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "625777bbc62f20e1448ef93c5b8838ab0a6c3e4e6f0f43746e0876a28fdf74b7",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "880aa8eb39d0b43ee573",
+            "game_id": "401918004",
+            "grade_status": "pending",
+            "home": "TCU Horned Frogs",
+            "league": "NCAA_W",
+            "line": 139.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.079439,
+              "historical_pick_count": 29,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 15,
+              "market": "total",
+              "observed_roi": -0.080633,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.07817,
+              "wins": 14
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "880aa8eb39d0b43ee573",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-22T20:30:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T20:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
+      },
       "401918468": {
         "decision_cutoff_utc": "2026-11-22T19:00:00Z",
         "frozen_at": "2026-11-22T19:20:06Z",
@@ -32167,23 +32682,7 @@
   "league": "NCAA_W",
   "pending_frozen_games": [
     [
-      "401918820",
-      "2026-11-22T17:00:00Z"
-    ],
-    [
-      "401918890",
-      "2026-11-22T17:00:00Z"
-    ],
-    [
-      "401911747",
-      "2026-11-22T18:00:00Z"
-    ],
-    [
       "401912982",
-      "2026-11-22T18:00:00Z"
-    ],
-    [
-      "401913718",
       "2026-11-22T18:00:00Z"
     ],
     [
@@ -32321,6 +32820,10 @@
     [
       "401927019",
       "2026-11-22T20:00:00Z"
+    ],
+    [
+      "401918004",
+      "2026-11-22T20:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
