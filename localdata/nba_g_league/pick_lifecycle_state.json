@@ -7,11 +7,10 @@
       "frozen_fixtures": 9
     },
     "2026-11-21": {
-      "frozen_fixtures": 6,
-      "logical_picks": 17
+      "frozen_fixtures": 6
     },
     "2026-11-22": {
-      "frozen_fixtures": 0,
+      "frozen_fixtures": 1,
       "logical_picks": 18
     }
   },
@@ -2544,9 +2543,151 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
       }
+    },
+    "2026-11-22": {
+      "401914590": {
+        "decision_cutoff_utc": "2026-11-22T17:00:00Z",
+        "frozen_at": "2026-11-22T17:09:54Z",
+        "game_id": "401914590",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Capital City Go-Go",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.394366,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "ae60d27448863f867fe37d39eaa74594335f47f73deac3e60d25c470755d7e72",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "692ea829c83649f716e8",
+            "game_id": "401914590",
+            "grade_status": "pending",
+            "home": "Maine Celtics",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "692ea829c83649f716e8",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.394366,
+            "role": null,
+            "scheduled_utc": "2026-11-22T18:00:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "Capital City Go-Go",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.507042,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "fc36bea019ded997df9a87e256b686a3f937dab02dbc502eb69c0cfd9e6263f7",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "536a76c58416c91a59d0",
+            "game_id": "401914590",
+            "grade_status": "pending",
+            "home": "Maine Celtics",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "536a76c58416c91a59d0",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.507042,
+            "role": null,
+            "scheduled_utc": "2026-11-22T18:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Capital City Go-Go",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.605634,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "61202e633c5d88716e147b0cf0d6d984ff6492d499b67c4d8011b34afeb9c344",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "c5943494c1f698fc39fd",
+            "game_id": "401914590",
+            "grade_status": "pending",
+            "home": "Maine Celtics",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "c5943494c1f698fc39fd",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.605634,
+            "role": null,
+            "scheduled_utc": "2026-11-22T18:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T18:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
+      }
     }
   },
   "league": "NBA_G_LEAGUE",
-  "pending_frozen_games": [],
+  "pending_frozen_games": [
+    [
+      "401914590",
+      "2026-11-22T18:00:00Z"
+    ]
+  ],
   "schema_version": "magolide.pick_lifecycle_state"
 }
