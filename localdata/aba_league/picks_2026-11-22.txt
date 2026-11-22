@@ -1,6 +1,6 @@
 Ma Golide Picks — ABA_LEAGUE 2026-11-22
 ========================================================================
-Generated at: 2026-11-22 20:15 SAST
+Generated at: 2026-11-22 20:45 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -13,22 +13,11 @@ ELIGIBLE CLEAN PICKS
 
 CAUTION PICKS
 ========================================================================
-  [team_history_empirical/team_history_empirical] Partizan Mozzart Bet Belgrade vs Dubai Basketball · KO 2026-11-22 20:30 SAST
-      MONEYLINE full_game -> HOME · p=62.6% (raw 63.0%) @1.780 Stake.com
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T17:45:52Z
-      calibration=provisional n=15 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  (none)
 
 WATCHLIST — NO MATCHED ODDS
 ========================================================================
-  [team_history_empirical/team_history_empirical] Partizan Mozzart Bet Belgrade vs Dubai Basketball · KO 2026-11-22 20:30 SAST
-      MONEYLINE H1 -> HOME · p=62.2% (raw 57.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T17:45:52Z
-      calibration=provisional n=15 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
-  [team_history_empirical/team_history_empirical] Partizan Mozzart Bet Belgrade vs Dubai Basketball · KO 2026-11-22 20:30 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=22.1% (raw 27.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T17:45:52Z
-      calibration=provisional n=15 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  (none)
 
 WATCHLIST — INSUFFICIENT CONTEXT
 ========================================================================
@@ -40,7 +29,19 @@ SKIPPED — INELIGIBLE
 
 IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
-  (none)
+  [team_history_empirical/team_history_empirical] Partizan Mozzart Bet Belgrade vs Dubai Basketball · KO 2026-11-22 20:30 SAST
+      MONEYLINE full_game -> HOME · p=62.6% (raw 63.0%) @1.780 Stake.com
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T17:45:52Z
+      calibration=provisional n=15 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [team_history_empirical/team_history_empirical] Partizan Mozzart Bet Belgrade vs Dubai Basketball · KO 2026-11-22 20:30 SAST
+      MONEYLINE H1 -> HOME · p=62.2% (raw 57.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T17:45:52Z
+      calibration=provisional n=15 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Partizan Mozzart Bet Belgrade vs Dubai Basketball · KO 2026-11-22 20:30 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=22.1% (raw 27.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T17:45:52Z
+      calibration=provisional n=15 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
@@ -95,9 +96,9 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T11:16:50Z
       calibration=provisional n=13 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
 
-Active summary: ELIGIBLE_CLEAN=0 CAUTION=1 WATCHLIST_NO_ODDS=2 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 WATCHLIST_NO_ODDS=0 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=12
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=3 SETTLED=12
 Logical picks shown: 15 · superseded observations: 0
 Total archived pick evidence rows: 15
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.

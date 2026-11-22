@@ -17,8 +17,8 @@
       "logical_picks": 435
     },
     "2026-11-22": {
-      "frozen_fixtures": 15,
-      "logical_picks": 316
+      "frozen_fixtures": 16,
+      "logical_picks": 318
     }
   },
   "frozen_by_date": {
@@ -72736,6 +72736,367 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
       },
+      "401928790": {
+        "decision_cutoff_utc": "2026-11-22T18:30:00Z",
+        "frozen_at": "2026-11-22T18:50:25Z",
+        "game_id": "401928790",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Robert Morris Colonials",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.606462,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 230,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "7ade981496df9f98180f0f03b3741e40efa5c6665c3c39f16bbc7b18e3ca64c6",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4b23acfe98214c855a66",
+            "game_id": "401928790",
+            "grade_status": "pending",
+            "home": "New Mexico State Aggies",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "4b23acfe98214c855a66",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.67,
+            "role": null,
+            "scheduled_utc": "2026-11-22T19:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Robert Morris Colonials",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401928790",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-22T18:40:08Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 2.02,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.505058,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 152,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "8d0a3998c01ae25eb3698b5a438f067375ce4c556695aa4a550f16e5b0e846bf",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4f5840684bc105ede795",
+            "game_id": "401928790",
+            "grade_status": "pending",
+            "home": "New Mexico State Aggies",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.200278,
+              "historical_pick_count": 3,
+              "individual_odds_band": "2.00+",
+              "losses": 2,
+              "market": "moneyline",
+              "observed_roi": -0.3,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.297833,
+              "wins": 1
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "4f5840684bc105ede795",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-22T18:40:12Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.5692,
+            "role": "underdog",
+            "scheduled_utc": "2026-11-22T19:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Robert Morris Colonials",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401928790",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-22T18:40:08Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.819672131147541,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.547885,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 230,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "8e654418b461661100f8bdf88c163fe61d4de13cd93f4736bec7d0603d3ac136",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "bf5adc3800871787ec8e",
+            "game_id": "401928790",
+            "grade_status": "pending",
+            "home": "New Mexico State Aggies",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "bf5adc3800871787ec8e",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.62,
+            "role": null,
+            "scheduled_utc": "2026-11-22T19:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Robert Morris Colonials",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401928790",
+              "line": -1.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-22T18:40:08Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.444105,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 65,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "3f1b258eb90e694ee5216048b37348b88a8906f44e6d8ab31f1841847af1e3a4",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d93add0a63538ad5d958",
+            "game_id": "401928790",
+            "grade_status": "pending",
+            "home": "New Mexico State Aggies",
+            "league": "NCAA_M",
+            "line": -1.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "d93add0a63538ad5d958",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-22T19:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Robert Morris Colonials",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401928790",
+              "line": 137.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T14:10:24Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.488681,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 61,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "b0307accde7a69c87afc237fe772f9fca6b2c42cd532e4b519093fba2d6ab915",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "afd962e4a408bd74a283",
+            "game_id": "401928790",
+            "grade_status": "pending",
+            "home": "New Mexico State Aggies",
+            "league": "NCAA_M",
+            "line": 137.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "afd962e4a408bd74a283",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-22T19:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Robert Morris Colonials",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401928790",
+              "line": 134.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T18:40:08Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.488681,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 61,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "94a6d74c56da1029a5b530e31f56c70ab5be6e3c6101ba27c8d78b06af7110cd",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "cc145e7e9236c9c8457d",
+            "game_id": "401928790",
+            "grade_status": "pending",
+            "home": "New Mexico State Aggies",
+            "league": "NCAA_M",
+            "line": 134.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "cc145e7e9236c9c8457d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-22T19:30:00Z",
+            "selection": "over"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T19:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
+      },
       "401928802": {
         "decision_cutoff_utc": "2026-11-22T18:00:00Z",
         "frozen_at": "2026-11-22T18:22:43Z",
@@ -73855,6 +74216,10 @@
     [
       "401928802",
       "2026-11-22T19:00:00Z"
+    ],
+    [
+      "401928790",
+      "2026-11-22T19:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
