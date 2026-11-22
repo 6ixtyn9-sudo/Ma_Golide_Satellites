@@ -21,7 +21,7 @@
       "logical_picks": 146
     },
     "2026-11-21": {
-      "frozen_fixtures": 50,
+      "frozen_fixtures": 51,
       "logical_picks": 166
     }
   },
@@ -20664,6 +20664,147 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
       },
+      "401917714": {
+        "decision_cutoff_utc": "2026-11-22T02:00:00Z",
+        "frozen_at": "2026-11-22T02:16:39Z",
+        "game_id": "401917714",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "UC Irvine Anteaters",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.529246,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 169,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "17d9298813503082b65242af2208f4b0a9c90f9285920474da18732d5aa4f17b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7d79306f1260e43f7796",
+            "game_id": "401917714",
+            "grade_status": "pending",
+            "home": "San Diego Toreros",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "7d79306f1260e43f7796",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-22T03:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UC Irvine Anteaters",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.66566,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 132,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "7a4d834ec45979590aeaf04a60b7421898d898048efa863e0abd2269fe5006a9",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "281b384e0434213fcf16",
+            "game_id": "401917714",
+            "grade_status": "pending",
+            "home": "San Diego Toreros",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "281b384e0434213fcf16",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-22T02:09:54Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.6968,
+            "role": null,
+            "scheduled_utc": "2026-11-22T03:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "UC Irvine Anteaters",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.741558,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 169,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "19f38dbd3aaf467e326f715163e215f9c6f15d814dad100aaf062dab2c72b58c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "3d0e77b6f696ce639f7a",
+            "game_id": "401917714",
+            "grade_status": "pending",
+            "home": "San Diego Toreros",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "3d0e77b6f696ce639f7a",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.75,
+            "role": null,
+            "scheduled_utc": "2026-11-22T03:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T03:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      },
       "401918036": {
         "decision_cutoff_utc": "2026-11-21T21:00:00Z",
         "frozen_at": "2026-11-21T21:14:31Z",
@@ -24601,28 +24742,16 @@
   "league": "NCAA_W",
   "pending_frozen_games": [
     [
-      "401915910",
-      "2026-11-22T00:00:00Z"
-    ],
-    [
-      "401921021",
-      "2026-11-22T00:00:00Z"
-    ],
-    [
-      "401921236",
-      "2026-11-22T00:00:00Z"
-    ],
-    [
-      "401928067",
-      "2026-11-22T00:00:00Z"
-    ],
-    [
       "401919710",
       "2026-11-22T01:00:00Z"
     ],
     [
       "401917713",
       "2026-11-22T02:15:00Z"
+    ],
+    [
+      "401917714",
+      "2026-11-22T03:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"

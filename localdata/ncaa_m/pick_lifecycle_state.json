@@ -13,7 +13,7 @@
       "logical_picks": 462
     },
     "2026-11-21": {
-      "frozen_fixtures": 55,
+      "frozen_fixtures": 56,
       "logical_picks": 435
     }
   },
@@ -46338,6 +46338,652 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-21"
       },
+      "401917537": {
+        "decision_cutoff_utc": "2026-11-22T02:00:00Z",
+        "frozen_at": "2026-11-22T02:18:21Z",
+        "game_id": "401917537",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Bradley Braves",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.638725,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 174,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "dd074aca215d8fb0f229d074ec0181d34094693645bbfb943b86105901c3b1c2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "9f01668f4d9e1c3839b1",
+            "game_id": "401917537",
+            "grade_status": "pending",
+            "home": "Pacific Tigers",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "9f01668f4d9e1c3839b1",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.71,
+            "role": null,
+            "scheduled_utc": "2026-11-22T03:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Bradley Braves",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917537",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-22T02:09:53Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.2531645569620253,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.516078,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 174,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "95be9a4cfe764106406421dbb6a7ccf4ad28add9905d867dd8fd139e5abd44cd",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "2c48030c395d6c5d0c8e",
+            "game_id": "401917537",
+            "grade_status": "pending",
+            "home": "Pacific Tigers",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "2c48030c395d6c5d0c8e",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-22T03:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Bradley Braves",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917537",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-22T02:09:53Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.2531645569620253,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.687719,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 133,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "797b66798df8c7727e83dba1efc597b7a2495d84e05049566c10f0c86aff8ca9",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "8333c52b32ce5e275667",
+            "game_id": "401917537",
+            "grade_status": "pending",
+            "home": "Pacific Tigers",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.178081,
+              "historical_pick_count": 7,
+              "individual_odds_band": "1.20-<1.50",
+              "losses": 3,
+              "market": "moneyline",
+              "observed_roi": -0.219669,
+              "period": "full_game",
+              "probability_band": "0.60-<0.70",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.204226,
+              "wins": 4
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "8333c52b32ce5e275667",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-22T02:09:59Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.7557,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-22T03:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Bradley Braves",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917537",
+              "line": -9.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-21T16:39:22Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.847457627118644,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.531774,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 32,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "88e1785839bae193208b9f886862d0f432c3a3cc66cfb9d4259275d136830d9a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "059ca4f99bc15a75f5eb",
+            "game_id": "401917537",
+            "grade_status": "pending",
+            "home": "Pacific Tigers",
+            "league": "NCAA_M",
+            "line": -9.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "059ca4f99bc15a75f5eb",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.6,
+            "role": null,
+            "scheduled_utc": "2026-11-22T03:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Bradley Braves",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917537",
+              "line": -8.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-22T02:09:53Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.535405,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 44,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "f3786c76e75f1a0c3697f6ac145b728cb387869b3d23d56d2e4a1a2390ee35e3",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "08e540cd3fc5d10eccd2",
+            "game_id": "401917537",
+            "grade_status": "pending",
+            "home": "Pacific Tigers",
+            "league": "NCAA_M",
+            "line": -8.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "08e540cd3fc5d10eccd2",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-22T03:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Bradley Braves",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917537",
+              "line": 125.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T07:08:47Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.538519,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "7d7f2b3852d9ccce71905d405c0acee4a92f289727bea1bc48a3cc1368312bec",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "234e88cf9cd068c5eb3c",
+            "game_id": "401917537",
+            "grade_status": "pending",
+            "home": "Pacific Tigers",
+            "league": "NCAA_M",
+            "line": 125.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "234e88cf9cd068c5eb3c",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-22T03:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Bradley Braves",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917537",
+              "line": 127.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T15:09:27Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.564407,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "e083b1a532395c00f172a114bc9bd04b96dfc908cc38ea270c161008b04cd610",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7100e45f108dc7ce25dd",
+            "game_id": "401917537",
+            "grade_status": "pending",
+            "home": "Pacific Tigers",
+            "league": "NCAA_M",
+            "line": 127.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "7100e45f108dc7ce25dd",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-22T03:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Bradley Braves",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917537",
+              "line": 130.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T02:09:53Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.5012,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 45,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "0ca1e415dad359de92a226333f7a4a2523aab811a27031b49ef878ab8d46c363",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7fc4a818d05d7661aae3",
+            "game_id": "401917537",
+            "grade_status": "pending",
+            "home": "Pacific Tigers",
+            "league": "NCAA_M",
+            "line": 130.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "7fc4a818d05d7661aae3",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-22T03:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Bradley Braves",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917537",
+              "line": 128.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T18:09:01Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.538197,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 31,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "08173b8f3e5157025ed08cf504f27bf2aa1a8748a28e7b7857d56d9692386971",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "8dc313c34e66d8161144",
+            "game_id": "401917537",
+            "grade_status": "pending",
+            "home": "Pacific Tigers",
+            "league": "NCAA_M",
+            "line": 128.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "8dc313c34e66d8161144",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-22T03:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Bradley Braves",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917537",
+              "line": 129.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T19:08:53Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.546,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 30,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "4c355317bbd3e58d28cfc659b48de0b5dd22d9ccb69be84ea6451e0b664395a1",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b15be8f34df3a57fba5c",
+            "game_id": "401917537",
+            "grade_status": "pending",
+            "home": "Pacific Tigers",
+            "league": "NCAA_M",
+            "line": 129.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "b15be8f34df3a57fba5c",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-22T03:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Bradley Braves",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917537",
+              "line": 126.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-21T13:39:07Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.564561,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-21",
+            "detailed_evidence_sha256": "38769973dc1af4665991620f567f2192fd7454aae600dd07f60dfcccd0c3279b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "bcea0502cd3c97f1d10a",
+            "game_id": "401917537",
+            "grade_status": "pending",
+            "home": "Pacific Tigers",
+            "league": "NCAA_M",
+            "line": 126.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "bcea0502cd3c97f1d10a",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-22T03:00:00Z",
+            "selection": "over"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T03:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-21"
+      },
       "401917538": {
         "decision_cutoff_utc": "2026-11-21T20:30:00Z",
         "frozen_at": "2026-11-21T20:48:21Z",
@@ -65670,31 +66316,7 @@
   "league": "NCAA_M",
   "pending_frozen_games": [
     [
-      "401911310",
-      "2026-11-22T00:00:00Z"
-    ],
-    [
       "401911378",
-      "2026-11-22T00:00:00Z"
-    ],
-    [
-      "401911394",
-      "2026-11-22T00:00:00Z"
-    ],
-    [
-      "401917539",
-      "2026-11-22T00:00:00Z"
-    ],
-    [
-      "401920125",
-      "2026-11-22T00:00:00Z"
-    ],
-    [
-      "401920964",
-      "2026-11-22T00:00:00Z"
-    ],
-    [
-      "401920975",
       "2026-11-22T00:00:00Z"
     ],
     [
@@ -65720,6 +66342,10 @@
     [
       "401925049",
       "2026-11-22T01:30:00Z"
+    ],
+    [
+      "401917537",
+      "2026-11-22T03:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
