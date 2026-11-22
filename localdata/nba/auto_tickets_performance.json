@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 7,
+  "awaiting_game_legs": 6,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -941,7 +941,7 @@
       "wins": 0
     },
     {
-      "awaiting_game_legs": 7,
+      "awaiting_game_legs": 6,
       "bank_units": 100.7688506008459,
       "date": "2026-11-21",
       "decision_id": "44904801842_nba_1_attempt_1",
@@ -1109,7 +1109,7 @@
           "unresolved_legs": 3
         },
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
@@ -1120,7 +1120,7 @@
           "leg_count": 3,
           "leg_outcomes": [
             null,
-            null,
+            "win",
             "loss"
           ],
           "legs": [
@@ -1147,12 +1147,12 @@
               "book_provider": "espn",
               "forecast_id": "61d4720aa4bcdfd59e1a",
               "game_id": "401910024",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "New York Knicks",
               "market": "moneyline",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "61d4720aa4bcdfd59e1a",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-22T00:30:00Z",
               "selected_decimal_price": 1.4975124378109452,
               "selection": "home"
@@ -1186,7 +1186,7 @@
           "stake_units": 1.0,
           "ticket_id": "0dac4ec70b6294050cce",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         }
       ],
       "profit_units": -1.0,
@@ -1198,7 +1198,7 @@
       "settled_positions": 1,
       "settled_singles": 0,
       "staked_units": 1.0,
-      "unresolved_result_legs": 7,
+      "unresolved_result_legs": 6,
       "wins": 0
     }
   ],
@@ -1218,12 +1218,12 @@
   "result_unresolvable_legs": 0,
   "roi": 0.06407088340382416,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.30293128532224134,
+  "selected_leg_brier_score": 0.2964665904371333,
   "settled_accas": 9,
   "settled_positions": 12,
   "settled_singles": 3,
   "settled_stake_units": 12.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 7,
+  "unresolved_result_legs": 6,
   "wins": 4
 }
