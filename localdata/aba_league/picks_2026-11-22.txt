@@ -1,6 +1,6 @@
 Ma Golide Picks — ABA_LEAGUE 2026-11-22
 ========================================================================
-Generated at: 2026-11-22 16:14 SAST
+Generated at: 2026-11-22 16:48 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -20,7 +20,7 @@ CAUTION PICKS
       ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
   [team_history_empirical/team_history_empirical] U-BT Cluj-Napoca vs Zadar · KO 2026-11-22 17:30 SAST
       MONEYLINE full_game -> HOME · p=62.5% (raw 62.0%) @1.250 Stake.com
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T14:48:33Z
       calibration=provisional n=13 · reasons=insufficient_walk_forward_samples · prediction=history
       ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.20-<1.50 · n=0 · recency ROI n/a / adjusted n/a
 
@@ -40,7 +40,7 @@ WATCHLIST — NO MATCHED ODDS
       calibration=provisional n=13 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] U-BT Cluj-Napoca vs Zadar · KO 2026-11-22 17:30 SAST
       MONEYLINE H1 -> HOME · p=59.7% (raw 56.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T14:48:33Z
       calibration=provisional n=13 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] Budućnost VOLI vs HKK Široki TT Kabeli · KO 2026-11-22 18:00 SAST
       HIGHEST QUARTER full_game -> Q2 · p=27.5% (raw 31.0%) @n/a no matched book
@@ -48,7 +48,7 @@ WATCHLIST — NO MATCHED ODDS
       calibration=provisional n=13 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] U-BT Cluj-Napoca vs Zadar · KO 2026-11-22 17:30 SAST
       HIGHEST QUARTER full_game -> Q2 · p=26.5% (raw 30.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T14:48:33Z
       calibration=provisional n=13 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Partizan Mozzart Bet Belgrade vs Dubai Basketball · KO 2026-11-22 20:30 SAST
       HIGHEST QUARTER full_game -> Q3 · p=23.5% (raw 27.0%) @n/a no matched book
@@ -98,7 +98,7 @@ SETTLED PICKS — ARCHIVE ONLY
 Active summary: ELIGIBLE_CLEAN=0 CAUTION=2 WATCHLIST_NO_ODDS=7 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
 Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=6
-Logical picks shown: 15 · superseded observations: 2
-Total archived pick evidence rows: 17
+Logical picks shown: 15 · superseded observations: 1
+Total archived pick evidence rows: 16
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.

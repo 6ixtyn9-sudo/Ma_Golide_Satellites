@@ -13,7 +13,7 @@
       "logical_picks": 6
     },
     "2026-11-22": {
-      "frozen_fixtures": 2,
+      "frozen_fixtures": 3,
       "logical_picks": 15
     }
   },
@@ -992,10 +992,181 @@
         "scheduled_utc": "2026-11-22T11:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
+      },
+      "aba_liga:26:1:88": {
+        "decision_cutoff_utc": "2026-11-22T14:30:00Z",
+        "frozen_at": "2026-11-22T14:48:33Z",
+        "game_id": "aba_liga:26:1:88",
+        "league": "ABA_LEAGUE",
+        "rows": [
+          {
+            "away": "Zadar",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.265116,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 13,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "199b897456e530652733188cbd73bc1fa45d1c43811017a408a194f7d7a8b49d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "01918c69d06dbc9e1735",
+            "game_id": "aba_liga:26:1:88",
+            "grade_status": "pending",
+            "home": "U-BT Cluj-Napoca",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "01918c69d06dbc9e1735",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.3,
+            "role": null,
+            "scheduled_utc": "2026-11-22T15:30:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "Zadar",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.596512,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 13,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "3ce533b454c0f8c281cd597de8919a284967232c323b9ce5de9b1c20d4a59896",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "29b5172f74cac77edc1d",
+            "game_id": "aba_liga:26:1:88",
+            "grade_status": "pending",
+            "home": "U-BT Cluj-Napoca",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "29b5172f74cac77edc1d",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-22T15:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Zadar",
+            "book": {
+              "book": "Stake.com",
+              "frozen": false,
+              "game_id": "aba_liga:26:1:88",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-22T12:09:45Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.25,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.624651,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 13,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "c6e28cf87199cccacda27f36d32f2703f07fe48af443383f261957f14eff3081",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "03d64de3c06feb5b2ac8",
+            "game_id": "aba_liga:26:1:88",
+            "grade_status": "pending",
+            "home": "U-BT Cluj-Napoca",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": null,
+              "historical_pick_count": 0,
+              "individual_odds_band": "1.20-<1.50",
+              "losses": 0,
+              "market": "moneyline",
+              "observed_roi": null,
+              "period": "full_game",
+              "probability_band": "0.60-<0.70",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": null,
+              "wins": 0
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "03d64de3c06feb5b2ac8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.62,
+            "role": null,
+            "scheduled_utc": "2026-11-22T15:30:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T15:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
       }
     }
   },
   "league": "ABA_LEAGUE",
-  "pending_frozen_games": [],
+  "pending_frozen_games": [
+    [
+      "aba_liga:26:1:88",
+      "2026-11-22T15:30:00Z"
+    ]
+  ],
   "schema_version": "magolide.pick_lifecycle_state"
 }
