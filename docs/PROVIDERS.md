@@ -16,6 +16,7 @@ No live-provider claim should be inferred from a passing offline suite.
 | ESPN | NBA G League | `basketball/nba-development` date-bounded scoreboard discovery, summaries, reconciled Q1–Q4 results, and bounded recent-result backfill | Public endpoints | Captured public scoreboard and summary on 2026-10-29 plus hermetic identity/status/period reconciliation regressions; BPI, deep core-index history, and named-book pricing are **not** validated |
 | Israel Winner League JSON | Israel Premier League (`ISRAEL_PREMIER_LEAGUE`) | Game board with per-quarter scores, OT totals, finals, team ids and English names | `basket.co.il/ws/ws.asmx/Games` (browser UA required) | Route referenced from league-site and SportsDataverse `hoopR` documentation; **no first-party capture**; tip times carry no UTC offset, so `Asia/Jerusalem` is applied as a recorded assumption |
 | ACB JSON API | Spain ACB (`SPAIN_ACB`) | Liga Endesa season calendar, per-game header with names, status, final score, quarter/OT reconciliation | Public endpoints (`api2.acb.com`) | Route contract referenced from SportsDataverse's generated `acb` module; **no Ma Golide first-party capture**; source automation/reuse terms unverified |
+| LBA JSON API | Italy LBA (`ITALY_LBA`) | Serie A championships list, focus-day calendar with UTC-offset tips and finals, per-match play-by-play reconciled into quarters | Public endpoints (`www.legabasket.it/api`) | Route contract referenced from an external 2026-11-22 probe; **no Ma Golide first-party capture**; the calendar serves only the league's current focus day, so no season enumeration and no history backfill |
 | EuroLeague | EuroLeague, EuroCup (`EUROCUP`) | Schedule discovery, game results, quarter/OT reconciliation, standings | Public endpoints | EuroLeague: schedule/boxscore live captures 2026-11-06; season schedule scores/partials, empty-season trap, and v3 per-round standings live-verified 2026-11-16. EuroCup: same host and route shape with competition code `U`, fixture-tested only — no Ma Golide first-party capture. Upstream reuse terms not reviewed |
 | FIBA GDAP + game page | EuroLeague Women (`EUROLEAGUE_W`) | Competition schedule, canonical UTC fixtures/status/results, official game-page play-by-play/period scores, player/team detail | Public APIM key shipped in FIBA's web client | Live facts and fixture-only cases are separated below; independent namespace, no men's EuroLeague reuse. Automation/reuse rights and future route/status vocabulary remain unresolved. |
 | CBA | CBA | Official league data API: season/day discovery, Beijing-local UTC times, quarter/OT reconciliation via observed period-score POST endpoint | Public endpoints; AES-128-ECB bodies decrypted with the key constant shipped in the site's own bundle | Live-verified 2026-11-16 from a datacenter IP (decryption, statuses, quarter sums, OT shape); unofficial/undocumented API and terms not reviewed — see caveats |
@@ -62,7 +63,13 @@ verified index floors.
   ``score_by_q_2`` (away) — with ``total_ot``/``overtime``, finals in
   ``score_team1``/``score_team2``, and team identity in ``team1``/``team2`` plus
   ``team1_name_eng``/``team2_name_eng``. Quarter values are points scored in
-  that period.
+  that period — an external 2026-11-22 audit of a captured board checked all 45
+  rows and found none cumulative, which is how the adapter already treats them.
+  That audit also confirmed this host publishes a per-game ``game_id`` (read
+  preferentially for identity) and exposes overtime three ways (extra pipe
+  elements, ``total_ot``, ``overtime``); the adapter's stricter "refuse an OT
+  total without a fifth element" rule is deliberate and keeps the lane
+  fail-closed rather than loosening to the source's least reliable channel.
 - The host is Cloudflare-fronted and rejects a non-browser client with error
   1010, so the adapter's own client sends a browser ``User-Agent``. An injected
   fixture transport in tests bypasses it.
@@ -74,6 +81,31 @@ verified index floors.
 - Overtime is reconciled only when its points are actually exposed: a row that
   reports ``total_ot`` without a fifth period is refused, never treated as a
   regulation final.
+- Pricing stays on the universal direct BetExplorer fallback.
+
+### Italy LBA acquisition details (referenced route contract, fixture-tested)
+
+- ``GET https://www.legabasket.it/api/championships/get-championships?cs_id=1&items=1000&s={year}``
+  lists competitions for a season. ``s`` is the season's **first** year
+  (``2026`` == 2026/27). The adapter requires exactly one ``cserie_code == "A1"``
+  row; zero or several is refused rather than picking one.
+- ``GET .../championships/get-championships-calendar-by-id?id={championship}``
+  returns the games: match id, home/visitor ids and names, finals, status and
+  ``match_datetime`` with an explicit offset. A timestamp without an offset, or
+  a row naming the same team on both sides, is recorded as a gap and skipped.
+- ``GET .../championships/get-championships-matches-play-by-play?id={match}``
+  returns actions carrying ``period``, ``order`` and a cumulative ``score``. The
+  adapter takes the highest-``order`` scored action per period, differences
+  consecutive period ends into per-period points, and requires periods 1–4 plus
+  overtime that is contiguous from period 5. A jump from regulation to period 6
+  is refused, not filled in.
+- **The probed day selectors are silently ignored server-side.** The calendar
+  answers with the league's current focus day whatever date is requested, so the
+  adapter treats a run's target date as a filter over that one slate, never as a
+  date-bounded query. That also means a season cannot be enumerated through this
+  route: history backfill is deliberately not wired.
+- The adapter needs its own client with a browser ``User-Agent``; tests inject a
+  fixture transport instead.
 - Pricing stays on the universal direct BetExplorer fallback.
 
 ### Spain ACB acquisition details (referenced route contract, fixture-tested)

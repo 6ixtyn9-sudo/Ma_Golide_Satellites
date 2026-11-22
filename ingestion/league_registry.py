@@ -320,7 +320,31 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     ),
     LeagueSpec(League.FRANCE_LNB_PRO_A, "France LNB Pro A", "france_lnb_pro_a", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.GERMANY_BBL, "Germany BBL", "germany_bbl", "Europe/Berlin", "Europe/Berlin", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
-    LeagueSpec(League.ITALY_LBA, "Italy LBA", "italy_lba", "Europe/Rome", "Europe/Rome", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
+    # legabasket.it's own JSON API is a referenced route contract (probe run
+    # externally on 2026-11-22; no first-party body retained here): a
+    # championships list keyed by the season's FIRST year, a focus-day calendar
+    # with explicit-offset timestamps and finals, and per-match play-by-play
+    # whose cumulative period ends derive reconciled quarters. The calendar
+    # serves only the league's current focus day — probed day selectors are
+    # ignored server-side — so season-wide enumeration (and therefore history
+    # backfill) is refused rather than guessed.
+    LeagueSpec(
+        League.ITALY_LBA,
+        "Italy LBA",
+        "italy_lba",
+        "Europe/Rome",
+        "Europe/Rome",
+        "lba",
+        "lba",
+        "lba",
+        source_detail=(
+            "legabasket.it JSON contract: championships?cs_id=1&s={season first year}, "
+            "get-championships-calendar-by-id focus-day slate with explicit UTC offsets, "
+            "get-championships-matches-play-by-play cumulative periods reconciled to "
+            "quarters. Referenced probe, no first-party capture; the calendar cannot "
+            "enumerate a season, so history backfill is refused."
+        ),
+    ),
     LeagueSpec(League.TURKEY_BSL, "Turkey BSL", "turkey_bsl", "Europe/Istanbul", "Europe/Istanbul", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.GREECE_BASKET_LEAGUE, "Greece Basket League", "greece_basket_league", "Europe/Athens", "Europe/Athens", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     # The externally referenced aba-liga.com calendar/detail route is the
