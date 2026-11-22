@@ -461,6 +461,62 @@ def test_direct_fallback_does_not_fetch_odds_for_an_unmatched_or_past_fixture(mo
     assert betexplorer_direct.last_receipt()["status"] == "no_future_candidate_games"
 
 
+def test_guarded_token_subset_matches_mascot_free_names_in_order():
+    game = _game()
+    game.home_name = "Texas Longhorns"
+    game.away_name = "Ohio State Buckeyes"
+    fixture = {
+        "event_id": "TexasOhio1",
+        "home_name": "Texas",
+        "away_name": "Ohio State",
+        "date": "2026-11-20",
+        "match_url": "https://www.betexplorer.com/basketball/example/TexasOhio1/",
+    }
+
+    matches = betexplorer_direct._match_fixtures([fixture], [game], league="NCAA_M")
+
+    assert matches == [(fixture, game)]
+    diagnostic = betexplorer_direct.last_receipt()["candidate_fixture_diagnostics"][0]
+    assert diagnostic["match_method"] == "ordered_token_subset"
+    assert diagnostic["reason"] == "ordered_token_subset_on_paris_board_date"
+
+
+def test_ncaa_w_suffix_is_handled_only_in_the_womens_league_lane():
+    game = _game()
+    game.home_name = "Texas Longhorns"
+    game.away_name = "Ohio State Buckeyes"
+    fixture = {
+        "event_id": "TexasOhioW1",
+        "home_name": "Texas Longhorns W",
+        "away_name": "Ohio State W",
+        "date": "2026-11-20",
+        "match_url": "https://www.betexplorer.com/basketball/example/TexasOhioW1/",
+    }
+
+    assert not betexplorer_direct._match_fixtures([fixture], [game], league="NCAA_M")
+    assert betexplorer_direct._match_fixtures([fixture], [game], league="NCAA_W") == [(fixture, game)]
+
+
+def test_duplicate_board_rows_with_same_event_do_not_duplicate_fixture_matches():
+    game = _game()
+    fixture = {
+        "event_id": "AbCdEf12",
+        "home_name": "Los Angeles Lakers",
+        "away_name": "Boston Celtics",
+        "date": "2026-11-20",
+        "match_url": "https://www.betexplorer.com/basketball/example/AbCdEf12/",
+    }
+
+    matches = betexplorer_direct._match_fixtures(
+        [fixture, dict(fixture)], [game], league="NBA"
+    )
+
+    assert matches == [(fixture, game)]
+    receipt = betexplorer_direct.last_receipt()
+    assert receipt["duplicate_board_rows_removed"] == 1
+    assert receipt["candidate_fixture_diagnostics"][0]["ordered_pair_rows"] == 1
+
+
 def test_candidate_diagnostics_rank_name_overlap_not_first_board_rows():
     assert betexplorer_direct._team_name_tokens("Budućnost") == betexplorer_direct._team_name_tokens("Buducnost")
     game = _game()
@@ -510,6 +566,7 @@ def test_direct_fallback_fetches_each_required_paris_board_date(monkeypatch):
             "away": game.away_name,
             "board_rows_on_date": 1,
             "ordered_pair_rows": 1,
+            "compatible_ordered_pair_rows": 1,
             "reversed_pair_rows_diagnostic_only": 0,
             "nearest_board_rows": [
                 {
@@ -522,6 +579,7 @@ def test_direct_fallback_fetches_each_required_paris_board_date(monkeypatch):
             ],
             "status": "matched",
             "reason": "exact_ordered_pair_on_paris_board_date",
+            "match_method": "normalized_exact",
         }
     ]
 

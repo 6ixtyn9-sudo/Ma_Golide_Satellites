@@ -530,11 +530,63 @@ def _candidate_board_date(game: Any) -> str:
 
 
 def _team_name_tokens(name: str) -> set[str]:
-    """Tokenize names for diagnostic ranking only; never used to admit a match."""
+    """Tokenize names consistently for diagnostics and conservative matching."""
 
     decomposed = unicodedata.normalize("NFKD", str(name or "")).casefold()
     folded = "".join(character for character in decomposed if not unicodedata.combining(character))
     return set(re.findall(r"[^\W_]+", folded, flags=re.UNICODE))
+
+
+def _team_name_words(name: str) -> List[str]:
+    decomposed = unicodedata.normalize("NFKD", str(name or "")).casefold()
+    folded = "".join(character for character in decomposed if not unicodedata.combining(character))
+    return re.findall(r"[^\W_]+", folded, flags=re.UNICODE)
+
+
+_SQUAD_MARKERS = {"b", "ii", "iii", "w", "women", "womens", "ladies", "reserve", "reserves", "res", "youth", "academy"}
+
+
+def _squad_markers(name: str) -> set[str]:
+    markers = set()
+    for word in _team_name_words(name):
+        if re.fullmatch(r"u(?:1[4-9]|2[0-3])", word):
+            markers.add(word)
+        elif word in _SQUAD_MARKERS:
+            markers.add(word)
+    return markers
+
+
+def _team_names_agree(candidate_name: str, board_name: str, *, league: str) -> tuple[bool, str]:
+    """Edge-inspired deterministic name agreement; never edit-distance fuzzy."""
+
+    candidate = str(candidate_name or "")
+    board = str(board_name or "")
+    league_key = str(league or "").strip().upper()
+    if league_key == "NCAA_W":
+        # BetExplorer labels women's NCAA teams with a terminal W marker;
+        # ESPN's NCAA_W schedule lane is already gender-scoped.
+        candidate = re.sub(r"\s+W$", "", candidate, flags=re.IGNORECASE)
+        board = re.sub(r"\s+W$", "", board, flags=re.IGNORECASE)
+
+    if canonical_team_key(candidate) == canonical_team_key(board):
+        return True, "normalized_exact"
+
+    if _squad_markers(candidate) != _squad_markers(board):
+        return False, ""
+    candidate_digits = set(re.findall(r"\d+", candidate))
+    board_digits = set(re.findall(r"\d+", board))
+    if candidate_digits and board_digits and candidate_digits != board_digits:
+        return False, ""
+
+    candidate_tokens = _team_name_tokens(candidate)
+    board_tokens = _team_name_tokens(board)
+    shared = candidate_tokens & board_tokens
+    # Retain Edge's conservative whole-name subset principle: one complete
+    # token set must be contained in the other, with at least five shared
+    # letters. No partial-token/edit-distance or side-swapping match.
+    if shared and (shared == candidate_tokens or shared == board_tokens) and sum(map(len, shared)) >= 5:
+        return True, "ordered_token_subset"
+    return False, ""
 
 
 def _nearest_board_rows(
@@ -569,89 +621,137 @@ def _nearest_board_rows(
 
 
 def _match_fixtures(
-    fixtures: Iterable[Dict[str, str]], games: Iterable[Any]
+    fixtures: Iterable[Dict[str, str]], games: Iterable[Any], *, league: str
 ) -> List[tuple[Dict[str, str], Any]]:
-    """Bind an event only on its Paris-local board date and unique ordered names."""
+    """Bind unique board events by Paris date and guarded ordered team names."""
 
     candidates = list(games)
-    fixture_rows = list(fixtures)
+    raw_fixture_rows = list(fixtures)
+    fixture_rows: List[Dict[str, str]] = []
+    seen_rows = set()
+    for fixture in raw_fixture_rows:
+        # The two adjacent day boards can repeat the same event. Collapse only
+        # identical event/date/ordered-team identities; distinct event IDs are
+        # retained and will be refused as ambiguous if both match one candidate.
+        signature = (
+            fixture.get("event_id"),
+            fixture.get("date"),
+            canonical_team_key(fixture.get("home_name", "")),
+            canonical_team_key(fixture.get("away_name", "")),
+        )
+        if signature in seen_rows:
+            continue
+        seen_rows.add(signature)
+        fixture_rows.append(fixture)
+    _last_receipt["duplicate_board_rows_removed"] = len(raw_fixture_rows) - len(fixture_rows)
+
     fixture_dates = {fixture.get("date") for fixture in fixture_rows}
-    matches: List[tuple[Dict[str, str], Any]] = []
-    matched_game_ids: set[str] = set()
-    diagnostics: List[Dict[str, Any]] = []
     fixtures_by_date: Dict[str, List[Dict[str, str]]] = {}
     for fixture in fixture_rows:
         fixtures_by_date.setdefault(fixture.get("date", ""), []).append(fixture)
+
+    diagnostics: Dict[str, Dict[str, Any]] = {}
     for game in candidates:
         board_date = _candidate_board_date(game)
         date_rows = fixtures_by_date.get(board_date, [])
         home_key = canonical_team_key(game.home_name)
         away_key = canonical_team_key(game.away_name)
-        ordered_rows = [
+        exact_rows = [
             fixture
             for fixture in date_rows
             if canonical_team_key(fixture["home_name"]) == home_key
             and canonical_team_key(fixture["away_name"]) == away_key
         ]
-        # Reversed-pair and one-side hits are telemetry only. They never admit
-        # a fixture to matching or authorize a comparison-page request.
+        compatible_rows = [
+            fixture
+            for fixture in date_rows
+            if _team_names_agree(game.home_name, fixture["home_name"], league=league)[0]
+            and _team_names_agree(game.away_name, fixture["away_name"], league=league)[0]
+        ]
         reversed_rows = [
             fixture
             for fixture in date_rows
-            if canonical_team_key(fixture["home_name"]) == away_key
-            and canonical_team_key(fixture["away_name"]) == home_key
+            if _team_names_agree(game.home_name, fixture["away_name"], league=league)[0]
+            and _team_names_agree(game.away_name, fixture["home_name"], league=league)[0]
         ]
-        diagnostics.append(
-            {
-                "game_id": str(game.game_id),
-                "scheduled_utc": str(game.scheduled_utc),
-                "board_date": board_date,
-                "home": str(game.home_name),
-                "away": str(game.away_name),
-                "board_rows_on_date": len(date_rows),
-                "ordered_pair_rows": len(ordered_rows),
-                "reversed_pair_rows_diagnostic_only": len(reversed_rows),
-                "nearest_board_rows": _nearest_board_rows(game, date_rows),
-                "status": "unmatched",
-                "reason": (
-                    "no_fixture_rows_on_paris_board_date"
-                    if board_date not in fixture_dates
-                    else "ordered_team_pair_not_found_on_board_date"
-                ),
-            }
-        )
-    by_id = {item["game_id"]: item for item in diagnostics}
+        diagnostics[str(game.game_id)] = {
+            "game_id": str(game.game_id),
+            "scheduled_utc": str(game.scheduled_utc),
+            "board_date": board_date,
+            "home": str(game.home_name),
+            "away": str(game.away_name),
+            "board_rows_on_date": len(date_rows),
+            "ordered_pair_rows": len(exact_rows),
+            "compatible_ordered_pair_rows": len(compatible_rows),
+            "reversed_pair_rows_diagnostic_only": len(reversed_rows),
+            "nearest_board_rows": _nearest_board_rows(game, date_rows),
+            "status": "unmatched",
+            "reason": (
+                "no_fixture_rows_on_paris_board_date"
+                if board_date not in fixture_dates
+                else "ordered_team_pair_not_found_on_board_date"
+            ),
+        }
 
+    hits_by_game: Dict[str, Dict[str, tuple[Dict[str, str], str]]] = {
+        str(game.game_id): {} for game in candidates
+    }
+    ambiguous_game_ids: set[str] = set()
     for fixture in fixture_rows:
-        fixture_date = fixture.get("date")
-        same_date = [game for game in candidates if _candidate_board_date(game) == fixture_date]
-        pair = [
-            game
-            for game in same_date
-            if canonical_team_key(fixture["home_name"]) == canonical_team_key(game.home_name)
-            and canonical_team_key(fixture["away_name"]) == canonical_team_key(game.away_name)
-        ]
-        if len(pair) == 1:
-            game = pair[0]
-            matches.append((fixture, game))
-            matched_game_ids.add(str(game.game_id))
-            by_id[str(game.game_id)].update(
-                status="matched", reason="exact_ordered_pair_on_paris_board_date"
+        same_date = [game for game in candidates if _candidate_board_date(game) == fixture.get("date")]
+        pair: List[tuple[Any, str]] = []
+        for game in same_date:
+            home_ok, home_method = _team_names_agree(
+                game.home_name, fixture["home_name"], league=league
             )
+            away_ok, away_method = _team_names_agree(
+                game.away_name, fixture["away_name"], league=league
+            )
+            if home_ok and away_ok:
+                method = (
+                    "normalized_exact"
+                    if home_method == away_method == "normalized_exact"
+                    else "ordered_token_subset"
+                )
+                pair.append((game, method))
+        if len(pair) == 1:
+            game, method = pair[0]
+            event_id = str(fixture.get("event_id") or "")
+            hits_by_game[str(game.game_id)].setdefault(event_id, (fixture, method))
         elif pair:
+            for game, _method in pair:
+                ambiguous_game_ids.add(str(game.game_id))
+
+    matches: List[tuple[Dict[str, str], Any]] = []
+    for game in candidates:
+        game_id = str(game.game_id)
+        hits = hits_by_game[game_id]
+        diagnostic = diagnostics[game_id]
+        if game_id in ambiguous_game_ids or len(hits) > 1:
+            diagnostic.update(status="ambiguous", reason="ambiguous_ordered_team_pair")
             _count_rejection("ambiguous_ordered_team_pair")
-            for game in pair:
-                by_id[str(game.game_id)].update(status="ambiguous", reason="ambiguous_ordered_team_pair")
+            continue
+        if len(hits) == 1:
+            fixture, method = next(iter(hits.values()))
+            matches.append((fixture, game))
+            diagnostic.update(
+                status="matched",
+                reason=(
+                    "exact_ordered_pair_on_paris_board_date"
+                    if method == "normalized_exact"
+                    else "ordered_token_subset_on_paris_board_date"
+                ),
+                match_method=method,
+            )
+            continue
+        _count_rejection(diagnostic["reason"])
 
     _last_receipt["candidate_fixture_diagnostics"] = [
-        by_id[str(game.game_id)] for game in candidates
+        diagnostics[str(game.game_id)] for game in candidates
     ][:MAX_RECEIPT_CANDIDATES]
     _last_receipt["candidate_fixture_diagnostics_truncated"] = max(
         0, len(candidates) - MAX_RECEIPT_CANDIDATES
     )
-    for game in candidates:
-        if str(game.game_id) not in matched_game_ids:
-            _count_rejection(by_id[str(game.game_id)]["reason"])
     return matches
 
 
@@ -747,7 +847,7 @@ def fetch_odds(
         _last_receipt["day_url"] = day_receipts[0]["url"]
         _last_receipt["day_response_sha256"] = day_receipts[0]["response_sha256"]
     _last_receipt["day_rows_seen"] = sum(item["rows_seen"] for item in day_receipts)
-    matched = _match_fixtures(fixtures, candidates)
+    matched = _match_fixtures(fixtures, candidates, league=league)
     _last_receipt["fixtures_matched"] = len(matched)
     _last_receipt["fixtures_unmatched"] = max(0, len(candidates) - len(matched))
 
