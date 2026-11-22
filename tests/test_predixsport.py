@@ -135,7 +135,7 @@ def test_disabled_without_key(monkeypatch):
     def _unused_factory(provider):
         raise AssertionError("fetch_factory must not be called while disabled")
 
-    assert px.fetch_upcoming("nba", 7, _unused_factory) == []
+    assert px.fetch_upcoming("nba", px.UPCOMING_DAYS, _unused_factory) == []
     assert px.fetch_match_detail("px-nba-1", "nba", _unused_factory) is None
 
 
@@ -162,10 +162,10 @@ def test_auth_header_built_from_env(monkeypatch):
     assert px._headers() == {"Authorization": f"Bearer {FAKE_KEY}"}
     # And the header really reaches the wire through the prod-style factory.
     factory, session = px_factory([px_json(px_load("upcoming_nba.json"))])
-    px.fetch_upcoming("nba", 7, factory)
+    px.fetch_upcoming("nba", px.UPCOMING_DAYS, factory)
     assert len(session.calls) == 1
     url, headers = session.calls[0]
-    assert url == f"{px.BASE_URL}/v1/predictions/nba/upcoming?days=7"
+    assert url == f"{px.BASE_URL}/v1/predictions/nba/upcoming?days={px.UPCOMING_DAYS}"
     assert headers["Authorization"] == f"Bearer {FAKE_KEY}"
     assert session.providers_seen == [px.PROVIDER]
 
@@ -232,7 +232,7 @@ def test_missing_total_leaves_scores_none(monkeypatch):
     monkeypatch.setenv(px.ENV_KEY, FAKE_KEY)
     factory, _session = px_factory([px_json(px_load("upcoming_nba.json"))])
     gaps = []
-    predictions = px.fetch_upcoming("nba", 7, factory, gaps=gaps)
+    predictions = px.fetch_upcoming("nba", px.UPCOMING_DAYS, factory, gaps=gaps)
     assert len(predictions) == 2
     assert len(gaps) == 1  # the malformed third entry is skipped with a gap
     assert gaps[0].reason is CoverageState.MISSING
@@ -279,7 +279,7 @@ def test_list_rejects_out_of_range_probabilities_with_gap(monkeypatch):
     }
     factory, _session = px_factory([px_json(payload)])
     gaps = []
-    predictions = px.fetch_upcoming("nba", 7, factory, gaps=gaps)
+    predictions = px.fetch_upcoming("nba", px.UPCOMING_DAYS, factory, gaps=gaps)
     assert predictions == []
     assert len(gaps) == 1
     assert gaps[0].reason is CoverageState.MISSING
@@ -318,7 +318,7 @@ def test_invalid_league_is_rejected(monkeypatch):
     monkeypatch.setenv(px.ENV_KEY, FAKE_KEY)
     factory, session = px_factory([])
     with pytest.raises(ValueError):
-        px.fetch_upcoming("nfl", 7, factory)
+        px.fetch_upcoming("nfl", px.UPCOMING_DAYS, factory)
     with pytest.raises(ValueError):
         px.fetch_match_detail("px-1", "football", factory)
     assert session.calls == []  # nothing was called
@@ -379,7 +379,7 @@ def test_diagnostics_record_shape_of_an_empty_feed(monkeypatch):
 
     monkeypatch.setenv(px.ENV_KEY, FAKE_KEY)
     diagnostics: dict = {}
-    rows = px.fetch_upcoming("nba", 7, _px_factory({"matches": []}), diagnostics=diagnostics)
+    rows = px.fetch_upcoming("nba", px.UPCOMING_DAYS, _px_factory({"matches": []}), diagnostics=diagnostics)
     assert rows == []
     assert diagnostics == {
         "response_type": "dict",
@@ -395,7 +395,7 @@ def test_diagnostics_expose_rows_returned_under_an_unread_key(monkeypatch):
     monkeypatch.setenv(px.ENV_KEY, FAKE_KEY)
     diagnostics: dict = {}
     payload = {"data": [{"match_id": "px-1", "probabilities": {"home": 0.6, "away": 0.4}}]}
-    rows = px.fetch_upcoming("nba", 7, _px_factory(payload), diagnostics=diagnostics)
+    rows = px.fetch_upcoming("nba", px.UPCOMING_DAYS, _px_factory(payload), diagnostics=diagnostics)
     assert rows == []
     assert diagnostics["row_source"] == "absent"
     assert diagnostics["payload_keys"] == ["data"]
@@ -406,7 +406,7 @@ def test_diagnostics_count_rows_of_a_documented_payload(monkeypatch):
     monkeypatch.setenv(px.ENV_KEY, FAKE_KEY)
     payload = json.loads((FIXTURES / "upcoming_nba.json").read_text())
     diagnostics: dict = {}
-    rows = px.fetch_upcoming("nba", 7, _px_factory(payload), diagnostics=diagnostics)
+    rows = px.fetch_upcoming("nba", px.UPCOMING_DAYS, _px_factory(payload), diagnostics=diagnostics)
     assert diagnostics["row_source"] == "matches"
     assert diagnostics["rows_seen"] == len(payload["matches"]) == 3
     assert diagnostics["payload_keys"] == ["_evidence", "matches"]
@@ -444,3 +444,86 @@ def test_non_ascii_credential_fails_closed_as_a_provider_error(monkeypatch):
     assert caught.value.status == 0
     assert "latin-1" in str(caught.value)
     assert "U+2026" in str(caught.value)
+
+
+DOCUMENTED_FIXTURE = FIXTURES / "upcoming_nba_documented_20261122.json"
+
+
+def test_upcoming_horizon_is_the_documented_one_day(monkeypatch):
+    """days=7 requested a window the provider documents as empty in steady state."""
+
+    assert px.UPCOMING_DAYS == 1
+    monkeypatch.setenv(px.ENV_KEY, FAKE_KEY)
+    seen: list[str] = []
+
+    def factory(_provider):
+        def fetch(url):
+            seen.append(url)
+            return {"matches": []}
+
+        return fetch
+
+    px.fetch_upcoming("nba", px.UPCOMING_DAYS, factory)
+    assert seen == ["https://api.predixsport.com/v1/predictions/nba/upcoming?days=1"]
+
+
+def test_published_quickstart_row_shape_parses(monkeypatch):
+    """home_team/away_team objects with win_probability are the documented shape."""
+
+    monkeypatch.setenv(px.ENV_KEY, FAKE_KEY)
+    payload = json.loads(DOCUMENTED_FIXTURE.read_text())
+    diagnostics: dict = {}
+    rows = px.fetch_upcoming("nba", 1, _px_factory(payload), diagnostics=diagnostics)
+
+    assert len(rows) == 2
+    assert diagnostics["rows_seen"] == 2
+    first = rows[0]
+    assert (first.prob_home, first.prob_away) == (0.70023, 0.29977)
+    assert first.expected_margin == 6.17137
+    assert first.auxiliary_metrics["source_home_name"] == "Detroit Pistons"
+    assert first.auxiliary_metrics["source_away_name"] == "Cleveland Cavaliers"
+    # the published examples carry no tip-off, and none is invented
+    assert first.auxiliary_metrics["source_tipoff_utc"] is None
+    assert first.game_id == "DET_202605130_CLE.csv"
+
+
+def test_quickstart_shape_without_tipoff_stays_unjoined():
+    """No tip-off means no identity join — a gap, not a guess.
+
+    The published rows carry ``prediction_date`` only, so the strict
+    home/away/UTC-tip join cannot fire. That must surface as an explicit
+    coverage gap rather than a date-only or array-position match.
+    """
+
+    from ingestion.models import Game, GameStatus, League
+    from ingestion.pipeline import _match_predixsport_prediction
+
+    prediction = px.Prediction(
+        game_id="DET_202605130_CLE.csv",
+        provider=px.PROVIDER,
+        observed_utc="2026-11-22T16:00:00Z",
+        model="predixsport-nba",
+        model_version=px.PREDICTION_MODEL_VERSION,
+        prob_home=0.70023,
+        prob_away=0.29977,
+        auxiliary_metrics={
+            "source_match_id": "DET_202605130_CLE.csv",
+            "source_home_name": "Detroit Pistons",
+            "source_away_name": "Cleveland Cavaliers",
+            "source_tipoff_utc": None,
+        },
+    )
+    game = Game(
+        game_id="espn-1",
+        league=League.NBA,
+        season="2026",
+        home_team_id="det",
+        away_team_id="cle",
+        home_name="Detroit Pistons",
+        away_name="Cleveland Cavaliers",
+        scheduled_utc="2026-05-13T23:00:00Z",
+        status=GameStatus.SCHEDULED,
+    )
+    matched, reason = _match_predixsport_prediction(prediction, [game])
+    assert matched is None
+    assert "lacks provider ID mapping and home/away/UTC-tip identity" in reason

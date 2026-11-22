@@ -1,0 +1,25 @@
+{
+  "_evidence": "DOCUMENTATION_ONLY — authored 2026-11-22 from Predixsport's published Python/Java quickstart (GET /v1/predictions/nba/upcoming?days=1) and its /v1/predictions/nba/{match_id} example response. Row shape: home_team/away_team objects carrying name and win_probability, plus predicted_point_diff and predicted_total_points. No tip-off timestamp appears in the published examples, so none is invented here. Not LIVE_VERIFIED evidence.",
+  "matches": [
+    {
+      "match_id": "DET_202605130_CLE.csv",
+      "sport": "nba",
+      "prediction_date": "2026-05-13",
+      "season": 2026,
+      "home_team": { "name": "Detroit Pistons", "win_probability": 0.70023 },
+      "away_team": { "name": "Cleveland Cavaliers", "win_probability": 0.29977 },
+      "predicted_point_diff": 6.17137,
+      "predicted_total_points": 214.789
+    },
+    {
+      "match_id": "BOS_202605130_NYK.csv",
+      "sport": "nba",
+      "prediction_date": "2026-05-13",
+      "season": 2026,
+      "home_team": { "name": "Boston Celtics", "win_probability": 0.44 },
+      "away_team": { "name": "New York Knicks", "win_probability": 0.56 },
+      "predicted_point_diff": -2.5,
+      "predicted_total_points": 221.4
+    }
+  ]
+}

@@ -1105,7 +1105,7 @@ class Pipeline:
         try:
             predictions = predixsport.fetch_upcoming(
                 "nba" if league is League.NBA else "euroleague",
-                7,
+                predixsport.UPCOMING_DAYS,
                 self.fetch_factory,
                 gaps=source_gaps,
                 diagnostics=response_shape,

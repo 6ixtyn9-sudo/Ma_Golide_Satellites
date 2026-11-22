@@ -71,7 +71,9 @@ def test_predixsport_slate_is_fetched_once_and_joined_by_teams_and_utc_tip(monke
 
     candidates = pipeline._predixsport_candidates_for_games(games)
 
-    assert calls == ["https://api.predixsport.com/v1/predictions/nba/upcoming?days=7"]
+    assert calls == [
+        f"https://api.predixsport.com/v1/predictions/nba/upcoming?days={predixsport.UPCOMING_DAYS}"
+    ]
     assert [prediction.game_id for prediction in candidates["espn-1"]] == ["espn-1"]
     assert [prediction.game_id for prediction in candidates["espn-2"]] == ["espn-2"]
     assert candidates["espn-1"][0].auxiliary_metrics["source_match_id"] == "predix-1"
