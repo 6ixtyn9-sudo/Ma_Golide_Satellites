@@ -25,7 +25,7 @@
       "logical_picks": 166
     },
     "2026-11-22": {
-      "frozen_fixtures": 52,
+      "frozen_fixtures": 53,
       "logical_picks": 219
     }
   },
@@ -26723,6 +26723,378 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
       },
+      "401912957": {
+        "decision_cutoff_utc": "2026-11-22T21:30:00Z",
+        "frozen_at": "2026-11-22T21:49:58Z",
+        "game_id": "401912957",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "UCLA Bruins",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.543921,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 248,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "64f0358735a98a4adf4590e76b477fed216e75addf9eac11f47e25f0042b04d5",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "fcaf6c056c835fed42f5",
+            "game_id": "401912957",
+            "grade_status": "pending",
+            "home": "Tennessee Lady Volunteers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "fcaf6c056c835fed42f5",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.61,
+            "role": null,
+            "scheduled_utc": "2026-11-22T22:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UCLA Bruins",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401912957",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-22T21:40:31Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 3.05,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.519412,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 143,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "90a042e56fa37425aa13623a6c3c45f53d1d7a1e39f1e7dd31f0a2798e17332a",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a4393ace2ea3a99a9be5",
+            "game_id": "401912957",
+            "grade_status": "pending",
+            "home": "Tennessee Lady Volunteers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "a4393ace2ea3a99a9be5",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-22T21:40:36Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.5584,
+            "role": "underdog",
+            "scheduled_utc": "2026-11-22T22:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UCLA Bruins",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401912957",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-22T21:40:31Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 3.05,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.531079,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 248,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "648e69c270678466f9e42fdd7c3de3dca00f85fed7874d49f3c9b63e987f6618",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b40f8fbbd7cdaf9d451f",
+            "game_id": "401912957",
+            "grade_status": "pending",
+            "home": "Tennessee Lady Volunteers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.300675,
+              "historical_pick_count": 1,
+              "individual_odds_band": "2.00+",
+              "losses": 1,
+              "market": "moneyline",
+              "observed_roi": -1.0,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -1.0,
+              "wins": 0
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "b40f8fbbd7cdaf9d451f",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-22T22:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UCLA Bruins",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401912957",
+              "line": 5.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-22T21:40:31Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.415435,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 16,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "5911b9aebc8ac1a9af6c1a61b6a7bfd805e95e9b9d68fc1835f7273a87ca7c81",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "03cfade3384058779c8c",
+            "game_id": "401912957",
+            "grade_status": "pending",
+            "home": "Tennessee Lady Volunteers",
+            "league": "NCAA_W",
+            "line": 5.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "03cfade3384058779c8c",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-22T22:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "UCLA Bruins",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401912957",
+              "line": 6.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-22T12:09:52Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.395435,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 16,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "94014706ed62664bea703e2e7299b61317a8305a3928085976dab521830a08d9",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0ec045764f4bd3d71623",
+            "game_id": "401912957",
+            "grade_status": "pending",
+            "home": "Tennessee Lady Volunteers",
+            "league": "NCAA_W",
+            "line": 6.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "0ec045764f4bd3d71623",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-22T22:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "UCLA Bruins",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401912957",
+              "line": 145.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T21:40:31Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.556136,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 14,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "edee7dfcbd9a6e0b6919708e7c1f116a2754d84954272f091aa125536bcad36d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6ec3d42ce62cc71457f6",
+            "game_id": "401912957",
+            "grade_status": "pending",
+            "home": "Tennessee Lady Volunteers",
+            "league": "NCAA_W",
+            "line": 145.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.079444,
+              "historical_pick_count": 29,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 15,
+              "market": "total",
+              "observed_roi": -0.080633,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.07817,
+              "wins": 14
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "6ec3d42ce62cc71457f6",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-22T22:30:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T22:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
+      },
       "401912982": {
         "decision_cutoff_utc": "2026-11-22T17:00:00Z",
         "frozen_at": "2026-11-22T17:21:05Z",
@@ -34918,19 +35290,7 @@
       "2026-11-22T20:00:00Z"
     ],
     [
-      "401917932",
-      "2026-11-22T20:00:00Z"
-    ],
-    [
-      "401918468",
-      "2026-11-22T20:00:00Z"
-    ],
-    [
       "401918858",
-      "2026-11-22T20:00:00Z"
-    ],
-    [
-      "401918911",
       "2026-11-22T20:00:00Z"
     ],
     [
@@ -34939,10 +35299,6 @@
     ],
     [
       "401924634",
-      "2026-11-22T20:00:00Z"
-    ],
-    [
-      "401926953",
       "2026-11-22T20:00:00Z"
     ],
     [
@@ -34996,6 +35352,10 @@
     [
       "401926985",
       "2026-11-22T22:00:00Z"
+    ],
+    [
+      "401912957",
+      "2026-11-22T22:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"

@@ -17,7 +17,7 @@
       "logical_picks": 435
     },
     "2026-11-22": {
-      "frozen_fixtures": 31,
+      "frozen_fixtures": 32,
       "logical_picks": 321
     }
   },
@@ -74123,6 +74123,412 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
       },
+      "401921205": {
+        "decision_cutoff_utc": "2026-11-22T21:30:00Z",
+        "frozen_at": "2026-11-22T21:50:16Z",
+        "game_id": "401921205",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Temple Owls",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.681209,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 243,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "1bc79016b3834361a4baaefa496978a095088e2a1fece87927c67030428efa58",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "fc08261e8452ec7b7c44",
+            "game_id": "401921205",
+            "grade_status": "pending",
+            "home": "Stephen F. Austin Lumberjacks",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "fc08261e8452ec7b7c44",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.74,
+            "role": null,
+            "scheduled_utc": "2026-11-22T22:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Temple Owls",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921205",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-22T21:40:28Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 2.1,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.790551,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 242,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "6d2d5f3245d913d2ebbb17ae3742f95e7663e56d55f0d2e323703aca6a3f3e39",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a01befd458d9248fdbcc",
+            "game_id": "401921205",
+            "grade_status": "pending",
+            "home": "Stephen F. Austin Lumberjacks",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "a01befd458d9248fdbcc",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.85,
+            "role": null,
+            "scheduled_utc": "2026-11-22T22:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Temple Owls",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921205",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-22T21:40:28Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 2.1,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.495834,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 154,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "790d61fd458886e0e99ac34305ee27ce47d8eb5ab20c161df70f75136a383457",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "fd5d32f93fd9fc6bd1ab",
+            "game_id": "401921205",
+            "grade_status": "pending",
+            "home": "Stephen F. Austin Lumberjacks",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "fd5d32f93fd9fc6bd1ab",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-22T21:40:31Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.562,
+            "role": "underdog",
+            "scheduled_utc": "2026-11-22T22:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Temple Owls",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921205",
+              "line": 2.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-22T21:40:28Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.489271,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 66,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "0a53668316cea0efc561f3b70bd0076351464b7775c2374d4c239fa43c542382",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6c86296f3dd51cba81f0",
+            "game_id": "401921205",
+            "grade_status": "pending",
+            "home": "Stephen F. Austin Lumberjacks",
+            "league": "NCAA_M",
+            "line": 2.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6c86296f3dd51cba81f0",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-22T22:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Temple Owls",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921205",
+              "line": 1.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-22T18:40:08Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9803921568627452,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.479271,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 66,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "29a4b15bfa3240a4e599d6805e2bb663cd6f6d673acbe88c388d77dabf0e1d5a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "f0377cb359e414cb536c",
+            "game_id": "401921205",
+            "grade_status": "pending",
+            "home": "Stephen F. Austin Lumberjacks",
+            "league": "NCAA_M",
+            "line": 1.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "f0377cb359e414cb536c",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-22T22:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Temple Owls",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921205",
+              "line": 144.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T21:40:28Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.446105,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 65,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "bf2af98d383335d59758dd646a8a644a4c119421c5fa5fafc90e34fa1a162cae",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "3d8b04bd48e187170423",
+            "game_id": "401921205",
+            "grade_status": "pending",
+            "home": "Stephen F. Austin Lumberjacks",
+            "league": "NCAA_M",
+            "line": 144.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "3d8b04bd48e187170423",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-22T22:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Temple Owls",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921205",
+              "line": 143.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T14:10:24Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.446105,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 65,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "47731e1f9134fb615174fd4153d936143b09a18894d1a197222113174d00ea6c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a1764694b1f5559cc841",
+            "game_id": "401921205",
+            "grade_status": "pending",
+            "home": "Stephen F. Austin Lumberjacks",
+            "league": "NCAA_M",
+            "line": 143.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "a1764694b1f5559cc841",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-22T22:30:00Z",
+            "selection": "over"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T22:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
+      },
       "401921706": {
         "decision_cutoff_utc": "2026-11-22T18:00:00Z",
         "frozen_at": "2026-11-22T18:22:43Z",
@@ -80855,10 +81261,6 @@
   "league": "NCAA_M",
   "pending_frozen_games": [
     [
-      "401928802",
-      "2026-11-22T19:00:00Z"
-    ],
-    [
       "401928790",
       "2026-11-22T19:30:00Z"
     ],
@@ -80921,6 +81323,10 @@
     [
       "401925013",
       "2026-11-22T22:00:00Z"
+    ],
+    [
+      "401921205",
+      "2026-11-22T22:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
