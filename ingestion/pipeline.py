@@ -57,6 +57,7 @@ from .league_registry import SPECS, league_spec, parse_league, price_evidence_po
 from .leagues import native_periods
 from .providers import (
     aba_liga,
+    acb,
     betexplorer,
     betexplorer_direct,
     cbaleague,
@@ -386,10 +387,30 @@ class Pipeline:
             )
             report["bookmakers"] = self._bookmakers_smoke()
             return report
-        if league == "EUROLEAGUE":
-            report = euroleague.smoke(self.fetch)
-            report["standings"] = self._standings_smoke()
-            report["predixsport"] = self._predixsport_smoke()
+        if league == "SPAIN_ACB":
+            try:
+                year = self._acb_season_end_year()
+                report = acb.smoke(self.fetch, year)
+            except Exception as exc:
+                report = {"status": "provider_error", "provider": "acb",
+                          "error_type": type(exc).__name__}
+            report["bookmakers"] = self._bookmakers_smoke()
+            return report
+        if league in ("EUROLEAGUE", "EUROCUP"):
+            # EuroCup reuses the validated EuroLeague Basketball adapter with
+            # competition code U; a failed probe is reported, never raised.
+            try:
+                report = euroleague.smoke(self.fetch, self._euro_seasoncode())
+            except Exception as exc:
+                report = {
+                    "status": "provider_error",
+                    "provider": "euroleague",
+                    "season_code": self._euro_seasoncode(),
+                    "error_type": type(exc).__name__,
+                }
+            if league == "EUROLEAGUE":
+                report["standings"] = self._standings_smoke()
+                report["predixsport"] = self._predixsport_smoke()
             report["bookmakers"] = self._bookmakers_smoke()
             return report
         if league == "EUROLEAGUE_W":
@@ -734,8 +755,25 @@ class Pipeline:
             # discovery source, preventing duplicate canonical games.
             games = cbaleague.discover_games(self.config.date_yyyymmdd, self.fetch, league)
             self.gaps.extend(cbaleague.last_gaps())
-        elif league is League.EUROLEAGUE:
-            games = euroleague.discover_games(_iso(self.config.date_yyyymmdd), self.fetch)
+        elif league is League.SPAIN_ACB:
+            games = acb.discover_games(
+                _iso(self.config.date_yyyymmdd), self.fetch, self._acb_season_end_year()
+            )
+            for gap in acb.last_gaps():
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=(f"ACB-{gap['game_id']}" if gap.get("game_id") else None),
+                        required_field="schedule_identity",
+                        reason=CoverageState.MISSING,
+                        provider="acb",
+                        detail=str(gap.get("detail", ""))[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+        elif league in (League.EUROLEAGUE, League.EUROCUP):
+            games = euroleague.discover_games(
+                _iso(self.config.date_yyyymmdd), self.fetch, self._euro_seasoncode()
+            )
         elif league is League.EUROLEAGUE_W:
             games = fiba_euroleague_w.discover_games(
                 _iso(self.config.date_yyyymmdd), self._fiba_schedule_fetch
@@ -1555,6 +1593,30 @@ class Pipeline:
             if parse_utc(game.scheduled_utc) <= now
         ]
 
+    def _acb_season_end_year(self) -> int:
+        """ACB season END year for this run's target date (2027 == 2026-27)."""
+        from datetime import datetime as _dt
+
+        target = _dt.strptime(self.config.date_yyyymmdd, "%Y%m%d")
+        return acb.season_end_year(target)
+
+    def _euro_seasoncode(self) -> str:
+        """Season code for the EuroLeague Basketball lanes (E… / U…).
+
+        The provider identifies the competition by the season-code letter, so a
+        EuroCup run must never inherit the EuroLeague code. The season start
+        year follows the same July boundary used by the standings probe.
+        """
+        year = int(self.config.date_yyyymmdd[:4])
+        if int(self.config.date_yyyymmdd[4:6]) < 7:
+            year -= 1
+        competition = (
+            euroleague.COMPETITION_EUROCUP
+            if self.config.league_enum is League.EUROCUP
+            else euroleague.COMPETITION_EUROLEAGUE
+        )
+        return euroleague.season_code(competition, year)
+
     def _default_history_start_season(self) -> int:
         target = datetime.strptime(self.config.date_yyyymmdd, "%Y%m%d").date()
         current = target.year
@@ -1901,9 +1963,14 @@ class Pipeline:
         cursor = self._history_cursor("euroleague-history")
         season = int(cursor.get("next_season") or self._default_history_start_season())
         season = min(season, self._default_history_start_season())
+        competition = (
+            euroleague.COMPETITION_EUROCUP
+            if self.config.league_enum is League.EUROCUP
+            else euroleague.COMPETITION_EUROLEAGUE
+        )
         ledger_dates: set = set()
         while budget > 0 and season > 1900:
-            seasoncode = f"E{season}"
+            seasoncode = euroleague.season_code(competition, season)
             failures: List[Dict[str, str]] = []
             try:
                 results = euroleague.season_results(seasoncode, self.fetch, failures)
@@ -2781,6 +2848,7 @@ class Pipeline:
         if self.config.league_enum not in ESPN_LEAGUES | {
             League.ABA_LEAGUE,
             League.EUROLEAGUE,
+            League.EUROCUP,
             League.EUROLEAGUE_W,
             League.CBA,
         }:
@@ -2932,7 +3000,7 @@ class Pipeline:
             }
         elif self.config.league_enum is League.ABA_LEAGUE:
             deep = self._backfill_aba_liga_history()
-        elif self.config.league_enum is League.EUROLEAGUE:
+        elif self.config.league_enum in (League.EUROLEAGUE, League.EUROCUP):
             deep = self._backfill_euroleague_history()
         elif self.config.league_enum is League.EUROLEAGUE_W:
             deep = self._backfill_fiba_euroleague_w_history()
@@ -2986,7 +3054,9 @@ class Pipeline:
             )
             self.gaps.extend(cbaleague.last_gaps())
             return finals
-        if league is League.EUROLEAGUE:
+        if league is League.SPAIN_ACB:
+            return self._acb_finals(self._discover_games())
+        if league in (League.EUROLEAGUE, League.EUROCUP):
             return self._euroleague_finals(self._discover_games())
         if league is League.EUROLEAGUE_W:
             return self._fiba_euroleague_w_finals(self._discover_games())
@@ -3000,6 +3070,50 @@ class Pipeline:
             ),
         )
         return []
+
+    def _acb_finals(self, games: List[Game]) -> List[Game]:
+        """Re-fetch ACB finals from the per-game header (periods authoritative).
+
+        Discovery already resolves identity and periods from the header; the
+        results stage refreshes only games the schedule marks finished so a
+        late correction is never lost, and a failure stays a gap.
+        """
+        finals: List[Game] = []
+        for game in games:
+            if game.status is not GameStatus.FINAL:
+                continue
+            try:
+                refreshed = acb.fetch_game_result(game, self.fetch)
+            except Exception as exc:
+                logger.warning("acb result failed for %s: %s", game.game_id, exc)
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="actual_result",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider="acb",
+                        detail=str(exc)[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            if refreshed.actual is None:
+                continue
+            ok, reason = refreshed.actual.reconciles()
+            if not ok:
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=refreshed.game_id,
+                        required_field="historical_reconciliation",
+                        reason=CoverageState.MISSING,
+                        provider="acb",
+                        detail=reason[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            finals.append(refreshed)
+        return finals
 
     def _euroleague_finals(self, games: List[Game]) -> List[Game]:
         finals = []

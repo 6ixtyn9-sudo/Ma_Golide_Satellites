@@ -263,7 +263,28 @@ _SPECS: Tuple[LeagueSpec, ...] = (
         "espn",
         (_ESPN_RELAY_ONLY, _validated_named_book("theoddsapi")),
     ),
-    LeagueSpec(League.EUROCUP, "EuroCup", "eurocup", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
+    # EuroCup shares the EuroLeague Basketball host and route shape with the
+    # already-validated EuroLeague adapter; only the competition letter differs
+    # (U instead of E). Two independent public clients document that contract,
+    # but Ma Golide still retains no first-party capture for EuroCup itself, so
+    # the lane is labelled as a referenced route contract rather than a live
+    # capture. Pricing stays on the universal direct BetExplorer fallback.
+    LeagueSpec(
+        League.EUROCUP,
+        "EuroCup",
+        "eurocup",
+        "Europe/Paris",
+        "Europe/Paris",
+        "euroleague",
+        "euroleague",
+        "euroleague",
+        source_detail=(
+            "EuroCup schedule/results use the validated EuroLeague Basketball adapter "
+            "with competition code U (api-live.euroleague.net v2 competitions/{E|U}); "
+            "the route shape is referenced from the same provider host and two "
+            "independent public clients, with no Ma Golide first-party capture retained."
+        ),
+    ),
     LeagueSpec(League.BASKETBALL_CHAMPIONS_LEAGUE, "Basketball Champions League", "basketball_champions_league", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     # ESPN's public NBA G League scoreboard and event-summary route were
     # captured with stable event/team identity, UTC tips, terminal status, and
@@ -276,7 +297,27 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     # probationary until a credentialed regional/bookmaker smoke proves actual
     # account coverage, and it never supplies canonical schedule/results.
     LeagueSpec(League.AUSTRALIA_NBL, "Australia NBL", "australia_nbl", "Australia/Sydney", "Australia/Sydney", "source_unavailable", "source_unavailable", "source_unavailable", (_probationary_named_book("theoddsapi"),), "No compliant official schedule/result adapter has been validated; The Odds API price lane is probationary."),
-    LeagueSpec(League.SPAIN_ACB, "Spain ACB", "spain_acb", "Europe/Madrid", "Europe/Madrid", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
+    # The ACB's own JSON API is a referenced route contract (SportsDataverse
+    # ``acb`` module, host api2.acb.com): a season calendar plus a per-game
+    # header that carries names, status, final score and quarterScores[].
+    # Ma Golide retains no first-party capture; pricing stays on the universal
+    # direct BetExplorer fallback.
+    LeagueSpec(
+        League.SPAIN_ACB,
+        "Spain ACB",
+        "spain_acb",
+        "Europe/Madrid",
+        "Europe/Madrid",
+        "acb",
+        "acb",
+        "acb",
+        source_detail=(
+            "Liga Endesa schedule/results use the ACB JSON API "
+            "(seasondata/Calendar/season-calendar + matchdata/MatchHeader/match-header); "
+            "route contract referenced from SportsDataverse documentation, no Ma Golide "
+            "first-party capture retained."
+        ),
+    ),
     LeagueSpec(League.FRANCE_LNB_PRO_A, "France LNB Pro A", "france_lnb_pro_a", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.GERMANY_BBL, "Germany BBL", "germany_bbl", "Europe/Berlin", "Europe/Berlin", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.ITALY_LBA, "Italy LBA", "italy_lba", "Europe/Rome", "Europe/Rome", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),

@@ -43,16 +43,16 @@ def _args(tmp_path, **changes):
 
 def test_source_unavailable_coverage_marker_is_stable_and_write_gated(tmp_path):
     assert _write_coverage_gap_marker(
-        tmp_path, league="SPAIN_ACB", target_date="2026-11-18", write_enabled=False
+        tmp_path, league="FRANCE_LNB_PRO_A", target_date="2026-11-18", write_enabled=False
     ) is None
     path = _write_coverage_gap_marker(
-        tmp_path, league="SPAIN_ACB", target_date="2026-11-18", write_enabled=True
+        tmp_path, league="FRANCE_LNB_PRO_A", target_date="2026-11-18", write_enabled=True
     )
     assert path is not None
     first = Path(path).read_bytes()
     assert b'"status": "source_unavailable"' in first
     assert _write_coverage_gap_marker(
-        tmp_path, league="SPAIN_ACB", target_date="2026-11-18", write_enabled=True
+        tmp_path, league="FRANCE_LNB_PRO_A", target_date="2026-11-18", write_enabled=True
     ) == path
     assert Path(path).read_bytes() == first
     assert _write_coverage_gap_marker(

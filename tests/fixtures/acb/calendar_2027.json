@@ -1,0 +1,100 @@
+{
+ "selectedFilters": {
+  "competition": 1,
+  "season": 2027
+ },
+ "teams": [
+  {
+   "id": 5001,
+   "clubId": 11,
+   "fullName": "Real Madrid",
+   "abbreviatedName": "RMB"
+  },
+  {
+   "id": 5002,
+   "clubId": 22,
+   "fullName": "FC Barcelona",
+   "abbreviatedName": "FCB"
+  },
+  {
+   "id": 5003,
+   "clubId": 33,
+   "fullName": "Valencia Basket",
+   "abbreviatedName": "VAL"
+  },
+  {
+   "id": 5004,
+   "clubId": 44,
+   "fullName": "Unicaja Malaga",
+   "abbreviatedName": "UNI"
+  },
+  {
+   "id": 5005,
+   "clubId": 55,
+   "fullName": "Joventut Badalona",
+   "abbreviatedName": "JOV"
+  },
+  {
+   "id": 5006,
+   "clubId": 66,
+   "fullName": "Baskonia Vitoria-Gasteiz",
+   "abbreviatedName": "BKN"
+  }
+ ],
+ "rounds": [
+  {
+   "id": 9001,
+   "roundNumber": 8,
+   "subphaseId": 1,
+   "subphaseNumber": 1,
+   "matches": [
+    {
+     "id": 105401,
+     "homeTeamId": 5001,
+     "awayTeamId": 5002,
+     "homeScore": 88,
+     "awayScore": 80,
+     "startDateTime": "2026-11-18T20:30:00+01:00",
+     "matchStatus": "FINALIZED",
+     "currentQuarter": 4
+    },
+    {
+     "id": 105402,
+     "homeTeamId": 5003,
+     "awayTeamId": 5004,
+     "homeScore": 95,
+     "awayScore": 93,
+     "startDateTime": "2026-11-18T22:00:00+01:00",
+     "matchStatus": "FINALIZED",
+     "currentQuarter": 5
+    }
+   ]
+  },
+  {
+   "id": 9002,
+   "roundNumber": 9,
+   "subphaseId": 1,
+   "subphaseNumber": 1,
+   "matches": [
+    {
+     "id": 105403,
+     "homeTeamId": 5005,
+     "awayTeamId": 5006,
+     "homeScore": 70,
+     "awayScore": 66,
+     "startDateTime": "2026-11-19T20:00:00+01:00",
+     "matchStatus": "FINALIZED"
+    },
+    {
+     "id": 105404,
+     "homeTeamId": 5002,
+     "awayTeamId": 5003,
+     "homeScore": null,
+     "awayScore": null,
+     "startDateTime": "2026-11-25T20:30:00+01:00",
+     "matchStatus": "PROGRAMMED"
+    }
+   ]
+  }
+ ]
+}

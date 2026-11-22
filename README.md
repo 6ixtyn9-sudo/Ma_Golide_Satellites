@@ -35,7 +35,17 @@ defines the evidence-first path from a league contract to visible unpriced
 normal-lane output, bounded price validation, and only then a prospective
 paper-ticket path.
 
-The canonical registry also includes EuroCup, Basketball Champions League,
+Spain ACB (`SPAIN_ACB`) now has a canonical schedule/result lane built on the ACB's own JSON API: a season calendar for fixtures and a per-game header that carries team identity, status, final score and `quarterScores[]` for period reconciliation. It is a *referenced* route contract (no first-party capture) and reconciles only bodies with four regulation quarters plus contiguous overtime.
+
+EuroCup (`EUROCUP`) now has a canonical schedule/result lane: it reuses the
+validated EuroLeague Basketball adapter with competition code `U` (the season
+code itself carries the competition). That is a *referenced* route contract —
+no Ma Golide first-party EuroCup capture exists — and it is fixture-tested
+against a structural transform of the captured EuroLeague schedule. Pricing
+remains on the direct BetExplorer fallback, so the lane can emit unpriced
+forecasts and reconciled results before any ticket path exists.
+
+The canonical registry also includes Basketball Champions League,
 Basketball Africa League, Australia NBL, Spain ACB, France LNB Pro A, Germany
 BBL, Italy LBA, Turkey BSL, Greece Basket League, ABA League, Israel Premier
 League, Japan B.League, South Korea KBL, Brazil NBB, and Argentina Liga

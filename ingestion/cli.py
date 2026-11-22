@@ -188,6 +188,7 @@ def _offline_fixture_fetch():
         "competitions/401909938/predictor": "espn/predictor_401909938.json",
         "summary?event=401909938": "espn/summary_401909938_context.json",
         "seasons/E2026/games": "euroleague/schedule.json",
+        "seasons/U2026/games": "eurocup/schedule_scores.json",
         "Boxscore": "euroleague/boxscore_97.json",
         "getgdapgamesbycompetitionid": "fiba_euroleague_w/schedule_209127_20261118.json",
         "games/135150-ZARAG-BLA": "fiba_euroleague_w/game_detail_135150_20261118.json",

@@ -54,7 +54,18 @@ from ..identity import canonical_team_name, normalize_team_name, parse_utc, to_u
 from ..models import ActualResult, Game, GameStatus, League, PeriodKind
 from . import FetchFn, IdentityError
 
-SCHEDULE_URL = "https://api-live.euroleague.net/v2/competitions/E/seasons/{seasoncode}/games"
+# EuroLeague Basketball serves both competitions from one host; the first
+# letter of the season code is the competition code (``E`` EuroLeague, ``U``
+# EuroCup). The route shape is identical, so the competition is derived from
+# the season code rather than threaded as a second, disagreeable parameter.
+COMPETITION_EUROLEAGUE = "E"
+COMPETITION_EUROCUP = "U"
+COMPETITIONS = {COMPETITION_EUROLEAGUE, COMPETITION_EUROCUP}
+
+SCHEDULE_URL = (
+    "https://api-live.euroleague.net/v2/competitions/{competition}"
+    "/seasons/{seasoncode}/games"
+)
 BOXSCORE_URL = (
     "https://live.euroleague.net/api/Boxscore?gamecode={gamecode}&seasoncode={seasoncode}"
 )
@@ -62,8 +73,8 @@ BOXSCORE_URL = (
 # ``standings`` endpoint answers 404; the v3 per-round basicstandings answers
 # 200 for completed rounds and 404 for rounds not yet finished).
 STANDINGS_URL = (
-    "https://api-live.euroleague.net/v3/competitions/E/seasons/{seasoncode}"
-    "/rounds/{round}/basicstandings"
+    "https://api-live.euroleague.net/v3/competitions/{competition}"
+    "/seasons/{seasoncode}/rounds/{round}/basicstandings"
 )
 
 # Evidence labels used by smoke reports.
@@ -77,10 +88,36 @@ _QUARTER_KEYS = ("Quarter1", "Quarter2", "Quarter3", "Quarter4")
 _EXTRA_RE = re.compile(r"^Extra(\d+)$")
 
 
+def competition_of(seasoncode: str) -> str:
+    """Competition code carried by a season code (``U2026`` -> ``U``).
+
+    ``E`` EuroLeague and ``U`` EuroCup are documented by the provider host and
+    by two independent public clients; anything else fails closed rather than
+    being sent to an unvalidated path.
+    """
+    code = str(seasoncode or "").strip().upper()
+    if len(code) != 5 or not code[1:].isdigit() or code[0] not in COMPETITIONS:
+        raise ValueError(
+            f"euroleague season code {seasoncode!r} must look like E2026 or U2026"
+        )
+    return code[0]
+
+
+def season_code(competition: str, year: int) -> str:
+    """Canonical season code for one competition and season start year."""
+    code = str(competition or "").strip().upper()
+    if code not in COMPETITIONS:
+        raise ValueError(f"unsupported euroleague competition code {competition!r}")
+    return f"{code}{int(year)}"
+
+
 def _season_display(seasoncode: str) -> str:
-    """``E2026`` -> ``2026`` (the canonical Game.season display value)."""
+    """``E2026``/``U2026`` -> ``2026`` (the canonical Game.season display value)."""
     code = str(seasoncode or "")
-    return code[1:] if code.startswith("E") else code
+    head = code[:1].upper()
+    if head in COMPETITIONS and code[1:].isdigit():
+        return code[1:]
+    return code
 
 
 # ---------------------------------------------------------------------------
@@ -90,7 +127,9 @@ def _season_display(seasoncode: str) -> str:
 
 def _fetch_season_rows(fetch: FetchFn, seasoncode: str) -> List[Dict[str, Any]]:
     """Fetch and validate the raw season schedule rows (one request)."""
-    payload = fetch(SCHEDULE_URL.format(seasoncode=seasoncode))
+    payload = fetch(
+        SCHEDULE_URL.format(competition=competition_of(seasoncode), seasoncode=seasoncode)
+    )
     rows = payload.get("data") if isinstance(payload, dict) else payload
     if not isinstance(rows, list):
         raise ValueError(
@@ -183,6 +222,7 @@ def _game_from_schedule_row(row: Dict[str, Any], seasoncode: str) -> Game:
     provider_ids = {
         "euroleague": gamecode,
         "euroleague_season": str(seasoncode),
+        "euroleague_competition": competition_of(seasoncode),
     }
     ot_periods = _extra_period_count(row)
     if ot_periods:
@@ -344,12 +384,23 @@ def _gamecode_of(game: Game) -> str:
 
 
 def _seasoncode_of(game: Game) -> str:
-    """Season code for the boxscore URL: explicit id first, else derived."""
+    """Season code for the boxscore URL: explicit id first, else derived.
+
+    The derived path is competition-aware: a stored ``euroleague_competition``
+    or an owned ``U`` game id yields a EuroCup season code, never a EuroLeague
+    one. Guessing the wrong competition would silently query another
+    competition's season.
+    """
     code = game.provider_ids.get("euroleague_season")
     if code:
         return str(code)
+    competition = str(game.provider_ids.get("euroleague_competition") or "").upper()
     season = str(game.season or "")
-    return season if season.startswith("E") else f"E{season}"
+    if season[:1].upper() in COMPETITIONS and season[1:].isdigit():
+        return season
+    if competition not in COMPETITIONS:
+        competition = COMPETITION_EUROLEAGUE
+    return f"{competition}{season}"
 
 
 # ---------------------------------------------------------------------------
@@ -634,7 +685,11 @@ def fetch_standings(
             round = _latest_completed_round(fetch, seasoncode)
             if round is None:
                 return _fail(f"season {seasoncode} has no played rounds yet")
-        payload = fetch(STANDINGS_URL.format(seasoncode=seasoncode, round=int(round)))
+        payload = fetch(
+            STANDINGS_URL.format(
+                competition=competition_of(seasoncode), seasoncode=seasoncode, round=int(round)
+            )
+        )
     except Exception as exc:  # deliberate: standings must never break a run
         return _fail(f"standings fetch failed: {type(exc).__name__}: {exc}")
 
