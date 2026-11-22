@@ -32,6 +32,7 @@ from __future__ import annotations
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Sequence
 
+from ..http import HttpError
 from ..identity import canonical_team_name, to_utc_iso
 from ..models import ActualResult, Game, GameStatus, League, PeriodKind
 from . import FetchFn, IdentityError
@@ -138,8 +139,28 @@ def fetch_calendar(
     return rows
 
 
+class AuthenticationRequired(RuntimeError):
+    """The ACB match-header route answered 401/403.
+
+    A live probe on 2026-11-22 found the season calendar public but the
+    per-game header gated: the calendar alone carries no team names and no
+    period scores, so this lane cannot produce a canonical game until that
+    route is authorised. Raising a distinct error keeps the reason visible in
+    coverage gaps instead of looking like an empty season.
+    """
+
+
 def _match_header(fetch: FetchFn, match_id: str) -> Dict[str, Any]:
-    payload = fetch(f"{MATCH_HEADER_URL}?matchId={match_id}")
+    url = f"{MATCH_HEADER_URL}?matchId={match_id}"
+    try:
+        payload = fetch(url)
+    except HttpError as exc:
+        if int(getattr(exc, "status", 0) or 0) in (401, 403):
+            raise AuthenticationRequired(
+                f"ACB match-header requires authorisation (HTTP {exc.status}); "
+                "the public calendar carries neither team names nor period scores"
+            ) from exc
+        raise
     if not isinstance(payload, dict):
         raise ValueError(f"ACB match header {match_id} is not a JSON object")
     if not isinstance(payload.get("teams"), dict):
@@ -262,6 +283,11 @@ def discover_games(
         try:
             header = _match_header(fetch, match_id)
             games.append(_game_from_header(header, match_id, end_year, phase))
+        except AuthenticationRequired as exc:
+            # Every further candidate would fail identically; record the reason
+            # once and stop instead of emitting a gap per game.
+            _record_gap(match_id, str(exc))
+            break
         except (IdentityError, ValueError) as exc:
             _record_gap(match_id, str(exc))
     return games
@@ -312,6 +338,10 @@ def season_results(
             continue
         try:
             game = _game_from_header(_match_header(fetch, match_id), match_id, end_year, phase)
+        except AuthenticationRequired as exc:
+            if failures is not None:
+                failures.append({"game_id": f"ACB-{match_id}", "error": str(exc)})
+            break
         except (IdentityError, ValueError) as exc:
             if failures is not None:
                 failures.append({"game_id": f"ACB-{match_id}", "error": str(exc)})
@@ -374,8 +404,20 @@ def smoke(fetch: FetchFn, end_year: int, competition: int = COMPETITION_LIGA_END
                 complete += 1
             else:
                 failures.append({"game_id": game.game_id, "error": reason})
+        except AuthenticationRequired as exc:
+            failures.append({"game_id": f"ACB-{match_id}", "error": str(exc)})
+            break
         except (IdentityError, ValueError) as exc:
             failures.append({"game_id": f"ACB-{match_id}", "error": str(exc)})
     report["results_reconciled"]["complete"] = complete
     report["failures"] = failures
+    if failures and all(
+        "requires authorisation" in str(row.get("error", "")) for row in failures
+    ):
+        # Never present a fully gated route as a season with no results.
+        report["status"] = "auth_required"
+        report["detail"] = (
+            "ACB match-header answered 401/403 for every finished game; period-level "
+            "results stay unavailable until the route is authorised"
+        )
     return report
