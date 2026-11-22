@@ -13,7 +13,7 @@
       "logical_picks": 6
     },
     "2026-11-22": {
-      "frozen_fixtures": 4,
+      "frozen_fixtures": 5,
       "logical_picks": 15
     }
   },
@@ -993,6 +993,172 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
       },
+      "aba_liga:26:1:86": {
+        "decision_cutoff_utc": "2026-11-22T17:30:00Z",
+        "frozen_at": "2026-11-22T17:45:52Z",
+        "game_id": "aba_liga:26:1:86",
+        "league": "ABA_LEAGUE",
+        "rows": [
+          {
+            "away": "Dubai Basketball",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.221111,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 15,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "7bf18446d8a6db25bdf629d92c54f7f7f32eb0a9cc0daf87fd0c91b56121b13a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0a7d8218311718da4830",
+            "game_id": "aba_liga:26:1:86",
+            "grade_status": "pending",
+            "home": "Partizan Mozzart Bet Belgrade",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "0a7d8218311718da4830",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.27,
+            "role": null,
+            "scheduled_utc": "2026-11-22T18:30:00Z",
+            "selection": "Q3"
+          },
+          {
+            "away": "Dubai Basketball",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.622,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 15,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "bf5ef265f6a46b7e9b3ed859a3d643af848ea03a1d802e0a38ddc0b111ff27a6",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "44b8c863543bfef300f6",
+            "game_id": "aba_liga:26:1:86",
+            "grade_status": "pending",
+            "home": "Partizan Mozzart Bet Belgrade",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "44b8c863543bfef300f6",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-22T18:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Dubai Basketball",
+            "book": {
+              "book": "Stake.com",
+              "frozen": false,
+              "game_id": "aba_liga:26:1:86",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-22T02:40:39Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.78,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.626,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 15,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "8d0f36a96093d2325411bafdd9b61e46067ef2f6ab0cf450a43966439d1cac68",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b01413f25bd0b6b9e939",
+            "game_id": "aba_liga:26:1:86",
+            "grade_status": "pending",
+            "home": "Partizan Mozzart Bet Belgrade",
+            "league": "ABA_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": null,
+              "historical_pick_count": 0,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 0,
+              "market": "moneyline",
+              "observed_roi": null,
+              "period": "full_game",
+              "probability_band": "0.60-<0.70",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": null,
+              "wins": 0
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "b01413f25bd0b6b9e939",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.63,
+            "role": null,
+            "scheduled_utc": "2026-11-22T18:30:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-22T18:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
+      },
       "aba_liga:26:1:87": {
         "decision_cutoff_utc": "2026-11-22T10:00:00Z",
         "frozen_at": "2026-11-22T10:15:33Z",
@@ -1299,12 +1465,12 @@
   "league": "ABA_LEAGUE",
   "pending_frozen_games": [
     [
-      "aba_liga:26:1:88",
-      "2026-11-22T15:30:00Z"
-    ],
-    [
       "aba_liga:26:1:82",
       "2026-11-22T16:00:00Z"
+    ],
+    [
+      "aba_liga:26:1:86",
+      "2026-11-22T18:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
