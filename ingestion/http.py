@@ -126,6 +126,21 @@ class HttpClient:
         merged["User-Agent"] = self.user_agent
         if headers:
             merged.update(headers)
+        # Header values must be latin-1, and ``requests``/``urllib3`` raise a
+        # bare UnicodeEncodeError (not RequestException) for anything else —
+        # a traceback instead of a fail-closed provider error. Name the header
+        # and the code point; never echo the value, which may be a credential.
+        for name, value in merged.items():
+            try:
+                str(value).encode("latin-1")
+            except UnicodeEncodeError as exc:
+                raise HttpError(
+                    0,
+                    url,
+                    f"header {name!r} is not latin-1 encodable at index "
+                    f"{exc.start} (U+{ord(str(value)[exc.start]):04X}); "
+                    "check the credential value for pasted placeholders",
+                ) from exc
         attempt = 0
         while True:
             try:

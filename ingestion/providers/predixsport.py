@@ -113,6 +113,18 @@ def _headers() -> Dict[str, str]:
             "'Authorization: Bearer <key>' (unauthenticated calls on "
             "2026-11-06 returned 'Missing Authorization header')"
         )
+    # HTTP header values are latin-1: a pasted placeholder ('…'), a smart
+    # quote, or any other non-ASCII character otherwise surfaces as an
+    # opaque UnicodeEncodeError from deep inside requests/urllib3. Report
+    # the offending position and code point, never the value itself.
+    for index, char in enumerate(key):
+        if ord(char) > 0x7E or ord(char) < 0x21:
+            raise UnauthorizedError(
+                f"{ENV_KEY} contains a non-printable-ASCII character at index "
+                f"{index} (U+{ord(char):04X}); HTTP header values are latin-1, "
+                "so this cannot be sent. Re-paste the key — documentation "
+                "placeholders such as '\u2026' are not credentials."
+            )
     return {"Authorization": f"Bearer {key}"}
 
 

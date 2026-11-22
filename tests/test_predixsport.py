@@ -412,3 +412,35 @@ def test_diagnostics_count_rows_of_a_documented_payload(monkeypatch):
     assert diagnostics["payload_keys"] == ["_evidence", "matches"]
     # one malformed row is quarantined as a gap, two parse
     assert len(rows) == 2
+
+
+def test_pasted_placeholder_key_is_rejected_before_any_request(monkeypatch):
+    """A '…' placeholder or any non-ASCII key cannot be sent as a header.
+
+    Without this guard the failure is a UnicodeEncodeError from inside
+    requests/urllib3 — a traceback rather than a provider error — and the
+    message must never echo the key itself.
+    """
+
+    monkeypatch.setenv(px.ENV_KEY, "…")
+    with pytest.raises(px.UnauthorizedError) as caught:
+        px.default_fetch_factory(px.PROVIDER)
+    message = str(caught.value)
+    assert "U+2026" in message
+    assert "index 0" in message
+    assert "…" not in message.split("such as")[0]  # no echo of the secret value
+
+
+def test_non_ascii_credential_fails_closed_as_a_provider_error(monkeypatch):
+    from ingestion import http as http_module
+
+    class NoCall:
+        def get(self, *args, **kwargs):  # pragma: no cover - must not run
+            raise AssertionError("a non-latin-1 header must not reach the session")
+
+    client = http_module.HttpClient(session=NoCall())
+    with pytest.raises(http_module.HttpError) as caught:
+        client.get_json("https://example.invalid/x", headers={"Authorization": "Bearer …"})
+    assert caught.value.status == 0
+    assert "latin-1" in str(caught.value)
+    assert "U+2026" in str(caught.value)
