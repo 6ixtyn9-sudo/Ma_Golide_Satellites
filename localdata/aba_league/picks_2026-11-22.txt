@@ -1,6 +1,6 @@
 Ma Golide Picks — ABA_LEAGUE 2026-11-22
 ========================================================================
-Generated at: 2026-11-22 04:13 SAST
+Generated at: 2026-11-22 04:44 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -18,6 +18,11 @@ CAUTION PICKS
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=12 · reasons=insufficient_walk_forward_samples · prediction=history
       ROI-BAND BLOCKED · moneyline full_game · p 0.70-<0.80 · odds 1.00-<1.20 · n=0 · recency ROI n/a / adjusted n/a
+  [team_history_empirical/team_history_empirical] Partizan Mozzart Bet Belgrade vs Dubai Basketball · KO 2026-11-22 20:30 SAST
+      MONEYLINE full_game -> HOME · p=64.9% (raw 63.0%) @1.780 Stake.com
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=12 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
 
 WATCHLIST — NO MATCHED ODDS
 ========================================================================
@@ -35,10 +40,6 @@ WATCHLIST — NO MATCHED ODDS
       calibration=provisional n=12 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Mega Superbet vs SC Derby · KO 2026-11-22 13:00 SAST
       MONEYLINE full_game -> HOME · p=65.9% (raw 64.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=provisional n=12 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
-  [team_history_empirical/team_history_empirical] Partizan Mozzart Bet Belgrade vs Dubai Basketball · KO 2026-11-22 20:30 SAST
-      MONEYLINE full_game -> HOME · p=64.9% (raw 63.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=12 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] U-BT Cluj-Napoca vs Zadar · KO 2026-11-22 17:30 SAST
@@ -94,10 +95,10 @@ SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
   (none)
 
-Active summary: ELIGIBLE_CLEAN=0 CAUTION=1 WATCHLIST_NO_ODDS=14 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=2 WATCHLIST_NO_ODDS=13 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
 Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=0
-Logical picks shown: 15 · superseded observations: 0
-Total archived pick evidence rows: 15
+Logical picks shown: 15 · superseded observations: 1
+Total archived pick evidence rows: 16
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.
