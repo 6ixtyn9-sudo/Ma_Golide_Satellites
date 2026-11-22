@@ -1,6 +1,6 @@
 Ma Golide Picks — ABA_LEAGUE 2026-11-22
 ========================================================================
-Generated at: 2026-11-22 19:45 SAST
+Generated at: 2026-11-22 20:15 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -40,18 +40,7 @@ SKIPPED — INELIGIBLE
 
 IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
-  [team_history_empirical/team_history_empirical] Budućnost VOLI vs HKK Široki TT Kabeli · KO 2026-11-22 18:00 SAST
-      MONEYLINE H1 -> HOME · p=71.6% (raw 67.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T15:15:18Z
-      calibration=provisional n=14 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
-  [team_history_empirical/team_history_empirical] Budućnost VOLI vs HKK Široki TT Kabeli · KO 2026-11-22 18:00 SAST
-      MONEYLINE full_game -> HOME · p=70.0% (raw 71.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T15:15:18Z
-      calibration=provisional n=14 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
-  [team_history_empirical/team_history_empirical] Budućnost VOLI vs HKK Široki TT Kabeli · KO 2026-11-22 18:00 SAST
-      HIGHEST QUARTER full_game -> Q2 · p=25.8% (raw 30.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T15:15:18Z
-      calibration=provisional n=14 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  (none)
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
@@ -64,6 +53,14 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE H1 -> HOME · p=71.6% (raw 68.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T11:16:50Z
       calibration=provisional n=13 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Budućnost VOLI vs HKK Široki TT Kabeli · KO 2026-11-22 18:00 SAST
+      MONEYLINE H1 -> HOME · p=71.6% (raw 67.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T15:15:18Z
+      calibration=provisional n=14 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] Budućnost VOLI vs HKK Široki TT Kabeli · KO 2026-11-22 18:00 SAST
+      MONEYLINE full_game -> HOME · p=70.0% (raw 71.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T15:15:18Z
+      calibration=provisional n=14 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] Mega Superbet vs SC Derby · KO 2026-11-22 13:00 SAST
       MONEYLINE full_game -> HOME · p=64.4% (raw 64.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T10:15:33Z
@@ -89,6 +86,10 @@ SETTLED PICKS — ARCHIVE ONLY
       HIGHEST QUARTER full_game -> Q2 · p=26.5% (raw 30.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T14:48:33Z
       calibration=provisional n=13 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Budućnost VOLI vs HKK Široki TT Kabeli · KO 2026-11-22 18:00 SAST
+      HIGHEST QUARTER full_game -> Q2 · p=25.8% (raw 30.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T15:15:18Z
+      calibration=provisional n=14 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Crvena Zvezda Meridianbet Belgrade vs Cibona · KO 2026-11-22 14:00 SAST
       HIGHEST QUARTER full_game -> Q2 · p=25.5% (raw 29.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T11:16:50Z
@@ -96,7 +97,7 @@ SETTLED PICKS — ARCHIVE ONLY
 
 Active summary: ELIGIBLE_CLEAN=0 CAUTION=1 WATCHLIST_NO_ODDS=2 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=3 SETTLED=9
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=12
 Logical picks shown: 15 · superseded observations: 0
 Total archived pick evidence rows: 15
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
