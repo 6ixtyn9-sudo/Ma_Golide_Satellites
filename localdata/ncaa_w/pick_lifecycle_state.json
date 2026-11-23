@@ -29,7 +29,7 @@
       "logical_picks": 225
     },
     "2026-11-23": {
-      "frozen_fixtures": 5,
+      "frozen_fixtures": 7,
       "logical_picks": 132
     }
   },
@@ -36494,6 +36494,190 @@
       }
     },
     "2026-11-23": {
+      "401916019": {
+        "decision_cutoff_utc": "2026-11-23T17:30:00Z",
+        "frozen_at": "2026-11-23T18:14:22Z",
+        "game_id": "401916019",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Virginia Tech Hokies",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.720053,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 348,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "639b72479a0b772bfb7e1c2750f63a9c77e642dcd7d3cc18ea3f223b9c3149c1",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "dc3986cbb4d61c6e9459",
+            "game_id": "401916019",
+            "grade_status": "pending",
+            "home": "UT Martin Skyhawks",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "dc3986cbb4d61c6e9459",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.79,
+            "role": null,
+            "scheduled_utc": "2026-11-23T19:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Virginia Tech Hokies",
+            "book": {
+              "book": "Stake.com",
+              "frozen": false,
+              "game_id": "401916019",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-23T17:41:13Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.01,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.817434,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 348,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "f4d8ca1b42639287b2c47da3657834522caa3f9415a5495825030f407bfad259",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6abe28db6aff66c6f361",
+            "game_id": "401916019",
+            "grade_status": "pending",
+            "home": "UT Martin Skyhawks",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6abe28db6aff66c6f361",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.88,
+            "role": null,
+            "scheduled_utc": "2026-11-23T19:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Virginia Tech Hokies",
+            "book": {
+              "book": "Stake.com",
+              "frozen": false,
+              "game_id": "401916019",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-23T17:41:13Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.01,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.961087,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 199,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "8ce2f7c397b8739778f5f4ff28f564e1dae0ac3eea82c33cf023aeaf7d223de2",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d4c4b26fab937bfc4b6f",
+            "game_id": "401916019",
+            "grade_status": "pending",
+            "home": "UT Martin Skyhawks",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.017401,
+              "historical_pick_count": 4,
+              "individual_odds_band": "1.00-<1.20",
+              "losses": 0,
+              "market": "moneyline",
+              "observed_roi": 0.004375,
+              "period": "full_game",
+              "probability_band": "0.90-1.00",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.004271,
+              "wins": 4
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "d4c4b26fab937bfc4b6f",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-23T17:41:12Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.9906,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-23T19:30:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-23T19:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-23"
+      },
       "401916024": {
         "decision_cutoff_utc": "2026-11-23T15:00:00Z",
         "frozen_at": "2026-11-23T15:12:42Z",
@@ -37131,6 +37315,364 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-23"
       },
+      "401923673": {
+        "decision_cutoff_utc": "2026-11-23T17:30:00Z",
+        "frozen_at": "2026-11-23T18:14:22Z",
+        "game_id": "401923673",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Oklahoma Sooners",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.540053,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 348,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "af9bb5beaf15fcb3611b1f0736f0fc19cc6ac75f6717f6da906ae268087589d1",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "69653ad706a6e4eb75d9",
+            "game_id": "401923673",
+            "grade_status": "pending",
+            "home": "Virginia Cavaliers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "69653ad706a6e4eb75d9",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.61,
+            "role": null,
+            "scheduled_utc": "2026-11-23T19:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Oklahoma Sooners",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923673",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-23T17:41:08Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.2,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.861687,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 199,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "49d8292c776b5221c507c8c59671467b3ffaec23fb47735f35b1ab79cc112d6d",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "51be3f49c9314c4d7b9a",
+            "game_id": "401923673",
+            "grade_status": "pending",
+            "home": "Virginia Cavaliers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.09979,
+              "historical_pick_count": 1,
+              "individual_odds_band": "1.20-<1.50",
+              "losses": 0,
+              "market": "moneyline",
+              "observed_roi": 0.4,
+              "period": "full_game",
+              "probability_band": "0.80-<0.90",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.4,
+              "wins": 1
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "51be3f49c9314c4d7b9a",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-23T17:41:12Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.8912,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-23T19:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Oklahoma Sooners",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923673",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-23T17:41:08Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.2,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.677434,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 348,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "66e0ae6d5d160120e4593eb9e5765823de04fbe72304fa3ee9552d23bcff09a3",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "89524cdd3236eda58ee5",
+            "game_id": "401923673",
+            "grade_status": "pending",
+            "home": "Virginia Cavaliers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "89524cdd3236eda58ee5",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.74,
+            "role": null,
+            "scheduled_utc": "2026-11-23T19:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Oklahoma Sooners",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923673",
+              "line": 9.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-23T13:41:25Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.457593,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "68a18d9c72f4c917420040a83dbc6ef6879b2bdea81c456cf47f342998a62e4a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7e2d49856cbd2f2aa2fc",
+            "game_id": "401923673",
+            "grade_status": "pending",
+            "home": "Virginia Cavaliers",
+            "league": "NCAA_W",
+            "line": 9.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "7e2d49856cbd2f2aa2fc",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-23T19:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Oklahoma Sooners",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923673",
+              "line": 10.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-23T17:41:08Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.457593,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "acb33439ed833383eb3ea66541bf696ef975d04febe5b4cb5b5ab5774c6b932d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "bd15a3e1191412412fc7",
+            "game_id": "401923673",
+            "grade_status": "pending",
+            "home": "Virginia Cavaliers",
+            "league": "NCAA_W",
+            "line": 10.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "bd15a3e1191412412fc7",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-23T19:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Oklahoma Sooners",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923673",
+              "line": 151.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-23T17:41:08Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.4896,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 20,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "6cb6e1cab9e14da9f0d8798c79968b2e8644d34858469249397f8e0f069130b1",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "228f2b56e884c5958a67",
+            "game_id": "401923673",
+            "grade_status": "pending",
+            "home": "Virginia Cavaliers",
+            "league": "NCAA_W",
+            "line": 151.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "228f2b56e884c5958a67",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-23T19:30:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-23T19:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-23"
+      },
       "401926088": {
         "decision_cutoff_utc": "2026-11-23T14:00:00Z",
         "frozen_at": "2026-11-23T15:12:42Z",
@@ -37459,10 +38001,6 @@
   "league": "NCAA_W",
   "pending_frozen_games": [
     [
-      "401926088",
-      "2026-11-23T16:00:00Z"
-    ],
-    [
       "401916024",
       "2026-11-23T17:00:00Z"
     ],
@@ -37477,6 +38015,14 @@
     [
       "401921427",
       "2026-11-23T18:30:00Z"
+    ],
+    [
+      "401916019",
+      "2026-11-23T19:30:00Z"
+    ],
+    [
+      "401923673",
+      "2026-11-23T19:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
