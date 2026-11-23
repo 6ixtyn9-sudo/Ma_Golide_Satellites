@@ -74,7 +74,7 @@ request, or ticket-price authority.
 
 | Candidate | Advertised free allowance | Potential use | Current decision |
 | --- | --- | --- | --- |
-| [OddsPapi](https://oddspapi.io/blog/free-sports-data-api/) | 250 requests/month | A very-low-volume schedule/odds smoke across international books | Not suitable for the 30-minute all-lane workflow at this quota. Require direct terms, live key, and named-book identity verification before adding an adapter. |
+| [OddsPapi](https://oddspapi.io/blog/free-sports-data-api/) | 250 requests/month | A very-low-volume schedule/odds smoke across international books | Not suitable for the hourly all-lane workflow at this quota. Require direct terms, live key, and named-book identity verification before adding an adapter. |
 | Existing The Odds API | See policy table above | Current approved free-tier integration path | Retain and test first; no new adapter is needed to diagnose its real account coverage. |
 
 The multilingual search produced several directories and unofficial examples,
