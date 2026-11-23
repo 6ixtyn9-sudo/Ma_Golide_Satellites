@@ -57,3 +57,28 @@ bytes), `betexplorer/matchodds_404.txt` (910/917), `israel/board5_rows.slice.txt
 fixture uses), and `nbl/sdist_nbl_listing.txt` (204/206). Their claims are
 recorded in `docs/PROVIDERS.md` as *reported by the probe*, not as
 repository-verified bytes.
+
+## Shape fixtures, not captures (2026-11-23 source policy)
+
+The 2026-11-23 roadmap permits scraped and undocumented public sources for
+non-NBA expansion lanes on condition that a lane is promoted on a **live
+receipt**, not on a fixture. Two classes therefore exist and must not be
+confused:
+
+| class | what it proves | promotion authority |
+| --- | --- | --- |
+| `capture` (the files above) | the provider served this exact body | may justify wiring a parser |
+| `shape fixture` | the parser handles the documented column contract | **no** — a live receipt is still required |
+
+`kbl/match_list_shape.json` and `kbl/team_list_shape.json` are **shape
+fixtures**. They are written to the column contract documented by the
+SportsDataverse `kbl` module (MIT, read 2026-11-23) — `gmkey`, `game_date`,
+`game_start`, team codes and names, `home_score`/`away_score`, `is_started`,
+`is_ended`, `playing_quarter` — and no Ma Golide first-party body exists for
+that host yet.
+
+What stands in for a capture is the run-time receipt: `kbl.last_probe()`
+records the URL, byte count, sha256, envelope shape and row keys of the body
+the adapter actually read, and `Pipeline._discover_games` stores it as
+`provider_health`. An empty read is recorded as `CoverageState.MISSING` rather
+than `OK`, so a lane that stops returning rows cannot look healthy.
