@@ -1,9 +1,17 @@
 {
-  "archive_bytes": 6737617,
-  "archive_sha256": "40bf3e674b4bc7061e7ec4d39464453bda0bddbc98db6cec8351f5bebf15781f",
+  "archive_bytes": 6768246,
+  "archive_sha256": "709d19499893ebb0e5a0ce160fa26f28b53387dc5847cc5013c6a00d647354be",
   "asset_name": "magolide-state-euroleague.tar.gz",
   "canonical_csv_files": 6,
-  "content_manifest_sha256": "36fc5ac82697b9ad9cadfaa0809148cb52e94363d19e9ad43125a3493821372d",
+  "canonical_row_counts": {
+    "book_snapshots": 10,
+    "games": 6731,
+    "pipeline_runs": 716,
+    "predictions": 0,
+    "provider_health": 1,
+    "team_aliases": 0
+  },
+  "content_manifest_sha256": "ad53185012d4aff87c0271f5cf0d0d5b257f325e69d2206bfdfd7455d0149fd8",
   "release_tag": "magolide-state-current",
   "schema_version": "magolide.release_archive",
   "state_key": "euroleague"

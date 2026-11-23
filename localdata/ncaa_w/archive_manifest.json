@@ -1,9 +1,17 @@
 {
-  "archive_bytes": 265666623,
-  "archive_sha256": "48162d08532148cc8722ebf536ba78601f177dad420eab02ee631609680e1db1",
+  "archive_bytes": 266700045,
+  "archive_sha256": "8d77b98ca4bf9d9836de38842fc41956db519b636cf6fecdd32aec6ed5fb5a80",
   "asset_name": "magolide-state-ncaa_w.tar.gz",
   "canonical_csv_files": 6,
-  "content_manifest_sha256": "9a7149f76807747f926d41ee83f43a55ff6f01a9451dfc8bc5124b9ecc83b449",
+  "canonical_row_counts": {
+    "book_snapshots": 119,
+    "games": 9501,
+    "pipeline_runs": 716,
+    "predictions": 237,
+    "provider_health": 1,
+    "team_aliases": 0
+  },
+  "content_manifest_sha256": "d2116fbc1a6ad4e70de3a7df1506e532421256f1c909c5e1f5dccb8ce42c8cce",
   "release_tag": "magolide-state-current",
   "schema_version": "magolide.release_archive",
   "state_key": "ncaa_w"
