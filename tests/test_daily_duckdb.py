@@ -36,6 +36,17 @@ def _args(tmp_path, **changes):
         notify=False,
         send_notifications=False,
         started_utc="2026-11-07T18:00:00Z",
+        # Every test here writes a one-game warehouse into tmp_path, so comparing
+        # it against the repository's published checkpoint is meaningless -- and
+        # the comparison is not inert: scripts.daily falls back to
+        # localdata/<state_key>/archive_manifest.json relative to the working
+        # directory, so the moment the scheduled tick publishes a real checkpoint
+        # onto main, this file's tests fail on a checkout that has done nothing
+        # wrong. That is exactly what turned every scheduled run red after the
+        # 2026-11-23 10:34Z publish. The guard itself is covered by
+        # tests/test_daily_checkpoint_guard.py, which exercises both outcomes
+        # against a manifest it controls.
+        allow_checkpoint_regression=True,
     )
     values.update(changes)
     return argparse.Namespace(**values)
