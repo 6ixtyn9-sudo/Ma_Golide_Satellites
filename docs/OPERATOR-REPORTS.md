@@ -436,6 +436,19 @@ carry a `result_resolution_status` of `awaiting_game` or `result_unresolvable`
 in the graded performance copy. This diagnostic split does not change pending
 grades, stakes, or settlement decisions.
 
+A leg settles on the **team** it was priced on, never on a bare `home`/`away`
+label. Receipts record both team names, so a provider that re-designates the
+sides of a neutral-site game after the ticket was frozen cannot flip a winner
+into a loss: when the frozen names match the result only cross-wise, the result
+is mirrored back to the frozen orientation before grading (spread lines are
+home-oriented, so the line itself is left untouched). Such a leg keeps
+`result_side_identity: "mirrored"` in the graded performance copy and renders as
+`· sides mirrored` in the held-ticket block. When a recheck fetch reports the
+sides the other way round, acquisition also records one `result_side_identity`
+coverage gap for that game, so an operator sees the provider move the fixture
+even for games that are not yet on a ticket. Names that match neither side fall
+back to the previous side-label grading rather than inventing an orientation.
+
 The report gives flat-stake ROI only when settled priced observations exist. It
 never invents a return for an unresolved ticket. `bank*` is a latest-known-result
 mark by ticket date, not a settlement-time equity curve.

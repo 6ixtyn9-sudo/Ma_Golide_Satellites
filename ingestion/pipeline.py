@@ -27,6 +27,7 @@ from .identity import (
     canonical_team_key,
     now_utc_iso,
     parse_utc,
+    team_names_agree,
     times_within,
     to_utc_iso,
 )
@@ -3435,7 +3436,31 @@ class Pipeline:
                     )
                 )
                 continue
-            finals.extend(g for g in day if g.game_id in pending)
+            for fetched in day:
+                stored = pending.get(fetched.game_id)
+                if stored is None:
+                    continue
+                if team_names_agree(stored.home_name, fetched.away_name) and (
+                    team_names_agree(stored.away_name, fetched.home_name)
+                ):
+                    # A neutral-site or re-designated fixture can come back with
+                    # home and away exchanged. The frozen ticket is settled by
+                    # team identity, so this is not fatal — but the operator has
+                    # to see that the provider moved the sides.
+                    self.gaps.append(
+                        CoverageGap(
+                            game_id=fetched.game_id,
+                            required_field="result_side_identity",
+                            reason=CoverageState.MISSING,
+                            provider=league.value.lower(),
+                            detail=(
+                                "result reports home/away the other way round versus the "
+                                "frozen fixture; frozen legs settle on their own team identity"
+                            ),
+                            observed_utc=self._now_iso(),
+                        )
+                    )
+                finals.append(fetched)
         return finals
 
     # -- smoke helpers -------------------------------------------------------

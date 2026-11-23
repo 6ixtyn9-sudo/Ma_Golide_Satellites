@@ -109,6 +109,49 @@ def canonical_team_name(name: str, aliases: Optional[Dict[str, List[str]]] = Non
     return re.sub(r"\s+", " ", str(name or "").strip())
 
 
+# Tokens that never distinguish two basketball teams.  Conference/school
+# qualifiers are *leading* tokens ("LSU New Orleans Privateers" vs "New Orleans
+# Privateers"), which is why team_names_agree requires a suffix relationship
+# instead of a bag-of-words comparison.
+_TEAM_NAME_FILLER = frozenset(
+    {"university", "univ", "college", "of", "the", "at", "team", "men", "mens", "women", "womens"}
+)
+
+
+def _team_name_tokens(name: str) -> Tuple[str, ...]:
+    words = re.split(r"[^0-9a-z]+", normalize_team_name(name))
+    return tuple(word for word in words if word and word not in _TEAM_NAME_FILLER)
+
+
+def team_names_agree(left: str, right: str) -> bool:
+    """True when two team labels denote the same team.
+
+    A provider may prepend a school qualifier to the same basketball team
+    ("New Orleans Privateers" vs "LSU New Orleans Privateers") and may drop the
+    mascot ("Troy" vs "Troy Trojans").  Only those two shapes are treated as
+    agreement: equal alias-resolved names, or one token sequence being a suffix
+    of the other.  A shared mascot with a *differing* qualifier is deliberately
+    not agreement, because "Alabama Hornets" and "Alabama State Hornets" name
+    different teams.
+    """
+
+    if not str(left or "").strip() or not str(right or "").strip():
+        return False
+    if normalize_team_name(canonical_team_name(left)) == normalize_team_name(
+        canonical_team_name(right)
+    ):
+        return True
+    first, second = _team_name_tokens(left), _team_name_tokens(right)
+    if not first or not second:
+        return False
+    if first == second:
+        return True
+    shorter, longer = (first, second) if len(first) <= len(second) else (second, first)
+    if len(shorter) >= 2:
+        return longer[-len(shorter) :] == shorter
+    return shorter[0] in longer
+
+
 BOOK_CANONICALS: Dict[str, str] = {
     "draftkings": "DraftKings",
     "fanduel": "FanDuel",
