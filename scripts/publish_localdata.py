@@ -596,6 +596,9 @@ def _merge_pick_lifecycle_state(
     return _pick_lifecycle_state_bytes(merged)
 
 
+DATED_CARD_NAMES = re.compile(rf"(?:picks|auto_tickets)_{DATE}\.txt")
+
+
 def _card_grade_entries(text: str) -> list[tuple[str, str]]:
     """Return stable line fingerprints for unambiguous rendered grade states.
 
@@ -632,7 +635,11 @@ def _would_regress_settled_card(destination: Path, artifact_bytes: bytes) -> boo
     legacy no-identity guard for simple cards that cannot be line-matched.
     """
 
-    if not destination.name.endswith(".txt"):
+    # Only dated cards are progressive settlement evidence. The rolling
+    # performance summary legitimately loses settled lines when held legs
+    # finish (the HELD block disappears), so the line-count fallback below
+    # would otherwise reject every corrected summary forever.
+    if not DATED_CARD_NAMES.fullmatch(destination.name):
         return False
     try:
         current = destination.read_text(encoding="utf-8")

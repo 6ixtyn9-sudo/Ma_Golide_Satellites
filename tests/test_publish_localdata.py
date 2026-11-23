@@ -846,3 +846,62 @@ def test_cli_reports_json(tmp_path, capsys, monkeypatch):
     output = json.loads(capsys.readouterr().out)
     assert output["copied_count"] == 0
     assert not (tmp_path / "repo" / "localdata" / "nba" / "picks_today.json").exists()
+
+
+def test_publisher_accepts_the_rolling_performance_summary_losing_held_lines(tmp_path):
+    """Settling held legs removes their rows; that is not a regression.
+
+    The summary legitimately carries fewer settled lines once the HELD block
+    empties, which the dated-card line-count fallback read as a rollback and
+    skipped on every run (localdata/ncaa_m/auto_tickets_performance.txt was
+    frozen at the pre-regrade state for four days).
+    """
+
+    artifact_file(
+        tmp_path,
+        "fresh-nba-artifact",
+        "nba",
+        "auto_tickets_performance.txt",
+        (
+            "RECORD   ✅ WIN 6W / ❌ LOSS 8L (42.9% hit) · ROI +63.3%\n"
+            "OPEN     0 held paper positions · 0 awaiting legs in open tickets\n"
+            "  2026-11-21  ✅ WIN 1W / ❌ LOSS 2L staked 3.000 returned 4.055 net +1.055\n"
+        ).encode(),
+    )
+    repo = tmp_path / "repo"
+    summary = repo / "localdata" / "nba" / "auto_tickets_performance.txt"
+    summary.parent.mkdir(parents=True)
+    summary.write_text(
+        "RECORD   ✅ WIN 4W / ❌ LOSS 6L (40.0% hit) · ROI +24.1%\n"
+        "OPEN     2 held paper positions · 3 awaiting games\n"
+        "  2026-11-21  ❌ LOSS 1L staked 1.000 returned 0.000 net -1.000\n"
+        "HELD (not yet settled; stake counted as committed)\n"
+        "  George Mason Patriots vs South Florida Bulls · MONEYLINE full_game -> HOME · ✅ WIN\n"
+        "  Cleveland State Vikings vs Kent State Golden Flashes · MONEYLINE full_game -> AWAY · ✅ WIN\n"
+        "  Valparaiso Beacons vs Troy Trojans · MONEYLINE full_game -> HOME · ⏳ PENDING\n"
+    )
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+
+    assert report["settled_card_regressions_skipped"] == []
+    assert report["copied"] == ["localdata/nba/auto_tickets_performance.txt"]
+    assert "ROI +63.3%" in summary.read_text()
+
+
+def test_publisher_still_blocks_a_dated_card_reopening_settled_lines(tmp_path):
+    artifact_file(
+        tmp_path,
+        "stale-nba-artifact",
+        "nba",
+        "picks_2026-11-18.txt",
+        "bucket=CAUTION · grade=⏳ PENDING\n".encode(),
+    )
+    repo = tmp_path / "repo"
+    card = repo / "localdata" / "nba" / "picks_2026-11-18.txt"
+    card.parent.mkdir(parents=True)
+    card.write_text("bucket=CAUTION · grade=❌ LOSS · lifecycle=SETTLED_UNFROZEN\n")
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+
+    assert report["settled_card_regressions_skipped"] == ["localdata/nba/picks_2026-11-18.txt"]
+    assert "LOSS" in card.read_text()
