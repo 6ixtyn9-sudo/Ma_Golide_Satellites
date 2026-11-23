@@ -296,7 +296,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     # The Odds API NBL sport key is a documented integration lead. It remains
     # probationary until a credentialed regional/bookmaker smoke proves actual
     # account coverage, and it never supplies canonical schedule/results.
-    LeagueSpec(League.AUSTRALIA_NBL, "Australia NBL", "australia_nbl", "Australia/Sydney", "Australia/Sydney", "source_unavailable", "source_unavailable", "source_unavailable", (_probationary_named_book("theoddsapi"),), "No compliant official schedule/result adapter has been validated; The Odds API price lane is probationary."),
+    LeagueSpec(League.AUSTRALIA_NBL, "Australia NBL", "australia_nbl", "Australia/Sydney", "Australia/Sydney", "espn", "espn", "espn", (_probationary_named_book("theoddsapi"),), "Schedule/results ride the existing ESPN relay on the league's own competition route (basketball/nbl, league UID 55), verified by an operator probe on 2026-11-23 that returned three NBL games for 2026-11-21; no first-party body is retained, so live behaviour remains monitored rather than assumed. The Odds API price lane stays probationary."),
     # The ACB's own JSON API is a referenced route contract (SportsDataverse
     # ``acb`` module, host api2.acb.com): a season calendar plus a per-game
     # header that carries names, status, final score and quarterScores[].

@@ -9,6 +9,7 @@ import pytest
 from forecasting.harness import CalibrationConfig, apply_profiles
 from forecasting.service import MarketForecastService
 from forecasting.types import BookEvidence, Forecast
+from ingestion import adaptive_gate
 from ingestion.adaptive_gate import GateUncertain, LEAGUES, fetch_schedule
 from ingestion.duckdb_store import DuckDBStore
 from ingestion.league_registry import SPECS, league_spec, parse_league, price_evidence_policy
@@ -25,8 +26,14 @@ from ingestion.models import (
     PriceProvenance,
     SourcePermission,
 )
-from ingestion.pipeline import ACQUISITION_TZ, DEFAULT_TZ, Pipeline, PipelineConfig
-from ingestion.providers import theoddsapi
+from ingestion.pipeline import (
+    ACQUISITION_TZ,
+    DEFAULT_TZ,
+    ESPN_LEAGUES,
+    Pipeline,
+    PipelineConfig,
+)
+from ingestion.providers import espn, theoddsapi
 from ingestion.store import InMemoryStore
 
 
@@ -108,6 +115,15 @@ def test_final_expansion_is_typed_and_registry_backed_everywhere():
                 "acb",
                 "acb",
                 "acb",
+            )
+        elif league is League.AUSTRALIA_NBL:
+            # ESPN's own NBL competition route (basketball/nbl, league UID 55),
+            # verified live on 2026-11-23; pricing stays on the probationary
+            # The Odds API lane and is unchanged by the schedule route.
+            assert (spec.schedule_source, spec.results_source, spec.gate_schedule_source) == (
+                "espn",
+                "espn",
+                "espn",
             )
         elif league is League.EUROCUP:
             # EuroCup rides the validated EuroLeague Basketball adapter with
@@ -503,3 +519,27 @@ def test_nbl_odds_api_mapping_is_probationary_not_a_validated_ticket_lane(monkey
     assert "basketball_nbl" in urls[0]
     assert all(snapshot.price_provenance is PriceProvenance.NAMED_BOOK for snapshot in snapshots)
     assert all(snapshot.operational_validation is OperationalValidation.PROBATION for snapshot in snapshots)
+
+
+def test_australia_nbl_rides_the_espn_competition_route_not_a_country_slug():
+    """NBL is ESPN's own competition route, not a ``basketball/xx.1`` guess.
+
+    The core registry rejects ``basketball/esp.1``-style country slugs with
+    "Invalid sport/league combination"; ``basketball/nbl`` resolves to league
+    UID 55 and served three games for 2026-11-21. The identity guard must carry
+    that same UID or every event would be quarantined (the NCAA_W ``50`` bug).
+    """
+
+    assert espn.LEAGUE_SLUGS[League.AUSTRALIA_NBL] == "nbl"
+    assert espn.ESPN_LEAGUE_IDS[League.AUSTRALIA_NBL] == "55"
+    assert League.AUSTRALIA_NBL in ESPN_LEAGUES
+
+    url = espn._scoreboard_url("20261121", League.AUSTRALIA_NBL)
+    assert "basketball/nbl/scoreboard" in url
+    assert "dates=20261121" in url
+
+    gate = adaptive_gate._espn_scoreboard_url(
+        type("C", (), {"league": "AUSTRALIA_NBL"})(), "2026-11-21"
+    )
+    assert "basketball/nbl/scoreboard" in gate
+    assert "dates=20261121" in gate
