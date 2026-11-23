@@ -14,6 +14,7 @@ Rules:
 from __future__ import annotations
 
 import gzip
+import zlib
 
 import logging
 import os
@@ -109,9 +110,14 @@ def _decoded_body(resp: Any) -> str:
     if isinstance(raw, (bytes, bytearray)) and bytes(raw[:2]) == GZIP_MAGIC:
         try:
             return gzip.decompress(bytes(raw)).decode("utf-8", "replace")
-        except (OSError, EOFError):
-            # Not actually a gzip stream despite the magic; fall back rather
-            # than failing a provider read that might still be usable.
+        except (OSError, EOFError, zlib.error):
+            # Not a usable gzip stream despite the magic -- a truncated body, a
+            # bad CRC, or (the case an external audit found) a valid gzip header
+            # wrapped around a corrupt deflate stream, where gzip.decompress
+            # raises zlib.error. zlib.error is a zlib-module exception and is
+            # neither OSError nor EOFError, so catching only those let a raw
+            # zlib.error escape get_text() instead of falling back to resp.text
+            # -- an exception type this module's contract says it never raises.
             pass
     return resp.text
 
