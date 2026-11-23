@@ -59,6 +59,7 @@ from .leagues import native_periods
 from .providers import (
     aba_liga,
     acb,
+    bcl,
     betexplorer,
     betexplorer_direct,
     bleague,
@@ -914,6 +915,39 @@ class Pipeline:
                             f"url={probe.get('url')} bytes={probe.get('bytes')} "
                             f"sha256={probe.get('sha256')} "
                             f"competitions={','.join(probe.get('competitions') or [])}"
+                        )[:500],
+                    )
+                )
+        elif league is League.BASKETBALL_CHAMPIONS_LEAGUE:
+            games = bcl.discover_games(
+                _iso(self.config.date_yyyymmdd),
+                self.fetch if self._injected_fetch else None,
+            )
+            for gap in bcl.last_gaps():
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=(f"BCL-{gap['game_id']}" if gap.get("game_id") else None),
+                        required_field="schedule_identity",
+                        reason=CoverageState.MISSING,
+                        provider="bcl",
+                        detail=str(gap.get("detail", ""))[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+            probe = bcl.last_probe()
+            if probe:
+                now = self._now_iso()
+                self.store.upsert_provider_health(
+                    ProviderHealth(
+                        provider="bcl",
+                        league=self.config.league_enum,
+                        last_attempt_utc=now,
+                        last_success_utc=now if games else None,
+                        state=CoverageState.OK if games else CoverageState.MISSING,
+                        coverage={"games": len(games), "rows": probe.get("rows", 0)},
+                        detail=(
+                            f"url={probe.get('url')} bytes={probe.get('bytes')} "
+                            f"sha256={probe.get('sha256')}"
                         )[:500],
                     )
                 )
@@ -3255,6 +3289,8 @@ class Pipeline:
             return self._lba_finals(self._discover_games())
         if league is League.ISRAEL_PREMIER_LEAGUE:
             return self._israel_ibl_finals(self._discover_games())
+        if league is League.BASKETBALL_CHAMPIONS_LEAGUE:
+            return self._bcl_finals(self._discover_games())
         if league is League.JAPAN_B_LEAGUE:
             return self._bleague_finals(self._discover_games())
         if league is League.SOUTH_KOREA_KBL:
@@ -3397,6 +3433,32 @@ class Pipeline:
                         reason=CoverageState.MISSING,
                         provider="acb",
                         detail=reason[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            finals.append(refreshed)
+        return finals
+
+    def _bcl_finals(self, games: List[Game]) -> List[Game]:
+        """Re-read BCL finals from the GDAP index so a correction is not lost."""
+
+        finals: List[Game] = []
+        transport = self.fetch if self._injected_fetch else None
+        for game in games:
+            if game.status is not GameStatus.FINAL:
+                continue
+            try:
+                refreshed = bcl.fetch_game_result(game, transport)
+            except Exception as exc:
+                logger.warning("bcl result failed for %s: %s", game.game_id, exc)
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="actual_result",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider="bcl",
+                        detail=str(exc)[:200],
                         observed_utc=self._now_iso(),
                     )
                 )

@@ -285,7 +285,11 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "independent public clients, with no Ma Golide first-party capture retained."
         ),
     ),
-    LeagueSpec(League.BASKETBALL_CHAMPIONS_LEAGUE, "Basketball Champions League", "basketball_champions_league", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
+    # BCL runs on the FIBA GDAP platform the EuroLeague Women lane already reads,
+    # so this row reuses that contract module (header name, public fallback key,
+    # UTC parser, status vocabulary) instead of restating it. Competition 209123;
+    # the schedule index carries totals but no quarter split.
+    LeagueSpec(League.BASKETBALL_CHAMPIONS_LEAGUE, "Basketball Champions League", "basketball_champions_league", "Europe/Paris", "Europe/Paris", "bcl", "bcl", "bcl", source_detail="FIBA GDAP getgdapgamesbycompetitionid?gdapCompetitionId=209123 (whole season in one call, date-filtered client-side), gated by the site-shipped Ocp-Apim-Subscription-Key. One verbatim row vendored; settled rows are totals-only (no boxscore route captured)."),
     # ESPN's public NBA G League scoreboard and event-summary route were
     # captured with stable event/team identity, UTC tips, terminal status, and
     # reconciled Q1–Q4 finals. This grants canonical schedule/result handling
