@@ -88,8 +88,11 @@ workflow serialises on one concurrency group with `cancel-in-progress: false`,
 the overlap surfaced as the *pending* tick being cancelled when the next one
 arrived — acquisition silently skipped rather than run twice.
 
-Each slate still gets a pre-tip opportunity to make its 60-minute ticket
-decision, but from a single tick per window instead of two:
+Each slate gets its pre-tip opportunity from a 120-minute lead
+(`TICKET_DECISION_LEAD_TIME` in `forecasting/operator.py` and
+`DECISION_LEAD_MINUTES` in the gate must move together, or the gate rejects the
+freeze the writer produced). That lead is what puts two hourly ticks inside
+every window:
 
 - Lane cap is 60 minutes (`league` job), so a wedged lane cannot outlive the
   cadence in the normal case.
@@ -120,7 +123,7 @@ and may use only already-canonical imported games/history; it never fabricates
 fixtures, results, or named-book prices. The gate also wakes a league for its
 first dated draft, the universal midday dated-ticket cutoff (12:00 SAST for
 every league, or earlier first-fixture safety), each fixture's independent
-60-minute pre-tip snapshot, and
+120-minute pre-tip snapshot, and
 frozen-result reconciliation. One serialized publisher commits compact ticket
 and lifecycle state (including immutable inline per-fixture snapshots) and
 dated text cards to `main`; structured dated pick JSON, detailed
@@ -214,7 +217,7 @@ and current acquisition-day schedule. It starts a league job when any of these
 conditions holds:
 
 - a ticket decision is due: an unfrozen scheduled/live game is at or inside the
-  60-minute decision lead;
+  120-minute decision lead;
 - the compact performance report has a pending position, awaiting game leg, or
   unresolved-result leg needing reconciliation or settlement; or
 - a receipt-backed settlement card is missing or still displays `PENDING` after
@@ -271,7 +274,7 @@ Each matrix job has isolated state and artifacts:
 A current scan is candidate evidence, not a ticket publication. The
 **acquisition timezone** identifies the fixtures belonging to a league/date,
 while every dated-card decision is at **12:00 Africa/Johannesburg** on that
-named date. If the first fixture's ordinary 60-minute pre-tip safety cutoff is
+named date. If the first fixture's ordinary 120-minute pre-tip safety cutoff is
 earlier, that earlier cutoff takes precedence. The first successful scan at the
 applicable pre-tip
 cutoff freezes all currently valid, exact-priced paper

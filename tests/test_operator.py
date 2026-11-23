@@ -29,11 +29,14 @@ from ingestion.models import (
 )
 
 DATE = "2026-11-07"
-AS_OF = "2026-11-07T18:00:00Z"
+# The universe reference "before the fixture window" clock. Fixtures tip at
+# 20:00Z, so the window now opens at 18:00Z (tip minus 120) and this sits
+# comfortably ahead of it.
+AS_OF = "2026-11-07T17:00:00Z"
 # Every dated card freezes at 12:00 SAST (10:00Z). Fixture-level draft evidence
-# remains independently frozen at each fixture's 60-minute pre-tip point.
+# remains independently frozen at each fixture's 120-minute pre-tip point.
 TICKET_DECISION_AS_OF = "2026-11-07T10:00:00Z"
-FIXTURE_FREEZE_AS_OF = "2026-11-07T19:00:00Z"
+FIXTURE_FREEZE_AS_OF = "2026-11-07T18:00:00Z"
 
 
 class Store:
@@ -559,7 +562,7 @@ def test_ticket_waits_for_the_pre_tip_decision_window_and_uses_later_price(tmp_p
 
     assert early["ticket_receipt"] is None
     assert early["ticket_decision"]["status"] == "pending_cutoff"
-    assert early["ticket_decision"]["policy"] == "1200_sast_or_first_slate_tip_minus_60_minutes"
+    assert early["ticket_decision"]["policy"] == "1200_sast_or_first_slate_tip_minus_120_minutes"
     assert early["ticket_decision"]["publication_local_time"] == "12:00"
     assert early["ticket_decision"]["planned_cutoff_utc"] == "2026-11-07T10:00:00Z"
     assert json.loads(Path(early["ticket_state"]).read_text())["frozen_by_date"] == {}
@@ -716,11 +719,11 @@ def test_fixture_pick_freeze_contract_is_global_for_every_supported_league(tmp_p
 
 def test_per_fixture_pick_lifecycle_publishes_drafts_freezes_once_and_settles(tmp_path):
     draft_rows = [forecast(1), forecast(2)]
-    draft_rows[1]["scheduled_utc"] = "2026-11-07T22:00:00Z"
+    draft_rows[1]["scheduled_utc"] = "2026-11-07T23:00:00Z"
     games = Store(
         [
             game(1, scheduled_utc="2026-11-07T20:00:00Z"),
-            game(2, scheduled_utc="2026-11-07T22:00:00Z"),
+            game(2, scheduled_utc="2026-11-07T23:00:00Z"),
         ]
     )
 
@@ -729,14 +732,14 @@ def test_per_fixture_pick_lifecycle_publishes_drafts_freezes_once_and_settles(tm
         games,
         report(draft_rows),
         run_id="draft-before-cutoff",
-        generated_utc="2026-11-07T18:00:00Z",
+        generated_utc="2026-11-07T17:00:00Z",
     )
     assert draft["pick_freezes"] == 0
     draft_lifecycle = json.loads(Path(draft["pick_lifecycle"]).read_text())
     assert {row["lifecycle_status"] for row in draft_lifecycle["rows"]} == {"DRAFT"}
 
     freeze_rows = [forecast(1, price=1.95), forecast(2)]
-    freeze_rows[1]["scheduled_utc"] = "2026-11-07T22:00:00Z"
+    freeze_rows[1]["scheduled_utc"] = "2026-11-07T23:00:00Z"
     frozen = publish(
         tmp_path,
         games,
@@ -753,7 +756,7 @@ def test_per_fixture_pick_lifecycle_publishes_drafts_freezes_once_and_settles(tm
     assert frozen["pick_freezes"] == 1
 
     changed_rows = [forecast(1, price=2.10), forecast(2)]
-    changed_rows[1]["scheduled_utc"] = "2026-11-07T22:00:00Z"
+    changed_rows[1]["scheduled_utc"] = "2026-11-07T23:00:00Z"
     publish(
         tmp_path,
         games,
@@ -2055,7 +2058,7 @@ def test_repeated_observations_render_and_grade_as_one_logical_pick(tmp_path):
         Store([game(1)]),
         report([later]),
         run_id="second",
-        generated_utc="2026-11-07T18:30:00Z",
+        generated_utc="2026-11-07T17:30:00Z",
     )
 
     archived = json.loads(dated_path.read_text())
@@ -2228,7 +2231,7 @@ def test_later_exact_quote_hides_stale_unpriced_logical_pick_but_keeps_evidence(
         Store([game(1)]),
         report([priced]),
         run_id="after-quote",
-        generated_utc="2026-11-07T18:30:00Z",
+        generated_utc="2026-11-07T17:30:00Z",
     )
 
     # The original no-price evidence remains immutable in the dated ledger,
@@ -3047,7 +3050,7 @@ def test_derived_spread_lane_issues_future_ticket_with_separate_cover_roi_contra
         tmp_path,
         Store([*historical_games, game(1)]),
         report([source, posted]),
-        generated_utc="2026-11-07T18:00:00Z",
+        generated_utc="2026-11-07T17:00:00Z",
     )
 
     assert first["derived_spread_ticket_lane"]["future_only"] is True
