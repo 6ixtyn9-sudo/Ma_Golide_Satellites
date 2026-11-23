@@ -771,6 +771,51 @@ def _read_json_response(url: str, *, headers: dict[str, str] | None = None) -> A
         raise GateUncertain("schedule response was not JSON") from exc
 
 
+def _bleague_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGame]:
+    """One B.League B1 day from the site's server-rendered slate.
+
+    The slate is asked for in JST terms and already carries the tip time and the
+    status text, so the gate needs two page reads and no per-game snapshot. A
+    page with no recognisable game block fails open rather than asserting an
+    empty slate.
+    """
+
+    from ingestion.providers import bleague
+
+    day = datetime.strptime(target_date.replace("-", ""), "%Y%m%d")
+    local_day = (day.replace(tzinfo=timezone.utc) + timedelta(hours=9)).date()
+    games: list[ScheduleGame] = []
+    seen: set[str] = set()
+    for offset in (0, 1):
+        url = bleague.schedule_url(local_day + timedelta(days=offset), bleague.TAB_B1)
+        blocks = bleague.parse_slate(_read_limited_response(url))
+        if not blocks:
+            raise GateUncertain("B.LEAGUE schedule page has no recognisable game block")
+        for block in blocks:
+            key = block["schedule_key"]
+            if key in seen or not block["tip_local"]:
+                continue
+            try:
+                hour, minute = (int(part) for part in block["tip_local"].split(":"))
+                tip = datetime(
+                    local_day.year, local_day.month, local_day.day, hour, minute
+                ) + timedelta(days=offset)
+            except (TypeError, ValueError):
+                continue
+            tip = tip.replace(tzinfo=timezone(timedelta(hours=9)))
+            if tip.astimezone(timezone.utc).strftime("%Y-%m-%d") != target_date:
+                continue
+            seen.add(key)
+            games.append(
+                ScheduleGame(
+                    scheduled_utc=tip.astimezone(timezone.utc),
+                    status=bleague.status_from_text(block["status_text"]),
+                    game_id=f"BLEAGUE-{key}",
+                )
+            )
+    return games
+
+
 def _tbf_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGame]:
     """One TBF day from the federation's daily-matches route (no key).
 
@@ -1064,6 +1109,8 @@ def fetch_schedule(config: LeagueGateConfig, target_date: str) -> Iterable[Sched
         return _kbl_schedule(config, target_date)
     if config.schedule_source == "tbf":
         return _tbf_schedule(config, target_date)
+    if config.schedule_source == "bleague":
+        return _bleague_schedule(config, target_date)
     if config.schedule_source == "cba":
         return _cba_schedule(config, target_date)
     if config.schedule_source == "fiba_elw":

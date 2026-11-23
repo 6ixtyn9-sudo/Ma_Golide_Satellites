@@ -64,6 +64,15 @@ The hypothesis is admissible only if it produces evidence:
 | Is the softness obtainable? | bookmaker, market, line, period, pre-tip observation time and pre-match state on every emitted price |
 | Is it stable? | closing-line movement and quote staleness per lane; a stale quote is not an edge |
 
+**Verified 2026-11-23:** The Odds API's published sports table lists exactly 11
+basketball keys, and of the lanes this project runs only `basketball_euroleague`
+and `basketball_nbl` (Australia) are among them. Liga ACB, BSL, KBL, B.League,
+LNB Pro A, BBL, ESAKE, NBB and Liga Argentina are **absent from that provider's
+coverage** — not merely unpriced by us. No amount of adapter work will make those
+lanes billable through The Odds API; they need a different book source or stay
+research-only. This is the "is the league priceable at all?" row below, filled in
+for one provider.
+
 Two cautions must survive any future rewrite. **A soft market with no obtainable
 price is not an opportunity** — coverage, not softness, is what bounds 15 of the
 24 lanes today. And the settled evidence does not yet support assuming that

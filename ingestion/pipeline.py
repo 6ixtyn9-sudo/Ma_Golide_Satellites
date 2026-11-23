@@ -61,6 +61,7 @@ from .providers import (
     acb,
     betexplorer,
     betexplorer_direct,
+    bleague,
     cbaleague,
     espn,
     euroleague,
@@ -913,6 +914,44 @@ class Pipeline:
                             f"url={probe.get('url')} bytes={probe.get('bytes')} "
                             f"sha256={probe.get('sha256')} "
                             f"competitions={','.join(probe.get('competitions') or [])}"
+                        )[:500],
+                    )
+                )
+        elif league is League.JAPAN_B_LEAGUE:
+            games = bleague.discover_games(
+                _iso(self.config.date_yyyymmdd),
+                self.fetch if self._injected_fetch else None,
+            )
+            for gap in bleague.last_gaps():
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=(
+                            f"BLEAGUE-{gap['game_id']}" if gap.get("game_id") else None
+                        ),
+                        required_field="schedule_identity",
+                        reason=CoverageState.MISSING,
+                        provider="bleague",
+                        detail=str(gap.get("detail", ""))[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+            probe = bleague.last_probe()
+            if probe:
+                now = self._now_iso()
+                self.store.upsert_provider_health(
+                    ProviderHealth(
+                        provider="bleague",
+                        league=self.config.league_enum,
+                        last_attempt_utc=now,
+                        last_success_utc=now if games else None,
+                        state=CoverageState.OK if games else CoverageState.MISSING,
+                        coverage={
+                            "games": len(games),
+                            "slate_games": probe.get("slate_games", 0),
+                        },
+                        detail=(
+                            f"url={probe.get('url')} requests={probe.get('requests')} "
+                            f"bytes={probe.get('bytes')} sha256={probe.get('sha256')}"
                         )[:500],
                     )
                 )
@@ -3216,6 +3255,8 @@ class Pipeline:
             return self._lba_finals(self._discover_games())
         if league is League.ISRAEL_PREMIER_LEAGUE:
             return self._israel_ibl_finals(self._discover_games())
+        if league is League.JAPAN_B_LEAGUE:
+            return self._bleague_finals(self._discover_games())
         if league is League.SOUTH_KOREA_KBL:
             return self._kbl_finals(self._discover_games())
         if league is League.SPAIN_ACB:
@@ -3356,6 +3397,50 @@ class Pipeline:
                         reason=CoverageState.MISSING,
                         provider="acb",
                         detail=reason[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            finals.append(refreshed)
+        return finals
+
+    def _bleague_finals(self, games: List[Game]) -> List[Game]:
+        """Re-read B.League finals from the S3 context so quarters reconcile.
+
+        Discovery already settles a final from its context; this stage refreshes
+        FINAL games so a corrected period split is not lost, and a context that
+        does not reconcile stays a gap rather than an accepted final.
+        """
+
+        finals: List[Game] = []
+        transport = self.fetch if self._injected_fetch else None
+        for game in games:
+            if game.status is not GameStatus.FINAL:
+                continue
+            try:
+                refreshed = bleague.fetch_game_result(game, transport)
+            except Exception as exc:
+                logger.warning("bleague result failed for %s: %s", game.game_id, exc)
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="actual_result",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider="bleague",
+                        detail=str(exc)[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            ok, reason = refreshed.actual.reconciles() if refreshed.actual else (False, "")
+            if not ok:
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=refreshed.game_id,
+                        required_field="historical_reconciliation",
+                        reason=CoverageState.MISSING,
+                        provider="bleague",
+                        detail=str(reason)[:200],
                         observed_utc=self._now_iso(),
                     )
                 )

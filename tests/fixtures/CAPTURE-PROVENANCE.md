@@ -140,3 +140,35 @@ body**, upgrading the KBL lane from shape-fixture-only evidence.
 - What it does **not** prove: the list route (`/match/list`) still has no
   vendored body, so the daily discovery shape remains contract-referenced and is
   checked at run time by `kbl.last_probe()`.
+
+## Capture excerpts: Japan B.League (2026-11-23, out-of-sandbox probe)
+
+Neither host is reachable from this repository's sandbox, so these two files
+came from a probe run elsewhere and are labelled by what they actually are.
+
+`bleague/captures/schedule-2026-10-04-excerpt.html`
+- Source: `GET https://www.bleague.jp/schedule/?tab=1&year=2026&mon=10&day=4`,
+  HTTP 200, returned to the probe on 2026-11-23T12:02:12Z (162,511 bytes).
+- Class: **capture excerpt**. One `<li class="list-item">` game block is quoted
+  verbatim; the `<ul id="schedule-b1">` wrapper and the closing `</li>` are
+  synthesised because the excerpt stopped at `</a>`. It is not the full page.
+- What it proves: the slate is server-rendered HTML, the block structure, the
+  class names for names/scores/status/tip, and the honoured query spelling
+  (`mon`, not `month` — the latter is ignored by the host).
+- What it does not prove: multi-game pagination, live statuses beyond `FINAL`,
+  or any markup outside this one block.
+
+`bleague/captures/context-506418-113.json`
+- Source: `GET https://b-league.s3.amazonaws.com/web_json/v2_genius_contexts/506418/latestid`
+  → `113`, then `.../506418/113.json`, HTTP 200 (31,613 bytes), same probe run.
+- Class: **partial capture**. The `Game` object is verbatim; its sibling keys
+  (`PlayByPlays`, `HomeBoxscores`, `AwayBoxscores`, `Summaries`) are omitted
+  because this adapter reads only `Game`.
+- What it proves: club ids, long/short names, `.NET` `/Date(ms+0900)/` tip form,
+  totals and `HomeTeamScore01..04` per quarter.
+- What it does not prove: overtime encoding. `MaxPeriod` is documented as the OT
+  marker but no OT body was captured, so an unreconciling split falls back to
+  totals and records a gap rather than being interpreted.
+
+The documented `web_json/contexts/{key}` tree was also tried and refused with a
+403 `AccessDenied`; `v2_genius_contexts` is the keyless path this lane reads.

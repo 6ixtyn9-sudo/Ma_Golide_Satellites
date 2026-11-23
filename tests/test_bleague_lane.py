@@ -1,0 +1,246 @@
+"""Japan B.League (B1) lane: server-rendered slate + keyless S3 snapshot.
+
+Every body used here was served to an out-of-sandbox probe on 2026-11-23 (this
+sandbox has no egress to bleague.jp or the S3 bucket) and is vendored under
+``tests/fixtures/bleague/captures/``. The slate file is a capture *excerpt* —
+one verbatim ``<li>`` block with a synthesised ``<ul>``/``</li>`` wrapper — and
+the context file holds the verbatim ``Game`` object from snapshot 113.
+
+Cases covered: the slate parse, the .NET ``/Date(ms+0900)/`` tip conversion, the
+context's club identity, a reconciling quarter split, an overtime split that
+must fall back to totals, a settled context without totals, a context answering
+another key, a slate with no game block, a non-integer ``latestid``, the probe
+receipt, the UTC-date filter across the JST boundary, and the gate's slate read.
+"""
+
+from __future__ import annotations
+
+import json
+from datetime import datetime, timezone
+from typing import Any, Callable, Dict, List
+
+import pytest
+
+from ingestion.league_registry import league_spec
+from ingestion.models import GameStatus, League, PeriodKind
+from ingestion.providers import bleague
+from ingestion.providers import IdentityError
+
+SLATE = "tests/fixtures/bleague/captures/schedule-2026-10-04-excerpt.html"
+CONTEXT = "tests/fixtures/bleague/captures/context-506418-113.json"
+
+
+def _slate() -> str:
+    with open(SLATE, encoding="utf-8") as handle:
+        return handle.read()
+
+
+def _context_text() -> str:
+    with open(CONTEXT, encoding="utf-8") as handle:
+        return handle.read()
+
+
+def _context() -> Dict[str, Any]:
+    return json.loads(_context_text())
+
+
+def _transport(context: Any | None = None, slate: str | None = None) -> Callable[[str], str]:
+    body = _context_text() if context is None else json.dumps(context, ensure_ascii=False)
+    page = _slate() if slate is None else slate
+
+    def fetch(url: str) -> str:
+        if "/latestid" in url:
+            return "113"
+        if url.endswith("/113.json"):
+            return body
+        if "bleague.jp/schedule/" in url:
+            return page
+        raise AssertionError(f"unexpected URL: {url}")
+
+    return fetch
+
+
+def test_registry_points_the_lane_at_the_site_and_the_snapshot():
+    spec = league_spec(League.JAPAN_B_LEAGUE)
+    assert (spec.schedule_source, spec.results_source, spec.gate_schedule_source) == (
+        "bleague",
+        "bleague",
+        "bleague",
+    )
+    assert "mon=" in spec.source_detail
+
+
+def test_slate_url_uses_the_honoured_parameter_names():
+    # The host ignores ``month``; the captured working form is year/mon/day.
+    url = bleague.schedule_url(datetime(2026, 10, 4).date())
+    assert url.endswith("/schedule/?tab=1&year=2026&mon=10&day=4")
+
+
+def test_slate_parse_reads_key_names_scores_status_and_tip():
+    blocks = bleague.parse_slate(_slate())
+
+    assert len(blocks) == 1
+    block = blocks[0]
+    assert block["schedule_key"] == "506418"
+    assert block["home_name"] == "北海道"
+    assert block["away_name"] == "仙台"
+    assert (block["home_score"], block["away_score"]) == ("100", "89")
+    assert block["status_text"] == "FINAL"
+    assert block["tip_local"] == "14:05"
+
+
+def test_dotnet_date_is_converted_with_its_own_offset():
+    game = bleague._game_from_context(_context(), "506418", "2026-10-04")
+
+    # /Date(1791090300000+0900)/ = 2026-10-04T05:05:00Z = 14:05 JST
+    assert game.scheduled_utc == "2026-10-04T05:05:00Z"
+    assert game.league is League.JAPAN_B_LEAGUE
+    assert game.game_id == "BLEAGUE-506418"
+    assert game.home_team_id == "702"
+    assert game.away_team_id == "692"
+    assert game.season == "2027"
+
+
+def test_reconciling_quarters_are_written_with_their_finals():
+    game = bleague._game_from_context(_context(), "506418", "2026-10-04")
+
+    assert game.status is GameStatus.FINAL
+    actual = game.actual
+    assert actual.period_kind is PeriodKind.QUARTERS
+    assert actual.home_quarters == [16.0, 26.0, 27.0, 31.0]
+    assert actual.away_quarters == [23.0, 28.0, 17.0, 21.0]
+    assert actual.home_final == 100.0
+    assert actual.away_final == 89.0
+    ok, _ = actual.reconciles()
+    assert ok
+
+
+def test_overtime_split_falls_back_to_totals_instead_of_a_bad_sum():
+    body = _context()
+    game = body["Game"]
+    game["MaxPeriod"] = 5
+    game["GameCurrentPeriod"] = 5
+    game["HomeTeamScore"] = 108
+    game["AwayTeamScore"] = 97
+
+    parsed = bleague._game_from_context(body, "506418", "2026-10-04")
+
+    assert parsed.status is GameStatus.FINAL
+    assert parsed.actual.period_kind is PeriodKind.UNKNOWN
+    assert parsed.actual.home_quarters == []
+    assert parsed.actual.home_final == 108.0
+    assert any("does not reconcile" in gap["detail"] for gap in bleague.last_gaps())
+
+
+def test_settled_context_without_totals_is_refused_as_a_final():
+    body = _context()
+    del body["Game"]["HomeTeamScore"]
+
+    parsed = bleague._game_from_context(body, "506418", "2026-10-04")
+
+    assert parsed.status is not GameStatus.FINAL
+    assert parsed.actual is None
+    assert any("refused as a final" in gap["detail"] for gap in bleague.last_gaps())
+
+
+def test_context_answering_another_key_is_refused():
+    body = _context()
+    body["Game"]["ScheduleKey"] = 506419
+
+    with pytest.raises(IdentityError):
+        bleague._game_from_context(body, "506418", "2026-10-04")
+
+
+def test_discover_drops_a_game_outside_the_target_utc_date():
+    # The capture tips 2026-10-04T05:05Z, so a 2026-10-05 request has no game
+    # even though the same slate page is served for both days.
+    games = bleague.discover_games("2026-10-05", _transport())
+
+    assert games == []
+    assert bleague.last_probe()["slate_games"] == 1
+    assert bleague.last_probe()["games"] == 0
+
+
+def test_discover_keeps_the_game_on_its_own_utc_date():
+    games = bleague.discover_games("2026-10-04", _transport())
+
+    assert [game.game_id for game in games] == ["BLEAGUE-506418"]
+
+
+def test_slate_without_a_game_block_raises_instead_of_reading_as_empty():
+    with pytest.raises(ValueError):
+        bleague.discover_games("2026-10-04", _transport(slate="<html><body>no games</ul>"))
+
+
+def test_non_integer_latestid_is_refused():
+    def fetch(url: str) -> str:
+        if "/latestid" in url:
+            return "<html>error</html>"
+        if "bleague.jp/schedule/" in url:
+            return _slate()
+        raise AssertionError(url)
+
+    games = bleague.discover_games("2026-10-04", fetch)
+
+    assert games == []
+    assert any("snapshot id" in gap["detail"] for gap in bleague.last_gaps())
+
+
+def test_probe_records_every_read_not_a_summary_claim():
+    bleague.discover_games("2026-10-04", _transport())
+
+    probe = bleague.last_probe()
+    urls = [read["url"] for read in probe["reads"]]
+    assert any("bleague.jp/schedule/" in url for url in urls)
+    assert any(url.endswith("/latestid") for url in urls)
+    assert any(url.endswith("/113.json") for url in urls)
+    assert all(len(read["sha256"]) == 64 for read in probe["reads"])
+    assert probe["requests"] == len(urls)
+
+
+def test_gate_reads_the_slate_and_reports_the_utc_tip(monkeypatch):
+    from ingestion import adaptive_gate
+
+    seen: List[str] = []
+
+    def fake_read(url: str, headers=None, **kwargs):  # noqa: ANN001, ANN003
+        seen.append(url)
+        return _slate()
+
+    monkeypatch.setattr(adaptive_gate, "_read_limited_response", fake_read)
+    config = adaptive_gate.LeagueGateConfig(
+        label="Japan B.League",
+        league="japan_b_league",
+        league_key="JAPAN_B_LEAGUE",
+        state_key="japan_b_league",
+        acquisition_timezone="Asia/Tokyo",
+        schedule_source="bleague",
+    )
+    slate = adaptive_gate._bleague_schedule(config, "2026-10-04")
+
+    assert len(seen) == 2
+    assert all("tab=1&year=" in url for url in seen)
+    assert len(slate) == 1
+    game = slate[0]
+    assert game.game_id == "BLEAGUE-506418"
+    assert game.status == "final"
+    assert game.scheduled_utc == datetime(2026, 10, 4, 5, 5, tzinfo=timezone.utc)
+
+
+def test_gate_fails_open_on_a_page_without_blocks(monkeypatch):
+    from ingestion import adaptive_gate
+
+    monkeypatch.setattr(
+        adaptive_gate, "_read_limited_response", lambda url, **kw: "<html></html>"
+    )
+    config = adaptive_gate.LeagueGateConfig(
+        label="Japan B.League",
+        league="japan_b_league",
+        league_key="JAPAN_B_LEAGUE",
+        state_key="japan_b_league",
+        acquisition_timezone="Asia/Tokyo",
+        schedule_source="bleague",
+    )
+
+    with pytest.raises(adaptive_gate.GateUncertain):
+        adaptive_gate._bleague_schedule(config, "2026-10-04")
