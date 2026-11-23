@@ -54,7 +54,10 @@ from ingestion.providers.fiba_euroleague_w_contract import (
 )
 
 SCHEMA_VERSION = "magolide.adaptive-gate"
-DECISION_LEAD_MINUTES = 60
+DECISION_LEAD_MINUTES = 120
+# Freezes written under the previous one-hour lead remain readable evidence;
+# see the matching legacy tuple in forecasting.operator.
+LEGACY_DECISION_LEAD_MINUTES = (60,)
 # Keep this universal policy aligned with forecasting.operator. Every dated
 # ticket decision is at midday Johannesburg time, unless an earlier fixture
 # needs the ordinary 60-minute pre-tip safety cutoff.
@@ -269,10 +272,11 @@ def _inline_frozen_game_ids(
         tip = _parse_utc(payload.get("scheduled_utc"), context="frozen pick fixture")
         cutoff = _parse_utc(payload.get("decision_cutoff_utc"), context="frozen pick cutoff")
         frozen_at = _parse_utc(payload.get("frozen_at"), context="frozen pick timestamp")
-        if (
-            cutoff != tip - timedelta(minutes=DECISION_LEAD_MINUTES)
-            or not cutoff <= frozen_at < tip
-        ):
+        accepted_cutoffs = {
+            tip - timedelta(minutes=lead)
+            for lead in (DECISION_LEAD_MINUTES, *LEGACY_DECISION_LEAD_MINUTES)
+        }
+        if cutoff not in accepted_cutoffs or not cutoff <= frozen_at < tip:
             raise GateUncertain("pick lifecycle state has an invalid frozen fixture cutoff")
         frozen_ids.add(str(game_id))
     return frozen_ids

@@ -9,7 +9,7 @@ Operator evidence files live beneath one league's localdata directory:
   cards. They show all forecast picks, but are never evidence that a pick was
   actionable before its own cutoff.
 - ``pick_lifecycle_state.json`` embeds immutable per-fixture snapshots by date
-  and fixture once the fixture enters its 60-minute pre-tip window.
+  and fixture once the fixture enters its 120-minute pre-tip window.
 - ``picks_YYYY-MM-DD_lifecycle.json`` is a mutable rendered view that grades
   only those immutable snapshots after official finals arrive.
 - ``picks_today.json`` and rolling/dated audit files retain full active-cache
@@ -96,12 +96,27 @@ UNPRICED_SPREAD_TICKET_MIN_COVER_RATE = 0.70
 BASE_PAPER_UNITS = 100.0
 STAKE_UNITS_PER_ACCA = 1.0
 # A dated paper-ticket decision is universal across every league: midday in
-# Johannesburg.  An earlier fixture still wins through the ordinary 60-minute
+# Johannesburg.  An earlier fixture still wins through the ordinary 120-minute
 # pre-tip safety cutoff below; no policy may create a post-tip position.
-TICKET_DECISION_LEAD_TIME = timedelta(hours=1)
+#
+# The lead was 60 minutes while the scheduler ticked twice an hour, which gave
+# each fixture roughly two attempts to acquire and freeze inside its window.
+# The tick is now hourly, so a 60-minute lead would leave exactly one attempt:
+# one transient provider failure and the fixture reaches tip-off never having
+# been snapshotted.  120 minutes restores the second attempt.
+#
+# Freezing earlier has a real cost: the immutable snapshot is taken up to two
+# hours before tip instead of one, so a late market move is deliberately not
+# captured.  That is the trade the operator chose over missing a fixture
+# entirely; evidence rows record the cutoff that produced them, so the change
+# stays auditable after the fact.
+TICKET_DECISION_LEAD_TIME = timedelta(minutes=120)
 TICKET_PUBLICATION_TIMEZONE = "Africa/Johannesburg"
 TICKET_PUBLICATION_LOCAL_TIME = time(hour=12)
-TICKET_DECISION_POLICY = "1200_sast_or_first_slate_tip_minus_60_minutes"
+TICKET_DECISION_POLICY = "1200_sast_or_first_slate_tip_minus_120_minutes"
+# Freezes already written under the one-hour lead stay valid: the cutoff is
+# immutable evidence, and refusing to read it would strand a published snapshot.
+LEGACY_TICKET_DECISION_LEAD_TIMES = (timedelta(hours=1),)
 
 
 def _ticket_publication_local_time(_league: League) -> time:
@@ -1085,10 +1100,11 @@ def _load_pick_freezes(
             raise ValueError(
                 f"inline pick freeze has invalid lifecycle timestamps: {target_date}/{game_id}"
             ) from exc
-        if (
-            cutoff_utc != scheduled_utc - TICKET_DECISION_LEAD_TIME
-            or not cutoff_utc <= frozen_at < scheduled_utc
-        ):
+        accepted_cutoffs = {
+            scheduled_utc - lead
+            for lead in (TICKET_DECISION_LEAD_TIME, *LEGACY_TICKET_DECISION_LEAD_TIMES)
+        }
+        if cutoff_utc not in accepted_cutoffs or not cutoff_utc <= frozen_at < scheduled_utc:
             raise ValueError(f"inline pick freeze violates its fixture cutoff: {target_date}/{game_id}")
         for row in rows:
             if not isinstance(row, dict) or str(row.get("game_id")) != canonical_game_id:
@@ -1118,7 +1134,7 @@ def _freeze_due_pick_fixtures(
     rows: List[Dict[str, Any]],
     generated_utc: str,
 ) -> Dict[str, Dict[str, Any]]:
-    """Freeze fixture evidence inline once it enters tip minus 60 minutes.
+    """Freeze fixture evidence inline once it enters tip minus 120 minutes.
 
     A runner can arrive slightly after the exact cutoff, but never after tip.
     The immutable snapshot is nested by date and fixture in the Git-durable
@@ -1249,7 +1265,7 @@ def _render_picks(
         "=" * 72,
         f"Generated at: {_local_time(generated_utc, timezone_name)}",
         "PAPER ONLY · eligibility labels are evidence states, not profit guarantees.",
-        "Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.",
+        "Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.",
         "Only FROZEN rows are immutable settlement evidence; all final grades use official results.",
         "Started and settled games are retained separately as archive status.",
         "",

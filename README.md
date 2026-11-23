@@ -188,7 +188,7 @@ skipped) result reconciliation. Idle external ticks perform only a read-only
 schedule/state check; unavailable state or schedule data fails open to the full
 league run. Paper positions are not selected on the first usable scan: each
 All dated cards are decided at **12:00 Africa/Johannesburg** on their named
-date. An earlier first fixture's 60-minute pre-tip safety cutoff always takes
+date. An earlier first fixture's 120-minute pre-tip safety cutoff always takes
 precedence. At that point, either a strictly evidenced pre-tip ticket or an
 immutable no-bet decision is
 recorded. Before then, the single `auto_tickets_YYYY-MM-DD.txt` card carries a
@@ -325,7 +325,7 @@ writes.
 - `localdata/reports/`: derived operational and market JSON reports.
 - `localdata/<league>/picks_YYYY-MM-DD.txt`: Git-published readable dated
   human card. Individual fixture draft evidence stops changing at its own
-  60-minute pre-tip cutoff.
+  120-minute pre-tip cutoff.
 - `localdata/<league>/picks_YYYY-MM-DD.json` and
   `picks_YYYY-MM-DD_lifecycle.json`: structured mutable draft/lifecycle views
   retained only in the workflow cache and bounded Actions artifacts, never

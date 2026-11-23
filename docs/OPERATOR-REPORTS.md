@@ -18,7 +18,7 @@ raw-dump storage approach:
   so volatile structured detail does not become permanent Git history.
 
 A dated pick card begins as a mutable draft. At each fixture's scheduled tip
-minus 60 minutes, the operator writes one immutable fixture snapshot inline in
+minus 120 minutes, the operator writes one immutable fixture snapshot inline in
 `pick_lifecycle_state.json`. Later settlement reads the snapshot rather than a
 refreshed model or price scan, while the detailed lifecycle view records the
 frozen/settled status in cache and Actions artifacts. The publisher overlays
@@ -45,7 +45,7 @@ profitability.
 | --- | --- |
 | `picks_today.json` | Current scan of every forecast; cache/artifact only, not Git |
 | `picks_YYYY-MM-DD.json` | Structured dated draft evidence; cache/Actions-artifact only for every league, never Git-published |
-| `pick_lifecycle_state.json` | Git-published lifecycle state with immutable per-fixture evidence nested by date and fixture, captured at the 60-minute cutoff: selections, prices/lines, source/evidence timestamps, scheduled tip, and freeze timestamp; no per-fixture sidecar is published |
+| `pick_lifecycle_state.json` | Git-published lifecycle state with immutable per-fixture evidence nested by date and fixture, captured at the 120-minute cutoff: selections, prices/lines, source/evidence timestamps, scheduled tip, and freeze timestamp; no per-fixture sidecar is published |
 | `picks_YYYY-MM-DD_lifecycle.json` | Detailed mutable lifecycle view; grades frozen evidence against reconciled official finals and labels draft/frozen/settled state. Cache/Actions-artifact only for every league, never Git-published. |
 | `picks_YYYY-MM-DD.txt` | Git-published human-readable pick card rendered from the lifecycle view |
 | `picks_audit_rolling.json` | Thirty-day logical and settled ledgers; cache/artifact only, not Git |
@@ -277,7 +277,7 @@ A scan does **not** freeze the first non-empty ticket it sees. It remains
 candidate evidence until the dated card's universal Johannesburg publication
 time: **12:00** for every league. The first scheduled fixture on the league's
 acquisition-timezone slate can
-supply an earlier 60-minute pre-tip safety cutoff. The first successful scan at
+supply an earlier 120-minute pre-tip safety cutoff. The first successful scan at
 that cutoff freezes all currently valid candidates whose every leg is
 still pre-tip. It records the policy, planned cutoff, source timezone, actual
 scan, and candidate counts in the receipt. This includes a provisional paper

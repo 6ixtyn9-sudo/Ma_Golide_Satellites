@@ -220,12 +220,15 @@ or any uncertain state/schedule result. Uncertainty deliberately fails open;
 EuroLeague also fails open until a verified date-bounded schedule source exists,
 rather than polling its whole-season feed in the gate. The workflow restores/
 saves `localdata/` as a cache and uploads run reports/ledgers as artifacts. That
-cadence supports the operator's 60-minute pre-tip ticket decision window, with
-one honest cost worth stating: an hourly tick lands inside each 60-minute window
-exactly once, so a lane whose single attempt fails is not retried before
-tip-off. Under the old 30-minute cadence the same window usually got two
-attempts. Recovering that retry without returning to overlapping ticks needs a
-gate-level "a tick is already in flight" check, not a shorter interval.
+cadence supports the operator's 120-minute pre-tip ticket decision window. The
+lead was 60 minutes while ticks came twice an hour; at an hourly tick that left
+each fixture exactly one attempt inside its window, so one transient provider
+failure meant the fixture reached tip-off never having been snapshotted. The
+120-minute lead restores the second attempt without shortening the interval,
+and the cost is explicit: the immutable snapshot is taken up to two hours before
+tip rather than one, so a late market move is deliberately not captured.
+Freezes already written under the one-hour lead stay valid as legacy evidence
+rather than being rewritten.
 Disabled canonical writes still run live acquisition as a dry run; they do not
 create or modify canonical DuckDB/CSV state. Manual live dry runs force the
 full all-league rehearsal path. The GitHub Actions cache and 14-day artifacts
