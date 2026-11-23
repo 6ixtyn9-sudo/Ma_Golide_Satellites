@@ -94,6 +94,15 @@ LEAGUE_SLUGS = {
     # four regulation linescores, and reconciled final totals. Do not infer
     # BPI support from a schedule/result route; see BPI_LEAGUES below.
     League.NBA_G_LEAGUE: "nba-development",
+    # Australia NBL is ESPN's own ``basketball/nbl`` competition route (league
+    # UID 55), not a country-code slug. Verified from the operator's live probe
+    # on 2026-11-23: ``basketball/nbl`` resolved in the core registry as
+    # "National Basketball League" (id 55) and its 2026-11-21 scoreboard served
+    # three games (Illawarra Hawks at Tasmania JackJumpers). The ``basketball/
+    # esp.1``-style country slugs used by third-party repos are not ESPN
+    # leagues at all - the core registry answers "Invalid sport/league
+    # combination" - so those must never be substituted for this route.
+    League.AUSTRALIA_NBL: "nbl",
 }
 
 # A BPI endpoint is an independent source contract, not a generic ESPN
@@ -139,6 +148,7 @@ ESPN_LEAGUE_IDS = {
     # requested route and the event's own explicit women's-college identity.
     League.NCAA_W: "54",
     League.NBA_G_LEAGUE: "69",
+    League.AUSTRALIA_NBL: "55",
 }
 
 

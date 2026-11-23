@@ -781,6 +781,10 @@ def _espn_scoreboard_url(config: LeagueGateConfig, target_date: str | None) -> s
         slug, suffix = "mens-college-basketball", "groups=50&limit=500"
     elif config.league == "NCAA_W":
         slug, suffix = "womens-college-basketball", "groups=50&limit=500"
+    elif config.league == "AUSTRALIA_NBL":
+        # ESPN's own NBL competition route (league UID 55); date-bounded, so
+        # the half-hour gate may read it directly.
+        slug, suffix = "nbl", "limit=100"
     elif config.league == "NBA_G_LEAGUE":
         # Validated separately from NBA: this is ESPN's NBA G League route,
         # not the NBA scoreboard with a group filter.
