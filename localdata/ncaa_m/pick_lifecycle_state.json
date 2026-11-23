@@ -17,7 +17,7 @@
       "logical_picks": 435
     },
     "2026-11-22": {
-      "frozen_fixtures": 40,
+      "frozen_fixtures": 41,
       "logical_picks": 330
     }
   },
@@ -71302,6 +71302,706 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
       },
+      "401917542": {
+        "decision_cutoff_utc": "2026-11-23T01:30:00Z",
+        "frozen_at": "2026-11-23T01:54:33Z",
+        "game_id": "401917542",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "UC San Diego Tritons",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.674034,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 265,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "8c211ddd0191bd95ac0ef9b85515c41d03a7eddaa867edd63508b5cb1ee26d96",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "f738a67249374b8e2082",
+            "game_id": "401917542",
+            "grade_status": "pending",
+            "home": "Seattle U Redhawks",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "f738a67249374b8e2082",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.74,
+            "role": null,
+            "scheduled_utc": "2026-11-23T02:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Seattle U Redhawks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917542",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-23T00:10:26Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.453107,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 171,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "d5bbb02c6edc0153be8b5b317fd3cee413bb7657bbeb42dea9fad127f8e0e48b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "ac63903b9bd1eeb9a9f7",
+            "game_id": "401917542",
+            "grade_status": "pending",
+            "home": "UC San Diego Tritons",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "ac63903b9bd1eeb9a9f7",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-23T00:10:29Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.5223,
+            "role": null,
+            "scheduled_utc": "2026-11-23T02:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "UC San Diego Tritons",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917542",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-23T01:40:35Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.466859,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 178,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "716839baf27fa9682fb76892dc038b2e66ef7b7f4bd20b0d902a53b7232237ed",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a81bd0ec91373aac7520",
+            "game_id": "401917542",
+            "grade_status": "pending",
+            "home": "Seattle U Redhawks",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "a81bd0ec91373aac7520",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-23T01:40:37Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.5223,
+            "role": null,
+            "scheduled_utc": "2026-11-23T02:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UC San Diego Tritons",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917542",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-23T01:40:35Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.495,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 264,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "403a886f20702105a9c11e2a0f8187dfdec7fc68fae032416a753535bf868038",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "f7d511200514ab95ba70",
+            "game_id": "401917542",
+            "grade_status": "pending",
+            "home": "Seattle U Redhawks",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "f7d511200514ab95ba70",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-23T02:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UC San Diego Tritons",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917542",
+              "line": -1.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-23T00:10:26Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.7692307692307692,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.501028,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 77,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "797420dd39c7dbb8ee9af43aa362db7a1a8b855363a08ba52962363c771cae74",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "9a42de4118c5efa45a83",
+            "game_id": "401917542",
+            "grade_status": "pending",
+            "home": "Seattle U Redhawks",
+            "league": "NCAA_M",
+            "line": -1.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "9a42de4118c5efa45a83",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-23T02:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "UC San Diego Tritons",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917542",
+              "line": 1.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-23T01:40:35Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 2.1,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.501028,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 77,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "a4b4e7f5df6c92285b035803de0317e94a46d12632d9c05d03a68ca78ade5d0c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b2ff2c83d1fb164ce67c",
+            "game_id": "401917542",
+            "grade_status": "pending",
+            "home": "Seattle U Redhawks",
+            "league": "NCAA_M",
+            "line": 1.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "b2ff2c83d1fb164ce67c",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-23T02:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Seattle U Redhawks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917542",
+              "line": 1.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-22T17:40:21Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.819672131147541,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.449271,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 66,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "419c1bcafa8320685dbcccd22bee3155d949bbfe5c96130405c127ebe1523d6a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "163a00e8b74d9efa11d8",
+            "game_id": "401917542",
+            "grade_status": "pending",
+            "home": "UC San Diego Tritons",
+            "league": "NCAA_M",
+            "line": 1.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "163a00e8b74d9efa11d8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-23T02:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Seattle U Redhawks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917542",
+              "line": -1.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-22T05:10:11Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.444353,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 55,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "3c6cbceedf6bef1aa6c5e0ae83cf1fe5d5e2bf15c4c23c1dc73578e15db61798",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "88c5747dd3bcaf3a88c9",
+            "game_id": "401917542",
+            "grade_status": "pending",
+            "home": "UC San Diego Tritons",
+            "league": "NCAA_M",
+            "line": -1.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "88c5747dd3bcaf3a88c9",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-23T02:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UC San Diego Tritons",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917542",
+              "line": 147.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T15:40:11Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.497156,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 79,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "955464b9b43f6b01719259b8b7237658310d65843552cd2697d7ea82846f1546",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "25386a9a1f763f746121",
+            "game_id": "401917542",
+            "grade_status": "pending",
+            "home": "Seattle U Redhawks",
+            "league": "NCAA_M",
+            "line": 147.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "25386a9a1f763f746121",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-23T02:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "UC San Diego Tritons",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917542",
+              "line": 148.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-23T01:40:35Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.487156,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 79,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "e71706833b8510f74b49148d8c8e9ea5efb5ceff1a60766448a2dfa763e2c689",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7bf431d7a80ed805b565",
+            "game_id": "401917542",
+            "grade_status": "pending",
+            "home": "Seattle U Redhawks",
+            "league": "NCAA_M",
+            "line": 148.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "7bf431d7a80ed805b565",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-23T02:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "UC San Diego Tritons",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917542",
+              "line": 145.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T13:40:15Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.507156,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 79,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "25889637a6507a2e086db364a0bd5ac8625f24a1e1a63f20a264afd2566d3640",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "bdd9b144bf676a45e020",
+            "game_id": "401917542",
+            "grade_status": "pending",
+            "home": "Seattle U Redhawks",
+            "league": "NCAA_M",
+            "line": 145.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "bdd9b144bf676a45e020",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-23T02:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "UC San Diego Tritons",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917542",
+              "line": 146.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T15:09:42Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.507156,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 79,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "f8cdcba3c7c1d1ef5bf2b68d727f46669722c43b3a621ce20f51e06afa8b58f8",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d0fe86e8916535290fdd",
+            "game_id": "401917542",
+            "grade_status": "pending",
+            "home": "Seattle U Redhawks",
+            "league": "NCAA_M",
+            "line": 146.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "d0fe86e8916535290fdd",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-23T02:30:00Z",
+            "selection": "over"
+          }
+        ],
+        "scheduled_utc": "2026-11-23T02:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
+      },
       "401918455": {
         "decision_cutoff_utc": "2026-11-22T18:00:00Z",
         "frozen_at": "2026-11-22T18:22:43Z",
@@ -85001,10 +85701,6 @@
       "2026-11-23T00:00:00Z"
     ],
     [
-      "401920905",
-      "2026-11-23T00:00:00Z"
-    ],
-    [
       "401921206",
       "2026-11-23T01:00:00Z"
     ],
@@ -85015,6 +85711,10 @@
     [
       "401929595",
       "2026-11-23T01:00:00Z"
+    ],
+    [
+      "401917542",
+      "2026-11-23T02:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
