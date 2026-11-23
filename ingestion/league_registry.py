@@ -366,7 +366,15 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     # No key, no special header. A real response body is vendored for this lane
     # (tests/fixtures/tbf/captures/, attributed in CAPTURE-PROVENANCE.md), so the
     # parser is checked against a body the host actually served.
-    LeagueSpec(League.TURKEY_BSL, "Turkey BSL", "turkey_bsl", "Europe/Istanbul", "Europe/Istanbul", "tbf", "tbf", "tbf", source_detail="Federation mini-app API (miniappapi.tbf.org.tr): /Match/get-daily-matches?match_date=YYYY-MM-DD covers BSL, TBL, KBSL and TKBL in one body; no key. Real 2026-10-11 body vendored; settled rows are totals-only (no quarter split on this route).", price_sources=(_aggregate_research_only("betexplorer"),)),
+    # The TBF route is live but cannot serve this league. An external probe on
+    # 2026-11-23 (recorded in lane-probe-2026-11-23.md) called
+    # /Match/get-daily-matches for 2026-11-21, 11-22 and 11-23 and received
+    # byte-identical bodies for all three: the match_date parameter is ignored,
+    # and the single row in each body belongs to TKBL, not BSL. Zero BSL rows on
+    # any date, so no parser change can produce BSL fixtures from it. Declared
+    # unavailable rather than left claiming a source: 732 runs previously
+    # produced nothing and looked healthy doing it.
+    LeagueSpec(League.TURKEY_BSL, "Turkey BSL", "turkey_bsl", "Europe/Istanbul", "Europe/Istanbul", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="TBF mini-app API /Match/get-daily-matches answers 200 but ignores match_date (identical body for 2026-11-21/22/23) and returns only TKBL rows; no BSL fixture is obtainable from this route. Re-capture or a different route is required. See lane-probe-2026-11-23.md.", price_sources=(_aggregate_research_only("betexplorer"),)),
     LeagueSpec(League.GREECE_BASKET_LEAGUE, "Greece Basket League", "greece_basket_league", "Europe/Athens", "Europe/Athens", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
     # The externally referenced aba-liga.com calendar/detail route is the
     # active canonical fixture, result, and history target. Ma Golide retains

@@ -1,0 +1,56 @@
+"""Undecodable bodies: an undeclared gzip stream must still become text.
+
+Evidence: external probe 2026-11-23 (Z.ai), recorded in
+``lane-probe-2026-11-23.md``. B.League's S3 context snapshot for ScheduleKey
+506602 came back with body magic ``1f 8b``, ``content-type: application/json``
+and no usable text form, while ``latestid`` beside it returns a bare integer.
+Decompressed it is a complete 543,231-byte payload with 725 ``PlayByPlays``
+rows. A client that returns ``resp.text`` for that body hands the JSON parser
+replacement characters, so the lane reads nothing and blames the payload.
+"""
+
+from __future__ import annotations
+
+import gzip
+import json
+from dataclasses import dataclass
+
+from ingestion.http import GZIP_MAGIC, _decoded_body
+
+
+@dataclass
+class _Response:
+    content: bytes
+    text: str
+    status_code: int = 200
+
+
+def test_undeclared_gzip_body_is_decompressed():
+    payload = json.dumps({"PlayByPlays": [{"Period": 1}], "Game": {"ScheduleKey": 506602}})
+    compressed = gzip.compress(payload.encode("utf-8"))
+    assert compressed[:2] == GZIP_MAGIC
+
+    response = _Response(content=compressed, text=compressed.decode("latin-1"))
+
+    decoded = _decoded_body(response)
+
+    assert json.loads(decoded)["Game"]["ScheduleKey"] == 506602
+
+
+def test_a_plain_body_is_returned_untouched():
+    response = _Response(content=b'{"ok": true}', text='{"ok": true}')
+    assert _decoded_body(response) == '{"ok": true}'
+
+
+def test_broken_gzip_falls_back_to_the_text_attribute():
+    # Magic bytes but not a real stream: prefer the declared text over raising
+    # on a provider read that might still be usable.
+    response = _Response(content=GZIP_MAGIC + b"not really gzip", text="fallback text")
+    assert _decoded_body(response) == "fallback text"
+
+
+def test_response_without_a_content_attribute_still_works():
+    class _TextOnly:
+        text = '{"ok": true}'
+
+    assert _decoded_body(_TextOnly()) == '{"ok": true}'

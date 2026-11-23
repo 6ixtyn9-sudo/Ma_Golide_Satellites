@@ -55,14 +55,24 @@ def _fetch(payload: Any | None = None, calls: List[str] | None = None) -> Callab
     return fetch
 
 
-def test_registry_points_the_lane_at_the_federation_route():
+def test_registry_stops_claiming_a_route_that_cannot_serve_this_league():
+    """The parser below is still tested against captured bytes.
+
+    What changed is the claim: on 2026-11-23 an external probe called
+    get-daily-matches for three consecutive dates and received byte-identical
+    bodies (match_date is ignored), each containing a single TKBL row and no BSL
+    row. 732 scheduled runs had already produced no games and reported healthy.
+    The registry now says so instead of asserting a working source.
+    """
+
     spec = league_spec(League.TURKEY_BSL)
     assert (spec.schedule_source, spec.results_source, spec.gate_schedule_source) == (
-        "tbf",
-        "tbf",
-        "tbf",
+        "source_unavailable",
+        "source_unavailable",
+        "source_unavailable",
     )
     assert "get-daily-matches" in spec.source_detail
+    assert "lane-probe-2026-11-23.md" in spec.source_detail
 
 
 def test_capture_carries_three_competitions_in_one_envelope():

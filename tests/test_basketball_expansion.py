@@ -135,13 +135,17 @@ def test_final_expansion_is_typed_and_registry_backed_everywhere():
                 "kbl",
             )
         elif league is League.TURKEY_BSL:
-            # The TBF lane reads the federation's own daily-matches route; a real
-            # 2026-10-11 body is vendored, and the same route also serves TBL,
-            # KBSL and TKBL, selected by activityCode on the row.
+            # No longer a live lane. The TBF daily-matches route answers 200 but
+            # ignores match_date (byte-identical bodies for 2026-11-21/22/23)
+            # and carries only TKBL rows; the vendored 2026-10-11 body has TBL,
+            # KBSL and TKBL and no BSL row either. An external probe on
+            # 2026-11-23 recorded this in lane-probe-2026-11-23.md. The adapter
+            # and its parser tests stay, but the registry must not claim a
+            # source that cannot yield this league's fixtures.
             assert (spec.schedule_source, spec.results_source, spec.gate_schedule_source) == (
-                "tbf",
-                "tbf",
-                "tbf",
+                "source_unavailable",
+                "source_unavailable",
+                "source_unavailable",
             )
         elif league is League.JAPAN_B_LEAGUE:
             # The B.League lane reads the site's server-rendered slate plus a
