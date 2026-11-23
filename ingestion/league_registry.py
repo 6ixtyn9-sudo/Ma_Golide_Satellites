@@ -289,7 +289,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     # so this row reuses that contract module (header name, public fallback key,
     # UTC parser, status vocabulary) instead of restating it. Competition 209123;
     # the schedule index carries totals but no quarter split.
-    LeagueSpec(League.BASKETBALL_CHAMPIONS_LEAGUE, "Basketball Champions League", "basketball_champions_league", "Europe/Paris", "Europe/Paris", "bcl", "bcl", "bcl", source_detail="FIBA GDAP getgdapgamesbycompetitionid?gdapCompetitionId=209123 (whole season in one call, date-filtered client-side), gated by the site-shipped Ocp-Apim-Subscription-Key. One verbatim row vendored; settled rows are totals-only (no boxscore route captured)."),
+    LeagueSpec(League.BASKETBALL_CHAMPIONS_LEAGUE, "Basketball Champions League", "basketball_champions_league", "Europe/Paris", "Europe/Paris", "bcl", "bcl", "bcl", source_detail="FIBA GDAP getgdapgamesbycompetitionid?gdapCompetitionId=209123 (whole season in one call, date-filtered client-side), gated by the site-shipped Ocp-Apim-Subscription-Key. One verbatim row vendored; settled rows are totals-only (no boxscore route captured).", price_sources=(_aggregate_research_only("betexplorer"),)),
     # ESPN's public NBA G League scoreboard and event-summary route were
     # captured with stable event/team identity, UTC tips, terminal status, and
     # reconciled Q1–Q4 finals. This grants canonical schedule/result handling
@@ -330,9 +330,10 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "route contract referenced from SportsDataverse documentation, no Ma Golide "
             "first-party capture retained."
         ),
+        price_sources=(_aggregate_research_only("betexplorer"),),
     ),
-    LeagueSpec(League.FRANCE_LNB_PRO_A, "France LNB Pro A", "france_lnb_pro_a", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
-    LeagueSpec(League.GERMANY_BBL, "Germany BBL", "germany_bbl", "Europe/Berlin", "Europe/Berlin", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
+    LeagueSpec(League.FRANCE_LNB_PRO_A, "France LNB Pro A", "france_lnb_pro_a", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
+    LeagueSpec(League.GERMANY_BBL, "Germany BBL", "germany_bbl", "Europe/Berlin", "Europe/Berlin", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
     # legabasket.it's own JSON API is a referenced route contract (probe run
     # externally on 2026-11-22; no first-party body retained here): a
     # championships list keyed by the season's FIRST year, a focus-day calendar
@@ -357,6 +358,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "quarters. Referenced probe, no first-party capture; the calendar cannot "
             "enumerate a season, so history backfill is refused."
         ),
+        price_sources=(_aggregate_research_only("betexplorer"),),
     ),
         # The federation's own mini-app API answers one Turkey local date at a
     # time: GET /Match/get-daily-matches?match_date=YYYY-MM-DD, grouping the
@@ -364,8 +366,8 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     # No key, no special header. A real response body is vendored for this lane
     # (tests/fixtures/tbf/captures/, attributed in CAPTURE-PROVENANCE.md), so the
     # parser is checked against a body the host actually served.
-    LeagueSpec(League.TURKEY_BSL, "Turkey BSL", "turkey_bsl", "Europe/Istanbul", "Europe/Istanbul", "tbf", "tbf", "tbf", source_detail="Federation mini-app API (miniappapi.tbf.org.tr): /Match/get-daily-matches?match_date=YYYY-MM-DD covers BSL, TBL, KBSL and TKBL in one body; no key. Real 2026-10-11 body vendored; settled rows are totals-only (no quarter split on this route)."),
-    LeagueSpec(League.GREECE_BASKET_LEAGUE, "Greece Basket League", "greece_basket_league", "Europe/Athens", "Europe/Athens", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
+    LeagueSpec(League.TURKEY_BSL, "Turkey BSL", "turkey_bsl", "Europe/Istanbul", "Europe/Istanbul", "tbf", "tbf", "tbf", source_detail="Federation mini-app API (miniappapi.tbf.org.tr): /Match/get-daily-matches?match_date=YYYY-MM-DD covers BSL, TBL, KBSL and TKBL in one body; no key. Real 2026-10-11 body vendored; settled rows are totals-only (no quarter split on this route).", price_sources=(_aggregate_research_only("betexplorer"),)),
+    LeagueSpec(League.GREECE_BASKET_LEAGUE, "Greece Basket League", "greece_basket_league", "Europe/Athens", "Europe/Athens", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
     # The externally referenced aba-liga.com calendar/detail route is the
     # active canonical fixture, result, and history target. Ma Golide retains
     # no first-party capture, so live behavior and source-use terms remain
@@ -394,16 +396,17 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "Tip times are local wall clock with no offset, so Asia/Jerusalem is applied as a "
             "recorded assumption rather than a provider fact."
         ),
+        price_sources=(_aggregate_research_only("betexplorer"),),
     ),
     # B.League serves its slate as server-rendered HTML on www.bleague.jp and the
     # structured record on a keyless S3 snapshot (web_json/v2_genius_contexts,
     # not the 403ing web_json/contexts tree). Both were captured by an
     # out-of-sandbox probe on 2026-11-23 and vendored under tests/fixtures/
     # bleague/captures; the adapter records every URL/size/digest it reads.
-    LeagueSpec(League.JAPAN_B_LEAGUE, "Japan B.League", "japan_b_league", "Asia/Tokyo", "Asia/Tokyo", "bleague", "bleague", "bleague", source_detail="B1 slate is server-rendered HTML (/schedule/?tab=1&year=&mon=&day=, note: mon not month); club ids, UTC tip and quarter scores come from the keyless S3 snapshot web_json/v2_genius_contexts/{key}/{snapshot}.json via a latestid pointer. No key."),
-    LeagueSpec(League.SOUTH_KOREA_KBL, "South Korea KBL", "south_korea_kbl", "Asia/Seoul", "Asia/Seoul", "kbl", "kbl", "kbl", source_detail="Schedule/results use the KBL data API behind www.kbl.or.kr (GET /match/list with a fromDate/toDate window, plus /common/teamList for English team names; two headers, Channel and TeamCode, no key). Route referenced from the SportsDataverse kbl module (MIT, read 2026-11-23); no Ma Golide first-party body is retained, so each run records the URL, byte count and sha256 it actually saw. Quarter splits are not captured, so a settled row is totals-only and not quarter-reconcilable."),
-    LeagueSpec(League.BRAZIL_NBB, "Brazil NBB", "brazil_nbb", "America/Sao_Paulo", "America/Sao_Paulo", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
-    LeagueSpec(League.ARGENTINA_LIGA_NACIONAL, "Argentina Liga Nacional", "argentina_liga_nacional", "America/Argentina/Buenos_Aires", "America/Argentina/Buenos_Aires", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
+    LeagueSpec(League.JAPAN_B_LEAGUE, "Japan B.League", "japan_b_league", "Asia/Tokyo", "Asia/Tokyo", "bleague", "bleague", "bleague", source_detail="B1 slate is server-rendered HTML (/schedule/?tab=1&year=&mon=&day=, note: mon not month); club ids, UTC tip and quarter scores come from the keyless S3 snapshot web_json/v2_genius_contexts/{key}/{snapshot}.json via a latestid pointer. No key.", price_sources=(_aggregate_research_only("betexplorer"),)),
+    LeagueSpec(League.SOUTH_KOREA_KBL, "South Korea KBL", "south_korea_kbl", "Asia/Seoul", "Asia/Seoul", "kbl", "kbl", "kbl", source_detail="Schedule/results use the KBL data API behind www.kbl.or.kr (GET /match/list with a fromDate/toDate window, plus /common/teamList for English team names; two headers, Channel and TeamCode, no key). Route referenced from the SportsDataverse kbl module (MIT, read 2026-11-23); no Ma Golide first-party body is retained, so each run records the URL, byte count and sha256 it actually saw. Quarter splits are not captured, so a settled row is totals-only and not quarter-reconcilable.", price_sources=(_aggregate_research_only("betexplorer"),)),
+    LeagueSpec(League.BRAZIL_NBB, "Brazil NBB", "brazil_nbb", "America/Sao_Paulo", "America/Sao_Paulo", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
+    LeagueSpec(League.ARGENTINA_LIGA_NACIONAL, "Argentina Liga Nacional", "argentina_liga_nacional", "America/Argentina/Buenos_Aires", "America/Argentina/Buenos_Aires", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
 )
 
 SPECS: Tuple[LeagueSpec, ...] = _SPECS

@@ -60,15 +60,48 @@ from . import IdentityError
 PROVIDER = "betexplorer"
 BOOK = "average"
 SITE_TZ = "Europe/Paris"
-EVIDENCE = "LIVE_VERIFIED (live captures 2026-11-16; source terms unreviewed)"
+EVIDENCE = (
+    "LIVE_VERIFIED (fixtures pages and representative prices captured 2026-11-23; "
+    "source terms unreviewed, prices are the site average, not a named book)"
+)
 ABA_EVIDENCE = "PROBATIONARY_RESEARCH_ONLY (no named-book, ticket, ROI, or execution use)"
 
+BASE = "https://www.betexplorer.com/basketball"
+
+#: Competition pages this parser reads. Every entry below the first three was
+#: verified on 2026-11-23 by fetching the fixtures URL and matching its served
+#: ``<h1>`` title, not by guessing the slug — the slugs are irregular
+#: (``italy/lega-a``, ``turkey/super-lig``, ``japan/b-league-one``,
+#: ``south-korea/kbl``, ``argentina/liga-a``), and ``turkey/tbl`` is the SECOND
+#: tier despite matching the old top-flight name.
 FIXTURES_URLS = {
-    "EUROLEAGUE": "https://www.betexplorer.com/basketball/europe/euroleague/fixtures/",
-    "CBA": "https://www.betexplorer.com/basketball/china/cba/fixtures/",
-    "ABA_LEAGUE": "https://www.betexplorer.com/basketball/europe/aba-league/fixtures/",
+    "EUROLEAGUE": BASE + "/europe/euroleague/fixtures/",
+    "CBA": BASE + "/china/cba/fixtures/",
+    "ABA_LEAGUE": BASE + "/europe/aba-league/fixtures/",
+    "SPAIN_ACB": BASE + "/spain/acb/fixtures/",
+    "ITALY_LBA": BASE + "/italy/lega-a/fixtures/",
+    "TURKEY_BSL": BASE + "/turkey/super-lig/fixtures/",
+    "FRANCE_LNB_PRO_A": BASE + "/france/lnb/fixtures/",
+    "GERMANY_BBL": BASE + "/germany/bbl/fixtures/",
+    "GREECE_BASKET_LEAGUE": BASE + "/greece/basket-league/fixtures/",
+    "ISRAEL_PREMIER_LEAGUE": BASE + "/israel/super-league/fixtures/",
+    "JAPAN_B_LEAGUE": BASE + "/japan/b-league-one/fixtures/",
+    "SOUTH_KOREA_KBL": BASE + "/south-korea/kbl/fixtures/",
+    "BRAZIL_NBB": BASE + "/brazil/nbb/fixtures/",
+    "ARGENTINA_LIGA_NACIONAL": BASE + "/argentina/liga-a/fixtures/",
+    "BASKETBALL_CHAMPIONS_LEAGUE": BASE + "/europe/champions-league/fixtures/",
 }
+#: ``BASKETBALL_AFRICA_LEAGUE`` is deliberately absent: its fixtures table serves
+#: ``No matches found`` for the whole season (verified 2026-11-23), so registering
+#: it would read as a healthy source that can never quote. Its RESULTS page does
+#: carry odds, but this adapter reads fixtures, so the lane stays unpriced by
+#: this provider rather than silently empty.
 SUPPORTED_LEAGUES = frozenset(FIXTURES_URLS)
+
+#: BetExplorer reports one representative price per market. It publishes the
+#: fixture row's odds only in the days before tip-off (empty ``data-oid`` further
+#: out) and uses ``1.00`` as a "no market" placeholder, which is never a price.
+MIN_DECIMAL_ODD = 1.01
 
 
 def evidence_for(league: League | str) -> str:
@@ -211,6 +244,12 @@ def _rows(
         odds = tuple(_ODD_RE.findall(row))
         if len(odds) != 2:
             odds = ()
+        else:
+            try:
+                if any(float(value) < MIN_DECIMAL_ODD for value in odds):
+                    odds = ()
+            except ValueError:
+                odds = ()
         output.append((local_dt, match_id, slug, names[0], names[1], odds))
     return output
 
