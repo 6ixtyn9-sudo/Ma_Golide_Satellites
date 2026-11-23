@@ -80,8 +80,10 @@ Useful options:
 
 There is no in-repository daemon and no GitHub Actions cron fallback. An
 external scheduler invokes the workflow hourly, at :37. That interval is set
-from measurement, not preference: a healthy tick runs 22-29 minutes, so the
-30-minute cadence it replaced routinely overlapped itself, and because the
+from measurement, not preference: a healthy tick runs ~42 minutes end-to-end
+(22-29 minutes of lane work across 19 parallel lanes, then ~13 minutes of
+publishing), so the 30-minute cadence it replaced could not even contain one
+tick, and because the
 workflow serialises on one concurrency group with `cancel-in-progress: false`,
 the overlap surfaced as the *pending* tick being cancelled when the next one
 arrived — acquisition silently skipped rather than run twice.
