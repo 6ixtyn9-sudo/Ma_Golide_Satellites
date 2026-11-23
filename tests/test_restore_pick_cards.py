@@ -1,6 +1,9 @@
 from __future__ import annotations
 
+import csv
+import gzip
 import hashlib
+import io
 from pathlib import Path
 import subprocess
 
@@ -8,6 +11,15 @@ import pytest
 
 from scripts.release_archive import build_release_archives
 from scripts.restore_pick_cards import restore_pick_cards
+
+
+def csv_gzip_bytes(rows: list[list[str]]) -> bytes:
+    text = io.StringIO()
+    csv.writer(text).writerows(rows)
+    buffer = io.BytesIO()
+    with gzip.GzipFile(fileobj=buffer, mode="wb", mtime=0) as handle:
+        handle.write(text.getvalue().encode())
+    return buffer.getvalue()
 
 
 def readable_card(state: str, day: str, body: str = "  (none)\n") -> bytes:
@@ -108,7 +120,12 @@ def test_restore_prefers_marker_hash_verified_release_archive(tmp_path):
     day = "2026-11-20"
     detailed = readable_card("nba", day, "  exact archived pick\n")
     target = write_marker(repo, "nba", day, detailed)
-    artifact_file(artifacts, "nba", "csv/games.csv.gz", b"canonical")
+    artifact_file(
+        artifacts,
+        "nba",
+        "csv/games.csv.gz",
+        csv_gzip_bytes([["game_id", "payload_json"], ["espn-1", "{}"]]),
+    )
     artifact_file(artifacts, "nba", f"picks_{day}.txt", detailed)
     output = tmp_path / "archives"
     build_release_archives(artifacts=artifacts, repo=repo, output=output)
@@ -133,7 +150,12 @@ def test_restore_never_substitutes_a_nonmatching_release_archive_card(tmp_path):
     expected = readable_card("nba", day, "  marker revision\n")
     archived = readable_card("nba", day, "  other revision\n")
     target = write_marker(repo, "nba", day, expected)
-    artifact_file(artifacts, "nba", "csv/games.csv.gz", b"canonical")
+    artifact_file(
+        artifacts,
+        "nba",
+        "csv/games.csv.gz",
+        csv_gzip_bytes([["game_id", "payload_json"], ["espn-1", "{}"]]),
+    )
     artifact_file(artifacts, "nba", f"picks_{day}.txt", archived)
     output = tmp_path / "archives"
     build_release_archives(artifacts=artifacts, repo=repo, output=output)
@@ -156,7 +178,12 @@ def test_restore_rejects_archive_when_git_manifest_checksum_does_not_match(tmp_p
     day = "2026-11-20"
     detailed = readable_card("nba", day)
     write_marker(repo, "nba", day, detailed)
-    artifact_file(artifacts, "nba", "csv/games.csv.gz", b"canonical")
+    artifact_file(
+        artifacts,
+        "nba",
+        "csv/games.csv.gz",
+        csv_gzip_bytes([["game_id", "payload_json"], ["espn-1", "{}"]]),
+    )
     artifact_file(artifacts, "nba", f"picks_{day}.txt", detailed)
     output = tmp_path / "archives"
     build_release_archives(artifacts=artifacts, repo=repo, output=output)

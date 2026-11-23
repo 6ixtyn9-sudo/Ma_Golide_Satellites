@@ -14,6 +14,7 @@ checkpoint before the normal cache and live pipeline run.
 from __future__ import annotations
 
 import argparse
+import csv
 from dataclasses import dataclass
 import gzip
 import hashlib
@@ -36,6 +37,9 @@ ARCHIVE_SCHEMA = "magolide.release_archive"
 CONTENT_MANIFEST_NAME = "archive_content_manifest.json"
 DEFAULT_RELEASE_TAG = "magolide-state-current"
 STATE_KEYS = frozenset(spec.state_key for spec in SPECS)
+# Tables whose loss means the run stopped being able to see history it already
+# had. ``pipeline_runs`` is excluded because retention prunes it by design.
+REGRESSION_GUARDED_TABLES = ("games", "predictions", "book_snapshots", "team_aliases")
 DATE = r"\d{4}-\d{2}-\d{2}"
 
 
@@ -187,6 +191,52 @@ def _entries_for_state(*, state: str, artifact_dir: Path, repo: Path) -> list[Ar
     return sorted(entries, key=lambda entry: entry.archive_path)
 
 
+def _csv_row_count(path: Path) -> int:
+    """Count data rows in a canonical CSV.GZ, ignoring the header."""
+
+    previous = csv.field_size_limit()
+    limit = sys.maxsize
+    while True:
+        try:
+            csv.field_size_limit(limit)
+            break
+        except OverflowError:  # pragma: no cover - 32-bit platforms
+            limit //= 10
+    try:
+        with gzip.open(path, "rt", newline="") as handle:
+            reader = csv.reader(handle)
+            next(reader, None)
+            return sum(1 for _ in reader)
+    finally:
+        csv.field_size_limit(previous)
+
+
+def _canonical_row_counts(canonical_entries: list[ArchiveEntry]) -> dict[str, int]:
+    counts: dict[str, int] = {}
+    for entry in canonical_entries:
+        name = Path(entry.archive_path).name
+        if name.endswith(".csv.gz"):
+            counts[name[: -len(".csv.gz")]] = _csv_row_count(entry.source_path)
+    return counts
+
+
+def _checkpoint_regressions(
+    previous: dict[str, Any], current: dict[str, int]
+) -> dict[str, dict[str, int]]:
+    """Tables where the new checkpoint holds fewer rows than the committed one."""
+
+    previous_counts = previous.get("canonical_row_counts") or {}
+    regressions: dict[str, dict[str, int]] = {}
+    for table in REGRESSION_GUARDED_TABLES:
+        before = previous_counts.get(table)
+        after = current.get(table)
+        if not isinstance(before, int) or after is None:
+            continue
+        if after < before:
+            regressions[table] = {"committed": before, "new": after}
+    return regressions
+
+
 def _write_deterministic_archive(path: Path, *, content_manifest: dict[str, Any], entries: list[ArchiveEntry]) -> None:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(path.name + ".tmp")
@@ -210,7 +260,12 @@ def _write_deterministic_archive(path: Path, *, content_manifest: dict[str, Any]
 
 
 def build_release_archives(
-    *, artifacts: Path, repo: Path, output: Path, release_tag: str = DEFAULT_RELEASE_TAG
+    *,
+    artifacts: Path,
+    repo: Path,
+    output: Path,
+    release_tag: str = DEFAULT_RELEASE_TAG,
+    allow_checkpoint_regression: bool = False,
 ) -> dict[str, Any]:
     """Create a deterministic canonical checkpoint for each successful lane."""
 
@@ -223,6 +278,30 @@ def build_release_archives(
     records: list[dict[str, Any]] = []
     for state, artifact_dir in sorted(state_dirs.items()):
         entries = _entries_for_state(state=state, artifact_dir=artifact_dir, repo=repo)
+        canonical_entries = [entry for entry in entries if entry.role == "canonical_csv"]
+        row_counts = _canonical_row_counts(canonical_entries)
+        state_manifest = repo / "localdata" / state / "archive_manifest.json"
+        # A checkpoint is built from whatever CSV export the run produced, and
+        # the asset upload plus manifest write are unconditional. Without a
+        # comparison, a thin or freshly rebuilt warehouse silently re-packs
+        # itself as the new canonical state, which is how a 234-prediction
+        # corpus was replaced by 40. Check before anything is written so a
+        # refusal leaves the published release and manifest intact.
+        if state_manifest.exists() and not allow_checkpoint_regression:
+            try:
+                previous_manifest = json.loads(state_manifest.read_text())
+            except (OSError, json.JSONDecodeError) as exc:
+                raise ValueError(
+                    f"invalid committed checkpoint manifest: {state_manifest}"
+                ) from exc
+            regressions = _checkpoint_regressions(previous_manifest, row_counts)
+            if regressions:
+                raise ValueError(
+                    f"checkpoint_regression: refusing to replace the committed {state} "
+                    f"checkpoint with a thinner one: "
+                    f"{json.dumps(regressions, sort_keys=True)}; pass "
+                    "--allow-checkpoint-regression once the loss is understood"
+                )
         content_manifest = {
             "schema_version": ARCHIVE_SCHEMA,
             "state_key": state,
@@ -233,7 +312,6 @@ def build_release_archives(
         archive_path = output / asset_name
         _write_deterministic_archive(archive_path, content_manifest=content_manifest, entries=entries)
         archive_sha256 = _sha256_path(archive_path)
-        canonical_entries = [entry for entry in entries if entry.role == "canonical_csv"]
         manifest = {
             "schema_version": ARCHIVE_SCHEMA,
             "state_key": state,
@@ -242,9 +320,9 @@ def build_release_archives(
             "archive_bytes": archive_path.stat().st_size,
             "archive_sha256": archive_sha256,
             "canonical_csv_files": len(canonical_entries),
+            "canonical_row_counts": dict(sorted(row_counts.items())),
             "content_manifest_sha256": hashlib.sha256(_json_bytes(content_manifest)).hexdigest(),
         }
-        state_manifest = repo / "localdata" / state / "archive_manifest.json"
         state_manifest.parent.mkdir(parents=True, exist_ok=True)
         state_manifest.write_bytes(_json_bytes(manifest))
         records.append(manifest)
@@ -363,6 +441,11 @@ def main() -> int:
     build.add_argument("--repo", type=Path, default=Path.cwd())
     build.add_argument("--output", type=Path, required=True)
     build.add_argument("--release-tag", default=DEFAULT_RELEASE_TAG)
+    build.add_argument(
+        "--allow-checkpoint-regression",
+        action="store_true",
+        help="replace a committed checkpoint with one holding fewer canonical rows",
+    )
     restore = subcommands.add_parser("restore", help="restore canonical CSV from a verified asset")
     restore.add_argument("--archive", type=Path, required=True)
     restore.add_argument("--state-key", required=True)
@@ -375,6 +458,7 @@ def main() -> int:
             repo=args.repo,
             output=args.output,
             release_tag=args.release_tag,
+            allow_checkpoint_regression=args.allow_checkpoint_regression,
         )
     else:
         report = restore_canonical_checkpoint(

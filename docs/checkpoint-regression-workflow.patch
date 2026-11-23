@@ -1,0 +1,62 @@
+diff --git a/.github/workflows/ingestion.yml b/.github/workflows/ingestion.yml
+index 344888d..a454dc7 100644
+--- a/.github/workflows/ingestion.yml
++++ b/.github/workflows/ingestion.yml
+@@ -333,12 +333,22 @@ jobs:
+           set -euo pipefail
+           # The release checkpoint is only a cold-cache recovery source. A
+           # warm cache's DuckDB is newer and therefore wins; never overwrite it
+-          # with a monthly/current release asset.
++          # with a monthly/current release asset. It must, however, still hold
++          # every canonical row the committed checkpoint promises: a cache that
++          # lost its corpus can otherwise keep winning and re-pack itself as the
++          # new canonical state.
++          MANIFEST="$LOCALDATA/archive_manifest.json"
+           if [ -f "$MAGOLIDE_WAREHOUSE" ]; then
+-            echo "Warm warehouse restored; release checkpoint not needed."
+-            exit 0
++            if python scripts/verify_checkpoint.py \
++              --warehouse "$MAGOLIDE_WAREHOUSE" \
++              --manifest "$MANIFEST" \
++              --state-key "$STATE_KEY"; then
++              echo "Warm warehouse verified against the committed checkpoint; release checkpoint not needed."
++              exit 0
++            fi
++            echo "::warning::Warm warehouse holds fewer canonical rows than the committed checkpoint; discarding it and recovering from the release asset."
++            rm -f "$MAGOLIDE_WAREHOUSE"
+           fi
+-          MANIFEST="$LOCALDATA/archive_manifest.json"
+           if [ ! -f "$MANIFEST" ]; then
+             echo "No compact release checkpoint has been published for $STATE_KEY yet."
+             exit 0
+diff --git a/workflows/ingestion.yml b/workflows/ingestion.yml
+index 344888d..a454dc7 100644
+--- a/workflows/ingestion.yml
++++ b/workflows/ingestion.yml
+@@ -333,12 +333,22 @@ jobs:
+           set -euo pipefail
+           # The release checkpoint is only a cold-cache recovery source. A
+           # warm cache's DuckDB is newer and therefore wins; never overwrite it
+-          # with a monthly/current release asset.
++          # with a monthly/current release asset. It must, however, still hold
++          # every canonical row the committed checkpoint promises: a cache that
++          # lost its corpus can otherwise keep winning and re-pack itself as the
++          # new canonical state.
++          MANIFEST="$LOCALDATA/archive_manifest.json"
+           if [ -f "$MAGOLIDE_WAREHOUSE" ]; then
+-            echo "Warm warehouse restored; release checkpoint not needed."
+-            exit 0
++            if python scripts/verify_checkpoint.py \
++              --warehouse "$MAGOLIDE_WAREHOUSE" \
++              --manifest "$MANIFEST" \
++              --state-key "$STATE_KEY"; then
++              echo "Warm warehouse verified against the committed checkpoint; release checkpoint not needed."
++              exit 0
++            fi
++            echo "::warning::Warm warehouse holds fewer canonical rows than the committed checkpoint; discarding it and recovering from the release asset."
++            rm -f "$MAGOLIDE_WAREHOUSE"
+           fi
+-          MANIFEST="$LOCALDATA/archive_manifest.json"
+           if [ ! -f "$MANIFEST" ]; then
+             echo "No compact release checkpoint has been published for $STATE_KEY yet."
+             exit 0
