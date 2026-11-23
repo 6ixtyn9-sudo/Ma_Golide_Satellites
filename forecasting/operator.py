@@ -2542,6 +2542,12 @@ def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict
         "pending_singles": len(pending_singles),
         "unresolved_result_legs": unresolved_legs,
         "awaiting_game_legs": sum(position["awaiting_game_legs"] for position in positions),
+        # Legs that still block money. The total above also counts legs inside
+        # already-settled tickets: a losing acca settles on its known losing leg
+        # while its other legs stay unresolved ("awaiting") forever.
+        "awaiting_game_legs_open": sum(
+            position["awaiting_game_legs"] for position in pending
+        ),
         "result_unresolvable_legs": sum(
             position["result_unresolvable_legs"] for position in positions
         ),
@@ -4563,7 +4569,8 @@ def _render_performance(report: Dict[str, Any], timezone_name: str) -> str:
     lines.extend(
         [
             f"OPEN     {pending_positions} held paper positions · "
-            f"{report['awaiting_game_legs']} awaiting games · "
+            f"{report.get('awaiting_game_legs_open', report['awaiting_game_legs'])} "
+            f"awaiting legs in open tickets · "
             f"{report['result_unresolvable_legs']} result unresolvable",
             f"LEGS     Brier {report['selected_leg_brier_score']:.4f}"
             if report["selected_leg_brier_score"] is not None

@@ -1461,8 +1461,9 @@ def test_unresolvable_leg_results_are_distinguished_from_waiting_games(
     assert performance["awaiting_game_legs"] == expected_awaiting
     assert performance["result_unresolvable_legs"] == expected_unresolvable
     assert performance["unresolved_result_legs"] == 1
+    assert performance["awaiting_game_legs_open"] == expected_awaiting
     assert (
-        f"{expected_awaiting} awaiting games · "
+        f"{expected_awaiting} awaiting legs in open tickets · "
         f"{expected_unresolvable} result unresolvable"
     ) in Path(result["performance_text"]).read_text()
 
