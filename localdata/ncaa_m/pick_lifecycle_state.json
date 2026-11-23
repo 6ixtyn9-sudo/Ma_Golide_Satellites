@@ -17,7 +17,7 @@
       "logical_picks": 435
     },
     "2026-11-22": {
-      "frozen_fixtures": 37,
+      "frozen_fixtures": 40,
       "logical_picks": 326
     }
   },
@@ -76116,6 +76116,482 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
       },
+      "401921206": {
+        "decision_cutoff_utc": "2026-11-23T00:00:00Z",
+        "frozen_at": "2026-11-23T00:18:15Z",
+        "game_id": "401921206",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "UT Martin Skyhawks",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.525439,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 255,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "6c9041e0163a1506baf7a06f9522ae30d5d41344767c6fe0b2e556ae603397c5",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "89d7e5a99b7ab85cc977",
+            "game_id": "401921206",
+            "grade_status": "pending",
+            "home": "Utah Valley Wolverines",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "89d7e5a99b7ab85cc977",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UT Martin Skyhawks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921206",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-23T00:10:26Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.3278688524590163,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.584807,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 171,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "ce57a0aa0c0afb54522d4ccc1d86036088e373645edf3ba41ddbb464cd78328a",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0e12de0f9e2038104657",
+            "game_id": "401921206",
+            "grade_status": "pending",
+            "home": "Utah Valley Wolverines",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.132655,
+              "historical_pick_count": 5,
+              "individual_odds_band": "1.20-<1.50",
+              "losses": 2,
+              "market": "moneyline",
+              "observed_roi": -0.16105,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.148862,
+              "wins": 3
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "0e12de0f9e2038104657",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-23T00:10:29Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.654,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UT Martin Skyhawks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921206",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-23T00:10:26Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.3278688524590163,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.457852,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 254,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "c79ae05ebc618c37350055854217f14e36e17088dd57f989f0ac4b73461a06ab",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "ac3a000ceb7c795c59b1",
+            "game_id": "401921206",
+            "grade_status": "pending",
+            "home": "Utah Valley Wolverines",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "ac3a000ceb7c795c59b1",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UT Martin Skyhawks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921206",
+              "line": -7.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-22T14:10:24Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.505701,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 77,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "759e22a6e9128f8d621f5d4e1542bd52acb5c11f822dc66e9c24f8d904002e9a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "91b6b8a146d0e062d47e",
+            "game_id": "401921206",
+            "grade_status": "pending",
+            "home": "Utah Valley Wolverines",
+            "league": "NCAA_M",
+            "line": -7.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "91b6b8a146d0e062d47e",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "UT Martin Skyhawks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921206",
+              "line": -6.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-23T00:10:26Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.495701,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 77,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "dc72af0ad9f31a2759d4ba73952b4a5e710e96231883cc1e7cb9f76a882e38c0",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e57ab2423d200a4af258",
+            "game_id": "401921206",
+            "grade_status": "pending",
+            "home": "Utah Valley Wolverines",
+            "league": "NCAA_M",
+            "line": -6.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "e57ab2423d200a4af258",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "UT Martin Skyhawks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921206",
+              "line": 145.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T14:40:03Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.49972,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 77,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "a71afb99682e576f34ddf90b3cd23854631fc8938d44ff83185787dc3fa15833",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5a18d57190d765143762",
+            "game_id": "401921206",
+            "grade_status": "pending",
+            "home": "Utah Valley Wolverines",
+            "league": "NCAA_M",
+            "line": 145.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "5a18d57190d765143762",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "UT Martin Skyhawks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921206",
+              "line": 146.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T13:40:15Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.49972,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 77,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "c4bf17ea87cde1fe801b136b48fe7ed5dd744c646fcd38ea6a7b533ec2fda206",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "9322af39fd1f5ee56ab2",
+            "game_id": "401921206",
+            "grade_status": "pending",
+            "home": "Utah Valley Wolverines",
+            "league": "NCAA_M",
+            "line": 146.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "9322af39fd1f5ee56ab2",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "UT Martin Skyhawks",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921206",
+              "line": 144.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-23T00:10:26Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.50972,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 77,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "51e9931ef5d7f062335a2c4c6b68c11edb8d75786ea220b0be594bbe04435563",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b9de03bf6ddef62c21cb",
+            "game_id": "401921206",
+            "grade_status": "pending",
+            "home": "Utah Valley Wolverines",
+            "league": "NCAA_M",
+            "line": 144.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "b9de03bf6ddef62c21cb",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "over"
+          }
+        ],
+        "scheduled_utc": "2026-11-23T01:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
+      },
       "401921420": {
         "decision_cutoff_utc": "2026-11-22T22:00:00Z",
         "frozen_at": "2026-11-22T22:20:54Z",
@@ -80821,6 +81297,596 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
       },
+      "401926774": {
+        "decision_cutoff_utc": "2026-11-23T00:00:00Z",
+        "frozen_at": "2026-11-23T00:18:15Z",
+        "game_id": "401926774",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Louisiana Ragin' Cajuns",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.725439,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 255,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "c5c5cb7624a80a31c00fac803b78b4268b89a89198b96ae32b4d4b38d9f23862",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0900edc8917a0d1ea4a1",
+            "game_id": "401926774",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "0900edc8917a0d1ea4a1",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.79,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Louisiana Ragin' Cajuns",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926774",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-23T00:10:26Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.002,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.717852,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 254,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "c65985909bc467bdb258ed9132d6846733adf719f33217c4d63dece9407209cc",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "35e5018dd7868136486f",
+            "game_id": "401926774",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "35e5018dd7868136486f",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.79,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Louisiana Ragin' Cajuns",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926774",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-23T00:10:26Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.002,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.919807,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 171,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "630eb9d000d77e2daae1e734abb849ec90ca8ef24816bbbdeb4d540c7c12ba22",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "92eee92343d751bd636b",
+            "game_id": "401926774",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.001533,
+              "historical_pick_count": 17,
+              "individual_odds_band": "1.00-<1.20",
+              "losses": 0,
+              "market": "moneyline",
+              "observed_roi": 0.025101,
+              "period": "full_game",
+              "probability_band": "0.90-1.00",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.024374,
+              "wins": 17
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "92eee92343d751bd636b",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-23T00:10:28Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.989,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Louisiana Ragin' Cajuns",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926774",
+              "line": -32.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-22T23:10:21Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.565701,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 77,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "76742929585c7a2242d2aa8f9d17c21ad6ef0776eadb9acb3e48bff6fdce3ff0",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "2fbb9f2c7f7df78b46d8",
+            "game_id": "401926774",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_M",
+            "line": -32.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "2fbb9f2c7f7df78b46d8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.63,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Louisiana Ragin' Cajuns",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926774",
+              "line": -33.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-22T14:10:25Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.565701,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 77,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "fdb030ecbe48648339576fa46d9bdfbcbccc3a58ce46ba186d94baf82bcb1c71",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "cdf6bc10125aec103553",
+            "game_id": "401926774",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_M",
+            "line": -33.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "cdf6bc10125aec103553",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.63,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Louisiana Ragin' Cajuns",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926774",
+              "line": -31.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-23T00:10:26Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.565701,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 77,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "ab073d94ec5e7014ae44633bd929ef5d544921e8b7f30ba63a2b084f8b93ba59",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "dcf697f264224f8915a8",
+            "game_id": "401926774",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_M",
+            "line": -31.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "dcf697f264224f8915a8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.63,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Louisiana Ragin' Cajuns",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926774",
+              "line": 144.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T23:40:14Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.469533,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 77,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "aab7152cb1e28a85655156d7c18dcd0b61d0c238ed81260dbbff45130cd67125",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e63b21b33383715e8bc0",
+            "game_id": "401926774",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_M",
+            "line": 144.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "e63b21b33383715e8bc0",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Louisiana Ragin' Cajuns",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926774",
+              "line": 146.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T15:09:47Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.48972,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 77,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "61fbb5175210e4359b82f9b8b2abe2d865a7c6c620f4ddc49b18493a98b17995",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b5f2c8c5a7865fd6779d",
+            "game_id": "401926774",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_M",
+            "line": 146.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "b5f2c8c5a7865fd6779d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Louisiana Ragin' Cajuns",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926774",
+              "line": 147.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T14:10:25Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.48972,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 77,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "3b641c569ed1b5172941a34e92286d3ac5bdc8af26a6fc72564a929250ea4681",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "bfe4fffa0aa4b4c0cca7",
+            "game_id": "401926774",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_M",
+            "line": 147.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "bfe4fffa0aa4b4c0cca7",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "under"
+          },
+          {
+            "away": "Louisiana Ragin' Cajuns",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401926774",
+              "line": 145.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-22T23:10:21Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.48972,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 77,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "10237838325140f11024f94b8aa83a40c370b112b998fbb3f561a3a38b207677",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e3b2d15db2e0578bc405",
+            "game_id": "401926774",
+            "grade_status": "pending",
+            "home": "USC Trojans",
+            "league": "NCAA_M",
+            "line": 145.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "e3b2d15db2e0578bc405",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-23T01:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
+      },
       "401926795": {
         "decision_cutoff_utc": "2026-11-22T20:30:00Z",
         "frozen_at": "2026-11-22T20:52:35Z",
@@ -83780,27 +84846,152 @@
         "scheduled_utc": "2026-11-22T21:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
+      },
+      "401929595": {
+        "decision_cutoff_utc": "2026-11-23T00:00:00Z",
+        "frozen_at": "2026-11-23T00:18:15Z",
+        "game_id": "401929595",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Menlo Oaks",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.655439,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 255,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "6e2c0b7bd6d078a9253409c50db12c7200b9a7d5d00b6cbc1158e9c8e8395634",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "9fabada5ae85e0b8dd2e",
+            "game_id": "401929595",
+            "grade_status": "pending",
+            "home": "Saint Mary's Gaels",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "9fabada5ae85e0b8dd2e",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.72,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Menlo Oaks",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.717852,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 254,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "918d8f5356e7aaf73546751da62185c91283c3f2d632dddbc0e02516af556b17",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "3f11441381e580ad95a4",
+            "game_id": "401929595",
+            "grade_status": "pending",
+            "home": "Saint Mary's Gaels",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "3f11441381e580ad95a4",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.79,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Menlo Oaks",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.930607,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 171,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "ca6cb82f5c47e53d5e08b17cb1724026ecf195b10e507be1a21c18f7207d0e51",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "bcb985f49c21d95f88da",
+            "game_id": "401929595",
+            "grade_status": "pending",
+            "home": "Saint Mary's Gaels",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "bcb985f49c21d95f88da",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-23T00:10:28Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9998,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-23T01:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
       }
     }
   },
   "league": "NCAA_M",
   "pending_frozen_games": [
-    [
-      "401926795",
-      "2026-11-22T21:30:00Z"
-    ],
-    [
-      "401909556",
-      "2026-11-22T22:00:00Z"
-    ],
-    [
-      "401920159",
-      "2026-11-22T22:00:00Z"
-    ],
-    [
-      "401922293",
-      "2026-11-22T22:00:00Z"
-    ],
     [
       "401925013",
       "2026-11-22T22:00:00Z"
@@ -83828,6 +85019,18 @@
     [
       "401920905",
       "2026-11-23T00:00:00Z"
+    ],
+    [
+      "401921206",
+      "2026-11-23T01:00:00Z"
+    ],
+    [
+      "401926774",
+      "2026-11-23T01:00:00Z"
+    ],
+    [
+      "401929595",
+      "2026-11-23T01:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"

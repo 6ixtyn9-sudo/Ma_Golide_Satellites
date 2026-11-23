@@ -25,7 +25,7 @@
       "logical_picks": 166
     },
     "2026-11-22": {
-      "frozen_fixtures": 55,
+      "frozen_fixtures": 57,
       "logical_picks": 224
     }
   },
@@ -28927,6 +28927,145 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
       },
+      "401913834": {
+        "decision_cutoff_utc": "2026-11-23T00:00:00Z",
+        "frozen_at": "2026-11-23T00:21:32Z",
+        "game_id": "401913834",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Pepperdine Waves",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.672848,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 279,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "c92b3f30592f7b6c06aa17f9eddb5e8bd96e2f692972625c5d235e077887605b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a1125c16cc9d86f2921c",
+            "game_id": "401913834",
+            "grade_status": "pending",
+            "home": "Rice Owls",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "a1125c16cc9d86f2921c",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.74,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Pepperdine Waves",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.901984,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 181,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "21540a06fcfe757316ca81034a137fc9ce28eee1d6e0b1d022f8d76f5f4374fb",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7341378f2c8f2cf3a17b",
+            "game_id": "401913834",
+            "grade_status": "pending",
+            "home": "Rice Owls",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "7341378f2c8f2cf3a17b",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-23T00:10:23Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.925,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Pepperdine Waves",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.829837,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 277,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "46104a3e9e663aaad3f710bea71428320b6bc5230120fc04db1af4b9e4c16c70",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a476f859584aeca3d718",
+            "game_id": "401913834",
+            "grade_status": "pending",
+            "home": "Rice Owls",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "a476f859584aeca3d718",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.88,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-23T01:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
+      },
       "401913861": {
         "decision_cutoff_utc": "2026-11-22T20:00:00Z",
         "frozen_at": "2026-11-22T20:22:38Z",
@@ -29380,6 +29519,190 @@
           }
         ],
         "scheduled_utc": "2026-11-22T18:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
+      },
+      "401913903": {
+        "decision_cutoff_utc": "2026-11-23T00:00:00Z",
+        "frozen_at": "2026-11-23T00:21:32Z",
+        "game_id": "401913903",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "West Florida Argonauts",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.4697,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 270,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "b03859bcf6625454cd3a8d2611eaf58ed257f80615314558d5aa9d033bc85526",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1a2c7b9e34430cc90b90",
+            "game_id": "401913903",
+            "grade_status": "pending",
+            "home": "Texas A&M-Corpus Christi Islanders",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "1a2c7b9e34430cc90b90",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "West Florida Argonauts",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.619837,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 277,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "5b355c8895a3bc65476ac4791b4043a5d3112658ac74d1745e4a6f8f8ae94849",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5199fa8d17525be9c255",
+            "game_id": "401913903",
+            "grade_status": "pending",
+            "home": "Texas A&M-Corpus Christi Islanders",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "5199fa8d17525be9c255",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.67,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "West Florida Argonauts",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.806484,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 181,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "4446ed7a6c8b32ae78740e3d768e47bc30ef440b7dce7ce94d37d80e5c7052a5",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "2e66d174f5145572534f",
+            "game_id": "401913903",
+            "grade_status": "pending",
+            "home": "Texas A&M-Corpus Christi Islanders",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "2e66d174f5145572534f",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-23T00:10:23Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.8295,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "West Florida Argonauts",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.473673,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 245,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "85717e3b6c8f6d6066b2862ef6e382f45a03a5ac80fb2488bb02ad2ee9483a57",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "90d82e5d32ab8ae273ca",
+            "game_id": "401913903",
+            "grade_status": "pending",
+            "home": "Texas A&M-Corpus Christi Islanders",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "90d82e5d32ab8ae273ca",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-23T01:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
       },
@@ -35940,26 +36263,6 @@
   "league": "NCAA_W",
   "pending_frozen_games": [
     [
-      "401907053",
-      "2026-11-22T22:00:00Z"
-    ],
-    [
-      "401915983",
-      "2026-11-22T22:00:00Z"
-    ],
-    [
-      "401917717",
-      "2026-11-22T22:00:00Z"
-    ],
-    [
-      "401923737",
-      "2026-11-22T22:00:00Z"
-    ],
-    [
-      "401926985",
-      "2026-11-22T22:00:00Z"
-    ],
-    [
       "401912957",
       "2026-11-22T22:30:00Z"
     ],
@@ -35970,6 +36273,14 @@
     [
       "401906985",
       "2026-11-23T00:30:00Z"
+    ],
+    [
+      "401913834",
+      "2026-11-23T01:00:00Z"
+    ],
+    [
+      "401913903",
+      "2026-11-23T01:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
