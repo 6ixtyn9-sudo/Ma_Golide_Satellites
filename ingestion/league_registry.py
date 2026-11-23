@@ -296,7 +296,11 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     # only; ESPN BPI, deep core-index history, and named-book pricing remain
     # separately unvalidated and fail closed.
     LeagueSpec(League.NBA_G_LEAGUE, "NBA G League", "nba_g_league", "America/New_York", "America/New_York", "espn", "espn", "espn", (_ESPN_RELAY_ONLY,), "ESPN public basketball/nba-development scoreboard and summary are validated for date-bounded schedule/results; forecasts are empirical-history-only until an independent pre-tip prediction source is validated."),
-    LeagueSpec(League.BASKETBALL_AFRICA_LEAGUE, "Basketball Africa League", "basketball_africa_league", "Africa/Johannesburg", "Africa/Johannesburg", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
+    # BAL is not on the FIBA GDAP service (competition id 48286 answers an empty
+    # array), but bal.nba.com server-renders the whole season inside its Next.js
+    # __NEXT_DATA__ blob with UTC tips, arena and team ids. One captured game
+    # object is vendored under tests/fixtures/bal/captures.
+    LeagueSpec(League.BASKETBALL_AFRICA_LEAGUE, "Basketball Africa League", "basketball_africa_league", "Africa/Johannesburg", "Africa/Johannesburg", "bal", "bal", "bal", source_detail="bal.nba.com/schedule renders the whole season in its __NEXT_DATA__ blob (props.pageProps.gameDates[].games[]), keyless, date-filtered client-side on gameDateTimeUTC. GDAP competition 48286 returns an empty array, so the FIBA route is a dead end. Settled rows are totals-only (no quarter split in this body)."),
     # The Odds API NBL sport key is a documented integration lead. It remains
     # probationary until a credentialed regional/bookmaker smoke proves actual
     # account coverage, and it never supplies canonical schedule/results.
