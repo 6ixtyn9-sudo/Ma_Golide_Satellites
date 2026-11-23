@@ -304,3 +304,49 @@ def test_each_slate_page_records_its_digest_and_how_many_keys_it_added():
     assert [page["day"] for page in pages] == ["2026-10-04", "2026-10-05"]
     assert [page["new_keys"] for page in pages] == [1, 0]
     assert all(len(page["sha256"]) == 64 for page in pages)
+
+
+def test_the_probe_says_whether_day_scopes_the_page(monkeypatch):
+    """The 2026-11-23 settlement: `day` is echoed, not honoured.
+
+    Four day=22/23/24/25 fetches returned the same ten game keys and differed
+    by two bytes of echoed `day`, so a second page that adds no key is the
+    expected shape on this host — and if it ever adds one, the probe says
+    ``scoped`` instead of silently absorbing it.
+    """
+
+    calls = {"n": 0}
+    real_parse = bleague.parse_slate
+
+    def counting_parse(html: str):
+        calls["n"] += 1
+        return real_parse(html)
+
+    monkeypatch.setattr(bleague, "parse_slate", counting_parse)
+
+    bleague.discover_games("2026-10-04", _transport())
+    assert bleague.last_probe()["day_param"] == "ignored"
+
+    # Same page twice: the second adds nothing. Now make the second page carry
+    # a key the first did not, which is what a genuinely day-scoped host looks
+    # like.
+    second = {"schedule_key": "506999"}
+    state = {"n": 0}
+
+    def two_pages(html: str):
+        state["n"] += 1
+        blocks = real_parse(html)
+        return blocks if state["n"] == 1 else blocks + [second]
+
+    monkeypatch.setattr(bleague, "parse_slate", two_pages)
+    monkeypatch.setattr(
+        bleague, "_fetch_context", lambda key, transport: _context()
+    )
+    monkeypatch.setattr(
+        bleague,
+        "_game_from_context",
+        lambda payload, key, requested: (_ for _ in ()).throw(ValueError("off date")),
+    )
+
+    bleague.discover_games("2026-10-04", _transport())
+    assert bleague.last_probe()["day_param"] == "scoped"

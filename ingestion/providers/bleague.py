@@ -349,9 +349,22 @@ def discover_games(
 ) -> List[Game]:
     """Games of one UTC date in one division, from the slate page plus contexts.
 
-    The slate is asked for in **JST terms**, so a UTC target day is read through
-    the two JST dates that can contain a tip inside it; rows whose UTC tip falls
-    outside ``date_iso`` are dropped afterwards.
+    The page is asked for in **JST terms** for both JST dates that can contain a
+    tip inside the target UTC day, and rows whose tip falls outside
+    ``date_iso`` are dropped afterwards.
+
+    ``day`` does **not** scope the page's content. On 2026-11-23 four fetches
+    (``day=22/23/24/25``) returned 143,266 B each, parsed to the same ten game
+    keys (506602-506611), and the day22/day23 bodies differed by exactly two
+    bytes: the echoed ``day`` in a meta tag and in a JS assignment. The host
+    serves whatever round its pointer is on, and every row carries its own
+    ``GameDateTime``, which is what makes the UTC-day filter above correct.
+
+    Both dates are still requested: the second costs one request, and it is the
+    only thing that would find a tip if the host ever honours ``day``. What the
+    second page's contribution was is recorded per page (``new_keys``), and
+    ``day_param`` says which world we are in -- ``ignored`` when the second page
+    added nothing, ``scoped`` when it did.
     """
 
     _reset()
@@ -416,6 +429,10 @@ def discover_games(
             off_date += 1
             continue
         games.append(game)
+    pages = _last_probe.get("pages", [])
+    _last_probe["day_param"] = (
+        "scoped" if any(page["new_keys"] for page in pages[1:]) else "ignored"
+    )
     _last_probe["slate_games"] = len(keys)
     _last_probe["off_date_dropped"] = off_date
     _last_probe["games"] = len(games)
