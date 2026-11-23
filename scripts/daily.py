@@ -43,6 +43,7 @@ from ingestion.pipeline import (  # noqa: E402
 )
 from ingestion.providers import aba_liga  # noqa: E402
 from ingestion.warehouse import DEFAULT_WAREHOUSE  # noqa: E402
+from scripts.release_archive import _checkpoint_regressions  # noqa: E402
 from ingestion.write_guards import assert_fixture_write_isolation  # noqa: E402
 
 
@@ -310,6 +311,8 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
     reports: Dict[str, Any] = {}
     ledgers: Dict[str, Any] = {}
     try:
+        if getattr(args, "write", False):
+            assert_checkpoint_not_regressed(args, store)
         fetch, fetch_factory = _offline_fixture_fetch() if args.offline_fixture else (None, None)
         history_plan = default_history_backfill_plan(
             parse_league(args.league),
@@ -517,6 +520,52 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
         store.close()
 
 
+def _checkpoint_manifest(args) -> Path | None:
+    """Locate the committed checkpoint manifest for this lane, if any."""
+
+    override = os.environ.get("MAGOLIDE_CHECKPOINT_MANIFEST")
+    if override:
+        return Path(override)
+    state_key = league_spec(parse_league(args.league)).state_key
+    for candidate in (
+        Path(args.localdata) / "archive_manifest.json",
+        Path("localdata") / state_key / "archive_manifest.json",
+    ):
+        if candidate.is_file():
+            return candidate
+    return None
+
+
+def assert_checkpoint_not_regressed(args, store) -> None:
+    """Refuse a write run whose warehouse is thinner than its checkpoint.
+
+    A cold cache can leave a nearly empty DuckDB behind. That warehouse then
+    runs a full day, exports thin CSVs, and re-packs itself as the canonical
+    checkpoint, so the loss becomes permanent. Failing closed here keeps the
+    published checkpoint authoritative: the job goes red with
+    ``checkpoint_regression`` instead of publishing a degraded corpus.
+    """
+
+    manifest_path = _checkpoint_manifest(args)
+    if manifest_path is None:
+        return
+    if getattr(args, "allow_checkpoint_regression", False):
+        return
+    try:
+        manifest = json.loads(manifest_path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return
+    regressions = _checkpoint_regressions(manifest, store.counts())
+    if regressions:
+        raise ValueError(
+            "checkpoint_regression: warehouse holds fewer canonical rows than "
+            f"the committed checkpoint {manifest_path}: "
+            f"{json.dumps(regressions, sort_keys=True)}; recover from the verified "
+            "release asset or pass --allow-checkpoint-regression once the loss is "
+            "understood"
+        )
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -598,6 +647,11 @@ def main() -> int:
             "betexplorer_direct",
             "espn",
         ],
+    )
+    parser.add_argument(
+        "--allow-checkpoint-regression",
+        action="store_true",
+        help="run even though the warehouse holds fewer rows than its checkpoint manifest",
     )
     parser.add_argument("--notify", action="store_true", help="build an operations heartbeat")
     parser.add_argument(
