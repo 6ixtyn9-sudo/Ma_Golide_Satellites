@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 7,
+  "awaiting_game_legs": 5,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -1204,20 +1204,20 @@
       "wins": 0
     },
     {
-      "awaiting_game_legs": 7,
-      "bank_units": 96.7688506008459,
+      "awaiting_game_legs": 5,
+      "bank_units": 95.7688506008459,
       "date": "2026-11-22",
       "decision_id": "45010842248_nba_1_attempt_1",
       "frozen_at": "2026-11-22T10:11:13Z",
       "league": "NBA",
-      "losses": 2,
-      "pending_accas": 3,
-      "pending_positions": 3,
+      "losses": 3,
+      "pending_accas": 2,
+      "pending_positions": 2,
       "pending_singles": 0,
-      "pending_units": 3.0,
+      "pending_units": 2.0,
       "positions": [
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
@@ -1227,7 +1227,7 @@
           "grade_status": "pending",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "win",
             null,
             "win"
           ],
@@ -1238,12 +1238,12 @@
               "book_provider": "espn",
               "forecast_id": "9250a1e447feaab014d2",
               "game_id": "401910034",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "New York Knicks",
               "market": "moneyline",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "9250a1e447feaab014d2",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-23T01:00:00Z",
               "selected_decimal_price": 1.263157894736842,
               "selection": "home"
@@ -1291,7 +1291,7 @@
           "stake_units": 1.0,
           "ticket_id": "623860c88ac476e0f342",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         },
         {
           "awaiting_game_legs": 1,
@@ -1536,17 +1536,17 @@
           "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 6.8241,
           "effective_decimal_odds": 6.8241065802502465,
           "estimated_joint_win_probability": 0.14844145,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "loss",
             "win",
             null
           ],
@@ -1557,13 +1557,13 @@
               "book_provider": "espn",
               "forecast_id": "204f05c7e78b56e85c2e",
               "game_id": "401910034",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "New York Knicks",
               "line": -9.5,
               "market": "spread",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "204f05c7e78b56e85c2e",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-23T01:00:00Z",
               "selected_decimal_price": 1.9523809523809523,
               "selection": "home"
@@ -1604,6 +1604,7 @@
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 3,
           "provisional_sample_gate_bypassed": true,
           "publication_index": 5,
@@ -1613,44 +1614,44 @@
           "stake_units": 1.0,
           "ticket_id": "c3a8b239299ee474440a",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         }
       ],
-      "profit_units": -2.0,
+      "profit_units": -3.0,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-22_decision.json",
       "result_unresolvable_legs": 0,
       "returned_units": 0.0,
-      "settled_accas": 2,
-      "settled_positions": 2,
+      "settled_accas": 3,
+      "settled_positions": 3,
       "settled_singles": 0,
-      "staked_units": 2.0,
-      "unresolved_result_legs": 7,
+      "staked_units": 3.0,
+      "unresolved_result_legs": 5,
       "wins": 0
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.25,
+  "hit_rate": 0.23529411764705882,
   "league": "NBA",
-  "losses": 12,
-  "paper_bank_units": 96.7688506008459,
-  "paper_committed_units": 3.0,
+  "losses": 13,
+  "paper_bank_units": 95.7688506008459,
+  "paper_committed_units": 2.0,
   "paper_free_units": 93.7688506008459,
   "paper_only": true,
-  "pending_accas": 3,
-  "pending_positions": 3,
+  "pending_accas": 2,
+  "pending_positions": 2,
   "pending_singles": 0,
-  "profit_units": -3.23114939915411,
+  "profit_units": -4.23114939915411,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": -0.20194683744713188,
+  "roi": -0.24889114112671235,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.2806156234019545,
-  "settled_accas": 13,
-  "settled_positions": 16,
+  "selected_leg_brier_score": 0.27519944615152164,
+  "settled_accas": 14,
+  "settled_positions": 17,
   "settled_singles": 3,
-  "settled_stake_units": 16.0,
+  "settled_stake_units": 17.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 7,
+  "unresolved_result_legs": 5,
   "wins": 4
 }
