@@ -267,11 +267,20 @@ def fetch_window(
     end_yyyymmdd: str,
     fetch: FetchFn,
 ) -> List[Dict[str, Any]]:
-    """Rows of one date window for one season END year."""
+    """Rows of one date window.
+
+    The ``season`` query parameter takes a *seasonCode*, not an end year: the
+    2026-2027 season is ``seasonCode 49`` and ``gmkey`` values look like
+    ``S49G01N48``. Sending 2026/2027/2028 therefore asks meaningless questions
+    and every one of them answers ``[]``, which is indistinguishable from an
+    empty slate. An external audit on 2026-11-23 established both facts and also
+    that omitting the parameter entirely is valid, so it is omitted here and the
+    window alone scopes the read. ``season_end_year`` is retained in the
+    signature because the caller still varies it for season-scoped history.
+    """
 
     url = (
-        f"{MATCH_LIST_URL}?season={int(season_end_year)}"
-        f"&fromDate={start_yyyymmdd}&toDate={end_yyyymmdd}"
+        f"{MATCH_LIST_URL}?fromDate={start_yyyymmdd}&toDate={end_yyyymmdd}"
     )
     payload = fetch(url)
     rows = _rows(payload, f"match/list season={season_end_year}")

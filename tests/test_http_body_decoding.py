@@ -54,3 +54,23 @@ def test_response_without_a_content_attribute_still_works():
         text = '{"ok": true}'
 
     assert _decoded_body(_TextOnly()) == '{"ok": true}'
+
+
+def test_corrupt_deflate_behind_a_valid_header_falls_back():
+    """The case an external audit found in the first version of this helper.
+
+    Catching only ``OSError``/``EOFError`` was not enough: ``gzip.decompress``
+    raises ``zlib.error`` -- a zlib-module exception that is neither -- when the
+    gzip header parses but the deflate stream behind it is corrupt. A raw
+    ``zlib.error`` then escaped ``get_text``, violating this module's contract of
+    raising only ``HttpError``. The test above cannot catch that: its fixture has
+    a broken *header* (BadGzipFile, an OSError).
+    """
+
+    raw = bytearray(gzip.compress(b'{"a": 1}'))
+    raw[12] ^= 0xFF
+    raw[13] ^= 0xFF  # header intact, deflate stream corrupt
+
+    response = _Response(content=bytes(raw), text="fallback text")
+
+    assert _decoded_body(response) == "fallback text"

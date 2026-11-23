@@ -74,7 +74,11 @@ def test_window_row_becomes_a_canonical_game_in_utc():
     assert (first.actual.home_final, first.actual.away_final) == (88.0, 81.0)
     assert first.actual.period_kind.value == "unknown"  # totals only, never quarters
     assert first.provider_ids["kbl"] == "S47G01N49"
-    assert any("/match/list?season=2026" in url for url in seen)
+    # The season parameter is a seasonCode (49 == 2026-2027), not an end year;
+    # an external audit on 2026-11-23 established that sending 2026/2027/2028
+    # asks meaningless questions (all answer []) and that omission is valid.
+    assert any("/match/list?fromDate=" in url for url in seen)
+    assert not any("season=" in url for url in seen)
 
 
 def test_unstarted_row_is_scheduled_and_live_row_is_live():
@@ -110,7 +114,8 @@ def test_probe_records_url_bytes_digest_and_row_keys():
     # The documented envelope is not asserted, so the probe reports which
     # shape was actually served: this fixture carries a {"data": [...]} envelope.
     assert probe["shape"] == "object"
-    assert "/match/list?season=2026" in probe["url"]
+    assert "/match/list?fromDate=" in probe["url"]
+    assert "season=" not in probe["url"]
     assert probe["bytes"] > 0 and len(probe["sha256"]) == 64
     assert "gmkey" in probe["row_keys"]
 
