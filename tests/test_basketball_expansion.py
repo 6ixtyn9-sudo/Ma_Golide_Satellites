@@ -134,6 +134,15 @@ def test_final_expansion_is_typed_and_registry_backed_everywhere():
                 "kbl",
                 "kbl",
             )
+        elif league is League.TURKEY_BSL:
+            # The TBF lane reads the federation's own daily-matches route; a real
+            # 2026-10-11 body is vendored, and the same route also serves TBL,
+            # KBSL and TKBL, selected by activityCode on the row.
+            assert (spec.schedule_source, spec.results_source, spec.gate_schedule_source) == (
+                "tbf",
+                "tbf",
+                "tbf",
+            )
         elif league is League.EUROCUP:
             # EuroCup rides the validated EuroLeague Basketball adapter with
             # competition code U; it is a referenced route contract, not a

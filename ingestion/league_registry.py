@@ -350,7 +350,13 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "enumerate a season, so history backfill is refused."
         ),
     ),
-    LeagueSpec(League.TURKEY_BSL, "Turkey BSL", "turkey_bsl", "Europe/Istanbul", "Europe/Istanbul", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
+        # The federation's own mini-app API answers one Turkey local date at a
+    # time: GET /Match/get-daily-matches?match_date=YYYY-MM-DD, grouping the
+    # games of every competition it runs (bsl, tbl, kbsl, tkbl) in one body.
+    # No key, no special header. A real response body is vendored for this lane
+    # (tests/fixtures/tbf/captures/, attributed in CAPTURE-PROVENANCE.md), so the
+    # parser is checked against a body the host actually served.
+    LeagueSpec(League.TURKEY_BSL, "Turkey BSL", "turkey_bsl", "Europe/Istanbul", "Europe/Istanbul", "tbf", "tbf", "tbf", source_detail="Federation mini-app API (miniappapi.tbf.org.tr): /Match/get-daily-matches?match_date=YYYY-MM-DD covers BSL, TBL, KBSL and TKBL in one body; no key. Real 2026-10-11 body vendored; settled rows are totals-only (no quarter split on this route)."),
     LeagueSpec(League.GREECE_BASKET_LEAGUE, "Greece Basket League", "greece_basket_league", "Europe/Athens", "Europe/Athens", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     # The externally referenced aba-liga.com calendar/detail route is the
     # active canonical fixture, result, and history target. Ma Golide retains
