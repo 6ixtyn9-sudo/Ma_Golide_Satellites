@@ -422,9 +422,13 @@ For accas:
 
 The rolling performance report counts settled and pending positions separately.
 In `auto_tickets_performance.json`, `awaiting_game_legs` counts ungraded legs
-whose game is scheduled, live, or postponed; `result_unresolvable_legs` counts
-legs with no matching game, a non-playable/unknown game status, or a final whose
-result cannot be reconciled/graded. At the overall and history-day levels,
+whose game is scheduled, live, or postponed — across **all** positions, so it
+also includes legs inside tickets that already settled as a loss on another leg
+and will never affect the bank. The rendered `OPEN` line therefore reports
+`awaiting_game_legs_open`, which counts only legs inside still-pending
+positions — the number that actually explains why a ticket is held.
+`result_unresolvable_legs` counts legs with no matching game, a non-playable or
+unknown game status, or a final whose result cannot be reconciled/graded. At the overall and history-day levels,
 the unresolved total remains `unresolved_result_legs`; each also has the two
 category counts. On each position, the total is named `unresolved_legs`, with
 `awaiting_game_legs` and `result_unresolvable_legs` alongside it. Pending legs
