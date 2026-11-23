@@ -91,6 +91,31 @@ DEFAULT_TEAM_ALIASES: Dict[str, List[str]] = {
 }
 
 
+#: Letters with no combining mark of their own. Mapped so a source publishing
+#: ASCII (BetExplorer strips every accent) still equals the accented spelling.
+_ASCII_FOLDS = str.maketrans(
+    {
+        "ı": "i",
+        "İ": "I",
+        "ß": "ss",
+        "đ": "d",
+        "Đ": "D",
+        "ø": "o",
+        "Ø": "O",
+        "ł": "l",
+        "Ł": "L",
+        "æ": "ae",
+        "Æ": "AE",
+        "œ": "oe",
+        "Œ": "OE",
+        "ð": "d",
+        "Ð": "D",
+        "þ": "th",
+        "Þ": "TH",
+    }
+)
+
+
 def fold_diacritics(text: str) -> str:
     """Strip accents so ``Força`` == ``Forca``.
 
@@ -102,7 +127,12 @@ def fold_diacritics(text: str) -> str:
     """
 
     decomposed = unicodedata.normalize("NFKD", str(text or ""))
-    return "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+    stripped = "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+    # Letters that carry no combining mark and therefore survive NFKD, but which
+    # a source that publishes ASCII will have written as a plain letter. The
+    # Turkish dotless i is the one that bites basketball: ``Karşıyaka`` becomes
+    # ``karsiyaka`` on the board, not ``karsıyaka``.
+    return stripped.translate(_ASCII_FOLDS)
 
 
 def normalize_team_name(name: str) -> str:
