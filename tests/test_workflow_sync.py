@@ -297,3 +297,30 @@ def test_evidence_verified_cache_epoch_applies_to_every_league():
         assert "magolide-localdata-ncaa_w-identity-v1-" not in text
         assert "matrix.league != 'NCAA_W'" not in text
         assert "matrix.league == 'NCAA_W'" not in text
+
+
+def test_league_lane_cap_stays_inside_the_hourly_external_cadence():
+    """Pin the lane cap to the tick interval the external scheduler now uses.
+
+    The cadence deliberately lives outside this repository (``assert "cron:"
+    not in text``), so the only half of the contract the repo can enforce is
+    that no lane may hold a runner longer than the documented hourly interval.
+    An hourly tick replaced the 30-minute one because a healthy run already
+    took 22-29 minutes; a cap above 60 would quietly restore the overlap the
+    change was made to remove. The publisher's own 15 minutes is the reason a
+    pathological run queues rather than overlaps the following tick.
+    """
+
+    repo = Path(__file__).resolve().parents[1]
+    for path in (
+        repo / "workflows" / "ingestion.yml",
+        repo / ".github" / "workflows" / "ingestion.yml",
+    ):
+        text = path.read_text()
+        league = text.split("\n  league:\n", 1)[1].split("\n  publish-localdata:", 1)[0]
+        cap = re.search(r"timeout-minutes:\s*(\d+)", league)
+        assert cap is not None, f"{path} league job declares no timeout"
+        assert int(cap.group(1)) <= 60, (
+            f"{path} lets a lane hold a runner for {cap.group(1)} minutes, which is "
+            "at or beyond the hourly external tick and re-creates the overlap"
+        )

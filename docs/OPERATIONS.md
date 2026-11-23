@@ -79,9 +79,23 @@ Useful options:
 - `--keep-days 30` bounds operational runs and daily/market reports.
 
 There is no in-repository daemon and no GitHub Actions cron fallback. An
-external scheduler must invoke the workflow at least every 30 minutes. That
-cadence gives each slate a pre-tip opportunity to make its 60-minute ticket
-decision without letting the first partial-price scan freeze the date.
+external scheduler invokes the workflow hourly, at :37. That interval is set
+from measurement, not preference: a healthy tick runs 22-29 minutes, so the
+30-minute cadence it replaced routinely overlapped itself, and because the
+workflow serialises on one concurrency group with `cancel-in-progress: false`,
+the overlap surfaced as the *pending* tick being cancelled when the next one
+arrived — acquisition silently skipped rather than run twice.
+
+Each slate still gets a pre-tip opportunity to make its 60-minute ticket
+decision, but from a single tick per window instead of two:
+
+- Lane cap is 60 minutes (`league` job), so a wedged lane cannot outlive the
+  cadence in the normal case.
+- A pathological run is bounded by 60 (lane) + 15 (publisher) = 75 minutes; the
+  next tick then waits in the concurrency group rather than overlapping it.
+- If both a run and a queued tick are outstanding when a third tick arrives,
+  GitHub cancels the queued one. That is the failure mode to watch for in the
+  Actions list: a `cancelled` run whose predecessor ran long.
 
 ## Automatic registry-driven basketball workflow
 
@@ -191,7 +205,7 @@ odds or a post-cutoff ticket.
 
 ### Adaptive tick gate
 
-The 30-minute external event does **not** automatically run every expensive
+The hourly external event does **not** automatically run every expensive
 pipeline. Before dependency installation, the gate restores `localdata` from
 the latest `main` and checks each league's compact state/performance summary
 and current acquisition-day schedule. It starts a league job when any of these
