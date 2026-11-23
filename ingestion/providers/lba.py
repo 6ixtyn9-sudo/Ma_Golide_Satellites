@@ -69,6 +69,13 @@ SEASON_FLOOR = 2010
 PROVIDER = "lba"
 
 _last_gaps: List[Dict[str, Any]] = []
+_last_probe: Dict[str, Any] = {}
+
+
+def last_probe() -> Dict[str, Any]:
+    """What the last read actually saw, including rows it dropped and why."""
+
+    return dict(_last_probe)
 
 
 def last_gaps() -> List[Dict[str, Any]]:
@@ -283,7 +290,9 @@ def discover_games(date_iso: Optional[str], fetch: FetchFn, start_year: int) -> 
     """
 
     _reset_gaps()
+    _last_probe.clear()
     games: List[Game] = []
+    off_date = 0
     for row in fetch_calendar(championship_id(start_year, fetch), fetch):
         try:
             game = _game_from_row(row, start_year, "Serie A")
@@ -291,8 +300,10 @@ def discover_games(date_iso: Optional[str], fetch: FetchFn, start_year: int) -> 
             _record_gap(str(row.get("id") or ""), str(exc))
             continue
         if date_iso and not game.scheduled_utc.startswith(date_iso):
+            off_date += 1
             continue
         games.append(game)
+    _last_probe["off_date_dropped"] = off_date
     return games
 
 

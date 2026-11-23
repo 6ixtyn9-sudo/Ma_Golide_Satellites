@@ -264,3 +264,11 @@ def test_registry_contract_declares_the_fallback_price_lane():
     # competition's own fixtures page now also feeds aggregate, research-only
     # observations (verified 2026-11-23). Neither is a cleared API lane.
     assert spec.book_providers == ("betexplorer", "betexplorer_direct")
+
+
+def test_a_round_played_on_other_days_reports_a_receipt_not_silence():
+    """LBA's calendar is round-scoped: a full round can answer no fixtures."""
+
+    assert lba.discover_games("2026-11-23", _fetch(), 2026) == []
+
+    assert lba.last_probe()["off_date_dropped"] == 8
