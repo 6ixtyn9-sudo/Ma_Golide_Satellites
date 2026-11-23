@@ -171,3 +171,47 @@ runners, price range, and whether the league appears at all — basketball's
 event type id is 7522. Coverage is the open question, not documentation: if
 ACB / LBA / B.League / KBL / BCL are not listed, this avenue costs nothing but
 also buys nothing, and the honest label for those lanes stays "no market".
+
+### Bot protection is a boundary, not an obstacle
+
+Cloudflare/CloudFront challenges on league and bookmaker sites are the reason
+the "alt lane" work is slow, and the correct response is to stop treating them
+as something to get around. Three reasons, in order of weight:
+
+1. **It is somebody's access control.** This project's evidence model already
+   carries `SourcePermission`; a route that has to defeat a bot challenge is
+   not a source we can label `CLEARED`, and a headless browser that defeats one
+   is a deliberate circumvention, not an acquisition method.
+2. **It does not survive.** A scraper that works today behind a rotating
+   challenge is the highest-maintenance thing in the repository — the exact
+   complaint that started this section.
+3. **It is not where our gaps are.** The lanes that looked blocked by
+   Cloudflare mostly are not: B.League serves its HTML **and** its keyless S3
+   contexts, FIBA GDAP serves whole seasons on one call, KBL answers its window
+   route, ACB answers both routes with the site-shipped `X-APIKEY`, and
+   BetExplorer answered every probe on 2026-11-23 with real `data-odd` values
+   for played games. What is missing is *prices for unopened rounds* and
+   *coverage of specific leagues* — a calendar and licensing problem, not a
+   challenge-response problem.
+
+So the usable class is unchanged and narrow: documented API, documented
+exchange, or a licensed aggregate. `www.acb.com` being 403 behind CloudFront
+costs nothing, because the price we would have scraped there is not ours to
+take and not what the ACB API was asked for.
+
+### Settling provider coverage with the key already held
+
+`scripts/probe_odds_api_coverage.py` reads The Odds API's documented
+`GET /v4/sports` catalogue with the existing `THE_ODDS_API_KEY`, writes the raw
+body plus `LEDGER.tsv` (timestamp, slug, redacted URL, status, bytes, sha256),
+and classifies every basketball key against the registry:
+
+- `already mapped` — the provider lists it and `SPORT_KEYS` uses it;
+- `listed, unmapped` — the provider carries the league and the registry has not
+  admitted it: needs a credentialed odds smoke and a price policy, not an
+  adapter guess;
+- `listed, no league` — a basketball competition we do not trade;
+- absent from the table — the only reading that means "not carried".
+
+One request, no per-league guessing, and an empty body is reported as "do not
+read this as no coverage" rather than as a negative.
