@@ -208,10 +208,11 @@ an explicit conflict rather than overwriting history.
 
 A trusted external scheduler invokes GitHub's named repository-dispatch event
 hourly at :37; there is deliberately no GitHub Actions cron trigger, and the
-installed workflow asserts that. Hourly is chosen against measured duration: a
-successful tick takes 22-29 minutes across 19 parallel lanes, so the previous
-30-minute cadence no longer left room to finish, and overlapping ticks were
-queued and silently dropped by the run-concurrency group. A
+installed workflow asserts that. Hourly is chosen against measured duration: the
+lane matrix alone takes 22-29 minutes across 19 parallel lanes and the publisher
+adds about 13 more, so a full tick runs ~42 minutes end-to-end. The previous
+30-minute cadence therefore could not contain a tick at all, and overlapping
+ticks were dropped by the run-concurrency group rather than run twice. A
 small, read-only adaptive gate first restores the latest compact `localdata`
 operator state and checks a bounded current-day schedule. It starts the full
 pipeline only for a due ticket window, pending settlement/result reconciliation,
