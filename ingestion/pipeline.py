@@ -848,7 +848,9 @@ class Pipeline:
                 )
         elif league is League.SPAIN_ACB:
             games = acb.discover_games(
-                _iso(self.config.date_yyyymmdd), self.fetch, self._acb_season_end_year()
+                _iso(self.config.date_yyyymmdd),
+                self.fetch if self._injected_fetch else None,
+                self._acb_season_end_year(),
             )
             for gap in acb.last_gaps():
                 self.gaps.append(
@@ -859,6 +861,23 @@ class Pipeline:
                         provider="acb",
                         detail=str(gap.get("detail", ""))[:200],
                         observed_utc=self._now_iso(),
+                    )
+                )
+            probe = acb.last_probe()
+            if probe:
+                now = self._now_iso()
+                self.store.upsert_provider_health(
+                    ProviderHealth(
+                        provider="acb",
+                        league=self.config.league_enum,
+                        last_attempt_utc=now,
+                        last_success_utc=now if games else None,
+                        state=CoverageState.OK if games else CoverageState.MISSING,
+                        coverage={"games": len(games), "rows": probe.get("rows", 0)},
+                        detail=(
+                            f"url={probe.get('url')} bytes={probe.get('bytes')} "
+                            f"sha256={probe.get('sha256')} rounds={probe.get('rounds')}"
+                        )[:500],
                     )
                 )
         elif league in (League.EUROLEAGUE, League.EUROCUP):

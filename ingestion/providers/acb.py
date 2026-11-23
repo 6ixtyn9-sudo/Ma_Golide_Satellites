@@ -29,10 +29,13 @@ guessing from a score or list order.
 
 from __future__ import annotations
 
+import hashlib
+import json
+import os
 from datetime import datetime
 from typing import Any, Dict, List, Optional, Sequence
 
-from ..http import HttpError
+from ..http import HttpClient, HttpError
 from ..identity import canonical_team_name, to_utc_iso
 from ..models import ActualResult, Game, GameStatus, League, PeriodKind
 from . import FetchFn, IdentityError
@@ -40,6 +43,61 @@ from . import FetchFn, IdentityError
 BASE_URL = "https://api2.acb.com/api"
 CALENDAR_URL = BASE_URL + "/seasondata/Calendar/season-calendar"
 MATCH_HEADER_URL = BASE_URL + "/matchdata/MatchHeader/match-header"
+PROVIDER = "acb"
+
+#: api2.acb.com is the .NET API behind acb.com and live.acb.com. It is not a
+#: documented public API and it answers an unauthenticated client with an auth
+#: failure, which is why this lane read zero games for 728 runs while its
+#: parser tests passed against a hand-written body.
+#:
+#: ``X-APIKEY`` is a *public* value shipped in acb.com's own JavaScript bundle
+#: (``sharedServicesConfigDotnet``). It is a site-scoped identifier, not an
+#: account credential: nothing is billed, nothing is attributable, and the
+#: operator can override it with ``$ACB_API_KEY`` if the bundle rotates it.
+#: Recorded here from the SportsDataverse ``acb`` runtime (MIT, read
+#: 2026-11-23), which read it from the bundle on 2026-10-12.
+KEY_ENV = "ACB_API_KEY"
+DEFAULT_KEY = "0dd94928-6f57-4c08-a3bd-b1b2f092976e"
+KEY_HEADER = "X-APIKEY"
+BROWSER_USER_AGENT = "Mozilla/5.0 (X11; Linux x86_64) MaGolide/1.0"
+
+_last_probe: Dict[str, Any] = {}
+
+
+def api_key() -> str:
+    """The site-bundle key, with an operator override."""
+
+    return os.environ.get(KEY_ENV) or DEFAULT_KEY
+
+
+def request_headers() -> Dict[str, str]:
+    return {KEY_HEADER: api_key(), "Accept": "application/json"}
+
+
+def default_fetch() -> FetchFn:
+    """Adapter-owned JSON client that carries the required key header."""
+
+    client = HttpClient(timeout=30.0, retries=2, user_agent=BROWSER_USER_AGENT)
+    return lambda url: client.get_json(url, headers=request_headers())
+
+
+def last_probe() -> Dict[str, Any]:
+    """What the last calendar response actually looked like (never a body)."""
+
+    return dict(_last_probe)
+
+
+def _record_probe(url: str, payload: Any, rows: int) -> None:
+    body = json.dumps(payload, sort_keys=True, ensure_ascii=False).encode("utf-8")
+    _last_probe.update(
+        {
+            "url": url,
+            "bytes": len(body),
+            "sha256": hashlib.sha256(body).hexdigest(),
+            "rounds": len(payload.get("rounds") or []) if isinstance(payload, dict) else 0,
+            "rows": rows,
+        }
+    )
 
 COMPETITION_LIGA_ENDESA = 1
 COMPETITION_NAMES = {1: "Liga Endesa", 2: "Copa del Rey", 3: "Supercopa Endesa"}
@@ -118,6 +176,7 @@ def fetch_calendar(
     payload = fetch(f"{CALENDAR_URL}?season={int(end_year)}&competition={int(competition)}")
     if not isinstance(payload, dict):
         raise ValueError(f"ACB calendar {end_year} is not a JSON object")
+    calendar_url = f"{CALENDAR_URL}?season={int(end_year)}&competition={int(competition)}"
     rounds = payload.get("rounds")
     if not isinstance(rounds, list) or not rounds:
         raise ValueError(
@@ -136,6 +195,7 @@ def fetch_calendar(
                 rows.append({"round": round_row, "match": match})
     if not rows:
         raise ValueError(f"ACB calendar {end_year} has rounds but no matches")
+    _record_probe(calendar_url, payload, len(rows))
     return rows
 
 
@@ -261,7 +321,7 @@ def _candidates(rows: Sequence[Dict[str, Any]], date_iso: Optional[str]) -> List
 
 def discover_games(
     date_iso: Optional[str],
-    fetch: FetchFn,
+    fetch: Optional[FetchFn],
     end_year: int,
     competition: int = COMPETITION_LIGA_ENDESA,
 ) -> List[Game]:
@@ -273,15 +333,16 @@ def discover_games(
     """
 
     _reset_gaps()
+    transport = fetch or default_fetch()
     phase = COMPETITION_NAMES.get(int(competition), f"Competition {competition}")
     games: List[Game] = []
-    for row in _candidates(fetch_calendar(end_year, fetch, competition), date_iso):
+    for row in _candidates(fetch_calendar(end_year, transport, competition), date_iso):
         match_id = str((row.get("match") or {}).get("id") or "")
         if not match_id:
             _record_gap(None, f"calendar row without a match id in {end_year}")
             continue
         try:
-            header = _match_header(fetch, match_id)
+            header = _match_header(transport, match_id)
             games.append(_game_from_header(header, match_id, end_year, phase))
         except AuthenticationRequired as exc:
             # Every further candidate would fail identically; record the reason
