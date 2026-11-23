@@ -1,6 +1,6 @@
 Ma Golide Picks — NCAA_M 2026-11-22
 ========================================================================
-Generated at: 2026-11-23 05:54 SAST
+Generated at: 2026-11-23 06:24 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -11,44 +11,38 @@ ELIGIBLE CLEAN PICKS
 ========================================================================
   [team_history_empirical/team_history_empirical] Loyola Chicago Ramblers vs San José State Spartans · KO 2026-11-23 06:59 SAST
       MONEYLINE full_game -> HOME · p=67.8% (raw 75.0%) @1.541 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
       calibration=calibrated n=254 · reasons=none · prediction=history
       ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=10 · recency ROI -0.2% / adjusted -0.3%
-      archived_revisions=39 · latest_evidence_utc=2026-11-23T00:10:26Z
   [provider:espn/team_history_empirical] San José State Spartans vs Loyola Chicago Ramblers · KO 2026-11-23 06:59 SAST
-      MONEYLINE full_game -> AWAY · p=62.0% (raw 67.9%) @1.541 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=186 · reasons=none · prediction=espn
-      ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=12 · recency ROI -23.5% / adjusted -20.0%
-      archived_revisions=7 · latest_evidence_utc=2026-11-23T03:40:14Z
+      MONEYLINE full_game -> AWAY · p=62.1% (raw 67.9%) @1.541 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
+      calibration=calibrated n=188 · reasons=none · prediction=espn
+      ROI-BAND BLOCKED · moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=12 · recency ROI -23.5% / adjusted -19.8%
   [provider:espn/team_history_empirical] Loyola Chicago Ramblers vs San José State Spartans · KO 2026-11-23 06:59 SAST
       MONEYLINE full_game -> HOME · p=61.0% (raw 67.9%) @1.541 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
       calibration=calibrated n=171 · reasons=none · prediction=espn
-      archived_revisions=39 · latest_evidence_utc=2026-11-23T00:10:29Z
   [team_history_empirical/team_history_empirical] San José State Spartans vs Loyola Chicago Ramblers · KO 2026-11-23 06:59 SAST
-      SPREAD full_game +3.5 -> AWAY · p=54.3% (raw 57.0%) @1.952 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=84 · reasons=none · prediction=history
-      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=178 · recency ROI -0.3% / adjusted -0.3%
+      SPREAD full_game +3.5 -> AWAY · p=54.2% (raw 57.0%) @1.952 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
+      calibration=calibrated n=86 · reasons=none · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=180 · recency ROI -1.5% / adjusted -1.5%
   [team_history_empirical/team_history_empirical] San José State Spartans vs Loyola Chicago Ramblers · KO 2026-11-23 06:59 SAST
-      SPREAD full_game +4.5 -> AWAY · p=54.3% (raw 57.0%) @1.893 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=84 · reasons=none · prediction=history
-      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=178 · recency ROI -0.3% / adjusted -0.3%
-      archived_revisions=19 · latest_evidence_utc=2026-11-23T00:10:26Z
+      SPREAD full_game +4.5 -> AWAY · p=54.2% (raw 57.0%) @1.893 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
+      calibration=calibrated n=86 · reasons=none · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=180 · recency ROI -1.5% / adjusted -1.5%
   [team_history_empirical/team_history_empirical] San José State Spartans vs Loyola Chicago Ramblers · KO 2026-11-23 06:59 SAST
-      SPREAD full_game -4.5 -> AWAY · p=53.3% (raw 56.0%) @1.926 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=84 · reasons=none · prediction=history
-      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=178 · recency ROI -0.3% / adjusted -0.3%
-      archived_revisions=7 · latest_evidence_utc=2026-11-23T03:40:11Z
+      TOTAL full_game 148.5 -> UNDER · p=52.3% (raw 55.0%) @1.909 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
+      calibration=calibrated n=92 · reasons=none · prediction=history
+      PAPER SINGLE · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=302 · recency ROI +13.4% / adjusted +13.3%
   [team_history_empirical/team_history_empirical] San José State Spartans vs Loyola Chicago Ramblers · KO 2026-11-23 06:59 SAST
-      TOTAL full_game 148.5 -> UNDER · p=51.9% (raw 55.0%) @1.909 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=89 · reasons=none · prediction=history
-      PAPER SINGLE · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=301 · recency ROI +13.1% / adjusted +13.0%
-      archived_revisions=18 · latest_evidence_utc=2026-11-22T13:40:15Z
+      SPREAD full_game -4.5 -> AWAY · p=52.2% (raw 55.0%) @1.926 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
+      calibration=calibrated n=86 · reasons=none · prediction=history
+      ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=180 · recency ROI -1.5% / adjusted -1.5%
 
 CAUTION PICKS
 ========================================================================
@@ -57,9 +51,9 @@ CAUTION PICKS
 WATCHLIST — NO MATCHED ODDS
 ========================================================================
   [team_history_empirical/team_history_empirical] San José State Spartans vs Loyola Chicago Ramblers · KO 2026-11-23 06:59 SAST
-      MONEYLINE H1 -> HOME · p=44.6% (raw 52.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=280 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+      MONEYLINE H1 -> HOME · p=44.9% (raw 52.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
+      calibration=calibrated n=282 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
 
 WATCHLIST — INSUFFICIENT CONTEXT
 ========================================================================
@@ -68,25 +62,21 @@ WATCHLIST — INSUFFICIENT CONTEXT
 SKIPPED — INELIGIBLE
 ========================================================================
   [team_history_empirical/team_history_empirical] San José State Spartans vs Loyola Chicago Ramblers · KO 2026-11-23 06:59 SAST
-      TOTAL full_game 146.5 -> UNDER · p=49.9% (raw 53.0%) @1.952 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=89 · reasons=below_calibrated_probability_floor · prediction=history
-      archived_revisions=16 · latest_evidence_utc=2026-11-23T03:40:11Z
+      TOTAL full_game 146.5 -> UNDER · p=49.3% (raw 52.0%) @1.952 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
+      calibration=calibrated n=92 · reasons=below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] San José State Spartans vs Loyola Chicago Ramblers · KO 2026-11-23 06:59 SAST
-      MONEYLINE full_game -> AWAY · p=49.1% (raw 56.0%) @1.541 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=278 · reasons=below_calibrated_probability_floor · prediction=history
-      archived_revisions=7 · latest_evidence_utc=2026-11-23T03:40:11Z
+      TOTAL full_game 145.5 -> UNDER · p=49.3% (raw 52.0%) @1.952 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
+      calibration=calibrated n=92 · reasons=below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] San José State Spartans vs Loyola Chicago Ramblers · KO 2026-11-23 06:59 SAST
-      TOTAL full_game 145.5 -> UNDER · p=48.9% (raw 52.0%) @1.952 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=89 · reasons=below_calibrated_probability_floor · prediction=history
-      archived_revisions=11 · latest_evidence_utc=2026-11-22T23:10:21Z
+      MONEYLINE full_game -> AWAY · p=48.1% (raw 55.0%) @1.541 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
+      calibration=calibrated n=279 · reasons=below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Loyola Chicago Ramblers vs San José State Spartans · KO 2026-11-23 06:59 SAST
       SPREAD full_game -3.5 -> HOME · p=44.9% (raw 51.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
       calibration=calibrated n=66 · reasons=below_calibrated_probability_floor · prediction=history
-      archived_revisions=18 · latest_evidence_utc=2026-11-22T14:10:24Z
 
 IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
@@ -1429,7 +1419,7 @@ SETTLED PICKS — ARCHIVE ONLY
 Active summary: ELIGIBLE_CLEAN=7 CAUTION=0 WATCHLIST_NO_ODDS=1 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=4
 ROI-qualified individual paper singles: 1
 Archive status: IN_PROGRESS_OR_AWAITING_RESULT=12 SETTLED=306
-Logical picks shown: 330 · superseded observations: 171
-Total archived pick evidence rows: 501
+Logical picks shown: 330 · superseded observations: 0
+Total archived pick evidence rows: 330
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.

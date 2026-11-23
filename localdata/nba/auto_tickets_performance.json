@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 5,
+  "awaiting_game_legs": 0,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -1204,31 +1204,31 @@
       "wins": 0
     },
     {
-      "awaiting_game_legs": 5,
-      "bank_units": 95.7688506008459,
+      "awaiting_game_legs": 0,
+      "bank_units": 100.79459476818298,
       "date": "2026-11-22",
       "decision_id": "45010842248_nba_1_attempt_1",
       "frozen_at": "2026-11-22T10:11:13Z",
       "league": "NBA",
-      "losses": 3,
-      "pending_accas": 2,
-      "pending_positions": 2,
+      "losses": 4,
+      "pending_accas": 0,
+      "pending_positions": 0,
       "pending_singles": 0,
-      "pending_units": 2.0,
+      "pending_units": 0,
       "positions": [
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 2.0051,
           "effective_decimal_odds": 2.0050632911392405,
           "estimated_joint_win_probability": 0.51409955,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
             "win",
-            null,
+            "loss",
             "win"
           ],
           "legs": [
@@ -1254,12 +1254,12 @@
               "book_provider": "espn",
               "forecast_id": "98b476d800d447229a2d",
               "game_id": "401910035",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Golden State Warriors",
               "market": "moneyline",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "98b476d800d447229a2d",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-23T01:30:00Z",
               "selected_decimal_price": 1.2531645569620253,
               "selection": "away"
@@ -1282,6 +1282,7 @@
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 3,
           "provisional_sample_gate_bypassed": true,
           "publication_index": 1,
@@ -1291,10 +1292,10 @@
           "stake_units": 1.0,
           "ticket_id": "623860c88ac476e0f342",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -1304,7 +1305,7 @@
           "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "win",
             "loss",
             "win"
           ],
@@ -1315,13 +1316,13 @@
               "book_provider": "espn",
               "forecast_id": "c6ec8cb35ba854e52877",
               "game_id": "401910035",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Golden State Warriors",
               "line": 9.5,
               "market": "spread",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "c6ec8cb35ba854e52877",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-23T01:30:00Z",
               "selected_decimal_price": 1.9090909090909092,
               "selection": "home"
@@ -1372,10 +1373,10 @@
           "stake_units": 1.0,
           "ticket_id": "c277a84784fdaa0cd084",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -1387,7 +1388,7 @@
           "leg_outcomes": [
             "win",
             "loss",
-            null
+            "win"
           ],
           "legs": [
             {
@@ -1430,13 +1431,13 @@
               "book_provider": "espn",
               "forecast_id": "52b75ad11a0f15ace2ce",
               "game_id": "401910035",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Golden State Warriors",
               "line": 212.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "52b75ad11a0f15ace2ce",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-23T01:30:00Z",
               "selected_decimal_price": 1.9090909090909092,
               "selection": "under"
@@ -1453,21 +1454,21 @@
           "stake_units": 1.0,
           "ticket_id": "ee4b1f5907ea4f7ca7b7",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 7.0257,
           "effective_decimal_odds": 7.025744167337088,
           "estimated_joint_win_probability": 0.16580843,
-          "grade_status": "pending",
+          "grade_status": "win",
           "leg_count": 3,
           "leg_outcomes": [
             "win",
-            null,
+            "win",
             "win"
           ],
           "legs": [
@@ -1494,13 +1495,13 @@
               "book_provider": "espn",
               "forecast_id": "64f9e0d392376e0ddd4d",
               "game_id": "401910035",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Golden State Warriors",
               "line": 211.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "64f9e0d392376e0ddd4d",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-23T01:30:00Z",
               "selected_decimal_price": 1.8849557522123894,
               "selection": "under"
@@ -1524,6 +1525,7 @@
             }
           ],
           "paper_only": true,
+          "profit_units": 6.025744167337088,
           "provisional_leg_count": 3,
           "provisional_sample_gate_bypassed": true,
           "publication_index": 4,
@@ -1533,10 +1535,10 @@
           "stake_units": 1.0,
           "ticket_id": "a3d8f8b6531ac30eb45e",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -1548,7 +1550,7 @@
           "leg_outcomes": [
             "loss",
             "win",
-            null
+            "loss"
           ],
           "legs": [
             {
@@ -1591,13 +1593,13 @@
               "book_provider": "espn",
               "forecast_id": "b6eaec40df8b45a7dfbb",
               "game_id": "401910035",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Golden State Warriors",
               "line": 8.5,
               "market": "spread",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "b6eaec40df8b45a7dfbb",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-23T01:30:00Z",
               "selected_decimal_price": 1.8695652173913042,
               "selection": "away"
@@ -1614,44 +1616,44 @@
           "stake_units": 1.0,
           "ticket_id": "c3a8b239299ee474440a",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         }
       ],
-      "profit_units": -3.0,
+      "profit_units": 2.0257441673370877,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-22_decision.json",
       "result_unresolvable_legs": 0,
-      "returned_units": 0.0,
-      "settled_accas": 3,
-      "settled_positions": 3,
+      "returned_units": 7.025744167337088,
+      "settled_accas": 5,
+      "settled_positions": 5,
       "settled_singles": 0,
-      "staked_units": 3.0,
-      "unresolved_result_legs": 5,
-      "wins": 0
+      "staked_units": 5.0,
+      "unresolved_result_legs": 0,
+      "wins": 1
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.23529411764705882,
+  "hit_rate": 0.2631578947368421,
   "league": "NBA",
-  "losses": 13,
-  "paper_bank_units": 95.7688506008459,
-  "paper_committed_units": 2.0,
-  "paper_free_units": 93.7688506008459,
+  "losses": 14,
+  "paper_bank_units": 100.79459476818298,
+  "paper_committed_units": 0,
+  "paper_free_units": 100.79459476818298,
   "paper_only": true,
-  "pending_accas": 2,
-  "pending_positions": 2,
+  "pending_accas": 0,
+  "pending_positions": 0,
   "pending_singles": 0,
-  "profit_units": -4.23114939915411,
+  "profit_units": 0.7945947681829777,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": -0.24889114112671235,
+  "roi": 0.0418207772727883,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.27519944615152164,
-  "settled_accas": 14,
-  "settled_positions": 17,
+  "selected_leg_brier_score": 0.27661778085825484,
+  "settled_accas": 16,
+  "settled_positions": 19,
   "settled_singles": 3,
-  "settled_stake_units": 17.0,
+  "settled_stake_units": 19.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 5,
-  "wins": 4
+  "unresolved_result_legs": 0,
+  "wins": 5
 }
