@@ -161,6 +161,13 @@ def test_final_expansion_is_typed_and_registry_backed_everywhere():
                 "bcl",
                 "bcl",
             )
+        elif league is League.BASKETBALL_AFRICA_LEAGUE:
+            # BAL is served by the NBA site stack (__NEXT_DATA__), not FIBA GDAP.
+            assert (spec.schedule_source, spec.results_source, spec.gate_schedule_source) == (
+                "bal",
+                "bal",
+                "bal",
+            )
         elif league is League.EUROCUP:
             # EuroCup rides the validated EuroLeague Basketball adapter with
             # competition code U; it is a referenced route contract, not a

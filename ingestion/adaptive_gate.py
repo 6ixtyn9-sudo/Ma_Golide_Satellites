@@ -771,6 +771,52 @@ def _read_json_response(url: str, *, headers: dict[str, str] | None = None) -> A
         raise GateUncertain("schedule response was not JSON") from exc
 
 
+def _bal_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGame]:
+    """One BAL day from the season blob embedded in bal.nba.com/schedule.
+
+    The blob holds the whole season, so the gate reads one page and keeps the
+    rows whose UTC tip falls on the target date. State is derived from scores
+    (a settled basketball game cannot be 0-0) rather than from the unverified
+    ``gameStatus`` code.
+    """
+
+    from ingestion.providers import bal
+
+    html = _read_limited_response(bal.SCHEDULE_URL)
+    payload = bal.extract_schedule(html)
+    games: list[ScheduleGame] = []
+    for group in bal._game_dates(payload):
+        for row in group.get("games") or []:
+            if not isinstance(row, dict):
+                continue
+            stamp = row.get("gameDateTimeUTC")
+            if not isinstance(stamp, str) or not stamp.startswith(target_date):
+                continue
+            game_id = str(row.get("gameId") or "").strip()
+            if not game_id:
+                continue
+            home = (row.get("homeTeam") or {}).get("score")
+            away = (row.get("awayTeam") or {}).get("score")
+            postponed = str(row.get("postponedStatus") or "N").strip().upper() == "P"
+            if postponed:
+                continue
+            played = (
+                isinstance(home, (int, float))
+                and isinstance(away, (int, float))
+                and (home > 0 or away > 0)
+            )
+            status = "final" if played else "scheduled"
+            tip = datetime.fromisoformat(stamp.replace("Z", "+00:00"))
+            games.append(
+                ScheduleGame(
+                    scheduled_utc=tip.astimezone(timezone.utc),
+                    status=status,
+                    game_id=f"BAL-{game_id}",
+                )
+            )
+    return games
+
+
 def _bcl_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGame]:
     """One BCL day from the FIBA GDAP season index (one call, filtered here).
 
@@ -1161,6 +1207,8 @@ def fetch_schedule(config: LeagueGateConfig, target_date: str) -> Iterable[Sched
         return _bleague_schedule(config, target_date)
     if config.schedule_source == "bcl":
         return _bcl_schedule(config, target_date)
+    if config.schedule_source == "bal":
+        return _bal_schedule(config, target_date)
     if config.schedule_source == "cba":
         return _cba_schedule(config, target_date)
     if config.schedule_source == "fiba_elw":

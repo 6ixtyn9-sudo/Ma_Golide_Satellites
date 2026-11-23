@@ -193,3 +193,24 @@ response.
   derive that state by mutating this row), bracket placeholders with null teams,
   or any period split. Since the index carries no quarter scores and no boxscore
   route is captured, settled BCL rows stay totals-only.
+
+## Real capture: BAL season blob (2026-11-23, out-of-sandbox probe)
+
+`bal/captures/schedule-next-data-2026-03-27.json` holds one **verbatim game
+object** from the ``__NEXT_DATA__`` blob served by `https://bal.nba.com/schedule`
+(HTTP 200, 379,284 bytes, 23 `gameDates`, 2026-11-23T12:12:51Z).
+
+- Class: **partial capture**. The `props.pageProps.gameDates[]` envelope and the
+  `{gameDate, seasonYear}` group are **synthesised** around the one verbatim game
+  object; the other 22 dates and all their games are not vendored.
+- What it proves: the blob location, the JSON path to the games, and one real row's
+  38 fields — `gameId`, `gameCode`, `gameStatus`/`gameStatusText`, UTC tip fields,
+  arena, `postponedStatus`, and `homeTeam`/`awayTeam` with `teamId`, city, name,
+  tricode, wins/losses/score.
+- What it does **not** prove: what `gameStatus` 2 or 3 mean. The captured row is
+  `gameStatus: 1` with a 0-0 scoreline on a future tip, so the adapter derives
+  state from **scores** (a settled basketball game cannot be 0-0) instead of
+  trusting an unverified code, and the tests pin that rule by writing
+  `gameStatus: 3` next to a 0-0 line and requiring SCHEDULED.
+- Also recorded: `gdapCompetitionId=48286` (the id BAL detail links carry) answers
+  an empty array, so the FIBA GDAP route is a dead end for this competition.
