@@ -13,6 +13,8 @@ Rules:
 
 from __future__ import annotations
 
+import gzip
+
 import logging
 import os
 import re
@@ -83,6 +85,35 @@ def redact(text: str) -> str:
         out,
     )
     return out
+
+
+GZIP_MAGIC = b"\x1f\x8b"
+
+
+def _decoded_body(resp: Any) -> str:
+    """Return the response body as text, decompressing an undeclared gzip body.
+
+    B.League's S3 context snapshots are served gzip-compressed while declaring
+    ``content-type: application/json`` and no ``Content-Encoding``, so
+    ``requests`` leaves the bytes alone and ``resp.text`` is replacement
+    characters. Parsing that fails as if the JSON were corrupt. Verified from an
+    external probe on 2026-11-23: body magic ``1f 8b``, 543,231 bytes once
+    decompressed, full ``PlayByPlays``/``Game`` payload.
+
+    A body whose magic bytes say gzip is decompressed regardless of what the
+    headers claim; anything else keeps the normal ``resp.text`` path, so a
+    correctly declared response is untouched.
+    """
+
+    raw = getattr(resp, "content", None)
+    if isinstance(raw, (bytes, bytearray)) and bytes(raw[:2]) == GZIP_MAGIC:
+        try:
+            return gzip.decompress(bytes(raw)).decode("utf-8", "replace")
+        except (OSError, EOFError):
+            # Not actually a gzip stream despite the magic; fall back rather
+            # than failing a provider read that might still be usable.
+            pass
+    return resp.text
 
 
 class HttpClient:
@@ -164,7 +195,7 @@ class HttpClient:
                 continue
             if resp.status_code >= 400:
                 raise HttpError(resp.status_code, url, redact(resp.text[:300]))
-            return resp.text
+            return _decoded_body(resp)
 
     # -- internals ----------------------------------------------------------
 
