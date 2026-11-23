@@ -120,3 +120,23 @@ files above.
   run and the lane reports an empty slate instead of silently borrowing TBL or
   KBSL games.
 - Personal fields: none in this body (team and venue names only).
+
+## Real capture: Korea KBL match detail (2026-11-23)
+
+`kbl/captures/match__gmkey__S47G01N49.json` is a **vendored real response
+body**, upgrading the KBL lane from shape-fixture-only evidence.
+
+- Source: `sportsdataverse/sportsdataverse-py`,
+  `tests/fixtures/kbl/captures/match__gmkey__S47G01N49.json` (MIT), vendored
+  verbatim on 2026-11-23.
+- Route: `GET api.kbl.or.kr/match/S47G01N49` — 2025-11-01, Goyang Sono v
+  Changwon LG.
+- Contents: `{game, teams, teamrecords}`; `game` carries `gmkey`, `gameDate`,
+  `gameStart`, `isStarted`/`isEnded`, `playingQuarter`, team codes and names;
+  `teamrecords.{home,away}` carries `scoreq1..scoreq4` and `scoreeq[]`.
+- What it proves: the quarter split that the **list** route does not carry is
+  real and parseable, so a settled KBL row can reconcile periods after all —
+  quarter markets are gradeable from this route, not blocked forever.
+- What it does **not** prove: the list route (`/match/list`) still has no
+  vendored body, so the daily discovery shape remains contract-referenced and is
+  checked at run time by `kbl.last_probe()`.

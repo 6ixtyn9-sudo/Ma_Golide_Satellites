@@ -19,8 +19,9 @@ import pytest
 from ingestion import adaptive_gate
 from ingestion.adaptive_gate import GateUncertain, fetch_schedule
 from ingestion.league_registry import league_spec
-from ingestion.models import GameStatus, League
+from ingestion.models import ActualResult, Game, GameStatus, League, PeriodKind
 from ingestion.providers import kbl
+from ingestion.providers import IdentityError
 
 FIXTURES = Path(__file__).parent / "fixtures" / "kbl"
 
@@ -151,3 +152,110 @@ def test_gate_fails_open_when_the_body_has_no_row_list(monkeypatch):
 
     with pytest.raises(GateUncertain, match="no recognisable row list"):
         fetch_schedule(config, "2026-11-23")
+
+
+# --- /match/{gmkey}: the real captured body (S47G01N49) -----------------------
+
+CAPTURE = "tests/fixtures/kbl/captures/match__gmkey__S47G01N49.json"
+
+
+def _match_capture() -> dict:
+    with open(CAPTURE, encoding="utf-8") as handle:
+        return json.loads(handle.read())
+
+
+def _settled_game():
+    """The game as discovery leaves it: settled, totals-only, no period split."""
+
+    return Game(
+        game_id="KBL-S47G01N49",
+        league=League.SOUTH_KOREA_KBL,
+        season="2027",
+        home_team_id="66",
+        away_team_id="50",
+        home_name="Goyang Sono Skygunners",
+        away_name="Changwon LG Sakers",
+        scheduled_utc="2025-11-01T05:00:00Z",
+        status=GameStatus.FINAL,
+        provider_ids={"kbl": "S47G01N49"},
+        actual=ActualResult(
+            period_kind=PeriodKind.UNKNOWN,
+            home_quarters=[],
+            away_quarters=[],
+            home_final=74.0,
+            away_final=64.0,
+            source="kbl match/list gmkey=S47G01N49",
+        ),
+    )
+
+
+def test_match_route_reconciles_the_quarter_split_from_a_real_body():
+    refreshed = kbl.fetch_game_result(
+        _settled_game(), lambda url: _match_capture()
+    )
+
+    assert refreshed.status is GameStatus.FINAL
+    actual = refreshed.actual
+    assert actual.period_kind is PeriodKind.QUARTERS
+    assert actual.home_quarters == [21.0, 24.0, 18.0, 11.0]
+    assert actual.away_quarters == [23.0, 15.0, 5.0, 21.0]
+    assert actual.home_final == 74.0
+    assert actual.away_final == 64.0
+    assert actual.overtime_periods == 0
+    ok, _ = actual.reconciles()
+    assert ok
+    assert refreshed.evidence["quarters_from"] == "kbl match"
+
+
+def test_overtime_periods_are_summed_and_counted():
+    body = _match_capture()
+    body["teamrecords"]["home"]["scoreeq"] = [9]
+    body["teamrecords"]["away"]["scoreeq"] = [4]
+
+    actual = kbl.fetch_game_result(_settled_game(), lambda url: body).actual
+
+    assert actual.overtime_periods == 1
+    assert actual.home_overtime == 9.0
+    assert actual.away_overtime == 4.0
+    assert actual.home_final == 83.0
+    assert actual.away_final == 68.0
+
+
+def test_sides_disagreeing_on_overtime_are_refused():
+    body = _match_capture()
+    body["teamrecords"]["home"]["scoreeq"] = [9]
+
+    with pytest.raises(ValueError):
+        kbl.fetch_game_result(_settled_game(), lambda url: body)
+
+
+def test_missing_quarter_points_are_refused_not_zeroed():
+    body = _match_capture()
+    del body["teamrecords"]["away"]["scoreq3"]
+
+    with pytest.raises(ValueError):
+        kbl.fetch_game_result(_settled_game(), lambda url: body)
+
+
+def test_unended_game_body_is_refused_as_a_result():
+    body = _match_capture()
+    body["game"]["isEnded"] = 0
+
+    with pytest.raises(ValueError):
+        kbl.fetch_game_result(_settled_game(), lambda url: body)
+
+
+def test_body_for_another_game_is_refused():
+    body = _match_capture()
+    body["game"]["gmkey"] = "S47G01N50"
+
+    with pytest.raises(IdentityError):
+        kbl.fetch_game_result(_settled_game(), lambda url: body)
+
+
+def test_body_naming_another_club_is_refused():
+    body = _match_capture()
+    body["game"]["tcodeH"] = "99"
+
+    with pytest.raises(IdentityError):
+        kbl.fetch_game_result(_settled_game(), lambda url: body)
