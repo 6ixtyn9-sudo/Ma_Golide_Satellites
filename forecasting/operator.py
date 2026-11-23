@@ -33,6 +33,7 @@ from __future__ import annotations
 
 from collections import Counter, defaultdict
 from copy import deepcopy
+from dataclasses import replace
 from datetime import datetime, time, timedelta, timezone
 import hashlib
 import itertools
@@ -43,7 +44,7 @@ from pathlib import Path
 from typing import Any, Dict, List, Optional
 from zoneinfo import ZoneInfo
 
-from ingestion.identity import parse_utc
+from ingestion.identity import parse_utc, team_names_agree
 from ingestion.models import (
     Game,
     GameStatus,
@@ -781,10 +782,69 @@ def load_settled_pick_history(localdata: Path) -> Optional[List[Forecast]]:
     return history
 
 
+SIDE_IDENTITY_ALIGNED = "aligned"
+SIDE_IDENTITY_MIRRORED = "mirrored"
+SIDE_IDENTITY_UNVERIFIED = "unverified"
+
+
+def _frozen_side_identity(row: Dict[str, Any], game: Game) -> str:
+    """Compare the frozen leg's sides with the sides the result now reports.
+
+    A neutral-site or re-designated fixture can come back from the provider with
+    home and away swapped relative to the payload the ticket was frozen on.
+    Grading a ``home`` selection against the *result's* home side then settles a
+    winner as a loss.  The frozen row carries the team names it was priced on,
+    so the two orientations can be reconciled instead of trusted blindly.
+    """
+
+    row_home = row.get("home")
+    row_away = row.get("away")
+    if not isinstance(row_home, str) or not isinstance(row_away, str):
+        return SIDE_IDENTITY_UNVERIFIED
+    if team_names_agree(row_home, game.home_name) and team_names_agree(
+        row_away, game.away_name
+    ):
+        return SIDE_IDENTITY_ALIGNED
+    if team_names_agree(row_home, game.away_name) and team_names_agree(
+        row_away, game.home_name
+    ):
+        return SIDE_IDENTITY_MIRRORED
+    return SIDE_IDENTITY_UNVERIFIED
+
+
+def _mirrored_game(game: Game) -> Game:
+    """Return the same result with home and away exchanged."""
+
+    actual = game.actual
+    if actual is not None:
+        actual = replace(
+            actual,
+            home_quarters=list(actual.away_quarters),
+            away_quarters=list(actual.home_quarters),
+            home_overtime=actual.away_overtime,
+            away_overtime=actual.home_overtime,
+            home_final=actual.away_final,
+            away_final=actual.home_final,
+        )
+    return replace(
+        game,
+        home_team_id=game.away_team_id,
+        away_team_id=game.home_team_id,
+        home_name=game.away_name,
+        away_name=game.home_name,
+        actual=actual,
+    )
+
+
 def _grade_row(row: Dict[str, Any], games: Dict[str, Game]) -> Optional[str]:
     game = games.get(str(row["game_id"]))
     if game is None or game.status is not GameStatus.FINAL:
         return None
+    # Restore the orientation the ticket was frozen on. Spread lines are
+    # home-oriented, so mirroring the result (not negating the line) keeps the
+    # frozen line's meaning.
+    if _frozen_side_identity(row, game) == SIDE_IDENTITY_MIRRORED:
+        game = _mirrored_game(game)
     if _is_derived_spread_ticket_row(row):
         return _derived_spread_grade(row, game)
     return grade_forecast(_forecast_from_row(row), game)
@@ -794,6 +854,12 @@ def _set_grade(row: Dict[str, Any], games: Dict[str, Game]) -> None:
     outcome = _grade_row(row, games)
     row["outcome"] = outcome
     row["grade_status"] = outcome or "pending"
+    game = games.get(str(row["game_id"]))
+    if game is not None and _frozen_side_identity(row, game) == SIDE_IDENTITY_MIRRORED:
+        # Audit trail: this leg's result arrived with the sides exchanged.
+        row["result_side_identity"] = SIDE_IDENTITY_MIRRORED
+    else:
+        row.pop("result_side_identity", None)
 
 
 def _spread_line_for_selection(
@@ -4614,9 +4680,14 @@ def _render_performance(report: Dict[str, Any], timezone_name: str) -> str:
                 f"stake {position['stake_units']:.3f} · receipt {day['decision_id']}"
             )
             for leg in position["legs"]:
+                mirrored = (
+                    " · sides mirrored"
+                    if leg.get("result_side_identity") == SIDE_IDENTITY_MIRRORED
+                    else ""
+                )
                 lines.append(
                     f"      {leg['home']} vs {leg['away']} · {_selection_label(leg)} "
-                    f"· {_grade_badge(leg['grade_status'])}"
+                    f"· {_grade_badge(leg['grade_status'])}{mirrored}"
                 )
     if not held:
         lines.append("  None.")
