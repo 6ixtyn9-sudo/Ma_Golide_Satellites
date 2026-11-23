@@ -29,7 +29,7 @@
       "logical_picks": 225
     },
     "2026-11-23": {
-      "frozen_fixtures": 7,
+      "frozen_fixtures": 10,
       "logical_picks": 132
     }
   },
@@ -36494,6 +36494,364 @@
       }
     },
     "2026-11-23": {
+      "401913729": {
+        "decision_cutoff_utc": "2026-11-23T19:00:00Z",
+        "frozen_at": "2026-11-23T19:06:48Z",
+        "game_id": "401913729",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Michigan Wolverines",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.534488,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 351,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "6add0d0c6f77af7087a7a6de7a2c11a9070566f374f25cb07258a9c40ed56783",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "da08d8d82cac10a17ba5",
+            "game_id": "401913729",
+            "grade_status": "pending",
+            "home": "Miami Hurricanes",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "da08d8d82cac10a17ba5",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.61,
+            "role": null,
+            "scheduled_utc": "2026-11-23T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Michigan Wolverines",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401913729",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-23T18:41:30Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.02,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.637775,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 352,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "97775c0951b4377abb24d265612b0a35c0f551c611378fa68f032a00f282432a",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d72697de5a0bdc558d82",
+            "game_id": "401913729",
+            "grade_status": "pending",
+            "home": "Miami Hurricanes",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "d72697de5a0bdc558d82",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.7,
+            "role": null,
+            "scheduled_utc": "2026-11-23T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Michigan Wolverines",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401913729",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-23T18:41:30Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.02,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.946487,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 199,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "634371cf8a820d47fe1ebf66acf74d5613c200e19f8372d9cddaf7644ea94544",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e84c8beb3090e7a90973",
+            "game_id": "401913729",
+            "grade_status": "pending",
+            "home": "Miami Hurricanes",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.017426,
+              "historical_pick_count": 4,
+              "individual_odds_band": "1.00-<1.20",
+              "losses": 0,
+              "market": "moneyline",
+              "observed_roi": 0.004375,
+              "period": "full_game",
+              "probability_band": "0.90-1.00",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.004271,
+              "wins": 4
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "e84c8beb3090e7a90973",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-23T18:41:34Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.976,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-23T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Michigan Wolverines",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401913729",
+              "line": 22.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-23T18:41:30Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.427778,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "c524a626ebd4e9650f8e4fdab633de366cdb937fef20135d741493966aa40f4b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1f8488ec66bd1fdc1476",
+            "game_id": "401913729",
+            "grade_status": "pending",
+            "home": "Miami Hurricanes",
+            "league": "NCAA_W",
+            "line": 22.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "1f8488ec66bd1fdc1476",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-23T21:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Michigan Wolverines",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401913729",
+              "line": 21.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-23T14:40:50Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.417778,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "ec3498c5b832a854a37672d4113f35682cff44a0ed269117d18ace011214c065",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7d6db7e4fc128f7cc01c",
+            "game_id": "401913729",
+            "grade_status": "pending",
+            "home": "Miami Hurricanes",
+            "league": "NCAA_W",
+            "line": 21.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "7d6db7e4fc128f7cc01c",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.53,
+            "role": null,
+            "scheduled_utc": "2026-11-23T21:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Michigan Wolverines",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401913729",
+              "line": 136.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-23T18:41:30Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.4892,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 20,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "d31123240928d39be521e77ad590f94266e314b19026f54086da326ad90f8845",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "125655c580cb2ce5282a",
+            "game_id": "401913729",
+            "grade_status": "pending",
+            "home": "Miami Hurricanes",
+            "league": "NCAA_W",
+            "line": 136.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "125655c580cb2ce5282a",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-23T21:00:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-23T21:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-23"
+      },
       "401916019": {
         "decision_cutoff_utc": "2026-11-23T17:30:00Z",
         "frozen_at": "2026-11-23T18:14:22Z",
@@ -36814,6 +37172,146 @@
           }
         ],
         "scheduled_utc": "2026-11-23T17:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-23"
+      },
+      "401921391": {
+        "decision_cutoff_utc": "2026-11-23T19:00:00Z",
+        "frozen_at": "2026-11-23T19:06:48Z",
+        "game_id": "401921391",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Grand Canyon Lopes",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.464488,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 351,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "c54f82c6772f3abcf1c2cd864a9a2664a86bb7d879ad2b45e8f08696e3a95784",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b92509cd27a083fdab75",
+            "game_id": "401921391",
+            "grade_status": "pending",
+            "home": "High Point Panthers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "b92509cd27a083fdab75",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-23T21:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Grand Canyon Lopes",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.685587,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 199,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "de38abd7b880701b413a16eb3a6a1f2ac24a73e8cd86b7886cad16486ed22fe0",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "8d9ce9efb5b93f65479f",
+            "game_id": "401921391",
+            "grade_status": "pending",
+            "home": "High Point Panthers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "8d9ce9efb5b93f65479f",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-23T18:41:34Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.7151,
+            "role": null,
+            "scheduled_utc": "2026-11-23T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Grand Canyon Lopes",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.577775,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 352,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "578bc29a4358a3c54b279ea903ebcc337cdd012db133a4d629b3fec29eb6300c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5d984a30b3dd699f5145",
+            "game_id": "401921391",
+            "grade_status": "pending",
+            "home": "High Point Panthers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "5d984a30b3dd699f5145",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.64,
+            "role": null,
+            "scheduled_utc": "2026-11-23T21:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-23T21:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-23"
       },
@@ -37673,6 +38171,145 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-23"
       },
+      "401926044": {
+        "decision_cutoff_utc": "2026-11-23T19:00:00Z",
+        "frozen_at": "2026-11-23T19:06:48Z",
+        "game_id": "401926044",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Old Dominion Monarchs",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.564488,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 351,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "50136a0e317fc8e92b3ad58c2893b629caf7b476783c14590ab2bea93ca36be2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "81f2048e7fc29db3bfbb",
+            "game_id": "401926044",
+            "grade_status": "pending",
+            "home": "Memphis Tigers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "81f2048e7fc29db3bfbb",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.64,
+            "role": null,
+            "scheduled_utc": "2026-11-23T21:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Old Dominion Monarchs",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.677775,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 352,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "339ca27a3c2481b1c5a3010438f54965266c611497edb99106f0552abd580671",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "3fdd3cfe6db00fd88634",
+            "game_id": "401926044",
+            "grade_status": "pending",
+            "home": "Memphis Tigers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "3fdd3cfe6db00fd88634",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.74,
+            "role": null,
+            "scheduled_utc": "2026-11-23T21:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Old Dominion Monarchs",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.768487,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 199,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "251755fb6d8acf7c16a65d05ed88727718010c31911e33b89821aca095d762a0",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "8f428fb26d58f353cc33",
+            "game_id": "401926044",
+            "grade_status": "pending",
+            "home": "Memphis Tigers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "8f428fb26d58f353cc33",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-23T18:41:34Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.798,
+            "role": null,
+            "scheduled_utc": "2026-11-23T21:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-23T21:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-23"
+      },
       "401926088": {
         "decision_cutoff_utc": "2026-11-23T14:00:00Z",
         "frozen_at": "2026-11-23T15:12:42Z",
@@ -38001,18 +38638,6 @@
   "league": "NCAA_W",
   "pending_frozen_games": [
     [
-      "401916024",
-      "2026-11-23T17:00:00Z"
-    ],
-    [
-      "401923672",
-      "2026-11-23T17:00:00Z"
-    ],
-    [
-      "401928193",
-      "2026-11-23T17:00:00Z"
-    ],
-    [
       "401921427",
       "2026-11-23T18:30:00Z"
     ],
@@ -38023,6 +38648,18 @@
     [
       "401923673",
       "2026-11-23T19:30:00Z"
+    ],
+    [
+      "401913729",
+      "2026-11-23T21:00:00Z"
+    ],
+    [
+      "401921391",
+      "2026-11-23T21:00:00Z"
+    ],
+    [
+      "401926044",
+      "2026-11-23T21:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
