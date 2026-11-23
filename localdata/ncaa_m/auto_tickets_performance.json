@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 2,
+  "awaiting_game_legs": 0,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -1047,20 +1047,20 @@
       "wins": 0
     },
     {
-      "awaiting_game_legs": 2,
-      "bank_units": 99.40917456035842,
+      "awaiting_game_legs": 0,
+      "bank_units": 104.8094738495466,
       "date": "2026-11-22",
       "decision_id": "45010842248_ncaa_m_1_attempt_1",
       "frozen_at": "2026-11-22T10:20:25Z",
       "league": "NCAA_M",
       "losses": 1,
-      "pending_accas": 1,
-      "pending_positions": 1,
+      "pending_accas": 0,
+      "pending_positions": 0,
       "pending_singles": 0,
-      "pending_units": 1.0,
+      "pending_units": 0,
       "positions": [
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -1071,7 +1071,7 @@
           "leg_count": 3,
           "leg_outcomes": [
             "loss",
-            null,
+            "loss",
             "loss"
           ],
           "legs": [
@@ -1097,12 +1097,12 @@
               "book_provider": "espn",
               "forecast_id": "6a20dfe2e7bdcfa3ade6",
               "game_id": "401919020",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "UAB Blazers",
               "market": "moneyline",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "6a20dfe2e7bdcfa3ade6",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-23T00:00:00Z",
               "selected_decimal_price": 2.1399999999999997,
               "selection": "home"
@@ -1135,21 +1135,21 @@
           "stake_units": 1.0,
           "ticket_id": "2b8d1c5286f5516be989",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 6.4003,
           "effective_decimal_odds": 6.400299289188179,
           "estimated_joint_win_probability": 0.13986855,
-          "grade_status": "pending",
+          "grade_status": "win",
           "leg_count": 3,
           "leg_outcomes": [
             "win",
-            null,
+            "win",
             "win"
           ],
           "legs": [
@@ -1175,12 +1175,12 @@
               "book_provider": "espn",
               "forecast_id": "b47750f91c4445f99d63",
               "game_id": "401919020",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "UAB Blazers",
               "market": "moneyline",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "b47750f91c4445f99d63",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-23T00:00:00Z",
               "selected_decimal_price": 1.7407407407407407,
               "selection": "away"
@@ -1204,6 +1204,7 @@
             }
           ],
           "paper_only": true,
+          "profit_units": 5.400299289188179,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 2,
@@ -1213,44 +1214,44 @@
           "stake_units": 1.0,
           "ticket_id": "67887fe0dbc19a5e453c",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         }
       ],
-      "profit_units": -1.0,
+      "profit_units": 4.400299289188179,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-22_decision.json",
       "result_unresolvable_legs": 0,
-      "returned_units": 0.0,
-      "settled_accas": 1,
-      "settled_positions": 1,
+      "returned_units": 6.400299289188179,
+      "settled_accas": 2,
+      "settled_positions": 2,
       "settled_singles": 0,
-      "staked_units": 1.0,
-      "unresolved_result_legs": 2,
-      "wins": 0
+      "staked_units": 2.0,
+      "unresolved_result_legs": 0,
+      "wins": 1
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.3076923076923077,
+  "hit_rate": 0.35714285714285715,
   "league": "NCAA_M",
   "losses": 9,
-  "paper_bank_units": 99.40917456035841,
-  "paper_committed_units": 1.0,
-  "paper_free_units": 98.40917456035841,
+  "paper_bank_units": 104.80947384954659,
+  "paper_committed_units": 0,
+  "paper_free_units": 104.80947384954659,
   "paper_only": true,
-  "pending_accas": 1,
-  "pending_positions": 1,
+  "pending_accas": 0,
+  "pending_positions": 0,
   "pending_singles": 0,
-  "profit_units": -0.5908254396415895,
+  "profit_units": 4.809473849546589,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": -0.04544811074166073,
+  "roi": 0.34353384639618495,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.21809343855665786,
-  "settled_accas": 12,
-  "settled_positions": 13,
+  "selected_leg_brier_score": 0.22045338932502495,
+  "settled_accas": 13,
+  "settled_positions": 14,
   "settled_singles": 1,
-  "settled_stake_units": 13.0,
+  "settled_stake_units": 14.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 2,
-  "wins": 4
+  "unresolved_result_legs": 0,
+  "wins": 5
 }

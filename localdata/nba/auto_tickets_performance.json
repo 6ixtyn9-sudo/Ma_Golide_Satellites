@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 11,
+  "awaiting_game_legs": 7,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -1204,7 +1204,7 @@
       "wins": 0
     },
     {
-      "awaiting_game_legs": 11,
+      "awaiting_game_legs": 7,
       "bank_units": 96.7688506008459,
       "date": "2026-11-22",
       "decision_id": "45010842248_nba_1_attempt_1",
@@ -1217,7 +1217,7 @@
       "pending_units": 3.0,
       "positions": [
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
@@ -1229,7 +1229,7 @@
           "leg_outcomes": [
             null,
             null,
-            null
+            "win"
           ],
           "legs": [
             {
@@ -1270,12 +1270,12 @@
               "book_provider": "espn",
               "forecast_id": "dae42fb94ecaae3c2f50",
               "game_id": "401910032",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Chicago Bulls",
               "market": "moneyline",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "dae42fb94ecaae3c2f50",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-23T00:00:00Z",
               "selected_decimal_price": 1.2666666666666666,
               "selection": "away"
@@ -1291,10 +1291,10 @@
           "stake_units": 1.0,
           "ticket_id": "623860c88ac476e0f342",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         },
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
@@ -1306,7 +1306,7 @@
           "leg_outcomes": [
             null,
             "loss",
-            null
+            "win"
           ],
           "legs": [
             {
@@ -1349,13 +1349,13 @@
               "book_provider": "espn",
               "forecast_id": "2c41efccaa62e8daf80b",
               "game_id": "401910031",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Washington Wizards",
               "line": 222.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "2c41efccaa62e8daf80b",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-23T00:00:00Z",
               "selected_decimal_price": 1.9090909090909092,
               "selection": "under"
@@ -1372,7 +1372,7 @@
           "stake_units": 1.0,
           "ticket_id": "c277a84784fdaa0cd084",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         },
         {
           "awaiting_game_legs": 1,
@@ -1456,7 +1456,7 @@
           "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
@@ -1468,7 +1468,7 @@
           "leg_outcomes": [
             "win",
             null,
-            null
+            "win"
           ],
           "legs": [
             {
@@ -1511,13 +1511,13 @@
               "book_provider": "espn",
               "forecast_id": "aaadcb6d3d1d911ab61d",
               "game_id": "401910031",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Washington Wizards",
               "line": 5.5,
               "market": "spread",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "aaadcb6d3d1d911ab61d",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-23T00:00:00Z",
               "selected_decimal_price": 1.9090909090909092,
               "selection": "home"
@@ -1533,10 +1533,10 @@
           "stake_units": 1.0,
           "ticket_id": "a3d8f8b6531ac30eb45e",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
@@ -1547,7 +1547,7 @@
           "leg_count": 3,
           "leg_outcomes": [
             null,
-            null,
+            "win",
             null
           ],
           "legs": [
@@ -1574,13 +1574,13 @@
               "book_provider": "espn",
               "forecast_id": "aca92b5343135d32d328",
               "game_id": "401910033",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Utah Jazz",
               "line": 1.5,
               "market": "spread",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "aca92b5343135d32d328",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-23T00:00:00Z",
               "selected_decimal_price": 1.8695652173913042,
               "selection": "away"
@@ -1613,7 +1613,7 @@
           "stake_units": 1.0,
           "ticket_id": "c3a8b239299ee474440a",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         }
       ],
       "profit_units": -2.0,
@@ -1625,7 +1625,7 @@
       "settled_positions": 2,
       "settled_singles": 0,
       "staked_units": 2.0,
-      "unresolved_result_legs": 11,
+      "unresolved_result_legs": 7,
       "wins": 0
     }
   ],
@@ -1645,12 +1645,12 @@
   "result_unresolvable_legs": 0,
   "roi": -0.20194683744713188,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.2921465845289499,
+  "selected_leg_brier_score": 0.2806156234019545,
   "settled_accas": 13,
   "settled_positions": 16,
   "settled_singles": 3,
   "settled_stake_units": 16.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 11,
+  "unresolved_result_legs": 7,
   "wins": 4
 }
