@@ -127,7 +127,36 @@ def _quarter_list(value: Any) -> List[Optional[float]]:
     return quarters
 
 
-def _tip_utc(date_text: Any, time_text: Any) -> tuple[str, bool]:
+# The Winner League board fills ``TimeOfGame`` with a Hebrew placeholder while a
+# fixture's tip time is still unannounced. Observed in run 45185698512
+# (2026-11-23): row IBL-26679 carried "טרם נקבע" and the lane rejected it as a
+# malformed time. It is not malformed -- it is a provider telling us the time is
+# not decided yet, which is a different fact from "the payload is corrupt".
+_UNANNOUNCED_TIP_MARKERS = frozenset(
+    {
+        "טרם נקבע",
+        "טרם נקבעה",
+        "טרם נקבעו",
+        "לא נקבע",
+        "tbd",
+        "tba",
+        "n/a",
+        "na",
+        "-",
+    }
+)
+
+
+class TipTimeUnannounced(ValueError):
+    """The provider states that this fixture's tip time is not set yet."""
+
+
+def _is_unannounced_tip(time_text: str) -> bool:
+    normalised = " ".join(time_text.split()).casefold()
+    return normalised in _UNANNOUNCED_TIP_MARKERS
+
+
+def _tip_utc(date_text: Any, time_text: Any, *, played: bool = False) -> tuple[str, bool]:
     """Convert the provider's naive wall clock into UTC.
 
     Returns ``(iso_utc, dst_edge)``. The wall clock is interpreted in
@@ -145,12 +174,29 @@ def _tip_utc(date_text: Any, time_text: Any) -> tuple[str, bool]:
     except ValueError as exc:
         raise ValueError(f"Israel game date {raw_date!r} is not dd/mm/yyyy") from exc
     hour, minute = 0, 0
+    if raw_time and _is_unannounced_tip(raw_time):
+        # Fail closed on the fixture, but say what the provider actually said.
+        # An unannounced tip is not a midnight tip and must never be stored as
+        # one: it would place a scheduled game at 00:00 local and let it look
+        # like a real pre-tip candidate.
+        raise TipTimeUnannounced(
+            f"tip_time_unannounced: provider reports {raw_time!r} for {raw_date}"
+        )
     if raw_time:
         try:
             parsed_time = datetime.strptime(raw_time, "%H:%M")
         except ValueError as exc:
             raise ValueError(f"Israel tip time {raw_time!r} is not HH:MM") from exc
         hour, minute = parsed_time.hour, parsed_time.minute
+    elif not played:
+        # Same rule for a blank that is not yet a result: no announced tip means
+        # the fixture cannot be placed on a clock, so withhold it rather than
+        # invent midnight. A row that already carries a final score is different
+        # -- its tip time is incidental to grading, and dropping it would lose
+        # a settled result.
+        raise TipTimeUnannounced(
+            f"tip_time_unannounced: provider left the tip time blank for {raw_date}"
+        )
     zone = ZoneInfo(ASSUMED_LEAGUE_TZ)
     naive = datetime(day.year, day.month, day.day, hour, minute)
     aware = naive.replace(tzinfo=zone)
@@ -259,10 +305,12 @@ def _game_from_row(
     away_id, away_name = _team(row, 2)
     if home_id == away_id or home_name.casefold() == away_name.casefold():
         raise IdentityError(f"Israel game {game_ref} names the same team on both sides")
-    scheduled_utc, dst_edge = _tip_utc(row.get("game_date_txt"), row.get("TimeOfGame"))
     home_final = _int(row.get("score_team1"))
     away_final = _int(row.get("score_team2"))
     played = home_final is not None and away_final is not None and (home_final + away_final) > 0
+    scheduled_utc, dst_edge = _tip_utc(
+        row.get("game_date_txt"), row.get("TimeOfGame"), played=played
+    )
     game = Game(
         game_id=f"IBL-{game_ref}",
         league=League.ISRAEL_PREMIER_LEAGUE,
