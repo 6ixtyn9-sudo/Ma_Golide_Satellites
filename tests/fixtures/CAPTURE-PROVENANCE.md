@@ -92,3 +92,31 @@ zero live games, which is how the missing `X-APIKEY` header stayed invisible for
 the calendar URL, byte count, sha256, round count and row count it actually saw,
 persisted as `provider_health`, with an empty read recorded as
 `CoverageState.MISSING` rather than `OK`.
+
+## Real capture: Turkey TBF daily matches (2026-11-23)
+
+`tbf/captures/get-daily-matches-2026-10-11.json` is a **vendored real response
+body**, not a shape fixture — a different evidence class from the KBL and ACB
+files above.
+
+- Source: `sportsdataverse/sportsdataverse-py`,
+  `tests/fixtures/tbf/captures/Match__get-daily-matches.json` (MIT), vendored
+  verbatim on 2026-11-23.
+- Route: `GET miniappapi.tbf.org.tr/webapi-service/api/Match/get-daily-matches?match_date=2026-10-11`.
+- Contents: the federation's envelope `{data, isSuccess, message,
+  problemDetails}` with three grouped competitions — `kbsl`, `tbl`, `tkbl` —
+  and rows carrying `matchId`, `activityCode`, naive-local `matchDate`,
+  `homeTeam`/`awayTeam` ids, names and scores, `matchStatusId` 1 ("Oynandı"),
+  `week`, `venueName` and `hasUzatma`.
+- What it proves: the envelope, the row keys, the competition grouping, the
+  local-time format and the played-status marker are read from a body the host
+  actually served.
+- What it does **not** prove: the body carries no `bsl` row, so the top flight's
+  `activityCode` string is taken from the documented contract rather than
+  observed. The lane's BSL filter is therefore checked for *behaviour* (it keeps
+  BSL and nothing else) but the literal spelling is validated at run time by
+  `tbf.last_probe()`, which records every competition code the daily body
+  actually returned. If the spelling differs, the probe shows it on the first
+  run and the lane reports an empty slate instead of silently borrowing TBL or
+  KBSL games.
+- Personal fields: none in this body (team and venue names only).

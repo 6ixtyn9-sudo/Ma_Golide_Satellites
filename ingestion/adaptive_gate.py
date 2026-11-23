@@ -771,6 +771,60 @@ def _read_json_response(url: str, *, headers: dict[str, str] | None = None) -> A
         raise GateUncertain("schedule response was not JSON") from exc
 
 
+def _tbf_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGame]:
+    """One TBF day from the federation's daily-matches route (no key).
+
+    The route is keyed by Turkey local date and answers every competition the
+    federation runs in one body, so the gate reads the two local dates a UTC
+    target day can span and keeps only BSL rows whose UTC tip lands inside it.
+    An unreadable body fails open instead of asserting an empty slate.
+    """
+
+    day = datetime.strptime(target_date.replace("-", ""), "%Y%m%d")
+    local_day = (day.replace(tzinfo=timezone.utc) + timedelta(hours=3)).date()
+    games: list[ScheduleGame] = []
+    seen: set[str] = set()
+    for offset in (0, 1):
+        url = (
+            "https://miniappapi.tbf.org.tr/webapi-service/api/Match/get-daily-matches"
+            f"?match_date={(local_day + timedelta(days=offset)).isoformat()}"
+        )
+        body = _read_json_response(url, headers={"Accept": "application/json"})
+        if not isinstance(body, dict) or not isinstance(body.get("data"), list):
+            raise GateUncertain("TBF get-daily-matches has no data list")
+        for group in body["data"]:
+            matches = group.get("matches") if isinstance(group, dict) else None
+            for row in matches or []:
+                if not isinstance(row, dict):
+                    continue
+                if str(row.get("activityCode") or "").strip().lower() != "bsl":
+                    continue
+                match_id = row.get("matchId")
+                if match_id is None:
+                    continue
+                key = str(int(float(match_id)))
+                if key in seen:
+                    continue
+                try:
+                    tip = datetime.fromisoformat(str(row.get("matchDate") or "").strip())
+                except ValueError:
+                    continue
+                if tip.tzinfo is None:
+                    tip = tip.replace(tzinfo=timezone(timedelta(hours=3)))
+                if tip.astimezone(timezone.utc).strftime("%Y-%m-%d") != target_date:
+                    continue
+                seen.add(key)
+                played = str(row.get("matchStatusId") or "").strip()
+                games.append(
+                    ScheduleGame(
+                        scheduled_utc=tip.astimezone(timezone.utc),
+                        status="final" if played in {"1", "1.0"} else "scheduled",
+                        game_id=f"TBF-{key}",
+                    )
+                )
+    return games
+
+
 def _kbl_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGame]:
     """One KBL day from the documented date-window route (no key, two headers).
 
@@ -1008,6 +1062,8 @@ def fetch_schedule(config: LeagueGateConfig, target_date: str) -> Iterable[Sched
         return _espn_schedule(config, target_date)
     if config.schedule_source == "kbl":
         return _kbl_schedule(config, target_date)
+    if config.schedule_source == "tbf":
+        return _tbf_schedule(config, target_date)
     if config.schedule_source == "cba":
         return _cba_schedule(config, target_date)
     if config.schedule_source == "fiba_elw":

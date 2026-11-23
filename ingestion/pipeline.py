@@ -69,6 +69,7 @@ from .providers import (
     israel_ibl,
     kbl,
     lba,
+    tbf,
 )
 
 logger = logging.getLogger(__name__)
@@ -877,6 +878,41 @@ class Pipeline:
                         detail=(
                             f"url={probe.get('url')} bytes={probe.get('bytes')} "
                             f"sha256={probe.get('sha256')} rounds={probe.get('rounds')}"
+                        )[:500],
+                    )
+                )
+        elif league is League.TURKEY_BSL:
+            games = tbf.discover_games(
+                _iso(self.config.date_yyyymmdd),
+                self.fetch if self._injected_fetch else None,
+                competition=tbf.COMPETITION_BSL,
+            )
+            for gap in tbf.last_gaps():
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=(f"TBF-{gap['game_id']}" if gap.get("game_id") else None),
+                        required_field="schedule_identity",
+                        reason=CoverageState.MISSING,
+                        provider="tbf",
+                        detail=str(gap.get("detail", ""))[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+            probe = tbf.last_probe()
+            if probe:
+                now = self._now_iso()
+                self.store.upsert_provider_health(
+                    ProviderHealth(
+                        provider="tbf",
+                        league=self.config.league_enum,
+                        last_attempt_utc=now,
+                        last_success_utc=now if games else None,
+                        state=CoverageState.OK if games else CoverageState.MISSING,
+                        coverage={"games": len(games), "rows": probe.get("rows", 0)},
+                        detail=(
+                            f"url={probe.get('url')} bytes={probe.get('bytes')} "
+                            f"sha256={probe.get('sha256')} "
+                            f"competitions={','.join(probe.get('competitions') or [])}"
                         )[:500],
                     )
                 )
