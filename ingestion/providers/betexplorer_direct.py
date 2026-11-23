@@ -589,6 +589,17 @@ _SEASON_SCOPED_NAME_PAIRS = {
 }
 
 
+#: League-scoped board spellings that share no token subset with the canonical
+#: name, so no folding or subset rule can join them. Each entry is a pair the
+#: served board actually showed (2026-11-23); re-verify every season, because a
+#: sponsor change moves a club between the two forms without any warning.
+_LEAGUE_NAME_PAIRS = {
+    # FRANCE_LNB_PRO_A: the board abbreviates to the twin towns, the league feed
+    # names the club. Neither token set contains the other.
+    ("FRANCE_LNB_PRO_A", "elanchalon", "chalonsaone"),
+}
+
+
 def _team_names_agree(
     candidate_name: str,
     board_name: str,
@@ -629,6 +640,13 @@ def _team_names_agree(
         # ESPN's NCAA_W schedule lane is already gender-scoped.
         candidate = re.sub(r"\s+W$", "", candidate, flags=re.IGNORECASE)
         board = re.sub(r"\s+W$", "", board, flags=re.IGNORECASE)
+
+    if (league_key, candidate_key, board_key) in _LEAGUE_NAME_PAIRS or (
+        league_key,
+        board_key,
+        candidate_key,
+    ) in _LEAGUE_NAME_PAIRS:
+        return True, "league_alias"
 
     if canonical_team_key(candidate) == canonical_team_key(board):
         return True, "normalized_exact"
