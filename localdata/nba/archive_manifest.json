@@ -1,9 +1,17 @@
 {
-  "archive_bytes": 61799215,
-  "archive_sha256": "b6b7386412014f53b5012dd3e3508d7c6c06ba0d5e341e3b7af0af63a3f97eb3",
+  "archive_bytes": 18026045,
+  "archive_sha256": "96d497add014095fc65c07e7492b9def375134e0a97f4bb53db95adc26cbb062",
   "asset_name": "magolide-state-nba.tar.gz",
   "canonical_csv_files": 6,
-  "content_manifest_sha256": "eed0c2c85c7a084051bdff65a832d2c8834a0cb4a4c2c4850bf05d3bb61a08a4",
+  "canonical_row_counts": {
+    "book_snapshots": 240,
+    "games": 2177,
+    "pipeline_runs": 452,
+    "predictions": 69,
+    "provider_health": 2,
+    "team_aliases": 0
+  },
+  "content_manifest_sha256": "f8987cc664fbce43feb19848b528da7ed6dc92601a43ad54631c929652267c3c",
   "release_tag": "magolide-state-current",
   "schema_version": "magolide.release_archive",
   "state_key": "nba"
