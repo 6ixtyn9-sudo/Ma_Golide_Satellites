@@ -152,6 +152,15 @@ def test_final_expansion_is_typed_and_registry_backed_everywhere():
                 "bleague",
                 "bleague",
             )
+        elif league is League.BASKETBALL_CHAMPIONS_LEAGUE:
+            # BCL rides the FIBA GDAP contract module the EuroLeague Women lane
+            # already validates; only the competition id and identity namespace
+            # are its own.
+            assert (spec.schedule_source, spec.results_source, spec.gate_schedule_source) == (
+                "bcl",
+                "bcl",
+                "bcl",
+            )
         elif league is League.EUROCUP:
             # EuroCup rides the validated EuroLeague Basketball adapter with
             # competition code U; it is a referenced route contract, not a

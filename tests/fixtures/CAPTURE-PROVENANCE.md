@@ -172,3 +172,24 @@ came from a probe run elsewhere and are labelled by what they actually are.
 
 The documented `web_json/contexts/{key}` tree was also tried and refused with a
 403 `AccessDenied`; `v2_genius_contexts` is the keyless path this lane reads.
+
+## Real capture: BCL GDAP season index (2026-11-23, out-of-sandbox probe)
+
+`bcl/captures/gdap-games-209123-row.json` is one **verbatim row** of a captured
+response.
+
+- Source: `GET https://digital-api.fiba.basketball/hapi/getgdapgamesbycompetitionid?gdapCompetitionId=209123`,
+  HTTP 200, 23,789 bytes, returned 2026-11-23T12:11:54Z, header
+  `Ocp-Apim-Subscription-Key` set to the value fiba.basketball ships in its own
+  Next.js bootstrap JSON (public, not account-scoped; the repo already holds it
+  as `PUBLIC_FALLBACK_SUBSCRIPTION_KEY`).
+- Class: **partial capture** — the first row of a 136-row season index. The
+  other 135 rows, and any boxscore/detail route, are not vendored.
+- What it proves: the array-shaped response, the 40 row fields including
+  `gameDateTimeUTC` (offset-less UTC), `teamA`/`teamB` identity and codes,
+  `teamAScore`/`teamBScore`, `statusCode`/`gameResultStatusCode`/`liveGameStatus`
+  and the nested `round`/`competition` objects.
+- What it does not prove: scheduled rows (no unplayed row was quoted — tests
+  derive that state by mutating this row), bracket placeholders with null teams,
+  or any period split. Since the index carries no quarter scores and no boxscore
+  route is captured, settled BCL rows stay totals-only.
