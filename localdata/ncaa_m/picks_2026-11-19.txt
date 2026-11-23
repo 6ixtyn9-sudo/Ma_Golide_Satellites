@@ -1,6 +1,6 @@
 Ma Golide Picks — NCAA_M 2026-11-19
 ========================================================================
-Generated at: 2026-11-23 09:25 SAST
+Generated at: 2026-11-23 09:55 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -94,7 +94,7 @@ SETTLED PICKS — ARCHIVE ONLY
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=espn
   [team_history_empirical/team_history_empirical] Murray State Racers vs NC State Wolfpack · KO 2026-11-20 01:00 SAST
       MONEYLINE full_game -> HOME · p=88.5% (raw 96.0%) @2.400 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-19T22:10:05Z
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-19T22:10:05Z
       calibration=provisional n=12 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Louisville Cardinals vs Stetson Hatters · KO 2026-11-20 03:00 SAST
       MONEYLINE H1 -> HOME · p=87.9% (raw 95.0%) @n/a no matched book
@@ -127,7 +127,7 @@ SETTLED PICKS — ARCHIVE ONLY
       calibration=provisional n=28 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] Murray State Racers vs NC State Wolfpack · KO 2026-11-20 01:00 SAST
       MONEYLINE H1 -> HOME · p=84.0% (raw 86.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-19T22:10:05Z
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-19T22:10:05Z
       calibration=provisional n=12 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Illinois State Redbirds vs Eureka Red Devils · KO 2026-11-20 03:00 SAST
       MONEYLINE H1 -> HOME · p=83.9% (raw 91.0%) @n/a no matched book
@@ -156,7 +156,7 @@ SETTLED PICKS — ARCHIVE ONLY
       calibration=provisional n=16 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [provider:espn/team_history_empirical] Murray State Racers vs NC State Wolfpack · KO 2026-11-20 01:00 SAST
       MONEYLINE full_game -> AWAY · p=79.1% (raw 79.1%) @1.602 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-19T22:10:05Z
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-19T22:10:05Z
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=espn
   [team_history_empirical/team_history_empirical] High Point Panthers vs Montana State Bobcats · KO 2026-11-20 02:00 SAST
       MONEYLINE full_game -> HOME · p=77.7% (raw 89.0%) @1.105 DraftKings
@@ -386,7 +386,7 @@ SETTLED PICKS — ARCHIVE ONLY
       calibration=provisional n=11 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] Murray State Racers vs NC State Wolfpack · KO 2026-11-20 01:00 SAST
       SPREAD full_game +3.5 -> HOME · p=60.0% (raw 60.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-19T22:10:05Z
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-19T22:10:05Z
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] California Golden Bears vs East Texas A&M Lions · KO 2026-11-20 05:00 SAST
       MONEYLINE H1 -> HOME · p=59.5% (raw 69.0%) @n/a no matched book
@@ -415,7 +415,7 @@ SETTLED PICKS — ARCHIVE ONLY
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=espn
   [team_history_empirical/team_history_empirical] Murray State Racers vs NC State Wolfpack · KO 2026-11-20 01:00 SAST
       SPREAD full_game +2.5 -> HOME · p=59.0% (raw 59.0%) @1.980 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-19T22:10:05Z
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-19T22:10:05Z
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Stanford Cardinal vs Sacramento State Hornets · KO 2026-11-20 05:00 SAST
       SPREAD full_game +17.5 -> AWAY · p=59.0% (raw 59.0%) @1.893 DraftKings
@@ -717,7 +717,7 @@ SETTLED PICKS — ARCHIVE ONLY
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Murray State Racers vs NC State Wolfpack · KO 2026-11-20 01:00 SAST
       SPREAD full_game +4.5 -> HOME · p=53.0% (raw 53.0%) @1.847 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-19T22:10:05Z
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-19T22:10:05Z
       calibration=no_history n=0 · reasons=price_source_permission_unresolved,price_operational_validation_incomplete,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Pepperdine Waves vs UC Santa Barbara Gauchos · KO 2026-11-20 04:00 SAST
       SPREAD full_game -2.5 -> AWAY · p=53.0% (raw 53.0%) @2.020 DraftKings
