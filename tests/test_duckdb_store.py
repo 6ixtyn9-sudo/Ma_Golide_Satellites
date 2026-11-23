@@ -411,3 +411,19 @@ def test_restore_keeps_the_live_freeze_guard_for_real_ingestion(tmp_path):
     with pytest.raises(FrozenWriteError):
         store.upsert_book_snapshot(_snapshot(line=221.5))
     store.close()
+
+
+def test_csv_recovery_reads_run_reports_larger_than_the_stdlib_field_limit(tmp_path):
+    """`pipeline_runs.report_json` embeds operator summaries and blows the cap."""
+
+    store = DuckDBStore(str(tmp_path / "warehouse.duckdb"))
+    store.upsert_game(_game())
+    store.record_run("run-big", "auto", "2026-11-23", {"blob": "x" * 300_000})
+    store.export_csv(str(tmp_path / "csv"))
+    store.close()
+
+    recovered = DuckDBStore(str(tmp_path / "recovered.duckdb"))
+    counts = recovered.restore_csv(str(tmp_path / "csv"))
+    assert counts["pipeline_runs"] == 1
+    assert csv.field_size_limit() == 131072  # raised for the read, then restored
+    recovered.close()

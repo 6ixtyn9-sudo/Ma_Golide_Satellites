@@ -13,11 +13,13 @@ and downstream research without an external application database.
 from __future__ import annotations
 
 import csv
+from contextlib import contextmanager
 import gzip
 import json
 import os
 from pathlib import Path
-from typing import Any, Dict, Iterable, List
+import sys
+from typing import Any, Dict, Iterable, Iterator, List
 
 import duckdb
 
@@ -38,6 +40,30 @@ from .store import (
 )
 
 SCHEMA_VERSION = "5"
+
+
+@contextmanager
+def _unbounded_csv_fields() -> Iterator[None]:
+    """Lift the stdlib 131072-character field cap for trusted checkpoint rows.
+
+    ``pipeline_runs.report_json`` embeds whole operator summaries and routinely
+    exceeds the default limit, which aborted recovery with ``field larger than
+    field limit``. The limit is a global in the ``csv`` module, so it is raised
+    only for the duration of one file read and restored afterwards.
+    """
+
+    previous = csv.field_size_limit()
+    limit = sys.maxsize
+    while True:
+        try:
+            csv.field_size_limit(limit)
+            break
+        except OverflowError:  # pragma: no cover - 32-bit platforms
+            limit //= 10
+    try:
+        yield
+    finally:
+        csv.field_size_limit(previous)
 EXPORT_TABLES = (
     "games",
     "predictions",
@@ -657,7 +683,9 @@ class DuckDBStore(InMemoryStore):
         source = Path(directory)
 
         def rows(table: str) -> List[Dict[str, str]]:
-            with gzip.open(source / f"{table}.csv.gz", "rt", newline="") as handle:
+            with _unbounded_csv_fields(), gzip.open(
+                source / f"{table}.csv.gz", "rt", newline=""
+            ) as handle:
                 return list(csv.DictReader(handle))
 
         def boolean(value: Any) -> bool:
