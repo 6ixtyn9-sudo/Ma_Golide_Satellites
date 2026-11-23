@@ -143,6 +143,15 @@ def test_final_expansion_is_typed_and_registry_backed_everywhere():
                 "tbf",
                 "tbf",
             )
+        elif league is League.JAPAN_B_LEAGUE:
+            # The B.League lane reads the site's server-rendered slate plus a
+            # keyless S3 snapshot; both were captured out-of-sandbox and are
+            # vendored, so the parser is checked against served bytes.
+            assert (spec.schedule_source, spec.results_source, spec.gate_schedule_source) == (
+                "bleague",
+                "bleague",
+                "bleague",
+            )
         elif league is League.EUROCUP:
             # EuroCup rides the validated EuroLeague Basketball adapter with
             # competition code U; it is a referenced route contract, not a

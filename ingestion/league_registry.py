@@ -387,7 +387,12 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "recorded assumption rather than a provider fact."
         ),
     ),
-    LeagueSpec(League.JAPAN_B_LEAGUE, "Japan B.League", "japan_b_league", "Asia/Tokyo", "Asia/Tokyo", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
+    # B.League serves its slate as server-rendered HTML on www.bleague.jp and the
+    # structured record on a keyless S3 snapshot (web_json/v2_genius_contexts,
+    # not the 403ing web_json/contexts tree). Both were captured by an
+    # out-of-sandbox probe on 2026-11-23 and vendored under tests/fixtures/
+    # bleague/captures; the adapter records every URL/size/digest it reads.
+    LeagueSpec(League.JAPAN_B_LEAGUE, "Japan B.League", "japan_b_league", "Asia/Tokyo", "Asia/Tokyo", "bleague", "bleague", "bleague", source_detail="B1 slate is server-rendered HTML (/schedule/?tab=1&year=&mon=&day=, note: mon not month); club ids, UTC tip and quarter scores come from the keyless S3 snapshot web_json/v2_genius_contexts/{key}/{snapshot}.json via a latestid pointer. No key."),
     LeagueSpec(League.SOUTH_KOREA_KBL, "South Korea KBL", "south_korea_kbl", "Asia/Seoul", "Asia/Seoul", "kbl", "kbl", "kbl", source_detail="Schedule/results use the KBL data API behind www.kbl.or.kr (GET /match/list with a fromDate/toDate window, plus /common/teamList for English team names; two headers, Channel and TeamCode, no key). Route referenced from the SportsDataverse kbl module (MIT, read 2026-11-23); no Ma Golide first-party body is retained, so each run records the URL, byte count and sha256 it actually saw. Quarter splits are not captured, so a settled row is totals-only and not quarter-reconcilable."),
     LeagueSpec(League.BRAZIL_NBB, "Brazil NBB", "brazil_nbb", "America/Sao_Paulo", "America/Sao_Paulo", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
     LeagueSpec(League.ARGENTINA_LIGA_NACIONAL, "Argentina Liga Nacional", "argentina_liga_nacional", "America/Argentina/Buenos_Aires", "America/Argentina/Buenos_Aires", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated."),
