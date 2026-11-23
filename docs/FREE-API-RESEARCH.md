@@ -102,3 +102,72 @@ evidence only, not an approval of either provider for a new lane.
    operational-validation status as audit metadata; aggregate consensus prices
    remain research-only, while named-book paper candidates still require every
    model, calibration, and ROI gate.
+
+## Price avenues beyond BetExplorer — forge and package reconnaissance (2026-11-23)
+
+The question asked was whether GitLab offers a lower-maintenance bootstrap price
+avenue than the GitHub projects already surveyed. The reconnaissance below was
+run from a sandbox whose only reachable registries are PyPI, npm and GitHub;
+GitLab's public API was read through the fetch proxy only (no direct egress), so
+per-project *source* inspection there was not possible — only metadata.
+
+### GitLab: no usable project found
+
+`/api/v4/projects` searches for `basketball odds`, `betting`, `bookmaker`,
+`sports odds` and `basketball`, sorted by `last_activity_at`, returned no
+sports-betting or odds-feed project: results were poker cheat sheets, a
+RuneScape launcher, an unrelated odds-named signal repo, and similar. GitLab's
+public corpus is not where this class of project lives.
+
+More important than the search result: **a forge does not change the
+maintenance cost.** What makes a bootstrap price avenue expensive here is
+scraping an undocumented HTML surface and re-verifying it every time the host
+changes. A scraper hosted on GitLab instead of GitHub is the same scraper. The
+categories that actually differ in maintenance are:
+
+| Class | Maintenance | Provenance it can honestly claim |
+|---|---|---|
+| League's own feed | low — but none of these leagues publishes a price (probe 2026-11-23: B.League's S3 payload has no odds field of any name; ACB's match-header has none on a future fixture) | `no_price` |
+| Documented commercial API with a key | low: versioned REST, published error model | named book or aggregate, per its licence |
+| Exchange API (documented) | low: versioned, authenticated, no HTML | `exchange` (added 2026-11-23, see below) |
+| HTML scrape of an aggregate | high: layout changes, no contract, no rate limit published | `aggregate_consensus` |
+
+### Package ecosystem: only one avenue is alive
+
+Checked against PyPI and npm on 2026-11-23 (`pypi.org/pypi/<name>/json`,
+`registry.npmjs.org/<name>`):
+
+| Package | Registry | Latest | Last release | Licence | Verdict |
+|---|---|---|---|---|---|
+| `betfairlightweight` | PyPI | 2.24.0 | 2026-09-04 | MIT | **alive** — wrapper for the documented Betfair API-NG; the only candidate whose maintenance is the upstream's problem, not ours |
+| `sportsdataverse` | PyPI | 0.1.4 | 2026-10-26 | unspecified | alive; already the source of our route contracts, not a price feed |
+| `oddsapi` | PyPI | 1.2.4 | 2021-10-15 | unspecified | dead; The Odds API is already integrated directly |
+| `betfair` | PyPI | 0.1.1 | 2014-12-30 | unknown | dead |
+| `the-odds-api` | npm | 2.1.0 | 2019-06-04 | — | dead |
+| `betfair-api` | npm | 0.2.0 | 2014-12-02 | — | dead |
+| `pinnacle-api` | npm | 0.0.0 | 2017-08-10 | — | dead |
+
+`oddspapi` does not exist on PyPI (404) under that spelling.
+
+### What changed in the repository
+
+`PriceProvenance.EXCHANGE` now exists. Before it, an exchange quote had to be
+recorded as `named_book`, `aggregate_consensus` or `no_price`, all wrong — and
+`named_book` is exactly what `ticket_price_eligible` trusts, so the
+unknown-provider fallback would have laundered an exchange offer into the
+paper-ticket lane. `price_evidence_policy` now returns an exchange policy (with
+`acquire=False`, unresolved permission, unverified validation) for `betfair` /
+`betfair_exchange` identities **even when the league has not registered them**.
+
+No adapter was written, because no authorised capture exists: writing one from
+the package's README would be an invented API shape, and the exchange's terms
+for automated single-user reuse have not been reviewed.
+
+### The one probe worth running
+
+Betfair API-NG with a free delayed app key, one bounded catalogue read per
+league, recording: market present/absent, `marketStartTime`, number of
+runners, price range, and whether the league appears at all — basketball's
+event type id is 7522. Coverage is the open question, not documentation: if
+ACB / LBA / B.League / KBL / BCL are not listed, this avenue costs nothing but
+also buys nothing, and the honest label for those lanes stays "no market".
