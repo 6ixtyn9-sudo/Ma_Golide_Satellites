@@ -202,3 +202,34 @@ def test_gated_match_header_is_reported_as_auth_required_not_an_empty_season():
     assert report["status"] == "auth_required"
     assert "401/403" in report["detail"]
     assert len(report["failures"]) == 1
+
+
+def test_acb_sends_the_public_bundle_key_and_honours_the_env_override(monkeypatch):
+    """The host gates the match header; the header is a published site value.
+
+    The lane read zero games for 728 runs because the calendar was public while
+    the per-game header — the only route carrying team names and period scores —
+    answered 401/403 to an unauthenticated client.
+    """
+
+    monkeypatch.delenv(acb.KEY_ENV, raising=False)
+    assert acb.request_headers()["X-APIKEY"] == acb.DEFAULT_KEY
+    monkeypatch.setenv(acb.KEY_ENV, "operator-supplied")
+    assert acb.request_headers()["X-APIKEY"] == "operator-supplied"
+
+
+def test_acb_falls_back_to_its_own_keyed_transport(monkeypatch):
+    """With no injected fetch the adapter must not fall back to a bare client."""
+
+    monkeypatch.setattr(acb, "default_fetch", lambda: _acb_fetch())
+
+    # One date only: the fixture calendar deliberately carries a match whose
+    # header is absent (105404), and that case is covered separately.
+    games = acb.discover_games("2026-11-18", None, 2027)
+
+    assert games
+    assert all(game.league is League.SPAIN_ACB for game in games)
+    probe = acb.last_probe()
+    assert "season-calendar" in probe["url"]
+    assert probe["rows"] >= len(games)
+    assert len(probe["sha256"]) == 64

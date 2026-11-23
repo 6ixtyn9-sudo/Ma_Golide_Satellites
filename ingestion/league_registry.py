@@ -300,6 +300,11 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     # The ACB's own JSON API is a referenced route contract (SportsDataverse
     # ``acb`` module, host api2.acb.com): a season calendar plus a per-game
     # header that carries names, status, final score and quarterScores[].
+    # Both routes require the site's public ``X-APIKEY`` header; without it the
+    # calendar answered but every match header returned 401/403, which is why
+    # this lane recorded zero games for 728 runs. The key is a value shipped in
+    # acb.com's own bundle (site-scoped, not an account), overridable through
+    # $ACB_API_KEY.
     # Ma Golide retains no first-party capture; pricing stays on the universal
     # direct BetExplorer fallback.
     LeagueSpec(

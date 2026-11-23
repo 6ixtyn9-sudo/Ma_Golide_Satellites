@@ -82,3 +82,13 @@ records the URL, byte count, sha256, envelope shape and row keys of the body
 the adapter actually read, and `Pipeline._discover_games` stores it as
 `provider_health`. An empty read is recorded as `CoverageState.MISSING` rather
 than `OK`, so a lane that stops returning rows cannot look healthy.
+
+`acb/calendar_2027.json` and `acb/match_headers_2027.json` are likewise **shape
+fixtures** written to the documented ACB field contract — the calendar's match
+ids, dates and scores, and the header's `teams`, `matchStatus`, current score
+and `quarterScores[]`. The lane had passed those parser tests while reading
+zero live games, which is how the missing `X-APIKEY` header stayed invisible for
+728 runs. What makes the fix checkable is `acb.last_probe()`: every run records
+the calendar URL, byte count, sha256, round count and row count it actually saw,
+persisted as `provider_health`, with an empty read recorded as
+`CoverageState.MISSING` rather than `OK`.
