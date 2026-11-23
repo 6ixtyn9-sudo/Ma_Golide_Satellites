@@ -3216,6 +3216,8 @@ class Pipeline:
             return self._lba_finals(self._discover_games())
         if league is League.ISRAEL_PREMIER_LEAGUE:
             return self._israel_ibl_finals(self._discover_games())
+        if league is League.SOUTH_KOREA_KBL:
+            return self._kbl_finals(self._discover_games())
         if league is League.SPAIN_ACB:
             return self._acb_finals(self._discover_games())
         if league in (League.EUROLEAGUE, League.EUROCUP):
@@ -3354,6 +3356,51 @@ class Pipeline:
                         reason=CoverageState.MISSING,
                         provider="acb",
                         detail=reason[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            finals.append(refreshed)
+        return finals
+
+    def _kbl_finals(self, games: List[Game]) -> List[Game]:
+        """Re-fetch KBL finals from ``/match/{gmkey}`` so quarters reconcile.
+
+        Discovery settles a row totals-only because the list route carries no
+        period split. This stage replaces that record with reconciled quarters;
+        a body for another game, an unended game, or a split that does not
+        reconcile stays a gap rather than a silently accepted final.
+        """
+
+        finals: List[Game] = []
+        transport = self.fetch if self._injected_fetch else None
+        for game in games:
+            if game.status is not GameStatus.FINAL:
+                continue
+            try:
+                refreshed = kbl.fetch_game_result(game, transport)
+            except Exception as exc:
+                logger.warning("kbl result failed for %s: %s", game.game_id, exc)
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="actual_result",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider="kbl",
+                        detail=str(exc)[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            ok, reason = refreshed.actual.reconciles() if refreshed.actual else (False, "")
+            if not ok:
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=refreshed.game_id,
+                        required_field="historical_reconciliation",
+                        reason=CoverageState.MISSING,
+                        provider="kbl",
+                        detail=str(reason)[:200],
                         observed_utc=self._now_iso(),
                     )
                 )

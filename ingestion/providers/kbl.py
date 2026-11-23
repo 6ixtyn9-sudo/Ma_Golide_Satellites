@@ -28,11 +28,13 @@ the final. A game is therefore only marked ``FINAL`` when ``is_ended == 1``
 **and** both scores are present; ``is_started == 1`` without an end marker is
 ``LIVE``; anything else stays ``SCHEDULED``. Scores are read, never inferred.
 
-Quarter splits live on ``/match/{gmkey}``, which has not been captured for this
-repository yet, so a settled row carries a totals-only
-:class:`ActualResult` (``PeriodKind.UNKNOWN``) and is therefore **not
-quarter-reconcilable**. Moneyline grading needs only the finals; quarter and
-period-market grading must wait for that capture rather than invent splits.
+The list route carries no period split, so a row settled from it carries a
+totals-only :class:`ActualResult` (``PeriodKind.UNKNOWN``). ``/match/{gmkey}``
+does carry one -- ``teamrecords.{home,away}.scoreq1..scoreq4`` plus ``scoreeq[]``
+for overtime -- and a real body for ``S47G01N49`` is vendored at
+``tests/fixtures/kbl/captures/``, so :func:`fetch_game_result` reconciles
+quarters and the results stage replaces the totals-only record. A split that
+does not reconcile stays a gap instead of being summed into an accepted final.
 
 Every scope, identity and timestamp problem is recorded as a gap; a body that
 cannot be read raises instead of being treated as an empty slate.
@@ -53,6 +55,7 @@ from . import FetchFn, IdentityError
 BASE_URL = "https://api.kbl.or.kr"
 MATCH_LIST_URL = BASE_URL + "/match/list"
 TEAM_LIST_URL = BASE_URL + "/common/teamList"
+MATCH_URL = BASE_URL + "/match/{}"
 PROVIDER = "kbl"
 #: The host serves its own single-page app and requires these two headers.
 REQUIRED_HEADERS = {"Channel": "WEB", "TeamCode": "XX"}
@@ -63,6 +66,105 @@ _ROW_KEYS = ("data", "list", "games", "items", "result", "body")
 
 _last_gaps: List[Dict[str, Any]] = []
 _last_probe: Dict[str, Any] = {}
+
+
+def _quarter_scores(payload: Dict[str, Any], gmkey: str) -> ActualResult:
+    """Reconciled regulation quarters plus overtime, from ``teamrecords``.
+
+    ``/match/{gmkey}`` carries ``scoreq1..scoreq4`` per side and ``scoreeq`` as a
+    list of overtime periods. Four regulation quarters are required; overtime
+    must be contiguous from the fifth or the body is refused rather than summed
+    into a total that cannot be checked.
+    """
+
+    records = payload.get("teamrecords")
+    if not isinstance(records, dict):
+        raise ValueError(f"KBL match {gmkey} has no teamrecords")
+    home = records.get("home") or {}
+    away = records.get("away") or {}
+    quarters: Dict[int, tuple] = {}
+    for index in (1, 2, 3, 4):
+        home_points = _int(home.get(f"scoreq{index}"))
+        away_points = _int(away.get(f"scoreq{index}"))
+        if home_points is None or away_points is None:
+            raise ValueError(f"KBL match {gmkey} lacks quarter {index} for both sides")
+        quarters[index] = (float(home_points), float(away_points))
+
+    def _overtimes(side: Dict[str, Any]) -> List[float]:
+        raw = side.get("scoreeq")
+        if raw in (None, ""):
+            return []
+        if not isinstance(raw, list):
+            raise ValueError(f"KBL match {gmkey} has a non-list scoreeq")
+        out: List[float] = []
+        for value in raw:
+            points = _int(value)
+            if points is None:
+                raise ValueError(f"KBL match {gmkey} has an unreadable overtime value")
+            out.append(float(points))
+        return out
+
+    home_overtime = _overtimes(home)
+    away_overtime = _overtimes(away)
+    if len(home_overtime) != len(away_overtime):
+        raise ValueError(f"KBL match {gmkey} sides disagree on the overtime count")
+    return ActualResult(
+        period_kind=PeriodKind.QUARTERS,
+        home_quarters=[quarters[index][0] for index in (1, 2, 3, 4)],
+        away_quarters=[quarters[index][1] for index in (1, 2, 3, 4)],
+        home_overtime=sum(home_overtime) if home_overtime else None,
+        away_overtime=sum(away_overtime) if away_overtime else None,
+        home_final=sum(quarters[i][0] for i in (1, 2, 3, 4)) + sum(home_overtime),
+        away_final=sum(quarters[i][1] for i in (1, 2, 3, 4)) + sum(away_overtime),
+        overtime_periods=len(home_overtime),
+        source=f"kbl match gmkey={gmkey}",
+    )
+
+
+def fetch_game_result(game: Game, fetch: Optional[FetchFn] = None) -> Game:
+    """Re-read one game's ``/match/{gmkey}`` so its quarters can reconcile.
+
+    Discovery settles a row totals-only because the list route carries no
+    period split. This route does, so the results stage replaces that record
+    with reconciled quarters -- and refuses a body that belongs to another game
+    or another season.
+    """
+
+    gmkey = str(game.provider_ids.get(PROVIDER) or "")
+    if not gmkey:
+        raise IdentityError(f"game {game.game_id} carries no KBL gmkey")
+    transport = fetch or default_fetch()
+    url = MATCH_URL.format(gmkey)
+    payload = transport(url)
+    if not isinstance(payload, dict):
+        raise ValueError(f"KBL match {gmkey} is not a JSON object")
+    row = payload.get("game") if isinstance(payload.get("game"), dict) else payload
+    if str(row.get("gmkey") or "").strip() not in ("", gmkey):
+        raise IdentityError(
+            f"KBL match body answers gmkey {row.get('gmkey')!r}, asked for {gmkey!r}"
+        )
+    if _int(row.get("isEnded")) != 1:
+        raise ValueError(f"KBL match {gmkey} is not ended; refusing a result")
+    actual = _quarter_scores(payload, gmkey)
+    refreshed = Game(
+        game_id=game.game_id,
+        league=game.league,
+        season=game.season,
+        home_team_id=game.home_team_id,
+        away_team_id=game.away_team_id,
+        home_name=game.home_name,
+        away_name=game.away_name,
+        scheduled_utc=game.scheduled_utc,
+        status=GameStatus.FINAL,
+        provider_ids=dict(game.provider_ids),
+        actual=actual,
+        evidence={**game.evidence, "result_url": url, "quarters_from": "kbl match"},
+    )
+    if str(row.get("tcodeH") or "").strip() not in ("", game.home_team_id):
+        raise IdentityError(f"KBL match {gmkey} body names another home team")
+    if str(row.get("tcodeA") or "").strip() not in ("", game.away_team_id):
+        raise IdentityError(f"KBL match {gmkey} body names another away team")
+    return refreshed
 
 
 def last_gaps() -> List[Dict[str, Any]]:
