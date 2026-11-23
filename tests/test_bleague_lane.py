@@ -25,6 +25,7 @@ from ingestion.league_registry import league_spec
 from ingestion.models import GameStatus, League, PeriodKind
 from ingestion.providers import bleague
 from ingestion.providers import IdentityError
+from ingestion.store import InMemoryStore
 
 SLATE = "tests/fixtures/bleague/captures/schedule-2026-10-04-excerpt.html"
 CONTEXT = "tests/fixtures/bleague/captures/context-506418-113.json"
@@ -244,3 +245,46 @@ def test_gate_fails_open_on_a_page_without_blocks(monkeypatch):
 
     with pytest.raises(adaptive_gate.GateUncertain):
         adaptive_gate._bleague_schedule(config, "2026-10-04")
+
+
+def test_a_slate_read_for_another_day_counts_its_dropped_rows():
+    """0 fixtures after a real read has a reason, and the reason is countable.
+
+    The 16:37 tick answered a 2026-11-24 target with ``fixtures_found: 0`` for
+    Japan and said nothing at all, because a row whose tip is outside the asked
+    UTC day is dropped silently. That drop is correct; being unable to see it
+    afterwards is not.
+    """
+
+    games = bleague.discover_games("2026-10-05", _transport())
+
+    assert games == []
+    probe = bleague.last_probe()
+    assert probe["slate_games"] == 1
+    assert probe["off_date_dropped"] == 1
+    assert probe["requests"] >= 2  # both JST slate days, plus the context read
+
+
+def test_zero_fixtures_on_a_read_slate_is_not_reported_as_a_void():
+    from ingestion.models import CoverageState
+    from ingestion.pipeline import Pipeline, PipelineConfig
+
+    original = (bleague.discover_games, bleague.last_gaps, bleague.last_probe)
+    bleague.discover_games = lambda *_a, **_k: []
+    bleague.last_gaps = lambda: []
+    bleague.last_probe = lambda: {"url": "https://www.bleague.jp/x", "requests": 1,
+                                  "slate_games": 1, "off_date_dropped": 1, "bytes": 10}
+    try:
+        pipeline = Pipeline(
+            PipelineConfig(league="JAPAN_B_LEAGUE", date_yyyymmdd="20261124"),
+            InMemoryStore(),
+        )
+        games = pipeline._discover_games()
+    finally:
+        bleague.discover_games, bleague.last_gaps, bleague.last_probe = original
+
+    assert games == []
+    assert [g for g in pipeline.gaps if g.required_field == "official_schedule"] == []
+    row = pipeline.store.get_provider_health("bleague", League.JAPAN_B_LEAGUE)
+    assert row.state is CoverageState.MISSING
+    assert row.coverage["off_date_dropped"] == 1

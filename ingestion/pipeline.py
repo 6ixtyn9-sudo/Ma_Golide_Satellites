@@ -773,6 +773,11 @@ class Pipeline:
         # with provider_health=[]). Compare against this snapshot below so the
         # void becomes a visible, fail-closed gap instead.
         gaps_before = len(self.gaps)
+        # A lane that read its source and legitimately found nothing for the
+        # target day is not the same thing as a lane that told us nothing. The
+        # guard below is about the second case only, so branches that hold a
+        # read receipt raise this flag and keep the guard silent.
+        read_receipt = False
         if league in ESPN_LEAGUES:
             games, espn_books = espn.discover_games_with_evidence(
                 self.config.date_yyyymmdd,
@@ -839,6 +844,8 @@ class Pipeline:
                     )
                 )
             probe = kbl.last_probe()
+            # This branch holds a read receipt: the guard below must stay quiet.
+            read_receipt = bool(probe)
             if probe:
                 # Record what the run actually read: the new source policy makes
                 # a scraped read evidence only if its URL, size and digest are
@@ -876,6 +883,8 @@ class Pipeline:
                     )
                 )
             probe = acb.last_probe()
+            # This branch holds a read receipt: the guard below must stay quiet.
+            read_receipt = bool(probe)
             if probe:
                 now = self._now_iso()
                 self.store.upsert_provider_health(
@@ -910,6 +919,8 @@ class Pipeline:
                     )
                 )
             probe = tbf.last_probe()
+            # This branch holds a read receipt: the guard below must stay quiet.
+            read_receipt = bool(probe)
             if probe:
                 now = self._now_iso()
                 self.store.upsert_provider_health(
@@ -944,6 +955,8 @@ class Pipeline:
                     )
                 )
             probe = bal.last_probe()
+            # This branch holds a read receipt: the guard below must stay quiet.
+            read_receipt = bool(probe)
             if probe:
                 now = self._now_iso()
                 self.store.upsert_provider_health(
@@ -981,6 +994,8 @@ class Pipeline:
                     )
                 )
             probe = bcl.last_probe()
+            # This branch holds a read receipt: the guard below must stay quiet.
+            read_receipt = bool(probe)
             if probe:
                 now = self._now_iso()
                 self.store.upsert_provider_health(
@@ -1016,6 +1031,8 @@ class Pipeline:
                     )
                 )
             probe = bleague.last_probe()
+            # This branch holds a read receipt: the guard below must stay quiet.
+            read_receipt = bool(probe)
             if probe:
                 now = self._now_iso()
                 self.store.upsert_provider_health(
@@ -1028,6 +1045,7 @@ class Pipeline:
                         coverage={
                             "games": len(games),
                             "slate_games": probe.get("slate_games", 0),
+                            "off_date_dropped": probe.get("off_date_dropped", 0),
                         },
                         detail=(
                             f"url={probe.get('url')} requests={probe.get('requests')} "
@@ -1061,17 +1079,20 @@ class Pipeline:
         if (
             not games
             and len(self.gaps) == gaps_before
+            and not read_receipt
             and league_spec(league).automated_schedule_supported
         ):
             # Fail closed on the unknown, not on the empty: an adapter with a
             # registered source that neither produced fixtures nor recorded why
             # is a broken read, and must not be rendered as an empty slate.
+            # A branch that did read its source stays out of here: 0 fixtures on
+            # a slate that was actually read is an answer, not a void.
             self._unsupported_source_gap(
                 "official_schedule",
                 provider=league_spec(league).schedule_source,
                 detail=(
-                    "adapter returned no fixtures and recorded neither a coverage gap "
-                    "nor a read receipt; treat the slate as unknown, not empty"
+                    "adapter returned no fixtures and recorded no coverage gap; "
+                    "treat the slate as unknown, not empty"
                 ),
             )
         for game in games:

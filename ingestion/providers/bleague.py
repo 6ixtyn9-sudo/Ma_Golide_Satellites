@@ -391,6 +391,7 @@ def discover_games(
                 keys.append(block["schedule_key"])
 
     games: List[Game] = []
+    off_date = 0
     for key in keys:
         try:
             payload = _fetch_context(key, transport)
@@ -398,9 +399,16 @@ def discover_games(
         except (IdentityError, ValueError) as exc:
             _record_gap(key, str(exc))
             continue
-        if game is not None:
-            games.append(game)
+        if game is None:
+            # A slate row whose tip is not inside the requested UTC day. That is
+            # a correct drop, but it is also the reason an 11-23 local slate can
+            # answer 11-24 with zero fixtures; without counting it, a read that
+            # found nothing is indistinguishable from a read that never happened.
+            off_date += 1
+            continue
+        games.append(game)
     _last_probe["slate_games"] = len(keys)
+    _last_probe["off_date_dropped"] = off_date
     _last_probe["games"] = len(games)
     return games
 
