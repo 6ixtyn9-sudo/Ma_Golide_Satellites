@@ -765,6 +765,14 @@ class Pipeline:
     def _discover_games(self) -> List[Game]:
         league = self.config.league_enum
         espn_books: Dict[str, List[BookSnapshot]] = {}
+        # A registered adapter that returns nothing, records no read receipt and
+        # reports no gap has told us exactly nothing -- and that silence reads
+        # identically to "this league has no game today". Six lanes sat in that
+        # state for hundreds of runs (run 45185698512: JAPAN_B_LEAGUE, SPAIN_ACB,
+        # ITALY_LBA and BASKETBALL_AFRICA_LEAGUE all reported fixtures_found=0
+        # with provider_health=[]). Compare against this snapshot below so the
+        # void becomes a visible, fail-closed gap instead.
+        gaps_before = len(self.gaps)
         if league in ESPN_LEAGUES:
             games, espn_books = espn.discover_games_with_evidence(
                 self.config.date_yyyymmdd,
@@ -1050,6 +1058,22 @@ class Pipeline:
                 ),
             )
             games = self._stored_slate_games()
+        if (
+            not games
+            and len(self.gaps) == gaps_before
+            and league_spec(league).automated_schedule_supported
+        ):
+            # Fail closed on the unknown, not on the empty: an adapter with a
+            # registered source that neither produced fixtures nor recorded why
+            # is a broken read, and must not be rendered as an empty slate.
+            self._unsupported_source_gap(
+                "official_schedule",
+                provider=league_spec(league).schedule_source,
+                detail=(
+                    "adapter returned no fixtures and recorded neither a coverage gap "
+                    "nor a read receipt; treat the slate as unknown, not empty"
+                ),
+            )
         for game in games:
             self.store.upsert_game(game)
         if league in ESPN_LEAGUES:

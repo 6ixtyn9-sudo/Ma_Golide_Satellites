@@ -231,3 +231,81 @@ def test_captured_naive_tip_gets_the_recorded_jerusalem_offset():
     assert game.provider_ids["israel_ibl"] == "26646"
     assert game.provider_ids["israel_assumed_timezone"] == "Asia/Jerusalem"
     assert game.season == "2027"
+
+
+def test_an_unannounced_tip_is_its_own_fact_not_a_parse_error():
+    """Run 45185698512: row IBL-26679 carried the Hebrew placeholder.
+
+    The lane reported it as "is not HH:MM", which reads like a corrupt payload
+    and sends the next reader hunting for a broken parser. The provider was
+    telling us the time is not decided yet.
+    """
+
+    for marker in ("טרם נקבע", "TBD", " tba ", "-"):
+        try:
+            israel_ibl._tip_utc("22/11/2026", marker)
+        except israel_ibl.TipTimeUnannounced as exc:
+            assert "tip_time_unannounced" in str(exc)
+        else:
+            raise AssertionError(f"{marker!r} must be refused as unannounced")
+
+
+def test_a_blank_tip_is_never_invented_as_midnight():
+    # Unplayed fixture: no announced tip means it cannot be placed on a clock.
+    try:
+        israel_ibl._tip_utc("22/11/2026", "")
+    except israel_ibl.TipTimeUnannounced as exc:
+        assert "blank" in str(exc)
+    else:
+        raise AssertionError("a blank tip on an unplayed fixture must not become 00:00")
+
+    # A settled row is different: its tip is incidental to grading, so the
+    # documented midnight fallback still applies rather than losing the result.
+    iso, _ = israel_ibl._tip_utc("22/11/2026", "", played=True)
+    assert iso == "2026-11-21T22:00:00Z"  # midnight IST == 22:00Z the day before
+
+
+def test_unannounced_tip_lands_as_a_scoped_gap_and_spares_the_rest_of_the_board():
+    payload = _fixture_json("israel_ibl/board_2027.json")
+    rows = payload["games"]
+    assert rows, "fixture shape changed; update this test deliberately"
+    victim = rows[0]
+    original_time = victim["TimeOfGame"]
+    victim["TimeOfGame"] = "טרם נקבע"
+    try:
+        games = israel_ibl.discover_games("2026-11-22", _board_fetch(payload), 2027)
+        gaps = israel_ibl.last_gaps()
+    finally:
+        victim["TimeOfGame"] = original_time
+    assert all(game.scheduled_utc != "2026-11-22T22:00:00Z" for game in games)
+    assert any("tip_time_unannounced" in str(gap.get("detail", "")) for gap in gaps)
+
+
+def test_an_adapter_that_says_nothing_is_reported_as_unknown_not_empty():
+    """The six-lane silence from run 45185698512.
+
+    JAPAN_B_LEAGUE, SPAIN_ACB, ITALY_LBA and BASKETBALL_AFRICA_LEAGUE each
+    reported ``fixtures_found: 0`` with ``provider_health: []`` and no gap --
+    three ways of saying nothing, all of which render as "no games today". The
+    pipeline now refuses to read that as an empty slate.
+    """
+
+    from ingestion.providers import acb
+
+    original = (acb.discover_games, acb.last_gaps, acb.last_probe)
+    acb.discover_games = lambda *_a, **_k: []
+    acb.last_gaps = lambda: []
+    acb.last_probe = lambda: {}
+    try:
+        pipeline = Pipeline(
+            PipelineConfig(league="SPAIN_ACB", date_yyyymmdd="20261123"),
+            InMemoryStore(),
+        )
+        games = pipeline._discover_games()
+    finally:
+        acb.discover_games, acb.last_gaps, acb.last_probe = original
+
+    assert games == []
+    gap = next(g for g in pipeline.gaps if g.required_field == "official_schedule")
+    assert "unknown, not empty" in gap.detail
+    assert gap.reason.value == "unsupported"
