@@ -1,6 +1,6 @@
 Ma Golide Picks — NBA_G_LEAGUE 2026-11-22
 ========================================================================
-Generated at: 2026-11-23 03:09 SAST
+Generated at: 2026-11-23 04:09 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -17,6 +17,18 @@ CAUTION PICKS
 
 WATCHLIST — NO MATCHED ODDS
 ========================================================================
+  (none)
+
+WATCHLIST — INSUFFICIENT CONTEXT
+========================================================================
+  (none)
+
+SKIPPED — INELIGIBLE
+========================================================================
+  (none)
+
+IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
+========================================================================
   [team_history_empirical/team_history_empirical] San Diego Clippers vs Coachella Valley Lakers · KO 2026-11-23 04:00 SAST
       MONEYLINE H1 -> AWAY · p=59.2% (raw 59.2%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T01:09:07Z
@@ -29,18 +41,6 @@ WATCHLIST — NO MATCHED ODDS
       HIGHEST QUARTER full_game -> Q2 · p=35.5% (raw 35.5%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T01:09:07Z
       calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
-
-WATCHLIST — INSUFFICIENT CONTEXT
-========================================================================
-  (none)
-
-SKIPPED — INELIGIBLE
-========================================================================
-  (none)
-
-IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
-========================================================================
-  (none)
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
@@ -105,9 +105,9 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T17:09:54Z
       calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
 
-Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 WATCHLIST_NO_ODDS=3 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 WATCHLIST_NO_ODDS=0 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=15
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=3 SETTLED=15
 Logical picks shown: 18 · superseded observations: 0
 Total archived pick evidence rows: 18
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
