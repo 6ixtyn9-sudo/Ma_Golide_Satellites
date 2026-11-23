@@ -355,7 +355,15 @@ def discover_games(
     """
 
     _reset()
+    # Entry markers. A lane that returns [] having recorded nothing is an
+    # impossible state that nonetheless showed up on the runner: the guard in
+    # Pipeline._discover_games reported "returned no fixtures and recorded
+    # neither a coverage gap nor a read receipt" while this function is written
+    # to raise rather than return empty. Recording how far execution got turns
+    # that contradiction into evidence instead of another theory.
+    _last_probe["entered"] = True
     transport = fetch or default_fetch()
+    _last_probe["transport"] = "injected" if fetch is not None else "default"
     if date_iso:
         target = datetime.strptime(date_iso, "%Y-%m-%d").replace(tzinfo=timezone.utc)
     else:
@@ -366,11 +374,13 @@ def discover_games(
     for offset in (0, 1):
         day = local_day + timedelta(days=offset)
         url = schedule_url(day, tab)
+        _last_probe["stages"] = [*_last_probe.get("stages", []), f"request:{day.isoformat()}"]
         html = transport(url)
         if not isinstance(html, str):
             raise ValueError("B.LEAGUE schedule page was not text")
         _record_read(url, html)
         blocks = parse_slate(html)
+        _last_probe["stages"] = [*_last_probe.get("stages", []), f"blocks:{len(blocks)}"]
         if not blocks:
             raise ValueError(
                 f"B.LEAGUE schedule page for {day.isoformat()} has no recognisable game "
