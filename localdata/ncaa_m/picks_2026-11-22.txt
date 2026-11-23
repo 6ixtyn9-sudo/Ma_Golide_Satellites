@@ -1,6 +1,6 @@
 Ma Golide Picks — NCAA_M 2026-11-22
 ========================================================================
-Generated at: 2026-11-23 06:54 SAST
+Generated at: 2026-11-23 07:24 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -8,6 +8,26 @@ Started and settled games are retained separately as archive status.
 
 
 ELIGIBLE CLEAN PICKS
+========================================================================
+  (none)
+
+CAUTION PICKS
+========================================================================
+  (none)
+
+WATCHLIST — NO MATCHED ODDS
+========================================================================
+  (none)
+
+WATCHLIST — INSUFFICIENT CONTEXT
+========================================================================
+  (none)
+
+SKIPPED — INELIGIBLE
+========================================================================
+  (none)
+
+IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
   [team_history_empirical/team_history_empirical] Loyola Chicago Ramblers vs San José State Spartans · KO 2026-11-23 06:59 SAST
       MONEYLINE full_game -> HOME · p=67.8% (raw 75.0%) @1.541 DraftKings
@@ -43,24 +63,6 @@ ELIGIBLE CLEAN PICKS
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
       calibration=calibrated n=86 · reasons=none · prediction=history
       ROI-BAND BLOCKED · spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=180 · recency ROI -1.5% / adjusted -1.5%
-
-CAUTION PICKS
-========================================================================
-  (none)
-
-WATCHLIST — NO MATCHED ODDS
-========================================================================
-  [team_history_empirical/team_history_empirical] San José State Spartans vs Loyola Chicago Ramblers · KO 2026-11-23 06:59 SAST
-      MONEYLINE H1 -> HOME · p=44.9% (raw 52.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
-      calibration=calibrated n=282 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-
-WATCHLIST — INSUFFICIENT CONTEXT
-========================================================================
-  (none)
-
-SKIPPED — INELIGIBLE
-========================================================================
   [team_history_empirical/team_history_empirical] San José State Spartans vs Loyola Chicago Ramblers · KO 2026-11-23 06:59 SAST
       TOTAL full_game 146.5 -> UNDER · p=49.3% (raw 52.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
@@ -77,10 +79,10 @@ SKIPPED — INELIGIBLE
       SPREAD full_game -3.5 -> HOME · p=44.9% (raw 51.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
       calibration=calibrated n=66 · reasons=below_calibrated_probability_floor · prediction=history
-
-IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
-========================================================================
-  (none)
+  [team_history_empirical/team_history_empirical] San José State Spartans vs Loyola Chicago Ramblers · KO 2026-11-23 06:59 SAST
+      MONEYLINE H1 -> HOME · p=44.9% (raw 52.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T04:24:44Z
+      calibration=calibrated n=282 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
@@ -1417,9 +1419,9 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T19:20:09Z
       calibration=calibrated n=62 · reasons=below_calibrated_probability_floor · prediction=history
 
-Active summary: ELIGIBLE_CLEAN=7 CAUTION=0 WATCHLIST_NO_ODDS=1 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=4
-ROI-qualified individual paper singles: 1
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=318
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 WATCHLIST_NO_ODDS=0 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
+ROI-qualified individual paper singles: 0
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=12 SETTLED=318
 Logical picks shown: 330 · superseded observations: 0
 Total archived pick evidence rows: 330
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
