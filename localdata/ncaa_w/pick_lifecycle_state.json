@@ -29,8 +29,8 @@
       "logical_picks": 225
     },
     "2026-11-23": {
-      "frozen_fixtures": 4,
-      "logical_picks": 129
+      "frozen_fixtures": 5,
+      "logical_picks": 132
     }
   },
   "frozen_by_date": {
@@ -36633,6 +36633,364 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-23"
       },
+      "401921427": {
+        "decision_cutoff_utc": "2026-11-23T16:30:00Z",
+        "frozen_at": "2026-11-23T17:12:59Z",
+        "game_id": "401921427",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Utah Utes",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.642952,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 346,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "774c37cbc4546c6e127eec3a95fdecd3729a08c501d47b7fad600a3deb0e37ff",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "ae0f10160094be400e95",
+            "game_id": "401921427",
+            "grade_status": "pending",
+            "home": "Iowa Hawkeyes",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "ae0f10160094be400e95",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.71,
+            "role": null,
+            "scheduled_utc": "2026-11-23T18:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Utah Utes",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921427",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-23T16:40:59Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.074074074074074,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.882587,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 199,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "f902d67f50b5cb65bb57af4fbcd358b927aa27ba3d7b4a276b595e6af40ca613",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6b44bee9e8211c631e43",
+            "game_id": "401921427",
+            "grade_status": "pending",
+            "home": "Iowa Hawkeyes",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.057078,
+              "historical_pick_count": 4,
+              "individual_odds_band": "1.00-<1.20",
+              "losses": 0,
+              "market": "moneyline",
+              "observed_roi": 0.075,
+              "period": "full_game",
+              "probability_band": "0.80-<0.90",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.078626,
+              "wins": 4
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "6b44bee9e8211c631e43",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-23T16:41:04Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.9121,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-23T18:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Utah Utes",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921427",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-23T16:40:59Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.074074074074074,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.690745,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 346,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "10024c378d9a430ac930153551b02d2d957b91f3f296c5c564dd9c30df12939e",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "ff3457a8490a23756b67",
+            "game_id": "401921427",
+            "grade_status": "pending",
+            "home": "Iowa Hawkeyes",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "ff3457a8490a23756b67",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.75,
+            "role": null,
+            "scheduled_utc": "2026-11-23T18:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Utah Utes",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921427",
+              "line": -15.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-23T16:40:59Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.456852,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "cb8d14b3b0cf7a292b6b058aa6a9eccab579f8e3c6fb3f60d21709a8d7390040",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "74d85bb540a2158a5ffe",
+            "game_id": "401921427",
+            "grade_status": "pending",
+            "home": "Iowa Hawkeyes",
+            "league": "NCAA_W",
+            "line": -15.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "74d85bb540a2158a5ffe",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-23T18:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Utah Utes",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921427",
+              "line": -14.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-23T13:41:25Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.446852,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 24,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "3faa1c0f237d0ef1b95348adc3b1b894285522cf9adf4bcf4fb5aae9c603791f",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d3908bd1c79b883481cd",
+            "game_id": "401921427",
+            "grade_status": "pending",
+            "home": "Iowa Hawkeyes",
+            "league": "NCAA_W",
+            "line": -14.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "d3908bd1c79b883481cd",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-23T18:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Utah Utes",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921427",
+              "line": 137.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-23T16:40:59Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.499388,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 19,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-23",
+            "detailed_evidence_sha256": "c98bd23cbdac87cec6fab5b856a5c459a93cd99f7bf96a17c00ed1a650233e6f",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4d05705ba82b2b60768d",
+            "game_id": "401921427",
+            "grade_status": "pending",
+            "home": "Iowa Hawkeyes",
+            "league": "NCAA_W",
+            "line": 137.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "4d05705ba82b2b60768d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-23T18:30:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-23T18:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-23"
+      },
       "401923672": {
         "decision_cutoff_utc": "2026-11-23T15:00:00Z",
         "frozen_at": "2026-11-23T15:12:42Z",
@@ -37115,6 +37473,10 @@
     [
       "401928193",
       "2026-11-23T17:00:00Z"
+    ],
+    [
+      "401921427",
+      "2026-11-23T18:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
