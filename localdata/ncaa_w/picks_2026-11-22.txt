@@ -1,6 +1,6 @@
 Ma Golide Picks — NCAA_W 2026-11-22
 ========================================================================
-Generated at: 2026-11-23 02:21 SAST
+Generated at: 2026-11-23 02:54 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 60-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -9,32 +9,7 @@ Started and settled games are retained separately as archive status.
 
 ELIGIBLE CLEAN PICKS
 ========================================================================
-  [team_history_empirical/team_history_empirical] Kansas State Wildcats vs Missouri Tigers · KO 2026-11-23 02:30 SAST
-      MONEYLINE full_game -> HOME · p=85.7% (raw 90.0%) @1.770 FanDuel
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T23:49:19Z
-      calibration=calibrated n=269 · reasons=none · prediction=history
-  [team_history_empirical/team_history_empirical] Kansas State Wildcats vs Missouri Tigers · KO 2026-11-23 02:30 SAST
-      MONEYLINE full_game -> HOME · p=85.7% (raw 90.0%) @1.750 Stake.com
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T23:49:19Z
-      calibration=calibrated n=269 · reasons=none · prediction=history
-  [team_history_empirical/team_history_empirical] Kansas State Wildcats vs Missouri Tigers · KO 2026-11-23 02:30 SAST
-      MONEYLINE full_game -> HOME · p=85.7% (raw 90.0%) @1.800 BetMGM.us
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T23:49:19Z
-      calibration=calibrated n=269 · reasons=none · prediction=history
-      ROI-BAND BLOCKED · moneyline full_game · p 0.80-<0.90 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
-  [provider:espn/team_history_empirical] Kansas State Wildcats vs Missouri Tigers · KO 2026-11-23 02:30 SAST
-      MONEYLINE full_game -> AWAY · p=53.2% (raw 55.9%) @2.050 BetMGM.us
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T23:49:19Z
-      calibration=calibrated n=171 · reasons=none · prediction=espn
-      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=0 · recency ROI n/a / adjusted n/a
-  [provider:espn/team_history_empirical] Kansas State Wildcats vs Missouri Tigers · KO 2026-11-23 02:30 SAST
-      MONEYLINE full_game -> AWAY · p=53.2% (raw 55.9%) @1.960 Stake.com
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T23:49:19Z
-      calibration=calibrated n=171 · reasons=none · prediction=espn
-  [provider:espn/team_history_empirical] Kansas State Wildcats vs Missouri Tigers · KO 2026-11-23 02:30 SAST
-      MONEYLINE full_game -> AWAY · p=53.2% (raw 55.9%) @1.980 FanDuel
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T23:49:19Z
-      calibration=calibrated n=171 · reasons=none · prediction=espn
+  (none)
 
 CAUTION PICKS
 ========================================================================
@@ -44,9 +19,12 @@ WATCHLIST — NO MATCHED ODDS
 ========================================================================
   [provider:espn/team_history_empirical] Chicago State Cougars vs Alaska Anchorage Seawolves · KO 2026-11-23 03:30 SAST
       MONEYLINE full_game -> HOME · p=93.9% (raw 96.2%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T00:54:25Z
       calibration=calibrated n=181 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=32 · latest_evidence_utc=2026-11-23T00:10:23Z
+  [provider:espn/team_history_empirical] Alaska Anchorage Seawolves vs Chicago State Cougars · KO 2026-11-23 03:30 SAST
+      MONEYLINE full_game -> AWAY · p=93.5% (raw 96.2%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T00:54:25Z
+      calibration=calibrated n=182 · reasons=no_exact_bookmaker_market · prediction=espn
   [provider:espn/team_history_empirical] Rice Owls vs Pepperdine Waves · KO 2026-11-23 03:00 SAST
       MONEYLINE full_game -> HOME · p=90.2% (raw 92.5%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T00:21:32Z
@@ -59,30 +37,26 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE full_game -> HOME · p=80.6% (raw 83.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T00:21:32Z
       calibration=calibrated n=181 · reasons=no_exact_bookmaker_market · prediction=espn
-  [team_history_empirical/team_history_empirical] Kansas State Wildcats vs Missouri Tigers · KO 2026-11-23 02:30 SAST
-      MONEYLINE H1 -> HOME · p=70.0% (raw 76.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T23:49:19Z
-      calibration=calibrated n=270 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Alaska Anchorage Seawolves vs Chicago State Cougars · KO 2026-11-23 03:30 SAST
+      MONEYLINE full_game -> HOME · p=73.9% (raw 79.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T00:54:25Z
+      calibration=calibrated n=283 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Rice Owls vs Pepperdine Waves · KO 2026-11-23 03:00 SAST
       MONEYLINE H1 -> HOME · p=67.3% (raw 74.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T00:21:32Z
       calibration=calibrated n=279 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Alaska Anchorage Seawolves vs Chicago State Cougars · KO 2026-11-23 03:30 SAST
+      MONEYLINE H1 -> HOME · p=65.9% (raw 73.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T00:54:25Z
+      calibration=calibrated n=285 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Texas A&M-Corpus Christi Islanders vs West Florida Argonauts · KO 2026-11-23 03:00 SAST
       MONEYLINE full_game -> AWAY · p=62.0% (raw 67.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T00:21:32Z
       calibration=calibrated n=277 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Chicago State Cougars vs TBD · KO 2026-11-23 03:30 SAST
       MONEYLINE full_game -> AWAY · p=57.4% (raw 58.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T00:54:25Z
       calibration=calibrated n=187 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Chicago State Cougars vs Alaska Anchorage Seawolves · KO 2026-11-23 03:30 SAST
-      MONEYLINE full_game -> HOME · p=56.0% (raw 61.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=277 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Chicago State Cougars vs Alaska Anchorage Seawolves · KO 2026-11-23 03:30 SAST
-      MONEYLINE H1 -> HOME · p=48.3% (raw 55.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=279 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Texas A&M-Corpus Christi Islanders vs West Florida Argonauts · KO 2026-11-23 03:00 SAST
       MONEYLINE full_game -> HOME · p=47.4% (raw 51.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-23T00:21:32Z
@@ -102,55 +76,43 @@ SKIPPED — INELIGIBLE
 
 IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
-  [provider:espn/team_history_empirical] Seattle U Redhawks vs Louisville Cardinals · KO 2026-11-23 01:00 SAST
-      MONEYLINE full_game -> AWAY · p=96.1% (raw 99.9%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T22:20:40Z
-      calibration=calibrated n=154 · reasons=no_exact_bookmaker_market · prediction=espn
-  [team_history_empirical/team_history_empirical] Seattle U Redhawks vs TBD · KO 2026-11-23 01:00 SAST
-      MONEYLINE full_game -> HOME · p=72.9% (raw 74.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T22:20:40Z
-      calibration=calibrated n=195 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Seattle U Redhawks vs Louisville Cardinals · KO 2026-11-23 01:00 SAST
-      MONEYLINE full_game -> AWAY · p=58.7% (raw 63.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T22:20:40Z
-      calibration=calibrated n=256 · reasons=no_exact_bookmaker_market · prediction=history
-  [team_history_empirical/team_history_empirical] Tennessee Lady Volunteers vs UCLA Bruins · KO 2026-11-23 00:30 SAST
-      TOTAL full_game 145.5 -> UNDER · p=55.6% (raw 57.0%) @1.909 DraftKings
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T21:49:58Z
-      calibration=provisional n=14 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=29 · recency ROI -7.8% / adjusted -7.9%
-  [team_history_empirical/team_history_empirical] Tennessee Lady Volunteers vs UCLA Bruins · KO 2026-11-23 00:30 SAST
-      MONEYLINE H1 -> HOME · p=54.4% (raw 61.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T21:49:58Z
-      calibration=calibrated n=248 · reasons=no_exact_bookmaker_market · prediction=history
-  [team_history_empirical/team_history_empirical] Tennessee Lady Volunteers vs UCLA Bruins · KO 2026-11-23 00:30 SAST
-      MONEYLINE full_game -> HOME · p=53.1% (raw 57.0%) @3.050 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T21:49:58Z
-      calibration=calibrated n=248 · reasons=none · prediction=history
-      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=1 · recency ROI -100.0% / adjusted +30.1%
-  [provider:espn/team_history_empirical] Tennessee Lady Volunteers vs UCLA Bruins · KO 2026-11-23 00:30 SAST
-      MONEYLINE full_game -> HOME · p=51.9% (raw 55.8%) @3.050 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T21:49:58Z
-      calibration=calibrated n=143 · reasons=none · prediction=espn
-  [team_history_empirical/team_history_empirical] Seattle U Redhawks vs Louisville Cardinals · KO 2026-11-23 01:00 SAST
-      MONEYLINE H1 -> HOME · p=46.8% (raw 51.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T22:20:40Z
-      calibration=calibrated n=198 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Seattle U Redhawks vs Louisville Cardinals · KO 2026-11-23 01:00 SAST
-      MONEYLINE H1 -> AWAY · p=44.9% (raw 51.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T22:20:40Z
-      calibration=calibrated n=256 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Tennessee Lady Volunteers vs UCLA Bruins · KO 2026-11-23 00:30 SAST
-      SPREAD full_game -5.5 -> AWAY · p=41.5% (raw 53.0%) @1.909 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T21:49:58Z
-      calibration=provisional n=16 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Tennessee Lady Volunteers vs UCLA Bruins · KO 2026-11-23 00:30 SAST
-      SPREAD full_game -6.5 -> AWAY · p=39.5% (raw 51.0%) @1.909 DraftKings
-      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T21:49:58Z
-      calibration=provisional n=16 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Kansas State Wildcats vs Missouri Tigers · KO 2026-11-23 02:30 SAST
+      MONEYLINE full_game -> HOME · p=85.7% (raw 90.0%) @1.770 FanDuel
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T23:49:19Z
+      calibration=calibrated n=269 · reasons=none · prediction=history
+  [team_history_empirical/team_history_empirical] Kansas State Wildcats vs Missouri Tigers · KO 2026-11-23 02:30 SAST
+      MONEYLINE full_game -> HOME · p=85.7% (raw 90.0%) @1.750 Stake.com
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T23:49:19Z
+      calibration=calibrated n=269 · reasons=none · prediction=history
+  [team_history_empirical/team_history_empirical] Kansas State Wildcats vs Missouri Tigers · KO 2026-11-23 02:30 SAST
+      MONEYLINE full_game -> HOME · p=85.7% (raw 90.0%) @1.800 BetMGM.us
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T23:49:19Z
+      calibration=calibrated n=269 · reasons=none · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.80-<0.90 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
+  [team_history_empirical/team_history_empirical] Kansas State Wildcats vs Missouri Tigers · KO 2026-11-23 02:30 SAST
+      MONEYLINE H1 -> HOME · p=70.0% (raw 76.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T23:49:19Z
+      calibration=calibrated n=270 · reasons=no_exact_bookmaker_market · prediction=history
+  [provider:espn/team_history_empirical] Kansas State Wildcats vs Missouri Tigers · KO 2026-11-23 02:30 SAST
+      MONEYLINE full_game -> AWAY · p=53.2% (raw 55.9%) @2.050 BetMGM.us
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T23:49:19Z
+      calibration=calibrated n=171 · reasons=none · prediction=espn
+      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=0 · recency ROI n/a / adjusted n/a
+  [provider:espn/team_history_empirical] Kansas State Wildcats vs Missouri Tigers · KO 2026-11-23 02:30 SAST
+      MONEYLINE full_game -> AWAY · p=53.2% (raw 55.9%) @1.960 Stake.com
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T23:49:19Z
+      calibration=calibrated n=171 · reasons=none · prediction=espn
+  [provider:espn/team_history_empirical] Kansas State Wildcats vs Missouri Tigers · KO 2026-11-23 02:30 SAST
+      MONEYLINE full_game -> AWAY · p=53.2% (raw 55.9%) @1.980 FanDuel
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-22T23:49:19Z
+      calibration=calibrated n=171 · reasons=none · prediction=espn
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
+  [provider:espn/team_history_empirical] Seattle U Redhawks vs Louisville Cardinals · KO 2026-11-23 01:00 SAST
+      MONEYLINE full_game -> AWAY · p=96.1% (raw 99.9%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T22:20:40Z
+      calibration=calibrated n=154 · reasons=no_exact_bookmaker_market · prediction=espn
   [provider:espn/team_history_empirical] Washington Huskies vs Cal Poly Mustangs · KO 2026-11-23 00:00 SAST
       MONEYLINE full_game -> HOME · p=96.0% (raw 99.9%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T21:21:24Z
@@ -452,6 +414,10 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE full_game -> HOME · p=72.9% (raw 76.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T18:23:15Z
       calibration=calibrated n=235 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Seattle U Redhawks vs TBD · KO 2026-11-23 01:00 SAST
+      MONEYLINE full_game -> HOME · p=72.9% (raw 74.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T22:20:40Z
+      calibration=calibrated n=195 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Boston University Terriers vs New Hampshire Wildcats · KO 2026-11-22 21:00 SAST
       MONEYLINE full_game -> HOME · p=71.9% (raw 75.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T18:23:15Z
@@ -674,6 +640,10 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE H1 -> HOME · p=58.8% (raw 65.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T19:20:06Z
       calibration=calibrated n=246 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Seattle U Redhawks vs Louisville Cardinals · KO 2026-11-23 01:00 SAST
+      MONEYLINE full_game -> AWAY · p=58.7% (raw 63.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T22:20:40Z
+      calibration=calibrated n=256 · reasons=no_exact_bookmaker_market · prediction=history
   [provider:espn/team_history_empirical] Portland Pilots vs Stanford Cardinal · KO 2026-11-23 00:00 SAST
       MONEYLINE full_game -> HOME · p=58.3% (raw 62.2%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T21:21:24Z
@@ -719,6 +689,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T21:21:24Z
       calibration=provisional n=14 · reasons=insufficient_walk_forward_samples · prediction=history
       ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=29 · recency ROI -7.8% / adjusted -7.9%
+  [team_history_empirical/team_history_empirical] Tennessee Lady Volunteers vs UCLA Bruins · KO 2026-11-23 00:30 SAST
+      TOTAL full_game 145.5 -> UNDER · p=55.6% (raw 57.0%) @1.909 DraftKings
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T21:49:58Z
+      calibration=provisional n=14 · reasons=insufficient_walk_forward_samples · prediction=history
+      ROI-BAND BLOCKED · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=29 · recency ROI -7.8% / adjusted -7.9%
   [team_history_empirical/team_history_empirical] Maine Black Bears vs Pennsylvania Quakers · KO 2026-11-22 18:30 SAST
       MONEYLINE H1 -> HOME · p=55.4% (raw 62.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T15:53:19Z
@@ -736,6 +711,10 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE H1 -> HOME · p=54.4% (raw 61.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T17:21:05Z
       calibration=calibrated n=225 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Tennessee Lady Volunteers vs UCLA Bruins · KO 2026-11-23 00:30 SAST
+      MONEYLINE H1 -> HOME · p=54.4% (raw 61.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T21:49:58Z
+      calibration=calibrated n=248 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical/team_history_empirical] Penn State Lady Lions vs Saint Joseph's Hawks · KO 2026-11-22 20:00 SAST
       MONEYLINE full_game -> AWAY · p=53.7% (raw 56.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T17:21:05Z
@@ -775,6 +754,11 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE full_game -> AWAY · p=53.3% (raw 57.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T21:21:24Z
       calibration=calibrated n=247 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Tennessee Lady Volunteers vs UCLA Bruins · KO 2026-11-23 00:30 SAST
+      MONEYLINE full_game -> HOME · p=53.1% (raw 57.0%) @3.050 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T21:49:58Z
+      calibration=calibrated n=248 · reasons=none · prediction=history
+      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=1 · recency ROI -100.0% / adjusted +30.1%
   [team_history_empirical/team_history_empirical] Stonehill Skyhawks vs Illinois State Redbirds · KO 2026-11-22 21:00 SAST
       MONEYLINE full_game -> AWAY · p=52.9% (raw 56.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T18:23:15Z
@@ -810,6 +794,10 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE full_game -> HOME · p=52.1% (raw 56.2%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T20:22:38Z
       calibration=calibrated n=141 · reasons=no_exact_bookmaker_market · prediction=espn
+  [provider:espn/team_history_empirical] Tennessee Lady Volunteers vs UCLA Bruins · KO 2026-11-23 00:30 SAST
+      MONEYLINE full_game -> HOME · p=51.9% (raw 55.8%) @3.050 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T21:49:58Z
+      calibration=calibrated n=143 · reasons=none · prediction=espn
   [team_history_empirical/team_history_empirical] Tulsa Golden Hurricane vs Stephen F. Austin Ladyjacks · KO 2026-11-23 00:00 SAST
       MONEYLINE full_game -> HOME · p=51.6% (raw 53.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T21:21:24Z
@@ -908,6 +896,10 @@ SETTLED PICKS — ARCHIVE ONLY
       SPREAD full_game +30.5 -> AWAY · p=47.5% (raw 59.0%) @1.909 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T21:21:24Z
       calibration=provisional n=16 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Seattle U Redhawks vs Louisville Cardinals · KO 2026-11-23 01:00 SAST
+      MONEYLINE H1 -> HOME · p=46.8% (raw 51.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T22:20:40Z
+      calibration=calibrated n=198 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Oklahoma State Cowgirls vs Wichita State Shockers · KO 2026-11-23 00:00 SAST
       SPREAD full_game +28.5 -> AWAY · p=45.5% (raw 57.0%) @1.909 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T21:21:24Z
@@ -932,6 +924,10 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE H1 -> HOME · p=45.2% (raw 52.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T21:21:24Z
       calibration=calibrated n=249 · reasons=no_exact_bookmaker_market,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Seattle U Redhawks vs Louisville Cardinals · KO 2026-11-23 01:00 SAST
+      MONEYLINE H1 -> AWAY · p=44.9% (raw 51.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T22:20:40Z
+      calibration=calibrated n=256 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Creighton Bluejays vs Nebraska Cornhuskers · KO 2026-11-22 21:00 SAST
       SPREAD full_game +13.5 -> HOME · p=43.1% (raw 56.0%) @1.909 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T18:23:15Z
@@ -944,6 +940,10 @@ SETTLED PICKS — ARCHIVE ONLY
       SPREAD full_game +11.5 -> HOME · p=42.1% (raw 55.0%) @1.909 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T18:23:15Z
       calibration=provisional n=15 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Tennessee Lady Volunteers vs UCLA Bruins · KO 2026-11-23 00:30 SAST
+      SPREAD full_game -5.5 -> AWAY · p=41.5% (raw 53.0%) @1.909 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T21:49:58Z
+      calibration=provisional n=16 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Creighton Bluejays vs Nebraska Cornhuskers · KO 2026-11-22 21:00 SAST
       SPREAD full_game +10.5 -> HOME · p=41.1% (raw 54.0%) @1.909 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T18:23:15Z
@@ -952,15 +952,19 @@ SETTLED PICKS — ARCHIVE ONLY
       SPREAD full_game +9.5 -> HOME · p=40.1% (raw 53.0%) @1.909 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-22T18:23:15Z
       calibration=provisional n=15 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Tennessee Lady Volunteers vs UCLA Bruins · KO 2026-11-23 00:30 SAST
+      SPREAD full_game -6.5 -> AWAY · p=39.5% (raw 51.0%) @1.909 DraftKings
+      bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T21:49:58Z
+      calibration=provisional n=16 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Texas Longhorns vs Ohio State Buckeyes · KO 2026-11-22 20:00 SAST
       SPREAD full_game -8.5 -> HOME · p=39.4% (raw 53.0%) @1.909 DraftKings
       bucket=WATCHLIST_INSUFFICIENT_CONTEXT · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-22T17:21:05Z
       calibration=provisional n=16 · reasons=insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
 
-Active summary: ELIGIBLE_CLEAN=6 CAUTION=0 WATCHLIST_NO_ODDS=12 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 WATCHLIST_NO_ODDS=12 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=11 SETTLED=195
-Logical picks shown: 224 · superseded observations: 31
-Total archived pick evidence rows: 255
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=7 SETTLED=206
+Logical picks shown: 225 · superseded observations: 0
+Total archived pick evidence rows: 225
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.

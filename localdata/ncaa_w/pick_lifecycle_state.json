@@ -25,8 +25,8 @@
       "logical_picks": 166
     },
     "2026-11-22": {
-      "frozen_fixtures": 57,
-      "logical_picks": 224
+      "frozen_fixtures": 58,
+      "logical_picks": 225
     }
   },
   "frozen_by_date": {
@@ -36257,19 +36257,241 @@
         "scheduled_utc": "2026-11-22T23:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
+      },
+      "401929636": {
+        "decision_cutoff_utc": "2026-11-23T00:30:00Z",
+        "frozen_at": "2026-11-23T00:54:25Z",
+        "game_id": "401929636",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Chicago State Cougars",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.659048,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 285,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "854e1368d7730b71c91d123358ef138819c75034e816da39c0bd38b204e052be",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "811006f6ef402e59b4f7",
+            "game_id": "401929636",
+            "grade_status": "pending",
+            "home": "Alaska Anchorage Seawolves",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "811006f6ef402e59b4f7",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.73,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Chicago State Cougars",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.934781,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 182,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "61ed35462d763c9f7a3ed3c9e71457579629b60e2ceb328c0ff78df611237d1b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "56721122bf4518046373",
+            "game_id": "401929636",
+            "grade_status": "pending",
+            "home": "Alaska Anchorage Seawolves",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "56721122bf4518046373",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-23T00:40:13Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9624,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "TBD",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.57447,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 187,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "aff6cd2db0859e0ef3dec886dc87d8f7ba32175c2a8b937bb7718ae1fca0238b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "716b9f64cebc327ce02d",
+            "game_id": "401929636",
+            "grade_status": "pending",
+            "home": "Chicago State Cougars",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "716b9f64cebc327ce02d",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:30:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Chicago State Cougars",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.739042,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 283,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "28cd810003ee08e8f5ba892edfdda3465d072a6398c30410ca933d890bceac76",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "2d1bfe8b966b0cde54df",
+            "game_id": "401929636",
+            "grade_status": "pending",
+            "home": "Alaska Anchorage Seawolves",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "2d1bfe8b966b0cde54df",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.79,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Alaska Anchorage Seawolves",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.939384,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 181,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-22",
+            "detailed_evidence_sha256": "db1259d459e15314373beb2caa91af3a46bb2ecced627c083a03eee64f3de87d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "93ecce0176192516f2d0",
+            "game_id": "401929636",
+            "grade_status": "pending",
+            "home": "Chicago State Cougars",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "93ecce0176192516f2d0",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-23T00:10:23Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9624,
+            "role": null,
+            "scheduled_utc": "2026-11-23T01:30:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-23T01:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-22"
       }
     }
   },
   "league": "NCAA_W",
   "pending_frozen_games": [
-    [
-      "401912957",
-      "2026-11-22T22:30:00Z"
-    ],
-    [
-      "401929635",
-      "2026-11-22T23:00:00Z"
-    ],
     [
       "401906985",
       "2026-11-23T00:30:00Z"
@@ -36281,6 +36503,10 @@
     [
       "401913903",
       "2026-11-23T01:00:00Z"
+    ],
+    [
+      "401929636",
+      "2026-11-23T01:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
