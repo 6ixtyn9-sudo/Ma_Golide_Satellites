@@ -91,9 +91,23 @@ DEFAULT_TEAM_ALIASES: Dict[str, List[str]] = {
 }
 
 
+def fold_diacritics(text: str) -> str:
+    """Strip accents so ``Força`` == ``Forca``.
+
+    Not cosmetic: BetExplorer publishes every club name with its diacritics
+    already removed (``Forca Lleida``, ``Breogan``, ``Wurzburg``, verified across
+    five competition pages on 2026-11-23) while league feeds keep them. Without
+    folding, those rows never match a canonical game and the price silently
+    disappears into "no matched odds".
+    """
+
+    decomposed = unicodedata.normalize("NFKD", str(text or ""))
+    return "".join(ch for ch in decomposed if not unicodedata.combining(ch))
+
+
 def normalize_team_name(name: str) -> str:
-    """Lowercase, trim, and collapse whitespace."""
-    return re.sub(r"\s+", " ", str(name or "").strip()).lower()
+    """Lowercase, fold diacritics, trim, and collapse whitespace."""
+    return re.sub(r"\s+", " ", fold_diacritics(name).strip()).lower()
 
 
 def canonical_team_name(name: str, aliases: Optional[Dict[str, List[str]]] = None) -> str:

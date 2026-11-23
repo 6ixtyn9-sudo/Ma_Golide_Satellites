@@ -179,7 +179,10 @@ def test_israel_registry_contract_declares_the_fallback_price_lane():
     assert spec.schedule_source == "israel_ibl"
     assert spec.results_source == "israel_ibl"
     assert spec.automated_schedule_supported is True
-    assert spec.book_providers == ("betexplorer_direct",)
+    # The direct comparison page remains the named-book fallback; the
+    # competition's own fixtures page now also feeds aggregate, research-only
+    # observations (verified 2026-11-23). Neither is a cleared API lane.
+    assert spec.book_providers == ("betexplorer", "betexplorer_direct")
 
 
 # --- captured rows (2026-11-22 probe of basket.co.il board 5) ---------------

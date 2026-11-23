@@ -260,4 +260,7 @@ def test_registry_contract_declares_the_fallback_price_lane():
     assert spec.schedule_source == "lba"
     assert spec.results_source == "lba"
     assert spec.automated_schedule_supported is True
-    assert spec.book_providers == ("betexplorer_direct",)
+    # The direct comparison page remains the named-book fallback; the
+    # competition's own fixtures page now also feeds aggregate, research-only
+    # observations (verified 2026-11-23). Neither is a cleared API lane.
+    assert spec.book_providers == ("betexplorer", "betexplorer_direct")

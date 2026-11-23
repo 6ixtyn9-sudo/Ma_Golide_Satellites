@@ -495,10 +495,20 @@ def _odds_nav_page_param(odds_html: str, tab: str) -> Optional[str]:
 
 
 def _comparison_page_param(match_page: str) -> str:
-    """Read the page-supplied basketball H/A tab parameter; default to page 1."""
+    """The ``{page}`` value of the odds route — always a bare integer, default ``0``.
+
+    ``/match-odds/{event_id}/{page}/{tab}/bestOdds/?lang=en`` answers only when
+    ``page`` is the literal ``0`` for basketball (verified against the served
+    route on 2026-11-23: every word-form value — ``ha``, ``1x2``, ``all``,
+    ``match`` — returned 404 with an empty body). The match page's own navigation
+    callback is read first, but a non-integer value is discarded rather than
+    forwarded, because forwarding it is what produced 404s and therefore
+    "no named prices" on every attempt.
+    """
 
     match = _PAGE_PARAM_RE.search(match_page or "")
-    return match.group("page") if match and match.group("page") else "1"
+    value = match.group("page") if match else ""
+    return value if value.isdigit() else "0"
 
 
 def _scheduled_candidate_games(
