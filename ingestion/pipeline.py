@@ -67,6 +67,7 @@ from .providers import (
     fiba_euroleague_w,
     hardwood,
     israel_ibl,
+    kbl,
     lba,
 )
 
@@ -807,6 +808,42 @@ class Pipeline:
                         provider="israel_ibl",
                         detail=str(gap.get("detail", ""))[:200],
                         observed_utc=self._now_iso(),
+                    )
+                )
+        elif league is League.SOUTH_KOREA_KBL:
+            games = kbl.discover_games(
+                _iso(self.config.date_yyyymmdd),
+                self.fetch if self._injected_fetch else None,
+            )
+            for gap in kbl.last_gaps():
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=(f"KBL-{gap['game_id']}" if gap.get("game_id") else None),
+                        required_field="schedule_identity",
+                        reason=CoverageState.MISSING,
+                        provider="kbl",
+                        detail=str(gap.get("detail", ""))[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+            probe = kbl.last_probe()
+            if probe:
+                # Record what the run actually read: the new source policy makes
+                # a scraped read evidence only if its URL, size and digest are
+                # retained. Stored as provider health, never as a result.
+                now = self._now_iso()
+                self.store.upsert_provider_health(
+                    ProviderHealth(
+                        provider="kbl",
+                        league=self.config.league_enum,
+                        last_attempt_utc=now,
+                        last_success_utc=now if games else None,
+                        state=CoverageState.OK if games else CoverageState.MISSING,
+                        coverage={"games": len(games), "rows": probe.get("rows", 0)},
+                        detail=(
+                            f"url={probe.get('url')} bytes={probe.get('bytes')} "
+                            f"sha256={probe.get('sha256')}"
+                        )[:500],
                     )
                 )
         elif league is League.SPAIN_ACB:

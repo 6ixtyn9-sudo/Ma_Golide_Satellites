@@ -125,6 +125,15 @@ def test_final_expansion_is_typed_and_registry_backed_everywhere():
                 "espn",
                 "espn",
             )
+        elif league is League.SOUTH_KOREA_KBL:
+            # The KBL lane reads the league's own date-window data API; the
+            # route is documented by a third party, so the adapter records the
+            # URL/bytes/sha256 it actually saw on every run.
+            assert (spec.schedule_source, spec.results_source, spec.gate_schedule_source) == (
+                "kbl",
+                "kbl",
+                "kbl",
+            )
         elif league is League.EUROCUP:
             # EuroCup rides the validated EuroLeague Basketball adapter with
             # competition code U; it is a referenced route contract, not a

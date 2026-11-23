@@ -771,6 +771,67 @@ def _read_json_response(url: str, *, headers: dict[str, str] | None = None) -> A
         raise GateUncertain("schedule response was not JSON") from exc
 
 
+def _kbl_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGame]:
+    """One KBL day from the documented date-window route (no key, two headers).
+
+    The host answers a window inside one calendar year in a single request, so
+    the half-hour gate reads exactly the KST target day plus the UTC day either
+    side of it - never a season. Rows whose tip falls outside the target UTC
+    date are dropped, and an unreadable body fails open instead of asserting an
+    empty slate.
+    """
+
+    day = datetime.strptime(target_date.replace("-", ""), "%Y%m%d")
+    local = day.replace(tzinfo=timezone.utc) + timedelta(hours=9)
+    start = (local - timedelta(days=1)).strftime("%Y%m%d")
+    end = (local + timedelta(days=1)).strftime("%Y%m%d")
+    season = local.year + 1 if local.month >= 8 else local.year
+    url = (
+        f"https://api.kbl.or.kr/match/list?season={season}"
+        f"&fromDate={start}&toDate={end}"
+    )
+    body = _read_json_response(url, headers={"Channel": "WEB", "TeamCode": "XX"})
+    rows = body if isinstance(body, list) else None
+    if rows is None and isinstance(body, dict):
+        for key in ("data", "list", "games", "items"):
+            if isinstance(body.get(key), list):
+                rows = body[key]
+                break
+    if rows is None:
+        raise GateUncertain("KBL match/list has no recognisable row list")
+    games: list[ScheduleGame] = []
+    for row in rows:
+        if not isinstance(row, dict):
+            continue
+        raw_date = str(row.get("game_date") or "").replace("-", "")
+        raw_start = str(row.get("game_start") or "").strip().zfill(4)
+        if len(raw_date) != 8 or not raw_date.isdigit() or not raw_start.isdigit():
+            continue
+        tip = datetime.strptime(raw_date + raw_start, "%Y%m%d%H%M").replace(
+            tzinfo=timezone(timedelta(hours=9))
+        )
+        status = (
+            "final"
+            if str(row.get("is_ended") or "0").strip() == "1"
+            else "live"
+            if str(row.get("is_started") or "0").strip() == "1"
+            else "scheduled"
+        )
+        games.append(
+            ScheduleGame(
+                scheduled_utc=tip,
+                status=status,
+                game_id=f"KBL-{row.get('gmkey')}",
+            )
+        )
+    return [
+        game
+        for game in games
+        if game.scheduled_utc.astimezone(timezone.utc).strftime("%Y-%m-%d")
+        == target_date
+    ]
+
+
 def _espn_scoreboard_url(config: LeagueGateConfig, target_date: str | None) -> str:
     suffix: str
     if config.league == "NBA":
@@ -945,6 +1006,8 @@ def fetch_schedule(config: LeagueGateConfig, target_date: str) -> Iterable[Sched
 
     if config.schedule_source == "espn":
         return _espn_schedule(config, target_date)
+    if config.schedule_source == "kbl":
+        return _kbl_schedule(config, target_date)
     if config.schedule_source == "cba":
         return _cba_schedule(config, target_date)
     if config.schedule_source == "fiba_elw":
