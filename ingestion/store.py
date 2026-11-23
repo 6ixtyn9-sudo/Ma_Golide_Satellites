@@ -260,6 +260,23 @@ class InMemoryStore(Store):
                 frozen_map[key] = True
                 frozen_map[market_key] = True
 
+    def restore_book_snapshot(self, snapshot: BookSnapshot, frozen: bool = False) -> None:
+        """Insert a materialised snapshot verbatim; recovery only.
+
+        The live guard forbids a revised or additional line once a book's
+        market is frozen. A checkpoint already holds the exact rows that passed
+        that guard, and several lines legitimately coexist under one frozen
+        market marker, so replaying them must not re-apply the policy.
+        """
+
+        with self._lock:
+            key = _book_slot_key(snapshot)
+            self.books.setdefault(snapshot.game_id, {})[key] = snapshot
+            if frozen:
+                frozen_map = self.frozen_books.setdefault(snapshot.game_id, {})
+                frozen_map[key] = True
+                frozen_map[_book_market_slot_key(snapshot)] = True
+
     def get_book_snapshots(self, game_id: str) -> List[BookSnapshot]:
         return list(self.books.get(game_id, {}).values())
 

@@ -479,61 +479,72 @@ class DuckDBStore(InMemoryStore):
     def upsert_book_snapshot(self, snapshot: BookSnapshot, frozen: bool = False) -> None:
         with self._lock:
             super().upsert_book_snapshot(snapshot, frozen)
-            slot = _book_slot_key(snapshot)
-            is_frozen = self.is_book_snapshot_frozen(snapshot.game_id, snapshot)
-            self._replace(
-                "book_snapshots",
-                "game_id = ? AND slot = ?",
-                [snapshot.game_id, slot],
-                [
-                    "game_id",
-                    "provider",
-                    "book",
-                    "market",
-                    "period",
-                    "slot",
-                    "observed_utc",
-                    "source_modified_utc",
-                    "line",
-                    "over_price_decimal",
-                    "under_price_decimal",
-                    "home_price_decimal",
-                    "away_price_decimal",
-                    "draw_price_decimal",
-                    "pre_match",
-                    "main_line",
-                    "payload_hash",
-                    "price_provenance",
-                    "source_permission",
-                    "operational_validation",
-                    "frozen",
-                    "payload_json",
-                ],
-                [
-                    snapshot.game_id,
-                    snapshot.provider,
-                    snapshot.book,
-                    snapshot.market.value,
-                    snapshot.period.value,
-                    slot,
-                    snapshot.observed_utc,
-                    snapshot.source_modified_utc,
-                    snapshot.line,
-                    snapshot.over_price_decimal,
-                    snapshot.under_price_decimal,
-                    snapshot.home_price_decimal,
-                    snapshot.away_price_decimal,
-                    snapshot.draw_price_decimal,
-                    snapshot.pre_match,
-                    snapshot.main_line,
-                    snapshot.payload_hash,
-                    snapshot.price_provenance.value,
-                    snapshot.source_permission.value,
-                    snapshot.operational_validation.value,
-                    is_frozen,
-                    self._json(_book_to_dict(snapshot)),
-                ],
+            self._write_book_row(
+                snapshot, self.is_book_snapshot_frozen(snapshot.game_id, snapshot)
             )
+
+    def restore_book_snapshot(self, snapshot: BookSnapshot, frozen: bool = False) -> None:
+        """Replay a materialised snapshot without re-applying the freeze policy."""
+
+        with self._lock:
+            super().restore_book_snapshot(snapshot, frozen)
+            self._write_book_row(snapshot, bool(frozen))
+
+    def _write_book_row(self, snapshot: BookSnapshot, is_frozen: bool) -> None:
+        slot = _book_slot_key(snapshot)
+        self._replace(
+            "book_snapshots",
+            "game_id = ? AND slot = ?",
+            [snapshot.game_id, slot],
+            [
+                "game_id",
+                "provider",
+                "book",
+                "market",
+                "period",
+                "slot",
+                "observed_utc",
+                "source_modified_utc",
+                "line",
+                "over_price_decimal",
+                "under_price_decimal",
+                "home_price_decimal",
+                "away_price_decimal",
+                "draw_price_decimal",
+                "pre_match",
+                "main_line",
+                "payload_hash",
+                "price_provenance",
+                "source_permission",
+                "operational_validation",
+                "frozen",
+                "payload_json",
+            ],
+            [
+                snapshot.game_id,
+                snapshot.provider,
+                snapshot.book,
+                snapshot.market.value,
+                snapshot.period.value,
+                slot,
+                snapshot.observed_utc,
+                snapshot.source_modified_utc,
+                snapshot.line,
+                snapshot.over_price_decimal,
+                snapshot.under_price_decimal,
+                snapshot.home_price_decimal,
+                snapshot.away_price_decimal,
+                snapshot.draw_price_decimal,
+                snapshot.pre_match,
+                snapshot.main_line,
+                snapshot.payload_hash,
+                snapshot.price_provenance.value,
+                snapshot.source_permission.value,
+                snapshot.operational_validation.value,
+                is_frozen,
+                self._json(_book_to_dict(snapshot)),
+            ],
+        )
 
     def upsert_team_alias(self, canonical: str, variants: List[str]) -> None:
         with self._lock:
@@ -660,7 +671,7 @@ class DuckDBStore(InMemoryStore):
                 frozen=boolean(row["frozen"]),
             )
         for row in rows("book_snapshots"):
-            self.upsert_book_snapshot(
+            self.restore_book_snapshot(
                 _book_from_dict(json.loads(row["payload_json"])),
                 frozen=boolean(row["frozen"]),
             )

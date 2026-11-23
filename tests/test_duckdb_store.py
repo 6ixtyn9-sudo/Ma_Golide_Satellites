@@ -372,3 +372,42 @@ def test_immutable_ledger_noops_on_identical_bytes_and_rejects_conflict(tmp_path
     with pytest.raises(LedgerConflictError):
         write_immutable_json(str(path), {"games": []})
     assert json.loads(path.read_text()) == payload
+
+
+def test_csv_recovery_replays_a_frozen_line_ladder_without_reapplying_the_guard(tmp_path):
+    """A checkpoint holds several lines under one frozen market marker.
+
+    The live guard forbids an additional line once a book/market/period is
+    frozen, so replaying the materialised rows through it raised
+    ``FrozenWriteError`` on the second line and the cold-cache recovery aborted.
+    This is the reported case: 401919849 spread 9.5 frozen, the other line
+    rejected during restore.
+    """
+
+    store = DuckDBStore(str(tmp_path / "warehouse.duckdb"))
+    store.upsert_game(_game())
+    store.upsert_book_snapshot(_snapshot(line=220.5))
+    store.upsert_book_snapshot(_snapshot(line=221.5), frozen=True)
+    store.export_csv(str(tmp_path / "csv"))
+    store.close()
+
+    recovered = DuckDBStore(str(tmp_path / "recovered.duckdb"))
+    counts = recovered.restore_csv(str(tmp_path / "csv"))
+    assert counts["book_snapshots"] == 2
+    assert {snapshot.line for snapshot in recovered.get_book_snapshots("espn-1")} == {
+        220.5,
+        221.5,
+    }
+    assert recovered.is_book_frozen("espn-1", "theoddsapi")
+    recovered.close()
+
+
+def test_restore_keeps_the_live_freeze_guard_for_real_ingestion(tmp_path):
+    """Recovery bypass belongs to recovery; ingestion still refuses a new line."""
+
+    store = DuckDBStore(str(tmp_path / "warehouse.duckdb"))
+    store.upsert_game(_game())
+    store.upsert_book_snapshot(_snapshot(line=220.5), frozen=True)
+    with pytest.raises(FrozenWriteError):
+        store.upsert_book_snapshot(_snapshot(line=221.5))
+    store.close()
