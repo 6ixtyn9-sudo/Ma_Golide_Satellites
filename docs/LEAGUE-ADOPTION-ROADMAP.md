@@ -4,7 +4,10 @@
 provider, make a network request, grant a credential, change a ticket rule, or
 rewrite historic operator evidence.
 
-**Reviewed:** 2026-11-18
+**Reviewed:** 2026-11-23 — **operator policy change.** The project's ambition is
+no longer NBA-centric, and scraping publicly served league and media pages is
+now permitted for the non-NBA expansion lanes. Sections marked *(2026-11-23)*
+state the new position; everything unmarked is unchanged.
 
 ## Purpose
 
@@ -23,6 +26,51 @@ This roadmap is derived from current repository contracts. It is intentionally
 separate from the source-discovery inventory in
 [FREE-API-RESEARCH.md](FREE-API-RESEARCH.md): discovering a source is not
 adopting it.
+
+## Scope (2026-11-23): beyond the NBA
+
+The first version of this roadmap treated the NBA as the project. That was a
+limit on ambition, not a finding about evidence: the repository already carries
+24 typed league lanes, and 18 of them produce no picks because of upstream data
+gaps, not model or gate problems. ESPN's own registry was checked on 2026-11-23
+and carries 15 basketball leagues — all United States competitions plus NBL,
+FIBA and the Olympics — so no American route will ever supply Liga ACB, Lega A,
+BSL, KBL or B.League.
+
+The operator's position from 2026-11-23:
+
+- **Ambition.** Every configured league is a candidate for schedule, result,
+  forecast, price and paper-ticket coverage. The NBA remains the reference lane
+  — the most complete acquisition, the deepest history, the most efficient
+  market — but it is no longer the boundary of the project.
+- **Access.** Scraping publicly served league and media pages, and consuming
+  undocumented public JSON endpoints, is **permitted for non-NBA lanes**,
+  subject to the retained invariants in *Explicit non-goals*. This supersedes
+  the blanket prohibition stated in earlier revisions of this document.
+- **Rationale, stated as a hypothesis rather than a finding.** The NBA is the
+  most efficient basketball market in the world: the sharpest books, the most
+  arbitrage, the tightest closing lines. Any surviving model edge is therefore
+  more likely to sit in thinner domestic markets — Liga ACB, Lega A, BSL, KBL,
+  B.League, NBL — where prices are less competed away.
+
+### Testing the market-efficiency hypothesis
+
+The hypothesis is admissible only if it produces evidence:
+
+| question | evidence required |
+| --- | --- |
+| Is the league priceable at all? | an enumerated key list from every available provider, per lane |
+| Are the prices soft? | the per-lane distribution of calibrated EV, and realised ROI by EV band, against the NBA lane as reference |
+| Is the softness obtainable? | bookmaker, market, line, period, pre-tip observation time and pre-match state on every emitted price |
+| Is it stable? | closing-line movement and quote staleness per lane; a stale quote is not an edge |
+
+Two cautions must survive any future rewrite. **A soft market with no obtainable
+price is not an opportunity** — coverage, not softness, is what bounds 15 of the
+24 lanes today. And the settled evidence does not yet support assuming that
+inefficiency is easy to harvest: across the 40 settled NCAA-M legs, EV>=1
+returned 15W/11L against 12W/2L for EV<1, and the 14 settled positions split
+7/7 across that threshold with both halves in profit. Forty legs is not a
+result; it is a reason to keep measuring rather than to assume.
 
 ## Confirmed current baseline
 
@@ -176,7 +224,7 @@ and any price-based performance reporting.
 | Spain ACB | Schedule/result lane added on the ACB JSON API: season calendar plus per-game header for identity, status, final score and quarter/OT reconciliation. Referenced route contract, fixture-tested, no first-party capture; no history backfill yet; pricing stays on the direct BetExplorer fallback. | Watch the first scheduled runs for a real fixture and a reconciled final. A bounded per-game history plan is the next prerequisite before the empirical model can accumulate team history. |
 | Italy LBA | Schedule/result lane added on the league's own JSON API: championships list keyed by the season's first year, a focus-day calendar with explicit-offset tips, finals and status codes, and per-match play-by-play differenced into quarters. Two bodies are committed byte-exact from the 2026-11-22 capture and re-hashed by a test; the capture also corrected status handling (live rows carry real scores) and showed one focus day is a round spanning two dates. Probed day selectors are ignored, so no season enumeration and no history backfill; pricing stays on the direct BetExplorer fallback. | Watch the first scheduled runs for a real focus-day slate and a reconciled final. A date-bounded route is the prerequisite before this lane can carry history. |
 | EuroCup | Schedule/result lane added by reusing the validated EuroLeague Basketball adapter with competition code `U`; fixture-tested, with no first-party EuroCup capture and no validated price contract. | Watch the first scheduled runs for a real fixture and reconciled result. Price work stays on the direct BetExplorer fallback until a named-book contract is separately evidenced. |
-| Other expansion leagues | Typed registry and isolated state exist, but schedule/result acquisition is generally unavailable. | Establish compliant fixture/result identity before forecast or price work. A source discovery lead is not an integration. |
+| Other expansion leagues *(2026-11-23)* | Typed registry and isolated state exist; schedule/result acquisition is unavailable through provider APIs. League-owned public JSON is the first choice, media enterprises (Sofascore, LiveScore, Naver, Globo, Mackolik) the fallback. | Establish fixture/result identity from the scraped route, commit one scrape receipt per lane, then forecast. A discovery lead is still not an integration. |
 
 Australia NBL remains a documented/probationary The Odds API mapping only. It
 has no automatic provider budget promotion, no automatic schedule/result
@@ -236,11 +284,33 @@ are true:
 
 ## Explicit non-goals
 
-This roadmap does not approve a new provider, source, price feed, exchange, or
-prediction market. It does not authorise scraping, undocumented sportsbook
-endpoints, browser automation, proxying, account/key rotation, trial-only
-access, or treating aggregate/prediction/exchange prices as named-book ticket
-prices.
+This roadmap does not, on its own authority, approve a new provider, source,
+price feed, exchange, or prediction market, and it does not treat
+aggregate/prediction/exchange prices as named-book ticket prices.
+
+*(2026-11-23)* Earlier revisions also prohibited *scraping, undocumented
+sportsbook endpoints, browser automation and proxying*. **The operator has
+overridden that prohibition for non-NBA expansion lanes.** What replaces it is a
+narrower set of retained invariants, so that "permitted" does not become
+"unaccountable":
+
+| Retained invariant | Why it survives the override |
+| --- | --- |
+| NBA, WNBA and NCAA lanes keep their current acquisition routes | those relays are validated; changing them puts the only lanes that settle at risk |
+| The Odds API reservation ledger is untouched | quota control is a cost guard, not an access rule, and scraping may not be used to route around a budget decision |
+| No login, credential, paywall or entitlement circumvention | the project uses its own keys or none |
+| One request per second floor, hard per-run caps, stop on 403/429 | a blocked source is a CoverageGap, never a retry loop |
+| Every scraped body retained as evidence carries URL, retrieval UTC, byte count and sha256 | evidence class must be checkable rather than asserted |
+| Scraped prices keep bookmaker, market, line, period, observation time and pre-match state | the named-book/aggregate distinction is what keeps calibration honest |
+| Anything averaged, best-of, consensus or exchange-derived stays `research_only` | unchanged — the override is about access, not about what a price proves |
+| Unreachable or unparseable pages become CoverageGaps | fail closed, exactly as elsewhere |
+| Frozen receipts, stakes, bank, ROI and settled outcomes are never rewritten | no retroactivity, whatever the source policy |
+
+Scraping is therefore permitted, bounded and recorded. It is not a licence to
+invent a fixture, a result, a probability or a price. Scraped bodies are
+recorded in `tests/fixtures/CAPTURE-PROVENANCE.md` under a distinct class
+(`scraped_public_json` / `scraped_public_page`) rather than being described as
+first-party captures or provider API captures.
 
 It does not schedule a source-validation call, add a provider key, give a
 candidate source ticket authority, or change the current auto-ticket cutoff
@@ -252,15 +322,25 @@ policy:
 
 ## Implementation order
 
-1. Implement the derived readiness report and its hermetic tests.
-2. Add prospective display metadata so visible unpriced normal-lane picks are
-   unmistakably separate from paper tickets, without rewriting historic cards.
-3. Add future-source validation proposals, still code-only and unable to make a
-   request or expose a secret.
-4. Select one high-readiness, evidence-bounded validation only after its source
-   contract and cost policy are explicitly approved.
-5. Promote a source/lane only after its live evidence satisfies the declared
-   identity, rights, region, timestamp, market, and provider-budget gates.
+*(2026-11-23)* Reordered for expansion. Steps 1–2 are now the only
+prerequisites for a lane; the reporting increments move to the end.
+
+1. Enumerate price coverage per lane from the available providers' public key
+   lists, so that "unpriced" is a measured fact per lane rather than an
+   assumption carried over from the NBA.
+2. Bring one expansion lane at a time to real fixtures: league-owned public
+   JSON first (KBL `api.kbl.or.kr`, TBF `miniappapi.tbf.org.tr`, B.League S3
+   contexts, ACB, LBA, ABA, Israel), media-enterprise fallback second, each with
+   one committed scrape receipt and hermetic parser tests. Australia NBL is
+   already live on the ESPN relay and stays there.
+3. Make unpriced forecasts visible per lane so they contribute to calibration
+   while remaining unmistakably not tickets, without rewriting historic cards.
+4. Bounded price validation for a lane only once its fixtures, history and
+   forecast surface exist and its declared source contract is recorded.
+5. Promote a lane to ticket pricing only after its live evidence satisfies the
+   identity, price-class, timestamp, staleness and provider-budget gates.
+6. Keep the derived readiness report as a reporting increment: useful once
+   several lanes are moving, not a prerequisite for any of them.
 
 Each later step is a separate reviewable change. No source discovery result,
 readiness label, or passing parser fixture automatically promotes a provider to
