@@ -88,6 +88,13 @@ class PriceProvenance(str, Enum):
     NAMED_BOOK = "named_book"
     AGGREGATE_CONSENSUS = "aggregate_consensus"
     NO_PRICE = "no_price"
+    #: A matched counterparty offer on an exchange (e.g. Betfair API-NG).
+    #: It is a real, executable-in-principle price but it is *nobody's
+    #: bookmaker quote*: no named book stands behind it. Recorded as its own
+    #: provenance so it can be graded against -- and so it can never be
+    #: stamped ``NAMED_BOOK`` by the unknown-provider fallback and quietly
+    #: enter the paper-ticket lane as if a book had offered it.
+    EXCHANGE = "exchange"
 
 
 class SourcePermission(str, Enum):

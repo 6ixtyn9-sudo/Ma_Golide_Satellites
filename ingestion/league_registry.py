@@ -134,6 +134,42 @@ def _unresolved_named_book(provider: str) -> PriceSourcePolicy:
 _BETEXPLORER_DIRECT_FALLBACK = _unresolved_named_book("betexplorer_direct")
 
 
+#: Providers whose price is a matched counterparty offer on an exchange, not a
+#: bookmaker's quote. Named explicitly because the unknown-provider fallback
+#: stamps ``NAMED_BOOK``, which would let an exchange quote reach the
+#: paper-ticket lane as if a book had priced it.
+_EXCHANGE_ONLY_PROVIDERS = frozenset({"betfair", "betfair_exchange"})
+
+
+def _exchange_observation(provider: str, *, detail: str = "") -> PriceSourcePolicy:
+    """An exchange quote: real, gradeable, never a named-book ticket.
+
+    ``acquire`` stays False until an authorised capture proves the route and its
+    terms for this project. The vocabulary exists now so the first such capture
+    cannot be forced into ``NAMED_BOOK`` or ``AGGREGATE_CONSENSUS``, neither of
+    which describes it.
+    """
+
+    return PriceSourcePolicy(
+        provider,
+        PriceProvenance.EXCHANGE,
+        SourcePermission.UNRESOLVED,
+        OperationalValidation.UNVERIFIED,
+        acquire=False,
+        detail=detail,
+    )
+
+
+_EXCHANGE_OBSERVATION = _exchange_observation(
+    "betfair",
+    detail=(
+        "Betfair API-NG exchange price (matched counterparty offer), not a "
+        "bookmaker quote. No authorised capture for this project yet; acquire "
+        "is disabled and the quote can be graded, never paper-ticketed."
+    ),
+)
+
+
 def _aggregate_research_only(provider: str, *, detail: str = "") -> PriceSourcePolicy:
     return PriceSourcePolicy(
         provider,
@@ -454,6 +490,11 @@ def price_evidence_policy(league: League, provider: str) -> PriceSourcePolicy:
     """
 
     normalized = str(provider or "").strip().lower()
+    if normalized in _EXCHANGE_ONLY_PROVIDERS:
+        # An exchange identity is never a named book, even when a league has
+        # not registered it: the fallback below would otherwise stamp it
+        # NAMED_BOOK and make it ticket-eligible.
+        return _EXCHANGE_OBSERVATION
     if normalized == _BETEXPLORER_DIRECT_FALLBACK.provider:
         return _BETEXPLORER_DIRECT_FALLBACK
     for policy in league_spec(league).price_sources:
