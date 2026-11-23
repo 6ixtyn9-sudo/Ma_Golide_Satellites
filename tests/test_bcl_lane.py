@@ -195,3 +195,11 @@ def test_gate_reads_the_index_and_filters_by_utc_date(monkeypatch):
     assert slate[0].status == "final"
     assert slate[0].scheduled_utc == datetime(2026, 10, 6, 16, 30, tzinfo=timezone.utc)
     assert adaptive_gate._bcl_schedule(config, "2026-10-08") == []
+
+
+def test_a_row_for_another_day_is_dropped_with_a_count():
+    assert bcl.discover_games("2026-11-23", _fetch()) == []
+
+    probe = bcl.last_probe()
+    assert probe["rows"] == 1
+    assert probe["off_date_dropped"] == 1

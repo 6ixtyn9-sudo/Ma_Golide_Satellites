@@ -305,6 +305,8 @@ def _candidates(rows: Sequence[Dict[str, Any]], date_iso: Optional[str]) -> List
     """Calendar rows for one UTC date (or all rows when ``date_iso`` is None)."""
 
     selected: List[Dict[str, Any]] = []
+    off_date = 0
+    unparsable = 0
     for row in rows:
         match = row.get("match") or {}
         if date_iso is None:
@@ -314,8 +316,13 @@ def _candidates(rows: Sequence[Dict[str, Any]], date_iso: Optional[str]) -> List
         try:
             if _iso_utc(start).startswith(date_iso):
                 selected.append(row)
+            else:
+                off_date += 1
         except ValueError:
+            unparsable += 1
             continue
+    _last_probe["off_date_dropped"] = off_date
+    _last_probe["unparsable_date"] = unparsable
     return selected
 
 

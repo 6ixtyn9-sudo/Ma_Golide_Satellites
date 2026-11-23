@@ -236,3 +236,14 @@ def test_acb_falls_back_to_its_own_keyed_transport(monkeypatch):
     assert "season-calendar" in probe["url"]
     assert probe["rows"] >= len(games)
     assert len(probe["sha256"]) == 64
+
+
+def test_rows_dropped_for_being_on_another_day_are_counted_not_hidden():
+    """0 fixtures after a calendar read is an answer; the count says which one."""
+
+    assert acb.discover_games("2026-11-23", _acb_fetch(), 2027) == []
+
+    probe = acb.last_probe()
+    assert probe["rows"] == 4
+    assert probe["off_date_dropped"] == 4
+    assert probe["unparsable_date"] == 0

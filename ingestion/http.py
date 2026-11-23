@@ -26,6 +26,25 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+# Process-wide transport meter. Providers that receive no ``fetch`` build their
+# own ``HttpClient`` via ``default_fetch()``, which the pipeline's injected
+# meter never sees; a lane could therefore read thirty pages and still report
+# ``network_requests: 0``. Count every attempt here, at the one place a request
+# is actually issued, so "we did not ask" can never be reported for a lane that
+# did ask.
+_TRANSPORT_METER: Dict[str, int] = {"attempts": 0, "responses": 0, "errors": 0}
+
+
+def transport_meter() -> Dict[str, int]:
+    """HTTP attempts seen by every HttpClient in this process."""
+
+    return dict(_TRANSPORT_METER)
+
+
+def reset_transport_meter() -> None:
+    for key in _TRANSPORT_METER:
+        _TRANSPORT_METER[key] = 0
+
 DEFAULT_TIMEOUT = 20.0
 DEFAULT_RETRIES = 2
 DEFAULT_BACKOFF = 1.5
@@ -180,15 +199,18 @@ class HttpClient:
                 ) from exc
         attempt = 0
         while True:
+            _TRANSPORT_METER["attempts"] += 1
             try:
                 resp = self.session.get(url, headers=merged, timeout=self.timeout)
             except requests.RequestException as e:
+                _TRANSPORT_METER["errors"] += 1
                 if attempt >= self.retries:
                     raise HttpError(0, url, redact(str(e))) from e
                 attempt += 1
                 self.sleep(self.backoff**attempt)
                 continue
 
+            _TRANSPORT_METER["responses"] += 1
             self.last_status = resp.status_code
             self._capture_quota(resp)
             if resp.status_code in PERMANENT_STATUS:

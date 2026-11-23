@@ -288,3 +288,19 @@ def test_zero_fixtures_on_a_read_slate_is_not_reported_as_a_void():
     row = pipeline.store.get_provider_health("bleague", League.JAPAN_B_LEAGUE)
     assert row.state is CoverageState.MISSING
     assert row.coverage["off_date_dropped"] == 1
+
+
+def test_each_slate_page_records_its_digest_and_how_many_keys_it_added():
+    """Whether the host scopes the page by ``day`` is observed, not assumed.
+
+    Two pages are fetched (the two JST days that can hold a tip). If the second
+    adds no key, the probe says so with a digest instead of the contract
+    docstring claiming a day scoping the host may not honour.
+    """
+
+    bleague.discover_games("2026-10-04", _transport())
+
+    pages = bleague.last_probe()["pages"]
+    assert [page["day"] for page in pages] == ["2026-10-04", "2026-10-05"]
+    assert [page["new_keys"] for page in pages] == [1, 0]
+    assert all(len(page["sha256"]) == 64 for page in pages)

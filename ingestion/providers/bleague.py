@@ -386,9 +386,18 @@ def discover_games(
                 f"B.LEAGUE schedule page for {day.isoformat()} has no recognisable game "
                 "block; refusing to read it as an empty slate"
             )
+        page = {
+            "day": day.isoformat(),
+            "sha256": hashlib.sha256(html.encode("utf-8")).hexdigest(),
+            "bytes": len(html.encode("utf-8")),
+            "blocks": len(blocks),
+            "new_keys": 0,
+        }
         for block in blocks:
             if block["schedule_key"] not in keys:
                 keys.append(block["schedule_key"])
+                page["new_keys"] += 1
+        _last_probe.setdefault("pages", []).append(page)
 
     games: List[Game] = []
     off_date = 0

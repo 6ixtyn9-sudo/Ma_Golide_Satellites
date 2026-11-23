@@ -237,6 +237,7 @@ def discover_games(
     )
 
     games: List[Game] = []
+    off_date = 0
     for row in rows:
         game_id = str(row.get("gameId") or "") or None
         if has_unassigned_team_slot(row):
@@ -252,8 +253,13 @@ def discover_games(
             _record_gap(game_id, str(exc))
             continue
         if date_iso and not game.scheduled_utc.startswith(date_iso):
+            # Correct drop, but it must be countable: a slate that parses and
+            # then answers a different day is 0 fixtures *with a receipt*, not
+            # silence, and the difference decides whether the lane is broken.
+            off_date += 1
             continue
         games.append(game)
+    _last_probe["off_date_dropped"] = off_date
     _last_probe["games"] = len(games)
     return games
 

@@ -22,7 +22,7 @@ from .books import (
     select_moneyline_snapshots,
     select_total_snapshots,
 )
-from .http import HttpClient, HttpError
+from .http import HttpClient, HttpError, reset_transport_meter, transport_meter
 from .identity import (
     canonical_team_key,
     now_utc_iso,
@@ -238,6 +238,7 @@ class Pipeline:
         self.fetch_factory = fetch_factory or _default_fetch_factory
         self.allow_writes = allow_writes
         self.gaps: List[CoverageGap] = []
+        self._health_written: List[Dict[str, Any]] = []
         self.quota: Dict[str, Any] = {}
         self.context_report: Dict[str, Any] = {}
         # Per-stage source telemetry. This distinguishes a true no-market
@@ -266,6 +267,8 @@ class Pipeline:
 
         self.gaps = []
         self.quota = {}
+        self._health_written: List[Dict[str, Any]] = []
+        reset_transport_meter()
         self.context_report = {}
         self.book_provider_status = {}
         self.prediction_provider_status = {}
@@ -731,6 +734,27 @@ class Pipeline:
             return detail
         return self.fetch(url)
 
+    def _record_health(self, health: ProviderHealth) -> None:
+        """Store a read receipt *and* keep it for the printed summary.
+
+        The store write alone left every run reporting ``provider_health: []``
+        while the DuckDB store held the row: the summary described a lane that
+        recorded nothing when it had recorded a full receipt.
+        """
+
+        self.store.upsert_provider_health(health)
+        row = {
+            "provider": health.provider,
+            "league": health.league.value,
+            "last_attempt_utc": health.last_attempt_utc,
+            "last_success_utc": health.last_success_utc,
+            "state": health.state.value,
+            "coverage": dict(health.coverage),
+            "quota": dict(health.quota),
+            "detail": health.detail,
+        }
+        self._health_written.append(row)
+
     def _unsupported_source_gap(self, required_field: str, *, provider: str, detail: str) -> None:
         """Surface missing compliant source capability without inventing data."""
 
@@ -810,6 +834,29 @@ class Pipeline:
                         observed_utc=self._now_iso(),
                     )
                 )
+            probe = lba.last_probe()
+            # The calendar is round-scoped: it can hold a full round and still
+            # answer no fixtures for the asked day. That is a read receipt.
+            read_receipt = bool(probe)
+            if probe:
+                now = self._now_iso()
+                self._record_health(
+                    ProviderHealth(
+                        provider="lba",
+                        league=self.config.league_enum,
+                        last_attempt_utc=now,
+                        last_success_utc=now if games else None,
+                        state=CoverageState.OK if games else CoverageState.MISSING,
+                        coverage={
+                            "games": len(games),
+                            "off_date_dropped": probe.get("off_date_dropped", 0),
+                        },
+                        detail=(
+                            f"off_date_dropped={probe.get('off_date_dropped')} "
+                            f"gaps={len(lba.last_gaps())}"
+                        )[:500],
+                    )
+                )
         elif league is League.ISRAEL_PREMIER_LEAGUE:
             games = israel_ibl.discover_games(
                 _iso(self.config.date_yyyymmdd),
@@ -851,7 +898,7 @@ class Pipeline:
                 # a scraped read evidence only if its URL, size and digest are
                 # retained. Stored as provider health, never as a result.
                 now = self._now_iso()
-                self.store.upsert_provider_health(
+                self._record_health(
                     ProviderHealth(
                         provider="kbl",
                         league=self.config.league_enum,
@@ -887,14 +934,19 @@ class Pipeline:
             read_receipt = bool(probe)
             if probe:
                 now = self._now_iso()
-                self.store.upsert_provider_health(
+                self._record_health(
                     ProviderHealth(
                         provider="acb",
                         league=self.config.league_enum,
                         last_attempt_utc=now,
                         last_success_utc=now if games else None,
                         state=CoverageState.OK if games else CoverageState.MISSING,
-                        coverage={"games": len(games), "rows": probe.get("rows", 0)},
+                        coverage={
+                            "games": len(games),
+                            "rows": probe.get("rows", 0),
+                            "off_date_dropped": probe.get("off_date_dropped", 0),
+                            "unparsable_date": probe.get("unparsable_date", 0),
+                        },
                         detail=(
                             f"url={probe.get('url')} bytes={probe.get('bytes')} "
                             f"sha256={probe.get('sha256')} rounds={probe.get('rounds')}"
@@ -923,7 +975,7 @@ class Pipeline:
             read_receipt = bool(probe)
             if probe:
                 now = self._now_iso()
-                self.store.upsert_provider_health(
+                self._record_health(
                     ProviderHealth(
                         provider="tbf",
                         league=self.config.league_enum,
@@ -959,7 +1011,7 @@ class Pipeline:
             read_receipt = bool(probe)
             if probe:
                 now = self._now_iso()
-                self.store.upsert_provider_health(
+                self._record_health(
                     ProviderHealth(
                         provider="bal",
                         league=self.config.league_enum,
@@ -970,6 +1022,7 @@ class Pipeline:
                             "games": len(games),
                             "game_dates": probe.get("game_dates", 0),
                             "rows": probe.get("rows", 0),
+                            "off_date_dropped": probe.get("off_date_dropped", 0),
                         },
                         detail=(
                             f"url={probe.get('url')} bytes={probe.get('bytes')} "
@@ -998,7 +1051,7 @@ class Pipeline:
             read_receipt = bool(probe)
             if probe:
                 now = self._now_iso()
-                self.store.upsert_provider_health(
+                self._record_health(
                     ProviderHealth(
                         provider="bcl",
                         league=self.config.league_enum,
@@ -1035,7 +1088,7 @@ class Pipeline:
             read_receipt = bool(probe)
             if probe:
                 now = self._now_iso()
-                self.store.upsert_provider_health(
+                self._record_health(
                     ProviderHealth(
                         provider="bleague",
                         league=self.config.league_enum,
@@ -1942,7 +1995,7 @@ class Pipeline:
         self, season: int, event_index: int, index_year: int, event_count: int
     ) -> None:
         now = self._now_iso()
-        self.store.upsert_provider_health(
+        self._record_health(
             ProviderHealth(
                 provider="espn-history",
                 league=self.config.league_enum,
@@ -2176,7 +2229,7 @@ class Pipeline:
     def _record_history_cursor(self, provider: str, coverage: Dict[str, Any]) -> None:
         """Persist a durable non-ESPN history cursor in provider_health."""
         now = self._now_iso()
-        self.store.upsert_provider_health(
+        self._record_health(
             ProviderHealth(
                 provider=provider,
                 league=self.config.league_enum,
@@ -2222,7 +2275,7 @@ class Pipeline:
             "last_call_ok": bool(ok),
         }
         try:
-            self.store.upsert_provider_health(
+            self._record_health(
                 ProviderHealth(
                     provider="predixsport",
                     league=self.config.league_enum,
@@ -3929,6 +3982,7 @@ class Pipeline:
             frozen_predictions_used=extra.get("frozen_predictions_used", 0),
             predictions_selected=extra.get("predictions_selected", {}),
             gaps=[gap.__dict__.copy() for gap in self.gaps],
+            provider_health=[dict(row) for row in self._health_written],
             quota=self.quota,
         )
         report_dict = report.to_dict()
@@ -3937,6 +3991,18 @@ class Pipeline:
             "InMemoryStore": "in_memory_ephemeral",
         }.get(type(self.store).__name__, type(self.store).__name__)
         report_dict["acquisition"] = self.acquisition.telemetry()
+        # ``network_requests`` counts only the injected ``fetch``. Lanes that
+        # hand the adapter ``None`` read through their own HttpClient, so that
+        # number can be 0 while pages are being fetched. Report both meters.
+        transport = transport_meter()
+        report_dict["acquisition"].update(
+            {
+                "meter": "network_requests counts injected fetch; transport_counts HttpClient",
+                "transport_attempts": transport["attempts"],
+                "transport_responses": transport["responses"],
+                "transport_errors": transport["errors"],
+            }
+        )
         report_dict["persistence"] = {
             "kind": store_kind,
             "write_enabled": bool(getattr(self.store, "persist", False)),
