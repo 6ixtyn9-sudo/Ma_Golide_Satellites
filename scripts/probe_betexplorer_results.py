@@ -105,8 +105,12 @@ _GATE_MARKERS = (
 _GATE_WRITE_RES = (
     re.compile(r"document\.cookie\s*=\s*[\"'`](?P<value>[^\"'`]+)"),
     re.compile(r"(?:local|session)Storage\.setItem\(\s*[\"'](?P<key>[^\"']+)[\"']"),
-    re.compile(r"[\"'](?P<key>[A-Za-z0-9_-]*age[A-Za-z0-9_-]*)[\"']"),
 )
+
+#: Identifiers that merely contain "age" -- a CSS class, an element id, a vendor
+#: name. Reported separately from the writes because they are not a way in, and a
+#: list that mixes the two invites replaying a class name.
+_GATE_MENTION_RE = re.compile(r"[\"'](?P<key>[A-Za-z0-9_-]*age[A-Za-z0-9_-]*)[\"']")
 
 
 def gate_hints(body: str) -> list[str]:
@@ -114,7 +118,8 @@ def gate_hints(body: str) -> list[str]:
 
     A gate is passed by reproducing what it records, and guessing the name is how
     a project ends up arguing with a host. These are read from the page's own
-    script, in document order.
+    script, in document order: only cookie values and storage keys, because those
+    are the only things that are writes.
     """
 
     hints: list[str] = []
@@ -124,6 +129,17 @@ def gate_hints(body: str) -> list[str]:
             if value and value not in hints:
                 hints.append(value)
     return hints[:12]
+
+
+def gate_mentions(body: str) -> list[str]:
+    """Names that look gate-shaped but record nothing -- context, not a way in."""
+
+    mentions: list[str] = []
+    for match in _GATE_MENTION_RE.finditer(body or ""):
+        value = match.group("key").strip()
+        if value and value not in mentions:
+            mentions.append(value)
+    return mentions[:12]
 
 
 _COOKIE_WRITE_RE = re.compile(
@@ -654,7 +670,14 @@ def capture(
 
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__.splitlines()[0])
-    parser.add_argument("--league", required=True, choices=sorted(FIXTURES_URLS))
+    parser.add_argument(
+        "--league",
+        choices=sorted(FIXTURES_URLS),
+        help=(
+            "lane to probe; required for anything that fetches or replays a league, "
+            "and not needed for --gate-hints, which reads a saved file"
+        ),
+    )
     parser.add_argument("--max", type=int, default=6, help="match pages to capture (hard cap 12)")
     parser.add_argument("--date", help="only rows tipping on/before this YYYY-MM-DD")
     parser.add_argument("--out", default="results_probe", help="directory for saved bodies")
@@ -728,6 +751,8 @@ def main(argv: list[str] | None = None) -> int:
                     "path": args.gate_hints,
                     "gate": gate_reason(body),
                     "hints": gate_hints(body),
+                    "mentions": gate_mentions(body),
+                    "replayable": bool(gate_cookies(body)),
                     "age_gate_authorisation": AGE_GATE_AUTHORISATION,
                 },
                 indent=2,
@@ -735,6 +760,12 @@ def main(argv: list[str] | None = None) -> int:
             )
         )
         return 0 if gate_hints(body) else 1
+
+    if args.league is None:
+        parser.error(
+            "--league is required to fetch or replay a league; only --gate-hints "
+            "reads a saved page and needs no lane"
+        )
 
     if args.match:
         from ingestion.providers.betexplorer import _text_fetch
