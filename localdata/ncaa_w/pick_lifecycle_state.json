@@ -33,8 +33,8 @@
       "logical_picks": 132
     },
     "2026-11-24": {
-      "frozen_fixtures": 7,
-      "logical_picks": 211
+      "frozen_fixtures": 9,
+      "logical_picks": 219
     }
   },
   "frozen_by_date": {
@@ -39418,6 +39418,147 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-24"
       },
+      "401918586": {
+        "decision_cutoff_utc": "2026-11-24T16:00:00Z",
+        "frozen_at": "2026-11-24T16:04:58Z",
+        "game_id": "401918586",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Wright State Raiders",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.659276,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 412,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "8ade4c69cbcb54dd8bc47ff1be28054d46e7d93a1a8373d7f0ff759dbc8b61ca",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "8694128b6d080e67fcd5",
+            "game_id": "401918586",
+            "grade_status": "pending",
+            "home": "Bethune-Cookman Wildcats",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "8694128b6d080e67fcd5",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.74,
+            "role": null,
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Wright State Raiders",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.527374,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 236,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "4ba842859b568aa6f7b1999cd013965fc66905230e6b897e3b734f721977eb60",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e0e7973ccffbbc5f705c",
+            "game_id": "401918586",
+            "grade_status": "pending",
+            "home": "Bethune-Cookman Wildcats",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "e0e7973ccffbbc5f705c",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-24T15:41:28Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.5648,
+            "role": null,
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Wright State Raiders",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.682808,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 408,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "96905e66ab279683c0d1725fb78e4974feaa56c8cbcee42cd8216db82a9f7d6d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6747c2bba8fc92d911c2",
+            "game_id": "401918586",
+            "grade_status": "pending",
+            "home": "Bethune-Cookman Wildcats",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6747c2bba8fc92d911c2",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.74,
+            "role": null,
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-24T18:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-24"
+      },
       "401918727": {
         "decision_cutoff_utc": "2026-11-24T15:00:00Z",
         "frozen_at": "2026-11-24T15:16:48Z",
@@ -39835,6 +39976,493 @@
           }
         ],
         "scheduled_utc": "2026-11-24T16:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-24"
+      },
+      "401921022": {
+        "decision_cutoff_utc": "2026-11-24T16:00:00Z",
+        "frozen_at": "2026-11-24T16:04:58Z",
+        "game_id": "401921022",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Davidson Wildcats",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.839276,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 412,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "146dfbceafe09b06dee894716631840bb6d8124e1301b620218459cd7a79c29e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "007de4c6f034428dd0f1",
+            "game_id": "401921022",
+            "grade_status": "pending",
+            "home": "Notre Dame Fighting Irish",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "007de4c6f034428dd0f1",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.92,
+            "role": null,
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Davidson Wildcats",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921022",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T15:41:25Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.01,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.892808,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 408,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "3c03d044d43319d2ca10ccd3b131bd2c7a936ef5a0c77d467c7dc798501fbb31",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5d0761930966fa5e925b",
+            "game_id": "401921022",
+            "grade_status": "pending",
+            "home": "Notre Dame Fighting Irish",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "5d0761930966fa5e925b",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.95,
+            "role": null,
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Davidson Wildcats",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921022",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T15:41:25Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.01,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.936774,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 236,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "874e57300a5014fa6dde814a8ef675ed98cc9cf0251e99cd0b87b3a8d70b37db",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "95b4c642f3985575844b",
+            "game_id": "401921022",
+            "grade_status": "pending",
+            "home": "Notre Dame Fighting Irish",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.018574,
+              "historical_pick_count": 7,
+              "individual_odds_band": "1.00-<1.20",
+              "losses": 0,
+              "market": "moneyline",
+              "observed_roi": 0.0075,
+              "period": "full_game",
+              "probability_band": "0.90-1.00",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.007733,
+              "wins": 7
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "95b4c642f3985575844b",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-24T15:41:28Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.9742,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Davidson Wildcats",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921022",
+              "line": -25.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-24T15:41:25Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.442373,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "cf32402576e446cd31725ad5dd6bddda5472e595b5b7ef3b500cee2934d10b2d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7688210554de052f23b8",
+            "game_id": "401921022",
+            "grade_status": "pending",
+            "home": "Notre Dame Fighting Irish",
+            "league": "NCAA_W",
+            "line": -25.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "7688210554de052f23b8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Davidson Wildcats",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921022",
+              "line": -19.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-24T12:41:46Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.402373,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "84d14aea64fad5563723f82846b53fa6c26534bfb2b2d9e6bfefa935057fae50",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e331d0938ac7e2e1d4f0",
+            "game_id": "401921022",
+            "grade_status": "pending",
+            "home": "Notre Dame Fighting Irish",
+            "league": "NCAA_W",
+            "line": -19.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "e331d0938ac7e2e1d4f0",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Davidson Wildcats",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921022",
+              "line": -22.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-24T14:41:14Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.412373,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "6e88030018e9fff6877a49385efc8230251b65c57b35bfd9b12d266bb5276f76",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "fb5a160eb71fec45be0f",
+            "game_id": "401921022",
+            "grade_status": "pending",
+            "home": "Notre Dame Fighting Irish",
+            "league": "NCAA_W",
+            "line": -22.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "fb5a160eb71fec45be0f",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Davidson Wildcats",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921022",
+              "line": -19.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-24T12:41:46Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.423,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 30,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "83205251ed76599b38bdba5acdd627604a76381dc20ad141168c32f645264b08",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "43567b9e36552677e274",
+            "game_id": "401921022",
+            "grade_status": "pending",
+            "home": "Notre Dame Fighting Irish",
+            "league": "NCAA_W",
+            "line": -19.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "43567b9e36552677e274",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Davidson Wildcats",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401921022",
+              "line": 140.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-24T15:41:25Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.564211,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "70c4e3b5c6af03f3036fc9709c5bbeff68ff7a965c87e5e0e2b0554ec8c80f40",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5baaf4e9b605fd294a8d",
+            "game_id": "401921022",
+            "grade_status": "pending",
+            "home": "Notre Dame Fighting Irish",
+            "league": "NCAA_W",
+            "line": 140.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.063437,
+              "historical_pick_count": 45,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 20,
+              "market": "total",
+              "observed_roi": 0.059148,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.076078,
+              "wins": 25
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "5baaf4e9b605fd294a8d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-24T18:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-24"
       },
@@ -40377,6 +41005,14 @@
     [
       "401929239",
       "2026-11-24T17:00:00Z"
+    ],
+    [
+      "401918586",
+      "2026-11-24T18:00:00Z"
+    ],
+    [
+      "401921022",
+      "2026-11-24T18:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"

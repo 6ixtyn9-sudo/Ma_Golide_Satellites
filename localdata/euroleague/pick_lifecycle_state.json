@@ -21,7 +21,7 @@
       "logical_picks": 0
     },
     "2026-11-24": {
-      "frozen_fixtures": 1,
+      "frozen_fixtures": 2,
       "logical_picks": 48
     }
   },
@@ -1454,6 +1454,463 @@
       }
     },
     "2026-11-24": {
+      "E2026-131": {
+        "decision_cutoff_utc": "2026-11-24T16:00:00Z",
+        "frozen_at": "2026-11-24T16:06:52Z",
+        "game_id": "E2026-131",
+        "league": "EUROLEAGUE",
+        "rows": [
+          {
+            "away": "Virtus Bologna",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.378246,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "71a534af4efb1949ac2320417bf96769b98eda86bf81b0b597d74e1616ce300e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "ba647aea90848aa4cf35",
+            "game_id": "E2026-131",
+            "grade_status": "pending",
+            "home": "Crvena Zvezda Meridianbet Belgrade",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "ba647aea90848aa4cf35",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.33,
+            "role": null,
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "Q1"
+          },
+          {
+            "away": "Virtus Bologna",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.698644,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "f354429d39fb7d260c94394221fca72225e4e7eb7c067757615c71fc9242f4c2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "548cd174cdf5217505f0",
+            "game_id": "E2026-131",
+            "grade_status": "pending",
+            "home": "Crvena Zvezda Meridianbet Belgrade",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "548cd174cdf5217505f0",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.66,
+            "role": null,
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Virtus Bologna",
+            "book": {
+              "book": "BetMGM.us",
+              "frozen": false,
+              "game_id": "E2026-131",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.3,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.62,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "0bfeb3a1aac4839bdd72a632e3737dc1101c22badf2ccd058c3988b759f7be8b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0228bc667884c2a34bb0",
+            "game_id": "E2026-131",
+            "grade_status": "pending",
+            "home": "Crvena Zvezda Meridianbet Belgrade",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "0228bc667884c2a34bb0",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-24T15:39:51Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.62,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Virtus Bologna",
+            "book": {
+              "book": "bet365.us",
+              "frozen": false,
+              "game_id": "E2026-131",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.21,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.649474,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "48fd08e2ebc709d7a9f96be447cf8b07c47af1ce38a007f29ad62ed7ce754244",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "2760dae54ab645429970",
+            "game_id": "E2026-131",
+            "grade_status": "pending",
+            "home": "Crvena Zvezda Meridianbet Belgrade",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "2760dae54ab645429970",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.62,
+            "role": null,
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Virtus Bologna",
+            "book": {
+              "book": "BetMGM.us",
+              "frozen": false,
+              "game_id": "E2026-131",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.3,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.649474,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "6cb078a6287d0c1b2058dab2c5af0657e103c49fad2a79ebc6b86aa5e8f897ab",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6ae3c2af3c54aa443a49",
+            "game_id": "E2026-131",
+            "grade_status": "pending",
+            "home": "Crvena Zvezda Meridianbet Belgrade",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6ae3c2af3c54aa443a49",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.62,
+            "role": null,
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Virtus Bologna",
+            "book": {
+              "book": "Stake.com",
+              "frozen": false,
+              "game_id": "E2026-131",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.25,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.649474,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "26e6e26d5b179cbba4ad9cec267b2375bb666f3fe0508491e22db87d77093ae0",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a4095738d1f096a68fac",
+            "game_id": "E2026-131",
+            "grade_status": "pending",
+            "home": "Crvena Zvezda Meridianbet Belgrade",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "a4095738d1f096a68fac",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.62,
+            "role": null,
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Virtus Bologna",
+            "book": {
+              "book": "bet365.us",
+              "frozen": false,
+              "game_id": "E2026-131",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.21,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.62,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "4c493f8d04ef589c0e0511d938ced063d63226eed5a49df626634eb952ee326f",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "afcdd6a806726a0f8d93",
+            "game_id": "E2026-131",
+            "grade_status": "pending",
+            "home": "Crvena Zvezda Meridianbet Belgrade",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "afcdd6a806726a0f8d93",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-24T15:39:51Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.62,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Virtus Bologna",
+            "book": {
+              "book": "Stake.com",
+              "frozen": false,
+              "game_id": "E2026-131",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.25,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.62,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "f5e1a03284e69372b81f004ae560eb7a4471e7edddf48dd372efdc88c497d104",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b123352fd6cd5c627fa5",
+            "game_id": "E2026-131",
+            "grade_status": "pending",
+            "home": "Crvena Zvezda Meridianbet Belgrade",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "b123352fd6cd5c627fa5",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-24T15:39:51Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.62,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-24T18:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-24T18:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-24"
+      },
       "E2026-132": {
         "decision_cutoff_utc": "2026-11-24T15:00:00Z",
         "frozen_at": "2026-11-24T15:06:31Z",
@@ -1923,6 +2380,10 @@
     [
       "E2026-132",
       "2026-11-24T17:00:00Z"
+    ],
+    [
+      "E2026-131",
+      "2026-11-24T18:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
