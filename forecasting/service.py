@@ -146,6 +146,93 @@ class MarketForecastService:
         predictions = self._predictions(game, as_of_utc=as_of_utc, historical=historical)
         return predictions[0] if predictions else (None, False)
 
+    #: Provider name carried by predictions this service derives from stored
+    #: finals. It is deliberately not a network provider: nothing is fetched.
+    HISTORY_MODEL_PROVIDER = "history_model"
+
+    def history_prediction(
+        self, game: Game, *, as_of_utc: str
+    ) -> tuple[Optional[Prediction], Optional[str]]:
+        """One empirical full-game moneyline from this league's stored finals.
+
+        Returns ``(prediction, None)`` on success and ``(None, reason)`` when the
+        model will not answer. The reason is a tag with the numbers behind it,
+        never an empty dict, so a lane that cannot predict says *which*
+        precondition is missing. No credential and no network call is involved.
+
+        The candidate is complete by ``is_complete`` (probabilities, both
+        expected scores and the total), because the model's expected margin and
+        total are split into scores arithmetically rather than imported from a
+        provider feed. It is a model expectation, never a bookmaker line.
+        """
+
+        games = self.store.list_games(league=self.league)
+        finals = [
+            candidate
+            for candidate in games
+            if candidate.actual is not None and candidate.actual.reconciles()[0]
+        ]
+        if not finals:
+            return None, "no_reconciled_finals_in_store (finals_in_store=0)"
+
+        history = self.model.available_history(
+            games, scheduled_utc=game.scheduled_utc, as_of_utc=as_of_utc
+        )
+        if len(history) == 0:
+            return None, (
+                "no_history_before_tip "
+                f"(finals_in_store={len(finals)}, available_before_tip=0)"
+            )
+        distribution = self.model.distribution(game, history, Period.FULL_GAME)
+        if distribution is None:
+            return None, (
+                "model_declined_insufficient_history "
+                f"(available_before_tip={len(history)}, "
+                f"min_history_games={self.forecast_config.min_history_games}, "
+                f"min_residual_games={self.forecast_config.min_residual_games})"
+            )
+        forecasts = self.model.period_winner(game, history, (), {}, period=Period.FULL_GAME)
+        if not forecasts:
+            return None, "model_declined_symmetric_probabilities"
+        forecast = forecasts[0]
+        probabilities = dict(forecast.alternative_probabilities or {})
+        prob_home = probabilities.get("home")
+        prob_away = probabilities.get("away")
+        margin = forecast.expected_margin
+        total = forecast.expected_total
+        if prob_home is None or prob_away is None or margin is None or total is None:
+            return None, "model_returned_an_incomplete_bundle"
+        return (
+            Prediction(
+                game_id=game.game_id,
+                provider=self.HISTORY_MODEL_PROVIDER,
+                observed_utc=as_of_utc,
+                model=MODEL_VERSION,
+                model_version=forecast.calibration_version,
+                produced_by="empirical_walk_forward_history",
+                prob_home=float(prob_home),
+                prob_away=float(prob_away),
+                expected_home_score=(total + margin) / 2.0,
+                expected_away_score=(total - margin) / 2.0,
+                expected_total=float(total),
+                expected_margin=float(margin),
+                auxiliary_metrics={
+                    "training_games": forecast.training_games,
+                    "residual_games": forecast.residual_games,
+                    "model_selection": forecast.selection,
+                    "evidence": "stored_reconciled_finals",
+                },
+                pre_tip=True,
+            ),
+            None,
+        )
+
+    def pre_tip_prediction(self, game: Game, *, as_of_utc: str) -> Optional[Prediction]:
+        """``history_prediction`` reduced to the prediction, for callers that
+        only need the candidate. Use ``history_prediction`` to keep the reason."""
+
+        return self.history_prediction(game, as_of_utc=as_of_utc)[0]
+
     def _books(self, game: Game, *, as_of_utc: str, historical: bool) -> List[BookSnapshot]:
         tip = parse_utc(game.scheduled_utc)
         as_of = parse_utc(as_of_utc)

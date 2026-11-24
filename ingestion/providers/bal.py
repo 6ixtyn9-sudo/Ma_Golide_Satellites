@@ -259,15 +259,30 @@ def discover_games(date_iso: Optional[str], fetch: Optional[FetchFn] = None) -> 
     )
 
     games: List[Game] = []
+    # Every row the date filter removes is counted under its own reason. The
+    # old bare ``continue`` sat upstream of every counter, so run 45250804751
+    # could report ``rows: 42`` beside ``games: 0`` and ``off_date_dropped: 0``
+    # with nothing in between to explain the difference.
+    off_date_dropped = 0
+    missing_stamp_dropped = 0
+    non_dict_rows = 0
     for group in groups:
         season_year = _int(group.get("seasonYear"))
         for row in group.get("games") or []:
             if not isinstance(row, dict):
+                non_dict_rows += 1
                 continue
             game_id = str(row.get("gameId") or "") or None
             stamp = row.get("gameDateTimeUTC")
-            if date_iso and (not isinstance(stamp, str) or not stamp.startswith(date_iso)):
-                continue
+            if date_iso:
+                if not isinstance(stamp, str) or not stamp:
+                    # A row with no parseable stamp cannot be placed on a day;
+                    # dropping it is a decision, so it is counted as one.
+                    missing_stamp_dropped += 1
+                    continue
+                if not stamp.startswith(date_iso):
+                    off_date_dropped += 1
+                    continue
             try:
                 game = game_from_row(row, season_year)
             except (IdentityError, ValueError) as exc:
@@ -277,7 +292,14 @@ def discover_games(date_iso: Optional[str], fetch: Optional[FetchFn] = None) -> 
                 _record_gap(game_id, "tip does not fall on the requested UTC date")
                 continue
             games.append(game)
-    _last_probe["games"] = len(games)
+    _last_probe.update(
+        {
+            "games": len(games),
+            "off_date_dropped": off_date_dropped,
+            "missing_stamp_dropped": missing_stamp_dropped,
+            "non_dict_rows": non_dict_rows,
+        }
+    )
     return games
 
 
