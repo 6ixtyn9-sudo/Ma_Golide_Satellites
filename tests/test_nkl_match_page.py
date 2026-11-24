@@ -136,3 +136,32 @@ def test_the_receipt_names_where_the_final_came_from():
 
     assert page.to_dict()["final_source"].startswith("class=nkl-match-score")
     assert "83" in page.to_dict()["final_source"]
+
+
+def test_an_unplayed_fixture_is_not_a_parse_failure():
+    """The schedule runs ahead of the scores. A page with no result table means
+    the game has not been played, and saying 'parse failed' every night would
+    bury a real markup change in that noise."""
+
+    upcoming = _PAGE.replace(
+        '<div\nclass=nkl-card-box><table\nclass=nkl-quarters-table>', "<div"
+    )
+    page = nkl.parse_match_page(upcoming)
+
+    assert page.state == "no_result"
+    assert page.played_on.isoformat() == "2026-10-15"  # the date cell still reads
+
+
+def test_a_played_game_is_settled_and_a_five_column_one_is_incomplete():
+    played = nkl.parse_match_page(
+        _PAGE.replace("</div></div>", "</div></div><div class=nkl-match-score>83 : 88</div>", 1)
+    )
+    overtime = nkl.parse_match_page(
+        _PAGE.replace("<th>Q4</th>", "<th>Q4</th><th>OT1</th>").replace(
+            "</div></div>", "</div></div><div class=nkl-match-score>83 : 88</div>", 1
+        )
+    )
+
+    assert played.state == "settled"
+    assert overtime.state == "incomplete"
+    assert overtime.to_actual_result() is None

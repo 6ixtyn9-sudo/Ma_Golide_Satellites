@@ -82,6 +82,10 @@ class MatchPage:
     away_quarters: List[Optional[float]] = field(default_factory=list)
     home_final: Optional[float] = None
     away_final: Optional[float] = None
+    #: False when the head is anything but exactly Q1..Q4.  Four values read from
+    #: a five-column table would otherwise look complete while having dropped a
+    #: period, which is the one failure reconciles() must not be able to miss.
+    headers_ok: bool = False
     #: Which element stated the final, and the text around it.  A final that is
     #: really a summary row echoing the quarter sum would make reconciles() true
     #: by construction, so the claim has to be auditable in the receipt.
@@ -92,12 +96,29 @@ class MatchPage:
     @property
     def complete(self) -> bool:
         return (
-            len(self.home_quarters) == 4
+            self.headers_ok
+            and len(self.home_quarters) == 4
             and len(self.away_quarters) == 4
             and all(v is not None for v in self.home_quarters + self.away_quarters)
             and self.home_final is not None
             and self.away_final is not None
         )
+
+    @property
+    def state(self) -> str:
+        """What the page is, which is not the same as whether it parsed.
+
+        A fixture page with no result table is not a parse failure -- the game
+        has not been played.  Collapsing the two would let a lane report a
+        reader bug every night the schedule runs ahead of the scores, and would
+        hide a genuine markup change among the noise.
+        """
+
+        if not self.home_quarters or not self.away_quarters:
+            return "no_result"
+        if self.to_actual_result() is not None:
+            return "settled"
+        return "incomplete"
 
     def quarter_sums(self) -> Tuple[float, float]:
         return (
@@ -141,6 +162,7 @@ class MatchPage:
             "away_final": self.away_final,
             "final_source": self.final_source,
             "quarter_sums": [home_sum, away_sum],
+            "state": self.state,
             "settleable": self.to_actual_result() is not None,
             "counts": dict(self.counts),
             "reasons": list(self.reasons),
@@ -152,12 +174,15 @@ def _first_group(pattern: re.Pattern[str], text: str, group: str) -> Optional[st
     return None if match is None else match.group(group)
 
 
-def _read_quarters(table_body: str) -> Tuple[List[Optional[float]], List[Optional[float]], list]:
+def _read_quarters(
+    table_body: str,
+) -> Tuple[List[Optional[float]], List[Optional[float]], list, bool]:
     """Quarter headers and the two integer rows, refused unless exactly four."""
 
     headers = [m.group("text").strip() for m in _TH_RE.finditer(table_body)]
     problems: list = []
-    if headers[1:] != ["Q1", "Q2", "Q3", "Q4"]:
+    headers_ok = headers[1:] == ["Q1", "Q2", "Q3", "Q4"]
+    if not headers_ok:
         problems.append(f"quarter headers are {headers[1:] or 'none'}, not Q1..Q4")
 
     rows: List[List[Optional[float]]] = []
@@ -173,12 +198,12 @@ def _read_quarters(table_body: str) -> Tuple[List[Optional[float]], List[Optiona
 
     if len(rows) != 2:
         problems.append(f"expected two club rows, read {len(rows)}")
-        return [], [], problems
+        return [], [], problems, headers_ok
 
     home, away = rows
     if len(home) != 4 or len(away) != 4:
         problems.append(f"expected four quarters per club, read {len(home)} and {len(away)}")
-    return home, away, problems
+    return home, away, problems, headers_ok
 
 
 _CANDIDATE_RE = re.compile(r"\b\d{1,3}\s*[:\-–]\s*\d{1,3}\b")
@@ -226,10 +251,13 @@ def parse_match_page(html: str, url: str = "") -> MatchPage:
     table = _QUARTERS_TABLE_RE.search(text)
     home_quarters: List[Optional[float]] = []
     away_quarters: List[Optional[float]] = []
+    headers_ok = False
     if table is None:
         problems.append("no nkl-quarters-table in the page")
     else:
-        home_quarters, away_quarters, table_problems = _read_quarters(table.group("body"))
+        home_quarters, away_quarters, table_problems, headers_ok = _read_quarters(
+            table.group("body")
+        )
         problems.extend(table_problems)
 
     clubs = [m.group("slug") for m in _CLUB_RE.finditer(table.group("body") if table else "")]
@@ -284,6 +312,7 @@ def parse_match_page(html: str, url: str = "") -> MatchPage:
         home_final=home_final,
         away_final=away_final,
         final_source=final_source,
+        headers_ok=headers_ok,
         counts=counts,
         reasons=tuple(problems),
     )
