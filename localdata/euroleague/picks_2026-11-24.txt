@@ -1,6 +1,6 @@
 Ma Golide Picks — EUROLEAGUE 2026-11-24
 ========================================================================
-Generated at: 2026-11-24 21:10 SAST
+Generated at: 2026-11-24 22:22 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -13,6 +13,54 @@ ELIGIBLE CLEAN PICKS
 
 CAUTION PICKS
 ========================================================================
+  (none)
+
+PRIOR-HEAVY — THIN TEAM EVIDENCE (PAPER ONLY)
+========================================================================
+  (none)
+
+WATCHLIST — NO MATCHED ODDS
+========================================================================
+  (none)
+
+WATCHLIST — INSUFFICIENT CONTEXT
+========================================================================
+  (none)
+
+SKIPPED — INELIGIBLE
+========================================================================
+  (none)
+
+IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
+========================================================================
+  [team_history_empirical/team_history_empirical] Valencia Basket vs Panathinaikos AKTOR Athens · KO 2026-11-24 21:30 SAST
+      MONEYLINE H1 -> HOME · p=65.9% (raw 62.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T18:24:41Z
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
+      MONEYLINE H1 -> HOME · p=64.9% (raw 61.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] LDLC ASVEL Villeurbanne vs Armani Olimpia Milan · KO 2026-11-24 21:45 SAST
+      MONEYLINE H1 -> HOME · p=64.9% (raw 61.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T18:24:41Z
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] FC Barcelona vs Fenerbahce Tarfin Istanbul · KO 2026-11-24 22:00 SAST
+      MONEYLINE H1 -> HOME · p=62.9% (raw 59.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T18:24:41Z
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
+      MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.550 bet365.us
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
+      calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
+      MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.560 Stake.com
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
+      calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
+  [team_history_empirical/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
+      MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.600 BetMGM.us
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
+      calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] Valencia Basket vs Panathinaikos AKTOR Athens · KO 2026-11-24 21:30 SAST
       MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.850 BetMGM.us
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T18:24:41Z
@@ -26,6 +74,18 @@ CAUTION PICKS
       MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.720 bet365.us
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T18:24:41Z
       calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
+  [provider:history_model/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
+      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.550 bet365.us
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
+  [provider:history_model/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
+      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.600 BetMGM.us
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
+  [provider:history_model/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
+      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.560 Stake.com
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
   [provider:history_model/team_history_empirical] Valencia Basket vs Panathinaikos AKTOR Athens · KO 2026-11-24 21:30 SAST
       MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.720 bet365.us
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T18:24:41Z
@@ -88,28 +148,13 @@ CAUTION PICKS
       MONEYLINE full_game -> AWAY · p=51.0% (raw 51.0%) @1.680 bet365.us
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T18:24:41Z
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-
-PRIOR-HEAVY — THIN TEAM EVIDENCE (PAPER ONLY)
-========================================================================
-  (none)
-
-WATCHLIST — NO MATCHED ODDS
-========================================================================
-  [team_history_empirical/team_history_empirical] Valencia Basket vs Panathinaikos AKTOR Athens · KO 2026-11-24 21:30 SAST
-      MONEYLINE H1 -> HOME · p=65.9% (raw 62.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T18:24:41Z
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
-  [team_history_empirical/team_history_empirical] LDLC ASVEL Villeurbanne vs Armani Olimpia Milan · KO 2026-11-24 21:45 SAST
-      MONEYLINE H1 -> HOME · p=64.9% (raw 61.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T18:24:41Z
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
-  [team_history_empirical/team_history_empirical] FC Barcelona vs Fenerbahce Tarfin Istanbul · KO 2026-11-24 22:00 SAST
-      MONEYLINE H1 -> HOME · p=62.9% (raw 59.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T18:24:41Z
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] FC Barcelona vs Fenerbahce Tarfin Istanbul · KO 2026-11-24 22:00 SAST
       HIGHEST QUARTER full_game -> Q1 · p=33.8% (raw 29.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T18:24:41Z
+      calibration=provisional n=27 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
+      HIGHEST QUARTER full_game -> Q1 · p=33.8% (raw 29.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
       calibration=provisional n=27 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] LDLC ASVEL Villeurbanne vs Armani Olimpia Milan · KO 2026-11-24 21:45 SAST
       HIGHEST QUARTER full_game -> Q1 · p=33.8% (raw 29.0%) @n/a no matched book
@@ -120,87 +165,40 @@ WATCHLIST — NO MATCHED ODDS
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T18:24:41Z
       calibration=provisional n=27 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
 
-WATCHLIST — INSUFFICIENT CONTEXT
-========================================================================
-  (none)
-
-SKIPPED — INELIGIBLE
-========================================================================
-  (none)
-
-IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
+SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
   [team_history_empirical/team_history_empirical] Crvena Zvezda Meridianbet Belgrade vs Virtus Bologna · KO 2026-11-24 20:00 SAST
       MONEYLINE H1 -> HOME · p=69.9% (raw 66.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T16:06:52Z
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T16:06:52Z
       calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] Crvena Zvezda Meridianbet Belgrade vs Virtus Bologna · KO 2026-11-24 20:00 SAST
       MONEYLINE full_game -> HOME · p=64.9% (raw 62.0%) @1.210 bet365.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T16:06:52Z
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T16:06:52Z
       calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] Crvena Zvezda Meridianbet Belgrade vs Virtus Bologna · KO 2026-11-24 20:00 SAST
       MONEYLINE full_game -> HOME · p=64.9% (raw 62.0%) @1.300 BetMGM.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T16:06:52Z
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T16:06:52Z
       calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] Crvena Zvezda Meridianbet Belgrade vs Virtus Bologna · KO 2026-11-24 20:00 SAST
       MONEYLINE full_game -> HOME · p=64.9% (raw 62.0%) @1.250 Stake.com
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T16:06:52Z
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T16:06:52Z
       calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
-  [team_history_empirical/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
-      MONEYLINE H1 -> HOME · p=64.9% (raw 61.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
-  [provider:history_model/team_history_empirical] Crvena Zvezda Meridianbet Belgrade vs Virtus Bologna · KO 2026-11-24 20:00 SAST
-      MONEYLINE full_game -> HOME · p=62.0% (raw 62.0%) @1.300 BetMGM.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T16:06:52Z
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-  [provider:history_model/team_history_empirical] Crvena Zvezda Meridianbet Belgrade vs Virtus Bologna · KO 2026-11-24 20:00 SAST
-      MONEYLINE full_game -> HOME · p=62.0% (raw 62.0%) @1.210 bet365.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T16:06:52Z
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-  [provider:history_model/team_history_empirical] Crvena Zvezda Meridianbet Belgrade vs Virtus Bologna · KO 2026-11-24 20:00 SAST
-      MONEYLINE full_game -> HOME · p=62.0% (raw 62.0%) @1.250 Stake.com
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T16:06:52Z
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-  [team_history_empirical/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
-      MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.550 bet365.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
-      calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
-  [team_history_empirical/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
-      MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.560 Stake.com
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
-      calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
-  [team_history_empirical/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
-      MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.600 BetMGM.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
-      calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
-  [provider:history_model/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
-      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.550 bet365.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-  [provider:history_model/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
-      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.600 BetMGM.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-  [provider:history_model/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
-      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.560 Stake.com
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-  [team_history_empirical/team_history_empirical] Crvena Zvezda Meridianbet Belgrade vs Virtus Bologna · KO 2026-11-24 20:00 SAST
-      HIGHEST QUARTER full_game -> Q1 · p=37.8% (raw 33.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T16:06:52Z
-      calibration=provisional n=27 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
-      HIGHEST QUARTER full_game -> Q1 · p=33.8% (raw 29.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
-      calibration=provisional n=27 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
-
-SETTLED PICKS — ARCHIVE ONLY
-========================================================================
   [team_history_empirical/team_history_empirical] Besiktas Fuzul Istanbul vs Paris Basketball · KO 2026-11-24 19:00 SAST
       MONEYLINE H1 -> HOME · p=64.9% (raw 61.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T15:06:31Z
       calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [provider:history_model/team_history_empirical] Crvena Zvezda Meridianbet Belgrade vs Virtus Bologna · KO 2026-11-24 20:00 SAST
+      MONEYLINE full_game -> HOME · p=62.0% (raw 62.0%) @1.300 BetMGM.us
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T16:06:52Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
+  [provider:history_model/team_history_empirical] Crvena Zvezda Meridianbet Belgrade vs Virtus Bologna · KO 2026-11-24 20:00 SAST
+      MONEYLINE full_game -> HOME · p=62.0% (raw 62.0%) @1.210 bet365.us
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T16:06:52Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
+  [provider:history_model/team_history_empirical] Crvena Zvezda Meridianbet Belgrade vs Virtus Bologna · KO 2026-11-24 20:00 SAST
+      MONEYLINE full_game -> HOME · p=62.0% (raw 62.0%) @1.250 Stake.com
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T16:06:52Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
   [team_history_empirical/team_history_empirical] Besiktas Fuzul Istanbul vs Paris Basketball · KO 2026-11-24 19:00 SAST
       MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.790 bet365.us
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T15:06:31Z
@@ -225,14 +223,18 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.850 BetMGM.us
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T15:06:31Z
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
+  [team_history_empirical/team_history_empirical] Crvena Zvezda Meridianbet Belgrade vs Virtus Bologna · KO 2026-11-24 20:00 SAST
+      HIGHEST QUARTER full_game -> Q1 · p=37.8% (raw 33.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T16:06:52Z
+      calibration=provisional n=27 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Besiktas Fuzul Istanbul vs Paris Basketball · KO 2026-11-24 19:00 SAST
       HIGHEST QUARTER full_game -> Q1 · p=33.8% (raw 29.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T15:06:31Z
       calibration=provisional n=27 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
 
-Active summary: ELIGIBLE_CLEAN=0 CAUTION=18 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=6 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=0 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=16 SETTLED=8
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=32 SETTLED=16
 Logical picks shown: 48 · superseded observations: 0
 Total archived pick evidence rows: 48
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
