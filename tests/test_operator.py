@@ -2028,6 +2028,67 @@ def test_roi_band_history_loads_settled_single_picks_not_acca_performance(tmp_pa
     assert history[0].decimal_price == 1.8
 
 
+def test_one_selection_prints_once_however_many_books_quoted_it(tmp_path):
+    """Three books and two prediction surfaces are one bet, not six.
+
+    Measured on the frozen 2026-11-24 EuroLeague card: 48 evidence rows for 18
+    selections across 6 fixtures, because each of three books quoted the local
+    model's two surfaces (``team_history_empirical`` and the same estimate
+    re-entered as ``provider:history_model``) for one selection. The card is
+    what a reader counts as bets, and one settled loss read as six.
+    """
+
+    rows = []
+    for book_name, price in (
+        ("bet365.us", 1.55),
+        ("Stake.com", 1.56),
+        ("BetMGM.us", 1.60),
+    ):
+        for model in ("team_history_empirical", "provider:history_model"):
+            row = forecast(
+                1,
+                price=price,
+                eligible=False,
+                reasons=["insufficient_walk_forward_samples"],
+                calibration_n=27 if model == "team_history_empirical" else 0,
+            )
+            row["forecast_id"] = f"forecast-1-{book_name}-{model}"
+            row["model"] = model
+            row["book"]["book"] = book_name
+            rows.append(row)
+
+    result = publish(tmp_path, Store([game(1)]), report(rows))
+    text = Path(result["picks_text"]).read_text()
+
+    assert text.count("Home 1 vs Away 1") == 1
+    assert "collapsed_observations=6" in text
+    assert "books_quoted=3: BetMGM.us, Stake.com, bet365.us" in text
+    assert "surfaces=provider:history_model, team_history_empirical" in text
+    assert (
+        "Logical picks shown: 1 · superseded observations: 0 · "
+        "book/model rows collapsed: 5"
+    ) in text
+    # The surviving line is the calibrated observation of a real quote.
+    assert "p=62.0% (raw 60.0%) @1.600 BetMGM.us" in text
+
+
+def test_the_collapse_never_merges_two_sides_of_one_market(tmp_path):
+    """A model disagreeing with itself on side is two facts, not a duplicate."""
+
+    rows = []
+    for selection in ("home", "away"):
+        row = forecast(1, selection=selection, price=1.8, eligible=False)
+        row["forecast_id"] = f"forecast-1-moneyline-{selection}"
+        rows.append(row)
+
+    result = publish(tmp_path, Store([game(1)]), report(rows))
+    text = Path(result["picks_text"]).read_text()
+
+    assert "MONEYLINE full_game -> HOME" in text
+    assert "MONEYLINE full_game -> AWAY" in text
+    assert "collapsed_observations" not in text
+
+
 def test_repeated_observations_render_and_grade_as_one_logical_pick(tmp_path):
     original = forecast(
         1,

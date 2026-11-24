@@ -105,12 +105,28 @@ FIXTURES_URLS = {
     "LITHUANIA_NKL": BASE + "/lithuania/nkl/fixtures/",
     "AUSTRALIA_WNBL_W": BASE + "/australia/wnbl-women/fixtures/",
     "ISRAEL_LIGA_LEUMIT": BASE + "/israel/liga-leumit/fixtures/",
+    # 2026-11-24 additions, each slug read from the served page's own <h1>:
+    # "Eurocup 2026/2027" and "Euroleague Women 2026/2027".  Both lanes already
+    # have their own official schedule/result adapters, so this is a *price*
+    # route only: the table is read for its two-way quotes, never for a slate.
+    "EUROCUP": BASE + "/europe/eurocup/fixtures/",
+    "EUROLEAGUE_W": BASE + "/europe/euroleague-women/fixtures/",
 }
 #: ``BASKETBALL_AFRICA_LEAGUE`` is deliberately absent: its fixtures table serves
 #: ``No matches found`` for the whole season (verified 2026-11-23), so registering
 #: it would read as a healthy source that can never quote. Its RESULTS page does
 #: carry odds, but this adapter reads fixtures, so the lane stays unpriced by
 #: this provider rather than silently empty.
+#:
+#: ``NBA_G_LEAGUE`` is absent for the opposite reason, and it is not the slug:
+#: ``/usa/nba-g-league/fixtures/`` serves "NBA G League 2026/2027" and lists the
+#: whole slate. The competition simply has no market on this host. On
+#: 2026-11-24 the fixtures table showed an empty bookmaker count on every row --
+#: including games tipping that same day -- and the match page for Oklahoma City
+#: Blue vs Austin Toros Spurs (tip 24.11.2026 20:00) answered "Unfortunately
+#: there isn't any bookmaker offering odds for this match at the moment". A
+#: registered source that can only ever answer "no price" would make the lane
+#: look priced-and-empty instead of genuinely uncovered.
 SUPPORTED_LEAGUES = frozenset(FIXTURES_URLS)
 
 #: BetExplorer reports one representative price per market. It publishes the
@@ -360,9 +376,10 @@ def fetch_odds(
                     {"match_id": match_id, "slug": slug, "odds": odds}
                 ),
                 # BetExplorer's fixture-table value is explicitly an average
-                # quote.  It is retained for research/provenance but cannot
-                # become a named-book ticket price until source reuse and a
-                # named book contract are independently cleared.
+                # quote. Since operator decision 2026-11-22 that average may
+                # price a paper ticket, carrying this provenance -- it is still
+                # never a named-book quote, and every card line, receipt field
+                # and audit row says so through ``price_provenance_label``.
                 price_provenance=PriceProvenance.AGGREGATE_CONSENSUS,
                 source_permission=SourcePermission.UNRESOLVED,
                 operational_validation=OperationalValidation.PROBATION,

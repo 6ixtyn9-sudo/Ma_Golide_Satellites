@@ -196,8 +196,15 @@ verified index floors.
   live-captured EuroLeague schedule fixture (only competition identity is
   rewritten), which exercises reconciliation against real provider row shapes
   without claiming a EuroCup capture.
-- Pricing stays on the universal direct BetExplorer fallback; no EuroCup price
-  contract has been validated.
+- Pricing rides BetExplorer, on two routes (added 2026-11-24): the
+  competition's own fixtures table (`/basketball/europe/eurocup/fixtures/`, h1
+  "Eurocup 2026/2027") for the representative two-way average, and the universal
+  direct fallback for a named-book quote on any game it can match. The average is
+  `aggregate_consensus` and is reported as an average, never as a book's quote.
+  At verification the next round (8 Dec) was too far out to carry a market yet,
+  while settled EuroCup games showed quotes (1.19/4.23), so the route fills as
+  each round approaches — an empty card before then is an absence of market, not
+  a broken route.
 
 ### FIBA EuroLeague Women acquisition details (observations checked 2026-11-18)
 
@@ -248,9 +255,32 @@ redistribution rights, quotas, and key-rotation policy have not been reviewed.
 `teamA` is used as FIBA's schedule-side A/home orientation within this adapter,
 but neutral-site/all-round semantic confirmation remains outstanding; do not
 interpret this as independently verified venue-home proof. No independent
-pre-tip prediction provider or named-book market source has been validated for
-ELW. Its paper/operator lane is explicitly labelled **unpriced** and never
-makes price, value, or EV claims or inherits men’s EuroLeague pricing.
+pre-tip prediction provider has been validated for ELW, and no named-book feed
+is contracted for it; the lane never inherits men's EuroLeague pricing.
+
+**Pricing, checked 2026-11-24.** BetExplorer does cover the competition, and the
+lane now reads it on two routes: its own fixtures table
+(`/basketball/europe/euroleague-women/fixtures/`, h1 "Euroleague Women
+2026/2027") for the representative average, and the universal direct fallback
+for a per-book quote. The fixtures table showed real two-way odds for the round
+of 25.11 — Kibirkstis Vilnius W–Landes W 1.65/2.13, Crvena zvezda W–Schio W
+2.05/1.70, Flammes Carolo W–Valencia W 2.24/1.60 — and the match page carried
+named books (bet365.us 1.63/2.15, BetMGM.us 1.67/2.10). Two cautions survive:
+`1.00` is the site's "no market" placeholder (Galatasaray W–Mechelen W showed
+1.00/17.00), and site names differ from FIBA's in places (`Zaragoza W` vs
+`Casademont Zaragoza`, `Mechelen W` vs `Kangoeroes Mechelen`), so a row that
+fails ordered-name identity reports `no_exact_bookmaker_market` rather than a
+guessed match. Average quotes stay labelled `aggregate_consensus`.
+
+**Team identity.** The name gap is the reason the route alone changed nothing:
+`canonical_team_key("Landes W")` is `landesw`, while FIBA's own `officialName`
+is `Basket Landes` → `basketlandes`, so a real 1.65/2.13 was discarded as
+`no_exact_bookmaker_market`. Two pairs are now mapped in
+`DEFAULT_TEAM_ALIASES`, each with both sides read rather than inferred
+(`Landes W`→`Basket Landes`, `Zaragoza W`→`Casademont Zaragoza`, plus the
+`… W` spellings). The remaining fourteen first-stage clubs stay unmapped until
+someone reads both sides: a similarity guess here would attach one club's price
+to another club's game, which is worse than an unpriced card.
 
 ### CBA official data API — licensing and terms caveats
 
@@ -325,7 +355,7 @@ prices remain missing.
 | Provider | Implemented markets | Periods | League / key |
 | --- | --- | --- | --- |
 | ESPN scoreboard | Moneyline, totals, spreads when explicitly offered | Full game | NBA, WNBA, NCAA_M, NCAA_W, NBA G League; named-book observations are independently timestamped but relayed by ESPN, so registry policy preserves `unresolved` / `unverified` audit metadata. An exact current named-book quote can enter the paper lane only after the ordinary model, calibration, and ROI gates pass. |
-| BetExplorer aggregate (`betexplorer`) | Representative average two-way moneyline prices | Full game | EuroLeague and CBA are `LIVE_VERIFIED` from captured 2026-11-16 pages. ABA League uses the same route as a probationary aggregate research observation, separate from its `aba_liga` schedule/result adapter. Every aggregate adapter quote is `aggregate_consensus` with `unresolved` permission / `probation` validation, never a named-book ticket quote. |
+| BetExplorer aggregate (`betexplorer`) | Representative average two-way moneyline prices | Full game | EuroLeague and CBA are `LIVE_VERIFIED` from captured 2026-11-16 pages. ABA League, EuroLeague Women and EuroCup use the same route as probationary aggregate observations, separate from their own schedule/result adapters (the women's and EuroCup slugs were verified from the served pages' h1s on 2026-11-24). Every aggregate adapter quote is `aggregate_consensus` with `unresolved` permission / `probation` validation: since the 2026-11-22 operator decision it may price a paper leg, but it is never presented as a named-book quote. **NBA G League is deliberately not registered:** the competition has a page but no market on the host (every fixtures row carried an empty bookmaker count, and the 24.11 match page answered "there isn't any bookmaker offering odds for this match"), so registering it would only ever report "no price". |
 | BetExplorer direct (`betexplorer_direct`) | Response-labelled bookmaker H/A moneyline, O/U totals, and Asian Handicap spreads | Full game | **Named-book per-fixture depth remains unproven (probe 2026-11-22):** the league board and finished-fixture rows carry only *average* odds (`data-odd`), the comparison loads client-side, and the route the site's own bundle uses (`/match-odds/{event}/{page}/{tab}/bestOdds/`) answered **404 with an empty body** to a headerless client for every token order tried (two 429s during rapid probing; the 404 reproduced after backoff), while the match-content fragment returned a shell with an empty `#odds-all`. Our adapter's route shape is that same one, so an unauthorised price fails closed to *unpriced* — never to a guessed price. Universal fallback for canonical future basketball fixtures. It reads one dated basketball board then up to three exact comparison responses per strict ordered-team match: `ha` for the two-way H/A moneyline, `ou` for line-specific Over/Under prices, and `ah` for home-oriented spread prices. Each emitted price retains the response's bookmaker label, exact source line/side order, source-designated main line when present, and a capped URL/SHA-256 receipt. It is operator-authorised for this single-user project and marked `named_book` with `unresolved` permission / `probation` validation; no average, cross-book best price, relay, proxy, browser automation, login, or post-tip quote is used. |
 | The Odds API | `h2h`, totals, spreads | Routine acquisition: full game only | NBA, WNBA, NCAA_M, NCAA_W; a scheduled runner receives `THE_ODDS_API_KEY` only with a matching three-credit permit for date-bounded named-DraftKings collection. Australia NBL remains a documented but `probation` mapping and receives no automated permit pending credentialed region/bookmaker coverage. |
 

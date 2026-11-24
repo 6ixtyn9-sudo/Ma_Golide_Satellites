@@ -57,7 +57,119 @@ def test_bal_is_deliberately_unregistered_because_its_fixtures_table_is_empty():
     assert all(policy.provider != "betexplorer" for policy in spec.price_sources)
 
 
-def test_new_lanes_are_aggregate_and_research_only():
+def test_the_price_only_slugs_are_the_womens_and_eurocup_pages():
+    """Two lanes take prices from BetExplorer but their slate from elsewhere.
+
+    Verified 2026-11-24 against the served pages: the h1s answered
+    "Euroleague Women 2026/2027" and "Eurocup 2026/2027". These are read for
+    quotes only -- neither lane's schedule or results come from here.
+    """
+
+    assert betexplorer.FIXTURES_URLS["EUROLEAGUE_W"].endswith(
+        "/europe/euroleague-women/fixtures/"
+    )
+    assert betexplorer.FIXTURES_URLS["EUROCUP"].endswith("/europe/eurocup/fixtures/")
+
+
+def test_a_price_only_lane_keeps_its_own_schedule_and_results_source():
+    """Registering a price source must not quietly move the slate."""
+
+    for league, schedule in (
+        (League.EUROLEAGUE_W, "fiba_elw"),
+        (League.EUROCUP, "euroleague"),
+    ):
+        spec = league_spec(league)
+        assert spec.schedule_source == schedule
+        assert spec.results_source == schedule
+        assert any(p.provider == "betexplorer" for p in spec.price_sources)
+
+
+def test_a_womens_row_yields_an_aggregate_snapshot_on_the_womens_slug():
+    """The new price-only route reads its own page and labels what it read.
+
+    The row below is synthetic and only pins the wiring: which URL is fetched
+    for ``EUROLEAGUE_W``, that the ``W`` suffix survives into the canonical
+    names used for identity, and that the emitted price is
+    ``aggregate_consensus`` rather than a named book. The live values seen on
+    2026-11-24 (1.65/2.13 for Kibirkstis Vilnius W v Landes W) are recorded in
+    ``docs/PROVIDERS.md``.
+    """
+
+    from ingestion.models import PriceProvenance
+
+    fetched: list[str] = []
+
+    def text_fetch(url: str) -> str:
+        fetched.append(url)
+        return (
+            "<tr><td class=\"table-main__datetime\">25.11. 12:00</td>"
+            "<td><a href=\"/basketball/europe/euroleague-women/"
+            "kibirkstis-vilnius-landes/dEwy0DzS/\" class=\"in-match\">"
+            "<span>Kibirkstis Vilnius W</span> - <span>Landes W</span></a></td>"
+            "<td data-oid=\"a\" data-odd=\"1.65\"></td>"
+            "<td data-oid=\"b\" data-odd=\"2.13\"></td></tr>"
+        )
+
+    snapshots = betexplorer.fetch_odds(
+        "EUROLEAGUE_W",
+        "20261125",
+        now_utc="2026-11-24T18:39:00Z",
+        text_fetch=text_fetch,
+    )
+
+    assert fetched == ["https://www.betexplorer.com/basketball/europe/euroleague-women/fixtures/"]
+    assert len(snapshots) == 1
+    snapshot = snapshots[0]
+    assert snapshot.price_provenance is PriceProvenance.AGGREGATE_CONSENSUS
+    assert (snapshot.home_price_decimal, snapshot.away_price_decimal) == (1.65, 2.13)
+    # Names are stored through the alias table, which is what lets the snapshot
+    # join FIBA's canonical game: the site's "Landes W" is FIBA's "Basket Landes".
+    assert snapshot.home_name == "Kibirkstis Vilnius W"
+    assert snapshot.away_name == "Basket Landes"
+
+
+def test_verified_womens_alias_pairs_let_the_womens_price_join_happen():
+    """Both sides read, then mapped -- never a similarity score.
+
+    FIBA GDAP's ``officialName`` (captured 2026-11-18) is "Basket Landes" and
+    "Casademont Zaragoza"; the site writes "Landes W" and "Zaragoza W". Without
+    the alias rows those two prices could never join, whatever the route did.
+    """
+
+    from ingestion.identity import canonical_team_key
+
+    for site_name, fiba_name in (
+        ("Landes W", "Basket Landes"),
+        ("Basket Landes W", "Basket Landes"),
+        ("Zaragoza W", "Casademont Zaragoza"),
+        ("Casademont Zaragoza W", "Casademont Zaragoza"),
+    ):
+        assert canonical_team_key(site_name) == canonical_team_key(fiba_name)
+
+    # Pairs nobody has read both sides of stay unmatched on purpose: a guess
+    # here would attach one club's price to another club's game.
+    assert canonical_team_key("Mechelen W") != canonical_team_key("Kangoeroes Mechelen")
+    assert canonical_team_key("Schio W") != canonical_team_key("Famila Schio")
+
+
+def test_nba_g_league_stays_unregistered_because_the_host_has_no_market():
+    """The slug exists; the market does not.
+
+    ``/usa/nba-g-league/fixtures/`` serves "NBA G League 2026/2027" and lists the
+    slate, but on 2026-11-24 every row carried an empty bookmaker count -- even
+    games tipping that day -- and the match page answered "Unfortunately there
+    isn't any bookmaker offering odds for this match at the moment". Registering
+    it would produce a source that can only ever report "no price".
+    """
+
+    assert "NBA_G_LEAGUE" not in betexplorer.FIXTURES_URLS
+    spec = league_spec(League.NBA_G_LEAGUE)
+    assert all(policy.provider != "betexplorer" for policy in spec.price_sources)
+    # The only price route it does declare is ESPN's relayed named-book one.
+    assert [p.provider for p in spec.price_sources] == ["espn"]
+
+
+def test_new_lanes_are_aggregate_consensus_prices():
     """The fixtures table publishes the site average, never a named book."""
 
     from ingestion.models import PriceProvenance, SourcePermission
@@ -68,6 +180,8 @@ def test_new_lanes_are_aggregate_and_research_only():
         League.JAPAN_B_ONE,
         League.JAPAN_B_LEAGUE,
         League.BASKETBALL_CHAMPIONS_LEAGUE,
+        League.EUROLEAGUE_W,
+        League.EUROCUP,
     ):
         policy = [
             p for p in league_spec(league).price_sources if p.provider == "betexplorer"

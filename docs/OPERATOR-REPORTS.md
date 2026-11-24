@@ -232,6 +232,49 @@ back into frozen pick evidence. The root operator schema remains unchanged; the
 rolling JSON has a separately versioned nested `fade_audit` object for the
 prospective paper-only counterfactual described below.
 
+## One line per bet, one row per observation
+
+The ledger and the card answer different questions, and they no longer give the
+same answer to both.
+
+- The **ledger** keeps one row per observation: every named-book quote, every
+  aggregate quote, and every prediction surface, each independently auditable.
+  Nothing is deleted, because a settlement dispute turns on those rows.
+- The **card** prints one line per modelled selection — fixture, market, period,
+  line, and side — and reports the multiplicity on that line instead of
+  inflating the number of bets:
+
+```
+      MONEYLINE full_game -> HOME · p=64.9% (raw 62.0%) @1.300 BetMGM.us
+      collapsed_observations=6 · books_quoted=3: BetMGM.us, Stake.com, bet365.us · surfaces=provider:history_model, team_history_empirical
+```
+
+Measured on the frozen 2026-11-24 EuroLeague card: **48 evidence rows, 18
+selections, 6 fixtures.** Each selection was quoted by three books and by the
+local model twice — as `team_history_empirical` (calibrated, n=27) and as
+`provider:history_model`, which carries the *same* raw probability with
+calibration `n=0`. Printing both meant one settled loss read as six, and
+`Logical picks shown` counted 48.
+
+The surviving line is always one real observation, chosen by
+`_display_observation_rank`: named-book quote before aggregate, calibrated before
+uncalibrated, freshest quote before higher price, then a stable tie-break on
+`pick_id`. A stale 2.45 does not outrank a live 1.90, and nothing is synthesised
+by mixing one row's probability with another row's price.
+
+Two sides of one market are *not* merged: opposite selections stay separate
+rows, so a source disagreeing with itself about the side remains visible. The
+footer reports both counts:
+
+```
+Logical picks shown: 18 · superseded observations: 0 · book/model rows collapsed: 30
+Total archived pick evidence rows: 48
+```
+
+Tickets are unaffected. The acca builder already took at most one leg per
+fixture (`accas._best_leg_per_game`), so the duplication never reached a ticket,
+a stake, or the paper bank — it was a reporting and counting defect.
+
 ## Publication and freeze
 
 When `accas.paper_results` is present, the operator uses that paper-only

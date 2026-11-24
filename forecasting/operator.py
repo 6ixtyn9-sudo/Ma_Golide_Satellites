@@ -1087,6 +1087,104 @@ def _latest_evidence_utc(row: Dict[str, Any]) -> Optional[str]:
     return max(timestamps, key=parse_utc) if timestamps else None
 
 
+def _selection_pick_key(row: Dict[str, Any]) -> tuple:
+    """The bet a row expresses: fixture, market, period, line, and side.
+
+    Deliberately excludes ``model``. The local model reaches the card twice --
+    once as its own ``team_history_empirical`` surface and once as
+    ``provider:history_model`` -- carrying the *same* raw probability and
+    differing only in whether calibration was applied. Those are two
+    descriptions of one estimate, not two bets. Opposite selections stay
+    distinct, so a genuine disagreement between sources is still visible.
+    """
+
+    key = _market_pick_key(row)
+    return (*key[:5],)
+
+
+def _display_observation_rank(row: Dict[str, Any]) -> tuple:
+    """Order the observations of one selection for the single line that prints.
+
+    A named-book quote outranks an aggregate, a calibrated probability outranks
+    an uncalibrated one, and a higher price wins the remaining ties. Nothing is
+    synthesised: the line always prints one real evidence row.
+    """
+
+    tier = {
+        "NAMED_BOOKMAKER_PRICE": 3,
+        "AGGREGATE_CONSENSUS_PRICE": 2,
+        "MATCHED_BUT_SELECTED_PRICE_MISSING": 1,
+    }.get(str(row.get("price_evidence") or ""), 0)
+    calibration = row.get("calibration") or {}
+    n = calibration.get("n")
+    n = n if isinstance(n, int) and not isinstance(n, bool) else 0
+    book = row.get("book") or {}
+    price = book.get("selected_decimal_price")
+    price = (
+        float(price)
+        if isinstance(price, (int, float)) and not isinstance(price, bool)
+        else 0.0
+    )
+    # Freshest quote before the best price: a stale 2.45 is not a better bet
+    # than a live 1.90, and the card prints one price per selection.
+    return (tier, 1 if n > 0 else 0, n, _evidence_time(row), price, str(row.get("pick_id")))
+
+
+def _collapse_display_observations(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """One printed line per modelled selection, not per book and model surface.
+
+    The ledger keeps every row: a named-book quote, an aggregate quote, and each
+    prediction surface are independently auditable, and deleting them would
+    destroy the evidence a settlement dispute turns on. The card asks a
+    different question -- *what is the bet?* -- and answering it with one line
+    per observation made one fixture read as six picks and one settled loss read
+    as six losses. Measured on the 2026-11-24 EuroLeague card: 48 rows, 18
+    selections, 6 fixtures, because three books quoted each of two prediction
+    surfaces for the same estimate.
+
+    The surviving row is a real observation, chosen by
+    ``_display_observation_rank``; the multiplicity is reported on the row as
+    ``_display_collapse`` so the reader still sees how many quotes stood behind
+    the line.
+    """
+
+    groups: Dict[tuple, List[Dict[str, Any]]] = defaultdict(list)
+    for row in rows:
+        groups[_selection_pick_key(row)].append(row)
+    display: List[Dict[str, Any]] = []
+    for group in groups.values():
+        best = max(group, key=_display_observation_rank)
+        if len(group) == 1:
+            display.append(best)
+            continue
+        books = sorted(
+            {
+                _canonical_book_for_key((row.get("book") or {}).get("book"))
+                or str((row.get("book") or {}).get("provider") or "unattributed")
+                for row in group
+            }
+        )
+        surfaces = sorted({str(row.get("model") or "unknown") for row in group})
+        collapsed = dict(best)
+        collapsed["_display_collapse"] = {
+            "observations": len(group),
+            "books": books,
+            "surfaces": surfaces,
+        }
+        display.append(collapsed)
+    return sorted(
+        display,
+        key=lambda row: (
+            row["scheduled_utc"],
+            row["game_id"],
+            row["market"],
+            row["period"],
+            row["selection"],
+            str(row["pick_id"]),
+        ),
+    )
+
+
 def _latest_logical_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """Select displayable current observations without deleting raw evidence.
 
@@ -1351,10 +1449,13 @@ def _render_picks(
     timezone_name: str,
 ) -> str:
     logical_rows = _latest_logical_rows(rows)
+    # What the reader counts is bets, not evidence rows: one line per modelled
+    # selection, with the number of quotes behind it kept on the line.
+    display_rows = _collapse_display_observations(logical_rows)
     revision_counts = Counter(_logical_pick_key(row) for row in rows)
     generated = parse_utc(generated_utc)
-    settled = [row for row in logical_rows if row["grade_status"] in {"win", "loss", "push"}]
-    pending = [row for row in logical_rows if row["grade_status"] == "pending"]
+    settled = [row for row in display_rows if row["grade_status"] in {"win", "loss", "push"}]
+    pending = [row for row in display_rows if row["grade_status"] == "pending"]
     upcoming = [row for row in pending if parse_utc(row["scheduled_utc"]) > generated]
     started = [row for row in pending if parse_utc(row["scheduled_utc"]) <= generated]
 
@@ -1448,6 +1549,16 @@ def _render_picks(
             )
         elif row.get("paper_roi_band_eligible"):
             lines.append("      PAPER SINGLE · positive settled individual-pick ROI band")
+        collapse = row.get("_display_collapse")
+        if collapse:
+            books = collapse.get("books") or []
+            surfaces = collapse.get("surfaces") or []
+            lines.append(
+                f"      collapsed_observations={collapse['observations']} "
+                f"· books_quoted={len(books)}: "
+                f"{', '.join(books) if books else 'none'}"
+                + (f" · surfaces={', '.join(surfaces)}" if len(surfaces) > 1 else "")
+            )
         revisions = revision_counts[_logical_pick_key(row)]
         if revisions > 1:
             latest = _latest_evidence_utc(row) or "unknown"
@@ -1486,9 +1597,9 @@ def _render_picks(
             append_pick(row)
 
     rendered = len(upcoming) + len(started) + len(settled)
-    if rendered != len(logical_rows):
+    if rendered != len(display_rows):
         raise RuntimeError(
-            f"daily report dropped logical picks: ledger={len(logical_rows)} rendered={rendered}"
+            f"daily report dropped logical picks: ledger={len(display_rows)} rendered={rendered}"
         )
     counts = Counter(row["bucket"] for row in upcoming)
     lines.extend(
@@ -1498,8 +1609,9 @@ def _render_picks(
             f"ROI-qualified individual paper singles: "
             f"{sum(bool(row.get('paper_roi_band_eligible')) for row in upcoming)}",
             f"Archive status: IN_PROGRESS_OR_AWAITING_RESULT={len(started)} SETTLED={len(settled)}",
-            f"Logical picks shown: {len(logical_rows)} · "
-            f"superseded observations: {len(rows) - len(logical_rows)}",
+            f"Logical picks shown: {len(display_rows)} · "
+            f"superseded observations: {len(rows) - len(logical_rows)} · "
+            f"book/model rows collapsed: {len(logical_rows) - len(display_rows)}",
             f"Total archived pick evidence rows: {len(rows)}",
             "Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.",
             "Bet only what you can afford to lose.",
@@ -1561,9 +1673,13 @@ def _refresh_dated_pick_reports(
                 timezone_name=timezone_name,
             ),
         )
+        # ``logical_picks`` counts bets, so it uses the same collapse the card
+        # prints; ``evidence_rows`` keeps the raw multiplicity visible.
+        _lifecycle_logical = _latest_logical_rows(lifecycle_rows)
         dated_reports[target_date] = {
             "frozen_fixtures": len(freezes),
-            "logical_picks": len(_latest_logical_rows(lifecycle_rows)),
+            "logical_picks": len(_collapse_display_observations(_lifecycle_logical)),
+            "evidence_rows": len(_lifecycle_logical),
         }
     # This durable state embeds immutable fixture snapshots and lets the
     # dependency-free gate request a result recheck after a frozen fixture has
