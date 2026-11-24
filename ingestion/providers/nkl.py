@@ -351,6 +351,50 @@ def find_row(
     return hits[0] if len(hits) == 1 else None
 
 
+def explain_miss(
+    rows: List["ListingRow"],
+    *,
+    played_on: date,
+    home: str,
+    away: str,
+) -> List[str]:
+    """Why ``find_row`` found nothing, in terms someone can act on.
+
+    "no row" was the message that cost a live run: it is the same sentence for a
+    page that parsed no rows, a page whose rows are all other dates, and a page
+    whose club names are spelled differently from the reviewed table.  The three
+    have nothing in common except the fix being different, so they are reported
+    apart.
+    """
+
+    if not home.strip() or not away.strip():
+        return ["a club name was empty"]
+    if not rows:
+        return ["the club page parsed no fixture rows at all"]
+
+    on_date = [row for row in rows if row.played_on == played_on]
+    if not on_date:
+        dates = sorted({row.played_on.isoformat() for row in rows})
+        return [
+            f"no fixture row on {played_on.isoformat()}; the page lists "
+            f"{len(rows)} rows between {dates[0]} and {dates[-1]}"
+        ]
+
+    unmapped = {
+        name
+        for row in on_date
+        for name in (row.home_name, row.away_name)
+        if club_name(name) is None
+    }
+    listed = " | ".join(
+        f"{row.home_name} v {row.away_name} ({row.match_id})" for row in on_date
+    )
+    reason = f"{len(on_date)} row(s) on {played_on.isoformat()}: {listed}"
+    if unmapped:
+        reason += f"; no BetExplorer mapping for {sorted(unmapped)}"
+    return [reason]
+
+
 #: A club page's fixture table.  Each row is a joined view -- id, kickoff, both
 #: clubs and the final -- which is what makes a forecast findable without opening
 #: a 680 KB match page first.
@@ -507,6 +551,7 @@ def settle_forecast(
     row = find_row(rows, played_on=played_on, home=home, away=away)
     if row is None:
         reasons.append(f"no row for {home} v {away} on {played_on}")
+        reasons.extend(explain_miss(rows, played_on=played_on, home=home, away=away))
         return Settlement(result=None, url=url, requests_made=requests_made, reasons=tuple(reasons))
     if row.home_score is None:
         reasons.append(f"row {row.match_id} has no result yet")
