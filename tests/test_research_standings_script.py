@@ -214,7 +214,7 @@ def test_a_scored_slate_carries_rows_and_a_slip():
     )
     text = "\n".join(section)
 
-    assert "1 fixture(s), 1 with a side, 1 priced" in text
+    assert "1 fixture(s), 1 banker(s), 0 robber(s), 1 priced" in text
     assert "SINGLE @1.150" in text
     assert "RESEARCH PAPER" in text
 
