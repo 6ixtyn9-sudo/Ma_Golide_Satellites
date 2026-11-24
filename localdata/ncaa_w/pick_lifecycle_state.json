@@ -33,8 +33,8 @@
       "logical_picks": 132
     },
     "2026-11-24": {
-      "frozen_fixtures": 0,
-      "logical_picks": 204
+      "frozen_fixtures": 3,
+      "logical_picks": 210
     }
   },
   "frozen_by_date": {
@@ -39275,9 +39275,444 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-23"
       }
+    },
+    "2026-11-24": {
+      "401917187": {
+        "decision_cutoff_utc": "2026-11-24T14:00:00Z",
+        "frozen_at": "2026-11-24T14:04:13Z",
+        "game_id": "401917187",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "American University Eagles",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.738476,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 403,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "5b4c36f89aac00d4c6f2dbf92af5dadcf44fde66562fa0ba6e1c90625e02fb5b",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "fb4c0e8a54c82dd56d23",
+            "game_id": "401917187",
+            "grade_status": "pending",
+            "home": "Yale Bulldogs",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "fb4c0e8a54c82dd56d23",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.82,
+            "role": null,
+            "scheduled_utc": "2026-11-24T16:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "American University Eagles",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.906274,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 236,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "cb29fe5f2604374905b7017ed5e9dfab063d1a6fb4985462e1961d9bbf57dd60",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6f31e9d2c7e7a4aa2c5c",
+            "game_id": "401917187",
+            "grade_status": "pending",
+            "home": "Yale Bulldogs",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6f31e9d2c7e7a4aa2c5c",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-24T13:41:13Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9437,
+            "role": null,
+            "scheduled_utc": "2026-11-24T16:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "American University Eagles",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.734793,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 404,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "6e2723348922314b36293fd05a325cb193c5e3f5f2531621f9d1dcb1afa62f6e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "cea31ca090c2a6d3a62e",
+            "game_id": "401917187",
+            "grade_status": "pending",
+            "home": "Yale Bulldogs",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "cea31ca090c2a6d3a62e",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.79,
+            "role": null,
+            "scheduled_utc": "2026-11-24T16:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-24T16:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-24"
+      },
+      "401919425": {
+        "decision_cutoff_utc": "2026-11-24T14:00:00Z",
+        "frozen_at": "2026-11-24T14:04:13Z",
+        "game_id": "401919425",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "William & Mary Tribe",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.668476,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 403,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "3b2a494cc1d5b662aa34480368086b2046383f9def41133d0108991ab5585003",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "322bf37fdb8c32ffbb14",
+            "game_id": "401919425",
+            "grade_status": "pending",
+            "home": "Coppin State Eagles",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "322bf37fdb8c32ffbb14",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.75,
+            "role": null,
+            "scheduled_utc": "2026-11-24T16:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "William & Mary Tribe",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.700574,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 236,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "9606a574a39d0a121e93f9a59427950bc213d1e8fd2b15e00fcadcce258e579e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "773391fabf4f2ce9a38c",
+            "game_id": "401919425",
+            "grade_status": "pending",
+            "home": "Coppin State Eagles",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "773391fabf4f2ce9a38c",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-24T13:41:13Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.738,
+            "role": null,
+            "scheduled_utc": "2026-11-24T16:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "William & Mary Tribe",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.724793,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 404,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "5a4cfa0ce1e489cad12fe7059dc480da285634de9993c4ea3b6f8cc5c2a9b8e1",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b22ccda838f13b9cedb3",
+            "game_id": "401919425",
+            "grade_status": "pending",
+            "home": "Coppin State Eagles",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "b22ccda838f13b9cedb3",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.78,
+            "role": null,
+            "scheduled_utc": "2026-11-24T16:00:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-24T16:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-24"
+      },
+      "401919535": {
+        "decision_cutoff_utc": "2026-11-24T14:00:00Z",
+        "frozen_at": "2026-11-24T14:04:13Z",
+        "game_id": "401919535",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Bucknell Bison",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.488476,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 403,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "e3d23a5560a15ae2e45df200c7db7c419a5969fd790ca907fc9d2c9e236498bb",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "f6bc9210538a75bcdde8",
+            "game_id": "401919535",
+            "grade_status": "pending",
+            "home": "Le Moyne Dolphins",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "f6bc9210538a75bcdde8",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-24T16:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Bucknell Bison",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.808974,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 236,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "a3198328036d8ecad515c9b887dcf308a888bbe7ccb93afd2c8035671597a6d2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "796fddfa753fd2b766ff",
+            "game_id": "401919535",
+            "grade_status": "pending",
+            "home": "Le Moyne Dolphins",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "796fddfa753fd2b766ff",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-24T13:41:13Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.8464,
+            "role": null,
+            "scheduled_utc": "2026-11-24T16:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Bucknell Bison",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.614793,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 404,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "29c5d4cea439a2685ce70c0346e319bd64e6f8fceaa4bee81840a0eab8890b98",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "9c401e2bccd4fb0ef4e8",
+            "game_id": "401919535",
+            "grade_status": "pending",
+            "home": "Le Moyne Dolphins",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "9c401e2bccd4fb0ef4e8",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.67,
+            "role": null,
+            "scheduled_utc": "2026-11-24T16:00:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-24T16:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-24"
+      }
     }
   },
   "league": "NCAA_W",
-  "pending_frozen_games": [],
+  "pending_frozen_games": [
+    [
+      "401917187",
+      "2026-11-24T16:00:00Z"
+    ],
+    [
+      "401919425",
+      "2026-11-24T16:00:00Z"
+    ],
+    [
+      "401919535",
+      "2026-11-24T16:00:00Z"
+    ]
+  ],
   "schema_version": "magolide.pick_lifecycle_state"
 }
