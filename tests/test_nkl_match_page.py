@@ -256,3 +256,102 @@ def test_find_row_refuses_a_wrong_date_or_an_unmapped_club():
                         away="Neptunas 2") is None
     assert nkl.find_row(rows, played_on=date(2026, 10, 1), home="Unknown BC",
                         away="Neptunas 2") is None
+
+
+def test_settle_forecast_reads_two_pages_and_produces_a_reconciling_record():
+    played = _PAGE.replace(
+        "</div></div>",
+        "</div></div><div class=nkl-match-score>83 : 88</div>",
+        1,
+    )
+    calls = []
+
+    def read_text(url):
+        calls.append(url)
+        return _LISTING if "/komandos/" in url else played
+
+    settlement = nkl.settle_forecast(
+        read_text, played_on=date(2026, 10, 1), home="Kretinga", away="Neptunas 2"
+    )
+
+    assert settlement.requests_made == 2
+    assert calls == [
+        "https://nkl.lt/komandos/kretingos-kretinga-flexblow/",
+        "https://nkl.lt/matches/125749/",
+    ]
+    result = settlement.result
+    assert result is not None
+    assert result.reconciles() == (True, "")
+    assert (result.home_final, result.away_final) == (83.0, 88.0)
+
+
+def test_a_cached_club_page_costs_one_request_per_extra_game():
+    played = _PAGE.replace(
+        "</div></div>", "</div></div><div class=nkl-match-score>83 : 88</div>", 1
+    )
+    cache = {}
+    calls = []
+
+    def read_text(url):
+        calls.append(url)
+        return _LISTING if "/komandos/" in url else played
+
+    for _ in range(2):
+        nkl.settle_forecast(
+            read_text, played_on=date(2026, 10, 1), home="Kretinga", away="Neptunas 2",
+            cache=cache,
+        )
+
+    assert calls.count("https://nkl.lt/komandos/kretingos-kretinga-flexblow/") == 1
+    assert len(calls) == 3
+
+
+def test_an_unmapped_club_makes_no_request_at_all():
+    calls = []
+
+    settlement = nkl.settle_forecast(
+        lambda url: calls.append(url), played_on=date(2026, 10, 1),
+        home="Some New Club", away="Kretinga",
+    )
+
+    assert calls == []
+    assert settlement.requests_made == 0
+    assert "no NKL mapping" in settlement.reasons[0]
+
+
+def test_a_game_without_a_result_is_not_settled():
+    upcoming = _LISTING.replace(
+        '<td class="nkl-game-score loss"> 76-91</td>', "<td class=nkl-game-score> - </td>"
+    )
+    calls = []
+
+    def read_text(url):
+        calls.append(url)
+        return upcoming
+
+    settlement = nkl.settle_forecast(
+        read_text, played_on=date(2026, 10, 1), home="Kretinga", away="Neptunas 2"
+    )
+
+    assert settlement.result is None
+    assert settlement.requests_made == 1  # club page only; no match page fetched
+    assert "no result yet" in settlement.reasons[0]
+
+
+def test_quarters_that_disagree_with_the_final_are_refused_not_written():
+    """This is what an overtime column that the reader did not see looks like: the
+    page states a final the four quarters cannot reach."""
+
+    page = _PAGE.replace(
+        "</div></div>", "</div></div><div class=nkl-match-score>83 : 92</div>", 1
+    )
+
+    def read_text(url):
+        return _LISTING if "/komandos/" in url else page
+
+    settlement = nkl.settle_forecast(
+        read_text, played_on=date(2026, 10, 1), home="Kretinga", away="Neptunas 2"
+    )
+
+    assert settlement.result is None
+    assert "do not reconcile" in settlement.reasons[0]

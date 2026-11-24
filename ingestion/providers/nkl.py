@@ -269,6 +269,50 @@ CLUB_NAMES: Dict[str, str] = {
 }
 
 
+#: NKL club name -> its slug on the site, read from `/komandos/` (229,220 B, 18
+#: unique slugs, each linked twice).  Needed because a fixture listing gives the
+#: club's name in a span and its slug only inside a match page.
+CLUB_SLUGS: Dict[str, str] = {
+    "Alytaus Patriotai": "alytaus-patriotai",
+    "Jurbarko Jurbarkas-Karys-Manvesta": "jurbarko-jurbarkas-karys-manvesta",
+    "Kauno r. Atletas": "kauno-r-atletas",
+    "Kauno r. Omega-Tauras-LSU": "kauno-r-omega-tauras-lsu",
+    "Kauno Žalgiris-2": "kauno-zalgiris-2",
+    "Kėdainių Kėdainiai BC": "kedainiu-kedainiai-bc",
+    "Klaipėdos Neptūnas-II": "klaipedos-neptunas-ii",
+    "Kretingos Kretinga-FlexBlow": "kretingos-kretinga-flexblow",
+    "Marijampolės Sūduva": "marijampoles-suduva",
+    "Mažeikių M Basket": "mazeikiu-m-basket",
+    "Palangos Palanga": "palangos-palanga",
+    "Plungės Olimpas": "plunges-olimpas",
+    "Šakių Vytis-VDU": "sakiu-vytis-vdu",
+    "Šilutės Šilutė-PDS.lt": "silutes-silute-pds-lt",
+    "Telšių Telšiai": "telsiu-telsiai",
+    "Ukmergės Stekas": "ukmerges-stekas",
+    "Vilkaviškio Perlas Go": "vilkaviskio-perlas-go",
+    "Vilniaus Rytas-2": "vilniaus-rytas-2",
+}
+
+
+def nkl_name_for(betexplorer_name: str) -> Optional[str]:
+    """The NKL spelling of a BetExplorer club name, or ``None`` when unmapped."""
+
+    wanted = betexplorer_name.strip()
+    for nkl_name, name in CLUB_NAMES.items():
+        if name == wanted:
+            return nkl_name
+    return None
+
+
+def club_slug(nkl_name: str) -> Optional[str]:
+    return CLUB_SLUGS.get(nkl_name.strip())
+
+
+def club_url(nkl_name: str) -> Optional[str]:
+    slug = club_slug(nkl_name)
+    return None if slug is None else f"{SITE}/komandos/{slug}/"
+
+
 def club_name(nkl_name: str) -> Optional[str]:
     """The BetExplorer spelling of a club, or ``None`` when it is not mapped.
 
@@ -395,6 +439,100 @@ def parse_club_page(html: str) -> Tuple[List[ListingRow], Dict[str, int]]:
             )
         )
     return rows, counts
+
+
+@dataclass(frozen=True)
+class Settlement:
+    """What settling one forecast cost, and whether it produced a record."""
+
+    result: object
+    url: Optional[str] = None
+    requests_made: int = 0
+    reasons: Tuple[str, ...] = ()
+
+    def to_dict(self) -> Dict[str, object]:
+        result = self.result
+        return {
+            "settled": result is not None,
+            "url": self.url,
+            "requests_made": self.requests_made,
+            "reasons": list(self.reasons),
+            "periods": None if result is None else {
+                "home_quarters": result.home_quarters,
+                "away_quarters": result.away_quarters,
+                "home_final": result.home_final,
+                "away_final": result.away_final,
+                "reconciles": result.reconciles(),
+            },
+        }
+
+
+def settle_forecast(
+    read_text,
+    *,
+    played_on: date,
+    home: str,
+    away: str,
+    cache: Optional[Dict[str, List[ListingRow]]] = None,
+) -> Settlement:
+    """Find a forecast's game on nkl.lt and read its quarters.
+
+    Two requests at most: the club's fixture page (which lists every round, so it
+    is cached for the caller and reused across a slate) and the match page for the
+    one game.  Nothing is fetched from the match page until the fixture has been
+    identified by date and club pair.
+    """
+
+    reasons: list = []
+    home_nkl = nkl_name_for(home)
+    away_nkl = nkl_name_for(away)
+    if home_nkl is None or away_nkl is None:
+        missing = [name for name, mapped in ((home, home_nkl), (away, away_nkl)) if mapped is None]
+        reasons.append(f"no NKL mapping for {missing}")
+        return Settlement(result=None, reasons=tuple(reasons))
+
+    store = cache if cache is not None else {}
+    url = club_url(home_nkl)
+    requests_made = 0
+    rows = store.get(home_nkl or "")
+    if rows is None:
+        try:
+            rows, _ = parse_club_page(read_text(url))
+            requests_made += 1
+        except Exception as exc:  # noqa: BLE001 - a failed read is the receipt
+            reasons.append(f"club page failed: {str(exc)[:120]}")
+            return Settlement(result=None, url=url, requests_made=1, reasons=tuple(reasons))
+        store[home_nkl or ""] = rows
+
+    row = find_row(rows, played_on=played_on, home=home, away=away)
+    if row is None:
+        reasons.append(f"no row for {home} v {away} on {played_on}")
+        return Settlement(result=None, url=url, requests_made=requests_made, reasons=tuple(reasons))
+    if row.home_score is None:
+        reasons.append(f"row {row.match_id} has no result yet")
+        return Settlement(result=None, url=row.url, requests_made=requests_made,
+                          reasons=tuple(reasons))
+
+    try:
+        page = parse_match_page(read_text(row.url), url=row.url)
+        requests_made += 1
+    except Exception as exc:  # noqa: BLE001
+        reasons.append(f"match page failed: {str(exc)[:120]}")
+        return Settlement(result=None, url=row.url, requests_made=requests_made,
+                          reasons=tuple(reasons))
+
+    result = page.to_actual_result()
+    if result is None:
+        reasons.extend(page.reasons or ("no reconcilable periods",))
+        return Settlement(result=None, url=row.url, requests_made=requests_made,
+                          reasons=tuple(reasons))
+    ok, why = result.reconciles()
+    if not ok:
+        reasons.append(f"quarters do not reconcile with the final: {why}")
+        return Settlement(result=None, url=row.url, requests_made=requests_made,
+                          reasons=tuple(reasons))
+    return Settlement(result=result, url=row.url, requests_made=requests_made,
+                      reasons=tuple(reasons))
 
 
 def parse_match_page(html: str, url: str = "") -> MatchPage:
