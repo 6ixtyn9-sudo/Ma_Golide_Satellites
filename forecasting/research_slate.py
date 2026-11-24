@@ -232,6 +232,12 @@ def research_rows(
 ) -> List[ResearchPickRow]:
     """Score a slate from a published table, with the price that was observed.
 
+    ``games`` is read for four attributes only -- ``game_id``, ``home_name``,
+    ``away_name``, ``scheduled_utc`` -- so a caller may pass canonical ``Game``
+    objects or a fixture taken straight off a published page. That matters for the
+    lanes this exists for: three of them have no warehouse at all, and requiring a
+    ``Game`` would mean requiring a store they do not have.
+
     A fixture whose clubs are absent from the table is still scored -- the scorer's
     neutral defaults make it ``RISKY`` on purpose -- and the row records
     ``neutral_defaults_applied`` so a reader can tell a thin table from a confident

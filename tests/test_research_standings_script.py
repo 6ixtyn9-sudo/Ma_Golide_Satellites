@@ -288,3 +288,78 @@ def test_the_read_chain_is_paced_between_requests():
     paced("b")
 
     assert slept == [10.0]
+
+
+# -- the fixtures page as the slate ------------------------------------------
+
+OBSERVED = "2026-11-23T06:12:00Z"
+
+
+def test_the_fixtures_page_alone_yields_a_slate_and_its_prices():
+    calls: list[str] = []
+
+    def read(url: str) -> str:
+        calls.append(url)
+        return _fixture("el_fixtures_table.html")
+
+    fixtures, snapshots, html, reads = rs.slate_from_page(
+        "EUROLEAGUE", "2026-11-24", read, now_utc=OBSERVED
+    )
+
+    assert fixtures
+    assert reads == 1 and len(calls) == 1
+    first = fixtures[0]
+    assert first.game_id.startswith("betexplorer:")
+    assert first.home_name and first.away_name
+    assert snapshots[first.game_id][0].home_price_decimal > 1.0
+    assert "table-main" in html
+
+
+def test_a_page_mode_run_never_reads_the_fixtures_page_twice():
+    calls: list[str] = []
+    widget = _fixture("nkl_match_stats_widget.html")
+    overall = _fixture("nkl_standings_overall.html")
+    fixtures = _fixture("el_fixtures_table.html")
+
+    def read(url: str) -> str:
+        calls.append(url)
+        if "/standings/" in url:
+            return overall
+        if "/fixtures/" in url:
+            return fixtures
+        return widget
+
+    games, snapshots, html, page_reads = rs.slate_from_page(
+        "EUROLEAGUE", "2026-11-24", read, now_utc=OBSERVED
+    )
+    published, report = rs.fetch_published(
+        "EUROLEAGUE", read, fixtures_html=html, delay=0.0
+    )
+
+    fixtures_reads = [url for url in calls if url.endswith("/fixtures/")]
+    assert len(fixtures_reads) == 1  # the page served both the slate and the token
+    assert len(published) == 2
+    assert report["requests"] + page_reads == len(calls)
+
+
+def test_an_empty_slate_from_a_real_page_still_writes_the_fence(tmp_path):
+    """A lane with nothing to play today is an honest zero, not a missing file."""
+
+    def read(url: str) -> str:
+        return _fixture("el_fixtures_table.html") if "/fixtures/" in url else "<html></html>"
+
+    games, snapshots, _html, _reads = rs.slate_from_page(
+        "EUROLEAGUE", "2026-12-25", read, now_utc=OBSERVED
+    )
+
+    assert games == []
+    section = rs.build_section(
+        "EUROLEAGUE", games, TABLE, snapshots, target_date="2026-12-25"
+    )
+    written = rs.write_section(
+        tmp_path, state_key="euroleague", target_date="2026-12-25", section=section
+    )
+
+    text = Path(written["picks"]).read_text()
+    assert "0 fixture(s)" in text
+    assert "honest zero" in text
