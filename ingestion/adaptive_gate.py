@@ -95,6 +95,20 @@ class LeagueGateConfig:
     state_key: str
     acquisition_timezone: str
     schedule_source: str
+    #: Registry lane status, mirrored so the gate can refuse a dark lane
+    #: without reaching back into the spec table for every decision.
+    status: str = "active"
+    status_detail: str = ""
+
+    @property
+    def is_schedulable(self) -> bool:
+        return self.status == "active"
+
+    @property
+    def lane_reason(self) -> str:
+        if self.is_schedulable:
+            return ""
+        return f"lane_{self.status}: {self.status_detail}"
 
 
 LEAGUES: tuple[LeagueGateConfig, ...] = tuple(
@@ -107,6 +121,8 @@ LEAGUES: tuple[LeagueGateConfig, ...] = tuple(
         spec.state_key,
         spec.acquisition_timezone,
         spec.gate_schedule_source,
+        status=spec.status.value,
+        status_detail=spec.status_detail,
     )
     for spec in SPECS
 )
@@ -144,6 +160,7 @@ class GateDecision:
             "league_key": self.config.league_key,
             "state_key": self.config.state_key,
             "target_date": self.target_date,
+            "lane_status": self.config.status,
             "should_run": self.should_run,
             "reasons": list(self.reasons),
             "scheduled_game_count": self.scheduled_game_count,
@@ -604,6 +621,20 @@ def evaluate_league(
     state_dir = state_root / config.state_key
     reasons: list[str] = []
     schedule_count: int | None = None
+
+    # A dark lane is decided before any state read or schedule probe.  Its
+    # reason is reported so the absence is visible and explained, and the
+    # schedule fetcher is never called: a retired lane must not cost a request
+    # or invent an authoritative empty slate.
+    if not config.is_schedulable:
+        return GateDecision(
+            config,
+            target_date,
+            False,
+            (config.lane_reason,),
+            None,
+        )
+
     try:
         state, performance = _load_operator_summary(state_dir, league=config.league_key)
         frozen = date_is_frozen(
@@ -718,12 +749,15 @@ def evaluate_gate(
     if current.tzinfo is None:
         raise ValueError("gate clock must be timezone-aware")
     if force_all_reason:
+        # Forcing the gate open is a scheduling override, not a revival: a
+        # retired or off-season lane stays out of the matrix even when an
+        # operator asks for a full rehearsal, and says why.
         return [
             GateDecision(
                 config,
                 target_date_for(config, current),
-                True,
-                (force_all_reason,),
+                config.is_schedulable,
+                (force_all_reason,) if config.is_schedulable else (config.lane_reason,),
                 None,
             )
             for config in LEAGUES

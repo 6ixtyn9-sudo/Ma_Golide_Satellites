@@ -19,9 +19,10 @@ omitting evidence fields.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from enum import Enum
 import re
-from typing import Dict, Iterable, Tuple
+from typing import Dict, Iterable, Optional, Tuple
 
 from .models import (
     League,
@@ -29,6 +30,24 @@ from .models import (
     PriceProvenance,
     SourcePermission,
 )
+
+
+class LaneStatus(str, Enum):
+    """Whether a registered competition is part of the operational run.
+
+    ``RETIRED`` does not delete the contract, the state directory, the stored
+    finals, or the adapter: a retired lane keeps its identity and history so
+    that its past games can still be settled and so that revival is a single
+    deliberate flip.  What it loses is scheduling — the gate will not place it
+    in the workflow matrix, and the daily CLI refuses to run it by accident.
+
+    ``OFFSEASON`` is a calendar fact, not a verdict: the lane is real, it keeps
+    its state, and it must not be reported as a failure while it is dark.
+    """
+
+    ACTIVE = "active"
+    OFFSEASON = "offseason"
+    RETIRED = "retired"
 
 
 @dataclass(frozen=True)
@@ -73,6 +92,25 @@ class LeagueSpec:
     gate_schedule_source: str
     price_sources: Tuple[PriceSourcePolicy, ...] = ()
     source_detail: str = ""
+    status: LaneStatus = LaneStatus.ACTIVE
+    #: Why the lane is dark.  Required for every non-ACTIVE spec: an
+    #: unexplained dark lane is a silent no-op, which is the failure mode the
+    #: status field exists to prevent.
+    status_detail: str = ""
+
+    @property
+    def is_schedulable(self) -> bool:
+        """True only for a lane the gate may place in the run matrix."""
+
+        return self.status is LaneStatus.ACTIVE
+
+    @property
+    def lane_reason(self) -> str:
+        """Machine-readable dark-lane reason, empty for an active lane."""
+
+        if self.status is LaneStatus.ACTIVE:
+            return ""
+        return f"lane_{self.status.value}: {self.status_detail}"
 
     @property
     def book_providers(self) -> Tuple[str, ...]:
@@ -453,7 +491,74 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     LeagueSpec(League.ARGENTINA_LIGA_NACIONAL, "Argentina Liga Nacional", "argentina_liga_nacional", "America/Argentina/Buenos_Aires", "America/Argentina/Buenos_Aires", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
 )
 
-SPECS: Tuple[LeagueSpec, ...] = _SPECS
+# --------------------------------------------------------------------------
+# Lane status — measured 2026-11-24, single-day probe, ledgered bodies.
+#
+# The rule this table encodes: retire a lane when its *source* refuses us or
+# serves nothing usable, not when its season is simply quiet and not when it
+# merely lacks a price route.  Measured zero priced rows on an in-season
+# fixtures page, or no compliant schedule route at all, is a fight we stop
+# having.  A lane with a working schedule/result adapter keeps its place even
+# when no price exists, because prices can arrive later without re-deriving
+# the fixtures.
+#
+# Retirement is reversible and deletes nothing: the contract, state directory,
+# stored finals, and adapter all stay.  See ``LaneStatus``.
+# --------------------------------------------------------------------------
+
+_RETIRED_ON_2026_11_24: Dict[League, str] = {
+    League.ABA_LEAGUE: (
+        "recount 2026-11-24T06:53Z: 0 of 100 rows on an in-season fixtures "
+        "page carried a price"
+    ),
+    League.SPAIN_ACB: "2026-11-24: 0 of 225 fixtures rows carried a price",
+    League.ARGENTINA_LIGA_NACIONAL: "2026-11-24: 0 of 218 fixtures rows carried a price",
+    League.BASKETBALL_CHAMPIONS_LEAGUE: (
+        "2026-11-24: 0 of 32 fixtures rows carried a price; season archives "
+        "serve whole-season totals only, never a pre-tip slate"
+    ),
+    League.BASKETBALL_AFRICA_LEAGUE: (
+        "odds appear only on already-played rows; the fixtures table this "
+        "adapter reads carries none, so the lane is unpriced by construction"
+    ),
+    League.ITALY_LBA: (
+        "2026-11-24: the calendar body is byte-identical with and without the "
+        "day parameter, so only the focus day can ever be read"
+    ),
+    League.FRANCE_LNB_PRO_A: "no compliant date-bounded schedule/result route was validated",
+    League.GERMANY_BBL: "no compliant date-bounded schedule/result route was validated",
+    League.TURKEY_BSL: "no compliant date-bounded schedule/result route was validated",
+    League.BRAZIL_NBB: "no compliant date-bounded schedule/result route was validated",
+}
+
+#: Empty fixtures page is a calendar fact here, not a measured fight.  The
+#: lane keeps its state and its place; it must not alarm the heartbeat while
+#: dark, and it must not be confused with a retirement.
+_OFFSEASON_ON_2026_11_24: Dict[League, str] = {
+    League.WNBA: (
+        "WNBA season runs April-October; the 2026-11-24 fixture page was "
+        "empty because the calendar is, not because the source refused us"
+    ),
+}
+
+
+def _with_lane_status(spec: LeagueSpec) -> LeagueSpec:
+    if spec.league in _RETIRED_ON_2026_11_24:
+        return replace(
+            spec,
+            status=LaneStatus.RETIRED,
+            status_detail=_RETIRED_ON_2026_11_24[spec.league],
+        )
+    if spec.league in _OFFSEASON_ON_2026_11_24:
+        return replace(
+            spec,
+            status=LaneStatus.OFFSEASON,
+            status_detail=_OFFSEASON_ON_2026_11_24[spec.league],
+        )
+    return spec
+
+
+SPECS: Tuple[LeagueSpec, ...] = tuple(_with_lane_status(spec) for spec in _SPECS)
 _BY_LEAGUE: Dict[League, LeagueSpec] = {spec.league: spec for spec in SPECS}
 
 # Compatibility spellings are accepted only at the CLI/config boundary. The
@@ -535,7 +640,34 @@ def source_unavailable_specs() -> Iterable[LeagueSpec]:
     return (spec for spec in SPECS if not spec.automated_schedule_supported)
 
 
+def schedulable_specs() -> Tuple[LeagueSpec, ...]:
+    """Return the lanes the operational run may schedule."""
+
+    return tuple(spec for spec in SPECS if spec.is_schedulable)
+
+
+def retirement_guard(league: League, *, allow_retired: bool = False) -> Optional[str]:
+    """Return a refusal message for a dark lane, or ``None`` to proceed.
+
+    A retired lane is refused unless the operator explicitly asks for it: a
+    stale cron entry or a copied CI command must never resurrect a lane that
+    was measured to fight us.  An off-season lane remains runnable on explicit
+    invocation, because it is real and keeping its state warm is legitimate;
+    the caller only needs to know it will be quiet.
+    """
+
+    spec = league_spec(league)
+    if spec.status is LaneStatus.RETIRED and not allow_retired:
+        return (
+            f"{spec.league.value} is retired: {spec.status_detail}. "
+            "Re-run with --run-retired only to inspect or revive it; "
+            "revival is a one-line status flip in ingestion/league_registry.py."
+        )
+    return None
+
+
 __all__ = [
+    "LaneStatus",
     "LeagueSpec",
     "PriceSourcePolicy",
     "SPECS",
@@ -543,5 +675,7 @@ __all__ = [
     "league_spec",
     "parse_league",
     "price_evidence_policy",
+    "retirement_guard",
+    "schedulable_specs",
     "source_unavailable_specs",
 ]

@@ -381,7 +381,12 @@ def test_fiba_elw_gate_uses_official_competition_schedule_and_canonical_utc(monk
 
 
 def test_source_unavailable_lane_runs_once_for_a_durable_coverage_gap_then_skips(tmp_path: Path):
-    lnb = next(config for config in LEAGUES if config.league_key == "FRANCE_LNB_PRO_A")
+    # Greece is the surviving source-unavailable lane: no schedule route, but
+    # an active lane (its price evidence exists), so the coverage-gap lifecycle
+    # is still reachable.  France LNB Pro A exercises the same path but is now
+    # retired, which is decided earlier and never reaches this branch.
+    lnb = next(config for config in LEAGUES if config.league_key == "GREECE_BASKET_LEAGUE")
+    assert lnb.status == "active"
     _operator_state(tmp_path, lnb, date="2026-11-18")
 
     def should_not_fetch(_config, _date):
@@ -395,7 +400,7 @@ def test_source_unavailable_lane_runs_once_for_a_durable_coverage_gap_then_skips
         tmp_path / lnb.state_key / "coverage_gap_2026-11-18.json",
         {
             "schema_version": "magolide.coverage_gap_marker",
-            "league": "FRANCE_LNB_PRO_A",
+            "league": "GREECE_BASKET_LEAGUE",
             "target_date": "2026-11-18",
             "schedule_source": "source_unavailable",
         },
@@ -570,7 +575,7 @@ def test_gate_does_not_wake_a_healed_settlement_view(tmp_path: Path):
     assert decision.reasons == ("no_work",)
 
 
-def test_forced_gate_matrix_keeps_all_leagues_and_reports_only_work_rows(tmp_path: Path):
+def test_forced_gate_matrix_keeps_all_schedulable_leagues_and_names_the_dark_ones(tmp_path: Path):
     decisions = evaluate_gate(
         state_root=tmp_path,
         now=NOW,
@@ -579,7 +584,14 @@ def test_forced_gate_matrix_keeps_all_leagues_and_reports_only_work_rows(tmp_pat
     report = report_for(decisions, generated_utc=NOW)
 
     assert report["run_any"] is True
+    # Forcing the gate open is a scheduling override, not a revival: dark lanes
+    # stay out of the matrix but remain visible in the decisions with a reason.
     assert [row["league"] for row in report["matrix"]["include"]] == [
-        config.league for config in LEAGUES
+        config.league for config in LEAGUES if config.status == "active"
     ]
     assert all(row["gate_reason"] == "manual_read_only_rehearsal" for row in report["matrix"]["include"])
+    dark = [row for row in report["decisions"] if not row["should_run"]]
+    assert {row["league"] for row in dark} == {
+        config.league for config in LEAGUES if config.status != "active"
+    }
+    assert all(row["reasons"][0].startswith("lane_") for row in dark)

@@ -58,6 +58,45 @@ page exists, *not* that the direct fallback yields a named-book moneyline per
 fixture on those boards — that per-fixture pricing behaviour is **unprobed** and
 stays probationary.
 
+## Lane status: retired, off-season, active
+
+`ingestion/league_registry.py` carries a `LaneStatus` per competition, applied
+from one table (`_RETIRED_ON_2026_11_24`, `_OFFSEASON_ON_2026_11_24`) so the
+decision is auditable in a single place rather than scattered across specs.
+
+The rule the table encodes: **retire a lane when its source refuses us or
+serves nothing usable — not when its season is merely quiet, and not when it
+merely lacks a price route.** Measured zero priced rows on an in-season
+fixtures page, or no compliant schedule/result route at all, is a fight worth
+ending. A lane with a working adapter keeps its place even while unpriced,
+because prices can arrive later without re-deriving the fixtures.
+
+Measured on 2026-11-24 (ledgered request bodies) and **retired**: ABA League,
+Spain ACB, Italy LBA, Basketball Champions League, Basketball Africa League,
+Argentina Liga Nacional, France LNB Pro A, Germany BBL, Turkey BSL, Brazil NBB.
+The WNBA is **off-season** (April–October calendar), which is a calendar fact
+and must never be reported as a failure. The Chinese CBA stays **active**: its
+empty fixture page on the 17th–18th was the league's own break between round 8
+(2 November) and round 9 (4 December), not a refusal and not an off-season.
+
+Retirement is operational, not destructive. A retired lane keeps its enum
+member, contract, state key, price policies, adapter, stored finals and
+`localdata/` history — so it can still settle what it already holds — but it is
+never scheduled, never probed for a schedule, and never counted as work:
+
+* `adaptive_gate` decides a dark lane **before** any state read or schedule
+  probe and reports `should_run: false` with `lane_retired: …` /
+  `lane_offseason: …`; the lane therefore leaves the workflow matrix without
+  anyone editing a workflow file.
+* `scripts/daily.py` refuses a retired league with exit code 2 and a JSON
+  reason, so a stale cron line cannot silently resurrect it. `--run-retired`
+  is the deliberate override, for inspection or revival only.
+* `scripts/daily.py --league NBA --list-lanes` prints the whole table
+  (`league`, status, schedule source, price provenance/permission, reason).
+
+Revival is a one-line flip: `dataclasses.replace(spec, status=LaneStatus.ACTIVE)`
+restores a fully schedulable lane, and a test asserts exactly that.
+
 ## Order of work
 
 Done: EuroCup, Spain ACB (schedule only, gated header), Israel Premier League,
