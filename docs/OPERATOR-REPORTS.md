@@ -275,6 +275,38 @@ Tickets are unaffected. The acca builder already took at most one leg per
 fixture (`accas._best_leg_per_game`), so the duplication never reached a ticket,
 a stake, or the paper bank — it was a reporting and counting defect.
 
+## A ticket leg has to be able to pay
+
+Paper tickets are assembled by ranked probability (`accas.build_accas`), and
+probability alone will always walk towards the shortest prices on the board. On
+2026-11-24 that produced five NCAA_M "3-leg accas" whose headline price was
+**@1.003** — one full paper unit risked to return 0.3% — built from legs of
+`@1.001` and `@1.012`. The `1.001` quotes are ESPN's `-100000` moneyline on
+lopsided games; the lane's own plausibility floor in `ingestion/books.py`
+(`1.01`) already called that price implausible, but the relay path never applied
+it.
+
+The rule is now explicit and lives in configuration, not in the builder:
+
+| where | what |
+|---|---|
+| `config/magolide_bets.json` → `minTicketLegOdds: 1.20` | the shipped value, stamped into every ticket's `CFG_` hash |
+| `forecasting/bet_config.KEYS` | same default, bounds `1.0–5.0`, so a tuned file can move it |
+| `forecasting/accas.py` → `MIN_TICKET_LEG_DECIMAL` | applied in `_eligible_candidate_picks`, before bands, singles or acca legs exist |
+
+Consequences, stated plainly:
+
+- a leg cheaper than the floor is *not* a candidate, so it cannot become a
+  single, an acca leg, or a ROI-band row;
+- the floor is a floor, not a target: a 2-leg ticket is now at least `1.44`
+  and a 3-leg at least `1.728`, but the builder still optimises probability;
+- it costs the lane almost nothing. NCAA_M had **376 priced, eligible picks at
+  1.20 or better** on the same slate the absurd tickets were built from, and
+  only **6 rows** below 1.01.
+
+The card is unaffected: a sub-floor forecast still appears as a pick with its
+price and its eligibility blockers. It just cannot be sold as a ticket.
+
 ## Publication and freeze
 
 When `accas.paper_results` is present, the operator uses that paper-only
