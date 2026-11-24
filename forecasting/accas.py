@@ -187,6 +187,21 @@ def _best_leg_per_game(
     return best
 
 
+def ticket_leg_pool(
+    forecasts: Iterable[Forecast], *, allow_provisional: bool = False
+) -> List[Forecast]:
+    """Legs a multi-leg ticket could actually be built from, one per fixture.
+
+    Public wrapper over the builder's own pool so a caller can report *why* a
+    ticket was not built instead of guessing. On 2026-11-24 the NCAA_W card said
+    "9 of 14 candidate picks passed individual-pick ROI; no multi-leg acca was
+    produced" -- true, and useless: nine picks qualified for a single, none was
+    ``acca_eligible``, and only this pool can answer that.
+    """
+
+    return _best_leg_per_game(forecasts, allow_provisional=allow_provisional)
+
+
 def _probability_band(probability: float) -> str:
     if probability < 0.50:
         return "<0.50"
@@ -803,4 +818,9 @@ def build_accas(
     return output
 
 
-__all__ = ["build_accas", "filter_paper_candidate_picks", "is_provisional_sample_only"]
+__all__ = [
+    "build_accas",
+    "filter_paper_candidate_picks",
+    "is_provisional_sample_only",
+    "ticket_leg_pool",
+]

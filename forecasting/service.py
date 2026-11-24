@@ -31,6 +31,7 @@ from ingestion.predictions import DEFAULT_PROVIDER_ORDER
 from .accas import (
     build_accas,
     filter_paper_candidate_picks,
+    ticket_leg_pool,
     is_provisional_sample_only,
 )
 from .context_adjustment import (
@@ -875,6 +876,19 @@ class MarketForecastService:
             paper_single_picks.append(single)
 
         qualified_game_count = len({candidate.game_id for candidate in paper_candidates})
+        # Why a ticket may be missing even when singles qualified: the acca
+        # builder applies its own eligibility and price band on top of the ROI
+        # filter, so the card must name that instead of blaming the acca step.
+        acca_pool = ticket_leg_pool(paper_candidates, allow_provisional=True)
+        acca_pool_ids = {row.forecast_id for row in acca_pool}
+        acca_pool_games = len({row.game_id for row in acca_pool})
+        acca_blockers: Counter = Counter()
+        for candidate in paper_candidates:
+            if candidate.forecast_id in acca_pool_ids:
+                continue
+            reasons = (candidate.eligibility or {}).get("reasons") or []
+            for reason in reasons or ["not_acca_eligible"]:
+                acca_blockers[str(reason)] += 1
         effective_paper_legs = min(acca_legs, qualified_game_count)
         if effective_paper_legs < 2:
             effective_paper_legs = None
@@ -1089,7 +1103,12 @@ class MarketForecastService:
                 "paper_candidate_games": len(paper_candidate_games),
                 "paper_quality_candidate_picks": paper_pick_filter["qualifying_pick_count"],
                 "paper_quality_candidate_games": len(paper_quality_candidate_games),
-                "ranking": "highest_estimated_joint_win_probability_after_pick_filter",
+                "ranking": "probability_price_blend_after_pick_filter",
+                "paper_acca_eligible_games": acca_pool_games,
+                "paper_acca_eligible_rows": len(acca_pool),
+                "paper_acca_blockers": [
+                    reason for reason, _ in acca_blockers.most_common(4)
+                ],
                 "paper_result_count": len(paper_accas),
                 "strict_result_count": len(strict_accas),
                 "results": strict_accas,

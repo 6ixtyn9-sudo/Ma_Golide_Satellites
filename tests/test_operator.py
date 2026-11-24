@@ -1546,6 +1546,81 @@ def test_empty_ticket_card_summarizes_no_acca_without_printing_candidate_funnel(
     assert "insufficient_walk_forward_samples" not in text
 
 
+def test_empty_ticket_card_names_the_gate_that_stopped_the_acca():
+    """Nine picks can qualify for a single and still be no ticket at all.
+
+    Measured on the 2026-11-24 NCAA_W card: "9 of 14 candidate picks passed
+    individual-pick ROI; no multi-leg acca was produced". The second clause
+    blamed the acca step, which had nothing to choose from — every qualifying
+    pick failed `acca_eligible`. The card now names the gate and its blockers.
+    """
+
+    candidate_funnel = {
+        "scan_rows": 60,
+        "paper_candidate_rows": 14,
+        "paper_single_picks": 9,
+        "paper_single_games": 7,
+        "paper_pick_filter": {"candidate_pick_count": 14, "qualifying_pick_count": 9},
+        "paper_accas": 0,
+        "strict_accas": 0,
+        "paper_acca_eligible_games": 0,
+        "paper_acca_eligible_rows": 0,
+        "paper_acca_blockers": ["no_exact_bookmaker_market"],
+    }
+    text = _render_empty_ticket_scan(
+        league=League.NCAA_W,
+        target_date=DATE,
+        generated_utc=AS_OF,
+        performance={
+            "paper_bank_units": 100.0,
+            "paper_free_units": 100.0,
+            "paper_committed_units": 0.0,
+        },
+        timezone_name="UTC",
+        candidate_funnel=candidate_funnel,
+    )
+
+    assert (
+        "NO MULTI-LEG PAPER ACCA — 9 of 14 candidate picks passed individual-pick ROI; "
+        "no ROI-qualified pick is ticket-eligible" in text
+    )
+    assert "blockers: no_exact_bookmaker_market" in text
+    assert "no multi-leg acca was produced" not in text
+
+    # One eligible game reads as one, not as an unexplained absence.
+    candidate_funnel["paper_acca_eligible_games"] = 1
+    single_game = _render_empty_ticket_scan(
+        league=League.NCAA_W,
+        target_date=DATE,
+        generated_utc=AS_OF,
+        performance={
+            "paper_bank_units": 100.0,
+            "paper_free_units": 100.0,
+            "paper_committed_units": 0.0,
+        },
+        timezone_name="UTC",
+        candidate_funnel=candidate_funnel,
+    )
+    assert "only 1 distinct game is ticket-eligible" in single_game
+
+    # Two or more eligible games with no ticket keeps the honest generic line:
+    # something else stopped it, and the funnel has not named that case.
+    candidate_funnel["paper_acca_eligible_games"] = 2
+    both_games = _render_empty_ticket_scan(
+        league=League.NCAA_W,
+        target_date=DATE,
+        generated_utc=AS_OF,
+        performance={
+            "paper_bank_units": 100.0,
+            "paper_free_units": 100.0,
+            "paper_committed_units": 0.0,
+        },
+        timezone_name="UTC",
+        candidate_funnel=candidate_funnel,
+    )
+    assert "no multi-leg acca was produced" in both_games
+
+
 def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp_path):
     rows = [
         forecast(1),
