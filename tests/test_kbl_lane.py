@@ -264,3 +264,31 @@ def test_body_naming_another_club_is_refused():
 
     with pytest.raises(IdentityError):
         kbl.fetch_game_result(_settled_game(), lambda url: body)
+
+
+def test_the_matcher_sees_the_full_english_name_so_the_board_alias_is_unneeded():
+    """Why no `_LEAGUE_NAME_PAIRS` row is needed for KBL (captured 2026-11-24).
+
+    ``/common/teamList`` carries both a four-letter code (``teamNameEn: "DB"``,
+    ``"SONO"``) and the full name (``teamNameFullEn: "WONJU DB PROMY"``,
+    ``"GOYANG SONO SKY GUNNERS"``). The lane emits the **full** field, and the
+    board's own spelling -- captured on ``/basketball/south-korea/kbl/fixtures/``
+    and ``/results/`` the same day -- is ``Wonju DB``. That pair already agrees
+    by whole-token containment, so an alias entry would be dead code.
+
+    The short codes do fail, deliberately: ``"SONO"`` shares four letters with
+    ``Goyang Sono``, below the five-letter floor, and ``"DB"`` shares none with
+    ``Wonju DB``. They are listed here as the reason the field choice is
+    load-bearing, not as a candidate the adapter ever produces.
+    """
+
+    from ingestion.providers.betexplorer_direct import _team_names_agree
+
+    games = kbl.discover_games("2026-11-23", _transport(), end_year=2026)
+    assert games[0].home_name == "WONJU DB PROMY"
+
+    assert _team_names_agree("WONJU DB PROMY", "Wonju DB", league="SOUTH_KOREA_KBL")[0] is True
+    assert _team_names_agree("SEOUL SAMSUNG THUNDERS", "Seoul Thunders", league="SOUTH_KOREA_KBL")[0] is True
+    # Neither short code may ever fuzzy its way onto the board.
+    assert _team_names_agree("DB", "Wonju DB", league="SOUTH_KOREA_KBL")[0] is False
+    assert _team_names_agree("SONO", "Goyang Sono", league="SOUTH_KOREA_KBL")[0] is False

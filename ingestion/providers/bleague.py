@@ -65,7 +65,17 @@ SCHEDULE_URL = SITE + "/schedule/"
 SCORE_URL = SITE + "/direct/bleague/get_today_games_score/"
 CONTEXT_BASE = "https://b-league.s3.amazonaws.com/web_json/v2_genius_contexts"
 
-#: ``tab`` is the division: 1 = B1, 2 = B2, 3 = B3.
+#: ``tab`` is the division, top-first: 1 = B1, 2 = B2, 3 = B3. The numbering
+#: survived the 2026-27 rebrand -- tab=1 still serves the top division -- but the
+#: *names* did not: tab=1 now renders "B.LEAGUE PREMIER" and tab=2 "B.LEAGUE
+#: ONE" (captured 2026-11-24, probes24/aliases/bleague-schedule*-20261127.html).
+#:
+#: That collides with the board: BetExplorer's ``japan/b-league-one`` slug is the
+#: **second** division, not the top one, so this lane's top-division fixtures are
+#: priced against B.ONE clubs and no name can agree. The mismatch is named in
+#: ``docs/RESULTS-ROUTE-ASSESSMENT.md`` and is an open scope decision -- do not
+#: "fix" it by pointing the board at another slug without deciding which
+#: competition this lane is.
 TAB_B1 = 1
 
 #: Japan is UTC+09:00 all year (no DST), so the local offset is a constant.
