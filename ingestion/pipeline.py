@@ -94,6 +94,16 @@ BOOK_PROVIDERS = ("theoddsapi", "betexplorer_direct")
 # candidate fixture for the fallback to match.
 BOOK_PROVIDERS_BY_LEAGUE = {spec.league.value: spec.book_providers for spec in SPECS}
 
+#: Price providers that spend a credential or a paid quota. ``--skip-book-
+#: acquisition`` exists to protect these, and used to protect them by skipping
+#: *every* provider -- which silently switched off the free keyless pages that
+#: the fixtures-only lanes configure as their only price source. A lane whose
+#: registry entry names ``betexplorer`` and nothing else therefore recorded
+#: ``book_snapshots: 0`` on every gated run, and with no snapshot it can never
+#: produce a priced pick, let alone a ticket. Deferral is per-provider, not
+#: per-stage: paid sources wait for their permit, free ones keep reading.
+PAID_BOOK_PROVIDERS = frozenset({"theoddsapi", "predixsport"})
+
 # Registry declares which leagues have a validated ESPN schedule/result route.
 # ESPN's deeper core-event-index history and BPI are independent contracts with
 # narrower allow-lists in the adapter; a new scoreboard lane must not inherit
@@ -544,14 +554,15 @@ class Pipeline:
             # credits, while this bounded source can still fill exact named
             # full-game moneyline, total, and spread gaps in its live read-only
             # rehearsal.
-            self._acquire_book_lines(games, direct_fallback_only=True)
+            self._acquire_book_lines(games, paid_sources_deferred=True)
             self.book_provider_status["policy"] = {
                 "enabled": False,
-                "status": "paid_sources_deferred_direct_fallback_attempted",
+                "status": "paid_sources_deferred_free_sources_attempted",
                 "detail": (
                     "paid named-book acquisition was deferred outside the ticket window; "
-                    "the bounded direct BetExplorer fallback was still attempted for games "
-                    "without a fresh named full-game moneyline"
+                    "free keyless price sources configured for this lane were still read, "
+                    "and the bounded direct BetExplorer fallback was still attempted for "
+                    "games without a fresh full-game moneyline"
                 ),
             }
             self.gaps.append(
@@ -2143,7 +2154,7 @@ class Pipeline:
         return {}
 
     def _acquire_book_lines(
-        self, games: List[Game], *, direct_fallback_only: bool = False
+        self, games: List[Game], *, paid_sources_deferred: bool = False
     ) -> Dict[str, List[BookSnapshot]]:
         """Acquire and reconcile configured book sources with explicit health states.
 
@@ -2155,9 +2166,19 @@ class Pipeline:
         """
 
         raw_snapshots: List[BookSnapshot] = []
-        providers = (
-            ("betexplorer_direct",) if direct_fallback_only else _book_providers(self.config.league)
+        providers = tuple(
+            provider
+            for provider in _book_providers(self.config.league)
+            if not (paid_sources_deferred and provider in PAID_BOOK_PROVIDERS)
         )
+        if paid_sources_deferred:
+            # Record what was deferred, so a lane with no priced pick says why.
+            self.book_provider_status["deferred"] = {
+                "providers": sorted(
+                    set(_book_providers(self.config.league)) & PAID_BOOK_PROVIDERS
+                ),
+                "reason": "no paid permit this run; free sources were still read",
+            }
         if not providers:
             self.book_provider_status["policy"] = {
                 "enabled": False,
