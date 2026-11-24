@@ -182,12 +182,14 @@ def test_l10_form_beats_streak_proxy_when_present():
 def test_shadow_lane_leagues_is_exactly_the_fixtures_only_class():
     leagues = shadow_lane_leagues()
     values = {spec.league.value for spec in leagues}
+    # Leumit was retired on 2026-11-24 (no permitted results route), and a
+    # retired lane never qualifies whatever its sources say -- which is the
+    # behaviour this set is asserting.
     assert values == {
         "GREECE_BASKET_LEAGUE",
         "CHINA_WCBA_W",
         "LITHUANIA_NKL",
         "AUSTRALIA_WNBL_W",
-        "ISRAEL_LIGA_LEUMIT",
     }
     for spec in leagues:
         assert spec.results_source == "source_unavailable"

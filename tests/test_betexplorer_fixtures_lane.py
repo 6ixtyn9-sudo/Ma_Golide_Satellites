@@ -74,7 +74,10 @@ def test_each_fixtures_lane_has_a_verified_path(league):
 @pytest.mark.parametrize("league", LANES)
 def test_lane_is_active_and_its_price_is_aggregate_and_unresolved(league):
     spec = league_spec(parse_league(league))
-    assert spec.is_schedulable
+    # Leumit was retired on 2026-11-24: its fixtures page is served and its price
+    # is the site average, but no permitted results route exists, so it could
+    # never settle. The parse contract above still holds for it.
+    assert spec.is_schedulable is (league != "ISRAEL_LIGA_LEUMIT")
     policy = price_evidence_policy(parse_league(league), "betexplorer")
     assert policy.price_provenance is PriceProvenance.AGGREGATE_CONSENSUS
     assert policy.source_permission is SourcePermission.UNRESOLVED
@@ -319,3 +322,18 @@ def test_a_dark_results_lane_names_the_state_of_its_own_route(league):
     assert "2026-11-24" in spec.source_detail
     assert DARK_LANE_BLOCKERS[league] in spec.source_detail
     assert "docs/RESULTS-ROUTE-ASSESSMENT.md" in spec.source_detail
+
+
+def test_leumit_is_retired_because_it_could_never_settle():
+    """The same reason as the nine before it: no results route, so no grading."""
+
+    from ingestion.league_registry import LaneStatus, retirement_guard
+
+    spec = league_spec(parse_league("ISRAEL_LIGA_LEUMIT"))
+    assert spec.status is LaneStatus.RETIRED
+    assert "route assessment" in spec.status_detail
+    # The published route arithmetic is preserved, not deleted with the lane.
+    assert "one.co.il" in spec.source_detail
+    refusal = retirement_guard(parse_league("ISRAEL_LIGA_LEUMIT"))
+    assert refusal and "retired" in refusal
+    assert retirement_guard(parse_league("ISRAEL_LIGA_LEUMIT"), allow_retired=True) is None

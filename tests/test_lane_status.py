@@ -62,6 +62,7 @@ def test_dark_lane_population_is_exactly_the_measured_one():
         "BRAZIL_NBB",
         "FRANCE_LNB_PRO_A",
         "GERMANY_BBL",
+        "ISRAEL_LIGA_LEUMIT",
         "ITALY_LBA",
         "SPAIN_ACB",
         "TURKEY_BSL",

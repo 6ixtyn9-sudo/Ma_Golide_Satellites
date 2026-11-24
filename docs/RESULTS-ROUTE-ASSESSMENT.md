@@ -130,6 +130,28 @@ including that re-reading a B.ONE game's context cannot relabel it PREMIER.
 an aggregate price of its own. Until then it is graded on results, not priced on
 the aggregate board — which is the honest state, not a gap being hidden.
 
+## The operator decisions of 2026-11-24
+
+The licence gate on four lanes is now opened by a person rather than by a host,
+and recorded as data in the registry (`LeagueSpec.operator_acceptance`), not as a
+comment: who decided, when, what may be read, and on what basis.
+
+| Lane | Basis | What was accepted |
+|---|---|---|
+| `GREECE_BASKET_LEAGUE` | esake.gr terms scope copying to personal, non-commercial use | that clause, for this paper record |
+| `CHINA_WCBA_W` | cba.net.cn publishes **no terms document at all** | read the documented data-hub endpoint, paper-only, no redistribution |
+| `LITHUANIA_NKL` | nkl.lt publishes **no terms document** (sitemap: cookie + privacy only) | read the documented WP-JSON surface, honouring `Crawl-delay: 10` |
+| `AUSTRALIA_WNBL_W` | route assessment never completed; wnbl.com.au publishes terms | read the rosetta per-season route and those terms, paper-only |
+
+**An acceptance is not an activation.** All four lanes still report
+`results_source = source_unavailable`, because the remaining gate is not a licence
+— it is a served page the parser has been replayed against. `tests/test_operator_acceptance.py`
+asserts exactly that, so a future edit cannot turn a decision into a fake lane.
+
+`ISRAEL_LIGA_LEUMIT` was retired on the same day, for the same reason as the nine
+retired lanes before it: the schedule side is served, every candidate results
+route is closed, so it could never settle and its fixture cards graded nothing.
+
 ## Open items
 
 1. **Greece:** run `scripts/probe_esake_results.py --series 8` once from a host with
@@ -138,5 +160,7 @@ the aggregate board — which is the honest state, not a gap being hidden.
 2. **WNBL:** request the missing report — the probe log suggests it got furthest
    of all five.
 3. **Japan:** choose the division.
-4. **China / Lithuania / Israel:** unchanged until a terms document exists; no
-   adapter will be written against imagined markup or an unlicensed payload.
+4. **China / Lithuania / WNBL:** the licence gate is open (operator acceptance,
+   2026-11-24). What is left is one captured response per lane, so the parser can
+   be written against served bytes rather than imagined markup.
+5. **Israel Leumit:** retired 2026-11-24; no candidate route is permitted.
