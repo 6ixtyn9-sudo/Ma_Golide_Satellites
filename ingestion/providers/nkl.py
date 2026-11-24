@@ -242,6 +242,71 @@ def _read_final(html: str) -> Optional[Tuple[float, float, str]]:
     )
 
 
+#: NKL's club name -> the name BetExplorer uses for the same club, reviewed by
+#: eye on 2026-11-24 against the two 18-name lists.  A mapping, not a matcher:
+#: "Palangos Palanga" is BetExplorer's "BC Olimpas Palanga" while "Plungės
+#: Olimpas" is "Plunges Olimpas", so any scoring on shared words swaps those two
+#: clubs -- one of them would settle with the other's quarter scores.
+CLUB_NAMES: Dict[str, str] = {
+    "Alytaus Patriotai": "Alytaus Patriotai",
+    "Jurbarko Jurbarkas-Karys-Manvesta": "Jurbarkas",
+    "Kauno r. Atletas": "Kauno Atletas",
+    "Kauno r. Omega-Tauras-LSU": "Omega-Tauras",
+    "Kauno Žalgiris-2": "Zalgiris Kaunas 2",
+    "Klaipėdos Neptūnas-II": "Neptunas 2",
+    "Kretingos Kretinga-FlexBlow": "Kretinga",
+    "Kėdainių Kėdainiai BC": "Kedainiai BC",
+    "Marijampolės Sūduva": "Suduva-Mantinga",
+    "Mažeikių M Basket": "Mazeikiai",
+    "Palangos Palanga": "BC Olimpas Palanga",
+    "Plungės Olimpas": "Plunges Olimpas",
+    "Telšių Telšiai": "Telsiai",
+    "Ukmergės Stekas": "Ukmerges Stekas",
+    "Vilkaviškio Perlas Go": "Vilkaviskis",
+    "Vilniaus Rytas-2": "Rytas 2",
+    "Šakių Vytis-VDU": "Vytis VDU",
+    "Šilutės Šilutė-PDS.lt": "Silute",
+}
+
+
+def club_name(nkl_name: str) -> Optional[str]:
+    """The BetExplorer spelling of a club, or ``None`` when it is not mapped.
+
+    ``None`` is the honest answer for a promotion or a rename: settling with a
+    neighbouring club's result because the names were close is worse than not
+    settling that game at all.
+    """
+
+    return CLUB_NAMES.get(nkl_name.strip())
+
+
+def find_row(
+    rows: List["ListingRow"],
+    *,
+    played_on: date,
+    home: str,
+    away: str,
+) -> Optional["ListingRow"]:
+    """The one listing row for a forecast, by date and club pair.
+
+    Both sides must map to known clubs and the pair must match as a set, because
+    a source that lists the fixture the other way round is still the same game.
+    Two rows on one date for the same pair is ambiguous and returns ``None``.
+    """
+
+    wanted = {home.strip(), away.strip()}
+    hits = []
+    for row in rows:
+        if row.played_on != played_on:
+            continue
+        names = {club_name(row.home_name), club_name(row.away_name)}
+        if None in names:
+            continue
+        if names == wanted:
+            hits.append(row)
+    return hits[0] if len(hits) == 1 else None
+
+
 #: A club page's fixture table.  Each row is a joined view -- id, kickoff, both
 #: clubs and the final -- which is what makes a forecast findable without opening
 #: a 680 KB match page first.
