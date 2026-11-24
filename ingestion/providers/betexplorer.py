@@ -85,7 +85,12 @@ FIXTURES_URLS = {
     "GERMANY_BBL": BASE + "/germany/bbl/fixtures/",
     "GREECE_BASKET_LEAGUE": BASE + "/greece/basket-league/fixtures/",
     "ISRAEL_PREMIER_LEAGUE": BASE + "/israel/super-league/fixtures/",
-    "JAPAN_B_LEAGUE": BASE + "/japan/b-league-one/fixtures/",
+    # Japan is two lanes and the captured page is the second division: the
+    # tab=2 slate matched this board page game-for-game, so it belongs to
+    # JAPAN_B_ONE. No top-division page has been captured, so the PREMIER lane
+    # claims no slug rather than guessing one -- pointing it at this page is what
+    # made every club name disagree (run 45385819819).
+    "JAPAN_B_ONE": BASE + "/japan/b-league-one/fixtures/",
     "SOUTH_KOREA_KBL": BASE + "/south-korea/kbl/fixtures/",
     "BRAZIL_NBB": BASE + "/brazil/nbb/fixtures/",
     "ARGENTINA_LIGA_NACIONAL": BASE + "/argentina/liga-a/fixtures/",

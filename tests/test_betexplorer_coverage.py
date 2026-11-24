@@ -36,7 +36,7 @@ def test_the_verified_slugs_are_the_irregular_ones_served():
     # Spot-check the slugs that are easy to guess wrong.
     assert betexplorer.FIXTURES_URLS["ITALY_LBA"].endswith("/italy/lega-a/fixtures/")
     assert betexplorer.FIXTURES_URLS["TURKEY_BSL"].endswith("/turkey/super-lig/fixtures/")
-    assert betexplorer.FIXTURES_URLS["JAPAN_B_LEAGUE"].endswith("/japan/b-league-one/fixtures/")
+    assert betexplorer.FIXTURES_URLS["JAPAN_B_ONE"].endswith("/japan/b-league-one/fixtures/")
     assert betexplorer.FIXTURES_URLS["SOUTH_KOREA_KBL"].endswith("/south-korea/kbl/fixtures/")
     assert betexplorer.FIXTURES_URLS["ARGENTINA_LIGA_NACIONAL"].endswith("/argentina/liga-a/fixtures/")
 
@@ -61,7 +61,7 @@ def test_new_lanes_are_aggregate_and_research_only():
     for league in (
         League.SPAIN_ACB,
         League.TURKEY_BSL,
-        League.JAPAN_B_LEAGUE,
+        League.JAPAN_B_ONE,
         League.BASKETBALL_CHAMPIONS_LEAGUE,
     ):
         policy = [

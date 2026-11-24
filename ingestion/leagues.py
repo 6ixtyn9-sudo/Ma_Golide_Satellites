@@ -36,6 +36,7 @@ RESULT_PERIOD_POLICY = {
     League.ABA_LEAGUE: PeriodKind.QUARTERS,
     League.ISRAEL_PREMIER_LEAGUE: PeriodKind.QUARTERS,
     League.JAPAN_B_LEAGUE: PeriodKind.QUARTERS,
+    League.JAPAN_B_ONE: PeriodKind.QUARTERS,
     League.SOUTH_KOREA_KBL: PeriodKind.QUARTERS,
     League.BRAZIL_NBB: PeriodKind.QUARTERS,
     League.ARGENTINA_LIGA_NACIONAL: PeriodKind.QUARTERS,

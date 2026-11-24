@@ -1295,10 +1295,13 @@ class Pipeline:
                         )[:500],
                     )
                 )
-        elif league is League.JAPAN_B_LEAGUE:
+        elif league in (League.JAPAN_B_LEAGUE, League.JAPAN_B_ONE):
+            # One lane is one division: the adapter derives the schedule tab from
+            # the league, so PREMIER can never read the B.ONE slate or vice versa.
             games = bleague.discover_games(
                 _iso(self.config.date_yyyymmdd),
                 self.fetch if self._injected_fetch else None,
+                league=league,
             )
             for gap in bleague.last_gaps():
                 self.gaps.append(
@@ -4065,7 +4068,7 @@ class Pipeline:
             return self._bal_finals(self._discover_games())
         if league is League.BASKETBALL_CHAMPIONS_LEAGUE:
             return self._bcl_finals(self._discover_games())
-        if league is League.JAPAN_B_LEAGUE:
+        if league in (League.JAPAN_B_LEAGUE, League.JAPAN_B_ONE):
             return self._bleague_finals(self._discover_games())
         if league is League.SOUTH_KOREA_KBL:
             return self._kbl_finals(self._discover_games())

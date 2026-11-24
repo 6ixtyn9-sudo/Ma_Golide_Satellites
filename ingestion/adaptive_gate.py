@@ -904,7 +904,7 @@ def _bcl_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGa
 
 
 def _bleague_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGame]:
-    """One B.League B1 day from the site's server-rendered slate.
+    """One B.League day from the site's server-rendered slate, one division.
 
     The slate is asked for in JST terms and already carries the tip time and the
     status text, so the gate needs two page reads and no per-game snapshot. A
@@ -919,7 +919,8 @@ def _bleague_schedule(config: LeagueGateConfig, target_date: str) -> list[Schedu
     games: list[ScheduleGame] = []
     seen: set[str] = set()
     for offset in (0, 1):
-        url = bleague.schedule_url(local_day + timedelta(days=offset), bleague.TAB_B1)
+        tab = bleague.tab_for(config.league_key)
+        url = bleague.schedule_url(local_day + timedelta(days=offset), tab)
         blocks = bleague.parse_slate(_read_limited_response(url))
         if not blocks:
             raise GateUncertain("B.LEAGUE schedule page has no recognisable game block")

@@ -508,7 +508,58 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     # not the 403ing web_json/contexts tree). Both were captured by an
     # out-of-sandbox probe on 2026-11-23 and vendored under tests/fixtures/
     # bleague/captures; the adapter records every URL/size/digest it reads.
-    LeagueSpec(League.JAPAN_B_LEAGUE, "Japan B.League", "japan_b_league", "Asia/Tokyo", "Asia/Tokyo", "bleague", "bleague", "bleague", source_detail="B1 slate is server-rendered HTML (/schedule/?tab=1&year=&mon=&day=, note: mon not month; day is echoed back but does not scope the content -- four day=22/23/24/25 fetches on 2026-11-23 held the same ten game keys and differed by the two echoed day bytes, so the page serves its current round and rows are dated by their own GameDateTime); club ids, UTC tip and quarter scores come from the keyless S3 snapshot web_json/v2_genius_contexts/{key}/{snapshot}.json via a latestid pointer. No key.", price_sources=(_aggregate_research_only("betexplorer"),)),
+    LeagueSpec(
+        League.JAPAN_B_LEAGUE,
+        "Japan B.League Premier",
+        "japan_b_league",
+        "Asia/Tokyo",
+        "Asia/Tokyo",
+        "bleague",
+        "bleague",
+        "bleague",
+        source_detail=(
+            "Top division (B.LEAGUE PREMIER, the schedule page's tab=1; the tab "
+            "numbering survived the 2026-27 rebrand, the division names did not). "
+            "Slate is server-rendered HTML (/schedule/?tab=1&year=&mon=&day=, note: "
+            "mon not month; day is echoed back but does not scope the content -- "
+            "four day=22/23/24/25 fetches on 2026-11-23 held the same ten game keys "
+            "and differed by the two echoed day bytes, so the page serves its "
+            "current round and rows are dated by their own GameDateTime); club ids, "
+            "UTC tip and quarter scores come from the keyless S3 snapshot "
+            "web_json/v2_genius_contexts/{key}/{snapshot}.json via a latestid "
+            "pointer. No key. This lane claims no aggregate price source: the only "
+            "BetExplorer Japan board page captured (japan/b-league-one) is the "
+            "SECOND division and matched the tab=2 slate game-for-game, so pricing "
+            "PREMIER fixtures against it guaranteed that no club name could agree "
+            "(run 45385819819 priced nothing and claimed full coverage). Prices come "
+            "only from the bounded direct day-board fallback, which discovers games "
+            "by date rather than by slug. Split from JAPAN_B_ONE on 2026-11-24."
+        ),
+        price_sources=(),
+    ),
+    LeagueSpec(
+        League.JAPAN_B_ONE,
+        "Japan B.League One",
+        "japan_b_one",
+        "Asia/Tokyo",
+        "Asia/Tokyo",
+        "bleague",
+        "bleague",
+        "bleague",
+        source_detail=(
+            "Second division (B.LEAGUE ONE, the schedule page's tab=2), split out of "
+            "the Japan lane on 2026-11-24 because one lane cannot be two divisions. "
+            "Same contract as the Premier lane -- server-rendered slate at "
+            "/schedule/?tab=2&year=&mon=&day= (mon, not month) plus the keyless S3 "
+            "snapshot web_json/v2_genius_contexts/{key}/{snapshot}.json via a "
+            "latestid pointer, both captured out-of-sandbox and vendored under "
+            "tests/fixtures/bleague/captures -- read with tab=2. Its aggregate price "
+            "source is the one Japan board page that was captured and matched the "
+            "tab=2 slate game-for-game (basketball/japan/b-league-one); the site "
+            "average only, never a named book."
+        ),
+        price_sources=(_aggregate_research_only("betexplorer"),),
+    ),
     LeagueSpec(League.SOUTH_KOREA_KBL, "South Korea KBL", "south_korea_kbl", "Asia/Seoul", "Asia/Seoul", "kbl", "kbl", "kbl", source_detail="Schedule/results use the KBL data API behind www.kbl.or.kr (GET /match/list with a fromDate/toDate window, plus /common/teamList for English team names; two headers, Channel and TeamCode, no key). Route referenced from the SportsDataverse kbl module (MIT, read 2026-11-23); no Ma Golide first-party body is retained, so each run records the URL, byte count and sha256 it actually saw. Quarter splits are not captured, so a settled row is totals-only and not quarter-reconcilable.", price_sources=(_aggregate_research_only("betexplorer"),)),
     LeagueSpec(League.BRAZIL_NBB, "Brazil NBB", "brazil_nbb", "America/Sao_Paulo", "America/Sao_Paulo", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
     LeagueSpec(League.ARGENTINA_LIGA_NACIONAL, "Argentina Liga Nacional", "argentina_liga_nacional", "America/Argentina/Buenos_Aires", "America/Argentina/Buenos_Aires", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
