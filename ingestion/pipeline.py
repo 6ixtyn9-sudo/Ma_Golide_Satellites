@@ -1107,9 +1107,36 @@ class Pipeline:
                     )
                 )
         elif league in (League.EUROLEAGUE, League.EUROCUP):
+            euroleague.reset_probe()
             games = euroleague.discover_games(
                 _iso(self.config.date_yyyymmdd), self.fetch, self._euro_seasoncode()
             )
+            probe = euroleague.last_probe()
+            # This branch holds a read receipt: the void guard below must stay
+            # quiet. An on-date miss -- rows read, no games today -- is an
+            # answer, not a void.
+            read_receipt = bool(probe)
+            if probe:
+                now = self._now_iso()
+                self._record_health(
+                    ProviderHealth(
+                        provider="euroleague",
+                        league=self.config.league_enum,
+                        last_attempt_utc=now,
+                        last_success_utc=now if games else None,
+                        state=CoverageState.OK if games else CoverageState.MISSING,
+                        coverage={
+                            "games": len(games),
+                            "rows": probe.get("rows", 0),
+                            "seasoncode": probe.get("seasoncode"),
+                        },
+                        detail=(
+                            f"url={probe.get('url')} rows={probe.get('rows')} "
+                            f"payload_bytes={probe.get('payload_bytes')} "
+                            f"payload_sha256={probe.get('payload_sha256')}"
+                        )[:500],
+                    )
+                )
         elif league is League.EUROLEAGUE_W:
             games = fiba_euroleague_w.discover_games(
                 _iso(self.config.date_yyyymmdd), self._fiba_schedule_fetch
