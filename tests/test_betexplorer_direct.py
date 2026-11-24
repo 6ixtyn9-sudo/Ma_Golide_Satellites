@@ -772,3 +772,26 @@ def test_pipeline_skips_direct_request_only_when_all_named_core_markets_exist(mo
     status = pipeline.book_provider_status["betexplorer_direct"]
     assert status["status"] == "fallback_not_needed"
     assert status["snapshots_fetched"] == 0
+
+
+def test_an_empty_slate_is_named_not_claimed_as_covered():
+    """An empty slate must not be reported as ``fallback_not_needed``.
+
+    "A fresh named full-game moneyline already exists for every slate game" is
+    vacuously true over zero games and hides the real state (run
+    45385819819: JAPAN_B_LEAGUE dropped all ten slate games as off-date, priced
+    nothing, and still claimed full named-moneyline coverage).
+    """
+
+    pipeline = Pipeline(
+        PipelineConfig(league="JAPAN_B_LEAGUE", date_yyyymmdd=DATE, fixture_now_utc=OBSERVED),
+        InMemoryStore(),
+        fetch=lambda _url: {},
+    )
+    pipeline._reset_stage()
+    pipeline._acquire_book_lines([])
+
+    status = pipeline.book_provider_status["betexplorer_direct"]
+    assert status["status"] == "skipped_no_slate"
+    assert "no slate games survived acquisition" in status["detail"]
+    assert status["snapshots_fetched"] == 0
