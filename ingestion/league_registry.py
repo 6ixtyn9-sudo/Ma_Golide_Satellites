@@ -243,7 +243,17 @@ _EXCHANGE_OBSERVATION = _exchange_observation(
 )
 
 
-def _aggregate_research_only(provider: str, *, detail: str = "") -> PriceSourcePolicy:
+def _aggregate_consensus_price(provider: str, *, detail: str = "") -> PriceSourcePolicy:
+    """A representative/average quote: an observed paper price, not a book's own.
+
+    Until 2026-11-22 these policies were named "research only" because the
+    average could not price a ticket at all. Operator decision 2026-11-22
+    accepts the average as a paper-ticket price, so the name follows the
+    behaviour: the provenance is ``AGGREGATE_CONSENSUS`` on every row and is
+    never relabelled a named-book quote. Source permission and operational
+    validation stay ``unresolved``/``probation`` as durable audit metadata.
+    """
+
     return PriceSourcePolicy(
         provider,
         PriceProvenance.AGGREGATE_CONSENSUS,
@@ -253,17 +263,22 @@ def _aggregate_research_only(provider: str, *, detail: str = "") -> PriceSourceP
     )
 
 
-_ABA_BETEXPLORER_RESEARCH_ONLY = _aggregate_research_only(
+_ABA_BETEXPLORER_AGGREGATE = _aggregate_consensus_price(
     "betexplorer",
     detail=(
-        "ABA League representative average price observation for research only; "
-        "never a named-book ticket, receipt, bank, ROI, or execution quote."
+        "ABA League representative average price observation; it prices a paper "
+        "leg only as an explicit AGGREGATE_CONSENSUS quote and is never a "
+        "named-book ticket, receipt, bank, ROI, or execution quote."
     ),
 )
 
 
-def _euroleague_aggregate_research_only(provider: str) -> PriceSourcePolicy:
-    """Retain aggregate observations for ordinary pick reporting, never tickets."""
+def _euroleague_aggregate_consensus_price(provider: str) -> PriceSourcePolicy:
+    """EuroLeague's representative average, labelled as exactly that.
+
+    It prices a paper leg under the 2026-11-22 policy; it is never a named-book
+    quote and never borrows a bookmaker's name.
+    """
 
     return PriceSourcePolicy(
         provider,
@@ -271,8 +286,9 @@ def _euroleague_aggregate_research_only(provider: str) -> PriceSourcePolicy:
         SourcePermission.UNRESOLVED,
         OperationalValidation.PROBATION,
         detail=(
-            "EuroLeague representative aggregate observation for research and "
-            "pick reporting only; never a named-book ticket or execution quote."
+            "EuroLeague representative aggregate observation; it prices a paper "
+            "leg only as an explicit AGGREGATE_CONSENSUS quote and is never a "
+            "named-book ticket, receipt, or execution price."
         ),
     )
 
@@ -327,7 +343,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
         "euroleague",
         "euroleague",
         "euroleague",
-        (_euroleague_aggregate_research_only("betexplorer"),),
+        (_euroleague_aggregate_consensus_price("betexplorer"),),
     ),
     LeagueSpec(
         League.EUROLEAGUE_W,
@@ -338,6 +354,16 @@ _SPECS: Tuple[LeagueSpec, ...] = (
         "fiba_elw",
         "fiba_elw",
         "fiba_elw",
+        (_aggregate_consensus_price("betexplorer"),),
+        source_detail=(
+            "Price route added 2026-11-24: BetExplorer's own Euroleague Women "
+            "2026/2027 fixtures table (slug verified from the served page's h1) "
+            "publishes the representative two-way average, and its match pages "
+            "carry named-book quotes (bet365.us 1.63/2.15, BetMGM.us 1.67/2.10 "
+            "for Kibirkstis Vilnius W v Landes W, tip 25.11.2026 12:00) that the "
+            "universal direct fallback can match. Schedule and results stay on "
+            "the FIBA GDAP lane; this source prices, it does not schedule."
+        ),
     ),
     LeagueSpec(
         League.CBA,
@@ -348,7 +374,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
         "cba",
         "cba",
         "cba",
-        (_aggregate_research_only("betexplorer"),),
+        (_aggregate_consensus_price("betexplorer"),),
     ),
     LeagueSpec(
         League.NCAA_M,
@@ -377,7 +403,9 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     # (U instead of E). Two independent public clients document that contract,
     # but Ma Golide still retains no first-party capture for EuroCup itself, so
     # the lane is labelled as a referenced route contract rather than a live
-    # capture. Pricing stays on the universal direct BetExplorer fallback.
+    # capture. Pricing rides BetExplorer: the competition's own fixtures table
+    # for the representative average, plus the universal direct fallback for a
+    # named-book quote on any game it can match.
     LeagueSpec(
         League.EUROCUP,
         "EuroCup",
@@ -387,18 +415,25 @@ _SPECS: Tuple[LeagueSpec, ...] = (
         "euroleague",
         "euroleague",
         "euroleague",
+        (_aggregate_consensus_price("betexplorer"),),
         source_detail=(
             "EuroCup schedule/results use the validated EuroLeague Basketball adapter "
             "with competition code U (api-live.euroleague.net v2 competitions/{E|U}); "
             "the route shape is referenced from the same provider host and two "
-            "independent public clients, with no Ma Golide first-party capture retained."
+            "independent public clients, with no Ma Golide first-party capture retained. "
+            "Price route added 2026-11-24: BetExplorer's own Eurocup 2026/2027 fixtures "
+            "table (slug verified from the served page's h1) publishes the "
+            "representative average for this competition; at verification time the "
+            "next round (8 Dec) was too far out to have a market yet, while settled "
+            "EuroCup games carried quotes (1.19/4.23), so the route fills as each "
+            "round approaches."
         ),
     ),
     # BCL runs on the FIBA GDAP platform the EuroLeague Women lane already reads,
     # so this row reuses that contract module (header name, public fallback key,
     # UTC parser, status vocabulary) instead of restating it. Competition 209123;
     # the schedule index carries totals but no quarter split.
-    LeagueSpec(League.BASKETBALL_CHAMPIONS_LEAGUE, "Basketball Champions League", "basketball_champions_league", "Europe/Paris", "Europe/Paris", "bcl", "bcl", "bcl", source_detail="FIBA GDAP getgdapgamesbycompetitionid?gdapCompetitionId=209123 (whole season in one call, date-filtered client-side), gated by the site-shipped Ocp-Apim-Subscription-Key. One verbatim row vendored; settled rows are totals-only (no boxscore route captured).", price_sources=(_aggregate_research_only("betexplorer"),)),
+    LeagueSpec(League.BASKETBALL_CHAMPIONS_LEAGUE, "Basketball Champions League", "basketball_champions_league", "Europe/Paris", "Europe/Paris", "bcl", "bcl", "bcl", source_detail="FIBA GDAP getgdapgamesbycompetitionid?gdapCompetitionId=209123 (whole season in one call, date-filtered client-side), gated by the site-shipped Ocp-Apim-Subscription-Key. One verbatim row vendored; settled rows are totals-only (no boxscore route captured).", price_sources=(_aggregate_consensus_price("betexplorer"),)),
     # ESPN's public NBA G League scoreboard and event-summary route were
     # captured with stable event/team identity, UTC tips, terminal status, and
     # reconciled Q1–Q4 finals. This grants canonical schedule/result handling
@@ -439,10 +474,10 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "route contract referenced from SportsDataverse documentation, no Ma Golide "
             "first-party capture retained."
         ),
-        price_sources=(_aggregate_research_only("betexplorer"),),
+        price_sources=(_aggregate_consensus_price("betexplorer"),),
     ),
-    LeagueSpec(League.FRANCE_LNB_PRO_A, "France LNB Pro A", "france_lnb_pro_a", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
-    LeagueSpec(League.GERMANY_BBL, "Germany BBL", "germany_bbl", "Europe/Berlin", "Europe/Berlin", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
+    LeagueSpec(League.FRANCE_LNB_PRO_A, "France LNB Pro A", "france_lnb_pro_a", "Europe/Paris", "Europe/Paris", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_consensus_price("betexplorer"),)),
+    LeagueSpec(League.GERMANY_BBL, "Germany BBL", "germany_bbl", "Europe/Berlin", "Europe/Berlin", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_consensus_price("betexplorer"),)),
     # legabasket.it's own JSON API is a referenced route contract (probe run
     # externally on 2026-11-22; no first-party body retained here): a
     # championships list keyed by the season's FIRST year, a focus-day calendar
@@ -467,7 +502,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "quarters. Referenced probe, no first-party capture; the calendar cannot "
             "enumerate a season, so history backfill is refused."
         ),
-        price_sources=(_aggregate_research_only("betexplorer"),),
+        price_sources=(_aggregate_consensus_price("betexplorer"),),
     ),
         # The federation's own mini-app API answers one Turkey local date at a
     # time: GET /Match/get-daily-matches?match_date=YYYY-MM-DD, grouping the
@@ -483,7 +518,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     # any date, so no parser change can produce BSL fixtures from it. Declared
     # unavailable rather than left claiming a source: 732 runs previously
     # produced nothing and looked healthy doing it.
-    LeagueSpec(League.TURKEY_BSL, "Turkey BSL", "turkey_bsl", "Europe/Istanbul", "Europe/Istanbul", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="TBF mini-app API /Match/get-daily-matches answers 200 but ignores match_date (identical body for 2026-11-21/22/23) and returns only TKBL rows; no BSL fixture is obtainable from this route. The same host does serve BSL: /Match/get-all-matches-for-filter?ActivityId=22214&Page=1&PageSize=-1 answered 200 with 8 live BSL rows (round 9, played finals) in the same row schema, so this lane is unavailable because the adapter is pointed at the wrong route, not because no source exists. Re-point the adapter before re-enabling. See lane-probe-2026-11-23.md.", price_sources=(_aggregate_research_only("betexplorer"),)),
+    LeagueSpec(League.TURKEY_BSL, "Turkey BSL", "turkey_bsl", "Europe/Istanbul", "Europe/Istanbul", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="TBF mini-app API /Match/get-daily-matches answers 200 but ignores match_date (identical body for 2026-11-21/22/23) and returns only TKBL rows; no BSL fixture is obtainable from this route. The same host does serve BSL: /Match/get-all-matches-for-filter?ActivityId=22214&Page=1&PageSize=-1 answered 200 with 8 live BSL rows (round 9, played finals) in the same row schema, so this lane is unavailable because the adapter is pointed at the wrong route, not because no source exists. Re-point the adapter before re-enabling. See lane-probe-2026-11-23.md.", price_sources=(_aggregate_consensus_price("betexplorer"),)),
     # Revived 2026-11-24: the league has no official schedule route of its own,
     # but its fixtures table carried 7 both-sided quotes on an in-season page --
     # the only zero-priced-adjacent lane in the probe that was actually pricing.
@@ -506,7 +541,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "unreviewed. No results route, so settlement is unsupported by name."
             " Results route exercised end to end on 2026-11-24 from an egress host: EsakeResults?series=8 answered 200 in 139,358 B (sha256 a721bd89...) and robots.txt is absent (404, an allow state). The reader's row container matches the served markup -- 14 esake-program-game containers for 7 rows -- but it finds no EsakegameView?idgame= identity and no final-score block in any of them -- although the served page does carry them: hrefs of the form EsakegameView?idgame=3C7521D5&mode=2 (8 hex, uppercase; two per game, mode=2 and mode=3) appear in it, and a .esake-program-game-final-score style rule exists. So the anchors precede the row class this reader splits on, which is a split-point bug rather than a missing identity. Captured row markup 2026-11-24 confirms it exactly: the toggle handler in a script attribute writes .closest('.esake-program-game'), which the reader's bare-token split counted as a row start, cutting each game at its own toggle (7 games x 2 = the 14 containers, the first half holding both anchors and no score, the second holding the score and no anchor). The reader now requires the class attribute itself, not the bare token, and reads clubs and total from the final-score block, cutting the hidden per-quarter row before counting names; the captured fragment replays to 1 container, 1 row, identity 3C7521D5. The full-page replay against the saved bytes then read the round: containers 7, rows 7, no_identity 0, names_ambiguous 0, and the totals 84-87, 100-64, 83-87, 99-77 -- but with_final 0, because all seven dates were unreadable. The served date cell breaks inside the month name (newlines and indentation between the letters of the month), so a reader demanding a space between day and month found nothing on a page that plainly shows a date; it now retries with all whitespace removed, and a nested span inside a club cell is read whole rather than trimmed at the inner close tag. What still gates the lane is a dated final from the served bytes, not a route. Replayed once more on the fixed tree: containers 7, rows 7, no_identity 0, names_ambiguous 0, and the names now read whole including their sponsors -- ΚΟΛΟΣΣΟΣ H HOTELS COLLECTION, ΠΡΟΜΗΘΕΑΣ ΠΑΤΡΑΣ ΒΙΚΟΣ COLA, ΠΑΝΑΘΗΝΑΪΚΟΣ AKTOR -- so the depth-aware span fix is proven against served bytes, not just against a fixture. The dates are still unreadable: day=None month=None on all seven, so the round's own date cell carries the day and month somewhere this reader does not look, and the next read is that cell's escaped bytes rather than another hypothesis. That read found the cause: the saved page had been decoded as ISO-8859-1 because the host declares no charset, so every Greek letter had become two latin-1 characters, one of them a control code -- mojibake in the string, not in the terminal. With decode_body_bytes in ingestion/http.py the first live request now returns 200 in 133,247 B, sha256 8a2ebdb99a546d8306d5d457fced2da68bd12ca81603585debb093a1af857405, and the reader counts containers 7, rows 7, with_final 7, unresolved_date 0: seven dated finals, ΗΡΑΚΛΗΣ 84-87 ΑΕΚ among them. The lane is still source_unavailable and that is not an oversight: ActualResult.reconciles() needs quarters that sum to the final, this reader parses finals only, and switching the label before that adapter exists would be a status string with no behaviour behind it, so the route is served while the parser's identity and score patterns are wrong. That is a parser fix against captured bytes, not a route question: no results are written and the lane stays source_unavailable until the reader is replayed against the saved page and the date+tip join is unambiguous. See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
-        price_sources=(_aggregate_research_only("betexplorer"),),
+        price_sources=(_aggregate_consensus_price("betexplorer"),),
         operator_acceptance=OperatorAcceptance(
             decided_by="operator",
             decided_on="2026-11-24",
@@ -528,7 +563,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     # unverified. BetExplorer stays separate: aggregate observations are
     # research-only and cannot price tickets or support ROI, receipts, banks,
     # or execution.
-    LeagueSpec(League.ABA_LEAGUE, "ABA League", "aba_league", "Europe/Belgrade", "Europe/Belgrade", "aba_liga", "aba_liga", "aba_liga", (_ABA_BETEXPLORER_RESEARCH_ONLY,), source_detail="Externally referenced aba-liga.com calendar/detail route: season/game scope, official team IDs, Europe/Belgrade tips, and period-reconciled finals are required. Ma Golide retains no first-party capture; live behavior and source automation/reuse terms remain unverified. BetExplorer averages remain research-only."),
+    LeagueSpec(League.ABA_LEAGUE, "ABA League", "aba_league", "Europe/Belgrade", "Europe/Belgrade", "aba_liga", "aba_liga", "aba_liga", (_ABA_BETEXPLORER_AGGREGATE,), source_detail="Externally referenced aba-liga.com calendar/detail route: season/game scope, official team IDs, Europe/Belgrade tips, and period-reconciled finals are required. Ma Golide retains no first-party capture; live behavior and source automation/reuse terms remain unverified. BetExplorer averages remain average-provenance paper prices, never named-book quotes."),
     # The league's own JSON board route is a referenced contract (basket.co.il
     # ``ws.asmx/Games``, documented by SportsDataverse hoopR ``ibba_games``).
     # It carries per-quarter scores as pipe-delimited strings, but no UTC
@@ -550,7 +585,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "Tip times are local wall clock with no offset, so Asia/Jerusalem is applied as a "
             "recorded assumption rather than a provider fact."
         ),
-        price_sources=(_aggregate_research_only("betexplorer"),),
+        price_sources=(_aggregate_consensus_price("betexplorer"),),
     ),
     # B.League serves its slate as server-rendered HTML on www.bleague.jp and the
     # structured record on a keyless S3 snapshot (web_json/v2_genius_contexts,
@@ -587,7 +622,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "pipeline's own first fetch confirms the slug rather than assuming it. "
             "Split from JAPAN_B_ONE on 2026-11-24."
         ),
-        price_sources=(_aggregate_research_only("betexplorer"),),
+        price_sources=(_aggregate_consensus_price("betexplorer"),),
     ),
     LeagueSpec(
         League.JAPAN_B_ONE,
@@ -627,11 +662,11 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "first context read would then refuse every game discovered in the "
             "meantime."
         ),
-        price_sources=(_aggregate_research_only("betexplorer"),),
+        price_sources=(_aggregate_consensus_price("betexplorer"),),
     ),
-    LeagueSpec(League.SOUTH_KOREA_KBL, "South Korea KBL", "south_korea_kbl", "Asia/Seoul", "Asia/Seoul", "kbl", "kbl", "kbl", source_detail="Schedule/results use the KBL data API behind www.kbl.or.kr (GET /match/list with a fromDate/toDate window, plus /common/teamList for English team names; two headers, Channel and TeamCode, no key). Route referenced from the SportsDataverse kbl module (MIT, read 2026-11-23); no Ma Golide first-party body is retained, so each run records the URL, byte count and sha256 it actually saw. Quarter splits are not captured, so a settled row is totals-only and not quarter-reconcilable.", price_sources=(_aggregate_research_only("betexplorer"),)),
-    LeagueSpec(League.BRAZIL_NBB, "Brazil NBB", "brazil_nbb", "America/Sao_Paulo", "America/Sao_Paulo", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
-    LeagueSpec(League.ARGENTINA_LIGA_NACIONAL, "Argentina Liga Nacional", "argentina_liga_nacional", "America/Argentina/Buenos_Aires", "America/Argentina/Buenos_Aires", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
+    LeagueSpec(League.SOUTH_KOREA_KBL, "South Korea KBL", "south_korea_kbl", "Asia/Seoul", "Asia/Seoul", "kbl", "kbl", "kbl", source_detail="Schedule/results use the KBL data API behind www.kbl.or.kr (GET /match/list with a fromDate/toDate window, plus /common/teamList for English team names; two headers, Channel and TeamCode, no key). Route referenced from the SportsDataverse kbl module (MIT, read 2026-11-23); no Ma Golide first-party body is retained, so each run records the URL, byte count and sha256 it actually saw. Quarter splits are not captured, so a settled row is totals-only and not quarter-reconcilable.", price_sources=(_aggregate_consensus_price("betexplorer"),)),
+    LeagueSpec(League.BRAZIL_NBB, "Brazil NBB", "brazil_nbb", "America/Sao_Paulo", "America/Sao_Paulo", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_consensus_price("betexplorer"),)),
+    LeagueSpec(League.ARGENTINA_LIGA_NACIONAL, "Argentina Liga Nacional", "argentina_liga_nacional", "America/Argentina/Buenos_Aires", "America/Argentina/Buenos_Aires", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_consensus_price("betexplorer"),)),
     # ------------------------------------------------------------------
     # 2026-11-24 additions.  These four competitions have no official schedule
     # route of their own; their public fixtures table is the only one, so the
@@ -657,7 +692,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "No results route, so settlement is unsupported by name."
             " Results route observed twice, and the two observations disagree. A 2026-11-24 probe read cbamatch/games/matchschedules?competitionId=56&seasonId=2286 and got the whole 2026-27 season (297,504 B, integer gameId, scores, gameStatus, 10/10 coverage). Re-read from an egress host at 2026-11-24T14:02Z the same URL answers HTTP 500 in 179 B: {\"error\":\"Internal Server Error\",\"message\":\"param name: roundId value not exists\"}. So the documented URL is not sufficient as written and a roundId parameter is required -- scripts/probe_cba_results.py enumerates bounded roundIds and records what each returns, because the round space is the one thing the error does not tell us. The second error named the second parameter: with roundId=1&teamId=N the host stops rejecting and answers 200 for every N in 1-30, each time in 42 B with zero games, so the value space is a (round, team) grid and both coordinates are now accepted -- round 1 simply holds no game for those team ids. The grid is bounded (REQUEST_BUDGET 40, refusing rather than trimming a wider sweep) and the next read is the 42-byte body itself, to learn whether it is an empty list or a refusal wearing a 200. It is an empty list: the body is a data array that is empty, a status of 0 and an explicit success message -- not an error wearing a 200 -- so round 1 genuinely holds no game for team 1 and the next move is finding the round that does, not re-reading the refusal. That move was made: teamId=1 walked across roundId 1-30, thirty requests, every one 200 in 42 B with zero games. So no single team id in the range the error implied is a team in this season, and the grid is exhausted rather than merely unexplored: what is missing is a real team id or a real season id, and neither is guessable from the route's own errors. The licence gate is open (operator_acceptance) and the host still publishes no terms document. See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
-        price_sources=(_aggregate_research_only("betexplorer"),),
+        price_sources=(_aggregate_consensus_price("betexplorer"),),
         operator_acceptance=OperatorAcceptance(
             decided_by="operator",
             decided_on="2026-11-24",
@@ -691,7 +726,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "Page average, not a named book; source terms unreviewed. No results route."
             " WP-JSON surface exercised 2026-11-24T14:03Z from an egress host: the namespace index answers 200 in 398,405 B and lists nkl-calendar/v1; nkl-calendar/v1/teams?season=2026 answers 200 in 1,390 B as {\"season\":2026,\"teams\":[{\"id\":3386,\"name\":\"Alytaus Patriotai\",\"slug\":\"alytaus-patriotai\"}]}. But the single-game object answers schedule only: keys id, summary, location, start_local, start_utc, end_utc, url, ics -- no score, no status. So the earlier \"endpoint family proven\" reading overstated it: this namespace is a calendar, not a results source, and the scores have to come from another route (the index also lists nkl/v1 and nkl-advanced-statistics/v1, neither yet read). Re-read 2026-11-24T14:2xZ: urbo-nkl/v1/games answers 401 rest_unauthorized ('Trūksta Authorization Bearer antraštės') and nkl/v1/live-scores answers 200 with an empty array, so the score-bearing namespaces observed so far are token-gated or empty rather than merely unread; nkl-amw/v1/games answers 401 rest_forbidden ('Deja, Jūs negalite to daryti') and nkl/v1/live-scores?date=2026-11-24 answers 200 with the same empty array, so every score-bearing namespace observed on this host is auth-gated or empty and the WP-JSON surface has no public results route left to try; the next read is the site's own match pages. The aggregator's own results page for this lane was then captured at 14:45Z -- 200, 192,203 B, sha256 07a382c1774d...16de, 279 match-code links resolving to 140 distinct matches and 141 colon scores -- so the finals this host will not serve over WP-JSON are readable from a path-only, robots-allowed page. robots.txt carries Crawl-delay 10 with no Disallow; the host publishes no terms document. Licence gate open (operator_acceptance). Results lane activated 2026-11-24 on a live run, not on an argument: ingestion/providers/nkl.py settles a forecast in two requests from an egress host -- the club fixture page (which lists a whole season and is reused for every game of that club) then the match page -- and three games settled with quarters summing to the stated final: 2026-10-01 Kretinga 76-91 Neptunas 2 (125749, 2 requests), 2026-10-03 Vilkaviskis 84-65 Kretinga (125760, 2), 2026-10-10 Kretinga 95-99 Ukmerges Stekas (125775, 1), five requests total, every final agreeing with the club listing observed independently. The run found two defects that no single-game test had: the reader reported no row for three games the listings plainly contain, which is one sentence for three faults, and the club page prints a played fixture three times byte-identically, so the ambiguity rule refused every game on it -- identical repeats now collapse (collapse) while one match id carrying contradictory data still refuses. urllib and HttpClient return identical bytes (452,698 chars, 59 rows, same counts), so the mojibake class of bug was excluded by measurement rather than assumed. reads are paced to the host's own Crawl-delay 10 by PacedReader rather than by a caller who remembers to sleep. Settlement is store-driven: the fixtures lane discovers SCHEDULED rows with no score, so the results tick settles stored pending games from the club and match pages (Pipeline._nkl_settle) and writes nothing for a game whose quarters fail to reconcile. See docs/NKL-SETTLEMENT-LIVE-RUN.md."
         ),
-        price_sources=(_aggregate_research_only("betexplorer"),),
+        price_sources=(_aggregate_consensus_price("betexplorer"),),
         operator_acceptance=OperatorAcceptance(
             decided_by="operator",
             decided_on="2026-11-24",
@@ -732,7 +767,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "terms unreviewed. No results route."
             " Results route re-read 2026-11-24T14:03Z from an egress host: get/wnbl/matches/in/season/2026/regular answers HTTP 401 in 88 B even with Referer: https://www.wnbl.com.au/, where the earlier probe recorded 200 in 493,824 B. The referer alone no longer opens it, so the route now needs either a documented token or the exact headers the site's own client sends, and neither has been observed. wnbl.com.au publishes terms; licence gate open (operator_acceptance). The official route therefore needs a session token this project will not replicate. The next read is the aggregator's own results page for this lane (basketball/australia/wnbl-women/results/, path-only and robots-allowed), captured by scripts/probe_betexplorer_results.py --index. Captured 2026-11-24T14:41Z: 200, 129,186 B, sha256 f4249ca717af428117c9fb4c745a20b3e9f65b1a7d1049c79866b1a04be6115c, has_table true, 67 match-code links, 34 distinct codes, 35 colon scores, plus a 'No matches found' string that belongs to a hidden empty-state template rather than to this table. So the page carries a season of finals and the reader can be written against captured markup. Re-read 14:45Z: 128,973 B, sha256 e47afc235509...15b252, the same 67/34/35 counts. The remaining artifact is the shape of a row, which --index saves as a 2 KB window around the first code. ingestion/providers/betexplorer_results.py is the reader: it reuses the fixtures row rules this project has actually captured (in-match link, two span names, table-main__datetime) plus a score cell, reads a pair as a final only when both sides reach MIN_FINAL_POINTS 25 so no clock can qualify, and refuses a row rather than guessing it. `--read` replays it against the saved page with no network at all. The first replay read nothing -- 40 rows, 40 without a code -- because the fixtures parser demands href immediately before the in-match class and this page writes data-test in between: attribute order, not content, was the whole failure. With the anchor matched whole and its href read out of the tag, one captured row parses as Perth Lynx W 113 - 90 Canberra Capitals W. The results table groups rows under a round header rather than dating them, so every result from this page is undated and the date must come from the forecast the result is matched against. The replay then read the page: LITHUANIA_NKL 140 rows read out of 163, names_not_two 0, score_not_one 0 -- BC Olimpas Palanga 125-124 Omega-Tauras among them -- so a host that refuses every score-bearing WP-JSON namespace now has 140 readable finals, in its own club names, which is the same source this lane already forecasts from. WNBL reads 33 of 40 rows and WCBA 24 of 29, the remainder being round headers, with score_not_one zero in all three. Those are finals, and a final does not reconcile: ActualResult.reconciles() requires Q1-Q4 summing to the final, so a results index is cross-check material rather than a settlement record. The place period scores would live is the per-match page, which probe_betexplorer_results.py --match N now fetches once per league and reports period_markers for. The first such run opened the league's fixtures tab, because fixtures is eight lowercase letters and the code pattern asks for eight alphanumerics; the tool now requires a code to mix case or carry a digit and uses the index's own href, so its period_markers 0 is a tool fault rather than evidence. The next run then failed with HTTP 0, No scheme supplied: the index publishes hrefs as paths and the client needs absolute URLs, which absolute_url now supplies. Match pages then captured (NKL 110,391 B, WCBA 109,961 B) contain no table cells at all -- td_cells 0, integer_cells 0, span_cells 32 -- so this host's scoreboard is neither a table nor a Q1..Q4 label set, and period_markers 0 there measures the counter's vocabulary rather than the page. WNBL answered 429 six seconds later, so the probe now leaves ten seconds between match pages and stops on 429 instead of working through its list. The two pages that did arrive are an age gate -- an eighteen-plus modal in Portuguese -- so the aggregator is a verification source today, not a settlement source: 197 finals will catch a settlement error from elsewhere, and none of them can settle a forecast themselves. Going past the gate was then authorised: the operator stated on 2026-11-24 that they meet the site's 18+ requirement, so the self-declaration is theirs and every capture taken past it carries that authority. It is not a robots exception -- path-only URLs, no query shapes, no per-game burst. The probe passes the gate by reproducing what its accept button writes (--gate-hints reads that from a saved page, with no request), and separate runs are now spaced by an on-disk stamp (results_probe/.host-cooldown) rather than only inside a run, because three runs a few seconds apart are the burst that drew the 429. The gate was then read rather than guessed at: all.min.js (192,647 B, sha 6731062) defines init_age_wall, which sets age_verified=true for 365 days at path / when the accept button is clicked, and paints the wall only if the overlay carries data-age-wall-enabled=1 or the visitor looks Brazilian. Sending age_verified=true and js_cookie=1 on one match page returned status captured with td_cells 2, integer_cells 0 and period_markers 0 -- the same shape as the ungated read -- so the wall is painted client-side over a document the server sends either way, and the period table is not in the HTML at all. Passing the gate changed nothing an HTTP client can see: this lane is verification only by measurement rather than by assumption, and no further request on this route is worth making. See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
-        price_sources=(_aggregate_research_only("betexplorer"),),
+        price_sources=(_aggregate_consensus_price("betexplorer"),),
         operator_acceptance=OperatorAcceptance(
             decided_by="operator",
             decided_on="2026-11-24",
@@ -776,7 +811,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "basket.co.il serves the Premier board only (Leumit board ids answer "
             "empty). See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
-        price_sources=(_aggregate_research_only("betexplorer"),),
+        price_sources=(_aggregate_consensus_price("betexplorer"),),
         status=LaneStatus.RETIRED,
         status_detail=(
             "retired 2026-11-24 on the route assessment: the schedule side is served, "

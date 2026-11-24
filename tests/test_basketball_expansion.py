@@ -388,7 +388,10 @@ def test_registry_price_policy_is_provider_specific_and_fail_closed():
     assert euroleague_aggregate.price_provenance is PriceProvenance.AGGREGATE_CONSENSUS
     assert euroleague_aggregate.source_permission is SourcePermission.UNRESOLVED
     assert euroleague_aggregate.operational_validation is OperationalValidation.PROBATION
-    assert "pick reporting only" in euroleague_aggregate.detail
+    # Since the 2026-11-22 operator decision the average prices a paper leg, so
+    # the detail must claim neither named-book provenance nor ticket exclusion.
+    assert "AGGREGATE_CONSENSUS" in euroleague_aggregate.detail
+    assert "never a named-book ticket" in euroleague_aggregate.detail
 
     unknown = price_evidence_policy(League.NBA, "future-unreviewed-provider")
     assert unknown.source_permission is SourcePermission.UNRESOLVED

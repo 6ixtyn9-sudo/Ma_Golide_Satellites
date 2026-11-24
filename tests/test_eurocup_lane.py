@@ -146,7 +146,15 @@ def test_eurocup_backfill_is_wired_to_the_shared_history_engine():
     assert deep["status"] == "disabled_canonical_write_required"
 
 
-def test_eurocup_registry_contract_declares_only_the_fallback_price_lane():
+def test_eurocup_registry_contract_declares_both_betexplorer_price_lanes():
+    """EuroCup prices on the aggregate table and the direct book lookup.
+
+    Until 2026-11-24 the lane declared only the universal direct fallback, so
+    the competition's own fixtures table -- which does carry a representative
+    market for EuroCup -- was never read. Both routes stay BetExplorer; neither
+    relabels an average as a book's quote.
+    """
+
     from ingestion.league_registry import league_spec
 
     spec = league_spec(League.EUROCUP)
@@ -154,7 +162,7 @@ def test_eurocup_registry_contract_declares_only_the_fallback_price_lane():
     assert spec.results_source == "euroleague"
     assert spec.automated_schedule_supported is True
     assert spec.automated_results_supported is True
-    assert spec.book_providers == ("betexplorer_direct",)
+    assert spec.book_providers == ("betexplorer", "betexplorer_direct")
 
 
 def test_captured_u2026_overtime_row_reconciles():

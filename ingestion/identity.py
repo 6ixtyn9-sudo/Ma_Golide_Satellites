@@ -43,6 +43,18 @@ DEFAULT_TEAM_ALIASES: Dict[str, List[str]] = {
     "Besiktas Istanbul": ["Besiktas", "BJK"],
     "Zalgiris Kaunas": ["Zalgiris", "ZAL"],
     "FC Barcelona": ["Barca", "BAR", "Barcelona"],
+    # EuroLeague Women — BetExplorer appends a "W" marker and shortens some
+    # sponsor names, while FIBA GDAP publishes the club's official name with no
+    # marker.  Without these rows no ELW price can join at all: "Landes W" keys
+    # to ``landesw`` while FIBA's "Basket Landes" keys to ``basketlandes``, so
+    # the fixtures table's real quotes (2026-11-24: Kibirkstis Vilnius W 1.65 /
+    # Landes W 2.13) were dropped as ``no_exact_bookmaker_market``.
+    # Pairs are verified against the GDAP ``officialName`` capture of
+    # 2026-11-18 and the site's own Euroleague Women 2026/2027 rows; a pair is
+    # only added when both sides have been read, never inferred from a
+    # similarity score.
+    "Casademont Zaragoza": ["Zaragoza W", "Casademont Zaragoza W"],
+    "Basket Landes": ["Landes W", "Basket Landes W"],
     # EuroLeague — BetExplorer display names (live-verified 2026-11-16
     # against the official api-live schedule for the same games).
     "Dubai Basketball": ["Dubai"],

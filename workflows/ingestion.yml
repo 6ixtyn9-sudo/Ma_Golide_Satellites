@@ -480,6 +480,70 @@ jobs:
 
           python scripts/daily.py "${ARGS[@]}" | tee daily-output.json
 
+      - name: Score aggregate-price lanes with MAGOLIDE_SCORE
+        # Greece, WCBA and WNBL carry a fixtures page, an aggregate price and a
+        # published table, but no compliant schedule/result adapter -- so the
+        # forecast path that builds every other lane's card never runs for them.
+        # Scoring them from the published table is the only honest option left,
+        # and it now happens on every tick instead of only when a human
+        # remembered the script existed. NKL is here too: its results route is
+        # separate from its standings route, so this block is its only
+        # banker/robber view.
+        #
+        # The script paces every request at the host's measured ten-second
+        # floor, and reads one fixtures page, one match page, and one fragment
+        # per sub-table, so this costs seconds. `continue-on-error` is deliberate:
+        # a throttled research read must never suppress the lane's real picks,
+        # ticket card, or settlement evidence from the upload below.
+        if: >-
+          steps.capability.outputs.available == 'true' &&
+          contains(
+            fromJSON('["GREECE_BASKET_LEAGUE","CHINA_WCBA_W","AUSTRALIA_WNBL_W","LITHUANIA_NKL"]'),
+            matrix.league
+          )
+        continue-on-error: true
+        env:
+          LEAGUE: ${{ matrix.league }}
+          TARGET_DATE: ${{ matrix.target_date }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+        run: |
+          set -euo pipefail
+          ARGS=(
+            --league "$LEAGUE"
+            --date "$TARGET_DATE"
+            --localdata "$LOCALDATA"
+          )
+          # A manual dispatch stays the repository's read-only rehearsal: it
+          # scores the lane and prints the block without touching a card.
+          AUTOMATED_TICK=false
+          case "$EVENT_NAME:$EVENT_ACTION" in
+            repository_dispatch:magolide-scheduled-tick)
+              AUTOMATED_TICK=true
+              ;;
+          esac
+          if [ "$AUTOMATED_TICK" = "true" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
+            :
+          else
+            ARGS+=(--dry-run)
+            echo "Read-only rehearsal for $LEAGUE; the research block is printed, not written."
+          fi
+          python scripts/research_standings.py "${ARGS[@]}" | tee research-output.txt
+
+      - name: Publish MAGOLIDE_SCORE research summary
+        if: always()
+        run: |
+          set -euo pipefail
+          if [ ! -s research-output.txt ]; then
+            exit 0
+          fi
+          {
+            echo "## MAGOLIDE_SCORE research lane"
+            echo '```'
+            head -40 research-output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
       - name: Publish redacted operational summary
         if: always()
         env:
