@@ -307,9 +307,13 @@ def test_a_year_less_label_resolves_to_the_nearest_year_not_next_year():
 #: read it from.
 DARK_LANE_BLOCKERS = {
     "GREECE_BASKET_LEAGUE": "EsakeResults",
-    "CHINA_WCBA_W": "cba.net.cn",
-    "LITHUANIA_NKL": "nkl-calendar",
-    "AUSTRALIA_WNBL_W": "unresolved",
+    # Re-read 2026-11-24T14:02Z: the documented URL now answers 500 demanding a
+    # roundId, so the round space -- not the licence -- is what blocks it.
+    "CHINA_WCBA_W": "roundId",
+    # The namespace answers, but its game object has no score key: a calendar.
+    "LITHUANIA_NKL": "no score",
+    # Referer-only access stopped working between two reads the same day.
+    "AUSTRALIA_WNBL_W": "401",
     "ISRAEL_LIGA_LEUMIT": "robots Disallow",
 }
 

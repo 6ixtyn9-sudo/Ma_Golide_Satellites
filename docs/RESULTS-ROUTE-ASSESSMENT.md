@@ -126,9 +126,13 @@ when a caller asks for the other one, so the mismatch cannot be reintroduced by 
 forgotten argument. `tests/test_japan_division_split.py` holds that invariant,
 including that re-reading a B.ONE game's context cannot relabel it PREMIER.
 
-**Still open:** capturing a B.LEAGUE PREMIER fixtures page so that lane can claim
-an aggregate price of its own. Until then it is graded on results, not priced on
-the aggregate board — which is the honest state, not a gap being hidden.
+**Closed 2026-11-24:** a B.LEAGUE PREMIER board page was read by an external browser
+agent -- `basketball/japan/b-league-premier/fixtures/`, HTTP 200, served heading
+*"B.League Premier 2026/2027 Fixtures"*, dated rows from 04.12. -- so that lane now
+claims the slug and its aggregate price. The provenance is stated in the code: a
+third-party read, so this pipeline's first live fetch confirms the slug rather than
+assuming it, and a wrong slug fails loudly as a named gap instead of quietly pricing
+the wrong clubs.
 
 ## The operator decisions of 2026-11-24
 
@@ -152,6 +156,33 @@ asserts exactly that, so a future edit cannot turn a decision into a fake lane.
 retired lanes before it: the schedule side is served, every candidate results
 route is closed, so it could never settle and its fixture cards graded nothing.
 
+## What an egress host changed on 2026-11-24 (14:02–14:03Z)
+
+The probes that produced this document ran on a host without egress. Re-running
+three of the routes from GitHub Codespaces — which has egress — moved the verdicts
+on all three, and not in the direction anyone wanted:
+
+| Lane | Earlier reading | Re-read from egress | What it means |
+|---|---|---|---|
+| `CHINA_WCBA_W` | 297,504 B of season JSON, 10/10 coverage | **HTTP 500, 179 B**: `param name: roundId value not exists` | the documented URL is not sufficient; a `roundId` is required, and the error names no values |
+| `LITHUANIA_NKL` | "endpoint family proven" | `teams?season=2026` → 200 (1,390 B); `game/125863` → 200 but **schedule only**: `id, summary, location, start_local, start_utc, end_utc, url, ics` — no score, no status | `nkl-calendar` is a calendar, not a results source |
+| `AUSTRALIA_WNBL_W` | 200, 493,824 B via referer | **HTTP 401, 88 B** even with the referer | the referer alone no longer opens it |
+
+Two of the three earlier verdicts were therefore **overstated**, and the registry
+now says so in each lane's own `source_detail` rather than quietly improving. The
+lesson is worth keeping: a route proven once is a hypothesis about a host, not a
+fact about it.
+
+Greece was re-read the same day and came back the other way: `esake.gr/robots.txt` is
+**404 (absent, an allow state)**, and the series=8 results page answers **200** with the
+matchday label (*08η Αγωνιστική*), *Σαβ 21 Νοε - 15:00*, a venue, and
+`ΗΡΑΚΛΗΣ 84 - 87 ΑΕΚ` -- scores, server-rendered, as plain text. What that read did not
+yield is a container class or a game id, because the agent returned rendered text
+rather than HTML. Saving the HTML is exactly what `scripts/probe_esake_results.py` does.
+
+`GREEK` remains the shortest path: `scripts/probe_esake_results.py` was written for
+exactly this, and no egress read of `esake.gr` has yet succeeded.
+
 ## Open items
 
 1. **Greece:** run `scripts/probe_esake_results.py --series 8` once from a host with
@@ -160,7 +191,10 @@ route is closed, so it could never settle and its fixture cards graded nothing.
 2. **WNBL:** request the missing report — the probe log suggests it got furthest
    of all five.
 3. **Japan:** choose the division.
-4. **China / Lithuania / WNBL:** the licence gate is open (operator acceptance,
-   2026-11-24). What is left is one captured response per lane, so the parser can
-   be written against served bytes rather than imagined markup.
-5. **Israel Leumit:** retired 2026-11-24; no candidate route is permitted.
+4. **China:** run `scripts/probe_cba_results.py --rounds 1-40` from an egress host;
+   it enumerates the round space the 500 names and saves every body.
+5. **Lithuania:** read the two namespaces the index lists and this probe did not
+   test (`nkl/v1`, `nkl-advanced-statistics/v1`) for a score-bearing route.
+6. **WNBL:** capture the 401 body and the headers the site's own client sends; the
+   referer-only read that worked once no longer does.
+7. **Israel Leumit:** retired 2026-11-24; no candidate route is permitted.

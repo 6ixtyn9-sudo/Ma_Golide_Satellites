@@ -580,11 +580,14 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "BetExplorer Japan board page captured (japan/b-league-one) is the "
             "SECOND division and matched the tab=2 slate game-for-game, so pricing "
             "PREMIER fixtures against it guaranteed that no club name could agree "
-            "(run 45385819819 priced nothing and claimed full coverage). Prices come "
-            "only from the bounded direct day-board fallback, which discovers games "
-            "by date rather than by slug. Split from JAPAN_B_ONE on 2026-11-24."
+            "(run 45385819819 priced nothing and claimed full coverage). Its own board page, "
+            "basketball/japan/b-league-premier, was read on 2026-11-24 by an external "
+            "browser agent, which quoted the served heading 'B.League Premier 2026/2027 "
+            "Fixtures' and dated rows from 04.12.; that read is third-party, so the "
+            "pipeline's own first fetch confirms the slug rather than assuming it. "
+            "Split from JAPAN_B_ONE on 2026-11-24."
         ),
-        price_sources=(),
+        price_sources=(_aggregate_research_only("betexplorer"),),
     ),
     LeagueSpec(
         League.JAPAN_B_ONE,
@@ -635,7 +638,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "match code and names are display only. The served clock is CET/CEST, not "
             "Asia/Shanghai. Page average, not a named book; source terms unreviewed. "
             "No results route, so settlement is unsupported by name."
-            " Results endpoints proven 2026-11-24 but not enabled: cba.net.cn's own data hub (cbamatch/games/matchschedules?competitionId=56&seasonId=2286) answers the whole 2026-27 season (297,504 B, integer gameId, scores, gameStatus) with 10/10 coverage, but the host publishes no terms document at all -- a 200 is not permission -- and the endpoint is season-scoped, not date-scoped. See docs/RESULTS-ROUTE-ASSESSMENT.md."
+            " Results route observed twice, and the two observations disagree. A 2026-11-24 probe read cbamatch/games/matchschedules?competitionId=56&seasonId=2286 and got the whole 2026-27 season (297,504 B, integer gameId, scores, gameStatus, 10/10 coverage). Re-read from an egress host at 2026-11-24T14:02Z the same URL answers HTTP 500 in 179 B: {\"error\":\"Internal Server Error\",\"message\":\"param name: roundId value not exists\"}. So the documented URL is not sufficient as written and a roundId parameter is required -- scripts/probe_cba_results.py enumerates bounded roundIds and records what each returns, because the round space is the one thing the error does not tell us. The licence gate is open (operator_acceptance) and the host still publishes no terms document. See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
         price_sources=(_aggregate_research_only("betexplorer"),),
         operator_acceptance=OperatorAcceptance(
@@ -669,7 +672,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "Fixtures', served 2026-11-24: 167 rows, 7 priced of which 6 still future, "
             "99 rows with no kickoff cell). Clock is the site's CET/CEST wall clock. "
             "Page average, not a named book; source terms unreviewed. No results route."
-            " Results endpoints proven 2026-11-24 but not enabled: nkl.lt declares its own WP-JSON surface (/wp-json/nkl-calendar/v1/teams?season= and /game/<id>, per the namespace index and the calendar JS) and its robots.txt carries Crawl-delay 10 with no Disallow, but the host publishes no terms document -- only cookie and privacy policies -- so the route stays off. See docs/RESULTS-ROUTE-ASSESSMENT.md."
+            " WP-JSON surface exercised 2026-11-24T14:03Z from an egress host: the namespace index answers 200 in 398,405 B and lists nkl-calendar/v1; nkl-calendar/v1/teams?season=2026 answers 200 in 1,390 B as {\"season\":2026,\"teams\":[{\"id\":3386,\"name\":\"Alytaus Patriotai\",\"slug\":\"alytaus-patriotai\"}]}. But the single-game object answers schedule only: keys id, summary, location, start_local, start_utc, end_utc, url, ics -- no score, no status. So the earlier \"endpoint family proven\" reading overstated it: this namespace is a calendar, not a results source, and the scores have to come from another route (the index also lists nkl/v1 and nkl-advanced-statistics/v1, neither yet read). robots.txt carries Crawl-delay 10 with no Disallow; the host publishes no terms document. Licence gate open (operator_acceptance). See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
         price_sources=(_aggregate_research_only("betexplorer"),),
         operator_acceptance=OperatorAcceptance(
@@ -702,7 +705,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "0 rows with no kickoff cell -- the cleanest page in the sweep). Clock is "
             "the site's CET/CEST wall clock. Page average, not a named book; source "
             "terms unreviewed. No results route."
-            " Results route unresolved as of 2026-11-24: prod.rosetta.nbl.com.au answered per-season WNBL match JSON and wnbl.com.au publishes terms, but this lane's assessment was never completed -- no route, no coverage arithmetic, no adapter. See docs/RESULTS-ROUTE-ASSESSMENT.md."
+            " Results route re-read 2026-11-24T14:03Z from an egress host: get/wnbl/matches/in/season/2026/regular answers HTTP 401 in 88 B even with Referer: https://www.wnbl.com.au/, where the earlier probe recorded 200 in 493,824 B. The referer alone no longer opens it, so the route now needs either a documented token or the exact headers the site's own client sends, and neither has been observed. wnbl.com.au publishes terms; licence gate open (operator_acceptance). See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
         price_sources=(_aggregate_research_only("betexplorer"),),
         operator_acceptance=OperatorAcceptance(
