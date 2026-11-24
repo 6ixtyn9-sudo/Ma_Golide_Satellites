@@ -581,3 +581,41 @@ date, and read after that repair yields `2026-11-21` with the clubs intact.
 `without_code` is exactly the round-header rows in every table, and `score_not_one` is zero
 throughout: no row that had a code and two clubs failed to yield a total. Three lanes that
 could not settle this morning now read 197 finals between them.
+
+## Greece reads seven dated finals (2026-11-24T15:2xZ)
+
+```
+containers 7 · rows 7 · with_final 7 · without_final 0 · names_ambiguous 0
+unresolved_date 0 · duplicate_idgame 0 · no_identity 0
+
+3C7521D5 2026-11-21 84-87  ΗΡΑΚΛΗΣ                    | ΑΕΚ
+1439C9D6 2026-11-21 100-64 ΚΟΛΟΣΣΟΣ H HOTELS COLLECTION | ΠΡΟΜΗΘΕΑΣ ΠΑΤΡΑΣ ΒΙΚΟΣ COLA
+BE8E8A17 2026-11-21 83-87  ΔΟΞΑ ΛΕΥΚΑΔΑΣ ELABET        | ΠΕΡΙΣΤΕΡΙ Betsson
+95F2FDAA 2026-11-21 99-77  ΠΑΟΚ                       | ΑΡΗΣ
+779E922D 2026-11-21 85-72  ΠΑΝΑΘΗΝΑΪΚΟΣ AKTOR          | ΜΑΡΟΥΣΙ
+6AA68E52 2026-11-22 96-83  ΜΥΚΟΝΟΣ Betsson BC          | VIKOS ΦALCONS
+C02F68B7 2026-11-22 75-81  ΚΑΡΔΙΤΣΑ ΙΑΠΩΝΙΚΗ           | ΟΛΥΜΠΙΑΚΟΣ
+```
+
+Every count is now the one the page promised, and the same run proved the encoding fix at
+the source rather than on a repaired file: one request, **200 in 133,247 B**, sha256
+`8a2ebdb9…`. The byte count is its own evidence — the file was 139,358 B while it was
+double-encoded and is 133,247 B now, and 6,111 bytes is very close to one extra byte for
+every Greek letter in the page.
+
+Two things this does **not** establish, kept separate on purpose:
+
+* **No settlement.** `ActualResult.reconciles()` needs Q1–Q4 (or H1/H2) summing to the
+  final. This reader parses finals and cuts the hidden per-quarter row away precisely
+  because it repeats both club names. The page *has* quarters — the row's collapsed text
+  shows `Q1 15 23 Q2 17 19 Q3 25 20 Q4 20 7` — but that text is interleaved with player
+  stat lines and does not sum to any of these finals, so reading it from collapsed text
+  would be a guess.
+* **No join.** The receipt's join block is `stored_games: 0, attachable: 0, unmatched: 0`:
+  the lane has stored no games, so there is nothing for a final to attach to. That is the
+  fixtures side, not the results side.
+
+Hence `results_source` stays `source_unavailable`. The reader is proven; the *adapter* it
+would need — quarters reconciled to a final, attached to a stored game — does not exist,
+and relabelling the lane before it does would be a status string with no behaviour behind
+it. The next capture is the hidden row's own markup, ~900 escaped characters.

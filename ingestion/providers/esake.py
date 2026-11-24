@@ -35,9 +35,17 @@ to fail closed and to *count* what it cannot resolve rather than guessing:
 * an unresolvable month label or missing season context leaves the date unknown,
   and an unknown date cannot settle anything.
 
+A live read on 2026-11-24 settled the question this module was built to answer:
+one request, 133,247 B, sha256 ``8a2ebdb9…``, and counts of containers 7, rows 7,
+``with_final`` 7, ``unresolved_date`` 0 — seven games, seven identities, seven
+totals, seven dates.
+
 Nothing in this module writes, and nothing in it decides that a lane may settle.
-The registry stays on ``source_unavailable`` until a live read of this reader has
-been replayed against captured bytes.
+The registry stays on ``source_unavailable`` for a reason this reader does not
+answer: ``ActualResult.reconciles()`` needs Q1–Q4 (or H1/H2) that sum to the
+final, and a final alone is not a settlement record. The page carries quarters in
+its hidden per-quarter row, but that row is not parsed here, and a quarter parser
+written from collapsed text would be a guess wearing a date.
 
 Terms, as the operator decided them
 -----------------------------------
