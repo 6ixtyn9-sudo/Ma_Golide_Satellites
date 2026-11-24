@@ -19,15 +19,23 @@ position at all**, not "no pick today".
 
 ## Why "+29% ROI" is not a result
 
-- **n = 33.** Hit rate 33.3% ± 16.1% (95%, binomial). ROI's interval cannot
-  be pinned down without a variance assumption, and the assumption matters:
-  a single-bet-like spread of ~0.95u gives ±32.4% (t = 1.77), while the
-  acca-heavy reality — the settled positions include combined odds as high as
-  14.94 at 1u stake — widens it well past ±60pp. Bootstrapping 20 000 times
-  over the odds recorded in the frozen decision receipts (43 positions,
-  outcomes redrawn to the observed 11/33) gives −17% … +175% (half-width
-  ±96pp, z ≈ 0.60). Every method agrees on the conclusion: **the interval
-  spans zero.** The narrow figure should not be quoted on its own.
+- **n = 33.** Hit rate 33.3% ± 16.1% (95%, binomial). ROI's interval cannot be
+  pinned down without a variance assumption, and the assumption changes the
+  width by a factor of three. The ladder, all spanning zero:
+  - **±32.4%** — optimistic: every position treated as a single ~0.95u bet
+    (t = 1.77).
+  - **±62.4%** — the file-derivable model: 11 wins returned 42.659u on 33.0u
+    staked, i.e. an average payout of 3.878u per winning position; with flat
+    1u independent positions the single-position spread is
+    3.878·√(0.333·0.667) = 1.83u, so the standard error of the mean is
+    1.83/√33 = 0.32u and the ROI interval is ±62.4pp (z = 0.92).
+  - **±96pp** — the acca-realistic end: bootstrapping 20 000 times over the
+    odds recorded in the frozen decision receipts (43 positions, combined odds
+    up to 14.94, outcomes redrawn to the observed 11/33) gives
+    −17% … +175%.
+
+  Every method agrees on the conclusion: **the interval spans zero**, and the
+  narrow figure should never be quoted on its own.
 - **The +63% is 14 bets in one league**, chosen after the fact from a
   twenty-four-league field. Its companions: NBA at +4.18% (noise) and a Brier
   of 0.2766, which is worse than a coin's 0.25 on a two-way leg.
