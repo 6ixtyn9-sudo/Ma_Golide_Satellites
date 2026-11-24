@@ -17,7 +17,7 @@
       "logical_picks": 3
     },
     "2026-11-24": {
-      "frozen_fixtures": 0,
+      "frozen_fixtures": 1,
       "logical_picks": 12
     }
   },
@@ -3362,9 +3362,199 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-22"
       }
+    },
+    "2026-11-24": {
+      "401914597": {
+        "decision_cutoff_utc": "2026-11-24T17:00:00Z",
+        "frozen_at": "2026-11-24T17:40:33Z",
+        "game_id": "401914597",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Long Island Nets",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.384615,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "e428e71a9c7f62a1e86322ac2c37790d7b96fd7e522b9333ce00ba5af764f2b7",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "ccce236528ca3781ff03",
+            "game_id": "401914597",
+            "grade_status": "pending",
+            "home": "Capital City Go-Go",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "ccce236528ca3781ff03",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.384615,
+            "role": null,
+            "scheduled_utc": "2026-11-24T19:00:00Z",
+            "selection": "Q2"
+          },
+          {
+            "away": "Long Island Nets",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.653846,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "134c703aca86f82eea4c44abe4dea422ccb6694d8f769b405edef5c7e1c8fa9d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5b0c3db27636f7d1e0c7",
+            "game_id": "401914597",
+            "grade_status": "pending",
+            "home": "Capital City Go-Go",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "5b0c3db27636f7d1e0c7",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.653846,
+            "role": null,
+            "scheduled_utc": "2026-11-24T19:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Long Island Nets",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.653846,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "0bce4cf273fbd73be4df1a27b111c5cb048c7eb1aa729f055ae72ab50950b3f4",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7629dc0baf8711d5c73f",
+            "game_id": "401914597",
+            "grade_status": "pending",
+            "home": "Capital City Go-Go",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "7629dc0baf8711d5c73f",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.653846,
+            "role": null,
+            "scheduled_utc": "2026-11-24T19:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Long Island Nets",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.653846,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "40e200ea08f53d8c3209f97beb371e343d175c169159e2ef9889c8fe6f4e865f",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "81eb086543ed82f69a55",
+            "game_id": "401914597",
+            "grade_status": "pending",
+            "home": "Capital City Go-Go",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "81eb086543ed82f69a55",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-24T17:39:56Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.653846,
+            "role": null,
+            "scheduled_utc": "2026-11-24T19:00:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-24T19:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-24"
+      }
     }
   },
   "league": "NBA_G_LEAGUE",
-  "pending_frozen_games": [],
+  "pending_frozen_games": [
+    [
+      "401914597",
+      "2026-11-24T19:00:00Z"
+    ]
+  ],
   "schema_version": "magolide.pick_lifecycle_state"
 }
