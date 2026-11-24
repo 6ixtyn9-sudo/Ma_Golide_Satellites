@@ -21,7 +21,7 @@ Properties under test, in the order the failure modes were measured:
 
 from __future__ import annotations
 
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -161,7 +161,7 @@ def test_unreadable_page_raises_instead_of_returning_an_empty_slate():
 def test_a_read_page_with_no_games_on_the_date_is_an_answer_not_a_void():
     games = betexplorer_fixtures.fetch_slate(
         "AUSTRALIA_WNBL_W",
-        "2026-11-19",  # a date this capture does not cover
+        "2026-06-15",  # off-season: the capture spans 2026-11-18 .. 2027-04-16
         text_fetch=lambda _url: _page(),
         now_utc=OBSERVED,
     )
@@ -267,3 +267,31 @@ def test_pipeline_dispatch_writes_the_slate_and_its_receipt():
         gap.required_field == "official_results" and gap.provider == "source_unavailable"
         for gap in pipeline.gaps
     )
+
+
+def test_a_year_less_label_resolves_to_the_nearest_year_not_next_year():
+    """A fixture that tipped yesterday must not be dated next year.
+
+    The old rule bumped the year whenever the label's month/day had already
+    passed, so ``24.11.`` read on 2026-11-25 resolved to 2027: yesterday became
+    unreachable and its row reappeared in next season's slate.
+    """
+
+    from ingestion.providers.betexplorer import _parse_datetime
+
+    observed = datetime(2026, 11, 25, 12, 0, tzinfo=timezone.utc)
+
+    yesterday = _parse_datetime("24.11. 18:00", observed)
+    tomorrow = _parse_datetime("26.11. 18:00", observed)
+    new_year_eve = _parse_datetime("31.12. 20:00", observed)
+
+    assert yesterday is not None and yesterday.year == 2026
+    assert yesterday.day == 24
+    assert tomorrow is not None and tomorrow.year == 2026
+    assert new_year_eve is not None and new_year_eve.year == 2026
+    # A season that straddles January keeps both sides in one season.
+    january = datetime(2027, 1, 5, 12, 0, tzinfo=timezone.utc)
+    december = _parse_datetime("28.12. 20:00", january)
+    february = _parse_datetime("05.02. 20:00", january)
+    assert december is not None and december.year == 2026
+    assert february is not None and february.year == 2027

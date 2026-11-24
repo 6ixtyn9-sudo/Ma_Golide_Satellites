@@ -156,6 +156,48 @@ Prices on these lanes are an aggregate consensus from an unreviewed source
 ticket-eligible. The gate fails open for this source — the page is season-wide,
 so a half-hour gate must not pull it and call the read a probe.
 
+## Settlement for the fixtures-table lanes: what it actually needs
+
+The five fixtures-table lanes carry `results_source: source_unavailable`, and
+that is not a lazy default. A results page serves a *final score*, and a final
+score is not enough to forecast:
+
+    forecasting/model.py:409   game.actual is not None and actual.reconciles()[0]
+
+`ActualResult.reconciles()` refuses `PeriodKind.UNKNOWN`, so an 89-75 with no
+periods reconciles `(False, 'period kind unknown is not reconcilable')` and
+never enters the training corpus. A reconciliation-prerequisite check, not a
+convention, is what blocks these lanes: without period scores there is no
+history, without history the local model declines, and without a forecast there
+is no pick to price.
+
+Period data lives on each finished game's own match page — the fixtures page
+carries none (all 270 score cells on the captured page are empty). No match-page
+body has been captured for these lanes yet, so no parser exists, because writing
+one against imagined markup is how this project previously shipped wrong
+findings.
+
+`scripts/probe_betexplorer_results.py` is the capture step: it fetches a bounded
+number of finished match pages (hard cap 12, >=3 s apart, path-only URLs derived
+from each lane's verified fixtures slug, no query strings), saves each body
+verbatim with its sha256, and reports neutral shape signals — how many `<td>`
+cells, how many pure-integer cells, which scoreboard hints appear. It produces
+**no result of any kind**: no score, no partial score, no `ActualResult`. A page
+it captured is evidence for the parser; a page it did not capture is a named
+gap.
+
+    python scripts/probe_betexplorer_results.py --league GREECE_BASKET_LEAGUE --max 6
+
+When that has run, the period parser is written against the committed bodies and
+tested against them, exactly as the fixtures parser was.
+
+While writing the capture step, a genuine defect in the shared clock parser was
+found and fixed: year-less labels resolved to "next year whenever the month/day
+had already passed", so a fixture that tipped yesterday (observed 2026-11-25,
+label `24.11.`) was dated **2027**. That made yesterday unreachable and moved
+its row into next season's slate. Labels now resolve to the nearest year, which
+is what the site's labels mean.
+
 ## Order of work
 
 Done: EuroCup, Spain ACB (schedule only, gated header), Israel Premier League,
