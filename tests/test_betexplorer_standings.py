@@ -193,16 +193,68 @@ def test_an_empty_body_names_its_own_size():
     assert "no standings table" in str(caught.value)
 
 
-def test_a_head_without_win_columns_is_refused():
-    head = (
-        '<th class="rank col_rank" title="Rank">#</th>'
-        '<th class="participant_name col_name" title="Team">Team</th>'
-        '<th class="matches" title="MP">MP</th>'
-    )
-    with pytest.raises(IdentityError) as caught:
-        bs.parse_standings_table(_fragment(_row(name="Telsiai"), head=head))
+def _group_head(label: str, points: str = "PCT") -> str:
+    """The WCBA head, as served 2026-11-26: ``# | Group A | MP | W | L | TP | PCT | Form``."""
 
-    assert "missing one of" in str(caught.value)
+    return (
+        '<th class="rank col_rank" data-type="rank" title="Rank">#</th>'
+        f'<th class="participant_name col_name" data-type="participant_name" '
+        f'title="Team">{label}</th>'
+        '<th class="matches" data-type="matches" title="Matches Played">MP</th>'
+        '<th class="wins" data-type="wins" title="Wins">W</th>'
+        '<th class="losses" data-type="losses" title="Losses">L</th>'
+        '<th class="goals" data-type="goals" title="Total Points">TP</th>'
+        f'<th class="points" data-type="points" title="Points">{points}</th>'
+        '<th class="form" data-type="form" title="Last 5 matches">Form</th>'
+    )
+
+
+def test_a_head_that_labels_the_team_column_with_a_group_is_accepted():
+    """WCBA labels the column ``Group A`` and the points column ``PCT``."""
+
+    table = bs.parse_standings_table(
+        _fragment(_row(name="Wuhan", title=None), head=_group_head("Group A"))
+    )
+
+    assert [row.team_name for row in table.rows] == ["Wuhan"]
+    assert table.report["columns"] == ["#", "Group A", "MP", "W", "L", "TP", "PCT", "Form"]
+    assert table.report["groups"] == ["Group A"]
+    assert table.rows[0].section == "Group A"
+    assert table.report["has_points_column"] is True
+
+
+def test_every_group_table_in_the_fragment_is_read():
+    first = _fragment(_row(name="Wuhan", club_id="AAA111", title=None), head=_group_head("Group A"))
+    second = _fragment(
+        _row(name="Sichuan", club_id="BBB222", rank=1, title=None), head=_group_head("Group B")
+    )
+
+    table = bs.parse_standings_table(first + second)
+
+    assert [row.team_name for row in table.rows] == ["Wuhan", "Sichuan"]
+    assert table.report["tables"] == 2
+    assert table.report["groups"] == ["Group A", "Group B"]
+    assert [row.section for row in table.rows] == ["Group A", "Group B"]
+
+
+def test_a_club_repeated_across_tables_is_counted_once():
+    one = _fragment(_row(name="Wuhan", club_id="AAA111", title=None), head=_group_head("Group A"))
+
+    table = bs.parse_standings_table(one + one)
+
+    assert len(table.rows) == 1
+    assert table.report["skip_reasons"] == {"duplicate_team": 1}
+
+
+def test_a_body_without_the_read_classes_still_refuses():
+    """The contract moved to the cells, so a cell without ``col_wins`` is the refusal."""
+
+    body = _row(name="Telsiai").replace('class="wins col_wins"', 'class="wins"')
+
+    with pytest.raises(IdentityError) as caught:
+        bs.parse_standings_table(_fragment(body))
+
+    assert "missing_core_cells" in str(caught.value)
 
 
 def test_a_row_missing_core_cells_is_skipped_and_counted():
@@ -226,7 +278,7 @@ def test_a_table_that_parses_to_nothing_is_an_error_not_an_empty_list():
     with pytest.raises(IdentityError) as caught:
         bs.parse_standings_table(_fragment(_row(name="Impossible", wins=14, losses=1)))
 
-    assert "parsed to zero rows" in str(caught.value)
+    assert "produced zero rows" in str(caught.value)
 
 
 def test_unknown_league_is_rejected_before_any_request():
@@ -414,9 +466,11 @@ def test_the_delay_is_between_requests_never_before_the_first():
     assert reader.calls == 3
 
 
-def test_the_published_floor_is_ten_seconds():
-    assert bs.CRAWL_DELAY_SECONDS == 10.0
-    assert bs.paced(lambda url: "x", sleep=lambda _: None)._delay == 10.0
+def test_the_published_floor_is_the_smallest_spacing_that_never_failed():
+    """2 s drew 429 on the second request, 10 s on the fourth; 12 s and 20 s passed."""
+
+    assert bs.CRAWL_DELAY_SECONDS == 15.0
+    assert bs.paced(lambda url: "x", sleep=lambda _: None)._delay == 15.0
 
 
 def test_fetch_standings_uses_the_paced_reader():
