@@ -79,6 +79,35 @@ _UNVERIFIED_NAMED_BOOK = PriceSourcePolicy(
 
 
 @dataclass(frozen=True)
+class OperatorAcceptance:
+    """A named operator decision that a source may be read without a licence."""
+
+    #: Who decided. A decision with no name is not a decision.
+    decided_by: str
+    #: The UTC date the decision was given, ISO form.
+    decided_on: str
+    #: What was accepted: the hosts and reads it covers, and their limits.
+    scope: str
+    #: Why a decision was needed at all.
+    basis: str
+
+    def __post_init__(self) -> None:
+        for field_name in ("decided_by", "decided_on", "scope", "basis"):
+            if not str(getattr(self, field_name) or "").strip():
+                raise ValueError(
+                    f"an operator acceptance needs a non-empty {field_name}"
+                )
+
+    def as_dict(self) -> Dict[str, str]:
+        return {
+            "decided_by": self.decided_by,
+            "decided_on": self.decided_on,
+            "scope": self.scope,
+            "basis": self.basis,
+        }
+
+
+@dataclass(frozen=True)
 class LeagueSpec:
     """Stable operational contract for one canonical basketball competition."""
 
@@ -97,6 +126,12 @@ class LeagueSpec:
     #: unexplained dark lane is a silent no-op, which is the failure mode the
     #: status field exists to prevent.
     status_detail: str = ""
+    #: The licence gate, when it was opened by a person rather than by a host.
+    #: Absence means no decision has been recorded; it does not mean "refused".
+    #: A record does **not** switch a lane on by itself: an adapter still has to
+    #: exist and be replayed against a served page, which is what keeps this
+    #: field from becoming a licence nobody can audit.
+    operator_acceptance: Optional[OperatorAcceptance] = None
 
     @property
     def is_schedulable(self) -> bool:
@@ -472,6 +507,20 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             " Results route validated 2026-11-24 but deliberately not enabled: the federation's own pages (EsakeResults?idchampionship=184645B9&idseason=00000001&series=<matchday>, game identity EsakegameView?idgame=<HEX>) returned finals for 10 of the 10 most recent known fixtures; robots.txt is absent (404, reported as absent rather than as permission) and the terms license copying with source credit but scope that licence to personal, non-commercial use -- so promotion waits on an operator reading of the clause, not on a source; the operator accepted that scope for this paper record on 2026-11-24, and the lane still reports source_unavailable until a reader has been replayed against a served page (ingestion/providers/esake.py and scripts/probe_esake_results.py, one live run away). See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
         price_sources=(_aggregate_research_only("betexplorer"),),
+        operator_acceptance=OperatorAcceptance(
+            decided_by="operator",
+            decided_on="2026-11-24",
+            basis=(
+                "the esake.gr terms license copying with source credit but scope the "
+                "licence to personal, non-commercial use. Operator reading of that "
+                "clause, 2026-11-24: accepted for this paper record."
+            ),
+            scope=(
+                "Read esake.gr EsakeResults and EsakegameView pages, at most one "
+                "matchday page per series per run, with source and author credit on "
+                "every row. No redistribution, no commercial use."
+            ),
+        ),
     ),
     # The externally referenced aba-liga.com calendar/detail route is the
     # active canonical fixture, result, and history target. Ma Golide retains
@@ -589,6 +638,22 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             " Results endpoints proven 2026-11-24 but not enabled: cba.net.cn's own data hub (cbamatch/games/matchschedules?competitionId=56&seasonId=2286) answers the whole 2026-27 season (297,504 B, integer gameId, scores, gameStatus) with 10/10 coverage, but the host publishes no terms document at all -- a 200 is not permission -- and the endpoint is season-scoped, not date-scoped. See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
         price_sources=(_aggregate_research_only("betexplorer"),),
+        operator_acceptance=OperatorAcceptance(
+            decided_by="operator",
+            decided_on="2026-11-24",
+            basis=(
+                "cba.net.cn publishes no terms document of any kind, so there is no "
+                "licence to read, comply with, or breach. The only thing that can "
+                "authorise the read is a named operator decision: operator instruction "
+                "2026-11-24, activate WCBA now."
+            ),
+            scope=(
+                "Read the documented cba.net.cn data-hub match-schedule endpoint for "
+                "this paper-only record, one season-scoped read per run plus the per- "
+                "game reads its ids imply. No redistribution, no named-book or ticket "
+                "use, attribution on every row."
+            ),
+        ),
     ),
     LeagueSpec(
         League.LITHUANIA_NKL,
@@ -607,6 +672,20 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             " Results endpoints proven 2026-11-24 but not enabled: nkl.lt declares its own WP-JSON surface (/wp-json/nkl-calendar/v1/teams?season= and /game/<id>, per the namespace index and the calendar JS) and its robots.txt carries Crawl-delay 10 with no Disallow, but the host publishes no terms document -- only cookie and privacy policies -- so the route stays off. See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
         price_sources=(_aggregate_research_only("betexplorer"),),
+        operator_acceptance=OperatorAcceptance(
+            decided_by="operator",
+            decided_on="2026-11-24",
+            basis=(
+                "nkl.lt publishes no terms document -- its sitemap lists only cookie "
+                "and privacy policies -- so there is no licence to read, comply with, "
+                "or breach. Operator instruction 2026-11-24, activate NKL now."
+            ),
+            scope=(
+                "Read the documented nkl.lt WP-JSON namespace (teams by season, game by "
+                "id) for this paper-only record, honouring its Crawl-delay: 10 and one "
+                "page per game. No redistribution, attribution on every row."
+            ),
+        ),
     ),
     LeagueSpec(
         League.AUSTRALIA_WNBL_W,
@@ -626,7 +705,28 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             " Results route unresolved as of 2026-11-24: prod.rosetta.nbl.com.au answered per-season WNBL match JSON and wnbl.com.au publishes terms, but this lane's assessment was never completed -- no route, no coverage arithmetic, no adapter. See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
         price_sources=(_aggregate_research_only("betexplorer"),),
+        operator_acceptance=OperatorAcceptance(
+            decided_by="operator",
+            decided_on="2026-11-24",
+            basis=(
+                "wnbl.com.au publishes terms and prod.rosetta.nbl.com.au answered per- "
+                "season match JSON, but this lane's route assessment was never "
+                "completed, so nothing was ever enabled by evidence. Operator "
+                "instruction 2026-11-24, activate WNBL, permission granted."
+            ),
+            scope=(
+                "Read the documented rosetta.nbl.com.au per-season WNBL match route and "
+                "the wnbl.com.au terms it is governed by, for this paper-only record; "
+                "one season-scoped read per run, referer-gated as served. No "
+                "redistribution, attribution on every row."
+            ),
+        ),
     ),
+    # Retired 2026-11-24 on measurement, like the nine before it: the schedule
+    # side works but no permitted results route exists, so the lane can never
+    # settle and every run of it is a fixture card that grades nothing. The
+    # contract, adapter and state directory stay, so revival is one deliberate
+    # flip if a results route ever appears.
     LeagueSpec(
         League.ISRAEL_LIGA_LEUMIT,
         "Israel Liga Leumit",
@@ -641,10 +741,23 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "2026/2027 Fixtures', served 2026-11-24: 161 rows, 5 priced of which 3 still "
             "future, 83 rows with no kickoff cell). This is the second division, "
             "distinct from the Winner League board lane. Clock is CET/CEST. Page "
-            "average, not a named book; source terms unreviewed. No results route."
-            " No keyless results route found by 2026-11-24 probing: one.co.il puts the only score-bearing path (/api/) behind a robots Disallow, safsal.co.il publishes no terms page, the federation host basketball.org.il timed out on three attempts across two days, and basket.co.il serves the Premier board only (Leumit board ids answer empty). See docs/RESULTS-ROUTE-ASSESSMENT.md."
+            "average, not a named book; source terms unreviewed. No results route: "
+            "one.co.il puts the only score-bearing path (/api/) behind a robots "
+            "Disallow, safsal.co.il publishes no terms page, the federation host "
+            "basketball.org.il timed out on three attempts across two days, and "
+            "basket.co.il serves the Premier board only (Leumit board ids answer "
+            "empty). See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
         price_sources=(_aggregate_research_only("betexplorer"),),
+        status=LaneStatus.RETIRED,
+        status_detail=(
+            "retired 2026-11-24 on the route assessment: the schedule side is served, "
+            "but every candidate results route is closed (robots on the only "
+            "score-bearing path, no terms page, a federation host that timed out across "
+            "two days, and a Premier-only board), so the lane can never settle and its "
+            "fixture cards grade nothing. Keeping it in the matrix spent a lane of "
+            "wall-clock to produce zero graded rows."
+        ),
     ),
 )
 
