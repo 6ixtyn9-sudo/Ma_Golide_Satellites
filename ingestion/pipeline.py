@@ -99,6 +99,10 @@ BOOK_PROVIDERS_BY_LEAGUE = {spec.league.value: spec.book_providers for spec in S
 ESPN_LEAGUES = {spec.league for spec in SPECS if spec.schedule_source == "espn"}
 ESPN_DEEP_HISTORY_LEAGUES = frozenset(espn.HISTORY_FLOORS)
 ESPN_BPI_LEAGUES = espn.BPI_LEAGUES
+#: Provider name carried by lane-local empirical predictions derived from
+#: stored finals (``MarketForecastService.history_prediction``). It is not
+#: a network provider: no credential, no quota, no fetch.
+HISTORY_MODEL_PROVIDER = "history_model"
 
 # Most ESPN lanes can lean on a separately validated deep-history index. NBA G
 # League cannot: only its date-bounded scoreboard/result contract is approved.
@@ -246,6 +250,9 @@ class Pipeline:
         # its optional credential was not configured.
         self.book_provider_status: Dict[str, Dict[str, Any]] = {}
         self.prediction_provider_status: Dict[str, Dict[str, Any]] = {}
+        #: game_id -> decline tag from the lane-local model, consumed only when
+        #: no other source answered that game (see _acquire_predictions).
+        self._history_model_declines: Dict[str, str] = {}
 
     def _now_iso(self) -> str:
         if self.config.fixture_now_utc:
@@ -272,6 +279,7 @@ class Pipeline:
         self.context_report = {}
         self.book_provider_status = {}
         self.prediction_provider_status = {}
+        self._history_model_declines = {}
 
     def _stamp_book_evidence(self, snapshot: BookSnapshot) -> BookSnapshot:
         """Apply the registry evidence contract to every acquired price quote.
@@ -1446,6 +1454,7 @@ class Pipeline:
         # wastes the configured provider allowance and could create different
         # source observations inside the same slate.
         predix_by_game = self._predixsport_candidates_for_games(games)
+        history_by_game = self._history_model_candidates_for_games(games)
 
         for game in games:
             # Stored pre-tip observations compete with fresh observations. A
@@ -1484,6 +1493,23 @@ class Pipeline:
             # a matching Predixsport observation is retained as a coherent
             # shadow for prospective diagnostics.
             candidates.extend(predix_by_game.get(game.game_id, ()))
+            candidates.extend(history_by_game.get(game.game_id, ()))
+            if not candidates:
+                # Only an unanswered game is told why the local model declined.
+                # A lane that another source already answers does not need a
+                # second, noisier account of the model's precondition.
+                decline = self._history_model_declines.get(game.game_id)
+                if decline is not None:
+                    self.gaps.append(
+                        CoverageGap(
+                            game_id=game.game_id,
+                            required_field="pre_tip_prediction",
+                            reason=CoverageState.MISSING,
+                            provider=HISTORY_MODEL_PROVIDER,
+                            detail=f"history_model declined: {decline}"[:200],
+                            observed_utc=now,
+                        )
+                    )
 
             selection = select_prediction(
                 candidates,
@@ -1527,6 +1553,10 @@ class Pipeline:
                 sources.append("hardwood")
         if league in self.PREDICTION_CAPABLE_LEAGUES:
             sources.append("predixsport")
+        if league not in ESPN_BPI_LEAGUES:
+            # The local empirical model needs no credential and no quota, so it
+            # is wired for every lane the quota-scoped feed cannot serve.
+            sources.append(HISTORY_MODEL_PROVIDER)
         return sources
 
     def _note_prediction_capability(self, games: List[Game]) -> None:
@@ -1543,8 +1573,10 @@ class Pipeline:
             "sources": sources,
             "games": len(games),
         }
-        predix_wired = "predixsport" in sources
-        if not games or league in ESPN_BPI_LEAGUES or predix_wired:
+        if not games or set(sources) != {"stored_pre_tip"}:
+            # Some lane-local model is wired; a per-game decline gap from that
+            # model names the missing evidence, so a slate-level "never" would
+            # be a second, wrong answer.
             return
         self.gaps.append(
             CoverageGap(
@@ -1563,6 +1595,57 @@ class Pipeline:
                 observed_utc=self._now_iso(),
             )
         )
+
+    def _history_model_candidates_for_games(
+        self, games: List[Game]
+    ) -> Dict[str, List[Prediction]]:
+        """Ask the lane-local empirical model for one candidate per fixture.
+
+        The quota-scoped external feed cannot serve these lanes: 200 SHARED
+        calls per month at the existing 18h window is ~40 calls per league
+        month, so ~20 lanes would need ~800. The local model needs no
+        credential and no quota -- it reads finals the runners already store.
+
+        A decline is recorded per game with the reason and the numbers behind
+        it, and summarised in ``prediction_provider_status["history_model"]``.
+        Nothing here invents a probability: a lane whose store holds no finals
+        gets a named decline, not a fabricated forecast.
+        """
+
+        output: Dict[str, List[Prediction]] = {game.game_id: [] for game in games}
+        league = self.config.league_enum
+        if not games or league in ESPN_BPI_LEAGUES:
+            # ESPN lanes keep their provider surface; the local model is not
+            # asked to shadow evidence those lanes already hold.
+            return output
+
+        from forecasting.service import MarketForecastService
+
+        service = MarketForecastService(self.store, league)
+        now = self._now_iso()
+        finals_in_store = sum(
+            1
+            for stored in self.store.list_games(league=league)
+            if stored.actual is not None and stored.actual.reconciles()[0]
+        )
+        returned = 0
+        declined: Dict[str, int] = {}
+        self._history_model_declines = {}
+        for game in games:
+            prediction, reason = service.history_prediction(game, as_of_utc=now)
+            if prediction is None:
+                tag = str(reason or "model_declined")
+                declined[tag] = declined.get(tag, 0) + 1
+                self._history_model_declines[game.game_id] = tag
+                continue
+            output[game.game_id].append(prediction)
+            returned += 1
+        self.prediction_provider_status[HISTORY_MODEL_PROVIDER] = {
+            "finals_in_store": finals_in_store,
+            "candidates_returned": returned,
+            "decline_reasons": declined,
+        }
+        return output
 
     def _predixsport_candidates_for_games(
         self, games: List[Game]
