@@ -111,16 +111,20 @@ def test_pregame_dry_run_returns_canonical_prediction_and_book_gaps():
     assert attached["teams"]["11"][0]["athlete_id"] == "player-1"
 
 
-def test_pregame_defers_paid_books_but_attempts_the_direct_fallback_outside_ticket_window():
+def test_pregame_defers_paid_books_but_attempts_the_free_sources():
     store = InMemoryStore()
     pipeline = Pipeline(
         _config(acquire_book_lines=False), store, fetch=_nba_fetch(), allow_writes=False
     )
     report = pipeline.pregame()
 
+    # Deferral is per-provider: the paid source waits, the free ones are read.
+    # It used to skip the whole stage, which is how every fixtures-only lane came
+    # to hold zero book snapshots and therefore zero priced picks.
     assert report["book_provider_status"]["policy"]["status"] == (
-        "paid_sources_deferred_direct_fallback_attempted"
+        "paid_sources_deferred_free_sources_attempted"
     )
+    assert report["book_provider_status"]["deferred"]["providers"] == ["theoddsapi"]
     assert report["book_provider_status"]["betexplorer_direct"]["enabled"] is True
     assert any(
         gap["provider"] == "price_budget" and gap["required_field"] == "paid_named_book_price"

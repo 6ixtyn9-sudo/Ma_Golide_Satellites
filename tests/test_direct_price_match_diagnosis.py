@@ -20,7 +20,7 @@ from unittest.mock import patch
 
 from ingestion.models import Game, GameStatus, League
 from ingestion.pipeline import Pipeline, PipelineConfig
-from ingestion.providers import betexplorer_direct
+from ingestion.providers import betexplorer, betexplorer_direct
 from ingestion.store import InMemoryStore
 
 RECEIPT = {
@@ -152,8 +152,8 @@ def test_a_zero_snapshot_run_is_named_in_the_report_and_a_gap():
         betexplorer_direct, "last_receipt", return_value=RECEIPT
     ), patch.object(betexplorer_direct, "last_gaps", return_value=[]), patch.object(
         betexplorer_direct, "last_quota", return_value={}
-    ):
-        pipeline._acquire_book_lines([_game()], direct_fallback_only=True)
+    ), patch.object(betexplorer, "fetch_odds", return_value=[]):
+        pipeline._acquire_book_lines([_game()], paid_sources_deferred=True)
 
     status = pipeline.book_provider_status["betexplorer_direct"]
     assert status["status"] == "fetched_no_snapshots"
@@ -187,8 +187,72 @@ def test_a_cooldown_receipt_names_the_refusal_in_the_outer_status():
         betexplorer_direct, "last_gaps", return_value=[]
     ), patch.object(
         betexplorer_direct, "last_quota", return_value={}
-    ):
-        pipeline._acquire_book_lines([_game()], direct_fallback_only=True)
+    ), patch.object(betexplorer, "fetch_odds", return_value=[]):
+        pipeline._acquire_book_lines([_game()], paid_sources_deferred=True)
 
     status = pipeline.book_provider_status["betexplorer_direct"]
     assert status["status"] == "http_429_cooldown"
+
+
+def test_a_deferred_paid_source_does_not_switch_off_the_free_one():
+    """The bug behind ``book_snapshots: 0`` on every fixtures-only lane.
+
+    ``--skip-book-acquisition`` is set whenever the run holds no Odds API permit.
+    It used to collapse the provider list to the direct fallback alone, so the
+    free keyless ``betexplorer`` page that LITHUANIA_NKL, CHINA_WCBA_W,
+    AUSTRALIA_WNBL_W and GREECE configure as their only price source was never
+    called: five games stored, zero snapshots, therefore zero priced picks and
+    nothing a ticket could ever be built from.
+    """
+
+    from unittest.mock import MagicMock
+
+    pipeline = Pipeline(
+        PipelineConfig(league="LITHUANIA_NKL", date_yyyymmdd="20261124"),
+        InMemoryStore(),
+        fetch=lambda url: {},
+        allow_writes=False,
+    )
+    free = MagicMock(return_value=[])
+    free.return_value = []
+
+    with patch.object(betexplorer, "fetch_odds", free), patch.object(
+        betexplorer, "last_quota", return_value={}
+    ), patch.object(
+        betexplorer_direct, "fetch_odds", return_value=[]
+    ), patch.object(
+        betexplorer_direct, "last_receipt", return_value=RECEIPT
+    ), patch.object(
+        betexplorer_direct, "last_gaps", return_value=[]
+    ), patch.object(
+        betexplorer_direct, "last_quota", return_value={}
+    ):
+        pipeline._acquire_book_lines([_game()], paid_sources_deferred=True)
+
+    assert free.called, "the lane's own free price source must still be read"
+    assert "theoddsapi" not in pipeline.book_provider_status
+
+
+def test_the_deferral_names_the_paid_providers_it_skipped():
+    """A lane that yields no priced pick must say which source was deferred."""
+
+    pipeline = Pipeline(
+        PipelineConfig(league="NBA", date_yyyymmdd="20261124"),
+        InMemoryStore(),
+        fetch=lambda url: {},
+        allow_writes=False,
+    )
+    with patch.object(betexplorer_direct, "fetch_odds", return_value=[]), patch.object(
+        betexplorer_direct, "last_receipt", return_value=RECEIPT
+    ), patch.object(
+        betexplorer_direct, "last_gaps", return_value=[]
+    ), patch.object(
+        betexplorer_direct, "last_quota", return_value={}
+    ):
+        pipeline._acquire_book_lines([_game()], paid_sources_deferred=True)
+
+    deferred = pipeline.book_provider_status["deferred"]
+    assert deferred["providers"] == ["theoddsapi"]
+    # The direct fallback is free and was still attempted, so the lane's own
+    # status survives beside the deferral instead of being replaced by it.
+    assert "betexplorer_direct" in pipeline.book_provider_status
