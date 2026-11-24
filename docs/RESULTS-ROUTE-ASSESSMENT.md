@@ -912,6 +912,50 @@ Two things follow, both implemented rather than asserted:
   request, with the name recorded in the receipt as `cookies_sent`, so a pass is never
   mistaken for something the tool worked out by itself.
 
+### Where the gate lives, and the receipt that lied politely (2026-11-24T16:04Z)
+
+`--gate-bundle` on `all.min.js` (192,647 B, sha `6731062…`) found the gate, by name:
+
+```
+init_age_wall() { ageOverlay, ageModal, ageYes, ageNo, terapiaLink … }
+t.innerHTML = '<div class="age-modal age-modal--blocked" …><h2>Acesso Restrito</h2>…'
+```
+
+So the consent is a script, not markup: the wall is built client-side, into an element the
+served HTML leaves empty. That is why the page contained no handler — the handler had not been
+loaded yet.
+
+Two lessons from reading it, both now in the tool:
+
+- **The bundle writes cookies through its own helper.** The only raw
+  `document.cookie = …` in 192 KB is the body of `set_cookie()`. A reader that looks for the
+  assignment reports one write and misses every key; `set_cookie_calls` now lists the calls
+  with their names, `gate_keys` keeps the ones within 4,000 characters of the wall, and
+  `age_wall_region` prints the function itself.
+- **`--bundle-read PATH`** re-reads a saved bundle with `requests_made: 0`, because the asset
+  is already on disk and asking again would be a second request for the same bytes.
+
+Then the third receipt, and it is the one worth remembering:
+
+```
+cookies_sent: ["be18"], gated: 0, requests_made: 1
+detail: "dictionary update sequence element #0 has length 1; 2 is required"
+```
+
+`gated: 0` looks like the gate was passed. Nothing was passed: the request never left the
+process. The cookie string was handed to `get_text`'s second positional argument, which is
+`headers`, and a string is not a mapping. One line of the receipt contradicted the other, and
+the cheerful line was the wrong one.
+
+Fixed in `cookie_reader()`, which is the only place a `Cookie` header is now built, with a
+test that asserts the header dict rather than the fetch count. And `match_pages` now carries a
+`summary` — `0 captured, 0 gated, 1 failed of 1 requested; 1 request(s) never returned a body`
+— so the three counts can be read in one line instead of inferred. `gated: 0` means nothing
+without knowing how many bodies came back; the receipt now says so.
+
+The cooldown did its job in passing: `cooldown_seconds_waited: 20.58` between the bundle
+request and the match request, honoured from the on-disk stamp rather than from memory.
+
 Every receipt now names the build that produced it — `tool: {script, git_commit, modified}` —
 because three sessions were spent reading output from a checkout one merge behind, where the
 flags existed in the repository and not in the file being run. `git_commit: null` means the

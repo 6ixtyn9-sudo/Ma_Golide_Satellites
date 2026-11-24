@@ -396,6 +396,10 @@ def gate_reason(body: str) -> str | None:
 #: The gate's own vocabulary, as a minified bundle would spell it. Used to look
 #: for the handler in the asset the page loads, since the page itself attaches
 #: nothing by id.
+_SET_COOKIE_RE = re.compile(
+    r"set_cookie\(\s*[\"'](?P<name>[^\"']+)[\"']\s*,\s*(?P<value>[^,)]{0,80})"
+)
+
 _GATE_ASSET_TOKENS = (
     "age__btn--yes",
     "ageYes",
@@ -429,6 +433,29 @@ def bundle_map(js: str) -> dict[str, object]:
                     ).strip(),
                 }
             )
+    # The gate does not write raw cookies: it calls the bundle's own set_cookie
+    # helper. The only raw assignment in 192 KB is the helper's own body, so a
+    # reader that stops at document.cookie= reports one write and misses the key.
+    anchors = [match.start() for match in re.finditer(r"init_age_wall|ageYes|ageOverlay", text)]
+    helper_calls = []
+    for match in _SET_COOKIE_RE.finditer(text):
+        distance = min((abs(match.start() - anchor) for anchor in anchors), default=None)
+        helper_calls.append(
+            {
+                "name": match.group("name"),
+                "value": re.sub(r"\s+", " ", match.group("value")).strip()[:60],
+                "offset": match.start(),
+                "near_gate": distance is not None and distance <= 4000,
+            }
+        )
+
+    wall = re.search(r"init_age_wall", text)
+    wall_region = None
+    if wall is not None:
+        wall_region = re.sub(
+            r"\s+", " ", text[wall.start() : wall.start() + 3000]
+        ).strip()
+
     writes = []
     for match in list(re.finditer(r"document\.cookie\s*=\s*", text))[:8]:
         writes.append(
@@ -442,8 +469,28 @@ def bundle_map(js: str) -> dict[str, object]:
         "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
         "windows": windows[:6],
         "cookie_writes": writes,
+        "set_cookie_calls": helper_calls[:12],
+        "gate_keys": [call["name"] for call in helper_calls if call["near_gate"]],
+        "age_wall_region": wall_region,
         "tokens_found": [token for token in _GATE_ASSET_TOKENS if token in text],
     }
+
+
+def cookie_reader(client):
+    """Adapt a client's ``get_text`` to ``(url, cookie) -> body``.
+
+    The naive version of this passes the cookie string as ``get_text``'s second
+    positional argument, which is ``headers``, and a request that never leaves
+    the process fails with "dictionary update sequence element #0 has length 1".
+    The 2026-11-24 receipt recorded that as ``fetch_failed`` beside ``gated: 0``,
+    which at a glance reads as a gate passed. It was a request that never
+    happened. This is the one place the header is built.
+    """
+
+    def read(url: str, cookie: str) -> str:
+        return client.get_text(url, headers={"Cookie": cookie})
+
+    return read
 
 
 def gate_bundle_report(
@@ -826,10 +873,24 @@ def capture_match_pages(
             }
         )
 
+    # gated: 0 is not good news on its own. On 2026-11-24 a request that never
+    # left the process reported fetch_failed beside gated: 0, which reads at a
+    # glance as "the gate was passed". The summary says which it is, in one line,
+    # so nobody has to hold three counts in their head to learn nothing happened.
+    counts = {
+        status: sum(1 for page in captured if page["status"] == status)
+        for status in ("captured", "gated", "fetch_failed")
+    }
+    summary = (
+        f"{counts['captured']} captured, {counts['gated']} gated, "
+        f"{counts['fetch_failed']} failed of {len(wanted)} requested"
+        + (f"; {counts['fetch_failed']} request(s) never returned a body" if counts["fetch_failed"] else "")
+    )
     payload = {
         "schema_version": "magolide.results_probe.v1",
         "tool": probe_build(),
         "mode": "match_pages",
+        "summary": summary,
         "league": league,
         "captured_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "requested": len(wanted),
@@ -983,6 +1044,11 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     parser.add_argument(
+        "--bundle-read",
+        metavar="PATH",
+        help="re-read an already-saved gate bundle, with no request at all",
+    )
+    parser.add_argument(
         "--gate-bundle",
         metavar="URL",
         help=(
@@ -1052,6 +1118,24 @@ def main(argv: list[str] | None = None) -> int:
                     "path": args.gate_script,
                     "gate": gate_reason(body),
                     **gate_script(body),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
+
+    if args.bundle_read:
+        body = Path(args.bundle_read).read_text(encoding="utf-8", errors="replace")
+        print(
+            json.dumps(
+                {
+                    "schema_version": "magolide.results_probe.v1",
+                    "mode": "gate_bundle_read",
+                    "tool": probe_build(),
+                    "path": args.bundle_read,
+                    "requests_made": 0,
+                    **bundle_map(body),
                 },
                 indent=2,
                 sort_keys=True,
@@ -1130,17 +1214,18 @@ def main(argv: list[str] | None = None) -> int:
             supplied.append((name.strip(), value.strip()))
 
         gate_read_text = None
-        if args.gate_accept:
+        supplied_reader = None
+        if args.gate_accept or supplied:
             from ingestion.http import HttpClient
 
-            def gate_read_text(url: str, cookie: str) -> str:
-                return HttpClient().get_text(url, headers={"Cookie": cookie})
+            gate_read_text = cookie_reader(HttpClient())
+            supplied_reader = gate_read_text
 
         payload = capture_match_pages(
             args.league,
             matches=index_matches(index_path.read_text(encoding="utf-8")),
             out_dir=Path(args.out) / args.league,
-            read_text=_text_fetch(None, None),
+            read_text=supplied_reader or _text_fetch(None, None),
             limit=args.match,
             cooldown=cooldown,
             gate_accept=args.gate_accept,

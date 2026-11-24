@@ -851,3 +851,62 @@ def test_a_bundle_that_cannot_be_fetched_is_a_receipt_not_a_crash(tmp_path):
     assert report["status"] == "fetch_failed"
     assert "429" in report["detail"]
     assert "windows" not in report
+
+
+class _Client:
+    def __init__(self):
+        self.calls = []
+
+    def get_text(self, url, headers=None):
+        self.calls.append((url, headers))
+        return _MATCH_PAGE
+
+
+def test_a_cookie_is_sent_as_a_header_and_not_as_the_headers_dict():
+    """The 2026-11-24 receipt: `fetch_failed: dictionary update sequence element #0
+    has length 1` beside `gated: 0`. The request never left; the cookie string had
+    been handed to get_text as `headers`."""
+
+    client = _Client()
+    read = probe.cookie_reader(client)
+
+    assert read("https://example.test/x", "be18=1") == _MATCH_PAGE
+    assert client.calls == [("https://example.test/x", {"Cookie": "be18=1"})]
+
+
+def test_the_bundle_read_finds_a_key_named_through_the_pages_own_helper():
+    """The gate calls set_cookie('...'), not document.cookie=. A reader that stops
+    at the raw assignment reports one write and misses the key."""
+
+    js = (
+        "function set_cookie(e,t,a,s,n,i){document.cookie=e+\"=\"+escape(t)}"
+        "function init_age_wall(){var s=document.getElementById('ageYes');"
+        "s.onclick=function(){set_cookie('be18','1',365,'/');location.reload()}}"
+    )
+
+    report = probe.bundle_map(js)
+
+    assert report["gate_keys"] == ["be18"]
+    assert report["set_cookie_calls"][0]["value"] == "'1'"
+    assert report["age_wall_region"].startswith("init_age_wall")
+    # The raw assignment inside the helper is still reported, for contrast.
+    assert report["cookie_writes"]
+
+
+def test_a_failed_request_is_not_reported_as_a_passed_gate(tmp_path):
+    """gated: 0 with nothing fetched reads as success. The summary says otherwise."""
+
+    def boom(url, cookie):
+        raise ValueError("dictionary update sequence element #0 has length 1; 2 is required")
+
+    payload = probe.capture_match_pages(
+        "LITHUANIA_NKL",
+        matches=[{"code": "nRzm7OsT", "url": "/basketball/lithuania/nkl/a-b/nRzm7OsT/"}],
+        out_dir=tmp_path,
+        read_text=boom,
+        limit=1,
+        cookies=[("be18", "1")],
+    )
+
+    assert payload["gated"] == 0
+    assert payload["summary"] == "0 captured, 0 gated, 1 failed of 1 requested; 1 request(s) never returned a body"
