@@ -215,3 +215,64 @@ def test_the_page_reports_counts_so_a_drifted_markup_is_visible():
     assert payload["counts"]["with_final"] == 1
     assert payload["finals"][0]["played_on"] == "2026-11-21"
     assert any(item["idgame"] == "AAAABBBB" for item in payload["incomplete"])
+
+
+# --- the served page, as captured -------------------------------------------
+#
+# The fixtures below are *captured*, not derived: `results_row_with_onclick_
+# literal.html` reproduces one row of the 2026-11-24 series-8 page, and
+# `results_excerpt_captured.html` is the verbatim bytes the operator printed
+# around the first game anchor, truncated where that printout stopped.  Both
+# carry the toggle handler that the reader used to mistake for a row start.
+
+CAPTURED = Path(__file__).parent / "fixtures" / "esake" / "results_excerpt_captured.html"
+CAPTURED_ROW = Path(__file__).parent / "fixtures" / "esake" / "results_row_with_onclick_literal.html"
+
+
+def test_the_toggle_handler_is_not_a_row_start():
+    """The bug that wrote zero finals: `class="` is required, `.closest(` is not.
+
+    The handler names the container twice in one attribute, so splitting on the
+    bare token cut every row at its own toggle -- fourteen containers for seven
+    games, none of them holding both the identity and the score.
+    """
+
+    page = _parse(CAPTURED_ROW.read_text(encoding="utf-8"))
+
+    assert page.counts["containers"] == 1
+    assert page.counts["rows"] == 1
+    assert page.counts["no_identity"] == 0
+    assert len(page.finals) == 1
+
+    row = page.finals[0]
+    assert row.idgame == "3C7521D5"
+    assert (row.home, row.away) == ("ΑΡΗΣ", "ΠΑΟΚ")
+    assert (row.home_score, row.away_score) == (88, 79)
+    assert row.played_on == date(2026, 11, 21)
+    assert row.tip_local == "19:00"
+
+
+def test_the_hidden_per_quarter_row_does_not_make_the_clubs_ambiguous():
+    """Four repeats of two names is still two clubs, not an ambiguity."""
+
+    page = _parse(CAPTURED_ROW.read_text(encoding="utf-8"))
+
+    assert page.counts["names_ambiguous"] == 0
+    assert "ΑΡΗΣ" in CAPTURED_ROW.read_text(encoding="utf-8")
+
+
+def test_the_captured_fragment_yields_identity_where_the_page_once_yielded_none():
+    """Verbatim bytes, truncated mid-row: the identity reads, the total does not.
+
+    That asymmetry is the honest answer for a truncated printout, and it is the
+    opposite of what the reader used to say about the whole page (seven containers
+    with no identity at all).
+    """
+
+    page = _parse(CAPTURED.read_text(encoding="utf-8"))
+
+    assert page.counts["containers"] == 1
+    assert page.counts["rows"] == 1
+    assert page.counts["no_identity"] == 0
+    assert page.rows[0].idgame == "3C7521D5"
+    assert page.counts["with_final"] == 0

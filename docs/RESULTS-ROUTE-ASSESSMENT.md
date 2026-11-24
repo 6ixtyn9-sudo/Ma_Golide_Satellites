@@ -217,3 +217,65 @@ exactly this, and no egress read of `esake.gr` has yet succeeded.
 6. **WNBL:** capture the 401 body and the headers the site's own client sends; the
    referer-only read that worked once no longer does.
 7. **Israel Leumit:** retired 2026-11-24; no candidate route is permitted.
+
+## Greece, the split point found (2026-11-24T14:37Z)
+
+The replay wrote zero finals, and the reason was in the page's own bytes rather than
+in its contents. Printing 900 bytes either side of one game anchor answered both open
+questions at once.
+
+**The identity was there.** `EsakegameView?idgame=3C7521D5&mode=3` and `&mode=2`, eight
+uppercase hex digits, two anchors per game. The reader had reported `no_identity: 7` on
+a page holding fourteen anchors.
+
+**Fourteen containers for seven games.** The toggle handler writes the container name
+inside a script attribute:
+
+```html
+<a href="#" onclick="$j(this).closest('.esake-program-game').find('.esake-program-game-hidden-row')…">
+```
+
+`_ROW_RE` split on the bare token `esake-program-game(?![-\w])`, and `'` after `game` in
+`.closest('.esake-program-game')` satisfies that lookahead. Every row was therefore cut
+at its own toggle: the first half held both anchors and no score, the second half held
+the final-score block and no anchor. Seven plus seven is the fourteen the receipt
+reported, and it explains all four numbers at once — `containers: 14`, `rows: 7`,
+`no_identity: 7`, `with_final: 0`.
+
+The fix is one requirement: a container is `class="…esake-program-game…"`, not any
+occurrence of the token. The lookahead still excludes `-row-1`, `-final-score` and
+`-col-1`, which are parts of a row. Clubs and totals are then read from the
+`final-score` block alone, and the hidden per-quarter row — which repeats both club
+names and carries four numbers each — is cut before names are counted, because four
+repeats of two names is still two clubs.
+
+**What replays, and what does not.** The captured fragment replays to one container, one
+row and identity `3C7521D5`, which is the regression that mattered. It does not replay to
+a total, because the printout stopped inside the score cell. A full-page replay against
+the saved `esake_results_series-8.html` is the remaining gate, and until it passes the
+lane stays `source_unavailable`: the reader is fixed, not yet proven.
+
+## Lithuania, every public namespace closed (2026-11-24T14:33Z)
+
+`urbo-nkl/v1/games` → **401** `rest_unauthorized`, "Trūksta Authorization Bearer
+antraštės" (missing bearer header). `nkl/v1/live-scores` → **200** with `[]`, with and
+without `?date=`. `nkl-amw/v1/games` → **401** `rest_forbidden`, "Deja, Jūs negalite to
+daryti". `nkl-calendar/v1` is public and is a calendar: `start_local`, `start_utc`,
+`url`, `ics`, and no score or status field.
+
+So the WP-JSON surface has no public results route left to try. That is a *closing*
+result rather than an open one: the next read for this lane is the site's own match
+pages, not another namespace.
+
+## China, both coordinates accepted and empty (2026-11-24T14:33Z)
+
+Thirty requests — `roundId=1` crossed with `teamId=1..30` — all answered **200 in 42 B
+with zero games**. The important part is what stopped happening: the host no longer says
+`teamId value not exists`. Both parameters are now accepted, so the value space is the
+(round, team) grid the two errors implied, and round 1 simply holds no game for those
+team ids.
+
+Two things follow. First, the grid is a real cost: 40 requests per run, and the tool
+refuses a wider sweep rather than trimming it. Second, the 42-byte body is now the
+thing to read, because an empty list and a refusal wearing a 200 look identical from
+outside, and only one of them means "no games here".
