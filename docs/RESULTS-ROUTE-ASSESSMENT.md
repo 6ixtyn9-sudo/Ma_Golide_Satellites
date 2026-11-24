@@ -872,6 +872,46 @@ body's own shape alongside — `td_cells`, `period_markers`, `colon_scores` — 
 match page under this modal" is answered by the same vocabulary as the capture receipt
 instead of by inspecting the modal.
 
+### The gate is not in the page (2026-11-24T16:0xZ, build `d6e09552`)
+
+The correct build finally answered, and the answer is structural:
+
+| signal | value | what it means |
+|---|---|---|
+| occurrences of `ageYes` | **1**, at offset 14318 | the markup, and nothing else |
+| inline blocks mentioning a control | **0 of 15** | no block even names the buttons |
+| blocks that write a cookie/storage | 2 (index 0: 359 B, index 9: 703 B) | something writes; not the gate, by id |
+| `td_cells` / `integer_cells` / `period_markers` | 2 / 0 / 0 | no table of any kind |
+
+So the served document contains the modal's markup and **nothing that acts on it**. The accept
+behaviour is in `all.min.js`, `otSDKStub.js`, or nowhere at all. No cookie replay can be read
+out of this page, because the page does not contain the code that sets the cookie.
+
+`looks_like_code: true` on that single window is my heuristic, not the page: the 900-character
+window runs past the modal into `<div onclick="bannerClickAnalytics('top_desktop', event)">`,
+an **ad iframe's** handler. The flag answers "is there code near this id", not "is this the
+handler" — which is why the excerpt ships beside it, so the claim can be checked in public. It
+was checked here, and it was false.
+
+A correction to the previous section, while it is cheap to make: the shape numbers above
+describe *this document*, not the page behind the modal. A host that serves a consent shell
+instead of a match page tells you nothing about what it serves a consenting client. `td_cells:
+2` here is not evidence that BetExplorer's match pages lack a quarter table — it is evidence
+that this 110 KB document is a shell. Anyone reading the earlier paragraph as the stronger
+claim should read it as this one.
+
+Two things follow, both implemented rather than asserted:
+
+- `--gate-script` now prints the **code** of any inline block that writes a cookie or storage
+  (`excerpt`, 600 chars). A handler that selects `.age__btn--yes` by class is invisible to an
+  id search, and that is exactly the shape this page has.
+- `--gate-bundle URL` fetches one static asset the page loads and reports where the gate's own
+  tokens appear, plus every `document.cookie =` assignment within reach. One request, inside
+  the cooldown, and the key it names is evidence rather than a guess.
+- `--cookie NAME=VALUE` closes the loop: send a key read from the bundle on the match-page
+  request, with the name recorded in the receipt as `cookies_sent`, so a pass is never
+  mistaken for something the tool worked out by itself.
+
 Every receipt now names the build that produced it — `tool: {script, git_commit, modified}` —
 because three sessions were spent reading output from a checkout one merge behind, where the
 flags existed in the repository and not in the file being run. `git_commit: null` means the
