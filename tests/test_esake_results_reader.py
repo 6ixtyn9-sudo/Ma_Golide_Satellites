@@ -326,3 +326,49 @@ def test_a_club_cell_that_nests_a_span_keeps_the_whole_name():
 
     assert page.counts["names_ambiguous"] == 0
     assert page.finals[0].home == "ΚΟΛΟΣΣΟΣ H HOTELS"
+
+
+def test_the_date_comes_from_the_clock_cell_not_from_anywhere_on_the_row():
+    """A day in another cell is not this game's day.
+
+    The row carries venue and TV cells, and the page carries plenty of other
+    dates.  Reading the clock cell first is what keeps «12 Μαρτίου» from some
+    heading out of a November fixture.
+    """
+
+    html = (
+        '<div class="esake-program-game">'
+        "<h5>12 Μαρτίου - deadline</h5>"
+        '<div class="esake-program-game-info one-col"><img src="/skn/clock.svg" class="mr-xs">'
+        "Σαβ 21 Νοε - 15:00</div>"
+        '<div class="esake-program-game-final-score row equal">'
+        '<div class="col-lg-5 text-right"><span>ΑΡΗΣ</span></div>'
+        '<div class="col-lg-2 text-center"><span>84&nbsp;-&nbsp;87</span></div>'
+        '<div class="col-lg-5 text-left"><span>ΑΕΚ</span></div>'
+        "</div>"
+        '<a href="/el/action/EsakegameView?idgame=3C7521D5&mode=2">p</a>'
+        "</div>"
+    )
+
+    page = _parse(html)
+
+    assert page.finals[0].played_on == date(2026, 11, 21)
+
+
+def test_the_probe_reports_the_cell_and_the_row_side_by_side():
+    """`date_probe` exists because a reader saying None has two causes, and one
+    call should tell "never received" from "did not match"."""
+
+    html = (
+        '<div class="esake-program-game">'
+        '<div class="esake-program-game-info one-col">Σαβ 21 Νοε - 15:00</div>'
+        "</div>"
+    )
+
+    probe = esake.date_probe(html)
+
+    assert probe["cell_text"].startswith("Σαβ 21 Νοε")
+    assert probe["cell_matches"] == [["21", "Νοε"]]
+    assert probe["cell_result"] == (21, 11)
+    assert probe["result"] == (21, 11)
+    assert "\u039d\u03bf\u03b5" in probe["text_head"]

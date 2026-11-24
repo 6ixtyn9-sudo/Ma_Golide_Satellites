@@ -483,3 +483,47 @@ The day and month are plain text in the row, and a reader given exactly this pri
 `played_on = 2026-11-21`. So the remaining `unresolved_date: 7` is not about this cell's
 contents — it is about what `_text` over the *whole chunk* yields, which is the next thing
 to print rather than assume.
+
+## Lithuania reads 140 finals (2026-11-24T15:0xZ)
+
+The corrected reader on the captured NKL page:
+
+```
+read: 140   rows: 163   names_not_two: 0   score_not_one: 0
+BC Olimpas Palanga 125 - 124 Omega-Tauras
+Plunges Olimpas    101 -  78 Zalgiris Kaunas 2
+Silute              98 -  79 Mazeikiai
+```
+
+One hundred and forty finals, every one with a code, both clubs and both totals, from a
+host that refuses every score-bearing WP-JSON namespace and whose public namespace is a
+calendar with no score field. The lane was dark this morning; it has a results route now.
+
+Two properties worth naming, because they decide what wiring costs:
+
+* **the names are the aggregator's own** ("BC Olimpas Palanga", "Zalgiris Kaunas 2"), and
+  so are the fixtures this lane already forecasts from. Joining a result to a forecast is
+  therefore a same-source match, not a cross-provider alias problem — which is the single
+  most expensive thing this project knows how to do badly;
+* **every row is undated.** Results are grouped under round headers, so the date has to
+  come from the forecast being graded. A result that cannot be attached to a dated
+  forecast cannot settle, and that is a wiring question rather than a parsing one.
+
+## Greece, the date that should have matched (2026-11-24T15:0xZ)
+
+The clock cell as served is plain text — `Σαβ 21 Νοε - 15:00` — and a reader handed
+exactly that string returns `(21, 11)`, verified three ways here including from the
+operator's own escaped bytes. Yet the same call on the whole row returns `(None, None)` on
+a page where the same text is present. That is a contradiction, not a difficult parse, and
+guessing at it would cost more than asking.
+
+So two things changed rather than a theory: the date is now read **from the clock cell
+first** and only then from the row, which both shrinks the input and stops an unrelated
+day elsewhere on the page from being read as this game's; and `esake.date_probe(chunk)`
+reports the cell text, the cell's matches, the row's first 160 characters and the row's
+matches side by side. "The page shows a date and the reader says None" has two causes —
+text never received, and a pattern that did not match text it did receive — and one call
+now tells them apart.
+
+Reading the cell first is also right on its own terms: a fixture's date belongs to the
+clock cell, not to whichever day happens to appear earliest in the row's markup.

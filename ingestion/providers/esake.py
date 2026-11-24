@@ -179,6 +179,11 @@ _MONTHS_3 = {
 }
 
 _FINISHED_CLASS = "esake-program-game-final-score"
+#: The row's own clock cell, captured 2026-11-24:
+#: ``<div class="esake-program-game-info one-col"><img ...clock.svg...>Σαβ 21 Νοε - 15:00</div>``.
+#: Reading the date from *here* rather than from the whole row is what keeps an
+#: unrelated day in some other part of the page from being read as this game's.
+_DATE_CELL_CLASS = "esake-program-game-info"
 #: The per-quarter row, hidden behind the toggle.  It repeats both club names and
 #: carries four numbers per club, so reading club spans from the whole container
 #: would find four names and call every finished game ambiguous.
@@ -336,6 +341,40 @@ def _tip(chunk: str) -> Optional[str]:
     return f"{match.group(1).zfill(2)}:{match.group(2)}" if match else None
 
 
+def _date_cell_text(chunk: str) -> str:
+    """The visible text of the row's first info cell, which is the clock cell."""
+
+    at = chunk.find(_DATE_CELL_CLASS)
+    if at < 0:
+        return ""
+    opened = chunk.find(">", at)
+    start = opened + 1 if opened >= 0 else at
+    end = chunk.find("</div>", start)
+    return _text(chunk[start : end if end > start else start + 400])
+
+
+def date_probe(chunk: str) -> Dict[str, object]:
+    """What the date reader sees, for when the page and the reader disagree.
+
+    The whole-row read and the clock-cell read are reported side by side with the
+    matches each produced, because "the page shows a date and the reader says
+    None" has two very different causes -- text the reader never received, and a
+    pattern that did not match text it did receive -- and one call should tell
+    them apart.
+    """
+
+    cell = _date_cell_text(chunk)
+    text = _text(chunk)
+    return {
+        "cell_text": cell[:160],
+        "cell_matches": [list(pair) for pair in _DAY_MONTH_RE.findall(cell)],
+        "cell_result": _day_and_month(cell) if cell else None,
+        "text_head": text[:160],
+        "text_matches": [list(pair) for pair in _DAY_MONTH_RE.findall(text)][:5],
+        "result": _day_and_month(chunk),
+    }
+
+
 def _day_and_month(chunk: str) -> Tuple[Optional[int], Optional[int]]:
     """The day and the Greek month, reading around the page's own line breaks.
 
@@ -347,16 +386,20 @@ def _day_and_month(chunk: str) -> Tuple[Optional[int], Optional[int]]:
     and the day still bounds itself because a month name is letters.
     """
 
-    text = _text(chunk)
-    for day_text, label in _DAY_MONTH_RE.findall(text):
-        month = month_from_label(label)
-        if month is not None:
-            return int(day_text), month
-    squeezed = "".join(text.split())
-    for day_text, label in _UNSPACED_DATE_RE.findall(squeezed):
-        month = month_from_label(label)
-        if month is not None:
-            return int(day_text), month
+    # The clock cell first: it is the row's own date, and a smaller input cannot
+    # be broken by anything else on the page.  The whole row is the fallback.
+    for scope in (_date_cell_text(chunk), _text(chunk)):
+        if not scope:
+            continue
+        for day_text, label in _DAY_MONTH_RE.findall(scope):
+            month = month_from_label(label)
+            if month is not None:
+                return int(day_text), month
+        squeezed = "".join(scope.split())
+        for day_text, label in _UNSPACED_DATE_RE.findall(squeezed):
+            month = month_from_label(label)
+            if month is not None:
+                return int(day_text), month
     return None, None
 
 
@@ -543,6 +586,7 @@ __all__ = [
     "SITE",
     "SOURCE",
     "checksum",
+    "date_probe",
     "default_fetch",
     "game_url",
     "month_from_label",
