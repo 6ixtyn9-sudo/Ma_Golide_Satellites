@@ -803,6 +803,61 @@ class Pipeline:
             )
         )
 
+    def _degrade_schedule_to_stored_slate(
+        self,
+        *,
+        provider: str,
+        coverage: Dict[str, Any],
+        context: str,
+        exc: Exception,
+    ) -> List[Game]:
+        """Quarantine a dead schedule provider and run on the canonical stored slate.
+
+        ``HTTP 0`` means no response at all: the source was never read.  That is
+        not an empty slate, and it is not a reason to stop the day either.  Run
+        45357690260 lost settlement, freezing and the market report because one
+        host reset a connection at discovery time, so the failure is converted
+        here into a named ``provider_error`` gap plus a provider-health row, and
+        the run continues on whatever canonical games the store already holds.
+
+        The gap is what keeps the void guard honest: the day is named as
+        unreadable, never rendered as a quiet nothing, and an empty store still
+        degrades to an empty slate *with* the reason attached.
+        """
+
+        stored = self._stored_slate_games()
+        detail = (
+            f"{context}; day runs on the stored slate "
+            f"({len(stored)} stored game(s)): {type(exc).__name__}: {exc}"
+        )[:500]
+        logger.warning("schedule fetch failed for %s: %s", provider, exc)
+        self.gaps.append(
+            CoverageGap(
+                game_id=None,
+                required_field="official_schedule",
+                reason=CoverageState.PROVIDER_ERROR,
+                provider=provider,
+                detail=detail,
+                observed_utc=self._now_iso(),
+            )
+        )
+        self._record_health(
+            ProviderHealth(
+                provider=provider,
+                league=self.config.league_enum,
+                last_attempt_utc=self._now_iso(),
+                last_success_utc=None,
+                state=CoverageState.PROVIDER_ERROR,
+                coverage={
+                    **coverage,
+                    "games": len(stored),
+                    "stored_slate_fallback": True,
+                },
+                detail=detail,
+            )
+        )
+        return stored
+
     def _stored_slate_games(self) -> List[Game]:
         """Return only canonical games already supplied by a validated import.
 
@@ -1148,13 +1203,29 @@ class Pipeline:
                 )
         elif league in (League.EUROLEAGUE, League.EUROCUP):
             euroleague.reset_probe()
-            games = euroleague.discover_games(
-                _iso(self.config.date_yyyymmdd), self.fetch, self._euro_seasoncode()
-            )
-            probe = euroleague.last_probe()
-            # This branch holds a read receipt: the void guard below must stay
-            # quiet. An on-date miss -- rows read, no games today -- is an
-            # answer, not a void.
+            seasoncode = self._euro_seasoncode()
+            try:
+                games = euroleague.discover_games(
+                    _iso(self.config.date_yyyymmdd), self.fetch, seasoncode
+                )
+            except Exception as exc:
+                # An unreachable host is not an answer, and it must not be the
+                # end of the run either: the previous behaviour unwound all the
+                # way to scripts/daily.py, which can only report the whole tick
+                # as failed (run 45357690260: HTTP 0 before settlement of six
+                # live predictions).  Degrade to the stored slate instead.
+                games = self._degrade_schedule_to_stored_slate(
+                    provider="euroleague",
+                    coverage={"seasoncode": seasoncode},
+                    context=f"euroleague schedule fetch failed for {seasoncode}",
+                    exc=exc,
+                )
+                probe = None
+            else:
+                probe = euroleague.last_probe()
+            # Success holds a read receipt and stays out of the void guard below;
+            # a degraded read already appended its own gap, which the guard also
+            # treats as an answer -- "unreadable", not "no games today".
             read_receipt = bool(probe)
             if probe:
                 now = self._now_iso()
