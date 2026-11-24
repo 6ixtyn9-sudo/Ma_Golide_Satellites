@@ -187,17 +187,32 @@ def _parse_datetime(label: str, observed: datetime) -> Optional[datetime]:
         day = int(match.group("day"))
         if match.group("year"):
             year = int(match.group("year"))
-        else:
-            year = site_now.year
-            if (month, day) < (site_now.month, site_now.day):
-                year += 1
-        try:
-            return datetime(
-                year, month, day, int(match.group("hour")), int(match.group("minute")),
-                tzinfo=ZoneInfo(SITE_TZ),
-            )
-        except ValueError:
-            return None
+            try:
+                return datetime(
+                    year, month, day, int(match.group("hour")), int(match.group("minute")),
+                    tzinfo=ZoneInfo(SITE_TZ),
+                )
+            except ValueError:
+                return None
+        # Year-less labels are resolved to the *nearest* year, not to "next year
+        # if the month/day already passed".  The old rule dated a fixture that
+        # tipped yesterday as a fixture next year (observed 2026-11-25, label
+        # "24.11." -> 2027), which silently made yesterday unreachable and
+        # pushed the row into next season's slate.
+        hour, minute = int(match.group("hour")), int(match.group("minute"))
+        best: Optional[datetime] = None
+        best_distance: Optional[timedelta] = None
+        for year in (site_now.year - 1, site_now.year, site_now.year + 1):
+            try:
+                candidate = datetime(
+                    year, month, day, hour, minute, tzinfo=ZoneInfo(SITE_TZ)
+                )
+            except ValueError:
+                continue
+            distance = abs(candidate - site_now)
+            if best_distance is None or distance < best_distance:
+                best, best_distance = candidate, distance
+        return best
     match = _CLOCK_RE.match(text)
     if match:
         day_offset = 1 if match.group("today") == "Tomorrow" else 0
