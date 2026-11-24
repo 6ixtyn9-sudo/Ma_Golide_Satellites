@@ -94,10 +94,15 @@ Each slate gets its pre-tip opportunity from a 120-minute lead
 freeze the writer produced). That lead is what puts two hourly ticks inside
 every window:
 
-- Lane cap is 60 minutes (`league` job), so a wedged lane cannot outlive the
-  cadence in the normal case.
-- A pathological run is bounded by 60 (lane) + 15 (publisher) = 75 minutes; the
-  next tick then waits in the concurrency group rather than overlapping it.
+- Lane cap is 360 minutes (`league` job, raised from 60 at 2026-11-23T19:59Z
+  after a healthy tick measured 54 minutes end to end). Overlap is not the
+  risk the cap controls: `concurrency` holds one group with
+  `cancel-in-progress: false`, so a long run makes the next tick **queue**
+  instead of running beside it.
+- The cost of the longer cap is therefore a wedge, not a collision: a stuck
+  lane holds the group — and every later tick — for up to six hours. If that
+  trade is ever wrong, 90 minutes still clears a 54-minute run with the
+  publisher's 15 minutes of headroom.
 - If both a run and a queued tick are outstanding when a third tick arrives,
   GitHub cancels the queued one. That is the failure mode to watch for in the
   Actions list: a `cancelled` run whose predecessor ran long.

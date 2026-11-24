@@ -299,16 +299,28 @@ def test_evidence_verified_cache_epoch_applies_to_every_league():
         assert "matrix.league == 'NCAA_W'" not in text
 
 
-def test_league_lane_cap_stays_inside_the_hourly_external_cadence():
-    """Pin the lane cap to the tick interval the external scheduler now uses.
+def test_a_lane_cap_above_the_tick_requires_a_serialising_concurrency_group():
+    """The guard is overlap, not a magic number.
 
-    The cadence deliberately lives outside this repository (``assert "cron:"
-    not in text``), so the only half of the contract the repo can enforce is
-    that no lane may hold a runner longer than the documented hourly interval.
-    An hourly tick replaced the 30-minute one because a healthy run already
-    took 22-29 minutes; a cap above 60 would quietly restore the overlap the
-    change was made to remove. The publisher's own 15 minutes is the reason a
-    pathological run queues rather than overlaps the following tick.
+    The lane cap was 60 minutes while a tick was hourly, and the reasoning was
+    that a longer cap would restore overlap. That reasoning was incomplete: the
+    workflow already declares
+
+        concurrency:
+          group: magolide-automatic-available-leagues
+          cancel-in-progress: false
+
+    so a long run makes the next tick *queue*; it cannot run beside it. What a
+    long cap really costs is that a wedged lane holds the group (and therefore
+    every later tick) for its whole length, so the cap must stay inside a
+    bounded number of hours and the serialisation must be present for any cap
+    above the tick interval.
+
+    The cap was raised from 60 to 360 on 2026-11-23T19:59Z after a healthy run
+    measured 54 minutes. Pinning 60 blocked every tick from 20:37 onward on this
+    assertion -- nine hours of acquired-nothing to protect a number the
+    concurrency group already guaranteed. Hence: assert the property, not the
+    constant.
     """
 
     repo = Path(__file__).resolve().parents[1]
@@ -320,7 +332,21 @@ def test_league_lane_cap_stays_inside_the_hourly_external_cadence():
         league = text.split("\n  league:\n", 1)[1].split("\n  publish-localdata:", 1)[0]
         cap = re.search(r"timeout-minutes:\s*(\d+)", league)
         assert cap is not None, f"{path} league job declares no timeout"
-        assert int(cap.group(1)) <= 60, (
-            f"{path} lets a lane hold a runner for {cap.group(1)} minutes, which is "
-            "at or beyond the hourly external tick and re-creates the overlap"
+        minutes = int(cap.group(1))
+
+        # A typo guard: no lane may hold a runner for a working day.
+        assert minutes <= 6 * 60, (
+            f"{path} lets a lane hold a runner for {minutes} minutes; anything "
+            "beyond six hours is a typo, not a policy"
         )
+        if minutes > 60:
+            # Above the hourly tick, a run must queue behind its predecessor
+            # rather than run beside it.
+            assert re.search(
+                r"^concurrency:\s*\n\s+group:\s*\S+\s*\n\s+cancel-in-progress:\s*false\s*$",
+                text,
+                re.M,
+            ), (
+                f"{path} allows a {minutes}-minute lane without a serialising "
+                "concurrency group; overlapping ticks would then acquire twice"
+            )
