@@ -242,6 +242,96 @@ def _read_final(html: str) -> Optional[Tuple[float, float, str]]:
     )
 
 
+#: A club page's fixture table.  Each row is a joined view -- id, kickoff, both
+#: clubs and the final -- which is what makes a forecast findable without opening
+#: a 680 KB match page first.
+_ROW_RE = re.compile(r"<tr[^>]*>(?P<tag>.*?)</tr>", re.S)
+_ROW_URL_RE = re.compile(r"data-match-url=(?P<url>\S+)")
+_ROW_DATE_RE = re.compile(
+    r"<td[^>]*>\s*(?P<date>\d{4}-\d{2}-\d{2})\s+(?P<time>\d{2}:\d{2}):\d{2}\s*</td>"
+)
+_ROW_TEAM_RE = re.compile(
+    r"class=[\"']?nkl-game-team-cell[\"']?[^>]*>.*?<span>(?P<name>[^<]+)</span>", re.S
+)
+_ROW_SCORE_RE = re.compile(
+    r"class=[\"']?nkl-game-score[\"']?[^>]*>\s*(?P<home>\d{1,3})\s*-\s*(?P<away>\d{1,3})"
+)
+
+
+@dataclass(frozen=True)
+class ListingRow:
+    """One row of a club's fixture table, as the page states it."""
+
+    match_id: str
+    url: str
+    kickoff_local: datetime
+    home_name: str
+    away_name: str
+    home_score: Optional[float]
+    away_score: Optional[float]
+
+    @property
+    def played_on(self) -> date:
+        return self.kickoff_local.date()
+
+    def to_dict(self) -> Dict[str, object]:
+        return {
+            "match_id": self.match_id,
+            "url": self.url,
+            "kickoff_local": self.kickoff_local.isoformat(),
+            "home_name": self.home_name,
+            "away_name": self.away_name,
+            "home_score": self.home_score,
+            "away_score": self.away_score,
+        }
+
+
+def parse_club_page(html: str) -> Tuple[List[ListingRow], Dict[str, int]]:
+    """Every fixture row a club page lists, plus what could not be read.
+
+    No score is invented: an upcoming row has no result cell and is returned with
+    ``None`` scores rather than with zeros or a repeat of the last row.
+    """
+
+    rows: List[ListingRow] = []
+    counts = {"rows": 0, "with_url": 0, "with_date": 0, "with_teams": 0, "with_score": 0}
+    for row in _ROW_RE.finditer(html or ""):
+        body = row.group(0)
+        url_match = _ROW_URL_RE.search(body)
+        if url_match is None:
+            continue
+        counts["rows"] += 1
+        match_id = url_match.group("url").rstrip("/").rsplit("/", 1)[-1]
+        counts["with_url"] += 1
+
+        date_match = _ROW_DATE_RE.search(body)
+        teams = _ROW_TEAM_RE.findall(body)
+        score_match = _ROW_SCORE_RE.search(body)
+        if date_match is None or len(teams) != 2:
+            continue
+        counts["with_date"] += 1
+        counts["with_teams"] += 1
+        if score_match is not None:
+            counts["with_score"] += 1
+
+        day = date.fromisoformat(date_match.group("date"))
+        hour, minute = (int(part) for part in date_match.group("time").split(":"))
+        rows.append(
+            ListingRow(
+                match_id=match_id,
+                url=url_match.group("url"),
+                kickoff_local=datetime(
+                    day.year, day.month, day.day, hour, minute, tzinfo=ZoneInfo(SITE_TZ)
+                ),
+                home_name=teams[0].strip(),
+                away_name=teams[1].strip(),
+                home_score=None if score_match is None else float(score_match.group("home")),
+                away_score=None if score_match is None else float(score_match.group("away")),
+            )
+        )
+    return rows, counts
+
+
 def parse_match_page(html: str, url: str = "") -> MatchPage:
     """Read one served nkl.lt match page.  Never raises on absent markup."""
 
