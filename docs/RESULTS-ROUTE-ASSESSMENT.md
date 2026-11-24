@@ -22,9 +22,10 @@ final), never as a verdict.
 | `ISRAEL_LIGA_LEUMIT` | **Nothing passes — documented** | none | 0/10 on every candidate | `one.co.il` disallows `/api/` in robots (the only path with scores); `safsal.co.il` has no ToS page; the federation host `basketball.org.il` timed out ×3 over two days; `basket.co.il` serves only the Premier board |
 | `AUSTRALIA_WNBL_W` | **Not delivered** | — | — | The probe log shows real work (`prod.rosetta.nbl.com.au/get/wnbl/matches/in/season/{2025,2026}/regular` → 200; `wnbl.com.au/terms-and-conditions` → 200) but no report or verdict was handed back |
 
-Not one of these changes a registry value in this commit. A lane flips from
-`source_unavailable` only when an adapter exists **and** has been replayed
-against captured bytes.
+This commit changes no `results_source` value; it writes the verdict into each
+lane's own `source_detail` (so the dark lane explains itself where the reports
+read it) and into this document. A lane flips from `source_unavailable` only
+when an adapter exists **and** has been replayed against captured bytes.
 
 ## Greece: the one that can be promoted
 
