@@ -324,18 +324,14 @@ def club_name(nkl_name: str) -> Optional[str]:
     return CLUB_NAMES.get(nkl_name.strip())
 
 
-def find_row(
-    rows: List["ListingRow"],
-    *,
-    played_on: date,
-    home: str,
-    away: str,
-) -> Optional["ListingRow"]:
-    """The one listing row for a forecast, by date and club pair.
+def _candidates(
+    rows: List["ListingRow"], *, played_on: date, home: str, away: str
+) -> List["ListingRow"]:
+    """Every row on that date whose pair matches as a set.
 
-    Both sides must map to known clubs and the pair must match as a set, because
-    a source that lists the fixture the other way round is still the same game.
-    Two rows on one date for the same pair is ambiguous and returns ``None``.
+    The pair matches as a set because a source that lists the fixture the other
+    way round is still the same game.  Both names must map: an unmapped club
+    makes a row invisible rather than a wrong match.
     """
 
     wanted = {home.strip(), away.strip()}
@@ -348,7 +344,53 @@ def find_row(
             continue
         if names == wanted:
             hits.append(row)
-    return hits[0] if len(hits) == 1 else None
+    return hits
+
+
+def collapse(hits: List["ListingRow"]) -> Tuple[List["ListingRow"], List[str]]:
+    """One row per match, plus the ids that arrived twice carrying different data.
+
+    A club page prints the same fixture more than once -- Kretinga's page emits
+    the 2026-10-01 row three times, byte-identical -- because the markup repeats
+    a row per layout variant.  That is one match, and refusing it as ambiguous
+    refuses a game the page is stating plainly.
+
+    The distinction that matters: *identical* repeats collapse, but a match id
+    carrying contradictory scores, dates or names is a genuine conflict of the
+    kind a second read exists to catch, and it is returned apart so the caller
+    can refuse and say why.
+    """
+
+    unique: Dict[str, "ListingRow"] = {}
+    conflicting: List[str] = []
+    for row in hits:
+        prior = unique.get(row.match_id)
+        if prior is None:
+            unique[row.match_id] = row
+        elif prior != row and row.match_id not in conflicting:
+            conflicting.append(row.match_id)
+    return list(unique.values()), conflicting
+
+
+def find_row(
+    rows: List["ListingRow"],
+    *,
+    played_on: date,
+    home: str,
+    away: str,
+) -> Optional["ListingRow"]:
+    """The listing row for a forecast, by date and club pair.
+
+    Identical repeats of one match are one row.  Two *different* matches for the
+    same pair on the same date are ambiguous and return ``None``, as does one
+    match printed with contradictory data -- nothing here picks a winner.
+    """
+
+    hits, conflicting = collapse(_candidates(rows, played_on=played_on, home=home,
+                                            away=away))
+    if conflicting or len(hits) != 1:
+        return None
+    return hits[0]
 
 
 def explain_miss(
@@ -372,7 +414,23 @@ def explain_miss(
     if not rows:
         return ["the club page parsed no fixture rows at all"]
 
-    on_date = [row for row in rows if row.played_on == played_on]
+    hits, conflicting = collapse(_candidates(rows, played_on=played_on, home=home,
+                                            away=away))
+    if conflicting:
+        return [
+            f"match {len(conflicting)} id(s) {conflicting} printed more than once on "
+            f"{played_on.isoformat()} with different data; refusing to choose"
+        ]
+    if len(hits) > 1:
+        ids = sorted(row.match_id for row in hits)
+        return [
+            f"{len(hits)} distinct matches on {played_on.isoformat()} for "
+            f"{home} v {away}: {ids}; refusing to choose"
+        ]
+
+    # Collapse before printing: a fixture the page repeats three times should
+    # read as one fixture, not three.
+    on_date = collapse([row for row in rows if row.played_on == played_on])[0]
     if not on_date:
         dates = sorted({row.played_on.isoformat() for row in rows})
         return [
