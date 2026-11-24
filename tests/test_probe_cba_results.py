@@ -69,3 +69,10 @@ def test_a_non_json_body_is_recorded_without_inventing_a_shape():
     assert summary["game_count"] == 0
     assert summary["error"] == ""
     assert summary["sha256"]
+
+
+def test_the_second_parameter_the_host_demanded_is_carried():
+    """With roundId present the host asked for teamId (178 B, every round 1-31)."""
+
+    assert probe.rounds_url(3).endswith("&roundId=3")
+    assert probe.rounds_url(3, team_id=7).endswith("&roundId=3&teamId=7")
