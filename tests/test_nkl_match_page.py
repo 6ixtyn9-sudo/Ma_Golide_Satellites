@@ -119,3 +119,20 @@ def test_when_no_final_can_be_read_the_receipt_names_the_candidates():
 
     assert "no final score element" in reasons
     assert "score-shaped pairs" in reasons or "no 'Rungtynių" in reasons
+
+
+def test_the_receipt_names_where_the_final_came_from():
+    """A final that is really a summary row echoing the quarter sum would make
+    reconciles() true by construction. The audit trail has to be in the receipt."""
+
+    page = nkl.parse_match_page(
+        _PAGE.replace(
+            "</div></div>",
+            "</div></div><div class=nkl-match-score><span>83</span> : <span>88</span></div>",
+            1,
+        ),
+        url="https://nkl.lt/matches/125781/",
+    )
+
+    assert page.to_dict()["final_source"].startswith("class=nkl-match-score")
+    assert "83" in page.to_dict()["final_source"]

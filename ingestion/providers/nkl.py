@@ -60,7 +60,7 @@ _START_RE = re.compile(
 #: score-shaped class, so this looks for one and reports its absence rather than
 #: falling back to the quarter sum.
 _SCORE_ELEMENT_RE = re.compile(
-    r"class=[\"']?[^\"'>]*(?:match-score|nkl-score|final-score|score-box)[^\"'>]*[\"']?[^>]*>"
+    r"class=[\"']?(?P<token>[^\"'>]*(?:match-score|nkl-score|final-score|score-box)[^\"'>]*)[\"']?[^>]*>"
     r"(?P<body>.{0,400})",
     re.S,
 )
@@ -82,6 +82,10 @@ class MatchPage:
     away_quarters: List[Optional[float]] = field(default_factory=list)
     home_final: Optional[float] = None
     away_final: Optional[float] = None
+    #: Which element stated the final, and the text around it.  A final that is
+    #: really a summary row echoing the quarter sum would make reconciles() true
+    #: by construction, so the claim has to be auditable in the receipt.
+    final_source: Optional[str] = None
     counts: Dict[str, int] = field(default_factory=dict)
     reasons: Tuple[str, ...] = ()
 
@@ -135,6 +139,7 @@ class MatchPage:
             "away_quarters": list(self.away_quarters),
             "home_final": self.home_final,
             "away_final": self.away_final,
+            "final_source": self.final_source,
             "quarter_sums": [home_sum, away_sum],
             "settleable": self.to_actual_result() is not None,
             "counts": dict(self.counts),
@@ -198,14 +203,18 @@ def final_candidates(html: str, limit: int = 5) -> List[str]:
     return found
 
 
-def _read_final(html: str) -> Optional[Tuple[float, float]]:
+def _read_final(html: str) -> Optional[Tuple[float, float, str]]:
     element = _SCORE_ELEMENT_RE.search(html)
     if element is None:
         return None
-    pair = _PAIR_RE.search(re.sub(r"<[^>]+>", " ", element.group("body")))
+    flat = re.sub(r"<[^>]+>", " ", element.group("body"))
+    pair = _PAIR_RE.search(flat)
     if pair is None:
         return None
-    return float(pair.group("home")), float(pair.group("away"))
+    excerpt = re.sub(r"\s+", " ", flat[max(0, pair.start() - 60) : pair.end() + 60]).strip()
+    return float(pair.group("home")), float(pair.group("away")), (
+        f"class={element.group('token')} | {excerpt}"
+    )
 
 
 def parse_match_page(html: str, url: str = "") -> MatchPage:
@@ -252,7 +261,9 @@ def parse_match_page(html: str, url: str = "") -> MatchPage:
         candidates = final_candidates(text)
         if candidates:
             problems.append("score-shaped pairs on the page: " + " | ".join(candidates))
-    home_final, away_final = (None, None) if final is None else final
+    home_final, away_final, final_source = (
+        (None, None, None) if final is None else final
+    )
 
     counts = {
         "quarter_headers": len(_TH_RE.findall(table.group("body"))) if table else 0,
@@ -272,6 +283,7 @@ def parse_match_page(html: str, url: str = "") -> MatchPage:
         away_quarters=away_quarters,
         home_final=home_final,
         away_final=away_final,
+        final_source=final_source,
         counts=counts,
         reasons=tuple(problems),
     )
