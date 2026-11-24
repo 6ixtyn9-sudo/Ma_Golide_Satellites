@@ -697,3 +697,47 @@ def test_the_gate_script_read_shows_the_handler_and_the_bundles(tmp_path, capsys
     assert payload["inline_script_blocks"] == 0
     assert payload["accept_handlers"][0]["control"] == "ageYes"
     assert "ageOk" in payload["accept_handlers"][0]["excerpt"]
+    assert payload["accept_handlers"][0]["looks_like_code"] is True
+
+
+def test_the_handler_is_found_even_when_the_button_carries_none(tmp_path, capsys):
+    """The 2026-11-24 page: `<button id="ageYes">` with no onclick, banners after
+    it, and the behaviour attached far below. Reading only the first occurrence
+    of the id showed ads and declared nothing."""
+
+    page = tmp_path / "gate.html"
+    page.write_text(
+        '<div class="age__modal"><h1 id="ageTitle">18+</h1>'
+        '<div class="age__buttons"><button id="ageYes">Sim</button>'
+        '<button id="ageNo">Não</button></div></div>'
+        + '<div class="banner"><iframe src="/ad"></iframe></div>' * 20
+        + "<script>var el=document.getElementById('ageYes');"
+        "el.addEventListener('click',function(){document.cookie='be18=1;path=/';});</script>",
+        encoding="utf-8",
+    )
+
+    assert probe.main(["--gate-script", str(page)]) == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    windows = [item for item in payload["accept_handlers"] if item["control"] == "ageYes"]
+    assert len(windows) == 2  # the markup, and the listener
+    assert windows[0]["looks_like_code"] is False
+    assert windows[1]["looks_like_code"] is True
+    assert "addEventListener" in windows[1]["excerpt"]
+    # And the block that owns the behaviour is named, so it can be read next.
+    assert payload["inline_blocks"][0]["mentions_controls"] == ["ageYes"]
+    assert payload["inline_blocks"][0]["writes"] is True
+
+
+def test_the_gate_read_reports_whether_a_match_page_is_under_the_modal(tmp_path, capsys):
+    page = tmp_path / "gate.html"
+    page.write_text(
+        '<div class="age__modal"><h1 id="ageTitle">18+</h1>'
+        '<button id="ageYes">Sim</button></div>',
+        encoding="utf-8",
+    )
+
+    assert probe.main(["--gate-script", str(page)]) == 0
+
+    shape = json.loads(capsys.readouterr().out)["shape"]
+    assert shape["td_cells"] == 0 and shape["period_markers"] == 0

@@ -234,28 +234,63 @@ def gate_script(body: str) -> dict[str, object]:
     key name.
     """
 
-    excerpts: list[dict[str, str]] = []
+    # A button carries the handler in one of three places: an inline onclick, a
+    # listener attached by id in a later script, or a delegated handler in a
+    # bundle. The first occurrence of the id is the markup -- the 2026-11-24 page
+    # proved that reading only it shows banners and no behaviour at all -- so
+    # every occurrence is reported, with whether it looks like code.
+    handler_windows: list[dict[str, object]] = []
+    controls: list[str] = []
     for match in _ACCEPT_CONTROL_RE.finditer(body or ""):
         control = match.group("id")
-        # The handler may be attached by id elsewhere; the first occurrence of
-        # the identifier is usually the markup or the lookup, so take a window
-        # after it rather than a whole script.
-        at = body.find(control)
-        window = body[max(0, at - 200) : at + 900]
-        if any(item["excerpt"] == window for item in excerpts):
-            continue
-        excerpts.append({"control": control, "excerpt": re.sub(r"\s+", " ", window).strip()})
-        if len(excerpts) >= 3:
-            break
+        if control not in controls:
+            controls.append(control)
+
+    for control in controls[:3]:
+        for at in [m.start() for m in re.finditer(re.escape(control), body or "")][:3]:
+            window = body[max(0, at - 200) : at + 900]
+            handler_windows.append(
+                {
+                    "control": control,
+                    "offset": at,
+                    "excerpt": re.sub(r"\s+", " ", window).strip(),
+                    "looks_like_code": bool(
+                        re.search(r"addEventListener|onclick|\$\s*\(|function\s*\(|=>", window)
+                    ),
+                }
+            )
+
+    blocks = []
+    for index, match in enumerate(
+        re.finditer(r"<script(?![^>]*\bsrc=)[^>]*>(?P<text>.*?)</script>", body or "", re.S)
+    ):
+        text = match.group("text")
+        blocks.append(
+            {
+                "index": index,
+                "bytes": len(text),
+                "mentions_controls": [control for control in controls if control in text],
+                "writes": bool(re.search(r"document\.cookie|localStorage|sessionStorage", text)),
+            }
+        )
+
     scripts = []
     for match in re.finditer(r"<script[^>]+src=[\"'](?P<src>[^\"']+)[\"']", body or ""):
         src = match.group("src")
         if src not in scripts:
             scripts.append(src)
     return {
-        "accept_handlers": excerpts,
+        "accept_handlers": handler_windows,
         "external_scripts": scripts[:20],
-        "inline_script_blocks": len(re.findall(r"<script(?![^>]*\bsrc=)", body or "")),
+        "inline_blocks": blocks[:24],
+        "inline_script_blocks": len(blocks),
+        # The question the gate hides: is there a match page in this body at all?
+        # Same vocabulary as the capture receipt, so the numbers compare.
+        "shape": {
+            **shape_signals(body),
+            "period_markers": len(_PERIOD_RE.findall(re.sub(r"<[^>]+>", " ", body or ""))),
+            "colon_scores": len(_COLON_SCORE_RE.findall(re.sub(r"<[^>]+>", " ", body or ""))),
+        },
     }
 
 
