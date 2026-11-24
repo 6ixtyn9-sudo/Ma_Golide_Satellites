@@ -557,17 +557,25 @@ class BetProposal:
     line: Optional[float] = None
     basis: str = ""
     reason: str = ""
+    #: The league discount the tuner applied, 1.0 when it has not. Shown in the
+    #: token only when it bit, so a reader can see *why* a confidence fell short.
+    league_weight: float = 1.0
 
     def as_token(self) -> str:
         """``first_half_1x2=HOME@72.3/1.950`` or ``ft_ou=UNAVAILABLE(no_totals_line)``."""
 
         name = self.bet_type.lower()
         if not self.available:
-            return f"{name}=UNAVAILABLE({self.reason})"
+            token = f"{name}=UNAVAILABLE({self.reason})"
+            if self.league_weight != 1.0:
+                token += f" lw={self.league_weight:.2f}"
+            return token
         token = f"{name}={self.selection}"
         if self.line is not None:
             token += f" line={self.line:g}"
         token += f" conf={self.confidence:.1f}"
+        if self.league_weight != 1.0:
+            token += f" lw={self.league_weight:.2f}"
         if self.price is not None:
             token += f" @{self.price:.3f}"
         return token
@@ -582,6 +590,7 @@ class BetProposal:
             "line": self.line,
             "basis": self.basis,
             "reason": self.reason,
+            "league_weight": self.league_weight,
         }
 
 
@@ -613,6 +622,7 @@ def first_half_bet(
     verdict: MaGolideVerdict,
     snapshot: Optional[BookSnapshot],
     config: BetConfig,
+    league: str = "",
 ) -> BetProposal:
     """``FIRST_HALF_1X2`` from the score, on the combiner's own arithmetic.
 
@@ -650,12 +660,18 @@ def first_half_bet(
     confidence = _clamp(
         confidence, config.get("firstHalfMinConfidence"), config.get("firstHalfMaxConfidence")
     )
+    # The tuner's per-league discount applies to the confidence a gate compares,
+    # which is exactly what the sheet's ``league_weight_<LEAGUE> = 0.7`` advice was
+    # for. The undiscounted signal is still what chose the side.
+    weight = config.league_weight(league)
+    confidence *= weight
 
     if confidence < config.get("firstHalfMinConf"):
         return BetProposal(
             BET_FIRST_HALF,
             False,
             confidence=round(confidence, 1),
+            league_weight=weight,
             reason="confidence_below_first_half_gate",
         )
 
@@ -668,6 +684,7 @@ def first_half_bet(
                 False,
                 confidence=round(confidence, 1),
                 price=price,
+                league_weight=weight,
                 reason="edge_below_first_half_gate",
             )
 
@@ -678,6 +695,7 @@ def first_half_bet(
         confidence=round(confidence, 1),
         price=price,
         basis="h1_signal_from_magolide_score",
+        league_weight=weight,
     )
 
 
@@ -686,6 +704,7 @@ def ft_ou_bet(
     away: Optional[PublishedStandingsRow],
     snapshot: Optional[BookSnapshot],
     config: BetConfig,
+    league: str = "",
 ) -> BetProposal:
     """``FT_OU`` against an observed total line, or the reason there is none.
 
@@ -735,22 +754,23 @@ def ft_ou_bet(
     implied = 1.0 / float(price)
     edge = probability - implied
     ev = probability * (float(price) - 1.0) - (1.0 - probability)
-    confidence = probability * 100.0
+    weight = config.league_weight(league)
+    confidence = probability * 100.0 * weight
 
     if confidence < config.get("ftOuMinConf"):
         return BetProposal(
             BET_FT_OU, False, confidence=round(confidence, 1), line=line,
-            reason="confidence_below_ftou_gate",
+            league_weight=weight, reason="confidence_below_ftou_gate",
         )
     if edge < config.get("ftouEdgeThreshold"):
         return BetProposal(
             BET_FT_OU, False, confidence=round(confidence, 1), price=float(price), line=line,
-            reason="edge_below_ftou_gate",
+            league_weight=weight, reason="edge_below_ftou_gate",
         )
     if ev < config.get("ftOuMinEv"):
         return BetProposal(
             BET_FT_OU, False, confidence=round(confidence, 1), price=float(price), line=line,
-            reason="ev_below_ftou_gate",
+            league_weight=weight, reason="ev_below_ftou_gate",
         )
 
     return BetProposal(
@@ -761,6 +781,7 @@ def ft_ou_bet(
         price=float(price),
         line=line,
         basis="model_total_shrunk_to_observed_line",
+        league_weight=weight,
     )
 
 def _side_price(snapshot: Optional[BookSnapshot], selection: Optional[str]) -> Optional[float]:
@@ -798,8 +819,17 @@ def research_rows(
     read. That is the difference between this module and a filter.
     """
 
-    resolved_config = config or MaGolideConfig()
     bets_config = bet_config or default_config()
+    # The scorer runs under the same tunable numbers the bet gates do, unless a
+    # caller pins a scorer config explicitly. Without this the tuner's
+    # ``confidence_scale`` (its main calibration lever) would move a stamp and
+    # nothing else: the card would keep scoring at the shipped default.
+    resolved_config = config or MaGolideConfig(
+        confidence_scale=bets_config.get("confidence_scale"),
+        threshold=bets_config.get("threshold"),
+        conf_min=bets_config.get("confMin"),
+        conf_max=bets_config.get("confMax"),
+    )
     scorer_rows = from_published(published, derived=derived)
     index = {row.team: row for row in scorer_rows}
     published_by_team = {
@@ -856,12 +886,18 @@ def research_rows(
         )
         proposals = (
             headline,
-            first_half_bet(verdict, h1_by_id.get(game.game_id) or h1_by_pair.get(pair), bets_config),
+            first_half_bet(
+                verdict,
+                h1_by_id.get(game.game_id) or h1_by_pair.get(pair),
+                bets_config,
+                league,
+            ),
             ft_ou_bet(
                 published_by_team.get(home_name),
                 published_by_team.get(away_name),
                 totals_by_id.get(game.game_id) or totals_by_pair.get(pair),
                 bets_config,
+                league,
             ),
         )
         out.append(
@@ -1001,6 +1037,9 @@ def render_research_section(
         f"- Bet config: {'/'.join(stamps) or 'none'} — every gate, bound and tier "
         "invariant lives in config/magolide_bets.json, and the tuner may amend those "
         "numbers from settled results; the stamp on every line names the era it ran in.",
+        "- A league the tuner has discounted carries its weight on the confidence-gated "
+        "bet types (first half, totals), where `lw=` shows it; the moneyline tier is a "
+        "score, not a confidence, so it is not discounted.",
     ]
     if neutral:
         lines.append(
