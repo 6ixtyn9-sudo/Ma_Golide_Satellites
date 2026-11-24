@@ -11,12 +11,21 @@ fixtures page already uses -- path-only, no query string, robots-allowed -- and
 a 2026-11-24 capture found 34, 25 and 140 distinct matches on the three pages.
 
 So the finals exist.  What this module does **not** claim is that they have been
-read: every rule below is derived from the *fixtures* row markup this project
-already parses (``in-match`` link, two ``<span>`` names, a
-``table-main__datetime`` cell), because that is the only markup on this host that
-has been captured in full.  The results page is therefore read with the same
-rules plus a score cell, and every row that does not satisfy all of them is
-counted rather than guessed at:
+read end to end: the row shape was captured on 2026-11-24 and the rules below are
+written against it --
+
+```html
+<td class="h-text-left"><a data-test="11015187"
+    href="/basketball/australia/wnbl-women/perth-lynx-canberra-capitals/EaZEfXoI/"
+    class="in-match"><span><strong>Perth Lynx W</strong></span> -
+    <span>Canberra Capitals W</span></a></td>
+<td class="h-text-center"><a href=".../EaZEfXoI/">113:90</a></td>
+```
+
+The first replay read **zero** rows for all three leagues: the fixtures parser
+requires ``href`` immediately before ``class="in-match"``, and this page writes
+``data-test`` in between, so attribute order -- not content -- was the whole
+failure.  Every row that does not satisfy every rule is counted, never guessed:
 
 * no match code, not exactly two club names, or not exactly one score-shaped pair
   → the row is skipped and the reason is counted;
@@ -26,6 +35,9 @@ counted rather than guessed at:
   and are deliberately excluded: a missed final is recoverable, an invented one
   is not;
 * no date → no ``played_on``, and the row is not settled by this module anyway.
+  The results table groups rows under a round header rather than dating each one,
+  so in practice every row from this page is undated: the date has to come from
+  the forecast the result is matched against, not from the result page.
 
 Nothing here writes and nothing here decides that a lane may settle.  It returns
 rows and counts; the registry stays ``source_unavailable`` until a reader has been
@@ -59,17 +71,22 @@ MIN_FINAL_POINTS = 25
 
 #: Rows are the unit here too, and for the same reason: a page is not a row.
 _ROW_RE = re.compile(r"<tr>(?:(?!</tr>).)*?</tr>", re.S)
-#: The match link, exactly as the fixtures parser requires it.  Requiring the
-#: class is what keeps a duplicate bare link from reading as a second match.
-_LINK_RE = re.compile(
-    r'<a href="/basketball/[^"]+/(?P<slug>[a-z0-9-]+)/(?P<match_id>[A-Za-z0-9]{8})/"'
-    r' class="in-match">'
-)
+#: Any anchor, then its href read out of the tag.  The fixtures parser requires
+#: ``href`` immediately before ``class="in-match"`` and the results page writes
+#: ``<a data-test="11015187" href="..." class="in-match">`` -- attribute order is
+#: not a contract, so the tag is matched whole and its href read separately.
+#: Reading the tag's *content* is what separates the two clubs from the score link.
+_ANCHOR_RE = re.compile(r"<a\b[^>]*>", re.IGNORECASE)
+_HREF_RE = re.compile(r'href="(?P<href>/basketball/[^"]+/(?P<code>[A-Za-z0-9]{8})/)"')
+_IN_MATCH = 'class="in-match"'
+
 _SPANS_RE = re.compile(r"<span>(?:<strong>)?(?P<name>[^<]+?)(?:</strong>)?</span>")
 _DATETIME_RE = re.compile(r'class="table-main__datetime"[^>]*>(?P<label>[^<]*)</td>')
 #: The score's own cell, when the page has one.  The fallback scans the row.
 _RESULT_CELL_RE = re.compile(r'class="table-main__result"[^>]*>(?P<label>.*?)</td>', re.S)
-_CLOCK_PAIR_RE = re.compile(r"(?<!\d)(\d{1,2}):(\d{2})(?!\d)")
+#: Two or three digits either side: a basketball final reaches three (113:90),
+#: a clock never does.  Bounding it at two would silently skip every century.
+_PAIR_RE = re.compile(r"(?<!\d)(\d{1,3}):(\d{1,3})(?!\d)")
 _TAG_RE = re.compile(r"<[^>]+>")
 _ABSOLUTE_RE = re.compile(
     r"^(?P<day>\d{1,2})\.(?P<month>\d{1,2})\.(?P<year>\d{4})?\s+(?P<hour>\d{1,2}):(?P<minute>\d{2})$"
@@ -83,11 +100,36 @@ def _text(fragment: str) -> str:
     return " ".join(plain.split())
 
 
+def _match_anchor(row: str) -> Optional[Tuple[re.Match, str]]:
+    """The ``in-match`` anchor and the markup inside it.
+
+    The anchor holds both clubs; the total sits in the next cell.  So names come
+    from the anchor's content and the score comes from the row.
+    """
+
+    for tag in _ANCHOR_RE.finditer(row):
+        if _IN_MATCH not in tag.group(0):
+            continue
+        href = _HREF_RE.search(tag.group(0))
+        if href is None:
+            continue
+        close = row.find("</a>", tag.end())
+        inner = inner_start(row, tag.end(), close)
+        return href, inner
+    return None
+
+
+def inner_start(row: str, start: int, close: int) -> str:
+    """The anchor's content, or the rest of the row when it is never closed."""
+
+    return row[start : close if close > start else len(row)]
+
+
 def _score_pair(text: str) -> Optional[Tuple[int, int]]:
     """The one pair in ``text`` where both sides are too big to be a clock."""
 
     candidates: List[Tuple[int, int]] = []
-    for left, right in _CLOCK_PAIR_RE.findall(text):
+    for left, right in _PAIR_RE.findall(text):
         a, b = int(left), int(right)
         if a >= MIN_FINAL_POINTS and b >= MIN_FINAL_POINTS:
             candidates.append((a, b))
@@ -170,16 +212,17 @@ def parse_results(html: str) -> ResultPage:
 
     for row in _ROW_RE.findall(html):
         counts["rows"] += 1
-        link = _LINK_RE.search(row)
-        if link is None:
+        found = _match_anchor(row)
+        if found is None:
             counts["without_code"] += 1
             continue
-        match_id = link.group("match_id")
+        link, inner = found
+        match_id = link.group("code")
         if match_id in seen:
             counts["duplicate_match_id"] += 1
             continue
 
-        names = [name.strip() for name in _SPANS_RE.findall(row) if name.strip()]
+        names = [name.strip() for name in _SPANS_RE.findall(inner) if name.strip()]
         if len(names) != 2:
             counts["names_not_two"] += 1
             skipped.append({"match_id": match_id, "reason": f"club names not two ({len(names)})"})
@@ -188,7 +231,10 @@ def parse_results(html: str) -> ResultPage:
         cell = _RESULT_CELL_RE.search(row)
         score = _score_pair(_text(cell.group("label"))) if cell else None
         if score is None:
-            score = _score_pair(_text(_DATETIME_RE.sub(" ", row)))
+            # The total sits in a plain unclassed cell as a second link to the
+            # same match, so it is found by its shape rather than by a class --
+            # and it is inside that link, which is why the row is read whole.
+            score = _score_pair(_text(row))
         if score is None:
             counts["score_not_one"] += 1
             skipped.append({"match_id": match_id, "reason": "no single score-shaped pair"})
@@ -204,7 +250,7 @@ def parse_results(html: str) -> ResultPage:
         rows.append(
             ResultRow(
                 match_id=match_id,
-                slug=link.group("slug"),
+                slug=link.group("href").rstrip("/").rsplit("/", 2)[-2],
                 home=names[0],
                 away=names[1],
                 home_score=score[0],

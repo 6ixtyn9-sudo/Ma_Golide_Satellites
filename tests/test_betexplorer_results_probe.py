@@ -266,12 +266,11 @@ def test_read_replays_a_captured_page_without_a_request(tmp_path):
     saved.mkdir(parents=True)
     (saved / "results-index.html").write_text(
         '<table class="table-main"><tr>'
-        '<td class="table-main__datetime">22.11.2026 04:00</td>'
-        '<td><a href="/basketball/australia/wnbl-women/perth-sydney/AbCd1234/" class="in-match">'
-        "<span>Perth</span></a></td>"
-        '<td><a href="/basketball/australia/wnbl-women/perth-sydney/AbCd1234/" class="in-match">'
-        "<span>Sydney</span></a></td>"
-        '<td class="table-main__result">89:84</td>'
+        '<td class="h-text-left">'
+        '<a data-test="11015187" href="/basketball/australia/wnbl-women/perth-sydney/AbCd1234/"'
+        ' class="in-match"><span><strong>Perth</strong></span> - <span>Sydney</span></a></td>'
+        '<td class="h-text-center">'
+        '<a href="/basketball/australia/wnbl-women/perth-sydney/AbCd1234/">89:84</a></td>'
         "</tr></table>",
         encoding="utf-8",
     )

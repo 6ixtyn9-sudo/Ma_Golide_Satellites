@@ -22,16 +22,25 @@ def _row(
     home: str = "Perth",
     away: str = "Sydney",
     score: str = "89:84",
-    when: str = "22.11.2026 04:00",
+    when: str = "",
 ) -> str:
+    """One results row, in the shape the 2026-11-24 capture actually served.
+
+    ``data-test`` comes *before* ``href`` and both clubs sit inside the one
+    ``in-match`` anchor; the total is a second, unclassed link in the next cell.
+    """
+
+    date_cell = f'<td class="table-main__datetime">{when}</td>' if when else ""
     return (
         "<tr>"
-        f'<td class="table-main__datetime">{when}</td>'
-        f'<td><a href="/basketball/australia/wnbl-women/perth-sydney/{code}/" class="in-match">'
-        f"<span>{home}</span></a></td>"
-        f'<td><a href="/basketball/australia/wnbl-women/perth-sydney/{code}/" class="in-match">'
-        f"<span><strong>{away}</strong></span></a></td>"
-        f'<td class="table-main__result">{score}</td>'
+        + date_cell
+        + '<td class="h-text-left">'
+        f'<a data-test="11015187" href="/basketball/australia/wnbl-women/perth-sydney/{code}/"'
+        ' class="in-match">'
+        f"<span><strong>{home}</strong></span> - <span>{away}</span></a></td>"
+        '<td class="h-text-center">'
+        f'<a href="/basketball/australia/wnbl-women/perth-sydney/{code}/">{score}</a></td>'
+        '<td class="table-main__odds colored" data-odd="1.05">1.05</td>'
         "</tr>"
     )
 
@@ -41,7 +50,7 @@ def _page(*rows: str) -> str:
 
 
 def test_a_finished_row_yields_code_clubs_totals_and_the_date():
-    page = reader.parse_results(_page(_row()))
+    page = reader.parse_results(_page(_row(when="22.11.2026 04:00")))
 
     assert page.counts["rows"] == 1
     assert page.counts["read"] == 1
@@ -79,10 +88,22 @@ def test_two_score_shaped_pairs_are_an_ambiguity_not_a_choice():
     assert page.counts["score_not_one"] == 1
 
 
-def test_two_clubs_are_required_and_a_third_span_is_counted():
+def test_a_span_outside_the_match_anchor_is_not_a_club():
+    """The page wraps round labels, tabs and odds in spans too; only the anchor's
+    content is a club list."""
+
     page = reader.parse_results(
         _page(_row().replace("<tr>", "<tr><td><span>Round 8</span></td>", 1))
     )
+
+    assert page.counts["read"] == 1
+    assert (page.rows[0].home, page.rows[0].away) == ("Perth", "Sydney")
+
+
+def test_three_spans_inside_the_anchor_are_counted_not_guessed():
+    three = _row().replace("- <span>Sydney</span>", "- <span>Refs</span> <span>Sydney</span>")
+
+    page = reader.parse_results(_page(three))
 
     assert page.counts["read"] == 0
     assert page.counts["names_not_two"] == 1

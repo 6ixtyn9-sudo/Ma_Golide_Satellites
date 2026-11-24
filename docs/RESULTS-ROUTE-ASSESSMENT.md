@@ -435,3 +435,51 @@ The first `results-index-window.txt` spent 600 characters on the page's tab bar 
 the match row it existed to show out of the printed excerpt. The lead-in is now 300
 characters and the tail 1900, so the code sits near the start of the file: a window that
 ends before the row is a window that costs a round trip and returns nothing.
+
+## The aggregator row, captured and read (2026-11-24T14:59Z)
+
+```
+read: 0   rows: 40   without_code: 40
+```
+
+Zero rows on all three pages, and the reason was **attribute order**. The fixtures parser
+this project already trusts requires `href` immediately before `class="in-match"`; the
+results page writes:
+
+```html
+<a data-test="11015187" href="/basketball/australia/wnbl-women/perth-lynx-canberra-capitals/EaZEfXoI/" class="in-match">
+```
+
+`data-test` between them, so a pattern anchored on the file's own fixtures markup matched
+nothing. The page was never the problem; the assumption that one page's attribute order is
+the host's contract was.
+
+Three corrections followed from the same capture:
+
+* the anchor is matched **whole** and its `href` read out of the tag, so order stops
+  mattering;
+* both clubs live **inside** that one anchor (`<span><strong>Perth Lynx W</strong></span> -
+  <span>Canberra Capitals W</span>`), so names are read from the anchor's content and a
+  span elsewhere in the row — a round label, a tab — is no longer a third club;
+* the total is a **second unclassed link** in the next cell, not a `table-main__result`
+  cell, and it can reach three digits. A pair regex bounded at two digits silently skipped
+  every century: `113:90` produced no candidate at all. Bound is now three, with the same
+  rule that both sides must reach 25 so no clock qualifies.
+
+The captured row now reads `Perth Lynx W 113 - 90 Canberra Capitals W`.
+
+What the page does **not** carry: a date per row. Results are grouped under
+`<th colspan="2">6. Round</th>` headers, so every result from this page is undated. That
+is a design consequence, not a defect: the date must come from the forecast the result is
+matched against, and a result that cannot be dated that way cannot settle.
+
+## Greece, the date cell as served (2026-11-24T14:59Z)
+
+```html
+<div class="esake-program-game-info one-col"><img src="/skn/clock.svg" ...>Σαβ 21 Νοε - 15:00</div>
+```
+
+The day and month are plain text in the row, and a reader given exactly this prints
+`played_on = 2026-11-21`. So the remaining `unresolved_date: 7` is not about this cell's
+contents — it is about what `_text` over the *whole chunk* yields, which is the next thing
+to print rather than assume.
