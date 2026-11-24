@@ -315,7 +315,7 @@ def test_match_pages_are_fetched_bounded_spaced_and_receipted(tmp_path):
     )
 
     assert len(fetched) == 2
-    assert slept == [probe.MIN_INTERVAL_SECONDS]  # one gap between two requests
+    assert slept == [probe.MATCH_INTERVAL_SECONDS]  # one gap between two requests
     assert payload["requested"] == 2
     assert [page["status"] for page in payload["pages"]] == ["captured", "captured"]
     assert payload["pages"][0]["period_markers"] == 2
@@ -391,3 +391,36 @@ def test_match_fetches_use_absolute_urls(tmp_path):
     assert seen == [
         "https://www.betexplorer.com/basketball/australia/wnbl-women/a-b/EaZEfXoI/"
     ]
+
+
+def test_a_429_stops_the_run_rather_than_arguing_with_the_host(tmp_path):
+    """One landed page, one throttle, and no third request.
+
+    Three match pages a few seconds apart drew a 429 on 2026-11-24. The host was
+    naming its own limit; the receipt keeps it and the run ends.
+    """
+
+    fetched = []
+
+    def read_text(url):
+        fetched.append(url)
+        if len(fetched) == 2:
+            raise RuntimeError("HTTP 429 for %s: " % url)
+        return "<html><body>ok</body></html>"
+
+    payload = probe.capture_match_pages(
+        "AUSTRALIA_WNBL_W",
+        matches=[
+            {"code": "AbCd1234", "url": "/basketball/australia/wnbl-women/a-b/AbCd1234/"},
+            {"code": "EfGh5678", "url": "/basketball/australia/wnbl-women/c-d/EfGh5678/"},
+            {"code": "IjKl9012", "url": "/basketball/australia/wnbl-women/e-f/IjKl9012/"},
+        ],
+        out_dir=tmp_path,
+        read_text=read_text,
+        sleep=lambda _: None,
+        limit=3,
+    )
+
+    assert len(fetched) == 2  # the third was never asked for
+    assert payload["stopped_on_429"] is True
+    assert [page["status"] for page in payload["pages"]] == ["captured", "fetch_failed"]

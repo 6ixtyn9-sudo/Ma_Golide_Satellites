@@ -718,3 +718,26 @@ review: `read: 0` for three leagues (attribute order), `event_id: fixtures` (a n
 eight letters), and now `HTTP 0 ... No scheme supplied` (a relative href). The receipts are
 the reason none of them cost more than one run each -- a fetch that fails and says why is
 worth more than a fetch that succeeds and says nothing.
+
+## The match page is not a table (2026-11-24T15:24Z)
+
+Two of three match pages were captured — NKL 110,391 B, WCBA 109,961 B — and both report:
+
+```
+td_cells: 0    integer_cells: 0    span_cells: 32    period_markers: 0
+```
+
+A hundred kilobytes with **no table cells at all**. So the scoreboard on this host is not a
+`<tr>/<td>` structure and not a `Q1…Q4` label set; `td_cells` and `period_markers` were the
+wrong instruments, and `period_markers: 0` here says only that this page does not use the
+labels I chose to count. That is the third time today a zero needed reading carefully, and
+the lesson is the same each time: a count measures the counter's vocabulary, not the page.
+
+The WNBL request was **429**, six seconds after the NKL one. That is the host naming its own
+limit, so the probe now waits ten seconds between match pages and **stops on 429** instead of
+working through the rest of its list. Retrying would spend the budget arguing with a host
+that has already answered.
+
+What is still unknown is what those 110 KB *are*. The next read is a window of the saved
+NKL body around whatever carries the score — one command, no request, on a file that is
+already on disk.

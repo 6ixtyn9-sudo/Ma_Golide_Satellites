@@ -67,6 +67,15 @@ MIN_INTERVAL_SECONDS = 3.0
 #: Hard ceiling on captured games per run, regardless of ``--max``.
 MAX_CAPTURE = 12
 
+#: Match pages get a longer gap than fixtures rows: three of them, a few seconds
+#: apart, drew a 429 from this host on 2026-11-24.  Being throttled is the host
+#: telling us the interval, and the answer is to take it, not to retry.
+MATCH_INTERVAL_SECONDS = 10.0
+
+#: A score in a text cell, and the word the scoreboard tends to be named after.
+_COLON_SCORE_RE = re.compile(r"\b\d{1,3}:\d{1,3}\b")
+_SCOREBOARD_RE = re.compile(r"scoreboard", re.IGNORECASE)
+
 _INT_CELL_RE = re.compile(r">\s*(\d{1,3})\s*<")
 _INT_TOKEN_RE = re.compile(r"\b\d{1,3}\b")
 
@@ -302,16 +311,24 @@ def capture_match_pages(
     wanted = matches[: max(0, min(int(limit), MAX_CAPTURE))]
     out_dir.mkdir(parents=True, exist_ok=True)
     captured: list[dict[str, object]] = []
+    throttled = False
     for position, match in enumerate(wanted):
         if position:
-            sleep(MIN_INTERVAL_SECONDS)
+            sleep(MATCH_INTERVAL_SECONDS)
         code = match["code"]
         url = absolute_url(match.get("url") or match_url(league, code))
         try:
             body = read_text(url)
         except Exception as exc:  # noqa: BLE001 - a failed capture is a receipt
+            detail = str(exc)[:200]
             captured.append({"event_id": code, "url": url, "status": "fetch_failed",
-                             "detail": str(exc)[:200]})
+                             "detail": detail})
+            # 429 is the host naming its own limit. Stopping is the whole point of
+            # a receipt that carries the status: retrying would spend the budget
+            # arguing with a host that already answered.
+            if "429" in detail:
+                throttled = True
+                break
             continue
         path = out_dir / f"match_{code}.html"
         path.write_text(body, encoding="utf-8")
@@ -326,6 +343,11 @@ def capture_match_pages(
                 "path": str(path),
                 "period_markers": len(_PERIOD_RE.findall(text)),
                 "period_examples": sorted(set(_PERIOD_RE.findall(text)))[:6],
+                # What a scoreboard looks like when it is not a Q1..Q4 table:
+                # a pair of numbers in a text cell, and the word the block is
+                # usually named after.
+                "colon_scores": len(_COLON_SCORE_RE.findall(text)),
+                "scoreboard_mentions": len(_SCOREBOARD_RE.findall(body)),
                 **shape_signals(body),
             }
         )
@@ -336,6 +358,7 @@ def capture_match_pages(
         "league": league,
         "captured_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "requested": len(wanted),
+        "stopped_on_429": throttled,
         "note": (
             "Match pages saved verbatim. period_markers counts Q1..Q4/OT-shaped "
             "tokens, which is what a reconciliation record would need and what a "
