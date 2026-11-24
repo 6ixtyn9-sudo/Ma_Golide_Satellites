@@ -17,10 +17,15 @@ Verified, from the probe's verbatim snippets and its 10/10 join:
   ``<span>100&nbsp;-&nbsp;64</span>``;
 * the row carries a day, a Greek month label and a ``HH:MM`` tip.
 
-**Not** verified: the row container's exact class list, whether a row can hold
-more than two club spans, and how an unplayed row is marked. This reader is
-therefore built to fail closed and to *count* what it cannot resolve rather than
-guessing:
+Captured 2026-11-24: the container is ``<div class="esake-program-game">``, its
+final-score block puts each club's span inside a ``col-lg-5`` column and the
+total in the middle one, and the toggle handler ``.closest('.esake-program-game')``
+in a script attribute repeats the container name twice per row — which is the
+string that made a bare-token split cut every row in half before it was found.
+
+**Not** verified: how an unplayed row is marked, and whether the totals arrive as
+one ``100 - 64`` span (as captured) or two spans. This reader is therefore built
+to fail closed and to *count* what it cannot resolve rather than guessing:
 
 * no row container recognised → :class:`IdentityError`, never an empty page;
 * a row without a ``final-score`` block is simply not a final (it may be
@@ -133,11 +138,17 @@ def checksum(body: str) -> str:
 
 # --- parsing ---------------------------------------------------------------
 
-#: A row container. ``esake-program-game-final-score`` is *inside* the container,
-#: so it must not start a new one; the negative lookahead keeps a row whole.
-#: The container class token must END there: ``esake-program-game-final-score``
-#: and ``esake-program-game-when`` are parts *of* a row, not rows.
-_ROW_RE = re.compile(r"esake-program-game(?![\w-])", re.IGNORECASE)
+#: A row container, and only a container: the class attribute is required.
+#:
+#: The served page carries the bare strings ``esake-program-game`` in three
+#: places that are not row starts -- ``esake-program-game-row-1`` and
+#: ``esake-program-game-final-score`` inside the row, and, decisively, the
+#: toggle handler ``.closest('.esake-program-game')`` in a script attribute.
+#: Splitting on the bare token therefore cut every row at its own toggle, which
+#: is why a 139,358 B page of seven games counted fourteen containers, seven of
+#: them with no identity and none of them with a score.  Requiring ``class="``
+#: excludes the script literal; the lookahead excludes the row's own parts.
+_ROW_RE = re.compile(r'class="[^"]*esake-program-game(?![\w-])[^"]*"', re.IGNORECASE)
 _LINK_RE = re.compile(r"EsakegameView\?idgame=([0-9A-Fa-f]{8})", re.IGNORECASE)
 _SPAN_RE = re.compile(r"<span\b[^>]*>(.*?)</span>", re.DOTALL | re.IGNORECASE)
 _TAG_RE = re.compile(r"<[^>]+>")
@@ -166,6 +177,10 @@ _MONTHS_3 = {
 }
 
 _FINISHED_CLASS = "esake-program-game-final-score"
+#: The per-quarter row, hidden behind the toggle.  It repeats both club names and
+#: carries four numbers per club, so reading club spans from the whole container
+#: would find four names and call every finished game ambiguous.
+_HIDDEN_CLASS = "esake-program-game-hidden-row"
 
 
 def _fold(text: str) -> str:
@@ -239,6 +254,42 @@ def _club_spans(chunk: str) -> List[str]:
     return names
 
 
+def _final_block(chunk: str) -> str:
+    """The row's ``final-score`` block alone: both clubs and the total.
+
+    Empty when the row has no block, which is how an unplayed game reads -- or
+    how a game reads if its markup moved, which is the same answer: not a final.
+    """
+
+    at = chunk.find(_FINISHED_CLASS)
+    if at < 0:
+        return ""
+    end = chunk.find(_HIDDEN_CLASS, at)
+    return chunk[at : end if end > at else at + 4000]
+
+
+def _club_names(chunk: str) -> List[str]:
+    """The two clubs, preferring the block that also carries the total.
+
+    Two page shapes serve this and only one is byte-verified: the captured row
+    puts each club's span *inside* the final-score columns, while an earlier
+    derivation put them in sibling ``esake-program-team`` cells.  Both are read
+    the same way -- block first, and the container only when the block does not
+    yield exactly two names, with the hidden per-quarter row always cut away.
+    """
+
+    block = _final_block(chunk)
+    if block:
+        names = _club_spans(block)
+        if len(names) == 2:
+            return names
+    visible = chunk
+    at = visible.find(_HIDDEN_CLASS)
+    if at >= 0:
+        visible = visible[:at]
+    return _club_spans(visible)
+
+
 def _score(chunk: str) -> Optional[Tuple[int, int]]:
     """The final, and only from a ``final-score`` block.
 
@@ -246,10 +297,9 @@ def _score(chunk: str) -> Optional[Tuple[int, int]]:
     cell or a bracket label can wear that shape. No block, no final.
     """
 
-    at = chunk.find(_FINISHED_CLASS)
-    if at < 0:
+    block = _final_block(chunk)
+    if not block:
         return None
-    block = chunk[at : at + 4000]
     match = _SCORE_RE.search(_text(block))
     if not match:
         return None
@@ -392,7 +442,7 @@ def parse_results(html: str, *, season_start_year: Optional[int] = None) -> Resu
             continue
         seen.add(idgame)
 
-        names = _club_spans(chunk)
+        names = _club_names(chunk)
         score = _score(chunk)
         day, month = _day_and_month(chunk)
         played_on = _resolve_date(day, month, season_start_year)
