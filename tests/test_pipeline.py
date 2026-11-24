@@ -526,3 +526,44 @@ def test_pending_recheck_failure_on_one_day_does_not_block_other_days(monkeypatc
     assert report["rechecked_dates"] == ["2026-11-16"]
     assert store.get_game("early").status is GameStatus.SCHEDULED
     assert any(gap["required_field"] == "pending_results_recheck" for gap in report["gaps"])
+
+
+def test_freeze_reports_a_day_scoped_slate_and_names_the_work_set():
+    """ABA's ``fixtures_found: 4252`` was the backfill, not a slate.
+
+    ``freeze()`` reported every stored game whose tip had passed. On a
+    backfilled lane that is the whole season, so the run log carried a
+    season-sized number in a slate-named field beside
+    ``network_requests: 0``. The reported number is now the target day; the
+    work freeze performs is unchanged and travels as ``freeze_input_games``.
+    """
+
+    import dataclasses
+
+    store = InMemoryStore()
+    todays = dataclasses.replace(
+        _final_game(),
+        game_id="today-game",
+        scheduled_utc="2026-11-07T13:00:00Z",
+        status=GameStatus.SCHEDULED,
+        actual=None,
+    )
+    older = dataclasses.replace(
+        _final_game(),
+        game_id="backfilled-game",
+        scheduled_utc="2026-11-06T22:00:00Z",
+        status=GameStatus.SCHEDULED,
+        actual=None,
+    )
+    for game in (todays, older):
+        store.upsert_game(game)
+
+    pipeline = Pipeline(_config(), store)
+
+    report = pipeline.freeze()
+
+    assert report["fixtures_found"] == 1
+    assert report["target_day_games"] == ["today-game"]
+    assert report["freeze_input_games"] == 2
+    # The work set did not shrink: both games were still frozen.
+    assert set(report["frozen_predictions"]) == {"today-game", "backfilled-game"}

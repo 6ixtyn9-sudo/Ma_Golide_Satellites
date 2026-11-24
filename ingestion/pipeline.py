@@ -558,10 +558,23 @@ class Pipeline:
         )
 
     def freeze(self) -> Dict[str, Any]:
-        """Freeze the latest valid pre-tip predictions and book observations."""
+        """Freeze the latest valid pre-tip predictions and book observations.
+
+        ``fixtures_found`` is a SLATE-shaped field and must mean a slate. It
+        used to report ``len(_games_with_tip_passed())``, i.e. every stored
+        game whose tip has passed -- for a backfilled league that is the whole
+        season, which is how ABA reported ``fixtures_found: 4252`` beside
+        ``network_requests: 0``. The number is now scoped to the run's target
+        day; the work freeze actually performs is unchanged and travels as
+        ``freeze_input_games``.
+        """
 
         self._reset_stage()
         tip_games = self._games_with_tip_passed()
+        target_day = _iso(self.config.date_yyyymmdd)
+        target_day_games = [
+            game for game in tip_games if str(game.scheduled_utc).startswith(target_day)
+        ]
         frozen: Dict[str, Dict[str, str]] = {}
         books_frozen = 0
         for game in tip_games:
@@ -569,8 +582,10 @@ class Pipeline:
             books_frozen += self._freeze_books(game)
         return self._report(
             mode="write" if self.allow_writes else "dry_run",
-            fixtures_found=len(tip_games),
+            fixtures_found=len(target_day_games),
             extra={
+                "target_day_games": [game.game_id for game in target_day_games],
+                "freeze_input_games": len(tip_games),
                 "frozen_predictions": frozen,
                 "book_snapshots_frozen": books_frozen,
             },
