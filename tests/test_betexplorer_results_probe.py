@@ -909,7 +909,10 @@ def test_a_failed_request_is_not_reported_as_a_passed_gate(tmp_path):
     )
 
     assert payload["gated"] == 0
-    assert payload["summary"] == "0 captured, 0 gated, 1 failed of 1 requested; 1 request(s) never returned a body"
+    assert payload["summary"] == (
+        "0 captured, 0 gated, 1 failed of 1 requested; 0 carried period markers; "
+        "1 request(s) never returned a body"
+    )
 
 
 def test_a_page_that_ships_the_modal_and_a_table_is_captured_not_gated(tmp_path):
@@ -970,3 +973,23 @@ def test_the_gates_own_cookies_do_not_replace_the_callers(tmp_path):
 
     assert seen
     assert all(cookie == "age_verified=true" for cookie in seen)
+
+
+def test_a_captured_page_without_quarters_says_so(tmp_path):
+    """The 2026-11-24 result: 110 KB, td_cells 2, period_markers 0, status
+    captured. Transport succeeded and content did not exist, and the receipt has
+    to say both rather than let the first imply the second."""
+
+    payload = probe.capture_match_pages(
+        "LITHUANIA_NKL",
+        matches=[{"code": "nRzm7OsT", "url": "/basketball/lithuania/nkl/a-b/nRzm7OsT/"}],
+        out_dir=tmp_path,
+        read_text=lambda url: "<html><table><tr><td>x</td><td>y</td></tr></table></html>",
+        limit=1,
+    )
+
+    assert payload["pages"][0]["status"] == "captured"
+    assert payload["pages"][0]["carries_period_data"] is False
+    assert payload["summary"] == (
+        "1 captured, 0 gated, 0 failed of 1 requested; 0 carried period markers"
+    )

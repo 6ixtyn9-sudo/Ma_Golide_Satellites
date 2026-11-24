@@ -864,11 +864,17 @@ def capture_match_pages(
                 }
             )
             continue
+        # Transport and content are separate facts.  A page that came back is
+        # "captured" whether or not it holds quarters; 2026-11-24 produced a
+        # captured page with two layout <td> cells, no integer cells and no
+        # period markers, and calling that "captured" without the second word
+        # would let a missing scoreboard look like a successful read.
         captured.append(
             {
                 "event_id": code,
                 "url": url,
                 "status": "captured",
+                "carries_period_data": period_markers > 0,
                 "bytes": len(body.encode("utf-8")),
                 "sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
                 "path": str(path),
@@ -895,10 +901,16 @@ def capture_match_pages(
         status: sum(1 for page in captured if page["status"] == status)
         for status in ("captured", "gated", "fetch_failed")
     }
+    with_periods = sum(1 for page in captured if page.get("carries_period_data"))
     summary = (
         f"{counts['captured']} captured, {counts['gated']} gated, "
         f"{counts['fetch_failed']} failed of {len(wanted)} requested"
-        + (f"; {counts['fetch_failed']} request(s) never returned a body" if counts["fetch_failed"] else "")
+        f"; {with_periods} carried period markers"
+        + (
+            f"; {counts['fetch_failed']} request(s) never returned a body"
+            if counts["fetch_failed"]
+            else ""
+        )
     )
     payload = {
         "schema_version": "magolide.results_probe.v1",
