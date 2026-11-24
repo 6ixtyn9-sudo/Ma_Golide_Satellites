@@ -37,6 +37,7 @@ sys.path.insert(0, str(ROOT))
 
 from forecasting import research_slate  # noqa: E402
 from forecasting.research_slate import render_research_section, research_rows  # noqa: E402
+from ingestion.http import HttpError  # noqa: E402
 from ingestion.identity import parse_utc  # noqa: E402
 from ingestion.league_registry import league_spec, parse_league  # noqa: E402
 from ingestion.models import BookSnapshot, Game, GameStatus, StandingsRow  # noqa: E402
@@ -213,6 +214,25 @@ def fetch_published(
     return result.rows, report
 
 
+def failure_section(league: str, target_date: str, reason: str) -> List[str]:
+    """The block a failed run leaves behind, replacing whatever was there.
+
+    A read that never happened must not leave an earlier "no fixtures" line in
+    place: that sentence claims the table was read and the slate was empty, and on
+    this run neither was true. The reason is carried verbatim, because the useful
+    part of a 429 is that it was a 429.
+    """
+
+    return [
+        "",
+        f"{research_slate.RESEARCH_LABEL} — {league} {target_date} — READ FAILED",
+        "- No read succeeded, so this lane has no research rows for this date.",
+        f"- Reason: {reason}",
+        "- The earlier block for this date was replaced, not kept: a stale "
+        "\"no fixtures\" line would claim a read that did not happen.",
+    ]
+
+
 def build_section(
     league: str,
     games: Sequence[Game],
@@ -238,12 +258,14 @@ def build_section(
     ]
 
 
-def _read_text_factory(delay: float):
+def _read_text_factory(delay: float, stamp_path=None):
     """A paced transport for live runs.
 
-    The pacing lives here, once, and ``fetch_published`` is then called with
-    ``delay=0.0``: the inner ``PacedReader`` it builds would otherwise sleep a
-    second time for the same request.
+    Without a stamp path this paces within one process. With one it also honours
+    the gap *between* processes, which is the case that produced a 429: a
+    one-request diagnostic, then this script, seconds apart. The pacing lives here,
+    once, and ``fetch_published`` is then called with ``delay=0.0`` -- the inner
+    reader it builds would otherwise sleep again for the same request.
     """
 
     from ingestion.http import HttpClient
@@ -253,7 +275,9 @@ def _read_text_factory(delay: float):
     def read(url: str) -> str:
         return client.get_text(url)
 
-    return betexplorer_standings.paced(read, delay=delay)
+    if stamp_path is None:
+        return betexplorer_standings.paced(read, delay=delay)
+    return betexplorer_standings.cooldown(read, stamp_path, delay=delay)
 
 
 def _utc_now() -> str:
@@ -288,35 +312,51 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     league = parse_league(args.league)
     spec = league_spec(league)
     localdata = Path(args.localdata)
-    read = _read_text_factory(args.delay)
+    stamp_path = localdata / ".betexplorer_last_request"
+    read = _read_text_factory(args.delay, stamp_path)
     now_utc = _utc_now()
 
-    if args.from_store:
-        from ingestion.duckdb_store import DuckDBStore
+    try:
+        if args.from_store:
+            from ingestion.duckdb_store import DuckDBStore
 
-        store = DuckDBStore(args.warehouse)
-        try:
-            games = slate_games(
-                store.list_games(league=league),
-                args.date,
-                tz_offset_hours=args.tz_offset_hours,
+            store = DuckDBStore(args.warehouse)
+            try:
+                games = slate_games(
+                    store.list_games(league=league),
+                    args.date,
+                    tz_offset_hours=args.tz_offset_hours,
+                )
+                snapshots = {
+                    game.game_id: store.get_book_snapshots(game.game_id)
+                    for game in games
+                }
+            finally:
+                store.close()
+            published, report = fetch_published(league.value, read, delay=0.0)
+        else:
+            # Default: the fixtures page is both the slate and the route to a match
+            # page, so a lane with no warehouse is still scoreable.
+            games, snapshots, fixtures_html, page_reads = slate_from_page(
+                league.value, args.date, read, now_utc=now_utc
             )
-            snapshots = {
-                game.game_id: store.get_book_snapshots(game.game_id) for game in games
-            }
-        finally:
-            store.close()
-        published, report = fetch_published(league.value, read, delay=0.0)
-    else:
-        # Default: the fixtures page is both the slate and the route to a match
-        # page, so a lane with no warehouse is still scoreable.
-        games, snapshots, fixtures_html, page_reads = slate_from_page(
-            league.value, args.date, read, now_utc=now_utc
+            published, report = fetch_published(
+                league.value, read, fixtures_html=fixtures_html, delay=0.0
+            )
+            report["requests"] = int(report.get("requests") or 0) + page_reads
+    except (HttpError, betexplorer_standings.IdentityError, OSError, ValueError) as exc:
+        # A failed read replaces the block rather than leaving an older sentence
+        # behind that claims a read which did not happen.
+        section = failure_section(
+            league.value, args.date, f"{type(exc).__name__}: {exc}"
         )
-        published, report = fetch_published(
-            league.value, read, fixtures_html=fixtures_html, delay=0.0
+        written = write_section(
+            localdata, state_key=spec.state_key, target_date=args.date, section=section
         )
-        report["requests"] = int(report.get("requests") or 0) + page_reads
+        print(f"{league.value} {args.date}: READ FAILED — {type(exc).__name__}: {exc}")
+        for kind, path in written.items():
+            print(f"  {kind}: {path}")
+        return 1
 
     section = build_section(
         league.value, games, published, snapshots, target_date=args.date
@@ -327,7 +367,8 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     print(
         f"{league.value} {args.date}: {len(games)} fixture(s), "
         f"{len(published)} published row(s), requests={report.get('requests')}, "
-        f"subs={report.get('subs_read')}, mismatch={report.get('split_mismatch')}"
+        f"subs={report.get('subs_read')}, mismatch={report.get('split_mismatch')}, "
+        f"waited={getattr(read, 'waited', 0.0):.1f}s"
     )
     for kind, path in written.items():
         print(f"  {kind}: {path}")
