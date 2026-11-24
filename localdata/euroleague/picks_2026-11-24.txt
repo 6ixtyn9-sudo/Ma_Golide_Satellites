@@ -1,6 +1,6 @@
 Ma Golide Picks — EUROLEAGUE 2026-11-24
 ========================================================================
-Generated at: 2026-11-24 18:06 SAST
+Generated at: 2026-11-24 19:25 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -39,21 +39,21 @@ CAUTION PICKS
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
   [team_history_empirical/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
       MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.550 bet365.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
       calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
       MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.560 Stake.com
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
       calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
       MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.600 BetMGM.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
       calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] Valencia Basket vs Panathinaikos AKTOR Athens · KO 2026-11-24 21:30 SAST
       MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.850 BetMGM.us
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=5 · recency ROI -28.6% / adjusted -17.6%
+      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=5 · recency ROI -28.6% / adjusted -17.5%
   [team_history_empirical/team_history_empirical] Valencia Basket vs Panathinaikos AKTOR Athens · KO 2026-11-24 21:30 SAST
       MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.800 Stake.com
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -62,48 +62,33 @@ CAUTION PICKS
       MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.720 bet365.us
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
-  [provider:history_model/team_history_empirical] Besiktas Fuzul Istanbul vs Paris Basketball · KO 2026-11-24 19:00 SAST
-      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.850 Stake.com
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T15:06:31Z
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-  [provider:history_model/team_history_empirical] Besiktas Fuzul Istanbul vs Paris Basketball · KO 2026-11-24 19:00 SAST
-      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.790 bet365.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T15:06:31Z
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-  [provider:history_model/team_history_empirical] Besiktas Fuzul Istanbul vs Paris Basketball · KO 2026-11-24 19:00 SAST
-      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.850 BetMGM.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T15:06:31Z
+  [provider:history_model/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
+      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.550 bet365.us
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
   [provider:history_model/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
       MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.600 BetMGM.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=7 · latest_evidence_utc=2026-11-24T15:39:51Z
-  [provider:history_model/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
-      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.550 bet365.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=7 · latest_evidence_utc=2026-11-24T15:39:51Z
   [provider:history_model/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
       MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.560 Stake.com
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=7 · latest_evidence_utc=2026-11-24T15:39:51Z
   [provider:history_model/team_history_empirical] Valencia Basket vs Panathinaikos AKTOR Athens · KO 2026-11-24 21:30 SAST
       MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.720 bet365.us
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=7 · latest_evidence_utc=2026-11-24T15:39:51Z
-  [provider:history_model/team_history_empirical] Valencia Basket vs Panathinaikos AKTOR Athens · KO 2026-11-24 21:30 SAST
-      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.850 BetMGM.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=7 · latest_evidence_utc=2026-11-24T15:39:51Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-24T16:39:19Z
   [provider:history_model/team_history_empirical] Valencia Basket vs Panathinaikos AKTOR Athens · KO 2026-11-24 21:30 SAST
       MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.800 Stake.com
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=7 · latest_evidence_utc=2026-11-24T15:39:51Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-24T16:39:19Z
+  [provider:history_model/team_history_empirical] Valencia Basket vs Panathinaikos AKTOR Athens · KO 2026-11-24 21:30 SAST
+      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.850 BetMGM.us
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
+      archived_revisions=8 · latest_evidence_utc=2026-11-24T16:39:19Z
   [team_history_empirical/team_history_empirical] FC Barcelona vs Fenerbahce Tarfin Istanbul · KO 2026-11-24 22:00 SAST
       MONEYLINE full_game -> HOME · p=54.9% (raw 52.0%) @2.430 Stake.com
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -124,7 +109,7 @@ CAUTION PICKS
       MONEYLINE full_game -> AWAY · p=53.9% (raw 51.0%) @1.900 BetMGM.us
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=5 · recency ROI -28.6% / adjusted -17.6%
+      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=5 · recency ROI -28.6% / adjusted -17.5%
   [team_history_empirical/team_history_empirical] LDLC ASVEL Villeurbanne vs Armani Olimpia Milan · KO 2026-11-24 21:45 SAST
       MONEYLINE full_game -> AWAY · p=53.9% (raw 51.0%) @1.780 Stake.com
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -134,35 +119,35 @@ CAUTION PICKS
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
   [provider:history_model/team_history_empirical] FC Barcelona vs Fenerbahce Tarfin Istanbul · KO 2026-11-24 22:00 SAST
-      MONEYLINE full_game -> HOME · p=52.0% (raw 52.0%) @2.450 bet365.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=10 · latest_evidence_utc=2026-11-24T15:39:51Z
-  [provider:history_model/team_history_empirical] FC Barcelona vs Fenerbahce Tarfin Istanbul · KO 2026-11-24 22:00 SAST
       MONEYLINE full_game -> HOME · p=52.0% (raw 52.0%) @2.350 BetMGM.us
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=10 · latest_evidence_utc=2026-11-24T15:39:51Z
+      archived_revisions=11 · latest_evidence_utc=2026-11-24T16:39:19Z
   [provider:history_model/team_history_empirical] FC Barcelona vs Fenerbahce Tarfin Istanbul · KO 2026-11-24 22:00 SAST
       MONEYLINE full_game -> HOME · p=52.0% (raw 52.0%) @2.430 Stake.com
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=10 · latest_evidence_utc=2026-11-24T15:39:51Z
+      archived_revisions=11 · latest_evidence_utc=2026-11-24T16:39:19Z
+  [provider:history_model/team_history_empirical] FC Barcelona vs Fenerbahce Tarfin Istanbul · KO 2026-11-24 22:00 SAST
+      MONEYLINE full_game -> HOME · p=52.0% (raw 52.0%) @2.450 bet365.us
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
+      archived_revisions=11 · latest_evidence_utc=2026-11-24T16:39:19Z
   [provider:history_model/team_history_empirical] LDLC ASVEL Villeurbanne vs Armani Olimpia Milan · KO 2026-11-24 21:45 SAST
       MONEYLINE full_game -> AWAY · p=51.0% (raw 51.0%) @1.680 bet365.us
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=7 · latest_evidence_utc=2026-11-24T15:39:51Z
-  [provider:history_model/team_history_empirical] LDLC ASVEL Villeurbanne vs Armani Olimpia Milan · KO 2026-11-24 21:45 SAST
-      MONEYLINE full_game -> AWAY · p=51.0% (raw 51.0%) @1.900 BetMGM.us
-      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=7 · latest_evidence_utc=2026-11-24T15:39:51Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-24T16:39:19Z
   [provider:history_model/team_history_empirical] LDLC ASVEL Villeurbanne vs Armani Olimpia Milan · KO 2026-11-24 21:45 SAST
       MONEYLINE full_game -> AWAY · p=51.0% (raw 51.0%) @1.780 Stake.com
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=7 · latest_evidence_utc=2026-11-24T15:39:51Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-24T16:39:19Z
+  [provider:history_model/team_history_empirical] LDLC ASVEL Villeurbanne vs Armani Olimpia Milan · KO 2026-11-24 21:45 SAST
+      MONEYLINE full_game -> AWAY · p=51.0% (raw 51.0%) @1.900 BetMGM.us
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
+      archived_revisions=8 · latest_evidence_utc=2026-11-24T16:39:19Z
 
 PRIOR-HEAVY — THIN TEAM EVIDENCE (PAPER ONLY)
 ========================================================================
@@ -178,13 +163,9 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE H1 -> HOME · p=65.9% (raw 62.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
-  [team_history_empirical/team_history_empirical] Besiktas Fuzul Istanbul vs Paris Basketball · KO 2026-11-24 19:00 SAST
-      MONEYLINE H1 -> HOME · p=64.9% (raw 61.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T15:06:31Z
-      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
       MONEYLINE H1 -> HOME · p=64.9% (raw 61.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
       calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history
   [team_history_empirical/team_history_empirical] LDLC ASVEL Villeurbanne vs Armani Olimpia Milan · KO 2026-11-24 21:45 SAST
       MONEYLINE H1 -> HOME · p=64.9% (raw 61.0%) @n/a no matched book
@@ -198,17 +179,13 @@ WATCHLIST — NO MATCHED ODDS
       HIGHEST QUARTER full_game -> Q1 · p=37.8% (raw 33.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T16:06:52Z
       calibration=provisional n=27 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Besiktas Fuzul Istanbul vs Paris Basketball · KO 2026-11-24 19:00 SAST
-      HIGHEST QUARTER full_game -> Q1 · p=33.8% (raw 29.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T15:06:31Z
-      calibration=provisional n=27 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] FC Barcelona vs Fenerbahce Tarfin Istanbul · KO 2026-11-24 22:00 SAST
       HIGHEST QUARTER full_game -> Q1 · p=33.8% (raw 29.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=provisional n=27 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] FC Bayern Munich vs Maccabi Rapyd Tel Aviv · KO 2026-11-24 21:00 SAST
       HIGHEST QUARTER full_game -> Q1 · p=33.8% (raw 29.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:25:57Z
       calibration=provisional n=27 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] LDLC ASVEL Villeurbanne vs Armani Olimpia Milan · KO 2026-11-24 21:45 SAST
       HIGHEST QUARTER full_game -> Q1 · p=33.8% (raw 29.0%) @n/a no matched book
@@ -225,6 +202,14 @@ WATCHLIST — INSUFFICIENT CONTEXT
 
 SKIPPED — INELIGIBLE
 ========================================================================
+  (none)
+
+IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
+========================================================================
+  [team_history_empirical/team_history_empirical] Besiktas Fuzul Istanbul vs Paris Basketball · KO 2026-11-24 19:00 SAST
+      MONEYLINE H1 -> HOME · p=64.9% (raw 61.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T15:06:31Z
+      calibration=provisional n=29 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Besiktas Fuzul Istanbul vs Paris Basketball · KO 2026-11-24 19:00 SAST
       MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.790 bet365.us
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T15:06:31Z
@@ -237,19 +222,31 @@ SKIPPED — INELIGIBLE
       MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.850 BetMGM.us
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T15:06:31Z
       calibration=provisional n=27 · reasons=insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-
-IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
-========================================================================
-  (none)
+  [provider:history_model/team_history_empirical] Besiktas Fuzul Istanbul vs Paris Basketball · KO 2026-11-24 19:00 SAST
+      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.850 Stake.com
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T15:06:31Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
+  [provider:history_model/team_history_empirical] Besiktas Fuzul Istanbul vs Paris Basketball · KO 2026-11-24 19:00 SAST
+      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.790 bet365.us
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T15:06:31Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
+  [provider:history_model/team_history_empirical] Besiktas Fuzul Istanbul vs Paris Basketball · KO 2026-11-24 19:00 SAST
+      MONEYLINE full_game -> HOME · p=57.0% (raw 57.0%) @1.850 BetMGM.us
+      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T15:06:31Z
+      calibration=no_history n=0 · reasons=insufficient_walk_forward_samples · prediction=history_model
+  [team_history_empirical/team_history_empirical] Besiktas Fuzul Istanbul vs Paris Basketball · KO 2026-11-24 19:00 SAST
+      HIGHEST QUARTER full_game -> Q1 · p=33.8% (raw 29.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T15:06:31Z
+      calibration=provisional n=27 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
   (none)
 
-Active summary: ELIGIBLE_CLEAN=0 CAUTION=33 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=12 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=3
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=30 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=10 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=0
-Logical picks shown: 48 · superseded observations: 96
-Total archived pick evidence rows: 144
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=8 SETTLED=0
+Logical picks shown: 48 · superseded observations: 83
+Total archived pick evidence rows: 131
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.

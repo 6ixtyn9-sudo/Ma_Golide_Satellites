@@ -21,7 +21,7 @@
       "logical_picks": 0
     },
     "2026-11-24": {
-      "frozen_fixtures": 2,
+      "frozen_fixtures": 3,
       "logical_picks": 48
     }
   },
@@ -2372,6 +2372,463 @@
         "scheduled_utc": "2026-11-24T17:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-24"
+      },
+      "E2026-134": {
+        "decision_cutoff_utc": "2026-11-24T17:00:00Z",
+        "frozen_at": "2026-11-24T17:25:57Z",
+        "game_id": "E2026-134",
+        "league": "EUROLEAGUE",
+        "rows": [
+          {
+            "away": "Maccabi Rapyd Tel Aviv",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.338246,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "fc9b6dc980255421545e1c1f0757b43fd69501c3aee9107283993751ece1921f",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "51748da23d75c5070913",
+            "game_id": "E2026-134",
+            "grade_status": "pending",
+            "home": "FC Bayern Munich",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "51748da23d75c5070913",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.29,
+            "role": null,
+            "scheduled_utc": "2026-11-24T19:00:00Z",
+            "selection": "Q1"
+          },
+          {
+            "away": "Maccabi Rapyd Tel Aviv",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.648644,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "a79704155aa63cc6af67e20a636cf9373955b7fdbd12737ca46429eccba61039",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "2ba36a64fbdc5564543a",
+            "game_id": "E2026-134",
+            "grade_status": "pending",
+            "home": "FC Bayern Munich",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "2ba36a64fbdc5564543a",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.61,
+            "role": null,
+            "scheduled_utc": "2026-11-24T19:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Maccabi Rapyd Tel Aviv",
+            "book": {
+              "book": "bet365.us",
+              "frozen": false,
+              "game_id": "E2026-134",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.55,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.599474,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "dfdb916bcd01be4aae9ebdeb19a73e0e4f6799b8b8f9d6a9b4853351ffd1ced6",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "11b7e7f524d21cc87b36",
+            "game_id": "E2026-134",
+            "grade_status": "pending",
+            "home": "FC Bayern Munich",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "11b7e7f524d21cc87b36",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-24T19:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Maccabi Rapyd Tel Aviv",
+            "book": {
+              "book": "Stake.com",
+              "frozen": false,
+              "game_id": "E2026-134",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.56,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.599474,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "24ff84699bdab8df26bb1cf737eb4bbdb48a89932073a1fe9bf20d8eed938d9c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1d399c6f42e0b5705f82",
+            "game_id": "E2026-134",
+            "grade_status": "pending",
+            "home": "FC Bayern Munich",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "1d399c6f42e0b5705f82",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-24T19:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Maccabi Rapyd Tel Aviv",
+            "book": {
+              "book": "bet365.us",
+              "frozen": false,
+              "game_id": "E2026-134",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.55,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.57,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "dc880c4629d3d9dfbff6ef70d9f332a57ab113a654fe3a304ba013fa2c5633b9",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "3dec128b223d420a5c8a",
+            "game_id": "E2026-134",
+            "grade_status": "pending",
+            "home": "FC Bayern Munich",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "3dec128b223d420a5c8a",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-24T16:39:19Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-24T19:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Maccabi Rapyd Tel Aviv",
+            "book": {
+              "book": "BetMGM.us",
+              "frozen": false,
+              "game_id": "E2026-134",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.6,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.57,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "e98a8bf2f7acec4f9d649a0443fb12b4f4d4568c9ca1082767f2f2a7b625a3a4",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "3f3747065f2bf483d285",
+            "game_id": "E2026-134",
+            "grade_status": "pending",
+            "home": "FC Bayern Munich",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "3f3747065f2bf483d285",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-24T16:39:19Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-24T19:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Maccabi Rapyd Tel Aviv",
+            "book": {
+              "book": "BetMGM.us",
+              "frozen": false,
+              "game_id": "E2026-134",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.6,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.599474,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "c3a4576ff376041e40a594a40b5dbee5a29f5fee4949b4285141a960468ce817",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "50ba52abae8e9edddb3b",
+            "game_id": "E2026-134",
+            "grade_status": "pending",
+            "home": "FC Bayern Munich",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "50ba52abae8e9edddb3b",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-24T19:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Maccabi Rapyd Tel Aviv",
+            "book": {
+              "book": "Stake.com",
+              "frozen": false,
+              "game_id": "E2026-134",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.56,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.57,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "1fded8573c3d775b9d0136a63acbce07385ce8c65215ff920d4c5d5ed2a854e1",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "ce737bf23c598f925867",
+            "game_id": "E2026-134",
+            "grade_status": "pending",
+            "home": "FC Bayern Munich",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "ce737bf23c598f925867",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-24T16:39:19Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-24T19:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-24T19:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-24"
       }
     }
   },
@@ -2384,6 +2841,10 @@
     [
       "E2026-131",
       "2026-11-24T18:00:00Z"
+    ],
+    [
+      "E2026-134",
+      "2026-11-24T19:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
