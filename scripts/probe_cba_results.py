@@ -65,13 +65,27 @@ HEADERS = {
 
 
 def rounds_url(round_id: int, *, competition_id: int = COMPETITION_ID,
-               season_id: int = SEASON_ID) -> str:
-    """The one documented URL with the parameter the host says it needs."""
+               season_id: int = SEASON_ID, team_id: int | None = None) -> str:
+    """The documented URL with the parameters the host says it needs.
 
-    return (
+    The host validates in order: with ``roundId`` present it answers
+    ``param name: teamId value not exists`` (2026-11-24T14:2xZ, 178 B, every
+    round 1-31).  So the value space is a grid, and this stays a bounded one.
+    """
+
+    url = (
         f"{HOST}{PATH}?competitionId={int(competition_id)}"
         f"&seasonId={int(season_id)}&roundId={int(round_id)}"
     )
+    if team_id is not None:
+        url += f"&teamId={int(team_id)}"
+    return url
+
+
+def parse_ints(spec: str, *, label: str = "value") -> list[int]:
+    """The bounded integer-set parser, shared by rounds and team ids."""
+
+    return parse_rounds(spec)
 
 
 def parse_rounds(spec: str) -> list[int]:
@@ -148,18 +162,42 @@ def _largest_game_list(node: object, *, depth: int) -> int:
 def main(argv: list[str] | None = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--rounds", default="1-40", help="e.g. 1-40 or 1,3,7")
+    parser.add_argument(
+        "--team-ids",
+        default="",
+        help=(
+            "e.g. 1-30. Required once the host asks for teamId; the probe then "
+            "asks every round for every team, inside the same bounded budget."
+        ),
+    )
     parser.add_argument("--competition-id", type=int, default=COMPETITION_ID)
     parser.add_argument("--season-id", type=int, default=SEASON_ID)
     parser.add_argument("--outdir", default="/tmp/cba", help="where bodies are saved")
     parser.add_argument("--delay", type=float, default=2.0, help="seconds between requests")
     parser.add_argument("--timeout", type=float, default=30.0)
+    parser.add_argument(
+        "--stop-on-first",
+        action="store_true",
+        default=True,
+        help="stop as soon as a body carries games (default; --no-stop-on-first keeps going)",
+    )
+    parser.add_argument("--no-stop-on-first", dest="stop_on_first", action="store_false")
     parser.add_argument("--quiet", action="store_true")
     args = parser.parse_args(argv)
 
     try:
         rounds = parse_rounds(args.rounds)
+        teams = parse_ints(args.team_ids) if args.team_ids else []
     except ValueError as exc:
         print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    pairs = [(r, t) for r in rounds for t in (teams or [None])]
+    if len(pairs) > REQUEST_BUDGET:
+        print(
+            f"refused: {len(pairs)} round/team pairs exceeds the bounded budget of "
+            f"{REQUEST_BUDGET}; narrow --rounds or --team-ids",
+            file=sys.stderr,
+        )
         return 2
 
     outdir = Path(args.outdir)
@@ -177,15 +215,16 @@ def main(argv: list[str] | None = None) -> int:
 
     with requests.Session() as session:
         session.headers.update(HEADERS)
-        for index, round_id in enumerate(rounds):
+        for index, (round_id, team_id) in enumerate(pairs):
             if index:
                 time.sleep(max(args.delay, 0.0))
             url = rounds_url(
                 round_id,
                 competition_id=args.competition_id,
                 season_id=args.season_id,
+                team_id=team_id,
             )
-            record: dict = {"round_id": round_id, "url": url}
+            record: dict = {"round_id": round_id, "team_id": team_id, "url": url}
             try:
                 response = session.get(url, timeout=args.timeout)
                 record["status"] = int(response.status_code)
@@ -197,9 +236,15 @@ def main(argv: list[str] | None = None) -> int:
                 record["status"] = None
                 record["error"] = f"{type(exc).__name__}: {exc}"[:200]
             receipt["requests"].append(record)
+            if record.get("game_count"):
+                # A body with games is the thing this probe exists to find.
+                receipt.setdefault("first_hit", round_id)
+                if args.stop_on_first:
+                    break
             if not args.quiet:
                 print(
-                    f"round {round_id:3d}  status={record.get('status')}  "
+                    f"round {round_id:3d} team {str(team_id or '-'):>3}  "
+                    f"status={record.get('status')}  "
                     f"bytes={record.get('bytes', 0):>7}  games={record.get('game_count', 0):>4}"
                     f"  {record.get('error', '')[:60]}"
                 )

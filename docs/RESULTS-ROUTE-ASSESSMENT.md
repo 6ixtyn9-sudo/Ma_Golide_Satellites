@@ -156,6 +156,25 @@ asserts exactly that, so a future edit cannot turn a decision into a fake lane.
 retired lanes before it: the schedule side is served, every candidate results
 route is closed, so it could never settle and its fixture cards graded nothing.
 
+## Greece, first replay against a served page (2026-11-24T14:21Z)
+
+`scripts/probe_esake_results.py --series 8` ran on an egress host and saved the
+page: **139,358 B**, sha256 `a721bd89feea4da44e15602136350062ced3c9b4f0d0948bf37a0a5f9dfa8b43`,
+robots.txt absent (404).
+
+| signal | count | reading |
+|---|---|---|
+| `esake-program-game` containers | 14 | the row class guess was right |
+| rows assembled | 7 | two containers per game |
+| rows with an `EsakegameView?idgame=` id | **0** | the identity pattern is wrong for this markup |
+| rows with a final-score block | **0** | the score pattern is wrong for this markup |
+| finals written | 0 | correct: nothing is written from a guess |
+
+So Greece moved from "route unproven" to "route served, parser wrong" — a much
+better problem, and the first of the five lanes to be replayed against real bytes.
+The next read needs two focused questions of the saved page rather than another
+whole probe: what the game link actually looks like, and where the score sits.
+
 ## What an egress host changed on 2026-11-24 (14:02–14:03Z)
 
 The probes that produced this document ran on a host without egress. Re-running
