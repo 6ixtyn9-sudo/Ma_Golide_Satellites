@@ -266,12 +266,18 @@ def gate_script(body: str) -> dict[str, object]:
         re.finditer(r"<script(?![^>]*\bsrc=)[^>]*>(?P<text>.*?)</script>", body or "", re.S)
     ):
         text = match.group("text")
+        writes = bool(re.search(r"document\.cookie|localStorage|sessionStorage", text))
         blocks.append(
             {
                 "index": index,
                 "bytes": len(text),
                 "mentions_controls": [control for control in controls if control in text],
-                "writes": bool(re.search(r"document\.cookie|localStorage|sessionStorage", text)),
+                "writes": writes,
+                # The real page attached nothing by id, and two small inline
+                # blocks do write cookies. If the handler selects by class
+                # instead of by id, the id search cannot see it -- so a writing
+                # block is shown rather than summarised.
+                **({"excerpt": re.sub(r"\s+", " ", text).strip()[:600]} if writes else {}),
             }
         )
 
@@ -386,6 +392,97 @@ def gate_reason(body: str) -> str | None:
         if marker.lower() in lowered:
             return f"age gate ({marker})"
     return None
+
+#: The gate's own vocabulary, as a minified bundle would spell it. Used to look
+#: for the handler in the asset the page loads, since the page itself attaches
+#: nothing by id.
+_GATE_ASSET_TOKENS = (
+    "age__btn--yes",
+    "ageYes",
+    "ageModal",
+    "ageTitle",
+    "age__modal",
+    "ageOverlay",
+)
+
+
+def bundle_map(js: str) -> dict[str, object]:
+    """Look for the gate inside a script the page loads.
+
+    The served page holds the modal's markup and nothing that acts on it, so the
+    behaviour is either in a bundle or nowhere. This reports where the gate's own
+    tokens appear and every ``document.cookie`` assignment nearby -- the second
+    list is the one that can name a consent key, and it is evidence from the
+    code, not a guess at a name.
+    """
+
+    text = js or ""
+    windows: list[dict[str, object]] = []
+    for token in _GATE_ASSET_TOKENS:
+        for match in list(re.finditer(re.escape(token), text))[:2]:
+            windows.append(
+                {
+                    "token": token,
+                    "offset": match.start(),
+                    "excerpt": re.sub(
+                        r"\s+", " ", text[max(0, match.start() - 300) : match.start() + 500]
+                    ).strip(),
+                }
+            )
+    writes = []
+    for match in list(re.finditer(r"document\.cookie\s*=\s*", text))[:8]:
+        writes.append(
+            {
+                "offset": match.start(),
+                "excerpt": re.sub(r"\s+", " ", text[match.start() : match.start() + 160]).strip(),
+            }
+        )
+    return {
+        "bytes": len(text.encode("utf-8")),
+        "sha256": hashlib.sha256(text.encode("utf-8")).hexdigest(),
+        "windows": windows[:6],
+        "cookie_writes": writes,
+        "tokens_found": [token for token in _GATE_ASSET_TOKENS if token in text],
+    }
+
+
+def gate_bundle_report(
+    url: str,
+    *,
+    out_dir: Path,
+    read_text,
+    cooldown: "HostCooldown | None" = None,
+    sleep=time.sleep,
+) -> dict[str, object]:
+    """One bounded request for one static asset, then read it offline."""
+
+    out_dir.mkdir(parents=True, exist_ok=True)
+    waited = cooldown.wait(sleep=sleep) if cooldown is not None else 0.0
+    payload: dict[str, object] = {
+        "schema_version": "magolide.results_probe.v1",
+        "mode": "gate_bundle",
+        "tool": probe_build(),
+        "url": url,
+        "cooldown_seconds_waited": round(waited, 3),
+        "requests_made": 1,
+        "age_gate_authorisation": AGE_GATE_AUTHORISATION,
+        "note": (
+            "A public static asset saved verbatim and read for the gate's own code. "
+            "A key found here is evidence; a key guessed from here would not be."
+        ),
+    }
+    try:
+        body = read_text(url)
+    except Exception as exc:  # noqa: BLE001 - a failed read is the receipt
+        payload["status"] = "fetch_failed"
+        payload["detail"] = str(exc)[:200]
+        return payload
+    name = re.sub(r"[^A-Za-z0-9._-]+", "_", url.rsplit("/", 1)[-1])[:60] or "gate-bundle.js"
+    path = out_dir / f"gate-bundle-{name}"
+    path.write_text(body, encoding="utf-8")
+    payload.update({"status": "captured", "path": str(path), **bundle_map(body)})
+    return payload
+
 
 _INT_CELL_RE = re.compile(r">\s*(\d{1,3})\s*<")
 _INT_TOKEN_RE = re.compile(r"\b\d{1,3}\b")
@@ -614,6 +711,7 @@ def capture_match_pages(
     cooldown: "HostCooldown | None" = None,
     gate_accept: bool = False,
     gate_read_text=None,
+    cookies: list[tuple[str, str]] | None = None,
 ) -> dict[str, object]:
     """Fetch the league's own match pages for the first ``limit`` codes.
 
@@ -636,7 +734,13 @@ def capture_match_pages(
         url = absolute_url(match.get("url") or match_url(league, code))
         try:
             requests_made += 1
-            body = read_text(url)
+            if cookies:
+                # A key read from the page's own bundle, or supplied by the
+                # operator. Named in the receipt so a pass is never mistaken for
+                # something this tool worked out by itself.
+                body = read_text(url, "; ".join(f"{name}={value}" for name, value in cookies))
+            else:
+                body = read_text(url)
         except Exception as exc:  # noqa: BLE001 - a failed capture is a receipt
             detail = str(exc)[:200]
             captured.append({"event_id": code, "url": url, "status": "fetch_failed",
@@ -734,6 +838,7 @@ def capture_match_pages(
         "cooldown_seconds_waited": round(waited, 3),
         "requests_made": requests_made,
         "gate_accept": bool(gate_accept),
+        "cookies_sent": [name for name, _ in (cookies or [])],
         "age_gate_authorisation": AGE_GATE_AUTHORISATION,
         "note": (
             "Match pages saved verbatim. period_markers counts Q1..Q4/OT-shaped "
@@ -869,6 +974,23 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     parser.add_argument(
+        "--cookie",
+        action="append",
+        metavar="NAME=VALUE",
+        help=(
+            "send this cookie on each match page request (repeatable) -- for a key read "
+            "from the page's own bundle; names are recorded in the receipt"
+        ),
+    )
+    parser.add_argument(
+        "--gate-bundle",
+        metavar="URL",
+        help=(
+            "fetch one static script the gate page loads and look for the gate's own "
+            "code in it -- one request, honouring the cooldown"
+        ),
+    )
+    parser.add_argument(
         "--gate-accept",
         action="store_true",
         help=(
@@ -937,6 +1059,22 @@ def main(argv: list[str] | None = None) -> int:
         )
         return 0
 
+    if args.gate_bundle:
+        from ingestion.providers.betexplorer import _text_fetch
+
+        report = gate_bundle_report(
+            args.gate_bundle,
+            out_dir=Path(args.out),
+            read_text=_text_fetch(None, None),
+            cooldown=(
+                HostCooldown(Path(args.out) / ".host-cooldown", args.cooldown)
+                if args.cooldown > 0
+                else None
+            ),
+        )
+        print(json.dumps(report, indent=2, sort_keys=True))
+        return 0 if report.get("status") == "captured" else 1
+
     if args.gate_hints:
         body = Path(args.gate_hints).read_text(encoding="utf-8", errors="replace")
         print(
@@ -984,6 +1122,13 @@ def main(argv: list[str] | None = None) -> int:
             if args.cooldown > 0
             else None
         )
+        supplied: list[tuple[str, str]] = []
+        for item in args.cookie or []:
+            name, _, value = item.partition("=")
+            if not name.strip():
+                parser.error(f"--cookie needs NAME=VALUE, got {item!r}")
+            supplied.append((name.strip(), value.strip()))
+
         gate_read_text = None
         if args.gate_accept:
             from ingestion.http import HttpClient
@@ -1000,6 +1145,7 @@ def main(argv: list[str] | None = None) -> int:
             cooldown=cooldown,
             gate_accept=args.gate_accept,
             gate_read_text=gate_read_text,
+            cookies=supplied or None,
         )
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0 if any(page["status"] == "captured" for page in payload["pages"]) else 1

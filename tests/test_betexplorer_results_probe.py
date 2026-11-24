@@ -770,3 +770,84 @@ def test_the_build_stamp_survives_a_missing_git(monkeypatch):
     build = probe.probe_build()
 
     assert build == {"script": "probe_betexplorer_results.py", "git_commit": None, "modified": None}
+
+
+def test_a_writing_inline_block_is_shown_because_the_id_search_cannot_see_it(tmp_path, capsys):
+    """The real page attaches nothing by id: `ageYes` occurs once, as markup, and
+    two small blocks write cookies. A handler that selects by class is invisible
+    to an id search, so the code is printed instead of summarised."""
+
+    page = tmp_path / "gate.html"
+    page.write_text(
+        '<div class="age__modal"><h1 id="ageTitle">18+</h1><button id="ageYes">Sim</button></div>'
+        "<script>var m=document.cookie.match(/be18=1/);"
+        "document.querySelector('.age__btn--yes').onclick=function(){"
+        "document.cookie='be18=1; path=/';location.reload();};</script>",
+        encoding="utf-8",
+    )
+
+    probe.main(["--gate-script", str(page)])
+    payload = json.loads(capsys.readouterr().out)
+
+    block = payload["inline_blocks"][0]
+    assert block["mentions_controls"] == []  # by id, nothing -- and that is the point
+    assert block["writes"] is True
+    assert "querySelector('.age__btn--yes')" in block["excerpt"]
+    assert "be18=1" in block["excerpt"]
+
+
+def test_a_supplied_cookie_is_sent_and_named(tmp_path):
+    """The end of the road for this route: a key read from the page's own bundle.
+    The receipt names it, so a pass never reads as something the tool worked out."""
+
+    seen = []
+
+    def read_text(url, cookie):
+        seen.append(cookie)
+        return _MATCH_PAGE
+
+    payload = probe.capture_match_pages(
+        "LITHUANIA_NKL",
+        matches=[{"code": "nRzm7OsT", "url": "/basketball/lithuania/nkl/a-b/nRzm7OsT/"}],
+        out_dir=tmp_path,
+        read_text=read_text,
+        limit=1,
+        cookies=[("be18", "1")],
+    )
+
+    assert seen == ["be18=1"]
+    assert payload["cookies_sent"] == ["be18"]
+    assert payload["requests_made"] == 1
+    assert payload["pages"][0]["status"] == "captured"
+
+
+def test_the_bundle_read_names_the_key_it_finds(tmp_path):
+    """The page holds the modal and nothing that acts on it, so the behaviour is
+    in a bundle or nowhere. This is the reader for that bundle."""
+
+    js = (
+        "function n(){var e=document.getElementById('ageYes');"
+        "document.querySelector('.age__btn--yes').onclick=function(){"
+        "document.cookie='be18=1; path=/; max-age=31536000';location.reload();}}"
+    )
+
+    report = probe.gate_bundle_report("https://example.test/all.min.js", out_dir=tmp_path,
+                                     read_text=lambda url: js)
+
+    assert report["status"] == "captured"
+    assert report["tokens_found"] == ["age__btn--yes", "ageYes"]
+    assert report["cookie_writes"][0]["excerpt"].startswith("document.cookie='be18=1")
+    assert Path(report["path"]).read_text() == js
+    assert report["sha256"] == hashlib.sha256(js.encode()).hexdigest()
+
+
+def test_a_bundle_that_cannot_be_fetched_is_a_receipt_not_a_crash(tmp_path):
+    def boom(url):
+        raise RuntimeError("HTTP 429 for https://example.test/all.min.js")
+
+    report = probe.gate_bundle_report("https://example.test/all.min.js", out_dir=tmp_path,
+                                     read_text=boom)
+
+    assert report["status"] == "fetch_failed"
+    assert "429" in report["detail"]
+    assert "windows" not in report
