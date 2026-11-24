@@ -88,6 +88,15 @@ verified index floors.
 - Overtime is reconciled only when its points are actually exposed: a row that
   reports ``total_ot`` without a fifth period is refused, never treated as a
   regulation final.
+- **History is one request, not one game-day.** ``board_round=0`` returns every
+  round of the season rather than one, so ``backfill`` ingests the whole board
+  as finals (`_backfill_israel_history`). The per-date lane had been
+  date-filtering that same response down to a single day, which is why a full
+  season of hourly ticks left the store holding three games while the source
+  was already serving every played round with quarter splits. Finals whose
+  periods do not reconcile are counted and named in one aggregate gap: they are
+  stored as the official results they are, but they cannot train the model and
+  must not read as if they could.
 - **Captured rows, 2026-11-22:** four board rows are committed verbatim in
   `tests/fixtures/israel_ibl/board5_captured_rows.json` and are re-tested on
   every run. The probe reported that all 45 played rows of the full board sum to

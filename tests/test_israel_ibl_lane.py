@@ -309,3 +309,118 @@ def test_an_adapter_that_says_nothing_is_reported_as_unknown_not_empty():
     gap = next(g for g in pipeline.gaps if g.required_field == "official_schedule")
     assert "unknown, not empty" in gap.detail
     assert gap.reason.value == "unsupported"
+
+
+# ---------------------------------------------------------------------------
+# Season-board history backfill
+#
+# The board route is asked with ``board_round=0``: every round of the season,
+# not one. Each played row already carries its quarter splits, so one request
+# can reconcile a whole season -- which is exactly what the per-date lane throws
+# away. Rows below come from the committed ``board5_captured_rows.json``.
+# ---------------------------------------------------------------------------
+
+
+def _season_board_fetch(payload: Any) -> Callable[[str], Any]:
+    def fetch(url: str) -> Any:
+        assert "basket.co.il/ws/ws.asmx/Games" in url
+        return payload
+
+    return fetch
+
+
+def _israel_pipeline(fetch: Callable[[str], Any], **changes: Any):
+    from ingestion.pipeline import Pipeline, PipelineConfig
+    from ingestion.store import InMemoryStore
+
+    values: dict[str, Any] = {
+        "league": "ISRAEL_PREMIER_LEAGUE",
+        "date_yyyymmdd": "20261123",
+        "fixture_now_utc": "2026-11-23T09:00:00Z",
+        "history_request_budget": 4,
+    }
+    values.update(changes)
+    store = InMemoryStore()
+    return Pipeline(PipelineConfig(**values), store, fetch=fetch), store
+
+
+def test_backfill_ingests_the_whole_season_board_in_one_request():
+    board = _fixture_json("israel_ibl/board5_captured_rows.json")["games"]
+    played = [row for row in board if int(row.get("score_team1") or 0) + int(row.get("score_team2") or 0) > 0]
+    pipeline, store = _israel_pipeline(_season_board_fetch(board))
+
+    report = pipeline.backfill()
+
+    deep = report["backfill"]["deep_history"]
+    assert deep["status"] == "acquired"
+    assert deep["rows_on_board"] == len(board)
+    assert deep["finals_written"] == len(played) == deep["final_scores_written"]
+    assert deep["finals_reconciled"] == len(played)
+    assert deep["unreconciled_finals"] == 0
+    # The summary and the detail agree, so the stage total cannot read zero
+    # while the walk reports finals.
+    assert report["finals_written"] == len(played)
+    stored = store.list_games(league=League.ISRAEL_PREMIER_LEAGUE)
+    assert len(stored) == len(played)
+    assert all(game.actual is not None and game.actual.reconciles()[0] for game in stored)
+    assert all(game.status is GameStatus.FINAL for game in stored)
+
+
+def test_backfill_never_asks_for_one_day_and_gets_a_season():
+    """The date filter is what made a full season look like three games."""
+
+    board = _fixture_json("israel_ibl/board5_captured_rows.json")["games"]
+    seen: list[str] = []
+
+    def fetch(url: str) -> Any:
+        seen.append(url)
+        return board
+
+    pipeline, _store = _israel_pipeline(fetch)
+    pipeline.backfill()
+
+    assert len(seen) == 1
+    # board_round=0 is the whole-season sentinel already in the adapter's URL.
+    assert "board_round=0" in seen[0]
+    assert "team_id=0" in seen[0]
+
+
+def test_an_unreconciled_final_is_counted_and_named_not_dropped():
+    board = _fixture_json("israel_ibl/board5_captured_rows.json")["games"]
+    broken = json.loads(json.dumps(board))
+    broken[0]["score_team1"] = str(int(broken[0]["score_team1"]) + 7)
+    pipeline, store = _israel_pipeline(_season_board_fetch(broken))
+
+    report = pipeline.backfill()
+
+    deep = report["backfill"]["deep_history"]
+    assert deep["finals_written"] == len(board)
+    assert deep["unreconciled_finals"] == 1
+    assert deep["finals_reconciled"] == len(board) - 1
+    gap = next(g for g in pipeline.gaps if g.required_field == "history_period_scores")
+    assert "do not reconcile and cannot train the model" in gap.detail
+    assert gap.provider == "israel_ibl"
+    # It is still stored as the official final it is; it simply does not train.
+    assert len(store.list_games(league=League.ISRAEL_PREMIER_LEAGUE)) == len(board)
+
+
+def test_an_empty_board_is_a_provider_error_not_an_empty_season():
+    pipeline, store = _israel_pipeline(_season_board_fetch({"games": []}))
+
+    report = pipeline.backfill()
+
+    assert report["backfill"]["deep_history"]["status"] == "provider_error"
+    assert report["finals_written"] == 0
+    assert store.list_games(league=League.ISRAEL_PREMIER_LEAGUE) == []
+    gap = next(g for g in pipeline.gaps if g.required_field == "israel_season_board")
+    assert gap.reason.value == "provider_error"
+
+
+def test_history_backfill_is_disabled_without_a_request_budget():
+    board = _fixture_json("israel_ibl/board5_captured_rows.json")["games"]
+    pipeline, store = _israel_pipeline(_season_board_fetch(board), history_request_budget=0)
+
+    report = pipeline.backfill()
+
+    assert report["backfill"]["deep_history"]["status"] == "disabled_no_request_budget"
+    assert store.list_games(league=League.ISRAEL_PREMIER_LEAGUE) == []

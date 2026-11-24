@@ -3245,6 +3245,105 @@ class Pipeline:
             "ledger_dates": sorted(set(base["ledger_dates"])),
         }
 
+    def _backfill_israel_history(self) -> Dict[str, Any]:
+        """Ingest a whole Israel season board as reconciled finals, one request.
+
+        The board route is asked with ``board_round=0`` -- every round of the
+        season, not one -- and each played row already carries its quarter
+        splits. ``discover_games(None, ...)`` returns all of them, which is
+        documented behaviour the per-date lane never uses: it date-filters the
+        same response down to the target day, which is why a full season of
+        ticks left the store holding three games.
+
+        Nothing here is inferred. A row is written only when the adapter mapped
+        it to a FINAL with an ``ActualResult``; finals whose periods do not
+        reconcile are counted and named as one aggregate gap rather than
+        dropped silently, because an unreconciled final is not training
+        evidence and must not look like it.
+        """
+
+        base: Dict[str, Any] = {
+            "status": "acquired",
+            "season_end_year": self._israel_season_end_year(),
+            "rows_on_board": 0,
+            # ``events_acquired``/``final_scores_written`` are the keys the
+            # backfill report aggregates from a deep-history walk; they are
+            # set below so the summary and the detail cannot disagree.
+            "events_acquired": 0,
+            "final_scores_written": 0,
+            "finals_written": 0,
+            "finals_reconciled": 0,
+            "unreconciled_finals": 0,
+            "unplayed_rows_skipped": 0,
+            "ledger_dates": [],
+            "learning_or_calibration_claimed": False,
+        }
+        if max(0, int(self.config.history_request_budget)) < 1:
+            return {**base, "status": "disabled_no_request_budget"}
+        try:
+            games = israel_ibl.discover_games(
+                None,
+                self.fetch if self._injected_fetch else None,
+                base["season_end_year"],
+            )
+        except Exception as exc:
+            self.gaps.append(
+                CoverageGap(
+                    game_id=None,
+                    required_field="israel_season_board",
+                    reason=CoverageState.PROVIDER_ERROR,
+                    provider="israel_ibl",
+                    detail=str(exc)[:200],
+                    observed_utc=self._now_iso(),
+                )
+            )
+            return {**base, "status": "provider_error"}
+
+        for gap in israel_ibl.last_gaps():
+            self.gaps.append(
+                CoverageGap(
+                    game_id=(f"IBL-{gap['game_id']}" if gap.get("game_id") else None),
+                    required_field="history_identity",
+                    reason=CoverageState.MISSING,
+                    provider="israel_ibl",
+                    detail=str(gap.get("detail", ""))[:200],
+                    observed_utc=self._now_iso(),
+                )
+            )
+
+        base["rows_on_board"] = len(games)
+        unreconciled_ids: List[str] = []
+        for game in games:
+            if game.status is not GameStatus.FINAL or game.actual is None:
+                base["unplayed_rows_skipped"] += 1
+                continue
+            self.store.upsert_game(game)
+            base["finals_written"] += 1
+            base["events_acquired"] += 1
+            base["final_scores_written"] += 1
+            if game.actual.reconciles()[0]:
+                base["finals_reconciled"] += 1
+            else:
+                base["unreconciled_finals"] += 1
+                unreconciled_ids.append(game.game_id)
+        if unreconciled_ids:
+            self.gaps.append(
+                CoverageGap(
+                    game_id=None,
+                    required_field="history_period_scores",
+                    reason=CoverageState.MISSING,
+                    provider="israel_ibl",
+                    detail=(
+                        f"{len(unreconciled_ids)} of {base['finals_written']} board finals "
+                        "do not reconcile and cannot train the model: "
+                        + ", ".join(unreconciled_ids[:5])
+                        + (" …" if len(unreconciled_ids) > 5 else "")
+                    )[:500],
+                    observed_utc=self._now_iso(),
+                )
+            )
+        return base
+
     def _backfill_cba_history(self) -> Dict[str, Any]:
         """Walk official CBA days backwards, ingesting reconciled finals.
 
@@ -3404,6 +3503,7 @@ class Pipeline:
             League.EUROCUP,
             League.EUROLEAGUE_W,
             League.CBA,
+            League.ISRAEL_PREMIER_LEAGUE,
         }:
             spec = league_spec(self.config.league_enum)
             self._unsupported_source_gap(
@@ -3559,6 +3659,8 @@ class Pipeline:
             deep = self._backfill_fiba_euroleague_w_history()
         elif self.config.league_enum is League.CBA:
             deep = self._backfill_cba_history()
+        elif self.config.league_enum is League.ISRAEL_PREMIER_LEAGUE:
+            deep = self._backfill_israel_history()
         else:
             deep = {"status": "unsupported_league", "ledger_dates": []}
         ledger_dates.update(deep.get("ledger_dates") or [])
