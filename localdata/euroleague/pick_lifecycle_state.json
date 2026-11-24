@@ -21,7 +21,7 @@
       "logical_picks": 0
     },
     "2026-11-24": {
-      "frozen_fixtures": 0,
+      "frozen_fixtures": 1,
       "logical_picks": 48
     }
   },
@@ -1452,9 +1452,478 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-20"
       }
+    },
+    "2026-11-24": {
+      "E2026-132": {
+        "decision_cutoff_utc": "2026-11-24T15:00:00Z",
+        "frozen_at": "2026-11-24T15:06:31Z",
+        "game_id": "E2026-132",
+        "league": "EUROLEAGUE",
+        "rows": [
+          {
+            "away": "Paris Basketball",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.338246,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "f60fd7c030d8df016463077731166ec0264134c587ab7a1d17b864b7b91c320f",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "fbf687ba2d2200ea7952",
+            "game_id": "E2026-132",
+            "grade_status": "pending",
+            "home": "Besiktas Fuzul Istanbul",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "fbf687ba2d2200ea7952",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.29,
+            "role": null,
+            "scheduled_utc": "2026-11-24T17:00:00Z",
+            "selection": "Q1"
+          },
+          {
+            "away": "Paris Basketball",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.648644,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "61bfae4618a8a92d02fe33251beb3e892d41e00ce3d5b124fa9a32d1fb57b75e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "01038a814c0515908890",
+            "game_id": "E2026-132",
+            "grade_status": "pending",
+            "home": "Besiktas Fuzul Istanbul",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "01038a814c0515908890",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.61,
+            "role": null,
+            "scheduled_utc": "2026-11-24T17:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Paris Basketball",
+            "book": {
+              "book": "Stake.com",
+              "frozen": false,
+              "game_id": "E2026-132",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.85,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.57,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "8005b88a8ecdb921b9ea46cb689b4a7e46ee27defa3b39bab0dea68814545f5d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0616cfb3d24772425007",
+            "game_id": "E2026-132",
+            "grade_status": "pending",
+            "home": "Besiktas Fuzul Istanbul",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "0616cfb3d24772425007",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-24T14:39:48Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-24T17:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Paris Basketball",
+            "book": {
+              "book": "bet365.us",
+              "frozen": false,
+              "game_id": "E2026-132",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.79,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.599474,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "ddf0bc8b8935345310827b8c45c88709e238995b0b76a7c9f2dd99ec4ca7cdef",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "16c532ae5d78dfe7e5b3",
+            "game_id": "E2026-132",
+            "grade_status": "pending",
+            "home": "Besiktas Fuzul Istanbul",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "16c532ae5d78dfe7e5b3",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-24T17:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Paris Basketball",
+            "book": {
+              "book": "bet365.us",
+              "frozen": false,
+              "game_id": "E2026-132",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.79,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.57,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "7ea486061211026142d3addc5c2e273c73ebd1624052b281ba5419101cda8830",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1ec23578d402a39dde82",
+            "game_id": "E2026-132",
+            "grade_status": "pending",
+            "home": "Besiktas Fuzul Istanbul",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "1ec23578d402a39dde82",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-24T14:39:48Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-24T17:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Paris Basketball",
+            "book": {
+              "book": "Stake.com",
+              "frozen": false,
+              "game_id": "E2026-132",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.85,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.599474,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "b8752a597195def5dd18c4a97a975207a0d1ac1782bffac7fa37fb562577c57a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "70fbfe8e6cc0d209b6c8",
+            "game_id": "E2026-132",
+            "grade_status": "pending",
+            "home": "Besiktas Fuzul Istanbul",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "70fbfe8e6cc0d209b6c8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-24T17:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Paris Basketball",
+            "book": {
+              "book": "BetMGM.us",
+              "frozen": false,
+              "game_id": "E2026-132",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.85,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.57,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "456381ef4347855bbccd86d3a6faa834b04bab4e018201ff9cd7dd09487d8851",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "801a715e1efc5337ea98",
+            "game_id": "E2026-132",
+            "grade_status": "pending",
+            "home": "Besiktas Fuzul Istanbul",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "801a715e1efc5337ea98",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-24T14:39:48Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-24T17:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Paris Basketball",
+            "book": {
+              "book": "BetMGM.us",
+              "frozen": false,
+              "game_id": "E2026-132",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T09:39:33Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.85,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.599474,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "8120220839a8337809cc846c85f9918b05fef6e91f8fac2f268e065a6e3cefc1",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "aa339febcc5132a206fa",
+            "game_id": "E2026-132",
+            "grade_status": "pending",
+            "home": "Besiktas Fuzul Istanbul",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "aa339febcc5132a206fa",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-24T17:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-24T17:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-24"
+      }
     }
   },
   "league": "EUROLEAGUE",
-  "pending_frozen_games": [],
+  "pending_frozen_games": [
+    [
+      "E2026-132",
+      "2026-11-24T17:00:00Z"
+    ]
+  ],
   "schema_version": "magolide.pick_lifecycle_state"
 }
