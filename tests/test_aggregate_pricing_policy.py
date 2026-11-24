@@ -267,9 +267,11 @@ def test_a_band_with_no_settled_picks_is_still_refused_once_the_lane_has_history
     # The candidates sit in a different probability and odds band from the
     # settled loser, so their band has no history of its own while the lane has
     # some -- which is exactly the case cold start must not cover.
+    # Priced above ``minTicketLegOdds`` so the price floor is not what refuses
+    # them: this test is about the band's missing history.
     candidates = [
-        _pickable("c1", price=1.05, probability=0.92),
-        _pickable("c2", price=1.05, probability=0.93),
+        _pickable("c1", price=1.50, probability=0.92),
+        _pickable("c2", price=1.50, probability=0.93),
     ]
 
     _, summary = filter_paper_candidate_picks(

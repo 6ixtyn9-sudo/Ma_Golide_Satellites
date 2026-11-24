@@ -1065,6 +1065,39 @@ def _forecast(game_id: str, probability: float, *, outcome=None) -> Forecast:
     )
 
 
+def test_a_ticket_leg_below_the_configured_price_floor_is_never_used():
+    """A leg that cannot pay for its own risk is not a leg.
+
+    2026-11-24 NCAA_M: ESPN reports ``-100000`` (decimal ``1.001``) as the
+    moneyline on lopsided games, and the probability-ranked builder used three of
+    them for the card's headline "3-leg acca" at ``@1.003`` -- one full paper
+    unit risked to return 0.3%. The floor is configuration
+    (``minTicketLegOdds``), not a number buried in the builder, and the lane kept
+    376 eligible priced picks at 1.20 or better on that same slate.
+    """
+
+    from forecasting.accas import MIN_TICKET_LEG_DECIMAL
+    from forecasting.bet_config import DEFAULTS
+
+    assert MIN_TICKET_LEG_DECIMAL == DEFAULTS["minTicketLegOdds"] == 1.2
+
+    def priced(game_id: str, price: float, probability: float = 0.95) -> Forecast:
+        return _roi_forecast(game_id, probability, price, None)
+
+    sentinel = [priced(f"cheap-{index}", 1.001, 0.95) for index in range(3)]
+    assert build_accas(sentinel, legs=2, limit=3) == []
+
+    # Exactly at the floor is allowed; just under it is not.
+    assert build_accas([priced("at-floor", 1.2)], legs=2, limit=1) == []
+    under = [priced(f"under-{index}", 1.199, 0.95) for index in range(2)]
+    assert build_accas(under, legs=2, limit=1) == []
+
+    priced_pair = [priced("floor-a", 1.2), priced("floor-b", 1.21)]
+    tickets = build_accas(priced_pair, legs=2, limit=1)
+    assert len(tickets) == 1
+    assert tickets[0]["combined_decimal_odds"] == pytest.approx(1.2 * 1.21, rel=1e-3)
+
+
 def test_calibration_population_diagnostics_match_profile_admission_rules():
     config = CalibrationConfig(
         min_samples=30,

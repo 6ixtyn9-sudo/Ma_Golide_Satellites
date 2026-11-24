@@ -169,6 +169,14 @@ KEYS: Dict[str, ConfigKey] = {
              "Shrinkage towards the observed total line: (n*mu + k*line) / (n+k)."),
         _key("ftouMinSamples", 3, "int", 1, 100, "ft_ou"),
         # -- tier ladder and confidence ---------------------------------------
+        # -- ticket (one number, cross-cutting) --------------------------------
+        #: A paper ticket must be able to pay for its own risk. Below this price a
+        #: leg cannot: on 2026-11-24 the NCAA_M lane built five "3-leg accas" from
+        #: ESPN's lopsided-game moneyline sentinel, the best of them priced at
+        #: @1.003 -- one full unit risked to return 0.3%. 376 of that lane's 421
+        #: eligible priced picks sat at 1.20 or better, so the floor costs nothing
+        #: but the absurd tickets.
+        _key("minTicketLegOdds", 1.20, "float", 1.0, 5.0, "ticket"),
         _key("threshold", 25.0, "float", 0.0, 100.0, "tiers"),
         _key("tier_weak_min_score", 50.0, "float", 0.0, 200.0, "tiers"),
         _key("tier_medium_min_score", 60.0, "float", 0.0, 200.0, "tiers"),

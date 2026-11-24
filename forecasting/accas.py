@@ -10,7 +10,17 @@ from typing import Dict, Iterable, List, Tuple
 
 from ingestion.identity import parse_utc
 
+from .bet_config import DEFAULTS as BET_CONFIG_DEFAULTS
 from .types import Forecast
+
+#: The cheapest price a paper ticket leg may carry, from the data-driven config
+#: (``minTicketLegOdds``). A leg below it cannot pay for its own risk: on
+#: 2026-11-24 the NCAA_M lane printed five "3-leg accas" whose best price was
+#: @1.003 -- a full unit risked for 0.3% -- because ESPN reports -100000 as the
+#: moneyline for a lopsided game and the builder ranks legs by probability alone.
+#: The lane still had 376 priced, eligible picks at 1.20 or better, so the floor
+#: removes the absurd tickets and nothing else.
+MIN_TICKET_LEG_DECIMAL = float(BET_CONFIG_DEFAULTS["minTicketLegOdds"])
 
 
 def is_provisional_sample_only(forecast: Forecast) -> bool:
@@ -65,7 +75,12 @@ def _candidate_rank(row: Forecast) -> tuple:
 def _eligible_candidate_picks(
     forecasts: Iterable[Forecast], *, allow_provisional: bool = False
 ) -> List[Forecast]:
-    """Return one usable model row per exact wager selection."""
+    """Return one usable model row per exact wager selection.
+
+    A row cheaper than :data:`MIN_TICKET_LEG_DECIMAL` is not usable for a paper
+    ticket and is dropped here, before bands, singles or acca legs are built, so
+    every downstream count agrees on what is on the table.
+    """
     by_wager: Dict[Tuple[str, str, str, str, str, str], Forecast] = {}
     for forecast in forecasts:
         if not (forecast.eligibility or {}).get("acca_eligible"):
@@ -80,7 +95,7 @@ def _eligible_candidate_picks(
             or not 0.0 < probability <= 1.0
             or price is None
             or not math.isfinite(price)
-            or price <= 1.0
+            or price < MIN_TICKET_LEG_DECIMAL
         ):
             continue
         wager_key = _wager_leg_key(

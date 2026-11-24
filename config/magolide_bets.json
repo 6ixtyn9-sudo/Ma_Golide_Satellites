@@ -5,7 +5,6 @@
     "bankerThreshold": 60.0,
     "minBankerOdds": 1.01,
     "maxBankerOdds": 3.0,
-
     "enableRobbers": true,
     "robberMinConf": 54.0,
     "robberMaxConf": 45.0,
@@ -13,7 +12,6 @@
     "maxOdds": 12.0,
     "robberMinScore": 35.0,
     "robberMinEdge": 0.08,
-
     "enableFirstHalf": true,
     "firstHalfMinConf": 58.0,
     "firstHalfTwoWay": true,
@@ -25,7 +23,6 @@
     "firstHalfMarginPerSignal": 8.0,
     "firstHalfMinConfidence": 51.0,
     "firstHalfMaxConfidence": 85.0,
-
     "enableFTOU": true,
     "ftOuMinConf": 55.0,
     "ftOuMinEv": 0.005,
@@ -34,13 +31,13 @@
     "ftouSigmaScale": 1.0,
     "ftouShrinkK": 8.0,
     "ftouMinSamples": 3,
-
     "threshold": 25.0,
     "tier_weak_min_score": 50.0,
     "tier_medium_min_score": 60.0,
     "tier_strong_min_score": 75.0,
     "confMin": 50.0,
     "confMax": 95.0,
-    "confidence_scale": 30.0
+    "confidence_scale": 30.0,
+    "minTicketLegOdds": 1.2
   }
 }
