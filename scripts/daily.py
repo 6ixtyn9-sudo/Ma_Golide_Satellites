@@ -451,6 +451,16 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             slate_timezone_name=config.timezone,
         )
 
+        # Tuning runs inside the tick, on this lane's own settled ledgers. It is
+        # deliberately after publish_operator_reports(): that is what writes the
+        # outcomes this reads. A failure here is reported, never fatal -- the
+        # canonical acquisition state is already committed.
+        tuning = _tune_from_ledgers(
+            localdata,
+            write=bool(args.write),
+            skip=bool(getattr(args, "skip_tuning", False)),
+        )
+
         assay = mine_prediction_assay(store, config.league_enum)
         assay_path = (
             write_assay(str(localdata / f"assay_{args.league}.json"), assay) if args.write else None
@@ -487,6 +497,7 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             "markets": market_report,
             "market_report_path": market_report_path,
             "operator": operator,
+            "tuning": tuning,
             "ledgers": ledgers,
             "assay": assay,
             "assay_path": assay_path,
@@ -524,6 +535,67 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
         return summary
     finally:
         store.close()
+
+
+#: Where a lane keeps its tuned bet config and its config ledger. Lane-local on
+#: purpose: each league runs as its own matrix job, so a shared file would be a race
+#: between jobs that never see each other's writes.
+TUNED_FILENAME = "magolide_bets.tuned.json"
+CONFIG_LEDGER_FILENAME = "config_ledger.jsonl"
+
+
+def _tune_from_ledgers(localdata: Path, *, write: bool, skip: bool) -> Dict[str, Any]:
+    """Tune this lane's bet gates from its own settled picks.
+
+    Runs every tick so nobody has to remember to run it. Three properties matter
+    more than the tuning itself:
+
+    * it reads only *settled* rows (``forecasting.settlement`` counts pending,
+      duplicate and probability-less picks rather than grading them);
+    * a dry run reports what it would change and writes nothing;
+    * any failure is returned as ``status: failed`` -- a config suggestion is never
+      worth turning an otherwise-complete lane tick red.
+    """
+
+    if skip:
+        return {"enabled": False, "status": "skipped"}
+
+    try:
+        from forecasting import settlement
+        from forecasting.config_tuner import TUNED_PATH, analyse, apply, load_tuned
+
+        tuned_path = localdata / (TUNED_PATH.name or TUNED_FILENAME)
+        summary = settlement.collect(localdata)
+        report = analyse(list(summary.bets))
+        config = load_tuned(tuned_path=tuned_path)
+        _, stamp, applied = apply(
+            report,
+            config,
+            tuned_path=tuned_path,
+            ledger_path=localdata / CONFIG_LEDGER_FILENAME,
+            write=write,
+        )
+        if not write:
+            status = "dry_run"
+        else:
+            status = "applied" if applied else "no_change"
+        return {
+            "enabled": True,
+            "status": status,
+            "settled_picks": summary.total,
+            "not_counted": dict(summary.skipped),
+            "applied": {
+                key: [before, after] for key, (before, after) in sorted(applied.items())
+            },
+            "config_stamp": stamp.stamp_id,
+            "reasons": list(report.reasons),
+        }
+    except Exception as exc:  # noqa: BLE001 - a tuning fault must not fail the lane
+        return {
+            "enabled": True,
+            "status": "failed",
+            "error": f"{type(exc).__name__}: {str(exc)[:200]}",
+        }
 
 
 def _checkpoint_manifest(args) -> Path | None:
@@ -631,6 +703,15 @@ def main() -> int:
     )
     parser.add_argument("--skip-results", action="store_true")
     parser.add_argument("--skip-markets", action="store_true")
+    parser.add_argument(
+        "--skip-tuning",
+        action="store_true",
+        help=(
+            "do not run the bet-config tuner in this tick; by default a canonical "
+            "tick tunes from this lane's settled ledgers and a dry run reports what "
+            "it would change without writing"
+        ),
+    )
     parser.add_argument(
         "--skip-book-acquisition",
         action="store_true",
