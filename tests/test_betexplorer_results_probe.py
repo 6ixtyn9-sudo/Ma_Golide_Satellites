@@ -16,6 +16,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
+import probe_betexplorer_results as probe  # noqa: E402
 from probe_betexplorer_results import (  # noqa: E402
     MAX_CAPTURE,
     MIN_INTERVAL_SECONDS,
@@ -227,3 +228,28 @@ def test_an_empty_results_page_says_so_rather_than_looking_healthy():
 
     assert signals["match_codes"] == 0
     assert signals["has_no_matches_hint"] is True
+
+
+def test_the_first_match_window_is_the_row_not_the_page():
+    """A count says the page has 34 codes; the window says what a row looks like."""
+
+    filler = "<td>padding</td>" * 200
+    body = (
+        '<table class="table-main"><tr><td>header</td></tr>'
+        + filler
+        + '<tr><td><a href="/basketball/australia/wnbl-women/perth-sydney/AbCd1234/">'
+        "Perth - Sydney</a></td><td>89:84</td></tr>"
+        + filler
+        + "</table>"
+    )
+
+    window = probe.first_match_window(body)
+
+    assert "AbCd1234" in window
+    assert "89:84" in window
+    assert len(window) <= probe.WINDOW_CHARS
+    assert len(window) < len(body)
+
+
+def test_a_page_with_no_match_code_has_no_window_rather_than_a_guess():
+    assert probe.first_match_window('<table class="table-main"><p>No matches found</p></table>') == ""

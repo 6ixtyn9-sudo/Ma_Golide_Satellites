@@ -279,3 +279,32 @@ Two things follow. First, the grid is a real cost: 40 requests per run, and the 
 refuses a wider sweep rather than trimming it. Second, the 42-byte body is now the
 thing to read, because an empty list and a refusal wearing a 200 look identical from
 outside, and only one of them means "no games here".
+
+## WNBL, the aggregator's own results page (2026-11-24T14:41Z)
+
+Path-only, robots-allowed, 200 in 129,186 B (`f4249ca…6115c`): a table with **67
+match-code links, 34 distinct codes and 35 colon scores**. The page also contains the
+string "No matches found", which is a hidden empty-state template rather than a verdict
+on the table — the reason `index_signals` reports that hint *beside* the counts instead
+of letting it decide anything.
+
+34 games is a season-to-date: this is the entry point the lane lacked, because its
+fixtures table holds only future rows and the capture tool derives candidates from
+finished rows on that table. `--index` was added for exactly this shape.
+
+One thing the counts cannot answer is what a row looks like, and a parser written from
+counts is a guess with a digest attached. `--index` therefore now saves a 2 KB window
+around the first match code as `results-index-window.txt`. That is the artifact the
+reader gets written against, and the same command yields one for WCBA and NKL.
+
+## China, the 42 bytes (2026-11-24T14:41Z)
+
+```json
+{"data":[],"status":0,"message":"success"}
+```
+
+Not a refusal wearing a 200: `status` is 0 and the message says success. Round 1 holds
+no game for team 1, which is a statement about the round rather than about the route.
+So the grid is accepted end to end and the remaining question is *which* round carries
+games — a scoping question, answerable by walking one team across rounds inside the same
+40-request budget.

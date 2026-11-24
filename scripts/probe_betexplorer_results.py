@@ -126,6 +126,26 @@ def index_signals(body: str) -> dict[str, object]:
     }
 
 
+#: How much of the first match's markup to keep.  Enough to hold a whole table row
+#: and the two headers above it, small enough to read in one go.
+WINDOW_CHARS = 2000
+
+
+def first_match_window(body: str) -> str:
+    """The bytes around the first match code: the row, not the whole page.
+
+    A count says the page carries 34 codes; it does not say what a row looks like.
+    This is the smallest artifact that does, and it is saved with the page so the
+    parser can be written against captured markup instead of a description of it.
+    """
+
+    found = _CODE_LINK_RE.search(body)
+    if not found:
+        return ""
+    start = max(0, found.start() - 600)
+    return body[start : start + WINDOW_CHARS]
+
+
 def capture_index(league: str, *, out_dir: Path, read_text) -> dict[str, object]:
     """Save the league's results page verbatim and report its shape."""
 
@@ -140,12 +160,18 @@ def capture_index(league: str, *, out_dir: Path, read_text) -> dict[str, object]
     if body:
         path = out_dir / "results-index.html"
         path.write_text(body, encoding="utf-8")
+        window = first_match_window(body)
+        window_path = out_dir / "results-index-window.txt"
+        if window:
+            window_path.write_text(window, encoding="utf-8")
         record.update(
             {
                 "status": "captured",
                 "bytes": len(body.encode("utf-8")),
                 "sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
                 "path": str(path),
+                "window_chars": len(window),
+                "window_path": str(window_path) if window else None,
                 **index_signals(body),
             }
         )
