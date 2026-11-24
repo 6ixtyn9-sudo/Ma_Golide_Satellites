@@ -297,12 +297,20 @@ partial market locking the date.
 
 Before the cutoff, that single dated card also carries a clearly labelled
 `DRAFT ONLY` / `PRE-CUTOFF` named-price draft section: it may display one
-current exact pre-tip named-book price per game. Unresolved source-permission
+current exact pre-tip price per game. Unresolved source-permission
 and operational-validation labels remain audit metadata; they do not
-independently block that named-book quote from the paper-ticket lane. Legs are labelled
-**NAMED-BOOK PRICE** or **RESEARCH-ONLY**, preserve their model/calibration/ROI
+independently block that quote from the paper-ticket lane. Legs are labelled
+**NAMED-BOOK PRICE**, **AGGREGATE-CONSENSUS PRICE — NOT A NAMED-BOOK QUOTE**, or
+**NOT TICKET-ELIGIBLE EVIDENCE**, preserve their model/calibration/ROI
 blockers, rank only by forecast confidence (not a fabricated EV), and create
 no receipt, stake, grade, bank/performance entry, or real-money instruction.
+
+Since 2026-11-22 an aggregate consensus average is a paper-ticket price
+(`TICKET_PRICE_PROVENANCE`): it is an observed number with a published
+provenance, and refusing it left eleven aggregate-only lanes publishing nothing
+but `(none)` for ever. It is never relabelled a bookmaker quote -- every card
+line, receipt field, and audit row carries the provenance and its label. A
+`no_price` record and a bare exchange match remain outside the lane.
 There is no separate preview sidecar artifact; a strict receipt or immutable
 no-bet decision renders the terminal card without any draft section.
 

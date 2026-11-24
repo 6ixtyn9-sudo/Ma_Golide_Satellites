@@ -57,6 +57,7 @@ from ingestion.models import (
 )
 
 from .types import (
+    TICKET_PRICE_PROVENANCE,
     BookEvidence,
     Forecast,
     _period_scores,
@@ -435,6 +436,31 @@ def _prior_heavy_disclosure(row: Dict[str, Any]) -> str:
     )
 
 
+def _thin_evidence_disclosure(row: Dict[str, Any]) -> str:
+    """Name the shortfall on a pick that is eligible despite thin evidence.
+
+    Same numbers the prior-heavy disclosure uses, worded for a row that *is* a
+    pick: the reader is told the club evidence is thin, not that the row is
+    excluded.
+    """
+
+    history = row.get("team_history") or {}
+
+    def _games(value: Any) -> str:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return "n/a"
+        return f"{float(value):.1f}"
+
+    required = _games(history.get("required_effective_games_per_team"))
+    return (
+        "      thin team evidence · effective games "
+        f"home={_games(history.get('home_effective_games'))}/{required} "
+        f"away={_games(history.get('away_effective_games'))}/{required} "
+        "· recency-weighted and shrunk to the league mean "
+        "· still a paper pick, not a sufficient-sample claim"
+    )
+
+
 def _price_evidence(forecast: Dict[str, Any]) -> str:
     """Render price provenance without upgrading an aggregate quote to a book."""
 
@@ -451,6 +477,19 @@ def _price_evidence(forecast: Dict[str, Any]) -> str:
     if book:
         return "MATCHED_BUT_SELECTED_PRICE_MISSING"
     return "UNMATCHED"
+
+
+def _book_price_label(book: Dict[str, Any]) -> str:
+    """Name what priced this leg, without upgrading an average to a book."""
+
+    provenance = book.get("price_provenance")
+    if provenance == PriceProvenance.AGGREGATE_CONSENSUS.value:
+        return "AGGREGATE-CONSENSUS PRICE — NOT A NAMED-BOOK QUOTE"
+    if provenance == PriceProvenance.EXCHANGE.value:
+        return "EXCHANGE PRICE — NOT A NAMED-BOOK QUOTE"
+    if book.get("ticket_price_eligible") is True:
+        return "NAMED-BOOK PRICE"
+    return "NOT TICKET-ELIGIBLE EVIDENCE"
 
 
 def _has_exact_selected_price(row: Dict[str, Any]) -> bool:
@@ -1370,6 +1409,14 @@ def _render_picks(
             f"n={calibration.get('n', 0)} · reasons={reasons} "
             f"· prediction={(row.get('prediction') or {}).get('provider', 'history')}"
         )
+        advisory_list = list(eligibility.get("advisories") or [])
+        advisories = ",".join(advisory_list)
+        if advisories:
+            # Named, not hidden: the row is a pick, and the reader is still
+            # told that its evidence is thin so the pick can be weighted.
+            lines.append(f"      evidence_advisories={advisories}")
+        if "insufficient_team_specific_history" in advisory_list:
+            lines.append(_thin_evidence_disclosure(row))
         if bucket == "PRIOR_HEAVY":
             lines.append(_prior_heavy_disclosure(row))
         roi_band = row.get("paper_roi_band")
@@ -1387,6 +1434,11 @@ def _render_picks(
                 else "n/a"
             )
             status = "PAPER SINGLE" if row.get("paper_roi_band_eligible") else "ROI-BAND BLOCKED"
+            if (
+                row.get("paper_roi_band_eligible")
+                and roi_band.get("qualification_basis") == "cold_start_no_settled_history"
+            ):
+                status = "PAPER SINGLE · COLD START (lane has settled nothing yet)"
             lines.append(
                 f"      {status} · {roi_band.get('market', 'unknown')} "
                 f"{roi_band.get('period', 'unknown')} · p {roi_band.get('probability_band', 'unknown')} "
@@ -4370,7 +4422,10 @@ def _named_price_draft_candidates(
         book = row.get("book")
         if not isinstance(book, dict) or not _has_exact_selected_price(row):
             continue
-        if book.get("price_provenance") not in {None, PriceProvenance.NAMED_BOOK.value}:
+        provenance = book.get("price_provenance")
+        if provenance is not None and provenance not in {
+            item.value for item in TICKET_PRICE_PROVENANCE
+        }:
             continue
         if not str(book.get("book") or "").strip() or book.get("pre_match") is not True:
             continue
@@ -4459,7 +4514,7 @@ def _render_named_price_draft_section(
             book = row["book"]
             probability, basis = _confidence_probability(row)
             reasons = ",".join((row.get("eligibility") or {}).get("reasons") or []) or "none"
-            validation = "NAMED-BOOK PRICE" if book.get("ticket_price_eligible") is True else "RESEARCH-ONLY"
+            validation = _book_price_label(book)
             lines.append(
                 f"    [{validation}] {row.get('home')} vs {row.get('away')} · "
                 f"{_selection_label(row)} · @{float(book['selected_decimal_price']):.3f} {book.get('book')} · "

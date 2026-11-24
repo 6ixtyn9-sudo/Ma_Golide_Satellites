@@ -233,6 +233,7 @@ def filter_paper_candidate_picks(
     minimum_historical_picks_for_band: int = 1,
     require_positive_expected_value: bool = False,
     require_point_in_time_price: bool = False,
+    admit_cold_start_bands: bool = True,
 ) -> tuple[List[Forecast], dict]:
     """Route paper picks through adaptive, market-specific positive-ROI bands.
 
@@ -244,6 +245,18 @@ def filter_paper_candidate_picks(
     pick, positive recency-weighted ROI, and positive adjusted ROI. There is no
     long sample-size qualification period and an unseen band cannot inherit
     eligibility merely from a positive parent baseline.
+
+    Cold start (operator decision 2026-11-22)
+    -----------------------------------------
+    A band is admitted *once* while the lane has settled nothing at all: if
+    ``historical_count`` is zero there is no ROI to require, and refusing every
+    band would deadlock a new lane permanently -- it can never settle the picks
+    that would qualify it. That admission is narrow and self-terminating: it
+    applies only when the whole scope has zero settled individual picks, only to
+    bands with zero history, and it stops the moment one pick settles. Each
+    admitted band is stamped ``qualification_basis=cold_start_no_settled_history``
+    in ``bands`` and counted in ``cold_start`` so a reader can see it was an
+    admission, not a measured ROI.
     """
     for name, value, allow_zero in (
         ("ROI-band half-life", half_life_days, False),
@@ -269,6 +282,8 @@ def filter_paper_candidate_picks(
         raise ValueError("require_positive_expected_value must be a boolean")
     if not isinstance(require_point_in_time_price, bool):
         raise ValueError("require_point_in_time_price must be a boolean")
+    if not isinstance(admit_cold_start_bands, bool):
+        raise ValueError("admit_cold_start_bands must be a boolean")
     as_of = parse_utc(as_of_utc)
     history_cutoff = as_of - timedelta(hours=float(result_available_after_hours))
     candidate_pool = _eligible_candidate_picks(forecasts, allow_provisional=True)
@@ -409,7 +424,12 @@ def filter_paper_candidate_picks(
             if stats["count"]
             else None
         )
-        qualifies = (
+        cold_start = (
+            admit_cold_start_bands
+            and historical_count == 0
+            and stats["count"] == 0
+        )
+        qualifies = cold_start or (
             stats["count"] >= minimum_historical_picks_for_band
             and weighted_roi is not None
             and weighted_roi > 0.0
@@ -454,6 +474,13 @@ def filter_paper_candidate_picks(
             "parent_roi": round(parent_roi, 6) if parent_roi is not None else None,
             "adjusted_roi": round(adjusted_roi, 6) if adjusted_roi is not None else None,
             "qualifies": qualifies,
+            "qualification_basis": (
+                "cold_start_no_settled_history"
+                if cold_start
+                else "measured_positive_recency_weighted_and_adjusted_roi"
+                if qualifies
+                else "rejected"
+            ),
         }
         band_reports.append(details)
         for row in rows:
@@ -500,6 +527,15 @@ def filter_paper_candidate_picks(
         "minimum_historical_pick_count_for_band": minimum_historical_picks_for_band,
         "require_positive_expected_value": require_positive_expected_value,
         "require_point_in_time_price": require_point_in_time_price,
+        "cold_start_admission": {
+            "enabled": admit_cold_start_bands,
+            "applies_when_lane_settled_pick_count_is_zero": True,
+            "admitted_band_count": sum(
+                row.get("qualification_basis") == "cold_start_no_settled_history"
+                for row in band_reports
+            ),
+            "applied_this_run": admit_cold_start_bands and historical_count == 0,
+        },
         "candidate_pool_pick_count": len(candidate_pool),
         "candidate_with_point_in_time_price_count": len(scoped_candidates),
         "candidate_positive_expected_value_count": len(candidates),
@@ -521,6 +557,8 @@ def filter_paper_candidate_picks(
             if not scoped_candidates
             else "no_positive_expected_value_candidates"
             if not candidates
+            else "applied_cold_start_no_settled_history"
+            if not historical_count and qualifying
             else "no_settled_historical_picks"
             if not historical_count
             else "applied"

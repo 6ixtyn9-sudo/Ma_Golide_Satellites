@@ -419,7 +419,7 @@ def test_walk_forward_diagnostics_count_result_delay_withheld_replay_rows():
     )
 
 
-def test_service_routes_sample_only_candidates_to_paper_results():
+def test_service_publishes_sample_only_candidates_as_picks():
     report = service(
         populated_store(), min_calibration_samples=30
     ).build_report(as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4)
@@ -441,34 +441,42 @@ def test_service_routes_sample_only_candidates_to_paper_results():
     assert pick_filter["minimum_historical_pick_count_for_band"] == 1
     assert pick_filter["candidate_pick_count"] >= pick_filter["qualifying_pick_count"]
     assert pick_filter["qualifying_pick_count"] >= 2
-    assert accas["eligible_games"] == accas["strict_eligible_games"] == 0
-    assert accas["results"] == accas["strict_results"] == []
+    # Operator decision 2026-11-22: a short walk-forward sample is an advisory.
+    # These three priced rows are eligible picks and build real combinations;
+    # nothing here claims the sample was sufficient.
+    assert accas["eligible_games"] == accas["strict_eligible_games"] == 3
+    assert accas["results"] and accas["strict_results"]
     assert accas["paper_results"]
     assert accas["paper_result_count"] == len(accas["paper_results"])
-    assert accas["provisional_sample_only_rows"] > 0
-    assert accas["provisional_sample_only_games"] == 3
+    assert accas["provisional_sample_only_rows"] == 0
     assert accas["paper_candidate_games"] == 3
     assert report["execution"]["external_betting_writes"] is False
 
     used_paper_leg_keys = set()
     for acca in accas["paper_results"]:
-        assert acca["provisional_sample_gate_bypassed"] is True
-        assert acca["provisional_leg_count"] == 2
-        assert acca["ranking_status"] == "paper_only_provisional_sample_gate_bypassed"
+        assert acca["provisional_sample_gate_bypassed"] is False
+        assert acca["provisional_leg_count"] == 0
+        assert acca["ranking_status"] == "paper_only_strict_gates_passed"
         assert acca["ticket_leg_reuse_policy"] == "no_reused_wager_selections"
         assert acca["individual_pick_filter"] == pick_filter
         leg_keys = {_paper_leg_key(leg) for leg in acca["legs"]}
         assert used_paper_leg_keys.isdisjoint(leg_keys)
         used_paper_leg_keys.update(leg_keys)
         for leg in acca["legs"]:
-            assert leg["eligibility"]["acca_eligible"] is False
-            assert leg["eligibility"]["reasons"] == ["insufficient_walk_forward_samples"]
+            assert leg["eligibility"]["acca_eligible"] is True
+            assert leg["eligibility"]["reasons"] == []
+            assert "insufficient_walk_forward_samples" in leg["eligibility"]["advisories"]
             assert leg["calibration"]["status"] == "provisional"
             assert 0 < leg["calibration"]["n"] < leg["calibration"]["minimum_samples"]
             assert leg["book"]["selected_decimal_price"] > 1.0
             band = pick_filter["candidate_band_details"][leg["forecast_id"]]
             assert band["qualifies"] is True
-            assert band["historical_pick_count"] >= 1
+            # Either measured on settled picks, or an explicit cold start.
+            # Never silently "qualified" with neither basis named.
+            assert band["qualification_basis"] in {
+                "measured_positive_recency_weighted_and_adjusted_roi",
+                "cold_start_no_settled_history",
+            }
 
 
 def test_empty_settled_pick_audit_uses_past_only_prequential_roi_history():
@@ -810,7 +818,7 @@ def test_full_game_history_moneyline_earns_calibration_without_provider_history(
             assert leg["model"] == "team_history_empirical"
 
 
-def test_league_prior_dominated_history_moneyline_cannot_supply_accas():
+def test_league_prior_dominated_history_moneyline_is_a_labelled_pick():
     store = populated_store(finals=12, upcoming=3)
     store.predictions = {}
     store.frozen_predictions = {}
@@ -848,10 +856,14 @@ def test_league_prior_dominated_history_moneyline_cannot_supply_accas():
         evidence = row["team_history"]
         assert evidence["required_effective_games_per_team"] == 8.0
         assert evidence["sufficient_for_accas"] is False
-        assert row["eligibility"]["acca_eligible"] is False
-        assert "insufficient_team_specific_history" in row["eligibility"]["reasons"]
-    assert report["accas"]["results"] == []
-    assert report["accas"]["eligible_games"] == 0
+        # Operator decision 2026-11-22: a prior-dominated forecast is a pick
+        # that says so, rather than a row that is silently discarded. The
+        # team-history flag is still reported -- as an advisory.
+        assert row["eligibility"]["acca_eligible"] is True
+        assert row["eligibility"]["reasons"] == []
+        assert "insufficient_team_specific_history" in row["eligibility"]["advisories"]
+    assert report["accas"]["results"]
+    assert report["accas"]["eligible_games"] == 3
     # Fallback rows cannot manufacture eligible calibration, but diagnostics pool is visible.
     assert report["walk_forward"]["segments"]
     assert all(
@@ -1001,9 +1013,11 @@ def test_provider_only_forecasts_do_not_need_internal_team_history():
     history_model_target = _forecast("history-target", 0.8)
     history_model_target.source = "team_history_empirical"
     apply_profiles([history_model_target], provider_profile, config)
-    assert history_model_target.eligibility["acca_eligible"] is False
+    # Same advisory-not-refusal rule for a team-history forecast with thin
+    # club evidence: it stays a pick and carries the shortfall on the row.
+    assert history_model_target.eligibility["acca_eligible"] is True
     assert "insufficient_team_specific_history" in history_model_target.eligibility[
-        "reasons"
+        "advisories"
     ]
 
 
@@ -1285,10 +1299,21 @@ def test_paper_accas_admit_only_provisional_sample_only_legs():
     filtered, quality = filter_paper_candidate_picks(
         [provisional, strict], as_of_utc=as_of
     )
-    assert filtered == []
+    # Nothing has settled in this scope, so there is no ROI to require. The
+    # cold-start admission lets the lane publish the picks it would otherwise
+    # never be able to settle, and stamps that it did.
+    assert {row.game_id for row in filtered} == {"g0", "g1"}
     assert quality["candidate_pick_count"] == 2
-    assert quality["qualifying_pick_count"] == 0
-    assert quality["status"] == "no_settled_historical_picks"
+    assert quality["qualifying_pick_count"] == 2
+    assert quality["status"] == "applied_cold_start_no_settled_history"
+    assert quality["cold_start_admission"]["applied_this_run"] is True
+    assert quality["cold_start_admission"]["admitted_band_count"] == 2
+    # Turning the admission off restores the old deadlock exactly.
+    _, strict_again = filter_paper_candidate_picks(
+        [provisional, strict], as_of_utc=as_of, admit_cold_start_bands=False
+    )
+    assert strict_again["qualifying_pick_count"] == 0
+    assert strict_again["status"] == "no_settled_historical_picks"
 
     strict_history = _roi_forecast(
         "past-strict", 0.81, 1.8, "win", scheduled_utc="2026-02-08T20:00:00Z"
@@ -1467,9 +1492,14 @@ def test_paper_roi_filter_excludes_future_and_not_yet_available_settlements():
     qualifying, summary = filter_paper_candidate_picks(
         [candidate], [future, too_recent], as_of_utc=as_of
     )
-    assert qualifying == []
+    # A future result and a result still inside its availability window are
+    # never counted as history: the sample stays zero, and the band is admitted
+    # only as an explicit cold start rather than on an imagined ROI.
     assert summary["historical_unique_pick_count"] == 0
-    assert summary["status"] == "no_settled_historical_picks"
+    (band,) = summary["bands"]
+    assert band["historical_pick_count"] == 0
+    assert band["qualifies"] is True
+    assert band["qualification_basis"] == "cold_start_no_settled_history"
 
 
 @pytest.mark.parametrize(

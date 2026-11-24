@@ -355,10 +355,10 @@ def test_dual_sided_ncaa_bpi_matches_full_game_moneyline_book(load_fixture, fixt
     assert forecast["raw_probability"] == pytest.approx(0.5847)
     assert forecast["book"]["book"] == "DraftKings"
     assert forecast["book"]["selected_decimal_price"] == 1.75
-    assert not forecast["eligibility"]["acca_eligible"]
-    assert "insufficient_walk_forward_samples" in forecast["eligibility"]["reasons"]
-    assert report["accas"]["results"] == []
-    assert report["accas"]["eligible_games"] == 0
+    # Operator decision 2026-11-22: a real named-book quote on a forecast with
+    # no settled sample is a live paper candidate, not a permanent refusal.
+    assert forecast["eligibility"]["acca_eligible"] is True
+    assert "insufficient_walk_forward_samples" in forecast["eligibility"]["advisories"]
 
 
 def test_ncaa_pipeline_uses_espn_and_native_half_books(monkeypatch):

@@ -11,6 +11,12 @@ rule that a league-mean prior is not team evidence.  The compromise asserted
 here: the row is rendered in its own labelled bucket with the shortfall stated
 numerically, while eligibility (``acca_eligible``) is left exactly as the model
 computed it -- no acca leg, no ticket, no ROI band promotion.
+
+Superseded in part by operator decision 2026-11-22: ``apply_profiles`` no longer
+emits this reason at all, so a *new* thin row is an eligible pick carrying
+``advisories`` instead of a skipped one. This bucket therefore survives for the
+dated ledgers already written under the old contract -- which is why these tests
+build their rows by hand rather than from a live forecast.
 """
 
 from forecasting.accas import is_provisional_sample_only

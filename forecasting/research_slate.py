@@ -7,9 +7,11 @@ pick row. Two different reasons, both structural:
 
 * Greece, WCBA and WNBL produce no forecast at all. Nothing scores their fixtures,
   so the card has nothing to label.
-* NKL does have a results source, so a forecast exists, but its price is the site
-  average (``aggregate_consensus``), which fails
-  ``price_not_named_bookmaker_quote`` and is bucketed ``SKIPPED_INELIGIBLE``.
+* NKL does have a results source, so a forecast exists. Since operator decision
+  2026-11-22 its site-average price is ticket-eligible, so the ordinary lane now
+  publishes it -- this module is no longer the only view of that lane, and the
+  two are deliberately separate: a forecast from the model, and a score from a
+  published table.
 
 Both end in the same place: a lane that quotes fixtures and prices but never says
 anything about who wins. This module says something -- and says exactly what it is.
@@ -78,9 +80,11 @@ It is not a probability. ``uncalibrated_logistic_pct`` is
 number and never as a price, and the card says so on every line.
 
 It is not a ticket leg. ``acca_eligible`` is ``False`` on every row, always -- not
-because a gate happened to fail today, but because a site average is not a
-named-book quote and no amount of research labelling changes that. Nothing here
-touches a stake, a receipt, a bank balance or ROI.
+because a gate happened to fail today, but because this is a score from a
+standings table, not a calibrated forecast, and the three lanes it serves have no
+settlement route at all. A paper slip priced at an observed average is a
+different object from a graded ticket, and nothing here touches a stake, a
+receipt, a bank balance or ROI.
 
 What a research ticket is
 -------------------------

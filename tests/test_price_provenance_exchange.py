@@ -73,7 +73,11 @@ def test_an_exchange_quote_can_be_graded_but_never_paper_ticketed():
 
     assert exchange.ticket_price_eligible is False
     assert named.ticket_price_eligible is True  # the lane itself still works
-    assert aggregate.ticket_price_eligible is False
+    # Operator decision 2026-11-22 accepts the consensus average as a paper
+    # price; an exchange match is still nobody's bookmaker quote.
+    assert aggregate.ticket_price_eligible is True
+    assert aggregate.price_provenance is PriceProvenance.AGGREGATE_CONSENSUS
+    assert "NOT A NAMED-BOOK QUOTE" in aggregate.price_provenance_label
     # The price is still there to grade against -- refusing the ticket is not
     # the same as discarding the observation.
     assert exchange.prices["home"] == 1.98
