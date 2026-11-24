@@ -177,6 +177,19 @@ KEYS: Dict[str, ConfigKey] = {
         #: eligible priced picks sat at 1.20 or better, so the floor costs nothing
         #: but the absurd tickets.
         _key("minTicketLegOdds", 1.20, "float", 1.0, 5.0, "ticket"),
+        #: The most expensive leg a paper ticket may carry. A ceiling, not a
+        #: target: it keeps the ranking inside prices the model can speak about.
+        #: Above it the model's claimed edge explodes -- on 2026-11-24 it rated
+        #: Rice p=72% against a 3.50 quote (+152% claimed), and a blend that was
+        #: allowed to reach that leg assembled a 10.4 acca claiming +194% EV.
+        _key("maxTicketLegOdds", 3.00, "float", 1.0, 20.0, "ticket"),
+        #: How much of a ticket's ranking is price rather than probability.
+        #: 0.0 reproduces "maximise joint probability", which walks to the
+        #: shortest prices on the board; 1.0 chases the longest. 0.15 is measured
+        #: on the 2026-11-24 NCAA_M slate: it keeps the top ticket at @2.09 with
+        #: a 48.9% joint probability (EV +2%), where 0.35 produced @10.41 at a
+        #: claimed +194% -- the model's overclaim, not an opportunity.
+        _key("ticketRankingPriceWeight", 0.15, "float", 0.0, 1.0, "ticket"),
         _key("threshold", 25.0, "float", 0.0, 100.0, "tiers"),
         _key("tier_weak_min_score", 50.0, "float", 0.0, 200.0, "tiers"),
         _key("tier_medium_min_score", 60.0, "float", 0.0, 200.0, "tiers"),

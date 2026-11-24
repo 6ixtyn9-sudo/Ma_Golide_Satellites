@@ -6,7 +6,7 @@ import hashlib
 import heapq
 import math
 from datetime import timedelta
-from typing import Dict, Iterable, List, Tuple
+from typing import Dict, Iterable, List, Optional, Tuple
 
 from ingestion.identity import parse_utc
 
@@ -21,6 +21,53 @@ from .types import Forecast
 #: The lane still had 376 priced, eligible picks at 1.20 or better, so the floor
 #: removes the absurd tickets and nothing else.
 MIN_TICKET_LEG_DECIMAL = float(BET_CONFIG_DEFAULTS["minTicketLegOdds"])
+
+#: The most expensive price a paper ticket leg may carry (``maxTicketLegOdds``).
+#: A ceiling keeps the price-aware ranking inside the range the local model can
+#: actually speak about: on 2026-11-24 it rated Rice at p=72% against a 3.50
+#: quote (+152% claimed edge), and a ranking free to reach that leg assembled a
+#: 10.4 acca claiming +194% expected value -- a model overclaim dressed up as an
+#: opportunity. With the ceiling the same slate's best ticket was @2.09.
+MAX_TICKET_LEG_DECIMAL = float(BET_CONFIG_DEFAULTS["maxTicketLegOdds"])
+
+#: How much of a ticket's ranking is price rather than probability, from the
+#: data-driven config (``ticketRankingPriceWeight``). Ranking by probability
+#: alone is not neutral: it always walks to the shortest prices on the board,
+#: which is how five NCAA_M "3-leg accas" arrived at @1.003 on 2026-11-24 even
+#: though the floor now blocks the individual 1.001 legs. A blend keeps
+#: probability primary and lets a 1.90 leg outrank a 1.22 leg when the
+#: probabilities are close, which is what a bill of bets actually wants.
+TICKET_RANKING_PRICE_WEIGHT = float(BET_CONFIG_DEFAULTS["ticketRankingPriceWeight"])
+
+
+def _ticket_ranking_score(
+    row: Forecast, *, price_weight: Optional[float] = None
+) -> float:
+    """A ticket leg's ranking score: ``log p`` blended with ``log price``.
+
+    ``price_weight=0.0`` reproduces the old pure-probability ranking;
+    ``price_weight=0.5`` is the log of ``p * price`` (expected value per unit);
+    ``price_weight=1.0`` chases price alone. The default sits at 0.35 because
+    the model's edge over the market is small, so a full EV ranking would mostly
+    rank noise, while ignoring price entirely produced tickets that could not
+    pay for their own risk.
+
+    The score is additive across legs, which is what keeps the k-best
+    enumeration in :func:`build_accas` valid.
+    """
+
+    weight = TICKET_RANKING_PRICE_WEIGHT if price_weight is None else price_weight
+    probability = float(row.calibrated_probability or 0.0)
+    price = float(row.decimal_price or 0.0)
+    if not (0.0 < probability <= 1.0) or price <= 1.0:
+        return float("-inf")
+    return (1.0 - weight) * math.log(probability) + weight * math.log(price)
+
+
+def _ticket_rank(row: Forecast) -> tuple:
+    """Sort key: blended ticket score first, then the stable identity ties."""
+
+    return (-_ticket_ranking_score(row), row.game_id, *_candidate_rank(row)[1:])
 
 
 def is_provisional_sample_only(forecast: Forecast) -> bool:
@@ -77,9 +124,10 @@ def _eligible_candidate_picks(
 ) -> List[Forecast]:
     """Return one usable model row per exact wager selection.
 
-    A row cheaper than :data:`MIN_TICKET_LEG_DECIMAL` is not usable for a paper
-    ticket and is dropped here, before bands, singles or acca legs are built, so
-    every downstream count agrees on what is on the table.
+    A row priced outside ``[MIN_TICKET_LEG_DECIMAL, MAX_TICKET_LEG_DECIMAL]`` is
+    not usable for a paper ticket and is dropped here, before bands, singles or
+    acca legs are built, so every downstream count agrees on what is on the
+    table.
     """
     by_wager: Dict[Tuple[str, str, str, str, str, str], Forecast] = {}
     for forecast in forecasts:
@@ -95,7 +143,7 @@ def _eligible_candidate_picks(
             or not 0.0 < probability <= 1.0
             or price is None
             or not math.isfinite(price)
-            or price < MIN_TICKET_LEG_DECIMAL
+            or not MIN_TICKET_LEG_DECIMAL <= price <= MAX_TICKET_LEG_DECIMAL
         ):
             continue
         wager_key = _wager_leg_key(
@@ -121,8 +169,11 @@ def _best_leg_per_game(
     ):
         grouped.setdefault(forecast.game_id, []).append(forecast)
     best = [rows[0] for rows in grouped.values()]
-    # Price is payout evidence, never a ranking signal. Stable identities are
-    # the only tie-breakers after calibrated probability.
+    # One best row per fixture: calibrated probability first, then stable
+    # identities. Price enters the *ticket* ranking later
+    # (``_ticket_ranking_score``), not the choice of which row represents a
+    # fixture -- otherwise a long-priced row could stand in for a short-priced
+    # one of the same game.
     best.sort(
         key=lambda row: (
             -(row.calibrated_probability or 0.0),
@@ -620,7 +671,15 @@ def build_accas(
     allow_provisional: bool = False,
     require_disjoint_legs: bool = False,
 ) -> List[dict]:
-    """Return highest-probability accas for the requested leg count.
+    """Return best-ranked accas for the requested leg count.
+
+    Ranking is the blended probability/price score from
+    :func:`_ticket_ranking_score`, not raw joint probability, so a ticket is
+    assembled from legs that can pay rather than from whichever legs are most
+    certain. Same-game legs stay prohibited and every eligibility gate is
+    unchanged; ``estimated_joint_win_probability`` and
+    ``estimated_ev_per_unit`` are still reported so the blend never hides the
+    probability that was traded away.
 
     The optional paper path admits provisional forecasts only when insufficient
     sample size is their sole blocker and at least one graded observation exists.
@@ -681,8 +740,10 @@ def build_accas(
     candidates = _best_leg_per_game(forecasts, allow_provisional=allow_provisional)
     if len(candidates) < legs:
         return []
-    probabilities = [float(row.calibrated_probability) for row in candidates]
-    costs = [-math.log(probability) for probability in probabilities]
+    # Enumerate in ranked order: the k-best walk below assumes candidate index
+    # order is ascending cost, so the blend has to be applied before it starts.
+    candidates.sort(key=_ticket_rank)
+    costs = [-_ticket_ranking_score(row) for row in candidates]
     initial = tuple(range(legs))
     heap: List[tuple[float, Tuple[int, ...]]] = [(sum(costs[index] for index in initial), initial)]
     visited = {initial}
@@ -690,7 +751,11 @@ def build_accas(
     while heap and len(output) < limit:
         cost, state = heapq.heappop(heap)
         selected = [candidates[index] for index in state]
-        joint = math.exp(-cost)
+        # The cost is now a blended score, so the joint probability is read from
+        # the probabilities rather than assumed to be ``exp(-cost)``.
+        joint = math.exp(
+            sum(math.log(float(row.calibrated_probability)) for row in selected)
+        )
         decimal_odds = math.prod(float(row.decimal_price) for row in selected)
         leg_ids = [row.forecast_id for row in selected]
         provisional_leg_count = sum(is_provisional_sample_only(row) for row in selected)
@@ -707,7 +772,9 @@ def build_accas(
                 "combined_decimal_odds": round(decimal_odds, 4),
                 "bookmaker_implied_probability": round(1 / decimal_odds, 8),
                 "estimated_ev_per_unit": round(joint * decimal_odds - 1, 8),
-                "ranking_metric": "calibrated_joint_win_probability",
+                "ranking_metric": "probability_price_blend",
+                "ranking_price_weight": TICKET_RANKING_PRICE_WEIGHT,
+                "ranking_score": round(-cost, 8),
                 "ranking_status": (
                     "paper_only_provisional_sample_gate_bypassed"
                     if provisional_gate_bypassed
