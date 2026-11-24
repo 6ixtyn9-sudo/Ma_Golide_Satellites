@@ -1374,6 +1374,7 @@ class Pipeline:
     def _acquire_predictions(self, games: List[Game]) -> Dict[str, SelectionResult]:
         selections: Dict[str, SelectionResult] = {}
         now = self._now_iso()
+        self._note_prediction_capability(games)
         artifact = None
         if self.config.league_enum is League.NBA:
             try:
@@ -1460,6 +1461,60 @@ class Pipeline:
             selections[game.game_id] = selection
             self.gaps.extend(selection.gaps)
         return selections
+
+    #: Leagues with any code path that can produce a pre-tip probability.
+    #: Everything else reaches ``predictions_selected: {}`` no matter how many
+    #: fixtures it acquires: run 45250804751 logged six LBA fixtures and three
+    #: Israeli ones with a fresh named moneyline on every slate game, and
+    #: ``games_with_any_pre_tip_prediction: 0`` for both, because no source is
+    #: wired for them at all. That is a structural absence, and a lane that
+    #: cannot predict can never emit a pick.
+    PREDICTION_CAPABLE_LEAGUES = frozenset({League.NBA, League.EUROLEAGUE})
+
+    def _prediction_sources_for(self, league: League) -> List[str]:
+        sources = ["stored_pre_tip"]
+        if league in ESPN_BPI_LEAGUES:
+            sources.append("espn_bpi")
+            if league is League.NBA:
+                sources.append("hardwood")
+        if league in self.PREDICTION_CAPABLE_LEAGUES:
+            sources.append("predixsport")
+        return sources
+
+    def _note_prediction_capability(self, games: List[Game]) -> None:
+        """Name the reason a slate has no forecast source, instead of silence.
+
+        ``predictions_selected: {}`` reads identically whether the model declined
+        every game or no model was ever askable. Only the first is a result.
+        """
+
+        league = self.config.league_enum
+        sources = self._prediction_sources_for(league)
+        self.prediction_provider_status["capability"] = {
+            "league": league.value,
+            "sources": sources,
+            "games": len(games),
+        }
+        predix_wired = "predixsport" in sources
+        if not games or league in ESPN_BPI_LEAGUES or predix_wired:
+            return
+        self.gaps.append(
+            CoverageGap(
+                game_id=None,
+                required_field="pre_tip_prediction",
+                reason=CoverageState.UNSUPPORTED,
+                provider="prediction_source",
+                detail=(
+                    f"no prediction source is wired for {league.value}: the external "
+                    "forecast feed is scoped to "
+                    f"{', '.join(sorted(member.value for member in self.PREDICTION_CAPABLE_LEAGUES))}"
+                    " and this league is not an ESPN BPI lane, so these "
+                    f"{len(games)} fixtures can never reach a pick until a local "
+                    "model or a scoped feed exists"
+                )[:500],
+                observed_utc=self._now_iso(),
+            )
+        )
 
     def _predixsport_candidates_for_games(
         self, games: List[Game]
