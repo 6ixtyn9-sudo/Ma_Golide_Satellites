@@ -71,9 +71,24 @@ fixtures page, or no compliant schedule/result route at all, is a fight worth
 ending. A lane with a working adapter keeps its place even while unpriced,
 because prices can arrive later without re-deriving the fixtures.
 
-Measured on 2026-11-24 (ledgered request bodies) and **retired**: ABA League,
-Spain ACB, Italy LBA, Basketball Champions League, Basketball Africa League,
-Argentina Liga Nacional, France LNB Pro A, Germany BBL, Turkey BSL, Brazil NBB.
+Measured on 2026-11-24 and **retired**: Spain ACB, Italy LBA, Basketball
+Champions League, Basketball Africa League, Argentina Liga Nacional, France LNB
+Pro A, Germany BBL, Turkey BSL, Brazil NBB. Each of those ran for roughly 750
+scheduled runs and acquired **six games between all nine of them** (ACB, BCL,
+BAL, Argentina, France, Germany, Brazil: zero; LBA: six), per their own committed
+archive manifests.
+
+**ABA League was considered and rejected.** It looked like a fighter on the
+fixtures page — 0 of 100 rows priced — but that page only ever serves a site
+*average*, which is research-only here. Its ticket route is the direct
+named-book comparison, and it demonstrably worked: on 2026-11-22 it froze three
+priced picks (Stake.com 1.06 / 1.78 / 1.25, `named_book`, pre-match) out of 30
+logical picks, and it holds 4,252 games with finals reconciled back to 2004.
+Those three were CAUTION rather than clean only because calibration held n=13
+against a minimum of 30 walk-forward samples. A lane waiting to mature is not a
+source refusing us. `_KEPT_AFTER_REVIEW` records this, and a test asserts that
+no retired lane has a matched-price pick in its own state — the guard that
+caught the wrong call.
 The WNBA is **off-season** (April–October calendar), which is a calendar fact
 and must never be reported as a failure. The Chinese CBA stays **active**: its
 empty fixture page on the 17th–18th was the league's own break between round 8

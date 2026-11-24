@@ -608,28 +608,57 @@ _SPECS: Tuple[LeagueSpec, ...] = (
 # --------------------------------------------------------------------------
 
 _RETIRED_ON_2026_11_24: Dict[League, str] = {
-    League.ABA_LEAGUE: (
-        "recount 2026-11-24T06:53Z: 0 of 100 rows on an in-season fixtures "
-        "page carried a price"
+    # Every entry below is a lane that ran for ~750 scheduled runs and produced
+    # essentially nothing it could ever price.  The run and fixture counts come
+    # from each lane's own committed archive manifest; the row counts come from
+    # the 2026-11-24 fixtures-page probe.
+    League.SPAIN_ACB: (
+        "756 runs, 0 games ever acquired and 0 of 225 fixtures rows priced"
     ),
-    League.SPAIN_ACB: "2026-11-24: 0 of 225 fixtures rows carried a price",
-    League.ARGENTINA_LIGA_NACIONAL: "2026-11-24: 0 of 218 fixtures rows carried a price",
     League.BASKETBALL_CHAMPIONS_LEAGUE: (
-        "2026-11-24: 0 of 32 fixtures rows carried a price; season archives "
-        "serve whole-season totals only, never a pre-tip slate"
+        "760 runs, 0 games ever acquired and 0 of 32 fixtures rows priced; season "
+        "archives serve whole-season totals only, never a pre-tip slate"
     ),
     League.BASKETBALL_AFRICA_LEAGUE: (
-        "odds appear only on already-played rows; the fixtures table this "
-        "adapter reads carries none, so the lane is unpriced by construction"
+        "760 runs, 0 games ever acquired; odds appear only on already-played rows "
+        "and the fixtures table this adapter reads carries none"
+    ),
+    League.ARGENTINA_LIGA_NACIONAL: (
+        "760 runs, 0 games ever acquired and 0 of 218 fixtures rows priced"
     ),
     League.ITALY_LBA: (
-        "2026-11-24: the calendar body is byte-identical with and without the "
-        "day parameter, so only the focus day can ever be read"
+        "760 runs for 6 games; the calendar body is byte-identical with and "
+        "without the day parameter, so only the focus day can ever be read"
     ),
-    League.FRANCE_LNB_PRO_A: "no compliant date-bounded schedule/result route was validated",
-    League.GERMANY_BBL: "no compliant date-bounded schedule/result route was validated",
-    League.TURKEY_BSL: "no compliant date-bounded schedule/result route was validated",
-    League.BRAZIL_NBB: "no compliant date-bounded schedule/result route was validated",
+    League.FRANCE_LNB_PRO_A: (
+        "760 runs, 0 games: no compliant date-bounded schedule/result route was validated"
+    ),
+    League.GERMANY_BBL: (
+        "760 runs, 0 games: no compliant date-bounded schedule/result route was validated"
+    ),
+    League.TURKEY_BSL: (
+        "752 runs, 0 games: no compliant date-bounded schedule/result route was validated"
+    ),
+    League.BRAZIL_NBB: (
+        "760 runs, 0 games: no compliant date-bounded schedule/result route was validated"
+    ),
+}
+
+#: Considered for retirement on 2026-11-24 and **rejected** — recorded so the
+#: decision is not silently re-litigated.  ABA League looked like a fighter from
+#: the fixtures page (0 of 100 rows priced), but that page only ever serves a
+#: site *average*, which is research-only here.  Its ticket route is the direct
+#: named-book comparison, and that route demonstrably worked: on 2026-11-22 it
+#: produced three priced picks (Stake.com 1.06 / 1.78 / 1.25, named_book,
+#: pre-match) out of 30 logical picks.  Those three were CAUTION rather than
+#: clean only because calibration held n=13 against a minimum of 30 walk-forward
+#: samples.  That is a lane waiting to mature, not a source refusing us.
+_KEPT_AFTER_REVIEW: Dict[League, str] = {
+    League.ABA_LEAGUE: (
+        "4252 games acquired and reconciled finals back to 2004; 3 of 30 frozen "
+        "picks carried a named-book price on 2026-11-22 (betexplorer_direct, "
+        "Stake.com), CAUTION only for insufficient walk-forward samples"
+    ),
 }
 
 #: Empty fixtures page is a calendar fact here, not a measured fight.  The
@@ -769,6 +798,7 @@ def retirement_guard(league: League, *, allow_retired: bool = False) -> Optional
 
 __all__ = [
     "LaneStatus",
+    "_KEPT_AFTER_REVIEW",
     "LeagueSpec",
     "PriceSourcePolicy",
     "SPECS",

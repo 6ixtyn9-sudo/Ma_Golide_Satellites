@@ -56,7 +56,6 @@ def test_dark_lane_population_is_exactly_the_measured_one():
 
     retired = {spec.league.value for spec in SPECS if spec.status is LaneStatus.RETIRED}
     assert retired == {
-        "ABA_LEAGUE",
         "ARGENTINA_LIGA_NACIONAL",
         "BASKETBALL_AFRICA_LEAGUE",
         "BASKETBALL_CHAMPIONS_LEAGUE",
@@ -72,6 +71,37 @@ def test_dark_lane_population_is_exactly_the_measured_one():
     # the calendar.
     assert league_spec(parse_league("CBA")).status is LaneStatus.ACTIVE
     assert league_spec(parse_league("WNBA")).status is LaneStatus.OFFSEASON
+    # ABA League was considered and rejected as a retirement: its own state
+    # holds priced, named-book picks, so retiring it would have been a mistake.
+    assert league_spec(parse_league("ABA_LEAGUE")).status is LaneStatus.ACTIVE
+
+
+def test_no_retired_lane_has_ever_priced_a_pick():
+    """The rule that caught a wrong retirement, kept as a guard.
+
+    A lane whose own frozen-pick state carries a matched quote has proved its
+    price leg works.  Retiring it would hide a lane that is merely young behind
+    a label that says it cannot work.
+    """
+
+    repo = Path(__file__).resolve().parents[1]
+    offenders = []
+    for spec in SPECS:
+        if spec.status is not LaneStatus.RETIRED:
+            continue
+        state = repo / "localdata" / spec.state_key / "pick_lifecycle_state.json"
+        if not state.exists():
+            continue
+        payload = json.loads(state.read_text())
+        for games in (payload.get("frozen_by_date") or {}).values():
+            for record in games.values():
+                if any(row.get("book") for row in record.get("rows") or []):
+                    offenders.append(spec.league.value)
+                    break
+    assert offenders == [], (
+        "a retired lane has a matched-price pick in its own state; revisit the "
+        f"retirement instead of hiding it: {sorted(set(offenders))}"
+    )
 
 
 @pytest.mark.parametrize("spec", DARK_SPECS, ids=lambda spec: spec.league.value)
@@ -158,7 +188,7 @@ def test_revival_is_a_one_line_flip(tmp_path: Path):
 
 
 def test_retirement_guard_names_the_reason_and_yields_to_explicit_opt_in():
-    league = parse_league("ABA_LEAGUE")
+    league = parse_league("SPAIN_ACB")
 
     refusal = retirement_guard(league)
     assert refusal is not None
