@@ -2045,12 +2045,35 @@ class Pipeline:
                     "snapshots_mapped": 0,
                     "identity_rejections": 0,
                 }
-                if hasattr(module, "last_receipt"):
+                receipt = module.last_receipt() if hasattr(module, "last_receipt") else None
+                if receipt is not None:
                     # The direct BetExplorer fallback publishes its bounded
                     # source URLs/digests and identity census here.  Keep that
                     # receipt with the report rather than hiding a no-price
                     # result behind a generic empty-provider label.
-                    self.book_provider_status[provider]["receipt"] = module.last_receipt()
+                    self.book_provider_status[provider]["receipt"] = receipt
+                if (
+                    provider == "betexplorer_direct"
+                    and not provider_snapshots
+                    and receipt
+                ):
+                    # ``fetched_no_snapshots`` alone reads like "this source has
+                    # no prices for the league". Usually the board was read and
+                    # the team names did not agree -- which is a fixable alias,
+                    # not an absent source. Say which, from the run's own bytes.
+                    diagnosis = betexplorer_direct.summarize_match_failure(receipt)
+                    self.book_provider_status[provider]["match_diagnosis"] = diagnosis
+                    if diagnosis.get("status") != "no_receipt":
+                        self.gaps.append(
+                            CoverageGap(
+                                game_id=None,
+                                required_field="book_lines",
+                                reason=CoverageState.MISSING,
+                                provider=provider,
+                                detail=str(diagnosis.get("verdict") or "")[:200],
+                                observed_utc=self._now_iso(),
+                            )
+                        )
             except Exception as exc:
                 logger.warning("%s fetch failed: %s", provider, exc)
                 self.book_provider_status[provider] = {
