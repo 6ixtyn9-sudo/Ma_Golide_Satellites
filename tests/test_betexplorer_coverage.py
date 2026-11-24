@@ -37,6 +37,10 @@ def test_the_verified_slugs_are_the_irregular_ones_served():
     assert betexplorer.FIXTURES_URLS["ITALY_LBA"].endswith("/italy/lega-a/fixtures/")
     assert betexplorer.FIXTURES_URLS["TURKEY_BSL"].endswith("/turkey/super-lig/fixtures/")
     assert betexplorer.FIXTURES_URLS["JAPAN_B_ONE"].endswith("/japan/b-league-one/fixtures/")
+    # Two divisions, two pages: the top one is not the second one by another name.
+    assert betexplorer.FIXTURES_URLS["JAPAN_B_LEAGUE"].endswith(
+        "/japan/b-league-premier/fixtures/"
+    )
     assert betexplorer.FIXTURES_URLS["SOUTH_KOREA_KBL"].endswith("/south-korea/kbl/fixtures/")
     assert betexplorer.FIXTURES_URLS["ARGENTINA_LIGA_NACIONAL"].endswith("/argentina/liga-a/fixtures/")
 
@@ -62,6 +66,7 @@ def test_new_lanes_are_aggregate_and_research_only():
         League.SPAIN_ACB,
         League.TURKEY_BSL,
         League.JAPAN_B_ONE,
+        League.JAPAN_B_LEAGUE,
         League.BASKETBALL_CHAMPIONS_LEAGUE,
     ):
         policy = [

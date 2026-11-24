@@ -85,11 +85,14 @@ FIXTURES_URLS = {
     "GERMANY_BBL": BASE + "/germany/bbl/fixtures/",
     "GREECE_BASKET_LEAGUE": BASE + "/greece/basket-league/fixtures/",
     "ISRAEL_PREMIER_LEAGUE": BASE + "/israel/super-league/fixtures/",
-    # Japan is two lanes and the captured page is the second division: the
-    # tab=2 slate matched this board page game-for-game, so it belongs to
-    # JAPAN_B_ONE. No top-division page has been captured, so the PREMIER lane
-    # claims no slug rather than guessing one -- pointing it at this page is what
-    # made every club name disagree (run 45385819819).
+    # Japan is two lanes and two pages, one each. The second division's page was
+    # matched game-for-game against its own tab=2 slate; pointing PREMIER at it is
+    # what made every club name disagree (run 45385819819). PREMIER's own page was
+    # read on 2026-11-24 by an external browser agent, which quoted the served
+    # heading "B.League Premier 2026/2027 Fixtures" and dated rows from 04.12. --
+    # that is a third-party read, so this pipeline's first live fetch is the
+    # confirmation rather than the assumption.
+    "JAPAN_B_LEAGUE": BASE + "/japan/b-league-premier/fixtures/",
     "JAPAN_B_ONE": BASE + "/japan/b-league-one/fixtures/",
     "SOUTH_KOREA_KBL": BASE + "/south-korea/kbl/fixtures/",
     "BRAZIL_NBB": BASE + "/brazil/nbb/fixtures/",

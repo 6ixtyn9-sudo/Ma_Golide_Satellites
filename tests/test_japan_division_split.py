@@ -72,17 +72,26 @@ def test_each_lane_owns_exactly_one_division_tab():
         bleague.tab_for("JAPAN_NBL")
 
 
-def test_the_captured_board_page_belongs_to_the_second_division_only():
-    """The one Japan page ever captured matched the tab=2 slate game-for-game."""
+def test_each_division_has_its_own_board_page():
+    """Two divisions, two pages, and neither borrows the other's.
+
+    The second division's page was matched game-for-game against the tab=2 slate.
+    The top division's page was read on 2026-11-24 and served the heading
+    "B.League Premier 2026/2027 Fixtures" with dated rows from 04.12. -- a
+    third-party read, which is why the comment names its provenance instead of
+    presenting it as this pipeline's own capture.
+    """
 
     assert betexplorer.FIXTURES_URLS["JAPAN_B_ONE"].endswith("/japan/b-league-one/fixtures/")
-    # PREMIER claims no slug at all: guessing one is what broke the lane.
-    assert "JAPAN_B_LEAGUE" not in betexplorer.FIXTURES_URLS
-    premier = league_spec(League.JAPAN_B_LEAGUE)
-    assert all(policy.provider != "betexplorer" for policy in premier.price_sources)
-    # The direct day-board fallback remains, and it is division-agnostic.
-    assert premier.book_providers == ("betexplorer_direct",)
-    assert "betexplorer_direct" in league_spec(League.JAPAN_B_ONE).book_providers
+    assert betexplorer.FIXTURES_URLS["JAPAN_B_LEAGUE"].endswith(
+        "/japan/b-league-premier/fixtures/"
+    )
+    assert betexplorer.FIXTURES_URLS["JAPAN_B_ONE"] != betexplorer.FIXTURES_URLS["JAPAN_B_LEAGUE"]
+    for league in (League.JAPAN_B_LEAGUE, League.JAPAN_B_ONE):
+        spec = league_spec(league)
+        assert [policy.provider for policy in spec.price_sources] == ["betexplorer"]
+        # The direct day-board fallback remains on both, and is division-agnostic.
+        assert spec.book_providers == ("betexplorer", "betexplorer_direct")
 
 
 def test_the_b_one_lane_still_gets_the_aggregate_source_it_was_captured_with():
