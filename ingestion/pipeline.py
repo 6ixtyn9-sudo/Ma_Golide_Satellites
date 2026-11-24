@@ -105,6 +105,17 @@ ESPN_BPI_LEAGUES = espn.BPI_LEAGUES
 #: a network provider: no credential, no quota, no fetch.
 HISTORY_MODEL_PROVIDER = "history_model"
 
+#: Lanes whose list route settles a game without a period split, but whose
+#: detail route carries one. A totals-only final (``PeriodKind.UNKNOWN``) is
+#: rejected by ``ActualResult.reconciles()``, so it can never enter the
+#: forecast corpus -- and the on-date results stage only repairs *today's*
+#: slate. Every earlier settled row therefore stays unreconcilable forever and
+#: the empirical model keeps fewer than ``min_history_games`` games to learn
+#: from. This registry names the lane and the detail reader that can repair it.
+DETAIL_RESULT_REFRESH = {
+    League.SOUTH_KOREA_KBL: ("kbl", kbl.fetch_game_result),
+}
+
 # Most ESPN lanes can lean on a separately validated deep-history index. NBA G
 # League cannot: only its date-bounded scoreboard/result contract is approved.
 # A cold lane therefore needs a wider *bounded calendar* bootstrap before the
@@ -182,6 +193,9 @@ class PipelineConfig:
     # dispatch inputs. Backfill acquires official results, not invented training.
     history_days: int = 21
     history_request_budget: int = 21
+    # Bounded detail re-reads per run for settled games whose stored final
+    # cannot enter the forecast corpus. Zero disables the pass.
+    history_repair_budget: int = 25
     deep_history_event_budget: int = 50
     deep_history_start_season: Optional[int] = None
     context_request_budget: int = 40
@@ -291,6 +305,7 @@ class Pipeline:
         self.book_provider_status = {}
         self.prediction_provider_status = {}
         self._history_model_declines = {}
+        self.history_repair: Dict[str, Any] = {}
 
     def _stamp_book_evidence(self, snapshot: BookSnapshot) -> BookSnapshot:
         """Apply the registry evidence contract to every acquired price quote.
@@ -495,6 +510,10 @@ class Pipeline:
         """Acquire fixtures, coherent predictions, and observed book evidence."""
 
         self._reset_stage()
+        # Repair first: the corpus this run forecasts from is whatever the store
+        # can reconcile *now*, and a settled totals-only row silently starves
+        # the empirical model instead of failing it.
+        self.history_repair = self._repair_unreconciled_history()
         games = self._discover_games()
         games = self._acquire_context(games)
         selections = self._acquire_predictions(games)
@@ -573,6 +592,7 @@ class Pipeline:
                 "prediction_provider_status": self.prediction_provider_status,
                 "book_provider_status": self.book_provider_status,
                 "espn_context": self.context_report,
+                "history_repair": self.history_repair,
             },
         )
 
@@ -857,6 +877,121 @@ class Pipeline:
             )
         )
         return stored
+
+    def _repair_unreconciled_history(self) -> Dict[str, Any]:
+        """Re-read detail for settled games whose final cannot enter the corpus.
+
+        A totals-only final cannot be reconciled, so ``forecasting.model``
+        excludes it and a lane whose list route omits period splits never
+        accumulates the twenty games ``min_history_games`` requires -- it emits
+        no forecast at all, which reads on the card exactly like a league with
+        no fixtures. ``DETAIL_RESULT_REFRESH`` names the lanes whose detail
+        route can repair that.
+
+        Bounded and newest-first: a recency-decayed model is fed by recent
+        games, and the per-run budget is a request cap, not a target. A row
+        whose detail is missing, for another game, or still unreconcilable is
+        left untouched and named in a gap -- never upgraded on faith.
+        """
+
+        refresh = DETAIL_RESULT_REFRESH.get(self.config.league_enum)
+        budget = max(0, int(self.config.history_repair_budget))
+        summary: Dict[str, Any] = {
+            "status": "disabled",
+            "provider": refresh[0] if refresh else None,
+            "request_budget": budget,
+            "candidates": 0,
+            "requests": 0,
+            "repaired": 0,
+            "still_unreconciled": 0,
+            "failed": 0,
+            "detail": "",
+        }
+        if refresh is None:
+            summary.update(
+                status="unsupported",
+                detail="this lane's list route already settles reconcilable periods, "
+                "or no detail reader is registered",
+            )
+            return summary
+        if not budget:
+            summary.update(status="disabled", detail="history_repair_budget is zero")
+            return summary
+        if not self.allow_writes or not getattr(self.store, "persist", True):
+            # Repairing history is a canonical mutation, and a dry run must not
+            # spend requests to compute a result it cannot keep.
+            summary.update(
+                status="disabled_canonical_write_required",
+                detail="dry runs cannot persist a repaired final",
+            )
+            return summary
+
+        provider, reader = refresh
+        target = parse_utc(f"{_iso(self.config.date_yyyymmdd)}T00:00:00Z")
+        candidates = [
+            game
+            for game in self.store.list_games(
+                league=self.config.league_enum, status=GameStatus.FINAL
+            )
+            if parse_utc(game.scheduled_utc) < target
+            and (game.actual is None or not game.actual.reconciles()[0])
+        ]
+        candidates.sort(key=lambda game: parse_utc(game.scheduled_utc), reverse=True)
+        summary["candidates"] = len(candidates)
+
+        transport = self.fetch if self._injected_fetch else None
+        for game in candidates[:budget]:
+            summary["requests"] += 1
+            try:
+                refreshed = reader(game, transport)
+            except Exception as exc:
+                summary["failed"] += 1
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="historical_reconciliation",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider=provider,
+                        detail=str(exc)[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            ok, reason = refreshed.actual.reconciles() if refreshed.actual else (False, "")
+            if not ok:
+                summary["still_unreconciled"] += 1
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="historical_reconciliation",
+                        reason=CoverageState.MISSING,
+                        provider=provider,
+                        detail=str(reason)[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            self.store.upsert_game(refreshed)
+            summary["repaired"] += 1
+
+        summary["status"] = "ok"
+        summary["detail"] = (
+            f"re-read {summary['requests']} of {len(candidates)} unreconcilable final(s) "
+            f"newest-first; repaired={summary['repaired']} "
+            f"still_unreconciled={summary['still_unreconciled']} failed={summary['failed']}"
+        )
+        self._record_health(
+            ProviderHealth(
+                provider=f"{provider}-history-repair",
+                league=self.config.league_enum,
+                last_attempt_utc=self._now_iso(),
+                last_success_utc=self._now_iso() if summary["repaired"] else None,
+                state=CoverageState.OK if summary["repaired"] else CoverageState.MISSING,
+                coverage=dict(summary),
+                detail=summary["detail"],
+            )
+        )
+        return summary
 
     def _stored_slate_games(self) -> List[Game]:
         """Return only canonical games already supplied by a validated import.

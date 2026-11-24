@@ -73,6 +73,17 @@ Useful options:
   does not loosen forecast, calibration, price, or ticket gates.
 - `--deep-history-events 50` bounds indexed historical summaries per
   write-enabled league run; dry runs never advance that cursor.
+- The **history repair** pass (`PipelineConfig.history_repair_budget`, default
+  25 detail reads) runs at the start of a write-enabled `pregame` for lanes in
+  `DETAIL_RESULT_REFRESH` — today only KBL, whose list route settles a final
+  with no period split. Newest-first, it re-reads the detail route for settled
+  games whose stored final cannot reconcile, replacing the totals-only record
+  with reconciled quarters. `min_history_games` and `min_residual_games` are
+  both 20, so a lane starts with an empty corpus: the first repaired run crosses
+  the baseline floor and a second crosses the residual floor before the
+  empirical model emits a forecast. A row whose detail is missing, misidentified,
+  or still unreconcilable is left untouched and named in a
+  `historical_reconciliation` gap; the pass never upgrades a final on faith.
 - `--book draftkings` and `--book-provider theoddsapi` restrict book evidence.
 - `--localdata PATH` redirects reports/ledgers/exports.
 - `--warehouse PATH` overrides the canonical DuckDB path.
