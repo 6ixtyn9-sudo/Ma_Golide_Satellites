@@ -162,3 +162,33 @@ def test_a_zero_snapshot_run_is_named_in_the_report_and_a_gap():
     gap = next(g for g in pipeline.gaps if g.required_field == "book_lines")
     assert gap.provider == "betexplorer_direct"
     assert "board row(s)" in gap.detail
+
+
+def test_a_cooldown_receipt_names_the_refusal_in_the_outer_status():
+    """A 429-cooldown receipt must not render as ``fetched_no_snapshots``.
+
+    Run 45385819819: NCAA_W / LITHUANIA_NKL / ISRAEL_LIGA_LEUMIT receipts all
+    said ``http_429_cooldown`` while the outer status string stayed
+    ``fetched_no_snapshots`` -- a refused read and a names-did-not-agree read
+    were indistinguishable by status alone.
+    """
+
+    receipt = dict(RECEIPT)
+    receipt["status"] = "http_429_cooldown"
+    pipeline = Pipeline(
+        PipelineConfig(league="SOUTH_KOREA_KBL", date_yyyymmdd="20261124"),
+        InMemoryStore(),
+        fetch=lambda url: {},
+        allow_writes=False,
+    )
+    with patch.object(betexplorer_direct, "fetch_odds", return_value=[]), patch.object(
+        betexplorer_direct, "last_receipt", return_value=receipt
+    ), patch.object(
+        betexplorer_direct, "last_gaps", return_value=[]
+    ), patch.object(
+        betexplorer_direct, "last_quota", return_value={}
+    ):
+        pipeline._acquire_book_lines([_game()], direct_fallback_only=True)
+
+    status = pipeline.book_provider_status["betexplorer_direct"]
+    assert status["status"] == "http_429_cooldown"

@@ -2173,14 +2173,50 @@ class Pipeline:
                 if provider == "betexplorer_direct":
                     provider_games = self._betexplorer_direct_fallback_games(games)
                     if not provider_games:
-                        self.book_provider_status[provider] = {
-                            "enabled": True,
-                            "status": "fallback_not_needed",
-                            "snapshots_fetched": 0,
-                            "snapshots_mapped": 0,
-                            "identity_rejections": 0,
-                            "detail": "a fresh named full-game moneyline already exists for every slate game",
-                        }
+                        selected_provider = (
+                            (self.config.book.provider or "").strip().lower()
+                        )
+                        if not games:
+                            # An empty slate makes "already exists for every
+                            # slate game" vacuously true and dishonest: no game
+                            # was priced and nothing exists to back the claim.
+                            self.book_provider_status[provider] = {
+                                "enabled": True,
+                                "status": "skipped_no_slate",
+                                "snapshots_fetched": 0,
+                                "snapshots_mapped": 0,
+                                "identity_rejections": 0,
+                                "detail": (
+                                    "no slate games survived acquisition; there is "
+                                    "nothing to price and no named-book coverage "
+                                    "claim is possible (see provider_health)"
+                                ),
+                            }
+                        elif selected_provider and selected_provider not in {
+                            "none",
+                            "betexplorer_direct",
+                        }:
+                            self.book_provider_status[provider] = {
+                                "enabled": True,
+                                "status": "skipped_provider_override",
+                                "snapshots_fetched": 0,
+                                "snapshots_mapped": 0,
+                                "identity_rejections": 0,
+                                "detail": (
+                                    f"operator selected book provider "
+                                    f"'{selected_provider}'; the direct fallback "
+                                    "is not consulted"
+                                ),
+                            }
+                        else:
+                            self.book_provider_status[provider] = {
+                                "enabled": True,
+                                "status": "fallback_not_needed",
+                                "snapshots_fetched": 0,
+                                "snapshots_mapped": 0,
+                                "identity_rejections": 0,
+                                "detail": "a fresh named full-game moneyline already exists for every slate game",
+                            }
                         continue
                 options = self._book_provider_options(provider, provider_games)
                 provider_snapshots = module.fetch_odds(
@@ -2196,18 +2232,27 @@ class Pipeline:
                 permit_deferred = any(
                     gap.required_field == "provider_credit_permit" for gap in provider_gaps
                 )
+                receipt = module.last_receipt() if hasattr(module, "last_receipt") else None
+                receipt_status = str((receipt or {}).get("status") or "").strip()
+                if permit_deferred:
+                    outer_status = "budget_permit_rejected"
+                elif provider_snapshots:
+                    outer_status = "fetched"
+                elif receipt_status and receipt_status != "success":
+                    # The adapter's own receipt names a transport-level cause
+                    # (e.g. ``http_429_cooldown``); collapse it no longer into
+                    # ``fetched_no_snapshots``, which renders a refused read
+                    # and a names-did-not-agree read identically.
+                    outer_status = receipt_status
+                else:
+                    outer_status = "fetched_no_snapshots"
                 self.book_provider_status[provider] = {
                     "enabled": True,
-                    "status": (
-                        "budget_permit_rejected"
-                        if permit_deferred
-                        else "fetched" if provider_snapshots else "fetched_no_snapshots"
-                    ),
+                    "status": outer_status,
                     "snapshots_fetched": len(provider_snapshots),
                     "snapshots_mapped": 0,
                     "identity_rejections": 0,
                 }
-                receipt = module.last_receipt() if hasattr(module, "last_receipt") else None
                 if receipt is not None:
                     # The direct BetExplorer fallback publishes its bounded
                     # source URLs/digests and identity census here.  Keep that
