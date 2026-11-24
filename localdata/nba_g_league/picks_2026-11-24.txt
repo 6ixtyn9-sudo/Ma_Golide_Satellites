@@ -1,6 +1,6 @@
 Ma Golide Picks — NBA_G_LEAGUE 2026-11-24
 ========================================================================
-Generated at: 2026-11-24 21:39 SAST
+Generated at: 2026-11-24 22:40 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -21,11 +21,6 @@ PRIOR-HEAVY — THIN TEAM EVIDENCE (PAPER ONLY)
 
 WATCHLIST — NO MATCHED ODDS
 ========================================================================
-  [provider:history_model/team_history_empirical] Oklahoma City Blue vs Austin Spurs · KO 2026-11-25 03:00 SAST
-      MONEYLINE full_game -> AWAY · p=69.2% (raw 69.2%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=4 · latest_evidence_utc=2026-11-24T19:39:34Z
   [team_history_empirical/team_history_empirical] Oklahoma City Blue vs Austin Spurs · KO 2026-11-25 03:00 SAST
       MONEYLINE full_game -> AWAY · p=69.2% (raw 69.2%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -34,19 +29,24 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE H1 -> AWAY · p=69.2% (raw 69.2%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [provider:history_model/team_history_empirical] Oklahoma City Blue vs Austin Spurs · KO 2026-11-25 03:00 SAST
+      MONEYLINE full_game -> AWAY · p=69.2% (raw 69.2%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history_model
+      archived_revisions=5 · latest_evidence_utc=2026-11-24T20:39:38Z
   [team_history_empirical/team_history_empirical] Laketown Squadron vs Osceola Magic · KO 2026-11-25 02:30 SAST
       MONEYLINE H1 -> AWAY · p=65.4% (raw 65.4%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Laketown Squadron vs Osceola Magic · KO 2026-11-25 02:30 SAST
-      MONEYLINE full_game -> AWAY · p=57.7% (raw 57.7%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [provider:history_model/team_history_empirical] Laketown Squadron vs Osceola Magic · KO 2026-11-25 02:30 SAST
       MONEYLINE full_game -> AWAY · p=57.7% (raw 57.7%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=4 · latest_evidence_utc=2026-11-24T19:39:34Z
+      archived_revisions=5 · latest_evidence_utc=2026-11-24T20:39:38Z
+  [team_history_empirical/team_history_empirical] Laketown Squadron vs Osceola Magic · KO 2026-11-25 02:30 SAST
+      MONEYLINE full_game -> AWAY · p=57.7% (raw 57.7%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
   [team_history_empirical/team_history_empirical] Laketown Squadron vs Osceola Magic · KO 2026-11-25 02:30 SAST
       HIGHEST QUARTER full_game -> Q2 · p=44.9% (raw 44.9%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -90,7 +90,7 @@ SETTLED PICKS — ARCHIVE ONLY
 Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=8 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
 Archive status: IN_PROGRESS_OR_AWAITING_RESULT=4 SETTLED=0
-Logical picks shown: 12 · superseded observations: 6
-Total archived pick evidence rows: 18
+Logical picks shown: 12 · superseded observations: 8
+Total archived pick evidence rows: 20
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.
