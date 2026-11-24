@@ -165,6 +165,27 @@ def _require_league(league: League | str) -> str:
     return value
 
 
+def match_links(html: str) -> List[Tuple[str, str]]:
+    """``(slug, match_id)`` for every fixture row a page links, in page order.
+
+    A fixtures page is the only surface that pairs a competition's clubs with the
+    match pages that mint its standings token, so this is the public way to find
+    one. Duplicates are collapsed: a fixture the page repeats should read as one
+    fixture. Nothing here resolves identity -- the caller gets the two strings the
+    URL was built from and decides what they mean.
+    """
+
+    seen: set[Tuple[str, str]] = set()
+    out: List[Tuple[str, str]] = []
+    for link in _LINK_RE.finditer(html or ""):
+        key = (link.group("slug"), link.group("match_id"))
+        if key in seen:
+            continue
+        seen.add(key)
+        out.append(key)
+    return out
+
+
 def _text_fetch(fetch_factory: Optional[Callable[[Any], Any]], text_fetch: Optional[TextFetch]):
     """HTML needs raw text, not the pipeline's JSON-parsing fetch.
 
@@ -398,6 +419,7 @@ __all__ = [
     "SITE_TZ",
     "SUPPORTED_LEAGUES",
     "evidence_for",
+    "match_links",
     "fetch_odds",
     "is_enabled",
     "last_quota",
