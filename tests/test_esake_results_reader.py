@@ -276,3 +276,53 @@ def test_the_captured_fragment_yields_identity_where_the_page_once_yielded_none(
     assert page.counts["no_identity"] == 0
     assert page.rows[0].idgame == "3C7521D5"
     assert page.counts["with_final"] == 0
+
+
+def test_a_date_cell_that_breaks_inside_the_month_name_still_reads():
+    """The served page wraps «Νοεμβρίου» across lines; a date is still a date.
+
+    Captured raw bytes carry newlines and indentation between «Νοε» and
+    «μβρίου», so the whitespace-tolerant pass is what turns 7 finals that could
+    not be dated into 7 finals that can.
+    """
+
+    html = (
+        '<div class="esake-program-game">'
+        "<h5>08η Αγωνιστική</h5>"
+        "<div>Σαβ 21 Νοε\n                μβρίου 19:00 μμ</div>"
+        '<div class="esake-program-game-final-score row equal">'
+        '<div class="col-lg-5 text-right"><span>ΑΡΗΣ</span></div>'
+        '<div class="col-lg-2 text-center"><span>84&nbsp;-&nbsp;87</span></div>'
+        '<div class="col-lg-5 text-left"><span>ΑΕΚ</span></div>'
+        "</div>"
+        '<a href="/el/action/EsakegameView?idgame=3C7521D5&mode=2">p</a>'
+        "</div>"
+    )
+
+    page = _parse(html)
+
+    assert page.counts["unresolved_date"] == 0
+    assert len(page.finals) == 1
+    assert page.finals[0].played_on == date(2026, 11, 21)
+
+
+def test_a_club_cell_that_nests_a_span_keeps_the_whole_name():
+    """`<span>(.*?)</span>` stops at the inner close tag and trims the club."""
+
+    html = (
+        '<div class="esake-program-game">'
+        '<div>Σαβ 21 Νοεμβρίου 19:00</div>'
+        '<div class="esake-program-game-final-score row equal">'
+        '<div class="col-lg-5 text-right"><span>ΚΟΛΟΣΣΟΣ <span class="x">H</span> '
+        "HOTELS</span></div>"
+        '<div class="col-lg-2 text-center"><span>99&nbsp;-&nbsp;77</span></div>'
+        '<div class="col-lg-5 text-left"><span>ΑΡΗΣ</span></div>'
+        "</div>"
+        '<a href="/el/action/EsakegameView?idgame=95F2FDAA&mode=2">p</a>'
+        "</div>"
+    )
+
+    page = _parse(html)
+
+    assert page.counts["names_ambiguous"] == 0
+    assert page.finals[0].home == "ΚΟΛΟΣΣΟΣ H HOTELS"

@@ -150,12 +150,14 @@ def checksum(body: str) -> str:
 #: excludes the script literal; the lookahead excludes the row's own parts.
 _ROW_RE = re.compile(r'class="[^"]*esake-program-game(?![\w-])[^"]*"', re.IGNORECASE)
 _LINK_RE = re.compile(r"EsakegameView\?idgame=([0-9A-Fa-f]{8})", re.IGNORECASE)
-_SPAN_RE = re.compile(r"<span\b[^>]*>(.*?)</span>", re.DOTALL | re.IGNORECASE)
+_SPAN_TAG_RE = re.compile(r"<span\b[^>]*>|</span\s*>", re.IGNORECASE)
 _TAG_RE = re.compile(r"<[^>]+>")
 _GAP = r"(?:&nbsp;|&#160;|&#xa0;|\u00a0|\s)*"
 _SCORE_RE = re.compile(rf"(?<!\d)(\d{{1,3}}){_GAP}[-–]{_GAP}(\d{{1,3}})(?!\d)")
 _TIME_RE = re.compile(r"\b([01]?\d|2[0-3]):([0-5]\d)\b")
 _DAY_MONTH_RE = re.compile(r"\b(\d{1,2})\s+([^\W\d_]{3,})", re.UNICODE)
+#: The same pair with no whitespace at all, for cells that break inside a word.
+_UNSPACED_DATE_RE = re.compile(r"(?<!\d)(\d{1,2})([^\W\d_]{3,})", re.UNICODE)
 
 #: Month labels, matched on 4 letters first because ΙΟΥΝ/ΙΟΥΛ share a prefix.
 #: Only «Νοε» is byte-verified; the rest are the conventional Greek abbreviations
@@ -237,11 +239,34 @@ def _looks_like_when(text: str) -> bool:
     return any(month_from_label(token) is not None for token in stripped.split())
 
 
+def _spans(fragment: str) -> List[str]:
+    """The contents of every outermost span, in document order.
+
+    Depth, not a non-greedy match: a club cell can nest a span inside a span, and
+    ``<span>(.*?)</span>`` stops at the *inner* close tag -- which trims the name
+    to whatever followed it rather than reading the whole cell.
+    """
+
+    found: List[str] = []
+    depth = 0
+    start = 0
+    for tag in _SPAN_TAG_RE.finditer(fragment):
+        if tag.group(0)[1] != "/":
+            if depth == 0:
+                start = tag.end()
+            depth += 1
+        else:
+            depth = max(0, depth - 1)
+            if depth == 0:
+                found.append(fragment[start : tag.start()])
+    return found
+
+
 def _club_spans(chunk: str) -> List[str]:
     """Club names in document order, from the row's own spans."""
 
     names: List[str] = []
-    for raw in _SPAN_RE.findall(chunk):
+    for raw in _spans(chunk):
         visible = _text(raw)
         if not visible or not any(ch.isalpha() for ch in visible):
             continue
@@ -312,7 +337,23 @@ def _tip(chunk: str) -> Optional[str]:
 
 
 def _day_and_month(chunk: str) -> Tuple[Optional[int], Optional[int]]:
-    for day_text, label in _DAY_MONTH_RE.findall(_text(chunk)):
+    """The day and the Greek month, reading around the page's own line breaks.
+
+    The served date cell wraps inside the month name -- the raw bytes carry
+    newlines and indentation between «Νοε» and «μβρίου» -- so a regex that
+    demands ``21<space>Νοεμβρίου`` finds nothing on a page that plainly shows a
+    date.  Whitespace inside a word is a rendering artifact, so the second pass
+    removes all of it: «Σαβ 21 Νοεμβρίου 19:00» becomes «Σαβ21Νοεμβρίου19:00»
+    and the day still bounds itself because a month name is letters.
+    """
+
+    text = _text(chunk)
+    for day_text, label in _DAY_MONTH_RE.findall(text):
+        month = month_from_label(label)
+        if month is not None:
+            return int(day_text), month
+    squeezed = "".join(text.split())
+    for day_text, label in _UNSPACED_DATE_RE.findall(squeezed):
         month = month_from_label(label)
         if month is not None:
             return int(day_text), month

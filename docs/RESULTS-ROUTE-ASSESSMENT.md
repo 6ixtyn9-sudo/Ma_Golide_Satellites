@@ -308,3 +308,62 @@ no game for team 1, which is a statement about the round rather than about the r
 So the grid is accepted end to end and the remaining question is *which* round carries
 games — a scoping question, answerable by walking one team across rounds inside the same
 40-request budget.
+
+## Greece, the route reads (2026-11-24T14:45Z)
+
+The full-page replay on the fixed reader, against the same 139,358 B body:
+
+```
+{'containers': 7, 'rows': 7, 'with_final': 0, 'without_final': 0,
+ 'names_ambiguous': 0, 'unresolved_date': 7, 'duplicate_idgame': 0, 'no_identity': 0}
+84-87, 100-64, 83-87, 99-77 …
+```
+
+Every count that used to be wrong is now right. Seven containers for seven games, seven
+identities, seven totals, zero ambiguities — and `with_final: 0`, because the only thing
+still missing is the **date**.
+
+The served date cell breaks *inside* the month name: the raw bytes carry newlines and
+indentation between «Νοε» and «μβρίου», so a pattern demanding `21<space>Νοεμβρίου` finds
+nothing on a page that plainly shows a date. Whitespace inside a word is a rendering
+artifact, so the reader now retries with all whitespace removed — «Σαβ21Νοεμβρίου19:00»
+still bounds the day, because a month name is letters and a digit run is not.
+
+A second, quieter defect surfaced in the same output: one club read as the tail of its
+own name. `<span>(.*?)</span>` stops at the *inner* close tag, so a club cell that nests
+a span loses everything after it. Span extraction is now depth-aware.
+
+Both fixes are unit-tested on the shape that produced them, and neither moves the lane
+off `source_unavailable`: what gates it now is a dated final read from the served bytes.
+
+## The aggregator's results pages, three lanes (2026-11-24T14:45Z)
+
+| lane | bytes | codes | distinct matches | colon scores |
+|---|---|---|---|---|
+| WNBL | 128,973 | 67 | 34 | 35 |
+| WCBA | 122,154 | 49 | 25 | 26 |
+| NKL | 192,203 | 279 | 140 | 141 |
+
+Three lanes that could not settle now have a page, in one command each, path-only and
+robots-allowed. NKL is the striking one: the host refuses every WP-JSON namespace that
+carries a score, and its public namespace is a calendar with no score field — while a
+140-match season sits readable on the aggregator's own results page.
+
+All three pages carry the string "No matches found" and all three carry matches, which is
+the empty-state template again. A hint is not a verdict.
+
+## China, the grid exhausted (2026-11-24T14:45Z)
+
+`teamId=1` walked across `roundId` 1–30: thirty requests, every one `200` in **42 B** with
+zero games. Combined with the earlier `roundId=1 × teamId=1..30` sweep, no coordinate in
+the ranges the errors implied contains a game.
+
+The route accepts both parameters and answers politely; what is missing is a *real* team
+id or a *real* season id, and the errors do not disclose either. That is the difference
+between "unexplored" and "exhausted", and CBA is now the second: further guessing spends
+requests without buying information.
+
+## Lithuania's sitemap (2026-11-24T14:45Z)
+
+`https://nkl.lt/wp-sitemap.xml` answers **301 in 0 B** — a redirect, not an absence. Any
+read of it needs `-L`, and the hop is the one thing to record before trusting a body.
