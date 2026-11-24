@@ -350,3 +350,25 @@ def test_the_probe_says_whether_day_scopes_the_page(monkeypatch):
 
     bleague.discover_games("2026-10-04", _transport())
     assert bleague.last_probe()["day_param"] == "scoped"
+
+
+def test_the_matcher_sees_the_english_club_name_not_the_japanese_slate_label():
+    """Why a Japanese-name alias table is the wrong fix (captured 2026-11-24).
+
+    The schedule page renders short Japanese labels (``福岡``, ``越谷``), but this
+    lane does not read names from that page: it reads the S3 context, which
+    carries ``HomeTeamNameE``/``HomeTeamNameJ``, and prefers the English field.
+    A Latin board spelling therefore agrees by ordinary normalisation; only the
+    Japanese field would need a hand-maintained pair per club, and it is never
+    the candidate. ``HomeTeamNameJ`` stays as the fallback for a context that
+    omits English, and that fallback is exactly what would fail here.
+    """
+
+    from ingestion.providers.betexplorer_direct import _team_names_agree
+
+    game = bleague._game_from_context(_context(), "506418", "2026-10-04")
+
+    assert game.home_name == "LEVANGA HOKKAIDO"  # HomeTeamNameE, per the capture
+    assert _team_names_agree("LEVANGA HOKKAIDO", "Levanga Hokkaido", league="JAPAN_B_LEAGUE")[0] is True
+    # The Japanese label is a different script: no token rule can join it.
+    assert _team_names_agree("レバンガ北海道", "Levanga Hokkaido", league="JAPAN_B_LEAGUE")[0] is False

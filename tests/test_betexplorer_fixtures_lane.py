@@ -295,3 +295,27 @@ def test_a_year_less_label_resolves_to_the_nearest_year_not_next_year():
     february = _parse_datetime("05.02. 20:00", january)
     assert december is not None and december.year == 2026
     assert february is not None and february.year == 2027
+
+
+#: Each dark results lane must carry the current state of its own settlement
+#: route in ``source_detail``. A lane that says only "no results route" reads the
+#: same whether nobody looked or somebody looked and hit a gate; the assessment
+#: of 2026-11-24 distinguished the two, and the registry is where the reports
+#: read it from.
+DARK_LANE_BLOCKERS = {
+    "GREECE_BASKET_LEAGUE": "EsakeResults",
+    "CHINA_WCBA_W": "cba.net.cn",
+    "LITHUANIA_NKL": "nkl-calendar",
+    "AUSTRALIA_WNBL_W": "unresolved",
+    "ISRAEL_LIGA_LEUMIT": "robots Disallow",
+}
+
+
+@pytest.mark.parametrize("league", sorted(DARK_LANE_BLOCKERS))
+def test_a_dark_results_lane_names_the_state_of_its_own_route(league):
+    spec = league_spec(parse_league(league))
+
+    assert spec.results_source == "source_unavailable"
+    assert "2026-11-24" in spec.source_detail
+    assert DARK_LANE_BLOCKERS[league] in spec.source_detail
+    assert "docs/RESULTS-ROUTE-ASSESSMENT.md" in spec.source_detail

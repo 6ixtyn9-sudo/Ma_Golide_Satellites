@@ -105,6 +105,17 @@ ESPN_BPI_LEAGUES = espn.BPI_LEAGUES
 #: a network provider: no credential, no quota, no fetch.
 HISTORY_MODEL_PROVIDER = "history_model"
 
+#: Lanes whose list route settles a game without a period split, but whose
+#: detail route carries one. A totals-only final (``PeriodKind.UNKNOWN``) is
+#: rejected by ``ActualResult.reconciles()``, so it can never enter the
+#: forecast corpus -- and the on-date results stage only repairs *today's*
+#: slate. Every earlier settled row therefore stays unreconcilable forever and
+#: the empirical model keeps fewer than ``min_history_games`` games to learn
+#: from. This registry names the lane and the detail reader that can repair it.
+DETAIL_RESULT_REFRESH = {
+    League.SOUTH_KOREA_KBL: ("kbl", kbl.fetch_game_result),
+}
+
 # Most ESPN lanes can lean on a separately validated deep-history index. NBA G
 # League cannot: only its date-bounded scoreboard/result contract is approved.
 # A cold lane therefore needs a wider *bounded calendar* bootstrap before the
@@ -182,6 +193,9 @@ class PipelineConfig:
     # dispatch inputs. Backfill acquires official results, not invented training.
     history_days: int = 21
     history_request_budget: int = 21
+    # Bounded detail re-reads per run for settled games whose stored final
+    # cannot enter the forecast corpus. Zero disables the pass.
+    history_repair_budget: int = 25
     deep_history_event_budget: int = 50
     deep_history_start_season: Optional[int] = None
     context_request_budget: int = 40
@@ -291,6 +305,7 @@ class Pipeline:
         self.book_provider_status = {}
         self.prediction_provider_status = {}
         self._history_model_declines = {}
+        self.history_repair: Dict[str, Any] = {}
 
     def _stamp_book_evidence(self, snapshot: BookSnapshot) -> BookSnapshot:
         """Apply the registry evidence contract to every acquired price quote.
@@ -495,6 +510,10 @@ class Pipeline:
         """Acquire fixtures, coherent predictions, and observed book evidence."""
 
         self._reset_stage()
+        # Repair first: the corpus this run forecasts from is whatever the store
+        # can reconcile *now*, and a settled totals-only row silently starves
+        # the empirical model instead of failing it.
+        self.history_repair = self._repair_unreconciled_history()
         games = self._discover_games()
         games = self._acquire_context(games)
         selections = self._acquire_predictions(games)
@@ -573,6 +592,7 @@ class Pipeline:
                 "prediction_provider_status": self.prediction_provider_status,
                 "book_provider_status": self.book_provider_status,
                 "espn_context": self.context_report,
+                "history_repair": self.history_repair,
             },
         )
 
@@ -857,6 +877,121 @@ class Pipeline:
             )
         )
         return stored
+
+    def _repair_unreconciled_history(self) -> Dict[str, Any]:
+        """Re-read detail for settled games whose final cannot enter the corpus.
+
+        A totals-only final cannot be reconciled, so ``forecasting.model``
+        excludes it and a lane whose list route omits period splits never
+        accumulates the twenty games ``min_history_games`` requires -- it emits
+        no forecast at all, which reads on the card exactly like a league with
+        no fixtures. ``DETAIL_RESULT_REFRESH`` names the lanes whose detail
+        route can repair that.
+
+        Bounded and newest-first: a recency-decayed model is fed by recent
+        games, and the per-run budget is a request cap, not a target. A row
+        whose detail is missing, for another game, or still unreconcilable is
+        left untouched and named in a gap -- never upgraded on faith.
+        """
+
+        refresh = DETAIL_RESULT_REFRESH.get(self.config.league_enum)
+        budget = max(0, int(self.config.history_repair_budget))
+        summary: Dict[str, Any] = {
+            "status": "disabled",
+            "provider": refresh[0] if refresh else None,
+            "request_budget": budget,
+            "candidates": 0,
+            "requests": 0,
+            "repaired": 0,
+            "still_unreconciled": 0,
+            "failed": 0,
+            "detail": "",
+        }
+        if refresh is None:
+            summary.update(
+                status="unsupported",
+                detail="this lane's list route already settles reconcilable periods, "
+                "or no detail reader is registered",
+            )
+            return summary
+        if not budget:
+            summary.update(status="disabled", detail="history_repair_budget is zero")
+            return summary
+        if not self.allow_writes or not getattr(self.store, "persist", True):
+            # Repairing history is a canonical mutation, and a dry run must not
+            # spend requests to compute a result it cannot keep.
+            summary.update(
+                status="disabled_canonical_write_required",
+                detail="dry runs cannot persist a repaired final",
+            )
+            return summary
+
+        provider, reader = refresh
+        target = parse_utc(f"{_iso(self.config.date_yyyymmdd)}T00:00:00Z")
+        candidates = [
+            game
+            for game in self.store.list_games(
+                league=self.config.league_enum, status=GameStatus.FINAL
+            )
+            if parse_utc(game.scheduled_utc) < target
+            and (game.actual is None or not game.actual.reconciles()[0])
+        ]
+        candidates.sort(key=lambda game: parse_utc(game.scheduled_utc), reverse=True)
+        summary["candidates"] = len(candidates)
+
+        transport = self.fetch if self._injected_fetch else None
+        for game in candidates[:budget]:
+            summary["requests"] += 1
+            try:
+                refreshed = reader(game, transport)
+            except Exception as exc:
+                summary["failed"] += 1
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="historical_reconciliation",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider=provider,
+                        detail=str(exc)[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            ok, reason = refreshed.actual.reconciles() if refreshed.actual else (False, "")
+            if not ok:
+                summary["still_unreconciled"] += 1
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="historical_reconciliation",
+                        reason=CoverageState.MISSING,
+                        provider=provider,
+                        detail=str(reason)[:200],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            self.store.upsert_game(refreshed)
+            summary["repaired"] += 1
+
+        summary["status"] = "ok"
+        summary["detail"] = (
+            f"re-read {summary['requests']} of {len(candidates)} unreconcilable final(s) "
+            f"newest-first; repaired={summary['repaired']} "
+            f"still_unreconciled={summary['still_unreconciled']} failed={summary['failed']}"
+        )
+        self._record_health(
+            ProviderHealth(
+                provider=f"{provider}-history-repair",
+                league=self.config.league_enum,
+                last_attempt_utc=self._now_iso(),
+                last_success_utc=self._now_iso() if summary["repaired"] else None,
+                state=CoverageState.OK if summary["repaired"] else CoverageState.MISSING,
+                coverage=dict(summary),
+                detail=summary["detail"],
+            )
+        )
+        return summary
 
     def _stored_slate_games(self) -> List[Game]:
         """Return only canonical games already supplied by a validated import.
@@ -1251,13 +1386,40 @@ class Pipeline:
         elif league_spec(league).schedule_source == "betexplorer_fixtures":
             # One page yields the slate; the price read reuses the same page in
             # ``betexplorer`` and is keyed by the identical match code.
-            games = betexplorer_fixtures.fetch_slate(
-                league,
-                self.config.date_yyyymmdd,
-                text_fetch=self._betexplorer_text_fetch(),
-            )
-            self.gaps.extend(betexplorer_fixtures.last_gaps())
-            probe = betexplorer_fixtures.last_probe()
+            try:
+                games = betexplorer_fixtures.fetch_slate(
+                    league,
+                    self.config.date_yyyymmdd,
+                    text_fetch=self._betexplorer_text_fetch(),
+                )
+            except HttpError as exc:
+                # Run 45376480832 (2026-11-24T10:40Z): BetExplorer answered
+                # ``HTTP 429`` to ISRAEL_LIGA_LEUMIT's fixtures page after the
+                # transport's two retries, the adapter raised through this
+                # branch, and the tick exited 1 -- a *refused* read was reported
+                # as a failed day, with no card, no gap and no lifecycle work.
+                # That is the same failure class the EuroLeague branch above
+                # already survives, and it gets the same answer: name the
+                # refusal, run on the stored slate, let settlement continue.
+                # A refusal is not an empty slate, and it is not a verdict on
+                # the lane.
+                #
+                # Only transport failures degrade.  ``IdentityError`` (a page
+                # arrived but its table is gone) still raises: a source we can
+                # read but no longer parse is a code failure, not the host's.
+                games = self._degrade_schedule_to_stored_slate(
+                    provider=betexplorer_fixtures.SCHEDULE_SOURCE,
+                    coverage={"http_status": exc.status},
+                    context=(
+                        f"{betexplorer_fixtures.SCHEDULE_SOURCE} refused the "
+                        f"fixtures page for {league_spec(league).label}"
+                    ),
+                    exc=exc,
+                )
+                probe = None
+            else:
+                self.gaps.extend(betexplorer_fixtures.last_gaps())
+                probe = betexplorer_fixtures.last_probe()
             # The page was read, so an empty slate is an answer, not a void.
             read_receipt = bool(probe)
             if probe:
@@ -2045,12 +2207,35 @@ class Pipeline:
                     "snapshots_mapped": 0,
                     "identity_rejections": 0,
                 }
-                if hasattr(module, "last_receipt"):
+                receipt = module.last_receipt() if hasattr(module, "last_receipt") else None
+                if receipt is not None:
                     # The direct BetExplorer fallback publishes its bounded
                     # source URLs/digests and identity census here.  Keep that
                     # receipt with the report rather than hiding a no-price
                     # result behind a generic empty-provider label.
-                    self.book_provider_status[provider]["receipt"] = module.last_receipt()
+                    self.book_provider_status[provider]["receipt"] = receipt
+                if (
+                    provider == "betexplorer_direct"
+                    and not provider_snapshots
+                    and receipt
+                ):
+                    # ``fetched_no_snapshots`` alone reads like "this source has
+                    # no prices for the league". Usually the board was read and
+                    # the team names did not agree -- which is a fixable alias,
+                    # not an absent source. Say which, from the run's own bytes.
+                    diagnosis = betexplorer_direct.summarize_match_failure(receipt)
+                    self.book_provider_status[provider]["match_diagnosis"] = diagnosis
+                    if diagnosis.get("status") != "no_receipt":
+                        self.gaps.append(
+                            CoverageGap(
+                                game_id=None,
+                                required_field="book_lines",
+                                reason=CoverageState.MISSING,
+                                provider=provider,
+                                detail=str(diagnosis.get("verdict") or "")[:200],
+                                observed_utc=self._now_iso(),
+                            )
+                        )
             except Exception as exc:
                 logger.warning("%s fetch failed: %s", provider, exc)
                 self.book_provider_status[provider] = {

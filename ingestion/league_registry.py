@@ -469,6 +469,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "8 odds-bearing rows carried no kickoff cell). Deepest calendar window in the "
             "sweep, into 2027-01-03. Page average, not a named book; source terms "
             "unreviewed. No results route, so settlement is unsupported by name."
+            " Results route validated 2026-11-24 but deliberately not enabled: the federation's own pages (EsakeResults?idchampionship=184645B9&idseason=00000001&series=<matchday>, game identity EsakegameView?idgame=<HEX>) returned finals for 10 of the 10 most recent known fixtures; robots.txt is absent (404, reported as absent rather than as permission) and the terms license copying with source credit but scope that licence to personal, non-commercial use -- so promotion waits on an operator reading of the clause, not on a source; the operator accepted that scope for this paper record on 2026-11-24, and the lane still reports source_unavailable until a reader has been replayed against a served page (ingestion/providers/esake.py and scripts/probe_esake_results.py, one live run away). See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
         price_sources=(_aggregate_research_only("betexplorer"),),
     ),
@@ -534,6 +535,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "match code and names are display only. The served clock is CET/CEST, not "
             "Asia/Shanghai. Page average, not a named book; source terms unreviewed. "
             "No results route, so settlement is unsupported by name."
+            " Results endpoints proven 2026-11-24 but not enabled: cba.net.cn's own data hub (cbamatch/games/matchschedules?competitionId=56&seasonId=2286) answers the whole 2026-27 season (297,504 B, integer gameId, scores, gameStatus) with 10/10 coverage, but the host publishes no terms document at all -- a 200 is not permission -- and the endpoint is season-scoped, not date-scoped. See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
         price_sources=(_aggregate_research_only("betexplorer"),),
     ),
@@ -551,6 +553,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "Fixtures', served 2026-11-24: 167 rows, 7 priced of which 6 still future, "
             "99 rows with no kickoff cell). Clock is the site's CET/CEST wall clock. "
             "Page average, not a named book; source terms unreviewed. No results route."
+            " Results endpoints proven 2026-11-24 but not enabled: nkl.lt declares its own WP-JSON surface (/wp-json/nkl-calendar/v1/teams?season= and /game/<id>, per the namespace index and the calendar JS) and its robots.txt carries Crawl-delay 10 with no Disallow, but the host publishes no terms document -- only cookie and privacy policies -- so the route stays off. See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
         price_sources=(_aggregate_research_only("betexplorer"),),
     ),
@@ -569,6 +572,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "0 rows with no kickoff cell -- the cleanest page in the sweep). Clock is "
             "the site's CET/CEST wall clock. Page average, not a named book; source "
             "terms unreviewed. No results route."
+            " Results route unresolved as of 2026-11-24: prod.rosetta.nbl.com.au answered per-season WNBL match JSON and wnbl.com.au publishes terms, but this lane's assessment was never completed -- no route, no coverage arithmetic, no adapter. See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
         price_sources=(_aggregate_research_only("betexplorer"),),
     ),
@@ -587,6 +591,7 @@ _SPECS: Tuple[LeagueSpec, ...] = (
             "future, 83 rows with no kickoff cell). This is the second division, "
             "distinct from the Winner League board lane. Clock is CET/CEST. Page "
             "average, not a named book; source terms unreviewed. No results route."
+            " No keyless results route found by 2026-11-24 probing: one.co.il puts the only score-bearing path (/api/) behind a robots Disallow, safsal.co.il publishes no terms page, the federation host basketball.org.il timed out on three attempts across two days, and basket.co.il serves the Premier board only (Leumit board ids answer empty). See docs/RESULTS-ROUTE-ASSESSMENT.md."
         ),
         price_sources=(_aggregate_research_only("betexplorer"),),
     ),

@@ -835,6 +835,96 @@ def _match_fixtures(
     return matches
 
 
+def summarize_match_failure(
+    receipt: Optional[Dict[str, Any]], *, example_limit: int = 3
+) -> Dict[str, Any]:
+    """Name why a bounded board read produced no price, using its own receipt.
+
+    The receipt already records a verdict per candidate, but the pipeline used
+    to collapse a zero-snapshot run into ``fetched_no_snapshots`` -- which reads
+    like "the source has no prices for this league" when the truth is usually
+    "the source had rows and our names did not agree with them". That label is
+    exactly the silent-empty-result this project refuses, and it is the label
+    standing between a lane and its prices.
+
+    This is a pure reader of the adapter's own receipt: no fetching, no
+    guessing, and no aliases. It reports counts by reason plus the nearest board
+    row for a bounded number of candidates, so the pair that failed to agree is
+    printed rather than inferred.
+    """
+
+    if not receipt:
+        return {
+            "status": "no_receipt",
+            "verdict": "no direct-source receipt was published for this run",
+            "candidates": 0,
+            "board_rows": 0,
+            "matched": 0,
+            "reasons": {},
+            "examples": [],
+        }
+
+    diagnostics = receipt.get("candidate_fixture_diagnostics") or []
+    reasons: Dict[str, int] = {}
+    for diagnostic in diagnostics:
+        if not isinstance(diagnostic, dict):
+            continue
+        if str(diagnostic.get("status")) == "matched":
+            continue
+        reason = str(diagnostic.get("reason") or "unknown")
+        reasons[reason] = reasons.get(reason, 0) + 1
+
+    examples: List[Dict[str, Any]] = []
+    for diagnostic in diagnostics:
+        if len(examples) >= example_limit:
+            break
+        if not isinstance(diagnostic, dict):
+            continue
+        if str(diagnostic.get("status")) == "matched":
+            continue
+        nearest = diagnostic.get("nearest_board_rows") or []
+        best = nearest[0] if nearest and isinstance(nearest[0], dict) else {}
+        examples.append(
+            {
+                "game_id": diagnostic.get("game_id"),
+                "board_date": diagnostic.get("board_date"),
+                "scheduled_home": diagnostic.get("home"),
+                "scheduled_away": diagnostic.get("away"),
+                "board_rows_on_date": diagnostic.get("board_rows_on_date"),
+                "reason": diagnostic.get("reason"),
+                "nearest_board_home": best.get("home"),
+                "nearest_board_away": best.get("away"),
+                "shared_tokens": best.get("shared_tokens"),
+            }
+        )
+
+    candidates = int(receipt.get("candidate_games") or len(diagnostics) or 0)
+    matched = int(receipt.get("fixtures_matched") or 0)
+    board_rows = int(receipt.get("day_rows_seen") or 0)
+    if not reasons and matched:
+        verdict = f"{matched} of {candidates} candidate game(s) matched"
+    elif reasons:
+        top = max(reasons.items(), key=lambda item: item[1])
+        verdict = (
+            f"{matched} of {candidates} candidate game(s) matched {board_rows} board row(s); "
+            f"unmatched {sum(reasons.values())} ({top[0]} x{top[1]})"
+        )
+    else:
+        verdict = (
+            f"{matched} of {candidates} candidate game(s) matched {board_rows} board row(s); "
+            "no per-candidate diagnostic was published"
+        )
+    return {
+        "status": str(receipt.get("status") or "unknown"),
+        "verdict": verdict,
+        "candidates": candidates,
+        "board_rows": board_rows,
+        "matched": matched,
+        "reasons": reasons,
+        "examples": examples,
+    }
+
+
 def _receipt_fixture(
     fixture: Dict[str, str],
     game: Any,
@@ -1192,4 +1282,5 @@ __all__ = [
     "parse_day_board",
     "parse_named_moneyline_rows",
     "smoke",
+    "summarize_match_failure",
 ]

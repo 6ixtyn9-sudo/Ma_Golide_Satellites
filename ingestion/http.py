@@ -50,6 +50,41 @@ DEFAULT_RETRIES = 2
 DEFAULT_BACKOFF = 1.5
 PERMANENT_STATUS = {400, 401, 403, 404, 405, 406, 410, 422, 451}
 
+#: A host that answers ``Retry-After`` is telling us when to come back. Honouring
+#: it is the polite reading of a rate limit; ignoring it and retrying on our own
+#: schedule is the impolite one. The wait stays bounded so a lane cannot sleep
+#: through its own tick -- a header longer than this is a "come back later", and
+#: the caller degrades to the stored slate instead of camping on the run.
+MAX_RETRY_AFTER_SECONDS = 30.0
+
+
+def retry_after_seconds(value: Any) -> Optional[float]:
+    """Parse a ``Retry-After`` header (delta-seconds or HTTP-date) to seconds.
+
+    Returns ``None`` for anything unparseable so the caller falls back to its own
+    bounded backoff rather than trusting a malformed header.
+    """
+
+    text = str(value or "").strip()
+    if not text:
+        return None
+    try:
+        return max(0.0, float(text))
+    except ValueError:
+        pass
+    try:
+        from datetime import datetime, timezone
+        from email.utils import parsedate_to_datetime
+
+        when = parsedate_to_datetime(text)
+    except (TypeError, ValueError):
+        return None
+    if when is None:
+        return None
+    if when.tzinfo is None:
+        when = when.replace(tzinfo=timezone.utc)
+    return max(0.0, (when - datetime.now(timezone.utc)).total_seconds())
+
 # Quota headers we recognise across providers.
 QUOTA_HEADERS = [
     "x-datapoints",
@@ -219,13 +254,27 @@ class HttpClient:
                 if attempt >= self.retries:
                     raise HttpError(resp.status_code, url, redact(resp.text[:300]))
                 attempt += 1
-                self.sleep(self.backoff**attempt)
+                self.sleep(self._retry_delay(resp, attempt))
                 continue
             if resp.status_code >= 400:
                 raise HttpError(resp.status_code, url, redact(resp.text[:300]))
             return _decoded_body(resp)
 
     # -- internals ----------------------------------------------------------
+
+    def _retry_delay(self, resp: requests.Response, attempt: int) -> float:
+        """Bounded wait before retry: the host's ``Retry-After``, else backoff.
+
+        ``Retry-After`` is evidence about the host, not a preference of ours, so
+        it wins when present and parseable -- clamped to
+        :data:`MAX_RETRY_AFTER_SECONDS` because a longer one means "not now",
+        which the caller handles by degrading rather than sleeping.
+        """
+
+        promised = retry_after_seconds(resp.headers.get("Retry-After"))
+        if promised is not None:
+            return min(promised, MAX_RETRY_AFTER_SECONDS)
+        return self.backoff**attempt
 
     def _capture_quota(self, resp: requests.Response) -> None:
         quota: Dict[str, str] = {}

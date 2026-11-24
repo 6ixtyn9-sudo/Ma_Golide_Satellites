@@ -73,6 +73,17 @@ Useful options:
   does not loosen forecast, calibration, price, or ticket gates.
 - `--deep-history-events 50` bounds indexed historical summaries per
   write-enabled league run; dry runs never advance that cursor.
+- The **history repair** pass (`PipelineConfig.history_repair_budget`, default
+  25 detail reads) runs at the start of a write-enabled `pregame` for lanes in
+  `DETAIL_RESULT_REFRESH` — today only KBL, whose list route settles a final
+  with no period split. Newest-first, it re-reads the detail route for settled
+  games whose stored final cannot reconcile, replacing the totals-only record
+  with reconciled quarters. `min_history_games` and `min_residual_games` are
+  both 20, so a lane starts with an empty corpus: the first repaired run crosses
+  the baseline floor and a second crosses the residual floor before the
+  empirical model emits a forecast. A row whose detail is missing, misidentified,
+  or still unreconcilable is left untouched and named in a
+  `historical_reconciliation` gap; the pass never upgrades a final on faith.
 - `--book draftkings` and `--book-provider theoddsapi` restrict book evidence.
 - `--localdata PATH` redirects reports/ledgers/exports.
 - `--warehouse PATH` overrides the canonical DuckDB path.
@@ -556,3 +567,24 @@ bounded count and age retention. Replaying an identical summary returns
   by deleting evidence.
 - Check `provider_health`, stage `gaps`, and `uncovered_games` before assuming
   a market is unsupported.
+
+### Refused and unreachable schedule reads
+
+A schedule host that refuses us costs the lane its slate, never the tick. An
+`HttpError` on the `betexplorer_fixtures` and EuroLeague schedule branches
+becomes a named `official_schedule` `provider_error` gap (a refusal also records
+`coverage.http_status`, e.g. `429`) plus a `provider_error` health row, and the
+run continues on the canonical stored slate so settlement, grading and the
+market report still happen. An unreadable source is named as unreadable; it is
+never rendered as an empty slate, and it never unwinds to
+`{"status": "failed"}` with nothing recorded.
+
+Run 45376480832 (2026-11-24T10:40Z, `ISRAEL_LIGA_LEUMIT`) is the fixture case:
+`HTTP 429` on `/basketball/israel/liga-leumit/fixtures/` after the transport's
+two retries exited 1 with no card, no gap and no lifecycle work.
+
+A `Retry-After` header is honoured when the host sends one, clamped to
+`ingestion.http.MAX_RETRY_AFTER_SECONDS`; a longer one means "come back later",
+which is a degradation, not a reason to sleep through the tick. A page that
+arrives *without* its fixtures table (`IdentityError`) still raises: a source we
+can read but no longer parse is a code failure, not a host's bad day.
