@@ -37,23 +37,43 @@ sides carry the same club name is skipped rather than counted twice. A club with
 no finals has no row -- it is absent from the result, which is honest, rather than
 present at 0-0 as though it had played.
 
-This module makes no request, writes nothing, and knows nothing about rankings the
-competition itself publishes. A league tiebreak rule that differs from "win
-percentage, then points difference" will produce a different order than the
-official table, and the ``source`` field says which one this is.
+Two routes, one scorer surface
+-----------------------------
+:func:`standings_from_finals` derives a table from finals this project graded. It
+makes no request, writes nothing, and knows nothing about rankings the competition
+itself publishes; a league tiebreak rule that differs from "win percentage, then
+points difference" will produce a different order, and ``SOURCE`` names it.
+
+:func:`from_published` quotes a competition's own table instead, once
+``ingestion/providers/betexplorer_standings.py`` has read it. It keeps the
+published rank -- the NKL table captured on 2026-11-25 is *not* ordered by win
+percentage -- and it takes only those fields a table can state: ``pct``,
+``net_rtg``, and the home/away splits. A streak cannot be quoted from a table
+whose form glyphs are undecoded, so it arrives only from ``derived`` rows for the
+same clubs, which is why the two routes take a ``Mapping`` and not a flag. Rows
+from this route are labelled ``PUBLISHED_SOURCE`` by whoever stores them; the
+scorer row itself carries no source field, so the label must be carried by the
+caller rather than inferred later.
 """
 
 from __future__ import annotations
 
+import re
 from dataclasses import dataclass, field
-from typing import Dict, Iterable, List, Optional, Sequence
+from typing import Dict, Iterable, List, Mapping, Optional, Sequence
 
-from ingestion.identity import parse_utc
+from ingestion.identity import canonical_team_name, parse_utc
 from ingestion.models import Game, GameStatus
+from ingestion.models import StandingsRow as PublishedStandingsRow
 
 from .magolide_score import StandingsRow
 
 SOURCE = "derived_from_reconciled_finals"
+
+#: The label for rows that came from a competition's own published table rather
+#: than from finals we graded. Kept separate so a reader can tell arithmetic we
+#: did from arithmetic we quoted.
+PUBLISHED_SOURCE = "betexplorer_published_table"
 
 #: How many recent games the ``l10`` fields describe.
 LAST_N = 10
@@ -186,3 +206,91 @@ def standings_from_finals(
         return (-pct, -diff, tally.team)
 
     return [_row(tally, index + 1) for index, tally in enumerate(sorted(tallies.values(), key=order))]
+
+
+#: A published split record, exactly as a table writes it: ``8-1``.
+_RECORD_RE = re.compile(r"^(?P<wins>\d{1,3})-(?P<losses>\d{1,3})$")
+
+
+def _split_pct(record: Optional[str]) -> Optional[float]:
+    """Win percentage from a published ``W-L`` split, or ``None``.
+
+    ``0-0`` is a club that has not played in that role yet, so it yields ``None``
+    rather than ``0.0``: an empty record must not read as a losing one.
+    """
+
+    if not record:
+        return None
+    match = _RECORD_RE.match(str(record).strip())
+    if match is None:
+        return None
+    wins, losses = int(match.group("wins")), int(match.group("losses"))
+    played = wins + losses
+    if played <= 0:
+        return None
+    return round(wins / played, 4)
+
+
+def from_published(
+    rows: Iterable[PublishedStandingsRow],
+    *,
+    derived: Optional[Mapping[str, StandingsRow]] = None,
+) -> List[StandingsRow]:
+    """Scorer rows from a competition's own published table.
+
+    ``ingestion.providers.betexplorer_standings`` reads the table; this turns it
+    into the seven numbers ``forecasting/magolide_score.py`` consumes. Every value
+    is arithmetic on what the table states -- ``pct = W / MP`` and
+    ``net_rtg = (PF - PA) / MP`` -- and nothing is inferred.
+
+    **Rank is quoted, never recomputed.** The published table is ordered by the
+    competition's own tiebreak rules, which are not win percentage: the NKL table
+    captured on 2026-11-25 lists a 0.7647 club above a 0.8125 one and a 0.8571
+    club fifth. Recomputing the order from ``pct`` would silently disagree with
+    the table this row cites, so ``position`` passes through untouched.
+
+    ``streak`` and the last-ten fields cannot come from a published table at all:
+    the ``Form`` glyphs are undecoded (see the provider docstring). When a lane
+    also settles its own games, pass ``derived`` -- the output of
+    :func:`standings_from_finals` -- and those two fields are filled from finals
+    we graded ourselves while everything else stays quoted. A club with no derived
+    history keeps ``None`` rather than a zero.
+
+    A row without a name, or without games played, is skipped: a club that has not
+    played has no rate, and a 0.0 would read as a losing season.
+    """
+
+    by_derivation = dict(derived or {})
+    seen: set[str] = set()
+    out: List[StandingsRow] = []
+    for row in rows:
+        name = canonical_team_name(str(row.team_name or "").strip())
+        if not name or name in seen:
+            continue
+        played = row.games_played
+        if played is None or played <= 0:
+            continue
+        seen.add(name)
+
+        pct = row.win_pct
+        if pct is None and row.wins is not None:
+            pct = round(row.wins / played, 4)
+        net_rtg: Optional[float] = None
+        if row.points_for is not None and row.points_against is not None:
+            net_rtg = round((float(row.points_for) - float(row.points_against)) / played, 2)
+
+        graded = by_derivation.get(name) or by_derivation.get(str(row.team_name).strip())
+        out.append(
+            StandingsRow(
+                team=name,
+                rank=float(row.position) if row.position is not None else None,
+                pct=pct,
+                net_rtg=net_rtg,
+                home_pct=_split_pct(row.home_record),
+                away_pct=_split_pct(row.away_record),
+                streak=graded.streak if graded is not None else None,
+                l10_wins=graded.l10_wins if graded is not None else None,
+                l10_losses=graded.l10_losses if graded is not None else None,
+            )
+        )
+    return out
