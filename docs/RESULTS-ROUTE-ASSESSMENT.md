@@ -998,6 +998,44 @@ quarter table, or does `stats.js.php` draw it? That is one request with
 `--cookie "age_verified=true"` and a look at `period_markers`, and it is the last one this
 route gets before the honest answer is "verification only".
 
+### The route closes, measured (2026-11-24T16:12Z)
+
+One request with the key the host's own bundle checks:
+
+```
+cookies_sent: ["age_verified", "js_cookie"]
+status: captured    gate_markup: age gate (id="ageTitle")
+td_cells: 2   integer_cells: 0   period_markers: 0   scoreboard_mentions: 0
+colon_scores: 9   span_cells: 32   bytes: 110,144
+```
+
+Set beside the ungated read of the same page — `td_cells 2`, `integer_cells 0`,
+`colon_scores 9`, `span_cells 32` — the shape is the same. The cookie did not change what the
+server sends, because the server was never withholding: the wall is `innerHTML` painted by
+`init_age_wall()` after the document arrives.
+
+So the chain is complete and it ends where the tooling said it would:
+
+1. The results index gives 197 finals and no period scores; a final cannot reconcile.
+2. The match page is where periods would live, and it arrives with two layout `<td>` cells and
+   no integer cells at all — the scoreboard is drawn by script, not marked up.
+3. The age gate was real for a browser and irrelevant to a client: passing it, with the key its
+   own bundle sets, leaves the receipt identical.
+
+**This lane is a verification source, permanently, and now by measurement rather than by
+assumption.** No header, no cookie and no patience will make these pages carry quarters,
+because the document never contains them. Settlement would need a JavaScript runtime rendering
+`stats.js.php` for one page per game — for a paper-only record that is not a trade worth making,
+and it is the wrong thing to build quietly.
+
+What the 197 finals *are* good for has not changed: they catch a settlement error from a lane
+that can settle. That is a real job, and it is the job they keep.
+
+One small honesty change in the receipt, from this result: `status: captured` means the
+document arrived, nothing more. `carries_period_data` and a summary that ends
+`0 carried period markers` now say whether the arrival was worth anything. "Captured" and
+"captured, with nothing in it" are different facts, and the tool used to print only the first.
+
 Every receipt now names the build that produced it — `tool: {script, git_commit, modified}` —
 because three sessions were spent reading output from a checkout one merge behind, where the
 flags existed in the repository and not in the file being run. `git_commit: null` means the
