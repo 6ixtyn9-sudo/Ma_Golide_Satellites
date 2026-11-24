@@ -346,10 +346,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     )
     parser.add_argument(
         "--bet-config",
-        default=str(TUNED_PATH),
+        default=None,
         help=(
-            "tuned bet configuration the card should run under; the shipped baseline "
-            "is always loaded first, so a missing file means defaults"
+            "tuned bet configuration the card should run under; defaults to the "
+            "lane's own <localdata>/magolide_bets.tuned.json, which the daily tick "
+            "writes. The shipped baseline is always loaded first, so a missing file "
+            "means defaults"
         ),
     )
     parser.add_argument(
@@ -376,6 +378,10 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     spec = league_spec(league)
     localdata = Path(args.localdata)
     stamp_path = localdata / ".betexplorer_last_request"
+    bet_config_path = (
+        Path(args.bet_config) if args.bet_config else localdata / TUNED_PATH.name
+    )
+    bet_config = load_tuned(tuned_path=bet_config_path)
     read = _read_text_factory(args.delay, stamp_path)
     now_utc = _utc_now()
 
@@ -417,7 +423,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         published,
         snapshots,
         target_date=args.date,
-        bet_config=load_tuned(tuned_path=args.bet_config),
+        bet_config=bet_config,
     )
     written = write_section(
         localdata, state_key=spec.state_key, target_date=args.date, section=section

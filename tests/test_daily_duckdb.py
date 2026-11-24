@@ -317,3 +317,23 @@ def test_daily_write_persists_duckdb_csv_and_idempotent_ledgers(tmp_path, monkey
         assert con.execute("select count(*) from prediction_facts").fetchone()[0] == 1
     finally:
         con.close()
+
+
+def test_the_daily_tick_records_what_the_tuner_did(tmp_path):
+    """Tuning is part of the tick, not a command somebody has to remember."""
+
+    summary = run_daily(_args(tmp_path))
+
+    tuning = summary["tuning"]
+    assert tuning["enabled"] is True
+    # A dry tick reports rather than writes; either way the stamp is reported so a
+    # card rendered later can be matched to the config this tick ran under.
+    assert tuning["status"] in {"dry_run", "no_change"}
+    assert tuning["config_stamp"].startswith("CFG_")
+    assert isinstance(tuning["settled_picks"], int)
+
+
+def test_the_daily_tick_can_skip_tuning(tmp_path):
+    summary = run_daily(_args(tmp_path, skip_tuning=True))
+
+    assert summary["tuning"] == {"enabled": False, "status": "skipped"}

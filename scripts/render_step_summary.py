@@ -85,6 +85,7 @@ def render(data: dict) -> str:
             "report_path",
             "market_report_path",
             "operator",
+            "tuning",
         )
         if key in data
     }

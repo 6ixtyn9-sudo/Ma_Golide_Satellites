@@ -68,3 +68,28 @@ def test_a_missing_report_is_said_not_rendered(capsys, monkeypatch, tmp_path):
     monkeypatch.chdir(tmp_path)
     assert render_step_summary.main() == 0
     assert "No valid daily report" in capsys.readouterr().out
+
+
+def test_the_tuning_record_reaches_the_job_summary():
+    """A self-tuning system whose decisions nobody can see is not auditable."""
+
+    data = {
+        "league": "LITHUANIA_NKL",
+        "mode": "write",
+        "tuning": {
+            "enabled": True,
+            "status": "applied",
+            "settled_picks": 30,
+            "not_counted": {"pending": 2},
+            "applied": {"confidence_scale": [30.0, 40.0]},
+            "config_stamp": "CFG_F861DBA9",
+        },
+        "markets": {"forecast_count": 1, "walk_forward": {}, "accas": {}},
+        "commands": {"pregame": {"book_provider_status": {}}},
+    }
+
+    text = render_step_summary.render(data)
+
+    assert '"status": "applied"' in text
+    assert "CFG_F861DBA9" in text
+    assert "confidence_scale" in text
