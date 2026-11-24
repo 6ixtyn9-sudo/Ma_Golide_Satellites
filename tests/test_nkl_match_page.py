@@ -165,3 +165,44 @@ def test_a_played_game_is_settled_and_a_five_column_one_is_incomplete():
     assert played.state == "settled"
     assert overtime.state == "incomplete"
     assert overtime.to_actual_result() is None
+
+
+#: Two rows of the club fixture table, transcribed from the 2026-11-24 capture:
+#: `<tr class=nkl-match-row data-match-url=… >`, unquoted, date as `YYYY-MM-DD HH:MM:SS`.
+_LISTING = """
+<table class=nkl-matches-table-modern><tbody><tr class=nkl-match-row data-match-url=https://nkl.lt/matches/125749/ ><td style="color:#64748b; font-size:11px; white-space:nowrap;">2026-10-01 19:00:00</td><td><div style="display:flex; flex-direction:column; gap:3px;"><div class=nkl-game-team-cell> <img src=http://nkl.lt/wp-content/uploads/2026/09/4.png class=nkl-game-team-logo alt> <span>Kretingos Kretinga-FlexBlow</span></div><div class=nkl-game-team-cell> <img src=http://nkl.lt/wp-content/uploads/2026/09/18.png class=nkl-game-team-logo alt> <span>Klaipėdos Neptūnas-II</span></div></div></td><td class="nkl-game-score loss"> 76-91</td><td style="text-align:right; width: 40px;"> <a href=https://nkl.lt/matches/125749/ style="color:#075e32;">stat »</a></td></tr><tr class=nkl-match-row data-match-url=https://nkl.lt/matches/125760/ ><td style="color:#64748b; font-size:11px; white-space:nowrap;">2026-10-03 15:10:00</td><td><div style="display:flex; flex-direction:column; gap:3px;"><div class=nkl-game-team-cell> <img src=http://nkl.lt/wp-content/uploads/2026/09/19.png class=nkl-game-team-logo alt> <span>Vilkaviškio Perlas Go</span></div><div class=nkl-game-team-cell> <img src=http://nkl.lt/wp-content/uploads/2026/09/4.png class=nkl-game-team-logo alt> <span>Kretingos Kretinga-FlexBlow</span></div></div></td><td class="nkl-game-score win"> 84-65</td><td style="text-align:right; width: 40px;"> <a href=https://nkl.lt/matches/125760/ style="color:#075e32;">stat »</a></td></tr></tbody></table>
+"""
+
+
+def test_the_club_listing_gives_date_clubs_final_and_id():
+    """One row is a joined view: it is what lets a forecast be found without
+    opening a 680 KB match page first."""
+
+    rows, counts = nkl.parse_club_page(_LISTING)
+
+    assert counts["rows"] == 2 and counts["with_score"] == 2
+    first = rows[0]
+    assert first.match_id == "125749"
+    assert first.url == "https://nkl.lt/matches/125749/"
+    assert first.kickoff_local.date().isoformat() == "2026-10-01"
+    assert (first.home_name, first.away_name) == (
+        "Kretingos Kretinga-FlexBlow",
+        "Klaipėdos Neptūnas-II",
+    )
+    assert (first.home_score, first.away_score) == (76.0, 91.0)
+
+
+def test_an_unplayed_row_keeps_none_rather_than_repeating_the_last_score():
+    """A fixture with no result cell must not inherit the previous row's numbers:
+    zeros or a carry-over would settle a game that has not been played."""
+
+    upcoming = _LISTING.replace(
+        '<td class="nkl-game-score loss"> 76-91</td>',
+        "<td class=nkl-game-score> - </td>",
+    )
+
+    rows, counts = nkl.parse_club_page(upcoming)
+
+    assert counts["with_score"] == 1
+    assert (rows[0].home_score, rows[0].away_score) == (None, None)
+    assert (rows[1].home_score, rows[1].away_score) == (84.0, 65.0)
