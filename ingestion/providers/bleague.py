@@ -53,7 +53,7 @@ import re
 from datetime import date, datetime, timedelta, timezone
 from typing import Any, Dict, List, Optional
 
-from ..http import HttpClient
+from ..http import PERMANENT_STATUS, HttpClient, HttpError
 from ..identity import canonical_team_name, to_utc_iso
 from ..models import ActualResult, Game, GameStatus, League, PeriodKind
 from . import FetchFn, IdentityError
@@ -64,6 +64,12 @@ SITE = "https://www.bleague.jp"
 SCHEDULE_URL = SITE + "/schedule/"
 SCORE_URL = SITE + "/direct/bleague/get_today_games_score/"
 CONTEXT_BASE = "https://b-league.s3.amazonaws.com/web_json/v2_genius_contexts"
+
+#: How many context keys to try before concluding a permanent denial is the
+#: bucket's answer rather than one moved object. Two is the smallest number that
+#: can tell those apart: one refusal is a coincidence, two different keys refused
+#: identically is the tree, and a 403 beside a 404 is a third thing again.
+DENIAL_PROBES = 2
 
 #: ``tab`` is the division, top-first: 1 = B1, 2 = B2, 3 = B3. The numbering
 #: survived the 2026-27 rebrand -- tab=1 still serves the top division -- but the
@@ -471,10 +477,26 @@ def discover_games(
 
     games: List[Game] = []
     off_date = 0
+    denials: List[Dict[str, Any]] = []
     for key in keys:
         try:
             payload = _fetch_context(key, transport)
             game = _game_from_context(payload, key, date_iso, league)
+        except HttpError as exc:
+            # A 403 from this bucket is permanent (it is in PERMANENT_STATUS): the
+            # object is not ours to read, and it will answer the same way at every
+            # retry. Raising here killed the whole scheduled tick -- exit 1, no
+            # summary, no gap -- for a lane whose only fault is that its source
+            # refuses it. So: try enough keys to prove the refusal is the tree's
+            # answer rather than one moved object, then report and stop.
+            if exc.status not in PERMANENT_STATUS:
+                raise
+            # Key and status only: an HttpError carries a URL, and a URL is
+            # where a credential would be if one were ever added to this bucket.
+            denials.append({"key": key, "status": exc.status})
+            if len(denials) >= DENIAL_PROBES:
+                break
+            continue
         except (IdentityError, ValueError) as exc:
             _record_gap(key, str(exc))
             continue
@@ -486,6 +508,19 @@ def discover_games(
             off_date += 1
             continue
         games.append(game)
+    if denials:
+        # The detail is the diagnostic the lane never had: which keys, which
+        # statuses, which URLs. Two identical 403s mean the tree is closed; a 403
+        # beside a 404 on the bare prefix would mean one object moved.
+        summary = ", ".join(
+            f"{item['key']} HTTP {item['status']}" for item in denials
+        )
+        _record_gap(
+            None,
+            f"contexts refused ({len(denials)} of {len(keys)} keys tried): {summary}; "
+            f"entry point {CONTEXT_BASE}/<key>/latestid",
+        )
+        _last_probe["contexts_denied"] = denials
     pages = _last_probe.get("pages", [])
     _last_probe["day_param"] = (
         "scoped" if any(page["new_keys"] for page in pages[1:]) else "ignored"

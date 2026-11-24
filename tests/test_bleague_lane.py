@@ -21,6 +21,7 @@ from typing import Any, Callable, Dict, List
 
 import pytest
 
+from ingestion.http import HttpError
 from ingestion.league_registry import league_spec
 from ingestion.models import GameStatus, League, PeriodKind
 from ingestion.providers import bleague
@@ -374,3 +375,89 @@ def test_the_matcher_sees_the_english_club_name_not_the_japanese_slate_label():
     assert _team_names_agree("LEVANGA HOKKAIDO", "Levanga Hokkaido", league="JAPAN_B_LEAGUE")[0] is True
     # The Japanese label is a different script: no token rule can join it.
     assert _team_names_agree("レバンガ北海道", "Levanga Hokkaido", league="JAPAN_B_LEAGUE")[0] is False
+
+
+def _denied_transport(status: int = 403) -> Callable[[str], str]:
+    """The schedule serves; every context pointer is refused, as S3 does."""
+
+    page = _slate()
+
+    def fetch(url: str) -> str:
+        if "bleague.jp/schedule/" in url:
+            return page
+        raise HttpError(status, url, "<?xml version='1.0'?><Error><Code>AccessDenied</Code>")
+
+    return fetch
+
+
+def test_a_permanent_denial_is_a_reported_gap_not_a_dead_tick():
+    """The 2026-11-24 scheduled tick died on exactly this: ``HTTP 403`` from
+    ``/web_json/v2_genius_contexts/507403/latestid``, exit 1, no summary and no
+    gap. A lane whose source refuses it must report that, not take the run with
+    it -- every other lane's slate was lost with the process."""
+
+    games = bleague.discover_games("2026-10-04", _denied_transport(403))
+
+    assert games == []
+    gaps = bleague.last_gaps()
+    assert len(gaps) == 1, "one refusal is one gap, not one per key"
+    detail = gaps[0]["detail"]
+    assert "contexts refused" in detail and "HTTP 403" in detail
+    assert "v2_genius_contexts" in detail
+    # The receipt still shows the schedule read that succeeded.
+    probe = bleague.last_probe()
+    assert probe["reads"] and probe["contexts_denied"][0]["status"] == 403
+
+
+def test_the_denial_probe_stops_after_two_keys():
+    """Two keys is the smallest number that can tell a moved object from a
+    closed tree; ten is a hammer."""
+
+    page = _slate()
+    # A second block, so discovery holds two keys.
+    # The block holding the key, not the first <li> in the document.
+    start = page.rfind("<li", 0, page.find("506418"))
+    end = page.find("</li>", start) + len("</li>")
+    two = page[:end] + page[start:end].replace("506418", "506419") + page[end:]
+    calls: List[str] = []
+
+    def fetch(url: str) -> str:
+        calls.append(url)
+        if "bleague.jp/schedule/" in url:
+            return two
+        raise HttpError(403, url, "AccessDenied")
+
+    games = bleague.discover_games("2026-10-04", fetch)
+
+    assert games == []
+    denied = bleague.last_probe()["contexts_denied"]
+    assert len(denied) == bleague.DENIAL_PROBES
+    assert len({item["key"] for item in denied}) == bleague.DENIAL_PROBES
+
+
+def test_a_transient_failure_still_raises():
+    """A 500 is not the bucket saying no; it is the run saying it does not know."""
+
+    with pytest.raises(HttpError):
+        bleague.discover_games("2026-10-04", _denied_transport(500))
+
+
+def test_the_one_lane_tick_reports_a_denial_instead_of_exiting_nonzero():
+    """End of the chain: the pipeline turns the denial into coverage, not a crash."""
+
+    from ingestion.pipeline import Pipeline, PipelineConfig
+
+    config = PipelineConfig(
+        league="JAPAN_B_ONE", date_yyyymmdd="20261125", fixture_now_utc="2026-11-24T16:00:00Z"
+    )
+    pipeline = Pipeline(
+        config, InMemoryStore(), fetch=_denied_transport(403), allow_writes=False
+    )
+
+    games = pipeline._discover_games()  # must not raise: this is the dead tick
+
+    assert games == []
+    assert any(
+        gap.provider == "bleague" and "contexts refused" in gap.detail
+        for gap in pipeline.gaps
+    )
