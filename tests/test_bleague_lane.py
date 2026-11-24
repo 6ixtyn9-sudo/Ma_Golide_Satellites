@@ -345,7 +345,9 @@ def test_the_probe_says_whether_day_scopes_the_page(monkeypatch):
     monkeypatch.setattr(
         bleague,
         "_game_from_context",
-        lambda payload, key, requested: (_ for _ in ()).throw(ValueError("off date")),
+        lambda payload, key, requested, *lane: (_ for _ in ()).throw(
+            ValueError("off date")
+        ),
     )
 
     bleague.discover_games("2026-10-04", _transport())

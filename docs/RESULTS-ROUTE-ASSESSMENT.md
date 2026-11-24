@@ -105,19 +105,30 @@ including the negative direction — the short code and the Japanese label must
 stay unmatched, so a future edit that switches fields fails loudly instead of
 quietly needing a twenty-row alias table per division.
 
-## The Japan mismatch this session *did* find
+## The Japan mismatch this session *did* find — resolved by splitting the lane
 
-The probe surfaced a real, load-bearing bug: this lane reads the provider's
-**top** division (`tab=1`, now branded B.LEAGUE PREMIER) while the board slug it
-prices against, `japan/b-league-one`, is the **second** division (B.LEAGUE ONE —
-the captured tab=2 slate matched that board page game-for-game). Different
-clubs, so no name can ever agree and the direct-price fallback is dead by
-construction for this lane.
+The probe surfaced a real, load-bearing bug: this lane read the provider's **top**
+division (`tab=1`, now branded B.LEAGUE PREMIER) while the board slug it priced
+against, `japan/b-league-one`, is the **second** division (B.LEAGUE ONE — the
+captured tab=2 slate matched that board page game-for-game). Different clubs, so
+no name could ever agree and the aggregate price source was dead by construction.
 
-Fixing it is a scope decision, not a patch: either this lane is B.ONE (point the
-provider at `tab=2`), or it stays PREMIER and needs its own board slug. Both are
-one-line changes with different consequences for what the lane claims to cover,
-so the constant is annotated and the choice is left open.
+One lane could not be two competitions. The choice was left open then; on
+2026-11-24 it was made by splitting rather than picking:
+
+| lane | division | schedule | aggregate price |
+|---|---|---|---|
+| `JAPAN_B_LEAGUE` | B.LEAGUE PREMIER (tab=1) | `bleague` | **none claimed** — no PREMIER board page has been captured, so it guesses no slug; prices come only from the bounded direct day-board fallback |
+| `JAPAN_B_ONE` | B.LEAGUE ONE (tab=2) | `bleague` | `basketball/japan/b-league-one/fixtures/` — the one Japan page captured, which matched this division game-for-game |
+
+The division is now derived from the lane (`bleague.TAB_BY_LEAGUE`) and refused
+when a caller asks for the other one, so the mismatch cannot be reintroduced by a
+forgotten argument. `tests/test_japan_division_split.py` holds that invariant,
+including that re-reading a B.ONE game's context cannot relabel it PREMIER.
+
+**Still open:** capturing a B.LEAGUE PREMIER fixtures page so that lane can claim
+an aggregate price of its own. Until then it is graded on results, not priced on
+the aggregate board — which is the honest state, not a gap being hidden.
 
 ## Open items
 

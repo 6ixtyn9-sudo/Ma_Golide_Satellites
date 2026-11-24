@@ -70,13 +70,21 @@ CONTEXT_BASE = "https://b-league.s3.amazonaws.com/web_json/v2_genius_contexts"
 #: *names* did not: tab=1 now renders "B.LEAGUE PREMIER" and tab=2 "B.LEAGUE
 #: ONE" (captured 2026-11-24, probes24/aliases/bleague-schedule*-20261127.html).
 #:
-#: That collides with the board: BetExplorer's ``japan/b-league-one`` slug is the
-#: **second** division, not the top one, so this lane's top-division fixtures are
-#: priced against B.ONE clubs and no name can agree. The mismatch is named in
-#: ``docs/RESULTS-ROUTE-ASSESSMENT.md`` and is an open scope decision -- do not
-#: "fix" it by pointing the board at another slug without deciding which
-#: competition this lane is.
+#: One adapter, two lanes, one division each. BetExplorer's ``japan/b-league-one``
+#: slug is the **second** division and matched the tab=2 slate game-for-game, so
+#: it belongs to ``JAPAN_B_ONE``; the top division is its own lane and claims no
+#: board slug until a page of it is captured. Sharing one lane across both
+#: divisions is what priced PREMIER fixtures against B.ONE clubs and made every
+#: name disagree (run 45385819819). See ``docs/RESULTS-ROUTE-ASSESSMENT.md``.
 TAB_B1 = 1
+TAB_B2 = 2
+
+#: The division each Japan lane reads. A lane is exactly one competition; this
+#: mapping is the only place the two are allowed to be related.
+TAB_BY_LEAGUE: Dict[League, int] = {
+    League.JAPAN_B_LEAGUE: TAB_B1,  # B.LEAGUE PREMIER (top division)
+    League.JAPAN_B_ONE: TAB_B2,  # B.LEAGUE ONE (second division)
+}
 
 #: Japan is UTC+09:00 all year (no DST), so the local offset is a constant.
 JST = timezone(timedelta(hours=9))
@@ -155,6 +163,16 @@ def _plain(text: str) -> str:
 
 def schedule_url(day: date, tab: int = TAB_B1) -> str:
     return f"{SCHEDULE_URL}?tab={int(tab)}&year={day.year}&mon={day.month}&day={day.day}"
+
+
+def tab_for(league: Any) -> int:
+    """The division tab for one Japan lane; an unknown lane is refused."""
+
+    value = league.value if isinstance(league, League) else str(league).strip().upper()
+    try:
+        return TAB_BY_LEAGUE[League(value)]
+    except (KeyError, ValueError) as exc:
+        raise ValueError(f"no B.League division tab for {league!r}") from exc
 
 
 def parse_slate(html: str) -> List[Dict[str, Any]]:
@@ -245,7 +263,10 @@ def _period_result(game: Dict[str, Any], key: str) -> Optional[ActualResult]:
 
 
 def _game_from_context(
-    payload: Dict[str, Any], key: str, requested_date: Optional[str]
+    payload: Dict[str, Any],
+    key: str,
+    requested_date: Optional[str],
+    league: League = League.JAPAN_B_LEAGUE,
 ) -> Optional[Game]:
     game = payload.get("Game") if isinstance(payload.get("Game"), dict) else payload
     if not isinstance(game, dict):
@@ -306,7 +327,7 @@ def _game_from_context(
     day = date.fromisoformat(scheduled_utc[:10])
     return Game(
         game_id=f"BLEAGUE-{key}",
-        league=League.JAPAN_B_LEAGUE,
+        league=league,
         season=str(season_end_year(day)),
         home_team_id=home_id,
         away_team_id=away_id,
@@ -355,9 +376,14 @@ def _fetch_context(key: str, transport: FetchFn) -> Dict[str, Any]:
 def discover_games(
     date_iso: Optional[str],
     fetch: Optional[FetchFn] = None,
-    tab: int = TAB_B1,
+    tab: Optional[int] = None,
+    league: League = League.JAPAN_B_LEAGUE,
 ) -> List[Game]:
     """Games of one UTC date in one division, from the slate page plus contexts.
+
+    ``tab`` defaults to the division ``league`` owns; passing a tab for another
+    division is refused, because a lane that reads one competition and prices
+    another cannot be diagnosed.
 
     The page is asked for in **JST terms** for both JST dates that can contain a
     tip inside the target UTC day, and rows whose tip falls outside
@@ -396,7 +422,16 @@ def discover_games(
     # neither a coverage gap nor a read receipt" while this function is written
     # to raise rather than return empty. Recording how far execution got turns
     # that contradiction into evidence instead of another theory.
+    expected_tab = tab_for(league)
+    if tab is not None and int(tab) != expected_tab:
+        raise ValueError(
+            f"{league.value} reads tab={expected_tab}, not tab={int(tab)}; "
+            "one lane is one division"
+        )
+    tab = expected_tab
     _last_probe["entered"] = True
+    _last_probe["league"] = league.value
+    _last_probe["tab"] = tab
     transport = fetch or default_fetch()
     _last_probe["transport"] = "injected" if fetch is not None else "default"
     if date_iso:
@@ -439,7 +474,7 @@ def discover_games(
     for key in keys:
         try:
             payload = _fetch_context(key, transport)
-            game = _game_from_context(payload, key, date_iso)
+            game = _game_from_context(payload, key, date_iso, league)
         except (IdentityError, ValueError) as exc:
             _record_gap(key, str(exc))
             continue
@@ -468,7 +503,7 @@ def fetch_game_result(game: Game, fetch: Optional[FetchFn] = None) -> Game:
     if not key:
         raise IdentityError(f"game {game.game_id} carries no B.LEAGUE ScheduleKey")
     transport = fetch or default_fetch()
-    refreshed = _game_from_context(_fetch_context(key, transport), key, None)
+    refreshed = _game_from_context(_fetch_context(key, transport), key, None, game.league)
     if refreshed is None:
         raise ValueError(f"B.LEAGUE game {key} is not on a dated slate")
     if refreshed.home_team_id != game.home_team_id:
