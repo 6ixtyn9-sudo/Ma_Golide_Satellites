@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -284,6 +285,44 @@ def _utc_now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def read_slate(args, league, read, now_utc: str):
+    """One attempt at the whole read: fixtures, prices, table.
+
+    Kept separate from :func:`main` so a retry is a retry of *the read* and not of
+    the writing: a card is only touched once a read has either succeeded or run out
+    of attempts.
+    """
+
+    if args.from_store:
+        from ingestion.duckdb_store import DuckDBStore
+
+        store = DuckDBStore(args.warehouse)
+        try:
+            games = slate_games(
+                store.list_games(league=league),
+                args.date,
+                tz_offset_hours=args.tz_offset_hours,
+            )
+            snapshots = {
+                game.game_id: store.get_book_snapshots(game.game_id) for game in games
+            }
+        finally:
+            store.close()
+        published, report = fetch_published(league.value, read, delay=0.0)
+        return games, snapshots, published, report
+
+    # Default: the fixtures page is both the slate and the route to a match page,
+    # so a lane with no warehouse is still scoreable.
+    games, snapshots, fixtures_html, page_reads = slate_from_page(
+        league.value, args.date, read, now_utc=now_utc
+    )
+    published, report = fetch_published(
+        league.value, read, fixtures_html=fixtures_html, delay=0.0
+    )
+    report["requests"] = int(report.get("requests") or 0) + page_reads
+    return games, snapshots, published, report
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--league", required=True)
@@ -305,7 +344,19 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         "--delay",
         type=float,
         default=betexplorer_standings.CRAWL_DELAY_SECONDS,
-        help="seconds between requests (the host's measured floor is 10)",
+        help="seconds between requests (the host's smallest safe spacing)",
+    )
+    parser.add_argument(
+        "--retries",
+        type=int,
+        default=1,
+        help="retries after a 429; a throttle is transient, a wrong header is not",
+    )
+    parser.add_argument(
+        "--retry-wait",
+        type=float,
+        default=45.0,
+        help="seconds to wait before a retry",
     )
     args = parser.parse_args(argv)
 
@@ -316,47 +367,37 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     read = _read_text_factory(args.delay, stamp_path)
     now_utc = _utc_now()
 
-    try:
-        if args.from_store:
-            from ingestion.duckdb_store import DuckDBStore
-
-            store = DuckDBStore(args.warehouse)
-            try:
-                games = slate_games(
-                    store.list_games(league=league),
-                    args.date,
-                    tz_offset_hours=args.tz_offset_hours,
-                )
-                snapshots = {
-                    game.game_id: store.get_book_snapshots(game.game_id)
-                    for game in games
-                }
-            finally:
-                store.close()
-            published, report = fetch_published(league.value, read, delay=0.0)
-        else:
-            # Default: the fixtures page is both the slate and the route to a match
-            # page, so a lane with no warehouse is still scoreable.
-            games, snapshots, fixtures_html, page_reads = slate_from_page(
-                league.value, args.date, read, now_utc=now_utc
-            )
-            published, report = fetch_published(
-                league.value, read, fixtures_html=fixtures_html, delay=0.0
-            )
-            report["requests"] = int(report.get("requests") or 0) + page_reads
-    except (HttpError, betexplorer_standings.IdentityError, OSError, ValueError) as exc:
-        # A failed read replaces the block rather than leaving an older sentence
-        # behind that claims a read which did not happen.
-        section = failure_section(
-            league.value, args.date, f"{type(exc).__name__}: {exc}"
-        )
+    def fail(reason: str) -> int:
+        section = failure_section(league.value, args.date, reason)
         written = write_section(
             localdata, state_key=spec.state_key, target_date=args.date, section=section
         )
-        print(f"{league.value} {args.date}: READ FAILED — {type(exc).__name__}: {exc}")
+        print(f"{league.value} {args.date}: READ FAILED — {reason}")
         for kind, path in written.items():
             print(f"  {kind}: {path}")
         return 1
+
+    attempts = 0
+    while True:
+        try:
+            games, snapshots, published, report = read_slate(args, league, read, now_utc)
+            break
+        except HttpError as exc:
+            if exc.status == 429 and attempts < args.retries:
+                attempts += 1
+                print(
+                    f"  HTTP 429 — waiting {args.retry_wait:.0f}s, "
+                    f"retry {attempts}/{args.retries}"
+                )
+                time.sleep(args.retry_wait)
+                continue
+            return fail(
+                f"{type(exc).__name__}: {exc}"
+                + (f" (after {attempts + 1} attempt(s))" if attempts else "")
+            )
+        except (betexplorer_standings.IdentityError, OSError, ValueError) as exc:
+            # A shape this reader refuses is not transient: no retry.
+            return fail(f"{type(exc).__name__}: {exc}")
 
     section = build_section(
         league.value, games, published, snapshots, target_date=args.date

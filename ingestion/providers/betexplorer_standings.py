@@ -95,9 +95,11 @@ BASE = "https://www.betexplorer.com/basketball"
 #: Sub-tables the match page offers, in the order the widget lists them.
 TABLE_SUBS = ("overall", "home", "away")
 
-#: This host answered 429 when two requests were 2 seconds apart, and answered
-#: normally at roughly ten. Ten is a floor, not a preference.
-CRAWL_DELAY_SECONDS = 10.0
+#: The floor, from measurements rather than taste: 2 s between requests drew 429
+#: on the second (2026-11-25), 10 s drew 429 on the fourth (2026-11-26, after three
+#: answered), 12 s and 20 s both completed four requests. Fifteen is the smallest
+#: spacing that has never failed here.
+CRAWL_DELAY_SECONDS = 15.0
 
 #: The table element the fragment answers with. Any ``stats-table`` will do: the
 #: capture wrote ``class="stats-table stats-main table-1"``, and the head is
@@ -107,17 +109,22 @@ _TABLE_RE = re.compile(
 )
 _ROW_RE = re.compile(r"<tr[^>]*>(?P<row>.*?)</tr>", re.S)
 _CELL_RE = re.compile(r"<td(?P<attrs>[^>]*)>(?P<body>.*?)</td>", re.S)
-_TH_RE = re.compile(r"<th[^>]*>(?P<text>.*?)</th>", re.S)
+_TH_RE = re.compile(r"<th(?P<attrs>[^>]*)>(?P<text>.*?)</th>", re.S)
+_DATA_TYPE_RE = re.compile(r'data-type="(?P<kind>[^"]*)"')
 _TAG_RE = re.compile(r"<[^>]+>")
 _ANCHOR_TEXT_RE = re.compile(r"<a\b[^>]*>(?P<text>[^<]*)</a>", re.S)
 _CLUB_ID_RE = re.compile(r"glib-participant-(?P<id>[A-Za-z0-9]{6,})")
 _TITLE_RE = re.compile(r"title=\"(?P<title>[^\"]*)\"")
 _SCORE_SPLIT_RE = re.compile(r"^\s*(?P<pf>\d{1,4})\s*:\s*(?P<pa>\d{1,4})\s*$")
 
-#: Columns the parser requires by name: the capture's head, minus ``Pts`` (which
-#: is redundant with ``W`` in this competition and may not exist elsewhere) and
-#: minus ``Form`` (not read).
-REQUIRED_HEADERS = ("#", "Team", "MP", "W", "L", "TP")
+#: The contract is the **body cell classes**, not the head's labels. WCBA serves
+#: ``# | Group A | MP | W | L | TP | PCT | Form`` (2026-11-26) where the capture
+#: served ``# | Team | MP | W | L | TP | Pts | Form``: the team column is labelled
+#: with its group, and the points column carries a percentage instead of a count.
+#: Both pages write the same ``col_*`` classes on their cells, so those are what a
+#: table must carry to be read.
+REQUIRED_CELL_CLASSES = ("col_matches_played", "col_wins", "col_losses")
+TEAM_CELL_CLASSES = ("col_participant_name", "col_name")
 
 #: The tab links a match page writes for itself. The token lives inside these and
 #: nowhere else on the page, which is why the match page is read first.
@@ -181,135 +188,174 @@ class ParsedTable:
         return len(self.rows)
 
 
-def _header_ok(head: str) -> Tuple[bool, List[str]]:
-    columns = [_text(cell) for cell in _TH_RE.findall(head)]
-    present = [column for column in columns if column]
-    ok = all(name in present for name in REQUIRED_HEADERS)
-    return ok, present
+def _columns(head: str) -> List[str]:
+    """The head's labels, in order -- reported, never validated against."""
+
+    return [text for text in (_text(cell.group("text")) for cell in _TH_RE.finditer(head)) if text]
+
+
+def _team_label(head: str) -> Optional[str]:
+    """The team column's own label. A group table puts its group here.
+
+    Found by the same classes the body uses, so ``Group A`` and ``Team`` are the
+    same finding: the column the clubs live in.
+    """
+
+    for cell in _TH_RE.finditer(head):
+        attrs = cell.group("attrs")
+        kinds = set(_cell_class(attrs).split())
+        typed = _DATA_TYPE_RE.search(attrs)
+        if typed:
+            kinds.add(typed.group("kind"))
+        if kinds & (set(TEAM_CELL_CLASSES) | {"col_participant_name"}):
+            return _text(cell.group("text"))
+    return None
 
 
 def parse_standings_table(html: str, sub: str = "overall") -> ParsedTable:
     """Parse the standings fragment into canonical rows.
 
-    Raises ``IdentityError`` when the body is not a standings table at all -- an
-    empty body (the shape the competition-level route returned), a fixtures
-    table, or a head that is missing the columns this parser reads. Guessing at
-    a table that is not there is what produced a fixtures table being read as
-    standings once already.
+    Every ``stats-table`` in the body is read, in order, because a competition may
+    publish one table per group (WCBA labels its team column ``Group A``): the
+    fragment is a group table, not a league table, and pretending otherwise would
+    drop half the competition. The group label rides on each row's ``section`` when
+    the rank cell does not name a stage.
+
+    Raises ``IdentityError`` when the body carries no standings table at all -- an
+    empty body (the shape the competition-level route returned) or a fixtures table
+    -- and when tables are present but yield no row. Guessing at a table that is
+    not there is what produced a fixtures table being read as standings once
+    already, and the head's labels are *not* used as a gate: ``Group A``/``PCT`` is
+    a shape this reader must accept, not refuse.
     """
 
-    table = _TABLE_RE.search(html or "")
-    if table is None:
+    tables = list(_TABLE_RE.finditer(html or ""))
+    if not tables:
         raise IdentityError(
             f"{PROVIDER}: no standings table in the {sub} fragment "
             f"({len(html or '')} bytes)"
         )
-    body = table.group("body")
-    head_end = body.find("</thead>")
-    head, rows_html = (body[:head_end], body[head_end:]) if head_end >= 0 else ("", body)
-    ok, columns = _header_ok(head)
-    if not ok:
-        raise IdentityError(
-            f"{PROVIDER}: {sub} fragment head {columns or ['<none>']} is missing "
-            f"one of {list(REQUIRED_HEADERS)}"
-        )
 
-    parsed = ParsedTable(sub=sub, report={"columns": columns})
+    parsed = ParsedTable(sub=sub, report={"tables": len(tables)})
     skipped: Dict[str, int] = {}
+    groups: List[str] = []
+    columns: List[str] = []
+    seen_teams: set[str] = set()
 
     def skip(reason: str) -> None:
         skipped[reason] = skipped.get(reason, 0) + 1
 
-    for row in _ROW_RE.finditer(rows_html):
-        # ``group(0)``, not ``group("row")``: the club id rides on the <tr> tag
-        # itself (``class="odd glib-participant-IHmmS3rt"``).
-        markup = row.group(0)
-        cells = list(_CELL_RE.finditer(row.group("row")))
-        if not cells:
-            skip("no_cells")
-            continue
-        by_class: Dict[str, str] = {}
-        rank_title: Optional[str] = None
-        for cell in cells:
-            attrs = cell.group("attrs")
-            classes = _cell_class(attrs).split()
-            for token in classes:
-                if token.startswith("col_"):
-                    by_class.setdefault(token, cell.group("body"))
-            if "col_rank" in classes:
-                title = _TITLE_RE.search(attrs)
-                rank_title = title.group("title") if title else None
+    for index, table in enumerate(tables):
+        body = table.group("body")
+        head_end = body.find("</thead>")
+        head, rows_html = (body[:head_end], body[head_end:]) if head_end >= 0 else ("", body)
+        if not columns:
+            columns = _columns(head)
+        label = _team_label(head)
+        group_label = label if label and label not in {"Team", "#", ""} else None
+        if group_label and group_label not in groups:
+            groups.append(group_label)
 
-        team_cell = by_class.get("col_participant_name") or by_class.get("col_name")
-        if team_cell is None:
-            # A stage/group separator row: it has a label, not a club.
-            skip("no_team_cell")
-            continue
-        anchor = _ANCHOR_TEXT_RE.search(team_cell)
-        name = _text(anchor.group("text") if anchor else team_cell)
-        if not name:
-            skip("empty_team_name")
-            continue
+        for row in _ROW_RE.finditer(rows_html):
+            # ``group(0)``, not ``group("row")``: the club id rides on the <tr> tag
+            # itself (``class="odd glib-participant-IHmmS3rt"``).
+            markup = row.group(0)
+            cells = list(_CELL_RE.finditer(row.group("row")))
+            if not cells:
+                skip("no_cells")
+                continue
+            by_class: Dict[str, str] = {}
+            rank_title: Optional[str] = None
+            for cell in cells:
+                attrs = cell.group("attrs")
+                classes = _cell_class(attrs).split()
+                for token in classes:
+                    if token.startswith("col_"):
+                        by_class.setdefault(token, cell.group("body"))
+                if "col_rank" in classes:
+                    title = _TITLE_RE.search(attrs)
+                    rank_title = title.group("title") if title else None
 
-        ranks = _clean_number(by_class.get("col_rank", ""))
-        played = _clean_number(by_class.get("col_matches_played", ""))
-        wins = _clean_number(by_class.get("col_wins", ""))
-        losses = _clean_number(by_class.get("col_losses", ""))
-        if played is None or wins is None or losses is None:
-            skip("missing_core_cells")
-            continue
-        if played <= 0:
-            skip("no_games_played")
-            continue
-        if wins + losses != played or wins > played or losses > played:
-            skip("inconsistent_record")
-            continue
+            team_cell = by_class.get("col_participant_name") or by_class.get("col_name")
+            if team_cell is None:
+                # A stage/group separator row: it has a label, not a club.
+                skip("no_team_cell")
+                continue
+            anchor = _ANCHOR_TEXT_RE.search(team_cell)
+            name = _text(anchor.group("text") if anchor else team_cell)
+            if not name:
+                skip("empty_team_name")
+                continue
 
-        points_for: Optional[float] = None
-        points_against: Optional[float] = None
-        total = _SCORE_SPLIT_RE.match(_text(by_class.get("col_goals", "")))
-        if total is not None:
-            points_for = float(total.group("pf"))
-            points_against = float(total.group("pa"))
+            ranks = _clean_number(by_class.get("col_rank", ""))
+            played = _clean_number(by_class.get("col_matches_played", ""))
+            wins = _clean_number(by_class.get("col_wins", ""))
+            losses = _clean_number(by_class.get("col_losses", ""))
+            if played is None or wins is None or losses is None:
+                skip("missing_core_cells")
+                continue
+            if played <= 0:
+                skip("no_games_played")
+                continue
+            if wins + losses != played or wins > played or losses > played:
+                skip("inconsistent_record")
+                continue
 
-        club_id = _CLUB_ID_RE.search(markup)
-        canonical = canonical_team_name(name)
-        if rank_title:
-            parsed.stage = parsed.stage or rank_title
-        parsed.rows.append(
-            StandingsRow(
-                team_name=canonical,
-                position=ranks,
-                games_played=played,
-                wins=wins,
-                losses=losses,
-                points_for=points_for,
-                points_against=points_against,
-                win_pct=round(wins / played, 4),
-                # Streak and last-10 stay unset: the Form glyph is not decoded
-                # here (see the module docstring), so there is nothing honest to
-                # put in them.
-                section=rank_title,
-                source=SOURCE,
+            points_for: Optional[float] = None
+            points_against: Optional[float] = None
+            total = _SCORE_SPLIT_RE.match(_text(by_class.get("col_goals", "")))
+            if total is not None:
+                points_for = float(total.group("pf"))
+                points_against = float(total.group("pa"))
+
+            club_id = _CLUB_ID_RE.search(markup)
+            canonical = canonical_team_name(name)
+            if canonical in seen_teams:
+                # The same club in two tables is one club; two groups overlap only
+                # if the page repeated a row, and counting it twice would double
+                # every total it contributes.
+                skip("duplicate_team")
+                continue
+            seen_teams.add(canonical)
+            section = rank_title or group_label
+            if rank_title:
+                parsed.stage = parsed.stage or rank_title
+            parsed.rows.append(
+                StandingsRow(
+                    team_name=canonical,
+                    position=ranks,
+                    games_played=played,
+                    wins=wins,
+                    losses=losses,
+                    points_for=points_for,
+                    points_against=points_against,
+                    win_pct=round(wins / played, 4),
+                    # Streak and last-10 stay unset: the Form glyph is not decoded
+                    # here (see the module docstring), so there is nothing honest to
+                    # put in them.
+                    section=section,
+                    source=SOURCE,
+                )
             )
-        )
-        if club_id is not None:
-            parsed.team_ids[canonical] = club_id.group("id")
+            if club_id is not None:
+                parsed.team_ids[canonical] = club_id.group("id")
 
     parsed.report.update(
         {
             "sub": sub,
+            "columns": columns,
+            "groups": groups,
             "rows_parsed": len(parsed.rows),
             "rows_skipped": sum(skipped.values()),
             "skip_reasons": skipped,
             "stage": parsed.stage,
-            "has_points_column": "Pts" in columns,
+            "has_points_column": any(column in {"Pts", "PCT"} for column in columns),
         }
     )
     if not parsed.rows:
         raise IdentityError(
-            f"{PROVIDER}: {sub} fragment table parsed to zero rows "
-            f"(skipped: {skipped or 'none'})"
+            f"{PROVIDER}: {sub} fragment produced zero rows from {len(tables)} "
+            f"table(s), head {columns or ['<none>']}, skipped: {skipped or 'none'}"
         )
     return parsed
 
@@ -564,9 +610,10 @@ __all__ = [
     "cooldown",
     "EVIDENCE",
     "PROVIDER",
-    "REQUIRED_HEADERS",
+    "REQUIRED_CELL_CLASSES",
     "SOURCE",
     "TABLE_SUBS",
+    "TEAM_CELL_CLASSES",
     "ParsedTable",
     "StandingsResult",
     "competition_prefix",

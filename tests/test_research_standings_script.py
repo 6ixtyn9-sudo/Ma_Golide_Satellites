@@ -12,6 +12,7 @@ from pathlib import Path
 
 import pytest
 
+from ingestion.http import HttpError
 from ingestion.models import (
     BookSnapshot,
     Game,
@@ -459,3 +460,77 @@ def test_the_failure_block_says_why_the_old_block_was_not_kept():
 
     assert "replaced, not kept" in text
     assert "claim a read that did not happen" in text
+
+
+# -- retries -----------------------------------------------------------------
+
+
+def _attempts_harness(tmp_path, monkeypatch, outcomes):
+    """Drive ``main`` with a scripted sequence of read outcomes."""
+
+    calls = {"n": 0}
+    slept: list[float] = []
+
+    def fake_read_slate(args, league, read, now_utc):
+        calls["n"] += 1
+        outcome = outcomes[calls["n"] - 1]
+        if isinstance(outcome, BaseException):
+            raise outcome
+        return outcome
+
+    monkeypatch.setattr(rs, "read_slate", fake_read_slate)
+    monkeypatch.setattr(
+        rs, "_read_text_factory", lambda delay, stamp: type("R", (), {"waited": 0.0})()
+    )
+    monkeypatch.setattr(rs.time, "sleep", slept.append)
+    return calls, slept
+
+
+def _success():
+    return (
+        [_game("a")],
+        {"a": [_snapshot("a")]},
+        TABLE,
+        {"requests": 5, "subs_read": ["away", "home", "overall"], "split_mismatch": []},
+    )
+
+
+def _main(tmp_path):
+    return ["--league", "LITHUANIA_NKL", "--date", "2026-12-01",
+            "--localdata", str(tmp_path), "--delay", "0"]
+
+
+def test_a_throttle_is_retried_once_and_then_succeeds(tmp_path, monkeypatch):
+    calls, slept = _attempts_harness(
+        tmp_path, monkeypatch, [HttpError(429, "u", ""), _success()]
+    )
+
+    assert rs.main(_main(tmp_path)) == 0
+    assert calls["n"] == 2
+    assert slept == [45.0]
+    text = (tmp_path / "lithuania_nkl" / "picks_2026-12-01.txt").read_text()
+    assert "SINGLE" in text  # the retry produced real rows
+
+
+def test_a_throttle_that_persists_reports_how_many_attempts_it_made(tmp_path, monkeypatch):
+    calls, slept = _attempts_harness(
+        tmp_path, monkeypatch, [HttpError(429, "u", ""), HttpError(429, "u", "")]
+    )
+
+    assert rs.main(_main(tmp_path)) == 1
+    assert calls["n"] == 2
+    assert slept == [45.0]
+    text = (tmp_path / "lithuania_nkl" / "picks_2026-12-01.txt").read_text()
+    assert "after 2 attempt(s)" in text
+
+
+def test_a_refused_shape_is_not_retried(tmp_path, monkeypatch):
+    calls, slept = _attempts_harness(
+        tmp_path, monkeypatch, [bs.IdentityError("head is missing")]
+    )
+
+    assert rs.main(_main(tmp_path)) == 1
+    assert calls["n"] == 1
+    assert slept == []
+    text = (tmp_path / "lithuania_nkl" / "picks_2026-12-01.txt").read_text()
+    assert "head is missing" in text
