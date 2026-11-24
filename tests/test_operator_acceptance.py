@@ -41,7 +41,14 @@ def test_every_recorded_acceptance_names_who_decided_and_what_they_accepted(leag
     assert "no redistribution" in record.scope.lower()
 
 
-@pytest.mark.parametrize("league", ACCEPTED)
+#: Lanes whose acceptance opened the licence gate but whose adapter has not yet
+#: been replayed against served pages. NKL is deliberately absent: its adapter was
+#: replayed live on 2026-11-24 and settled three games, which is the only thing
+#: that turns an acceptance into a lit lane.
+ACCEPTED_BUT_DARK = tuple(league for league in ACCEPTED if league != "LITHUANIA_NKL")
+
+
+@pytest.mark.parametrize("league", ACCEPTED_BUT_DARK)
 def test_an_acceptance_does_not_by_itself_switch_a_results_lane_on(league):
     """The rule the whole project runs on: a decision is not a served page."""
 
@@ -50,6 +57,20 @@ def test_an_acceptance_does_not_by_itself_switch_a_results_lane_on(league):
     assert spec.results_source == "source_unavailable", (
         f"{league} must stay dark until an adapter is replayed against a captured page"
     )
+
+
+def test_nkl_is_lit_by_a_served_page_rather_than_by_its_acceptance():
+    """The other half of the same rule, in the one lane where it has been met."""
+
+    from ingestion.providers import nkl
+
+    spec = league_spec(League.LITHUANIA_NKL)
+
+    assert spec.operator_acceptance is not None
+    assert spec.results_source == nkl.PROVIDER
+    # The lane names the reader that settled a game, not a promise of one.
+    assert spec.results_source == "nkl"
+    assert "Crawl-delay" in spec.operator_acceptance.scope
 
 
 def test_the_two_hosts_without_any_terms_document_say_so_in_their_basis():

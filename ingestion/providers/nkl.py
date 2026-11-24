@@ -23,12 +23,25 @@ construction, which would hide exactly the failure it exists to catch -- a game
 whose extra period was dropped.  ``to_actual_result()`` therefore returns ``None``
 unless the page states a final **and** the quarters add up to it.
 
-No request is made here: this reads bytes that were already captured.
+Reading and settling
+-------------------
+Parsing is pure: every reader below takes bytes it was handed.  The two functions
+that place requests are :func:`settle_forecast` (forecast names plus a date in,
+one reconciling record out, two reads for the first game of a club and one for
+each after it) and :func:`paced`, which wraps a reader so consecutive requests
+honour the ``Crawl-delay: 10`` this host publishes rather than the politeness of a
+caller who remembers to sleep.
+
+The lane is on.  ``LITHUANIA_NKL`` reports ``results_source = "nkl"`` as of
+2026-11-24, on a live run that settled three games whose quarters reconciled with
+their stated finals (``docs/NKL-SETTLEMENT-LIVE-RUN.md``), and the scheduled
+results tick reaches these functions through ``Pipeline._nkl_settle``.
 """
 
 from __future__ import annotations
 
 import re
+import time
 from dataclasses import dataclass, field
 from datetime import date, datetime
 from typing import Dict, List, Optional, Tuple
@@ -453,6 +466,46 @@ def explain_miss(
     return [reason]
 
 
+#: nkl.lt publishes exactly this in robots.txt: ``Crawl-delay: 10``.
+CRAWL_DELAY_SECONDS = 10.0
+
+
+class PacedReader:
+    """Wrap a text reader so consecutive requests honour a crawl delay.
+
+    nkl.lt asks for ten seconds between requests, and a slate of games is the one
+    shape where that matters: a forecast's two reads are seconds apart, and a run
+    that settles six games would otherwise make twelve requests back to back.
+    The delay is applied *between* requests -- never before the first, which would
+    penalise a run that reads one page -- and the sleep is injectable so tests
+    neither wait nor patch the clock.
+
+    ``calls`` counts reads that actually reached the transport, which is what a
+    receipt should report.
+    """
+
+    def __init__(self, read_text, *, delay: Optional[float] = None, sleep=None) -> None:
+        self._read_text = read_text
+        # Resolved at construction, not as a default argument: a delayed binding
+        # would let the module constant change while the reader kept the old one.
+        self._delay = max(0.0, float(CRAWL_DELAY_SECONDS if delay is None else delay))
+        self._sleep = sleep or time.sleep
+        self.calls = 0
+
+    def __call__(self, url: str) -> str:
+        if self.calls and self._delay:
+            self._sleep(self._delay)
+        self.calls += 1
+        return self._read_text(url)
+
+
+def paced(read_text, *, delay: Optional[float] = None, sleep=None) -> PacedReader:
+    """The reader a settlement run should pass in, so the delay cannot be
+    forgotten at the call site."""
+
+    return PacedReader(read_text, delay=delay, sleep=sleep)
+
+
 #: A club page's fixture table.  Each row is a joined view -- id, kickoff, both
 #: clubs and the final -- which is what makes a forecast findable without opening
 #: a 680 KB match page first.
@@ -549,6 +602,9 @@ class Settlement:
 
     result: object
     url: Optional[str] = None
+    #: The nkl.lt match id, so the caller can stamp it as a provider id rather
+    #: than re-parsing it out of ``url`` at the far end of a pipeline.
+    match_id: Optional[str] = None
     requests_made: int = 0
     reasons: Tuple[str, ...] = ()
 
@@ -557,6 +613,7 @@ class Settlement:
         return {
             "settled": result is not None,
             "url": self.url,
+            "match_id": self.match_id,
             "requests_made": self.requests_made,
             "reasons": list(self.reasons),
             "periods": None if result is None else {
@@ -614,7 +671,7 @@ def settle_forecast(
     if row.home_score is None:
         reasons.append(f"row {row.match_id} has no result yet")
         return Settlement(result=None, url=row.url, requests_made=requests_made,
-                          reasons=tuple(reasons))
+                          match_id=row.match_id, reasons=tuple(reasons))
 
     try:
         page = parse_match_page(read_text(row.url), url=row.url)
@@ -622,20 +679,20 @@ def settle_forecast(
     except Exception as exc:  # noqa: BLE001
         reasons.append(f"match page failed: {str(exc)[:120]}")
         return Settlement(result=None, url=row.url, requests_made=requests_made,
-                          reasons=tuple(reasons))
+                          match_id=row.match_id, reasons=tuple(reasons))
 
     result = page.to_actual_result()
     if result is None:
         reasons.extend(page.reasons or ("no reconcilable periods",))
         return Settlement(result=None, url=row.url, requests_made=requests_made,
-                          reasons=tuple(reasons))
+                          match_id=row.match_id, reasons=tuple(reasons))
     ok, why = result.reconciles()
     if not ok:
         reasons.append(f"quarters do not reconcile with the final: {why}")
         return Settlement(result=None, url=row.url, requests_made=requests_made,
-                          reasons=tuple(reasons))
+                          match_id=row.match_id, reasons=tuple(reasons))
     return Settlement(result=result, url=row.url, requests_made=requests_made,
-                      reasons=tuple(reasons))
+                      match_id=row.match_id, reasons=tuple(reasons))
 
 
 def parse_match_page(html: str, url: str = "") -> MatchPage:

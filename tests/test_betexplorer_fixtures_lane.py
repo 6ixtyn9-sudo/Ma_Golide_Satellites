@@ -81,8 +81,12 @@ def test_lane_is_active_and_its_price_is_aggregate_and_unresolved(league):
     policy = price_evidence_policy(parse_league(league), "betexplorer")
     assert policy.price_provenance is PriceProvenance.AGGREGATE_CONSENSUS
     assert policy.source_permission is SourcePermission.UNRESOLVED
-    # No settlement route exists on this page, and the contract says so.
-    assert spec.results_source == "source_unavailable"
+    # This page is a fixtures page: it carries no settlement route, and the price
+    # evidence stays aggregate and unresolved whatever the lane can settle from.
+    # NKL settles from the federation's own club and match pages, activated
+    # 2026-11-24 on a live run -- so its results_source names that reader.
+    expected_results = "nkl" if league == "LITHUANIA_NKL" else "source_unavailable"
+    assert spec.results_source == expected_results
 
 
 @pytest.mark.parametrize("league", LANES)
@@ -264,12 +268,12 @@ def test_pipeline_dispatch_writes_the_slate_and_its_receipt():
     )
     assert health["coverage"]["slate_games"] == len(games)
     assert health["coverage"]["blank_kickoff_rows"] > 0
-    # The missing settlement route is stated by name, never silently absent.
-    pipeline._fetch_finals()
-    assert any(
-        gap.required_field == "official_results" and gap.provider == "source_unavailable"
-        for gap in pipeline.gaps
-    )
+    # NKL's results are store-driven: a fixtures page holds no result, so the
+    # same-day finals path returns nothing *without* claiming the route is
+    # missing. Pending games are settled by the re-check from the club and match
+    # pages (tests/test_nkl_settlement_path.py).
+    assert pipeline._fetch_finals() == []
+    assert not any(gap.required_field == "official_results" for gap in pipeline.gaps)
 
 
 def test_a_year_less_label_resolves_to_the_nearest_year_not_next_year():
@@ -310,8 +314,6 @@ DARK_LANE_BLOCKERS = {
     # Re-read 2026-11-24T14:02Z: the documented URL now answers 500 demanding a
     # roundId, so the round space -- not the licence -- is what blocks it.
     "CHINA_WCBA_W": "roundId",
-    # The namespace answers, but its game object has no score key: a calendar.
-    "LITHUANIA_NKL": "no score",
     # Referer-only access stopped working between two reads the same day.
     "AUSTRALIA_WNBL_W": "401",
     "ISRAEL_LIGA_LEUMIT": "robots Disallow",
@@ -326,6 +328,22 @@ def test_a_dark_results_lane_names_the_state_of_its_own_route(league):
     assert "2026-11-24" in spec.source_detail
     assert DARK_LANE_BLOCKERS[league] in spec.source_detail
     assert "docs/RESULTS-ROUTE-ASSESSMENT.md" in spec.source_detail
+
+
+def test_the_lit_nkl_lane_carries_its_live_run_in_the_detail():
+    """A lane that was dark twice must say what lit it, not just that it is lit."""
+
+    spec = league_spec(parse_league("LITHUANIA_NKL"))
+
+    assert spec.results_source == "nkl"
+    # The blocker that kept it dark is preserved rather than deleted with it.
+    assert "no score" in spec.source_detail
+    assert "activated 2026-11-24" in spec.source_detail
+    # The evidence is the three settled games, by id and by final.
+    for match_id in ("125749", "125760", "125775"):
+        assert match_id in spec.source_detail
+    assert "76-91" in spec.source_detail and "95-99" in spec.source_detail
+    assert "docs/NKL-SETTLEMENT-LIVE-RUN.md" in spec.source_detail
 
 
 def test_leumit_is_retired_because_it_could_never_settle():

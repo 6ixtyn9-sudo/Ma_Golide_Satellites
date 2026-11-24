@@ -47,11 +47,22 @@ Both were reported by the code and fixed in the same session, in that order:
 Neither was visible from a single-game test. The first was found because the run
 printed its reasons; the second because the first printed them.
 
-## What this run does *not* establish
+## Activation (2026-11-24)
 
-- **Terms.** `nkl.lt` publishes `Crawl-delay: 10` in `robots.txt` and the delay is
-  honoured, but no terms document has been read. Storing results needs an
-  `OperatorAcceptance`; the `LITHUANIA_NKL` status is unchanged.
+The operator authorised storing results from this run, and stated that the site's
+published notices had been read and the read accepted for this record. Both are
+recorded in `ingestion/league_registry.py` as data — `decided_by`, `decided_on`,
+`scope`, `basis` — and the sitemap observation stands beside them: no separate
+terms document exists, and that absence is recorded rather than glossed.
+
+`LITHUANIA_NKL` now reports `results_source = "nkl"`, and the label has behaviour:
+the scheduled results tick settles stored pending fixtures through
+`Pipeline._nkl_settle` (one club page per club per run, one match page per game,
+paced to `Crawl-delay: 10`), writing a result only when the quarters reconcile and
+a gap with the reader's own reasons otherwise. `tests/test_nkl_settlement_path.py`
+pins that path, including the pacing and the fail-closed refusal.
+
+## What this run does *not* establish
 - **Overtime.** Totals 205, 202 and 194 (the season's highest) all reconciled with
   four periods, so either no OT games exist or NKL folds OT into the four columns.
   The five-column refusal is proven only against synthetic markup.
