@@ -9,7 +9,9 @@ exist only to pin that.
 
 from __future__ import annotations
 
-from forecasting.magolide_score import MaGolideVerdict
+import pytest
+
+from forecasting.magolide_score import MaGolideConfig, MaGolideVerdict
 from forecasting.research_slate import (
     PRICE_LABEL,
     RESEARCH_BUCKET,
@@ -35,7 +37,7 @@ LEAGUE = "LITHUANIA_NKL"
 
 
 def _published(team: str, *, position: int, played: int, wins: int, losses: int,
-               pf: float, pa: float) -> PublishedRow:
+               pf: float, pa: float, section: str | None = None) -> PublishedRow:
     return PublishedRow(
         team_name=team,
         position=position,
@@ -47,6 +49,7 @@ def _published(team: str, *, position: int, played: int, wins: int, losses: int,
         win_pct=round(wins / played, 4),
         home_record=None,
         away_record=None,
+        section=section,
         source="betexplorer_published_table",
     )
 
@@ -337,3 +340,88 @@ def test_the_section_reports_when_neutral_defaults_were_used():
     text = "\n".join(render_research_section(rows, date_label="2026-12-01", league=LEAGUE))
 
     assert "scored on the scorer's neutral defaults" in text
+
+
+# -- ranks belong to a group -------------------------------------------------
+
+
+WINNERS = "Promotion - NKL (Winners stage: )"
+LOSERS = "NKL (Losers stage: )"
+
+
+def _staged(team: str, *, position: int, wins: int, losses: int, pf: float, pa: float,
+            section: str) -> PublishedRow:
+    return _published(
+        team, position=position, played=16, wins=wins, losses=losses,
+        pf=pf, pa=pa, section=section,
+    )
+
+
+def test_a_rank_inside_one_group_is_not_a_rank_inside_another():
+    """NKL lists both stages as one 18-row table; the ranks are not one ladder."""
+
+    table = [
+        _staged("Alpha", position=2, wins=13, losses=3, pf=1300.0, pa=1200.0, section=WINNERS),
+        _staged("Beta", position=16, wins=3, losses=13, pf=1150.0, pa=1350.0, section=LOSERS),
+    ]
+
+    row = research_rows(LEAGUE, [_game(home="Alpha", away="Beta")], table)[0]
+
+    assert row.rank_suppressed is True
+    assert row.standings_evidence["home_section"] == WINNERS
+    assert row.standings_evidence["away_section"] == LOSERS
+    assert row.standings_evidence["home_rank"] is None  # dropped, not hidden
+
+
+def test_clubs_in_the_same_group_keep_their_ranks():
+    table = [
+        _staged("Alpha", position=2, wins=13, losses=3, pf=1300.0, pa=1200.0, section=WINNERS),
+        _staged("Beta", position=7, wins=8, losses=8, pf=1290.0, pa=1295.0, section=WINNERS),
+    ]
+
+    row = research_rows(LEAGUE, [_game(home="Alpha", away="Beta")], table)[0]
+
+    assert row.rank_suppressed is False
+    assert row.standings_evidence["home_rank"] == 2.0
+    assert row.standings_evidence["away_rank"] == 7.0
+
+
+def test_the_default_weights_give_rank_no_weight_at_all():
+    """So rank is provenance here: the score rides on pct, net_rtg and home court."""
+
+    assert MaGolideConfig().rank == 0.0
+    assert MaGolideConfig().pct > 0.0
+
+
+def test_the_suppression_removes_the_gap_once_rank_is_weighted():
+    """Under the defaults this is preventative; a weighted rank would otherwise bite."""
+
+    weighted = MaGolideConfig(rank=1.0)
+    cross = [
+        _staged("Alpha", position=2, wins=13, losses=3, pf=1300.0, pa=1200.0, section=WINNERS),
+        _staged("Beta", position=16, wins=3, losses=13, pf=1150.0, pa=1350.0, section=LOSERS),
+    ]
+    same = [
+        _staged("Alpha", position=2, wins=13, losses=3, pf=1300.0, pa=1200.0, section=WINNERS),
+        _staged("Beta", position=16, wins=3, losses=13, pf=1150.0, pa=1350.0, section=WINNERS),
+    ]
+
+    a = research_rows(LEAGUE, [_game(home="Alpha", away="Beta")], cross, config=weighted)[0]
+    b = research_rows(LEAGUE, [_game(home="Alpha", away="Beta")], same, config=weighted)[0]
+
+    # 16 - 2 = 14 ranks, at weight 1.0, present only where the ladder is one ladder.
+    assert b.verdict.score - a.verdict.score == pytest.approx(14.0)
+    assert a.rank_suppressed and not b.rank_suppressed
+
+
+def test_the_section_says_when_ranks_were_not_compared():
+    table = [
+        _staged("Alpha", position=2, wins=13, losses=3, pf=1300.0, pa=1200.0, section=WINNERS),
+        _staged("Beta", position=16, wins=3, losses=13, pf=1150.0, pa=1350.0, section=LOSERS),
+    ]
+    rows = research_rows(LEAGUE, [_game(home="Alpha", away="Beta")], table)
+
+    text = "\n".join(render_research_section(rows, date_label="2026-11-26", league=LEAGUE))
+
+    assert "different stages/groups" in text
+    assert "a rank inside one group is not a rank inside another" in text

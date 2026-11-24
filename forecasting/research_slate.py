@@ -45,7 +45,7 @@ which is all a paper slip needs and all this module claims.
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
 
 from ingestion.identity import canonical_team_name
@@ -99,6 +99,12 @@ class ResearchPickRow:
     standings_evidence: Dict[str, object] = field(default_factory=dict)
 
     @property
+    def rank_suppressed(self) -> bool:
+        """True when the two clubs sit in different stages/groups of one table."""
+
+        return bool(self.standings_evidence.get("rank_comparison_suppressed"))
+
+    @property
     def observed(self) -> bool:
         return self.market_observed
 
@@ -130,6 +136,7 @@ class ResearchPickRow:
             "market_observed": self.market_observed,
             "observed_utc": self.observed_utc,
             "bucket": RESEARCH_BUCKET,
+            "rank_comparison_suppressed": self.rank_suppressed,
             "acca_eligible": False,
             "bank_impact": "none",
             "weights_source": self.verdict.meta.get("weights_source"),
@@ -247,6 +254,11 @@ def research_rows(
     resolved_config = config or MaGolideConfig()
     scorer_rows = from_published(published, derived=derived)
     index = {row.team: row for row in scorer_rows}
+    sections = {
+        canonical_team_name(str(row.team_name)): row.section
+        for row in published
+        if row.section
+    }
     by_id, by_pair = _price_index(snapshots)
 
     out: List[ResearchPickRow] = []
@@ -255,6 +267,21 @@ def research_rows(
         away_name = canonical_team_name(game.away_name)
         home = index.get(home_name)
         away = index.get(away_name)
+        # A published rank is a rank *within its stage or group*. NKL's table lists
+        # the winners and losers stages as one 18-row list, so rank 2 in one group
+        # and rank 16 in the other are not two positions on one ladder. When the
+        # clubs sit in different sections the rank difference is dropped for both
+        # (the scorer's neutral 15 applies to neither side's advantage) and the
+        # suppression is recorded, rather than quoting a number that compares
+        # nothing.
+        home_section = sections.get(home_name)
+        away_section = sections.get(away_name)
+        cross_group = bool(home_section and away_section and home_section != away_section)
+        if cross_group:
+            if home is not None:
+                home = replace(home, rank=None)
+            if away is not None:
+                away = replace(away, rank=None)
         features = build_standings_features(home, away)
         verdict = score_features(features, resolved_config)
 
@@ -284,6 +311,9 @@ def research_rows(
                     "neutral_defaults_applied": home is None or away is None,
                     "home_rank": None if home is None else home.rank,
                     "away_rank": None if away is None else away.rank,
+                    "home_section": home_section,
+                    "away_section": away_section,
+                    "rank_comparison_suppressed": cross_group,
                     "rows_in_table": len(scorer_rows),
                 },
             )
@@ -363,6 +393,13 @@ def render_research_section(
         lines.append(
             f"- {neutral} fixture(s) had at least one club absent from the table and "
             "scored on the scorer's neutral defaults; those rows read RISKY by design."
+        )
+    suppressed = sum(1 for row in rows if row.rank_suppressed)
+    if suppressed:
+        lines.append(
+            f"- {suppressed} fixture(s) paired clubs from different stages/groups of "
+            "the same table, so rank was not used as a difference: a rank inside one "
+            "group is not a rank inside another."
         )
     lines.append("- acca_eligible=False on every row; this section never becomes a ticket leg.")
     lines.append("")
