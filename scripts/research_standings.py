@@ -37,6 +37,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from forecasting import research_slate  # noqa: E402
+from forecasting.config_tuner import TUNED_PATH, load_tuned  # noqa: E402
 from forecasting.research_slate import render_research_section, research_rows  # noqa: E402
 from ingestion.http import HttpError  # noqa: E402
 from ingestion.identity import parse_utc  # noqa: E402
@@ -241,13 +242,16 @@ def build_section(
     snapshots: Mapping[str, Sequence[BookSnapshot]],
     *,
     target_date: str,
+    bet_config=None,
 ) -> List[str]:
     """Rows and slips for one lane's slate, or an explicit empty block."""
 
     ordered: List[BookSnapshot] = [
         snapshot for game in games for snapshot in snapshots.get(game.game_id, ())
     ]
-    rows = research_rows(league, list(games), list(published), snapshots=ordered)
+    rows = research_rows(
+        league, list(games), list(published), snapshots=ordered, bet_config=bet_config
+    )
     section = render_research_section(rows, date_label=target_date, league=league)
     if section:
         return section
@@ -341,6 +345,14 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         help="lane wall-clock offset from UTC, for --from-store slate selection",
     )
     parser.add_argument(
+        "--bet-config",
+        default=str(TUNED_PATH),
+        help=(
+            "tuned bet configuration the card should run under; the shipped baseline "
+            "is always loaded first, so a missing file means defaults"
+        ),
+    )
+    parser.add_argument(
         "--delay",
         type=float,
         default=betexplorer_standings.CRAWL_DELAY_SECONDS,
@@ -400,7 +412,12 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             return fail(f"{type(exc).__name__}: {exc}")
 
     section = build_section(
-        league.value, games, published, snapshots, target_date=args.date
+        league.value,
+        games,
+        published,
+        snapshots,
+        target_date=args.date,
+        bet_config=load_tuned(tuned_path=args.bet_config),
     )
     written = write_section(
         localdata, state_key=spec.state_key, target_date=args.date, section=section
