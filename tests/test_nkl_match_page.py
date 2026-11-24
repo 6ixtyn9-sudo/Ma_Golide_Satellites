@@ -8,6 +8,8 @@ robots ``Crawl-delay: 10``), not invented.
 
 from __future__ import annotations
 
+from datetime import date
+
 from ingestion.providers import nkl
 
 #: Served shape: `class=nkl-quarters-table`, `<td\nclass=team-cell>`, unquoted href.
@@ -206,3 +208,51 @@ def test_an_unplayed_row_keeps_none_rather_than_repeating_the_last_score():
     assert counts["with_score"] == 1
     assert (rows[0].home_score, rows[0].away_score) == (None, None)
     assert (rows[1].home_score, rows[1].away_score) == (84.0, 65.0)
+
+
+def test_every_nkl_club_maps_to_exactly_one_betexplorer_club():
+    """Eighteen names on each side, reviewed on 2026-11-24. A duplicate target
+    would settle one club's game with another's quarter scores."""
+
+    targets = list(nkl.CLUB_NAMES.values())
+
+    assert len(nkl.CLUB_NAMES) == 18
+    assert len(set(targets)) == 18
+    assert len({name.strip().lower() for name in nkl.CLUB_NAMES}) == 18
+
+
+def test_the_two_olimpas_clubs_do_not_swap():
+    """Palanga's club is called Olimpas and so is Plungė's. A similarity matcher
+    swaps them; the reviewed table does not."""
+
+    assert nkl.club_name("Palangos Palanga") == "BC Olimpas Palanga"
+    assert nkl.club_name("Plungės Olimpas") == "Plunges Olimpas"
+
+
+def test_find_row_matches_a_forecast_by_date_and_club_pair():
+    rows, _ = nkl.parse_club_page(_LISTING)
+
+    hit = nkl.find_row(
+        rows,
+        played_on=date(2026, 10, 1),
+        home="Kretinga",
+        away="Neptunas 2",
+    )
+    reversed_order = nkl.find_row(
+        rows,
+        played_on=date(2026, 10, 1),
+        home="Neptunas 2",
+        away="Kretinga",
+    )
+
+    assert hit is not None and hit.match_id == "125749"
+    assert reversed_order is not None and reversed_order.match_id == "125749"
+
+
+def test_find_row_refuses_a_wrong_date_or_an_unmapped_club():
+    rows, _ = nkl.parse_club_page(_LISTING)
+
+    assert nkl.find_row(rows, played_on=date(2026, 10, 2), home="Kretinga",
+                        away="Neptunas 2") is None
+    assert nkl.find_row(rows, played_on=date(2026, 10, 1), home="Unknown BC",
+                        away="Neptunas 2") is None
