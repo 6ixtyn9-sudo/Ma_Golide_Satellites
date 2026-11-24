@@ -132,6 +132,7 @@ def _ticket_decision_policy(_league: League) -> str:
 BUCKET_ORDER = [
     "ELIGIBLE_CLEAN",
     "CAUTION",
+    "PRIOR_HEAVY",
     "WATCHLIST_NO_ODDS",
     "WATCHLIST_INSUFFICIENT_CONTEXT",
     "SKIPPED_INELIGIBLE",
@@ -139,6 +140,7 @@ BUCKET_ORDER = [
 BUCKET_LABELS = {
     "ELIGIBLE_CLEAN": "ELIGIBLE CLEAN PICKS",
     "CAUTION": "CAUTION PICKS",
+    "PRIOR_HEAVY": "PRIOR-HEAVY — THIN TEAM EVIDENCE (PAPER ONLY)",
     "WATCHLIST_NO_ODDS": "WATCHLIST — NO MATCHED ODDS",
     "WATCHLIST_INSUFFICIENT_CONTEXT": "WATCHLIST — INSUFFICIENT CONTEXT",
     "SKIPPED_INELIGIBLE": "SKIPPED — INELIGIBLE",
@@ -374,11 +376,63 @@ def _bucket(forecast: Dict[str, Any]) -> str:
         return "WATCHLIST_NO_ODDS"
     if reasons == {"insufficient_walk_forward_samples"}:
         return "CAUTION"
+    if reasons == {"insufficient_team_specific_history"}:
+        # A paid, calibrated forecast whose only remaining blocker is that a
+        # team's own recency-weighted evidence is thinner than the 8-game
+        # prior. The league-mean prior dominates the probability, so the row
+        # is visible as a labelled paper pick rather than discarded -- but it
+        # stays ineligible (no acca leg, no ticket) exactly as before. This
+        # surfaces the row; it does not relax the gate that produced it.
+        return "PRIOR_HEAVY"
     if "insufficient_walk_forward_samples" in reasons and not (
         reasons - {"insufficient_walk_forward_samples", "below_calibrated_probability_floor"}
     ):
         return "WATCHLIST_INSUFFICIENT_CONTEXT"
     return "SKIPPED_INELIGIBLE"
+
+
+def _prior_heavy_disclosure(row: Dict[str, Any]) -> str:
+    """Name the team-evidence shortfall that keeps a prior-heavy row paper-only.
+
+    A reader must be able to see *why* this row is not an eligible pick without
+    re-deriving the model: how much recency-weighted evidence each team has,
+    against the prior strength the model requires.
+    """
+
+    history = row.get("team_history") or {}
+
+    def _games(value: Any) -> str:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return "n/a"
+        return f"{float(value):.1f}"
+
+    required = _games(history.get("required_effective_games_per_team"))
+    # Value at the observed price, stated rather than implied. A prior-heavy
+    # row can be badly negative at the quote (the census' worst was -40%), and
+    # a reader must not take its presence in a pick file for a recommendation.
+    price = (row.get("book") or {}).get("selected_decimal_price")
+    probability = row.get("calibrated_probability")
+    if probability is None:
+        probability = row.get("raw_probability")
+    value_text = ""
+    if (
+        isinstance(price, (int, float))
+        and not isinstance(price, bool)
+        and price > 1.0
+        and isinstance(probability, (int, float))
+        and not isinstance(probability, bool)
+    ):
+        value_text = (
+            f" · price break-even {1.0 / float(price):.1%} vs p {float(probability):.1%}"
+            f" → value {float(probability) * float(price) - 1.0:+.1%}"
+        )
+    return (
+        "      prior-heavy · effective games "
+        f"home={_games(history.get('home_effective_games'))}/{required} "
+        f"away={_games(history.get('away_effective_games'))}/{required} "
+        "· recency-weighted and shrunk to the league mean "
+        "· not acca-eligible, no ticket" + value_text
+    )
 
 
 def _price_evidence(forecast: Dict[str, Any]) -> str:
@@ -626,6 +680,11 @@ def _pick_row(forecast: Dict[str, Any], target_date: str) -> Dict[str, Any]:
     row["pick_id"] = row["forecast_id"]
     row["date"] = target_date
     row["bucket"] = _bucket(row)
+    # Stable flag for reports: a prior-heavy row is a real paper pick with a
+    # real probability, but its probability leans on the league-mean prior, so
+    # any performance summary can separate it from eligible picks without
+    # parsing the bucket label.
+    row["prior_heavy"] = row["bucket"] == "PRIOR_HEAVY"
     row["price_evidence"] = _price_evidence(row)
     row["grade_status"] = "pending"
     row["outcome"] = None
@@ -1311,6 +1370,8 @@ def _render_picks(
             f"n={calibration.get('n', 0)} · reasons={reasons} "
             f"· prediction={(row.get('prediction') or {}).get('provider', 'history')}"
         )
+        if bucket == "PRIOR_HEAVY":
+            lines.append(_prior_heavy_disclosure(row))
         roi_band = row.get("paper_roi_band")
         if isinstance(roi_band, dict):
             weighted_roi = roi_band.get("recency_weighted_roi")
