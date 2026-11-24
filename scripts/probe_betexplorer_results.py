@@ -127,8 +127,12 @@ def index_signals(body: str) -> dict[str, object]:
 
 
 #: How much of the first match's markup to keep.  Enough to hold a whole table row
-#: and the two headers above it, small enough to read in one go.
-WINDOW_CHARS = 2000
+#: and the two headers above it, small enough to read in one go.  The first
+#: capture spent 600 of these on the page's tab bar and pushed the row it was
+#: meant to show out of the printed excerpt, so the lead-in is smaller than the
+#: tail: the match code belongs near the start of the file, not past its middle.
+WINDOW_CHARS = 2200
+WINDOW_LEAD_IN = 300
 
 
 def first_match_window(body: str) -> str:
@@ -142,7 +146,7 @@ def first_match_window(body: str) -> str:
     found = _CODE_LINK_RE.search(body)
     if not found:
         return ""
-    start = max(0, found.start() - 600)
+    start = max(0, found.start() - WINDOW_LEAD_IN)
     return body[start : start + WINDOW_CHARS]
 
 

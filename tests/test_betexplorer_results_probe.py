@@ -249,6 +249,9 @@ def test_the_first_match_window_is_the_row_not_the_page():
     assert "89:84" in window
     assert len(window) <= probe.WINDOW_CHARS
     assert len(window) < len(body)
+    # The row is the point of the file: it sits near the start, not past the
+    # middle, because a capture that ends before the row teaches nothing.
+    assert window.index("AbCd1234") < 500
 
 
 def test_a_page_with_no_match_code_has_no_window_rather_than_a_guess():

@@ -405,3 +405,33 @@ One name did look genuinely short in that output (`ΟΣΣΣ H HOTELS COLLECTION`
 depth-aware span fix addresses the mechanism that would cause it — a nested span closing
 early — but whether the name now reads whole is answerable only from the next replay, on
 a tree that has the fix.
+
+## Greece, the names read whole (2026-11-24T14:56Z)
+
+The replay on the fixed tree, with the names printed as escapes so the terminal cannot
+lie about them:
+
+```
+containers 7 · rows 7 · no_identity 0 · names_ambiguous 0 · with_final 0 · unresolved_date 7
+ΚΟΛΟΣΣΟΣ H HOTELS COLLECTION   100 64   ΠΡΟΜΗΘΕΑΣ ΠΑΤΡΑΣ ΒΙΚΟΣ COLA
+ΔΟΞΑ ΛΕΥΚΑΔΑΣ ELABET            83 87   ΠΕΡΙΣΤΕΡΙ Betsson
+ΠΑΝΑΘΗΝΑΪΚΟΣ AKTOR              85 72   ΜΑΡΟΥΣΙ
+```
+
+Two things are now settled. The mojibake was the terminal, not the file — the escapes
+prove it, and that costs one line rather than a base64 round trip. And the depth-aware
+span fix is **proven against served bytes**: these are complete club names including
+their title sponsors, where the old non-greedy span match trimmed them.
+
+The date is the last blocker and it has a shape now: `day=None month=None` on all seven
+rows, on a page whose *rendered* text demonstrably shows «Σαβ 21 Νοε - 15:00». So the day
+and month live somewhere `_text` does not reach — an attribute, or a cell this reader
+mistakes for markup. The next read is that cell's own escaped bytes, not another
+hypothesis about them.
+
+## A capture that taught nothing (2026-11-24T14:56Z)
+
+The first `results-index-window.txt` spent 600 characters on the page's tab bar and pushed
+the match row it existed to show out of the printed excerpt. The lead-in is now 300
+characters and the tail 1900, so the code sits near the start of the file: a window that
+ends before the row is a window that costs a round trip and returns nothing.
