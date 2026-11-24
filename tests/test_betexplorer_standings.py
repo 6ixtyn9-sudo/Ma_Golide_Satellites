@@ -438,3 +438,22 @@ def test_fetch_standings_uses_the_paced_reader():
 
     assert result.report["requests"] == 2
     assert slept == [10.0]
+
+
+def test_match_links_reads_the_fixtures_page_without_resolving_identity():
+    """The fixtures page is the only place a standings token's match page comes from."""
+
+    from ingestion.providers import betexplorer
+
+    links = betexplorer.match_links(_fixture("el_fixtures_table.html"))
+
+    assert links
+    slug, match_id = links[0]
+    assert slug and len(match_id) == 8
+    assert len(links) == len(set(links))  # a repeated fixture reads as one
+
+
+def test_match_links_on_a_page_without_rows_is_empty_not_an_error():
+    from ingestion.providers import betexplorer
+
+    assert betexplorer.match_links("<html><body>no fixtures</body></html>") == []
