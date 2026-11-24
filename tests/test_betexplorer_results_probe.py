@@ -910,3 +910,63 @@ def test_a_failed_request_is_not_reported_as_a_passed_gate(tmp_path):
 
     assert payload["gated"] == 0
     assert payload["summary"] == "0 captured, 0 gated, 1 failed of 1 requested; 1 request(s) never returned a body"
+
+
+def test_a_page_that_ships_the_modal_and_a_table_is_captured_not_gated(tmp_path):
+    """BetExplorer puts the age modal in every page's markup and hides it
+    client-side. Marker presence alone is not a refusal; the bundle says so:
+    init_age_wall() checks `data-age-wall-enabled` and `currentGeoLocation`."""
+
+    body = (
+        '<div class="age__modal"><h1 id="ageTitle">18+</h1>'
+        '<button id="ageYes">Sim</button></div>'
+        "<table><tr><td>Q1</td><td>88</td><td>91</td><td>Q2</td><td>22</td><td>19</td></tr></table>"
+    )
+
+    payload = probe.capture_match_pages(
+        "LITHUANIA_NKL",
+        matches=[{"code": "nRzm7OsT", "url": "/basketball/lithuania/nkl/a-b/nRzm7OsT/"}],
+        out_dir=tmp_path,
+        read_text=lambda url: body,
+        limit=1,
+    )
+
+    page = payload["pages"][0]
+    assert page["status"] == "captured"
+    assert page["gate_markup"].startswith("age gate")
+    assert page["td_cells"] == 6
+    assert payload["gated"] == 0
+
+
+def test_the_gates_own_cookies_do_not_replace_the_callers(tmp_path):
+    """`cookies` holds the header for every request in the loop. Reassigning it
+    with the gate's pairs would swap the operator's key for a `lang=` reset on
+    the next page -- the same overwrite, one loop later."""
+
+    gated = _GATED_COOKIE_PAGE + "<p>banner</p>"
+    seen = []
+
+    def read_text(url, cookie):
+        seen.append(cookie)
+        return gated
+
+    def gate_read_text(url, cookie):
+        return gated  # still gated: the replay path sets `cookies` in the old code
+
+    probe.capture_match_pages(
+        "LITHUANIA_NKL",
+        matches=[
+            {"code": "nRzm7OsT", "url": "/basketball/lithuania/nkl/a-b/nRzm7OsT/"},
+            {"code": "AbCd1234", "url": "/basketball/lithuania/nkl/c-d/AbCd1234/"},
+        ],
+        out_dir=tmp_path,
+        read_text=read_text,
+        sleep=lambda _: None,
+        limit=2,
+        cookies=[("age_verified", "true")],
+        gate_accept=True,
+        gate_read_text=gate_read_text,
+    )
+
+    assert seen
+    assert all(cookie == "age_verified=true" for cookie in seen)

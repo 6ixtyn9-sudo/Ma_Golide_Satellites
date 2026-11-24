@@ -804,9 +804,12 @@ def capture_match_pages(
         gate = gate_reason(body)
         passed_by = None
         if gate is not None and gate_accept:
-            cookies = gate_cookies(body)
-            if cookies and gate_read_text is not None:
-                header = "; ".join(f"{name}={value}" for name, value in cookies)
+            # Not `cookies`: that name holds the caller's header for every
+            # request in this loop, and reassigning it here would swap the
+            # operator's cookie for the gate's on the next page.
+            gate_cookie_pairs = gate_cookies(body)
+            if gate_cookie_pairs and gate_read_text is not None:
+                header = "; ".join(f"{name}={value}" for name, value in gate_cookie_pairs)
                 try:
                     requests_made += 1
                     second = gate_read_text(url, header)
@@ -817,12 +820,12 @@ def capture_match_pages(
                         body = second
                         path.write_text(body, encoding="utf-8")
                         gate = None
-                        passed_by = [name for name, _ in cookies]
+                        passed_by = [name for name, _ in gate_cookie_pairs]
                     else:
-                        gate = f"{gate}; still gated after replaying {len(cookies)} cookie(s)"
-            elif cookies:
+                        gate = f"{gate}; still gated after replaying {len(gate_cookie_pairs)} cookie(s)"
+            elif gate_cookie_pairs:
                 gate = f"{gate}; replay requested without a fetcher"
-            elif not cookies:
+            elif not gate_cookie_pairs:
                 keys = gate_storage_keys(body)
                 stray = [write["name"] for write in gate_cookie_writes(body) if not write["near_gate"]]
                 if stray:
@@ -836,7 +839,16 @@ def capture_match_pages(
                         + (f", storage keys {keys}" if keys else "")
                         + " -- needs a browser, not a header"
                     )
-        if gate is not None:
+        text = re.sub(r"<[^>]+>", " ", body)
+        shape = shape_signals(body)
+        period_markers = len(_PERIOD_RE.findall(text))
+        # "Gated" requires the modal AND no content.  BetExplorer ships the modal
+        # in the markup of every page and then hides it client-side, so marker
+        # presence alone is not a refusal: treating it as one would make a page
+        # that carries a table uncapturable forever.  Zero-vs-nonzero, no
+        # threshold to tune.
+        refused = gate is not None and shape["td_cells"] == 0 and period_markers == 0
+        if refused:
             # Saved, because it is evidence of what the host served, but never
             # counted as a match page: 110 KB of age modal reads as a captured
             # page to every check that only looks at size.
@@ -852,7 +864,6 @@ def capture_match_pages(
                 }
             )
             continue
-        text = re.sub(r"<[^>]+>", " ", body)
         captured.append(
             {
                 "event_id": code,
@@ -862,14 +873,17 @@ def capture_match_pages(
                 "sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
                 "path": str(path),
                 **({"gate_passed_by": passed_by} if passed_by else {}),
-                "period_markers": len(_PERIOD_RE.findall(text)),
+                # The modal was in the HTML and the page still carried content.
+                # Named rather than hidden: it is how this host ships.
+                **({"gate_markup": gate} if gate else {}),
+                "period_markers": period_markers,
                 "period_examples": sorted(set(_PERIOD_RE.findall(text)))[:6],
                 # What a scoreboard looks like when it is not a Q1..Q4 table:
                 # a pair of numbers in a text cell, and the word the block is
                 # usually named after.
                 "colon_scores": len(_COLON_SCORE_RE.findall(text)),
                 "scoreboard_mentions": len(_SCOREBOARD_RE.findall(body)),
-                **shape_signals(body),
+                **shape,
             }
         )
 
