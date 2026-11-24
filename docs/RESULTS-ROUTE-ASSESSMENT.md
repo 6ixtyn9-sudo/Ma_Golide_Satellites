@@ -40,9 +40,10 @@ published → allow state, quoted as absent). The terms page («Όροι Χρή�
 
 The same document scopes the copying clause to personal, non-commercial use, and
 contains no automated-access prohibition. **That is a reading, not a licence we
-can grant ourselves**: whether a paper-record research pipeline with attribution
-sits inside "personal, non-commercial" is an operator decision, and it is the
-only thing standing between this lane and settlement.
+can grant ourselves** — so it was put to the operator, who accepted the scope for
+this system's paper record on 2026-11-24. That acceptance is recorded here as an
+operator decision, not as a legal conclusion; the reader keeps the cheap half of
+the bargain by stamping the source and the sha256 of the bytes on every receipt.
 
 What the bytes already support: stable `idgame` identity per game
 (`EsakegameView?idgame=1439C9D6` refetched identically), finals in
@@ -51,10 +52,20 @@ What the bytes already support: stable `idgame` identity per game
 BetExplorer baseline by score pair + day (BetExplorer is the naming baseline
 only — its ToS prohibits scraping, and it is never the route).
 
-**To build the adapter, this repo needs the two captured HTML files** (one
-`EsakeResults` series page and one `EsakegameView` page). A parser written from
-the report's snippets alone would be a guess dressed as code, and would be
-untestable without egress.
+**What shipped instead of an adapter** (same day, after the operator's
+decision): `ingestion/providers/esake.py` reads a matchday page, and
+`scripts/probe_esake_results.py` fetches a bounded number of them, saves each body
+verbatim with its sha256, and reports two things — whether the parser's assumed
+container classes exist, and whether a final can be attached to one of this
+lane's games **without any club-name map at all**, by date + tip in Athens local
+time. The reader resolves, or refuses, everything: an unreadable month, a
+three-club row or a bare score outside the `final-score` block is counted, never
+guessed. Two finals at the same minute are refused, not tie-broken.
+
+The registry is still `source_unavailable`. One live probe run decides the next
+step: if the counts come back with rows and finals, the adapter is a short step;
+if the container class is absent, the parse failure is specific and the fix is
+against real bytes rather than imagination.
 
 ## China and Lithuania: proven endpoints behind a missing ToS
 
@@ -110,8 +121,9 @@ so the constant is annotated and the choice is left open.
 
 ## Open items
 
-1. **Greece:** operator decision on the ToS reading; then upload the two captured
-   pages so the adapter can be written and fixture-tested.
+1. **Greece:** run `scripts/probe_esake_results.py --series 8` once from a host with
+   egress and hand back `esake_probe_receipt.json` plus the saved bodies. That
+   replaces the derived fixture with a served page and answers the date+tip join.
 2. **WNBL:** request the missing report — the probe log suggests it got furthest
    of all five.
 3. **Japan:** choose the division.
