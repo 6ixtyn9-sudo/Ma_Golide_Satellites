@@ -33,12 +33,23 @@ from ingestion.models import Game, League
 SCHEMA_VERSION = "magolide.magolide_score_shadow"
 SOURCE_NAME = "magolide_score/shadow"
 
-#: Weight scale inherited from the retired Forecaster.gs tuner.  Feature
-#: differences are scaled to roughly match it: pct/home-court/streak diffs are
-#: expressed in percentage points, form and H2H in signed game counts.
-#: These are the tuner's own no-history baseline config (Forecaster.gs, Elite
-#: proposal empty stub) — recovered from git history, measured against nothing.
-TUNER_BASELINE: Dict[str, float] = {
+#: Defaults, NOT a fitted configuration.
+#:
+#: These numbers are the *validator's* defaults -- ``validateTier1Config`` in the
+#: deleted ``docs/Forecaster.gs`` (line 5396: threshold default 25, confMin 50,
+#: confMax 95, homeAdv 5) plus the empty-stub values handed to the Elite proposal
+#: writer (line 3956). They are the values a config falls back to when a sheet
+#: has no stored entry; they were never fitted to anything.
+#:
+#: The retired system did not run on a static config at all. Every analysis run
+#: began with ``loadTier1Config(ss)`` -- a versioned config read from the
+#: spreadsheet (line 2213, and again in the tuner at 3797, which logs
+#: ``Current config version: <v>``). The Elite tuner then re-tuned that config
+#: and ``writeEliteProposalSheet_`` promoted a new ``config_version`` with the
+#: current config and ranked #2/#3 alternatives side by side (line 4731). So the
+#: live behaviour came from a stored, versioned artifact that changed over time,
+#: per sheet, and the constants below are only its cold-start fallback.
+VALIDATOR_DEFAULTS: Dict[str, float] = {
     "rank": 0.0,
     "form": 2.5,
     "h2h": 1.5,
@@ -112,24 +123,29 @@ class MaGolideFeatures:
 class MaGolideConfig:
     """Weights and gates (port of Section B/E/F)."""
 
-    rank: float = TUNER_BASELINE["rank"]
-    form: float = TUNER_BASELINE["form"]
-    h2h: float = TUNER_BASELINE["h2h"]
-    forebet: float = TUNER_BASELINE["forebet"]
-    variance: float = TUNER_BASELINE["variance"]
-    pct: float = TUNER_BASELINE["pct"]
-    net_rtg: float = TUNER_BASELINE["net_rtg"]
-    home_court: float = TUNER_BASELINE["home_court"]
-    momentum: float = TUNER_BASELINE["momentum"]
-    streak: float = TUNER_BASELINE["streak"]
-    home_adv: float = TUNER_BASELINE["home_adv"]
-    threshold: float = TUNER_BASELINE["threshold"]
-    conf_min: float = TUNER_BASELINE["conf_min"]
-    conf_max: float = TUNER_BASELINE["conf_max"]
-    confidence_scale: float = TUNER_BASELINE["confidence_scale"]
+    rank: float = VALIDATOR_DEFAULTS["rank"]
+    form: float = VALIDATOR_DEFAULTS["form"]
+    h2h: float = VALIDATOR_DEFAULTS["h2h"]
+    forebet: float = VALIDATOR_DEFAULTS["forebet"]
+    variance: float = VALIDATOR_DEFAULTS["variance"]
+    pct: float = VALIDATOR_DEFAULTS["pct"]
+    net_rtg: float = VALIDATOR_DEFAULTS["net_rtg"]
+    home_court: float = VALIDATOR_DEFAULTS["home_court"]
+    momentum: float = VALIDATOR_DEFAULTS["momentum"]
+    streak: float = VALIDATOR_DEFAULTS["streak"]
+    home_adv: float = VALIDATOR_DEFAULTS["home_adv"]
+    threshold: float = VALIDATOR_DEFAULTS["threshold"]
+    conf_min: float = VALIDATOR_DEFAULTS["conf_min"]
+    conf_max: float = VALIDATOR_DEFAULTS["conf_max"]
+    confidence_scale: float = VALIDATOR_DEFAULTS["confidence_scale"]
     use_legacy_sigmoid: bool = False
     cap_risky_confidence: bool = False
     risky_confidence_cap: Optional[float] = None
+    #: Which stored configuration these weights came from. The retired system
+    #: read a versioned config per sheet (``loadTier1Config``); a caller that
+    #: holds such a config must say so here, because an unversioned default must
+    #: never be mistaken for a measured fit.
+    config_version: str = "unversioned-validator-defaults"
 
 
 @dataclass(frozen=True)
@@ -283,7 +299,8 @@ def score_features(features: MaGolideFeatures, config: MaGolideConfig) -> MaGoli
         "risky_cap_applied": bool(config.cap_risky_confidence and prediction == "RISKY"),
         "home_win_prob_pct": round(home_win_prob * 1000, 1) / 10,
         "predicted_win_prob_pct": round(predicted_win_prob * 1000, 1) / 10,
-        "weights_source": "forecaster_gs_tuner_baseline",
+        "weights_source": "validator_defaults_not_a_fitted_config",
+        "config_version": config.config_version,
     }
 
     return MaGolideVerdict(
@@ -347,6 +364,7 @@ class ShadowPickRow:
             f" · grade=NOT_SETTLEABLE · lifecycle=SHADOW\n"
             f"      reasons=magolide_score_shadow,no_settlement_route,"
             f"cold_start_no_walk_forward · weights={v.meta['weights_source']}"
+            f" · config_version={v.meta['config_version']}"
         )
 
 
@@ -430,7 +448,7 @@ def render_shadow_card(league_value: str, rows: Iterable[ShadowPickRow], *, date
 __all__ = [
     "SCHEMA_VERSION",
     "SOURCE_NAME",
-    "TUNER_BASELINE",
+    "VALIDATOR_DEFAULTS",
     "MaGolideConfig",
     "MaGolideFeatures",
     "MaGolideVerdict",

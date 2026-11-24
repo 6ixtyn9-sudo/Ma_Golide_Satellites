@@ -286,3 +286,15 @@ def test_the_shadow_scorer_is_not_reachable_from_the_forecast_pipeline():
     ]
     for path in watched:
         assert "magolide_score" not in path.read_text(), f"{path} must not import the shadow scorer"
+
+
+def test_an_unversioned_default_is_never_presented_as_a_fit():
+    """The retired system read a versioned config; a default must say so."""
+
+    verdict = score_features(MaGolideFeatures(pct_diff=40.0), MaGolideConfig())
+
+    assert verdict.meta["weights_source"] == "validator_defaults_not_a_fitted_config"
+    assert verdict.meta["config_version"] == "unversioned-validator-defaults"
+
+    supplied = MaGolideConfig(pct=4.0, config_version="v3")
+    assert score_features(MaGolideFeatures(pct_diff=40.0), supplied).meta["config_version"] == "v3"

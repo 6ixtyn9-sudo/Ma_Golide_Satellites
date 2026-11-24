@@ -5,6 +5,17 @@ guards), repo-wide `ruff` clean, full suite green.
 **Deliverables:** `forecasting/magolide_score.py`, `scripts/magolide_shadow_card.py`,
 `tests/test_magolide_score.py`, `docs/MAGOLIDE-SCORE-SHADOW-LANE.md`.
 
+**Correction on config provenance (2026-11-24).** The retired system did **not** run on a static
+config, and this port must not imply it did. Every run began with `loadTier1Config(ss)` — a
+versioned config read from the spreadsheet (`Forecaster.gs` line 2213; the tuner reads it again at
+3797 and logs `Current config version: <v>`), and `writeEliteProposalSheet_` promotes a new
+`config_version` with the current config beside ranked #2/#3 alternatives (line 4731). So the
+numbers below are *validator defaults* (`validateTier1Config`, line 5396) and empty-stub values
+(line 3956), not a fitted configuration. They are now named `VALIDATOR_DEFAULTS`, every verdict
+carries `config_version` (default `unversioned-validator-defaults`) and
+`weights_source=validator_defaults_not_a_fitted_config`, and a caller holding a stored versioned
+config must pass it and name its version.
+
 **Provenance re-verified on merge (2026-11-24).** The port was checked against the real deleted
 source rather than its description: `git show de966196^:docs/Forecaster.gs` — 5,986 lines,
 `calculateMaGolideScore` at line 694, Sections A–G as ported, and the weight table below
@@ -105,7 +116,7 @@ wrote /tmp/shadow-demo/shadow_scores_2026-11-24.txt (3 shadow row(s))
 Ma Golide SHADOW SCORES — GREECE_BASKET_LEAGUE 2026-11-24
 ========================================================================
 SHADOW ONLY · cold-start standings scorer ported from the retired
-Forecaster.gs calculateMaGolideScore (weights = tuner baseline,
+Forecaster.gs calculateMaGolideScore (weights = validator defaults,
 unmeasured for this lane). Not picks, not tickets, not settlement
 evidence. The lane has no results route: nothing here can ever be
 graded, banked, or ROI-qualified.
@@ -116,12 +127,12 @@ WATCHLIST_SHADOW — COLD-START STANDINGS READ
   [magolide_score/shadow] Panathinaikos BC vs AEK Athens · KO 2026-11-24T17:15:00Z
       MAGOLIDE_SCORE full_game -> HOME · score=+150.30 · uncalibrated_logistic=99.34% · confidence=95.0%
       bucket=WATCHLIST_SHADOW · price_evidence=NONE · acca_eligible=False · grade=NOT_SETTLEABLE · lifecycle=SHADOW
-      reasons=magolide_score_shadow,no_settlement_route,cold_start_no_walk_forward · weights=forecaster_gs_tuner_baseline
+      reasons=magolide_score_shadow,no_settlement_route,cold_start_no_walk_forward · weights=validator_defaults_not_a_fitted_config · config_version=unversioned-validator-defaults
   ...
 Logical shadow rows: 3 · tickets: 0 · settleable: 0
 ```
 
-### 4.3 `tests/test_magolide_score.py` — 19 tests, all green
+### 4.3 `tests/test_magolide_score.py` — 20 tests, all green
 
 Pinned behaviours: all-zero features → `RISKY` at 50%; pct difference drives HOME/AWAY with mirrored probabilities; the threshold boundary (`|score| == threshold` is **not** below it, matching the script); variance always subtracted; confidence logistic-clamped to `[confMin, confMax]` in both PROBABILITY and LEGACY_SIGMOID modes; the risky-cap; LEGACY mode when no new-feature weights are set (`2.5·form + 1.5·h2h = 10.5`); `homeAdv` added verbatim and reported in the breakdown; neutral defaults for missing teams; L10 beating the streak proxy; the exact five-lane shadow set; hard refusal for EuroLeague/Spain ACB; shadow-row markers; card language that never claims picks or settlement.
 
@@ -139,7 +150,9 @@ Pinned behaviours: all-zero features → `RISKY` at 50%; pct difference drives H
    now asserts that `ingestion/pipeline.py`, `forecasting/operator.py`, `forecasting/service.py`,
    `forecasting/accas.py` and `scripts/daily.py` do not mention it, so wiring it into the live
    forecast path is a deliberate edit with an assertion to argue against, not a one-line slip.
-4. **Publication boundary confirmed, not assumed.** `scripts/publish_localdata.py` selects files
+4. **Config provenance corrected.** See the correction above: the weights are validator defaults
+   read from a config that was dynamic and versioned, and the port now says so in every verdict.
+5. **Publication boundary confirmed, not assumed.** `scripts/publish_localdata.py` selects files
    by explicit name patterns (`picks_<date>.txt`, `auto_tickets_*`), so `shadow_scores_<date>.txt`
    is never published with the rest of the state. Verified, not hoped for.
 
@@ -164,7 +177,7 @@ The shadow scores this build produces give the operator a pre-tip read to watch 
 ## 7. Verification record
 
 - `uv run ruff check .` — **All checks passed** (whole worktree, not only new files).
-- `uv run pytest -q tests/test_magolide_score.py` — **19 passed** (16 original + 3 review guards).
+- `uv run pytest -q tests/test_magolide_score.py` — **20 passed**.
 - `uv run pytest -q` — see the merge PR for the current figures on `main`.
 - CLI smoke test on a demo Greece slate — 3 shadow rows rendered, `RISKY` correctly shown for the game whose standings were missing.
 
