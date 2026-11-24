@@ -698,3 +698,23 @@ The three `period_markers: 0` results in that run are therefore **not** evidence
 period scores. They are evidence that the tool opened the wrong pages, which is worth
 recording precisely because it is the second time today a plausible-looking success
 (`read: 0` for three leagues, `event_id: fixtures`) carried no information at all.
+
+## The href was relative (2026-11-24T15:2xZ)
+
+`--match 1` then failed on all three lanes with one message:
+
+```
+HTTP 0 for /basketball/lithuania/nkl/alytaus-patriotai-neptunas/nRzm7OsT/:
+Invalid URL: No scheme supplied.
+```
+
+The index publishes its hrefs as paths, and taking the href verbatim -- which was the
+point of the previous fix, so a page opens at the address the host gave -- handed the
+client `/basketball/...` with no scheme. `absolute_url()` now prefixes the site, because a
+path from this host is a path on this host.
+
+Three tool faults in one afternoon, and each was caught by the receipt rather than by a
+review: `read: 0` for three leagues (attribute order), `event_id: fixtures` (a nav word is
+eight letters), and now `HTTP 0 ... No scheme supplied` (a relative href). The receipts are
+the reason none of them cost more than one run each -- a fetch that fails and says why is
+worth more than a fetch that succeeds and says nothing.

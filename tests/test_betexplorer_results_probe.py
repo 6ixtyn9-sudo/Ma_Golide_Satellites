@@ -357,3 +357,37 @@ def test_a_nav_tab_is_not_a_match_code():
     assert probe.index_matches(body) == [
         {"code": "IeUABOGO", "url": "/basketball/lithuania/nkl/olimpas-palanga-omega-tauras/IeUABOGO/"}
     ]
+
+
+def test_a_relative_href_from_the_index_is_made_absolute():
+    """`No scheme supplied` is a tool fault wearing the look of a host refusal.
+
+    The first `--match 1` run on the corrected code handed the client
+    `/basketball/...` verbatim and got `HTTP 0 ... Invalid URL`. The receipt said
+    so, which is the only reason it took one run to see.
+    """
+
+    assert probe.absolute_url("/basketball/australia/wnbl-women/a-b/AbCd1234/") == (
+        "https://www.betexplorer.com/basketball/australia/wnbl-women/a-b/AbCd1234/"
+    )
+    assert probe.absolute_url("https://example.com/x") == "https://example.com/x"
+
+
+def test_match_fetches_use_absolute_urls(tmp_path):
+    seen = []
+
+    def read_text(url):
+        seen.append(url)
+        return "<table><tr><td>Q1</td></tr></table>"
+
+    probe.capture_match_pages(
+        "AUSTRALIA_WNBL_W",
+        matches=[{"code": "EaZEfXoI", "url": "/basketball/australia/wnbl-women/a-b/EaZEfXoI/"}],
+        out_dir=tmp_path,
+        read_text=read_text,
+        limit=1,
+    )
+
+    assert seen == [
+        "https://www.betexplorer.com/basketball/australia/wnbl-women/a-b/EaZEfXoI/"
+    ]

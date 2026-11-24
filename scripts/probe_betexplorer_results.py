@@ -54,7 +54,7 @@ import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from ingestion.providers.betexplorer import FIXTURES_URLS, SITE_TZ, _rows  # noqa: E402
+from ingestion.providers.betexplorer import BASE, FIXTURES_URLS, SITE_TZ, _rows  # noqa: E402
 
 #: A game three hours past tip is certainly over; anything closer may be live,
 #: and a live page's numbers are not a final.
@@ -236,6 +236,22 @@ _PERIOD_RE = re.compile(r"\b(?:[1-4]Q|Q[1-4]|OT)\b")
 _NAV_CODES = frozenset({"fixtures", "results", "summary", "stats"})
 
 
+def absolute_url(url_or_path: str) -> str:
+    """The host's absolute URL for a path it published as a relative href.
+
+    A captured results page writes ``/basketball/...`` without a scheme, and a
+    client handed that answers ``Invalid URL ... No scheme supplied``.  That is a
+    tool fault with a misleading shape -- it looks like the host refusing -- so the
+    path is made absolute here, once, rather than at each call site.
+    """
+
+    if url_or_path.startswith(("http://", "https://")):
+        return url_or_path
+    # ``BASE`` already ends in ``/basketball``, and so does every href here.
+    site = BASE[: -len("/basketball")]
+    return site + ("" if url_or_path.startswith("/") else "/") + url_or_path
+
+
 def _is_match_code(code: str) -> bool:
     """A real code mixes case or digits; a nav word is eight lowercase letters."""
 
@@ -290,7 +306,7 @@ def capture_match_pages(
         if position:
             sleep(MIN_INTERVAL_SECONDS)
         code = match["code"]
-        url = match.get("url") or match_url(league, code)
+        url = absolute_url(match.get("url") or match_url(league, code))
         try:
             body = read_text(url)
         except Exception as exc:  # noqa: BLE001 - a failed capture is a receipt
