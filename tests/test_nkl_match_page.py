@@ -397,3 +397,90 @@ def test_a_miss_caused_by_an_unmapped_name_is_named_as_such():
 
     assert "no BetExplorer mapping for" in reasons[0]
     assert "KlaipÄ—dos" in reasons[0]
+
+
+def _triple_first_row(html: str) -> str:
+    """Kretinga's page emits the same fixture three times, byte-identical."""
+
+    head, rest = html.split("<tr class=nkl-match-row", 1)
+    first, tail = rest.split("</tr>", 1)
+    row = "<tr class=nkl-match-row" + first + "</tr>"
+    return head + row * 3 + tail
+
+
+def test_a_fixture_the_page_prints_three_times_is_one_fixture():
+    """Observed live: 2026-10-01 Kretinga v Neptunas 2 arrives as three identical
+    rows.  The ambiguity rule refused the game -- a refusal aimed at a genuine
+    second match, firing at a layout repeat.  Identical repeats collapse."""
+
+    rows, counts = nkl.parse_club_page(_triple_first_row(_LISTING))
+
+    assert counts["rows"] == 4  # three copies of 125749, then 125760
+    hit = nkl.find_row(rows, played_on=date(2026, 10, 1), home="Kretinga",
+                       away="Neptunas 2")
+    assert hit is not None and hit.match_id == "125749"
+
+
+def test_settle_forecast_settles_a_repeated_fixture_end_to_end():
+    """The refusal was the only thing wrong: the contract holds on the page as
+    served.  Two requests, one reconciling result."""
+
+    # Listing and match page are made to agree on 83-88 so the test asserts the
+    # wiring, not a disagreement between two pages (the listing's score is not
+    # consulted at all -- the match page is the record).
+    played = _PAGE.replace(
+        "</div></div>", "</div></div><div class=nkl-match-score>83 : 88</div>", 1
+    )
+    listing = _triple_first_row(
+        _LISTING.replace('<td class="nkl-game-score loss"> 76-91</td>',
+                         '<td class="nkl-game-score loss"> 83-88</td>', 1)
+    )
+
+    def read_text(url):
+        return listing if "/komandos/" in url else played
+
+    settlement = nkl.settle_forecast(read_text, played_on=date(2026, 10, 1),
+                                     home="Kretinga", away="Neptunas 2")
+
+    assert settlement.to_dict()["settled"] is True
+    assert settlement.requests_made == 2
+    assert settlement.result is not None
+    assert settlement.result.reconciles() == (True, "")
+    assert (settlement.result.home_final, settlement.result.away_final) == (83.0, 88.0)
+
+
+def test_a_repeated_id_with_contradictory_data_still_refuses():
+    """Collapsing repeats must not become 'pick one'.  One id carrying two
+    different scores is the conflict a second read exists to catch."""
+
+    listing = _triple_first_row(_LISTING).replace(
+        '<td class="nkl-game-score loss"> 76-91</td>',
+        '<td class="nkl-game-score loss"> 75-91</td>',
+        1,
+    )
+    rows, _ = nkl.parse_club_page(listing)
+
+    assert nkl.find_row(rows, played_on=date(2026, 10, 1), home="Kretinga",
+                        away="Neptunas 2") is None
+    reasons = nkl.explain_miss(rows, played_on=date(2026, 10, 1), home="Kretinga",
+                               away="Neptunas 2")
+    assert "with different data" in reasons[0] and "refusing to choose" in reasons[0]
+
+
+def test_two_distinct_matches_on_one_date_are_named_as_ambiguous():
+    rows, _ = nkl.parse_club_page(_LISTING)
+    twin = nkl.ListingRow(
+        match_id="999999",
+        url="https://nkl.lt/matches/999999/",
+        kickoff_local=datetime(2026, 10, 1, 19, 0, tzinfo=ZoneInfo("Europe/Vilnius")),
+        home_name="Kretingos Kretinga-FlexBlow",
+        away_name="Klaipėdos Neptūnas-II",
+        home_score=76.0,
+        away_score=91.0,
+    )
+
+    assert nkl.find_row(rows + [twin], played_on=date(2026, 10, 1), home="Kretinga",
+                        away="Neptunas 2") is None
+    reasons = nkl.explain_miss(rows + [twin], played_on=date(2026, 10, 1),
+                               home="Kretinga", away="Neptunas 2")
+    assert "2 distinct matches" in reasons[0] and "999999" in reasons[0]
