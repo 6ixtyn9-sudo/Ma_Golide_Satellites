@@ -1,0 +1,148 @@
+{
+  "accas": [],
+  "captured_at": "2026-11-24T10:53:23Z",
+  "date": "2026-11-24",
+  "decision_id": "45376480832_nba_1_attempt_1",
+  "frozen_at": "2026-11-24T10:53:23Z",
+  "league": "NBA",
+  "paper_only": true,
+  "schema_version": "magolide.paper_ticket_receipt",
+  "singles": [
+    {
+      "bookmakers": [
+        "DraftKings"
+      ],
+      "combined_decimal_odds": 1.8620689655172413,
+      "estimated_joint_win_probability": 0.606061,
+      "estimated_win_probability": 0.606061,
+      "individual_pick_filter": {
+        "candidate_band_details": {
+          "842ebf8cafb38aa63c68": {
+            "adjusted_roi": 0.091512,
+            "historical_pick_count": 7,
+            "individual_odds_band": "1.50-<2.00",
+            "losses": 3,
+            "market": "spread",
+            "observed_roi": 0.070502,
+            "period": "full_game",
+            "probability_band": "0.60-<0.70",
+            "pushes": 0,
+            "qualifies": true,
+            "recency_weighted_roi": 0.070306,
+            "wins": 4
+          }
+        },
+        "candidate_pick_count": 15,
+        "historical_unique_pick_count": 91,
+        "history_source": "settled_pick_audit",
+        "qualifying_band_count": 1,
+        "qualifying_pick_count": 1,
+        "status": "applied"
+      },
+      "leg_count": 1,
+      "legs": [
+        {
+          "away": "Dallas Mavericks",
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "game_id": "401909316",
+            "line": -8.5,
+            "main_line": true,
+            "market": "spread",
+            "observed_utc": "2026-11-24T05:39:54Z",
+            "operational_validation": "unverified",
+            "period": "full_game",
+            "pre_match": true,
+            "price_provenance": "named_book",
+            "provider": "espn",
+            "selected_decimal_price": 1.8620689655172413,
+            "source_modified_utc": null,
+            "source_permission": "unresolved"
+          },
+          "bucket": "ELIGIBLE_CLEAN",
+          "calibrated_probability": 0.606061,
+          "calibration": {
+            "minimum_samples": 30,
+            "n": 36,
+            "status": "calibrated",
+            "sufficient_for_accas": true
+          },
+          "calibration_version": "team_history_empirical-cb419eb48826",
+          "date": "2026-11-24",
+          "detailed_evidence_sha256": "0e2dcbb5137b09780dc78be3361596d2b24c6fe905c59ee55c16c1a31defe9e6",
+          "eligibility": {
+            "acca_eligible": true,
+            "reasons": []
+          },
+          "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+          "forecast_id": "842ebf8cafb38aa63c68",
+          "game_id": "401909316",
+          "grade_status": "pending",
+          "home": "Denver Nuggets",
+          "league": "NBA",
+          "line": -8.5,
+          "market": "spread",
+          "model": "team_history_empirical",
+          "model_version": "team_history_empirical",
+          "outcome": null,
+          "paper_only": true,
+          "period": "full_game",
+          "pick_id": "842ebf8cafb38aa63c68",
+          "price_evidence": "NAMED_BOOKMAKER_PRICE",
+          "push_probability": 0.0,
+          "raw_probability": 0.62,
+          "role": null,
+          "scheduled_utc": "2026-11-25T03:00:00Z",
+          "selection": "away"
+        }
+      ],
+      "paper_only": true,
+      "provisional_leg_count": 0,
+      "provisional_sample_gate_bypassed": false,
+      "publication_index": 1,
+      "ranking_status": "paper_only_roi_qualified_single",
+      "stake_units": 1.0,
+      "ticket_id": "54fc3ff4b6d4aa558512",
+      "ticket_type": "single"
+    }
+  ],
+  "stake_units_per_acca": 1.0,
+  "stake_units_per_position": 1.0,
+  "status": "frozen",
+  "ticket_decision": {
+    "candidate_tickets_pre_tip": 1,
+    "candidate_tickets_seen": 1,
+    "derived_spread_candidates_seen": 0,
+    "derived_spread_history": {
+      "contract": "unpriced_moneyline_spread",
+      "cover_rate": null,
+      "decisions": 0,
+      "history_scope": "derived_spread_named_book_pre_tip_quotes",
+      "losses": 0,
+      "minimum_cover_rate": 0.7,
+      "minimum_decisions_exclusive": 10,
+      "positive_roi_required": true,
+      "priced_settled": 0,
+      "pushes": 0,
+      "qualifies": false,
+      "roi": null,
+      "status": "insufficient_history",
+      "units": 0,
+      "wins": 0
+    },
+    "earliest_slate_tip_utc": "2026-11-25T00:00:00Z",
+    "generated_utc": "2026-11-24T10:53:23Z",
+    "lead_minutes": 120,
+    "market_report_available": true,
+    "planned_cutoff_utc": "2026-11-24T10:00:00Z",
+    "policy": "1200_sast_or_first_slate_tip_minus_120_minutes",
+    "pre_tip_safety_cutoff_utc": "2026-11-24T22:00:00Z",
+    "publication_cutoff_utc": "2026-11-24T10:00:00Z",
+    "publication_local_time": "12:00",
+    "publication_timezone": "Africa/Johannesburg",
+    "slate_time_source": "games",
+    "slate_timezone": "America/New_York",
+    "status": "due"
+  }
+}
