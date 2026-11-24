@@ -97,6 +97,50 @@ never scheduled, never probed for a schedule, and never counted as work:
 Revival is a one-line flip: `dataclasses.replace(spec, status=LaneStatus.ACTIVE)`
 restores a fully schedulable lane, and a test asserts exactly that.
 
+## The fixtures-table lanes (added 2026-11-24)
+
+Four competitions that had no schedule route of their own, plus Greece revived
+on the same adapter, now take both fixtures and prices from a single fixtures
+page each (`ingestion/providers/betexplorer_fixtures.py`, which reuses the row
+parser in `betexplorer.py` rather than growing a second one):
+
+| lane | page | measured 2026-11-24 (rows / priced / blank kickoff) |
+|---|---|---|
+| WCBA Women (`CHINA_WCBA_W`) | `/basketball/china/wcba-women/fixtures/` | 255 / 3 / 2 |
+| Lithuania NKL (`LITHUANIA_NKL`) | `/basketball/lithuania/nkl/fixtures/` | 167 / 7 / 99 |
+| WNBL Women (`AUSTRALIA_WNBL_W`) | `/basketball/australia/wnbl-women/fixtures/` | 67 / 3 / 0 |
+| Israel Liga Leumit (`ISRAEL_LIGA_LEUMIT`) | `/basketball/israel/liga-leumit/fixtures/` | 161 / 5 / 83 |
+| Greece Basket League (`GREECE_BASKET_LEAGUE`) | `/basketball/greece/basket-league/fixtures/` | 126 / 7 / 2 |
+
+Five properties of that page decide how the lane behaves, each measured rather
+than assumed:
+
+1. **The clock is the site's own CET/CEST wall clock for every competition** —
+   not the league's local time, and there is no ISO attribute on the page to
+   read. The label is parsed as naive `Europe/Paris` and converted to UTC, and
+   every game records that reconstruction in its evidence.
+2. **Identity is the 8-character match code in the row href.** The table serves
+   transliterated names with sponsor suffixes, colliding city fragments
+   (`Paris`, `Dubai`) and a ` W` suffix on women's clubs, so a name join would
+   be a guess. Games and their price observations share
+   `betexplorer:<match_id>`, which is what makes the join exact.
+3. **Rows with a blank kickoff cell carry no time the server ever sends.** They
+   are counted and reported (`fixtures_kickoff_missing`), never dated by
+   assumption and never emitted as games.
+4. **A slate with no quote says so** (`fixtures_price_coverage`) instead of
+   looking like a page that was never read; a page that failed to serve a table
+   raises rather than returning an empty slate.
+5. **No settlement route.** These pages serve no final score, so
+   `results_source` is `source_unavailable` and the run emits an
+   `official_results` gap by name. The lanes produce fixtures, forecasts and
+   research-only prices; they cannot settle, and the code says that instead of
+   implying otherwise.
+
+Prices on these lanes are an aggregate consensus from an unreviewed source
+(`SourcePermission.UNRESOLVED`), so they are research-only and never
+ticket-eligible. The gate fails open for this source — the page is season-wide,
+so a half-hour gate must not pull it and call the read a probe.
+
 ## Order of work
 
 Done: EuroCup, Spain ACB (schedule only, gated header), Israel Premier League,

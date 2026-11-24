@@ -381,12 +381,16 @@ def test_fiba_elw_gate_uses_official_competition_schedule_and_canonical_utc(monk
 
 
 def test_source_unavailable_lane_runs_once_for_a_durable_coverage_gap_then_skips(tmp_path: Path):
-    # Greece is the surviving source-unavailable lane: no schedule route, but
-    # an active lane (its price evidence exists), so the coverage-gap lifecycle
-    # is still reachable.  France LNB Pro A exercises the same path but is now
-    # retired, which is decided earlier and never reaches this branch.
-    lnb = next(config for config in LEAGUES if config.league_key == "GREECE_BASKET_LEAGUE")
-    assert lnb.status == "active"
+    # No active lane is source-unavailable any more: Greece was revived on the
+    # fixtures table, and the remaining source-unavailable lanes are retired
+    # (decided earlier, so they never reach this branch).  The branch is still
+    # part of the contract, so exercise it on a retired contract revived the
+    # documented way -- one status flip, nothing else changed.
+    from dataclasses import replace
+
+    retired = next(config for config in LEAGUES if config.league_key == "FRANCE_LNB_PRO_A")
+    assert retired.status == "retired"
+    lnb = replace(retired, status="active", status_detail="")
     _operator_state(tmp_path, lnb, date="2026-11-18")
 
     def should_not_fetch(_config, _date):
@@ -400,7 +404,7 @@ def test_source_unavailable_lane_runs_once_for_a_durable_coverage_gap_then_skips
         tmp_path / lnb.state_key / "coverage_gap_2026-11-18.json",
         {
             "schema_version": "magolide.coverage_gap_marker",
-            "league": "GREECE_BASKET_LEAGUE",
+            "league": "FRANCE_LNB_PRO_A",
             "target_date": "2026-11-18",
             "schedule_source": "source_unavailable",
         },

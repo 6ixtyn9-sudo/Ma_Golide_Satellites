@@ -63,6 +63,7 @@ from .providers import (
     bal,
     betexplorer,
     betexplorer_direct,
+    betexplorer_fixtures,
     bleague,
     cbaleague,
     espn,
@@ -258,6 +259,16 @@ class Pipeline:
         if self.config.fixture_now_utc:
             return to_utc_iso(parse_utc(self.config.fixture_now_utc))
         return now_utc_iso()
+
+    def _betexplorer_text_fetch(self):
+        """Fixture transport for the fixtures table, which is server-rendered HTML.
+
+        The ordinary pipeline fetch is JSON-oriented; production therefore lets
+        the adapter build its own bounded text client, while a hermetic test
+        injects a recorded page.
+        """
+
+        return self.fetch if self._injected_fetch else None
 
     def _aba_text_fetch(self):
         """Use an injected fixture transport, else the adapter's text client.
@@ -1163,6 +1174,42 @@ class Pipeline:
                             f"url={probe.get('url')} rows={probe.get('rows')} "
                             f"payload_bytes={probe.get('payload_bytes')} "
                             f"payload_sha256={probe.get('payload_sha256')}"
+                        )[:500],
+                    )
+                )
+        elif league_spec(league).schedule_source == "betexplorer_fixtures":
+            # One page yields the slate; the price read reuses the same page in
+            # ``betexplorer`` and is keyed by the identical match code.
+            games = betexplorer_fixtures.fetch_slate(
+                league,
+                self.config.date_yyyymmdd,
+                text_fetch=self._betexplorer_text_fetch(),
+            )
+            self.gaps.extend(betexplorer_fixtures.last_gaps())
+            probe = betexplorer_fixtures.last_probe()
+            # The page was read, so an empty slate is an answer, not a void.
+            read_receipt = bool(probe)
+            if probe:
+                now = self._now_iso()
+                self._record_health(
+                    ProviderHealth(
+                        provider=betexplorer_fixtures.SCHEDULE_SOURCE,
+                        league=self.config.league_enum,
+                        last_attempt_utc=now,
+                        last_success_utc=now if games else None,
+                        state=CoverageState.OK if games else CoverageState.MISSING,
+                        coverage={
+                            "games": len(games),
+                            "rows": probe.get("rows", 0),
+                            "slate_games": probe.get("slate_games", 0),
+                            "slate_priced_rows": probe.get("slate_priced_rows", 0),
+                            "blank_kickoff_rows": probe.get("blank_kickoff_rows", 0),
+                        },
+                        detail=(
+                            f"url={probe.get('url')} rows={probe.get('rows')} "
+                            f"slate_games={probe.get('slate_games')} "
+                            f"slate_priced_rows={probe.get('slate_priced_rows')} "
+                            f"blank_kickoff_rows={probe.get('blank_kickoff_rows')}"
                         )[:500],
                     )
                 )

@@ -1255,6 +1255,14 @@ def fetch_schedule(config: LeagueGateConfig, target_date: str) -> Iterable[Sched
         # The adapter's only verified endpoint is a whole-season feed.  Do not
         # call it from a half-hour gate and claim this job is lightweight.
         raise GateUncertain("EuroLeague has no verified date-bounded schedule source")
+    if config.schedule_source == "betexplorer_fixtures":
+        # One whole-season fixtures table is the only route these lanes have;
+        # a half-hour gate must fail open rather than pull it and call the read
+        # a probe.  Running the lane costs the same single request.
+        raise GateUncertain(
+            f"{config.label} has no date-bounded gate source: its fixtures "
+            "table is season-wide"
+        )
     if config.schedule_source == "lba":
         # The calendar route always serves the league's current focus day; a
         # target date has no verified date-bounded source, so the gate fails

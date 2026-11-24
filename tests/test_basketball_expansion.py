@@ -181,6 +181,16 @@ def test_final_expansion_is_typed_and_registry_backed_everywhere():
                 "euroleague",
                 "euroleague",
             )
+        elif league is League.GREECE_BASKET_LEAGUE:
+            # Revived 2026-11-24 on the fixtures table: the league has no
+            # official schedule route, but its page carried both-sided quotes
+            # on an in-season slate. Schedule and price come from one fetch;
+            # results still have no route, and the spec says so by name.
+            assert (spec.schedule_source, spec.gate_schedule_source) == (
+                "betexplorer_fixtures",
+                "betexplorer_fixtures",
+            )
+            assert spec.results_source == "source_unavailable"
         else:
             assert spec.schedule_source == "source_unavailable"
             assert spec.results_source == "source_unavailable"
