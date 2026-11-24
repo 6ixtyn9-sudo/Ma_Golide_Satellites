@@ -150,25 +150,113 @@ _STORAGE_WRITE_RE = re.compile(
 )
 
 
-def gate_cookies(body: str) -> list[tuple[str, str]]:
-    """The cookies a gate writes on accept, as (name, value), in page order.
+#: How close a cookie write has to sit to the gate's own markup to be called
+#: related to it. Chosen to cover one inline handler and its callbacks, not the
+#: page: a language switcher that clears ``lang`` is a cookie write too, and
+#: replaying it is how a tool convinces itself it passed a gate.
+GATE_PROXIMITY_CHARS = 3000
 
-    These are the only thing an HTTP client can replay: a cookie travels in a
-    header. A storage key cannot, which is why ``gate_storage_keys`` exists --
-    the difference is the difference between passing the gate and pretending to.
+_ACCEPT_CONTROL_RE = re.compile(
+    r"[\"'](?P<id>[A-Za-z0-9_-]*age[A-Za-z0-9_-]*(?:yes|accept|confirm|ok|enter|btn)"
+    r"[A-Za-z0-9_-]*)[\"']",
+    re.IGNORECASE,
+)
+
+
+def gate_anchors(body: str) -> list[int]:
+    """Offsets of the gate's own markup: its markers and its accept controls."""
+
+    lowered = (body or "").lower()
+    positions = [lowered.find(marker.lower()) for marker in _GATE_MARKERS]
+    positions = [position for position in positions if position >= 0]
+    positions.extend(match.start() for match in _ACCEPT_CONTROL_RE.finditer(body or ""))
+    return sorted(positions)
+
+
+def gate_cookie_writes(body: str) -> list[dict[str, object]]:
+    """Every cookie the page writes, with how far it sits from the gate.
+
+    Distance is the whole point.  The 2026-11-24 gate page writes
+    ``lang=; expires=Thu, 01 Jan 1970`` (a language reset) and a bare ``mode``;
+    both are cookie writes, neither is consent, and replaying them produced a
+    second identical 110 KB gate.  A write is a hint only when it is near the
+    gate that is supposed to set it.
     """
 
-    found: list[tuple[str, str]] = []
+    anchors = gate_anchors(body)
+    writes: list[dict[str, object]] = []
+    seen: dict[tuple[str, str], int] = {}
     for match in _COOKIE_WRITE_RE.finditer(body or ""):
         pair = match.group("value").split(";", 1)[0].strip()
         name, _, value = pair.partition("=")
         name = name.strip()
         if not name:
             continue
-        item = (name, value.strip())
-        if item not in found:
-            found.append(item)
-    return found
+        distance = min((abs(match.start() - anchor) for anchor in anchors), default=None)
+        key = (name, value.strip())
+        if key in seen:
+            continue
+        seen[key] = len(writes)
+        writes.append(
+            {
+                "name": name,
+                "value": value.strip(),
+                "raw": match.group("value").strip(),
+                "distance": distance,
+                "near_gate": distance is not None and distance <= GATE_PROXIMITY_CHARS,
+            }
+        )
+    return writes
+
+
+def gate_cookies(body: str) -> list[tuple[str, str]]:
+    """The cookies a gate writes on accept, as (name, value), in page order.
+
+    These are the only thing an HTTP client can replay: a cookie travels in a
+    header. A storage key cannot, which is why ``gate_storage_keys`` exists --
+    the difference is the difference between passing the gate and pretending to.
+    Only writes near the gate count; see ``gate_cookie_writes``.
+    """
+
+    return [
+        (str(write["name"]), str(write["value"]))
+        for write in gate_cookie_writes(body)
+        if write["near_gate"]
+    ]
+
+
+def gate_script(body: str) -> dict[str, object]:
+    """What the accept handler does, read out of the page itself.
+
+    A saved body is enough to answer this when the handler is inline. It is not
+    when the gate ships its logic in an external bundle, and the honest answer
+    then is the list of bundles plus no excerpts -- not a plausible guess at a
+    key name.
+    """
+
+    excerpts: list[dict[str, str]] = []
+    for match in _ACCEPT_CONTROL_RE.finditer(body or ""):
+        control = match.group("id")
+        # The handler may be attached by id elsewhere; the first occurrence of
+        # the identifier is usually the markup or the lookup, so take a window
+        # after it rather than a whole script.
+        at = body.find(control)
+        window = body[max(0, at - 200) : at + 900]
+        if any(item["excerpt"] == window for item in excerpts):
+            continue
+        excerpts.append({"control": control, "excerpt": re.sub(r"\s+", " ", window).strip()})
+        if len(excerpts) >= 3:
+            break
+    scripts = []
+    for match in re.finditer(r"<script[^>]+src=[\"'](?P<src>[^\"']+)[\"']", body or ""):
+        src = match.group("src")
+        if src not in scripts:
+            scripts.append(src)
+    return {
+        "accept_handlers": excerpts,
+        "external_scripts": scripts[:20],
+        "inline_script_blocks": len(re.findall(r"<script(?![^>]*\bsrc=)", body or "")),
+    }
 
 
 def gate_storage_keys(body: str) -> list[str]:
@@ -511,11 +599,18 @@ def capture_match_pages(
                 gate = f"{gate}; replay requested without a fetcher"
             elif not cookies:
                 keys = gate_storage_keys(body)
-                gate = (
-                    f"{gate}; no cookie to replay"
-                    + (f", storage keys {keys}" if keys else "")
-                    + " -- needs a browser, not a header"
-                )
+                stray = [write["name"] for write in gate_cookie_writes(body) if not write["near_gate"]]
+                if stray:
+                    gate = (
+                        f"{gate}; no cookie written near the accept control "
+                        f"(unrelated writes: {stray}) -- replaying those is not consent"
+                    )
+                else:
+                    gate = (
+                        f"{gate}; no cookie to replay"
+                        + (f", storage keys {keys}" if keys else "")
+                        + " -- needs a browser, not a header"
+                    )
         if gate is not None:
             # Saved, because it is evidence of what the host served, but never
             # counted as a match page: 110 KB of age modal reads as a captured
@@ -691,6 +786,14 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     parser.add_argument(
+        "--gate-script",
+        metavar="PATH",
+        help=(
+            "read a saved gate page and print what its accept control does (inline handler "
+            "excerpts, external bundles), with no request"
+        ),
+    )
+    parser.add_argument(
         "--gate-accept",
         action="store_true",
         help=(
@@ -743,6 +846,21 @@ def main(argv: list[str] | None = None) -> int:
         if args.now
         else datetime.now(timezone.utc)
     )
+    if args.gate_script:
+        body = Path(args.gate_script).read_text(encoding="utf-8", errors="replace")
+        print(
+            json.dumps(
+                {
+                    "path": args.gate_script,
+                    "gate": gate_reason(body),
+                    **gate_script(body),
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0
+
     if args.gate_hints:
         body = Path(args.gate_hints).read_text(encoding="utf-8", errors="replace")
         print(
@@ -750,7 +868,15 @@ def main(argv: list[str] | None = None) -> int:
                 {
                     "path": args.gate_hints,
                     "gate": gate_reason(body),
-                    "hints": gate_hints(body),
+                    "hints": [
+                        write["raw"] for write in gate_cookie_writes(body) if write["near_gate"]
+                    ],
+                    "unrelated_writes": [
+                        {"raw": write["raw"], "distance": write["distance"]}
+                        for write in gate_cookie_writes(body)
+                        if not write["near_gate"]
+                    ],
+                    "storage_keys": gate_storage_keys(body),
                     "mentions": gate_mentions(body),
                     "replayable": bool(gate_cookies(body)),
                     "age_gate_authorisation": AGE_GATE_AUTHORISATION,
@@ -759,7 +885,10 @@ def main(argv: list[str] | None = None) -> int:
                 sort_keys=True,
             )
         )
-        return 0 if gate_hints(body) else 1
+        # Exit 0 means "there is a cookie to replay", which is the only answer
+        # that lets the next command run. Finding writes that belong to something
+        # else is not a way in, and saying so with 0 would invite the 429.
+        return 0 if gate_cookies(body) else 1
 
     if args.league is None:
         parser.error(

@@ -818,6 +818,7 @@ loop, and the receipt says which happened:
 | a cookie | `captured`, `gate_passed_by: ["age_verified"]`, `requests_made: 2` |
 | only localStorage | `gated`, `… no cookie to replay, storage keys ['ageVerified'] -- needs a browser` |
 | a cookie, still gated | `gated`, `… still gated after replaying 1 cookie(s)` |
+| cookie writes, none near the gate | `gated`, `… no cookie written near the accept control (unrelated writes: ['lang'])` |
 | nothing, not asked | `gated`, `requests_made: 1`, `gate_accept: false` |
 
 The third row is the one worth keeping. A gate that answers the cookie and shows the modal
@@ -828,6 +829,38 @@ What is *not* claimed: that passing the gate yields period scores. The 110 KB bo
 0 in every shape signal, so the modal may be incidental to a scoreboard that is drawn by a
 script we have not read yet. The next run answers that; this change only makes the question
 askable.
+
+### The gate answered, and it was not a cookie (2026-11-24T15:45Z)
+
+The first real receipt, run with the operator's authority and the cooldown in place:
+
+```
+hints:    ["lang=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/", "mode"]
+replay:   110,501 bytes, sha 8a1e9f05…, "still gated after replaying 1 cookie(s)"
+```
+
+`lang=` with an epoch expiry is a language reset, and a bare `mode` is not a cookie at all.
+Both are writes on that page; neither is consent. Replaying them bought a second identical
+age modal, which is the second row of the table above working as intended — the host answered
+the cookie and showed the gate anyway.
+
+So the extractor was the thing that lied, not the host: `document.cookie = …` matched, and a
+match is not the same as "the accept button wrote this". `gate_cookie_writes` now measures
+each write's distance to the gate's own markup (its markers, and ids like `ageYes`); only
+writes within 3,000 characters count as hints, everything else is listed with its distance as
+`unrelated_writes`, and `--gate-hints` exits non-zero when nothing replayable is near the
+gate. The failure this removes is precise: sending `lang=` to a host that then throttles us,
+and recording the throttle as policy.
+
+One incidental datum worth keeping: the same page was 110,391 bytes with sha `7cf27f25…` a
+session earlier and 110,501 with sha `8a1e9f05…` now. The body varies per request, so byte
+size and digest are evidence that *a* body was saved, never that it is the same body.
+
+Where the consent actually lives is still unknown, and guessing again is not the plan.
+`--gate-script` reads a saved gate page offline and prints what the accept control does —
+inline handler excerpts, the external bundle list, how many inline blocks there are. If the
+answer is a bundle, the gate cannot be passed from a saved body at all, and the honest
+conclusion for these lanes is the one already written above: verification only, no settlement.
 
 ### Not being throttled, in one mechanism
 
