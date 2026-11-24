@@ -10,20 +10,26 @@ projected.
 | NCAA_M | 14 | 6 | 8 | 14.0 | +8.864 | +63.32% | 42.9% | 0.2160 | 5 | 15 |
 | **Total** | **33** | **11** | **22** | **33.0** | **+9.659** | **+29.27%** | **33.3%** | — | 10 | 30 |
 
-Twenty-three of the twenty-five registered leagues have **zero settled
-positions**. The two that do are the ESPN lanes. Every lane revived in this
+Twenty-two of the twenty-four registered leagues have **zero settled
+positions** (24 `auto_tickets_performance.json` files, 2 with a non-zero
+`settled_positions` field: NBA 19, NCAA_M 14). The two that do are the ESPN
+lanes. Every lane revived in this
 period — B.League, ACB, LBA, KBL, BCL, BAL, BSL — has produced **no settled
 position at all**, not "no pick today".
 
 ## Why "+29% ROI" is not a result
 
-- **n = 33.** Hit rate 33.3% ± 16.1% (95%, binomial). The stake is 33 flat
-  units, so ROI's standard error is dominated by per-bet variance: at a
-  single-bet-like spread of ~0.95u the interval is ±32.4% (t = 1.77); with
-  acca-heavy returns — and accas are 29 of the 33 settled positions — the
-  interval is wider still (t < 1 at 2.5u spread). **The interval spans zero.**
+- **n = 33.** Hit rate 33.3% ± 16.1% (95%, binomial). ROI's interval cannot
+  be pinned down without a variance assumption, and the assumption matters:
+  a single-bet-like spread of ~0.95u gives ±32.4% (t = 1.77), while the
+  acca-heavy reality — the settled positions include combined odds as high as
+  14.94 at 1u stake — widens it well past ±60pp. Bootstrapping 20 000 times
+  over the odds recorded in the frozen decision receipts (43 positions,
+  outcomes redrawn to the observed 11/33) gives −17% … +175% (half-width
+  ±96pp, z ≈ 0.60). Every method agrees on the conclusion: **the interval
+  spans zero.** The narrow figure should not be quoted on its own.
 - **The +63% is 14 bets in one league**, chosen after the fact from a
-  twenty-five-league field. Its companions: NBA at +4.18% (noise) and a Brier
+  twenty-four-league field. Its companions: NBA at +4.18% (noise) and a Brier
   of 0.2766, which is worse than a coin's 0.25 on a two-way leg.
 - **Acca positions are not independent.** Legs repeat across accas, so the
   effective sample is smaller than 33 and the interval above is optimistic.

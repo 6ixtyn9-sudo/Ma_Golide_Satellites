@@ -46,6 +46,8 @@ Binding rules implemented here
 
 from __future__ import annotations
 
+import hashlib
+import json
 import re
 from typing import Any, Dict, List, Optional, Tuple
 
@@ -125,16 +127,51 @@ def _season_display(seasoncode: str) -> str:
 # ---------------------------------------------------------------------------
 
 
+_LAST_PROBE: Dict[str, Any] = {}
+
+
+def last_probe() -> Dict[str, Any]:
+    """What the most recent ``discover_games`` read, or ``{}`` if it read nothing.
+
+    The receipt exists so the pipeline's void guard only speaks for lanes that
+    read nothing. ``payload_bytes``/``payload_sha256`` describe the DECODED
+    payload returned by the fetch seam, not the wire body, and are labelled
+    that way so they can never be read as a transport capture.
+    """
+    return dict(_LAST_PROBE)
+
+
+def reset_probe() -> None:
+    _LAST_PROBE.clear()
+
+
+def _record_read(seasoncode: str, url: str, rows: List[Dict[str, Any]]) -> None:
+    canonical = json.dumps(rows, sort_keys=True, separators=(",", ":"), default=str)
+    raw = canonical.encode("utf-8")
+    _LAST_PROBE.clear()
+    _LAST_PROBE.update(
+        {
+            "seasoncode": seasoncode,
+            "url": url,
+            "rows": len(rows),
+            "payload_bytes": len(raw),
+            "payload_sha256": hashlib.sha256(raw).hexdigest(),
+        }
+    )
+
+
 def _fetch_season_rows(fetch: FetchFn, seasoncode: str) -> List[Dict[str, Any]]:
     """Fetch and validate the raw season schedule rows (one request)."""
-    payload = fetch(
-        SCHEDULE_URL.format(competition=competition_of(seasoncode), seasoncode=seasoncode)
-    )
+    url = SCHEDULE_URL.format(competition=competition_of(seasoncode), seasoncode=seasoncode)
+    payload = fetch(url)
     rows = payload.get("data") if isinstance(payload, dict) else payload
     if not isinstance(rows, list):
         raise ValueError(
             f"euroleague schedule for {seasoncode} has no data list (got {type(payload).__name__})"
         )
+    # A validated list is a read receipt even when it is empty: 0 games on the
+    # target date is an answer, and the guard must not call it a void.
+    _record_read(seasoncode, url, [r for r in rows if isinstance(r, dict)])
     if not rows:
         # Live trap (verified 2026-11-16): a bare-year season code (``2026``
         # instead of ``E2026``) answers HTTP 200 with an EMPTY data list.
