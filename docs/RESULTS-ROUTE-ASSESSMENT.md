@@ -619,3 +619,42 @@ Hence `results_source` stays `source_unavailable`. The reader is proven; the *ad
 would need — quarters reconciled to a final, attached to a stored game — does not exist,
 and relabelling the lane before it does would be a status string with no behaviour behind
 it. The next capture is the hidden row's own markup, ~900 escaped characters.
+
+## A final is not a settlement record (2026-11-24T15:3xZ)
+
+Worth stating plainly, because 197 parsed finals make it easy to skip past:
+
+`ActualResult.reconciles()` requires Q1–Q4 (or H1/H2) that sum to the final. It refuses
+anything else — `period kind unknown is not reconcilable`, `expected exactly four quarter
+values per team`. So a results **index**, which carries finals and nothing else, cannot
+settle a forecast in this corpus. Not for NKL, not for WNBL, not for WCBA. The 197 rows are
+cross-check material and an evidence trail; they are not settlement.
+
+That leaves exactly two places a reconcilable record can come from:
+
+* the **federation** page, which for Greece carries the quarters in its hidden row — the
+  reason that lane's adapter is a quarter parser and not a totals parser;
+* the **aggregator's per-match page**, which is where period scores live on that host.
+
+The second is one request to answer, and `scripts/probe_betexplorer_results.py --match N`
+now answers it: it takes the first N codes from the captured index, fetches each match page
+at the tool's own spacing, saves the body verbatim, and reports `period_markers` — a count
+of `Q1`/`1Q`/`OT`-shaped tokens. Zero means the host does not publish what reconciliation
+needs, whatever its results table says; a positive count means the lane can settle from one
+request per game.
+
+That is deliberately one request per league and not one per game: the question is whether
+this host carries period scores at all, and answering it with 140 fetches before knowing
+would be the impatience this project keeps out of its probes.
+
+## Greece's hidden row is player cards before it is quarters (2026-11-24T15:3xZ)
+
+The 900 characters after `esake-program-game-hidden-row` are MVP cards —
+`<div class="mvp-player"><div class="mvp-player-name"><a href="/el/action/EsakeplayerView?
+idplayer=9DBC8FE2&mode="><span>FORRESTER</span><br/>JAKOB</a></div><div class="mvp-player-
+stats">22<span>PTS</span></div>…` — and the per-quarter block sits further in. So the
+window was aimed at the right element and too early inside it; the next read targets `Q1`
+inside the hidden row rather than the row's start.
+
+Nothing in this changes the finals: seven games, seven dates, both clubs each. It changes
+only what the next 900 characters should be centred on.

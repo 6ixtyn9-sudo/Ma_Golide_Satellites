@@ -276,3 +276,57 @@ def test_read_replays_a_captured_page_without_a_request(tmp_path):
     )
 
     assert probe.main(["--league", league, "--read", "--out", str(tmp_path)]) == 0
+
+
+def test_the_index_codes_come_back_distinct_and_in_order():
+    body = (
+        '<a href="/basketball/australia/wnbl-women/a-b/AbCd1234/">x</a>'
+        '<a href="/basketball/australia/wnbl-women/a-b/AbCd1234/">x</a>'
+        '<a href="/basketball/australia/wnbl-women/a-b/EfGh5678/">x</a>'
+    )
+
+    assert probe.index_codes(body) == ["AbCd1234", "EfGh5678"]
+
+
+def test_match_pages_are_fetched_bounded_spaced_and_receipted(tmp_path):
+    """One request per league answers "can this host settle?" -- no more."""
+
+    fetched = []
+    slept = []
+
+    def read_text(url):
+        fetched.append(url)
+        return (
+            "<table><tr><td>Q1</td><td>22</td><td>18</td></tr>"
+            "<tr><td>Q2</td><td>19</td><td>21</td></tr></table>"
+        )
+
+    payload = probe.capture_match_pages(
+        "AUSTRALIA_WNBL_W",
+        codes=["AbCd1234", "EfGh5678", "IjKl9012"],
+        out_dir=tmp_path,
+        read_text=read_text,
+        sleep=slept.append,
+        limit=2,
+    )
+
+    assert len(fetched) == 2
+    assert slept == [probe.MIN_INTERVAL_SECONDS]  # one gap between two requests
+    assert payload["requested"] == 2
+    assert [page["status"] for page in payload["pages"]] == ["captured", "captured"]
+    assert payload["pages"][0]["period_markers"] == 2
+    assert payload["pages"][0]["period_examples"] == ["Q1", "Q2"]
+    assert (tmp_path / "match_AbCd1234.html").exists()
+    assert (tmp_path / "match-pages.json").exists()
+
+
+def test_a_failed_match_fetch_is_a_receipt_not_a_crash(tmp_path):
+    def read_text(url):
+        raise RuntimeError("429 from the host")
+
+    payload = probe.capture_match_pages(
+        "AUSTRALIA_WNBL_W", codes=["AbCd1234"], out_dir=tmp_path, read_text=read_text, limit=1
+    )
+
+    assert payload["pages"][0]["status"] == "fetch_failed"
+    assert "429" in payload["pages"][0]["detail"]

@@ -222,6 +222,86 @@ def finished_candidates(
     return output[:limit]
 
 
+#: Quarter and period markers a match page would use if it carried them.
+_PERIOD_RE = re.compile(r"\b(?:[1-4]Q|Q[1-4]|OT)\b")
+
+
+def index_codes(body: str) -> list[str]:
+    """Distinct match codes from a captured results page, in document order."""
+
+    seen: list[str] = []
+    for code in _CODE_LINK_RE.findall(body):
+        if code not in seen:
+            seen.append(code)
+    return seen
+
+
+def capture_match_pages(
+    league: str,
+    *,
+    codes: list[str],
+    out_dir: Path,
+    read_text,
+    sleep=time.sleep,
+    limit: int = 1,
+) -> dict[str, object]:
+    """Fetch the league's own match pages for the first ``limit`` codes.
+
+    The results index gives finals and nothing else, and a final does not
+    reconcile to a quarter record.  A match page is where period scores would be,
+    so this answers "can this host settle?" for the price of one request per
+    league rather than for the price of a design decision.
+    """
+
+    wanted = codes[: max(0, min(int(limit), MAX_CAPTURE))]
+    out_dir.mkdir(parents=True, exist_ok=True)
+    captured: list[dict[str, object]] = []
+    for position, code in enumerate(wanted):
+        if position:
+            sleep(MIN_INTERVAL_SECONDS)
+        url = match_url(league, code)
+        try:
+            body = read_text(url)
+        except Exception as exc:  # noqa: BLE001 - a failed capture is a receipt
+            captured.append({"event_id": code, "url": url, "status": "fetch_failed",
+                             "detail": str(exc)[:200]})
+            continue
+        path = out_dir / f"match_{code}.html"
+        path.write_text(body, encoding="utf-8")
+        text = re.sub(r"<[^>]+>", " ", body)
+        captured.append(
+            {
+                "event_id": code,
+                "url": url,
+                "status": "captured",
+                "bytes": len(body.encode("utf-8")),
+                "sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
+                "path": str(path),
+                "period_markers": len(_PERIOD_RE.findall(text)),
+                "period_examples": sorted(set(_PERIOD_RE.findall(text)))[:6],
+                **shape_signals(body),
+            }
+        )
+
+    payload = {
+        "schema_version": "magolide.results_probe.v1",
+        "mode": "match_pages",
+        "league": league,
+        "captured_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "requested": len(wanted),
+        "note": (
+            "Match pages saved verbatim. period_markers counts Q1..Q4/OT-shaped "
+            "tokens, which is what a reconciliation record would need and what a "
+            "results index does not carry."
+        ),
+        "pages": captured,
+    }
+    path = out_dir / "match-pages.json"
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    payload["receipt_path"] = str(path)
+    return payload
+
+
 def shape_signals(body: str) -> dict[str, object]:
     """Neutral counts, so the parser can be written against the real page.
 
@@ -320,6 +400,16 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", default="results_probe", help="directory for saved bodies")
     parser.add_argument("--now", help="override the observation instant (UTC ISO)")
     parser.add_argument(
+        "--match",
+        type=int,
+        default=0,
+        metavar="N",
+        help=(
+            "fetch N match pages for the first codes of the captured results "
+            "index -- the only place period scores could be (hard cap 12)"
+        ),
+    )
+    parser.add_argument(
         "--read",
         action="store_true",
         help=(
@@ -344,6 +434,22 @@ def main(argv: list[str] | None = None) -> int:
         if args.now
         else datetime.now(timezone.utc)
     )
+    if args.match:
+        from ingestion.providers.betexplorer import _text_fetch
+
+        index_path = Path(args.out) / args.league / "results-index.html"
+        if not index_path.exists():
+            parser.error(f"no captured results index at {index_path}; run --index first")
+        payload = capture_match_pages(
+            args.league,
+            codes=index_codes(index_path.read_text(encoding="utf-8")),
+            out_dir=Path(args.out) / args.league,
+            read_text=_text_fetch(None, None),
+            limit=args.match,
+        )
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0 if any(page["status"] == "captured" for page in payload["pages"]) else 1
+
     if args.read:
         path = Path(args.out) / args.league / "results-index.html"
         if not path.exists():
