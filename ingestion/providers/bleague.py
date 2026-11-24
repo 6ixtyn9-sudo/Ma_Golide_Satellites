@@ -353,15 +353,27 @@ def discover_games(
     tip inside the target UTC day, and rows whose tip falls outside
     ``date_iso`` are dropped afterwards.
 
-    ``day`` does **not** scope the page's content. On 2026-11-23 four fetches
-    (``day=22/23/24/25``) returned 143,266 B each, parsed to the same ten game
-    keys (506602-506611), and the day22/day23 bodies differed by exactly two
-    bytes: the echoed ``day`` in a meta tag and in a JS assignment. The host
-    serves whatever round its pointer is on, and every row carries its own
-    ``GameDateTime``, which is what makes the UTC-day filter above correct.
+    ``day`` does **not** scope the page's content *near today*. On 2026-11-23
+    four fetches (``day=22/23/24/25``) returned 143,266 B each, parsed to the
+    same ten game keys (506602-506611), and the day22/day23 bodies differed by
+    exactly two bytes: the echoed ``day`` in a meta tag and in a JS assignment.
+    The host serves whatever round its pointer is on, and every row carries its
+    own ``GameDateTime``, which is what makes the UTC-day filter above correct.
+
+    That observation is bounded by what was asked, and the bound matters: a
+    separate probe on 2026-11-24 of a deep-past day (``year=2025&mon=5&day=1``)
+    returned thirteen DIFFERENT ScheduleKeys with zero overlap against today's
+    ten, and one of those keys resolved to an S3 snapshot carrying both teams'
+    Q1-Q4. So the honest statement is "near-today days do not scope, a
+    historical day does" -- a historical day is the only way to enumerate past
+    games, and ``day_param`` below can only ever report the near-today world
+    because this lane asks for today and tomorrow by design.
+
+    The original text claimed the wider thing outright, which was wrong; see
+    ``_record_read``'s ``day_param`` for how the narrower claim is measured.
 
     Both dates are still requested: the second costs one request, and it is the
-    only thing that would find a tip if the host ever honours ``day``. What the
+    only thing that would find a tip on the neighbouring JST day. What the
     second page's contribution was is recorded per page (``new_keys``), and
     ``day_param`` says which world we are in -- ``ignored`` when the second page
     added nothing, ``scoped`` when it did.
