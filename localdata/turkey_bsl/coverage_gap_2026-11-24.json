@@ -1,0 +1,9 @@
+{
+  "detail": "TBF mini-app API /Match/get-daily-matches answers 200 but ignores match_date (identical body for 2026-11-21/22/23) and returns only TKBL rows; no BSL fixture is obtainable from this route. The same host does serve BSL: /Match/get-all-matches-for-filter?ActivityId=22214&Page=1&PageSize=-1 answered 200 with 8 live BSL rows (round 9, played finals) in the same row schema, so this lane is unavailable because the adapter is pointed at the wrong route, not because no source exists. Re-point the adapter before re-enabling. See lane-probe-2026-11-23.md.",
+  "league": "TURKEY_BSL",
+  "results_source": "source_unavailable",
+  "schedule_source": "source_unavailable",
+  "schema_version": "magolide.coverage_gap_marker",
+  "status": "source_unavailable",
+  "target_date": "2026-11-24"
+}
