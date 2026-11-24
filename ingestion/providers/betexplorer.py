@@ -90,6 +90,13 @@ FIXTURES_URLS = {
     "BRAZIL_NBB": BASE + "/brazil/nbb/fixtures/",
     "ARGENTINA_LIGA_NACIONAL": BASE + "/argentina/liga-a/fixtures/",
     "BASKETBALL_CHAMPIONS_LEAGUE": BASE + "/europe/champions-league/fixtures/",
+    # 2026-11-24 additions, each slug read from the served page's own h1 on the
+    # same day: "WCBA Women 2026/2027 Fixtures", "NKL 2026/2027 Fixtures",
+    # "WNBL Women 2026/2027 Fixtures", "Liga Leumit 2026/2027 Fixtures".
+    "CHINA_WCBA_W": BASE + "/china/wcba-women/fixtures/",
+    "LITHUANIA_NKL": BASE + "/lithuania/nkl/fixtures/",
+    "AUSTRALIA_WNBL_W": BASE + "/australia/wnbl-women/fixtures/",
+    "ISRAEL_LIGA_LEUMIT": BASE + "/israel/liga-leumit/fixtures/",
 }
 #: ``BASKETBALL_AFRICA_LEAGUE`` is deliberately absent: its fixtures table serves
 #: ``No matches found`` for the whole season (verified 2026-11-23), so registering

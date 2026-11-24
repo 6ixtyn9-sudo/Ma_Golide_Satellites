@@ -61,6 +61,14 @@ class League(str, Enum):
     BRAZIL_NBB = "BRAZIL_NBB"
     ARGENTINA_LIGA_NACIONAL = "ARGENTINA_LIGA_NACIONAL"
 
+    # 2026-11-24 additions: competitions whose own public fixtures table is the
+    # only schedule route available to them.  A page average is the only price
+    # such a lane can carry, so these lanes are research-only by construction.
+    CHINA_WCBA_W = "CHINA_WCBA_W"  # Chinese WCBA Women
+    LITHUANIA_NKL = "LITHUANIA_NKL"  # Lithuania NKL (second division)
+    AUSTRALIA_WNBL_W = "AUSTRALIA_WNBL_W"  # Australian WNBL Women
+    ISRAEL_LIGA_LEUMIT = "ISRAEL_LIGA_LEUMIT"  # Israel Liga Leumit (second division)
+
     # Boundary aliases retain familiar competition abbreviations without
     # creating a second persisted value.  Canonical writes always use the
     # long, country-qualified values above.
@@ -75,6 +83,10 @@ class League(str, Enum):
     KBL = "SOUTH_KOREA_KBL"
     NBB = "BRAZIL_NBB"
     LIGA_NACIONAL = "ARGENTINA_LIGA_NACIONAL"
+    WCBA = "CHINA_WCBA_W"
+    NKL = "LITHUANIA_NKL"
+    WNBL_W = "AUSTRALIA_WNBL_W"
+    LIGA_LEUMIT = "ISRAEL_LIGA_LEUMIT"
 
 
 class PriceProvenance(str, Enum):

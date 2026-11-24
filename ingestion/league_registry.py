@@ -19,9 +19,10 @@ omitting evidence fields.
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
+from enum import Enum
 import re
-from typing import Dict, Iterable, Tuple
+from typing import Dict, Iterable, Optional, Tuple
 
 from .models import (
     League,
@@ -29,6 +30,24 @@ from .models import (
     PriceProvenance,
     SourcePermission,
 )
+
+
+class LaneStatus(str, Enum):
+    """Whether a registered competition is part of the operational run.
+
+    ``RETIRED`` does not delete the contract, the state directory, the stored
+    finals, or the adapter: a retired lane keeps its identity and history so
+    that its past games can still be settled and so that revival is a single
+    deliberate flip.  What it loses is scheduling — the gate will not place it
+    in the workflow matrix, and the daily CLI refuses to run it by accident.
+
+    ``OFFSEASON`` is a calendar fact, not a verdict: the lane is real, it keeps
+    its state, and it must not be reported as a failure while it is dark.
+    """
+
+    ACTIVE = "active"
+    OFFSEASON = "offseason"
+    RETIRED = "retired"
 
 
 @dataclass(frozen=True)
@@ -73,6 +92,25 @@ class LeagueSpec:
     gate_schedule_source: str
     price_sources: Tuple[PriceSourcePolicy, ...] = ()
     source_detail: str = ""
+    status: LaneStatus = LaneStatus.ACTIVE
+    #: Why the lane is dark.  Required for every non-ACTIVE spec: an
+    #: unexplained dark lane is a silent no-op, which is the failure mode the
+    #: status field exists to prevent.
+    status_detail: str = ""
+
+    @property
+    def is_schedulable(self) -> bool:
+        """True only for a lane the gate may place in the run matrix."""
+
+        return self.status is LaneStatus.ACTIVE
+
+    @property
+    def lane_reason(self) -> str:
+        """Machine-readable dark-lane reason, empty for an active lane."""
+
+        if self.status is LaneStatus.ACTIVE:
+            return ""
+        return f"lane_{self.status.value}: {self.status_detail}"
 
     @property
     def book_providers(self) -> Tuple[str, ...]:
@@ -411,7 +449,29 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     # unavailable rather than left claiming a source: 732 runs previously
     # produced nothing and looked healthy doing it.
     LeagueSpec(League.TURKEY_BSL, "Turkey BSL", "turkey_bsl", "Europe/Istanbul", "Europe/Istanbul", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="TBF mini-app API /Match/get-daily-matches answers 200 but ignores match_date (identical body for 2026-11-21/22/23) and returns only TKBL rows; no BSL fixture is obtainable from this route. The same host does serve BSL: /Match/get-all-matches-for-filter?ActivityId=22214&Page=1&PageSize=-1 answered 200 with 8 live BSL rows (round 9, played finals) in the same row schema, so this lane is unavailable because the adapter is pointed at the wrong route, not because no source exists. Re-point the adapter before re-enabling. See lane-probe-2026-11-23.md.", price_sources=(_aggregate_research_only("betexplorer"),)),
-    LeagueSpec(League.GREECE_BASKET_LEAGUE, "Greece Basket League", "greece_basket_league", "Europe/Athens", "Europe/Athens", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
+    # Revived 2026-11-24: the league has no official schedule route of its own,
+    # but its fixtures table carried 7 both-sided quotes on an in-season page --
+    # the only zero-priced-adjacent lane in the probe that was actually pricing.
+    # Fixtures and the page average now come from one fetch; results have no
+    # route at all, which the lane states instead of pretending to settle.
+    LeagueSpec(
+        League.GREECE_BASKET_LEAGUE,
+        "Greece Basket League",
+        "greece_basket_league",
+        "Europe/Athens",
+        "Europe/Paris",
+        "betexplorer_fixtures",
+        "source_unavailable",
+        "betexplorer_fixtures",
+        source_detail=(
+            "Fixtures table '/basketball/greece/basket-league/fixtures/' (h1 'Basket "
+            "League 2026/2027 Fixtures', served 2026-11-24: 126 rows, 7 priced, 2 of the "
+            "8 odds-bearing rows carried no kickoff cell). Deepest calendar window in the "
+            "sweep, into 2027-01-03. Page average, not a named book; source terms "
+            "unreviewed. No results route, so settlement is unsupported by name."
+        ),
+        price_sources=(_aggregate_research_only("betexplorer"),),
+    ),
     # The externally referenced aba-liga.com calendar/detail route is the
     # active canonical fixture, result, and history target. Ma Golide retains
     # no first-party capture, so live behavior and source-use terms remain
@@ -451,9 +511,184 @@ _SPECS: Tuple[LeagueSpec, ...] = (
     LeagueSpec(League.SOUTH_KOREA_KBL, "South Korea KBL", "south_korea_kbl", "Asia/Seoul", "Asia/Seoul", "kbl", "kbl", "kbl", source_detail="Schedule/results use the KBL data API behind www.kbl.or.kr (GET /match/list with a fromDate/toDate window, plus /common/teamList for English team names; two headers, Channel and TeamCode, no key). Route referenced from the SportsDataverse kbl module (MIT, read 2026-11-23); no Ma Golide first-party body is retained, so each run records the URL, byte count and sha256 it actually saw. Quarter splits are not captured, so a settled row is totals-only and not quarter-reconcilable.", price_sources=(_aggregate_research_only("betexplorer"),)),
     LeagueSpec(League.BRAZIL_NBB, "Brazil NBB", "brazil_nbb", "America/Sao_Paulo", "America/Sao_Paulo", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
     LeagueSpec(League.ARGENTINA_LIGA_NACIONAL, "Argentina Liga Nacional", "argentina_liga_nacional", "America/Argentina/Buenos_Aires", "America/Argentina/Buenos_Aires", "source_unavailable", "source_unavailable", "source_unavailable", source_detail="No compliant date-bounded official schedule/result adapter has been validated.", price_sources=(_aggregate_research_only("betexplorer"),)),
+    # ------------------------------------------------------------------
+    # 2026-11-24 additions.  These four competitions have no official schedule
+    # route of their own; their public fixtures table is the only one, so the
+    # schedule and the price come from the same single fetch.  Acquisition time
+    # is Paris because that is the clock the table is served in for every
+    # competition; display stays in the league's own timezone.
+    # ------------------------------------------------------------------
+    LeagueSpec(
+        League.CHINA_WCBA_W,
+        "WCBA Women",
+        "china_wcba_w",
+        "Asia/Shanghai",
+        "Europe/Paris",
+        "betexplorer_fixtures",
+        "source_unavailable",
+        "betexplorer_fixtures",
+        source_detail=(
+            "Fixtures table '/basketball/china/wcba-women/fixtures/' (h1 'WCBA Women "
+            "2026/2027 Fixtures', served 2026-11-24: 255 rows, 3 priced, 2 rows with no "
+            "kickoff cell). Team names carry a ' W' suffix, so identity is the provider "
+            "match code and names are display only. The served clock is CET/CEST, not "
+            "Asia/Shanghai. Page average, not a named book; source terms unreviewed. "
+            "No results route, so settlement is unsupported by name."
+        ),
+        price_sources=(_aggregate_research_only("betexplorer"),),
+    ),
+    LeagueSpec(
+        League.LITHUANIA_NKL,
+        "Lithuania NKL",
+        "lithuania_nkl",
+        "Europe/Vilnius",
+        "Europe/Paris",
+        "betexplorer_fixtures",
+        "source_unavailable",
+        "betexplorer_fixtures",
+        source_detail=(
+            "Fixtures table '/basketball/lithuania/nkl/fixtures/' (h1 'NKL 2026/2027 "
+            "Fixtures', served 2026-11-24: 167 rows, 7 priced of which 6 still future, "
+            "99 rows with no kickoff cell). Clock is the site's CET/CEST wall clock. "
+            "Page average, not a named book; source terms unreviewed. No results route."
+        ),
+        price_sources=(_aggregate_research_only("betexplorer"),),
+    ),
+    LeagueSpec(
+        League.AUSTRALIA_WNBL_W,
+        "WNBL Women",
+        "australia_wnbl_w",
+        "Australia/Sydney",
+        "Europe/Paris",
+        "betexplorer_fixtures",
+        "source_unavailable",
+        "betexplorer_fixtures",
+        source_detail=(
+            "Fixtures table '/basketball/australia/wnbl-women/fixtures/' (h1 'WNBL Women "
+            "2026/2027 Fixtures', served 2026-11-24: 67 rows, 3 priced all still future, "
+            "0 rows with no kickoff cell -- the cleanest page in the sweep). Clock is "
+            "the site's CET/CEST wall clock. Page average, not a named book; source "
+            "terms unreviewed. No results route."
+        ),
+        price_sources=(_aggregate_research_only("betexplorer"),),
+    ),
+    LeagueSpec(
+        League.ISRAEL_LIGA_LEUMIT,
+        "Israel Liga Leumit",
+        "israel_liga_leumit",
+        "Asia/Jerusalem",
+        "Europe/Paris",
+        "betexplorer_fixtures",
+        "source_unavailable",
+        "betexplorer_fixtures",
+        source_detail=(
+            "Fixtures table '/basketball/israel/liga-leumit/fixtures/' (h1 'Liga Leumit "
+            "2026/2027 Fixtures', served 2026-11-24: 161 rows, 5 priced of which 3 still "
+            "future, 83 rows with no kickoff cell). This is the second division, "
+            "distinct from the Winner League board lane. Clock is CET/CEST. Page "
+            "average, not a named book; source terms unreviewed. No results route."
+        ),
+        price_sources=(_aggregate_research_only("betexplorer"),),
+    ),
 )
 
-SPECS: Tuple[LeagueSpec, ...] = _SPECS
+# --------------------------------------------------------------------------
+# Lane status — measured 2026-11-24, single-day probe, ledgered bodies.
+#
+# The rule this table encodes: retire a lane when its *source* refuses us or
+# serves nothing usable, not when its season is simply quiet and not when it
+# merely lacks a price route.  Measured zero priced rows on an in-season
+# fixtures page, or no compliant schedule route at all, is a fight we stop
+# having.  A lane with a working schedule/result adapter keeps its place even
+# when no price exists, because prices can arrive later without re-deriving
+# the fixtures.
+#
+# Retirement is reversible and deletes nothing: the contract, state directory,
+# stored finals, and adapter all stay.  See ``LaneStatus``.
+# --------------------------------------------------------------------------
+
+_RETIRED_ON_2026_11_24: Dict[League, str] = {
+    # Every entry below is a lane that ran for ~750 scheduled runs and produced
+    # essentially nothing it could ever price.  The run and fixture counts come
+    # from each lane's own committed archive manifest; the row counts come from
+    # the 2026-11-24 fixtures-page probe.
+    League.SPAIN_ACB: (
+        "756 runs, 0 games ever acquired and 0 of 225 fixtures rows priced"
+    ),
+    League.BASKETBALL_CHAMPIONS_LEAGUE: (
+        "760 runs, 0 games ever acquired and 0 of 32 fixtures rows priced; season "
+        "archives serve whole-season totals only, never a pre-tip slate"
+    ),
+    League.BASKETBALL_AFRICA_LEAGUE: (
+        "760 runs, 0 games ever acquired; odds appear only on already-played rows "
+        "and the fixtures table this adapter reads carries none"
+    ),
+    League.ARGENTINA_LIGA_NACIONAL: (
+        "760 runs, 0 games ever acquired and 0 of 218 fixtures rows priced"
+    ),
+    League.ITALY_LBA: (
+        "760 runs for 6 games; the calendar body is byte-identical with and "
+        "without the day parameter, so only the focus day can ever be read"
+    ),
+    League.FRANCE_LNB_PRO_A: (
+        "760 runs, 0 games: no compliant date-bounded schedule/result route was validated"
+    ),
+    League.GERMANY_BBL: (
+        "760 runs, 0 games: no compliant date-bounded schedule/result route was validated"
+    ),
+    League.TURKEY_BSL: (
+        "752 runs, 0 games: no compliant date-bounded schedule/result route was validated"
+    ),
+    League.BRAZIL_NBB: (
+        "760 runs, 0 games: no compliant date-bounded schedule/result route was validated"
+    ),
+}
+
+#: Considered for retirement on 2026-11-24 and **rejected** — recorded so the
+#: decision is not silently re-litigated.  ABA League looked like a fighter from
+#: the fixtures page (0 of 100 rows priced), but that page only ever serves a
+#: site *average*, which is research-only here.  Its ticket route is the direct
+#: named-book comparison, and that route demonstrably worked: on 2026-11-22 it
+#: produced three priced picks (Stake.com 1.06 / 1.78 / 1.25, named_book,
+#: pre-match) out of 30 logical picks.  Those three were CAUTION rather than
+#: clean only because calibration held n=13 against a minimum of 30 walk-forward
+#: samples.  That is a lane waiting to mature, not a source refusing us.
+_KEPT_AFTER_REVIEW: Dict[League, str] = {
+    League.ABA_LEAGUE: (
+        "4252 games acquired and reconciled finals back to 2004; 3 of 30 frozen "
+        "picks carried a named-book price on 2026-11-22 (betexplorer_direct, "
+        "Stake.com), CAUTION only for insufficient walk-forward samples"
+    ),
+}
+
+#: Empty fixtures page is a calendar fact here, not a measured fight.  The
+#: lane keeps its state and its place; it must not alarm the heartbeat while
+#: dark, and it must not be confused with a retirement.
+_OFFSEASON_ON_2026_11_24: Dict[League, str] = {
+    League.WNBA: (
+        "WNBA season runs April-October; the 2026-11-24 fixture page was "
+        "empty because the calendar is, not because the source refused us"
+    ),
+}
+
+
+def _with_lane_status(spec: LeagueSpec) -> LeagueSpec:
+    if spec.league in _RETIRED_ON_2026_11_24:
+        return replace(
+            spec,
+            status=LaneStatus.RETIRED,
+            status_detail=_RETIRED_ON_2026_11_24[spec.league],
+        )
+    if spec.league in _OFFSEASON_ON_2026_11_24:
+        return replace(
+            spec,
+            status=LaneStatus.OFFSEASON,
+            status_detail=_OFFSEASON_ON_2026_11_24[spec.league],
+        )
+    return spec
+
+
+SPECS: Tuple[LeagueSpec, ...] = tuple(_with_lane_status(spec) for spec in _SPECS)
 _BY_LEAGUE: Dict[League, LeagueSpec] = {spec.league: spec for spec in SPECS}
 
 # Compatibility spellings are accepted only at the CLI/config boundary. The
@@ -535,7 +770,35 @@ def source_unavailable_specs() -> Iterable[LeagueSpec]:
     return (spec for spec in SPECS if not spec.automated_schedule_supported)
 
 
+def schedulable_specs() -> Tuple[LeagueSpec, ...]:
+    """Return the lanes the operational run may schedule."""
+
+    return tuple(spec for spec in SPECS if spec.is_schedulable)
+
+
+def retirement_guard(league: League, *, allow_retired: bool = False) -> Optional[str]:
+    """Return a refusal message for a dark lane, or ``None`` to proceed.
+
+    A retired lane is refused unless the operator explicitly asks for it: a
+    stale cron entry or a copied CI command must never resurrect a lane that
+    was measured to fight us.  An off-season lane remains runnable on explicit
+    invocation, because it is real and keeping its state warm is legitimate;
+    the caller only needs to know it will be quiet.
+    """
+
+    spec = league_spec(league)
+    if spec.status is LaneStatus.RETIRED and not allow_retired:
+        return (
+            f"{spec.league.value} is retired: {spec.status_detail}. "
+            "Re-run with --run-retired only to inspect or revive it; "
+            "revival is a one-line status flip in ingestion/league_registry.py."
+        )
+    return None
+
+
 __all__ = [
+    "LaneStatus",
+    "_KEPT_AFTER_REVIEW",
     "LeagueSpec",
     "PriceSourcePolicy",
     "SPECS",
@@ -543,5 +806,7 @@ __all__ = [
     "league_spec",
     "parse_league",
     "price_evidence_policy",
+    "retirement_guard",
+    "schedulable_specs",
     "source_unavailable_specs",
 ]

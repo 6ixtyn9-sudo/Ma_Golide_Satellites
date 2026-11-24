@@ -33,7 +33,13 @@ from ingestion.books import BookConfig  # noqa: E402
 from ingestion.cli import _offline_fixture_fetch  # noqa: E402
 from ingestion.duckdb_store import DuckDBStore  # noqa: E402
 from ingestion.ledger import write_canonical_ledger  # noqa: E402
-from ingestion.league_registry import cli_league_choices, league_spec, parse_league  # noqa: E402
+from ingestion.league_registry import (  # noqa: E402
+    SPECS,
+    cli_league_choices,
+    league_spec,
+    parse_league,
+    retirement_guard,
+)
 from ingestion.mining import mine_prediction_assay, write_assay  # noqa: E402
 from ingestion.pipeline import (  # noqa: E402
     ACQUISITION_TZ,
@@ -653,6 +659,16 @@ def main() -> int:
         action="store_true",
         help="run even though the warehouse holds fewer rows than its checkpoint manifest",
     )
+    parser.add_argument(
+        "--run-retired",
+        action="store_true",
+        help="proceed with a retired lane (inspection/revival only)",
+    )
+    parser.add_argument(
+        "--list-lanes",
+        action="store_true",
+        help="print the lane status table and exit without acquiring",
+    )
     parser.add_argument("--notify", action="store_true", help="build an operations heartbeat")
     parser.add_argument(
         "--send-notifications",
@@ -660,7 +676,45 @@ def main() -> int:
         help="send the heartbeat through configured WhatsApp credentials",
     )
     args = parser.parse_args()
+    if args.list_lanes:
+        for lane in SPECS:
+            print(
+                "\t".join(
+                    (
+                        lane.league.value,
+                        lane.status.value,
+                        lane.schedule_source,
+                        ",".join(
+                            f"{policy.provider}:{policy.price_provenance.value}"
+                            f"/{policy.source_permission.value}"
+                            for policy in lane.price_sources
+                        )
+                        or "-",
+                        lane.status_detail,
+                    )
+                )
+            )
+        return 0
     args.league = parse_league(args.league).value
+    refusal = retirement_guard(
+        parse_league(args.league), allow_retired=args.run_retired
+    )
+    if refusal is not None:
+        # A stale cron line or a copied CI command must not silently resurrect
+        # a lane that was measured to fight us. Loud, machine-readable refusal.
+        print(
+            json.dumps(
+                {
+                    "status": "refused",
+                    "league": args.league,
+                    "lane_status": league_spec(parse_league(args.league)).status.value,
+                    "reason": refusal,
+                },
+                indent=2,
+            ),
+            file=sys.stderr,
+        )
+        return 2
     spec = league_spec(parse_league(args.league))
     if args.localdata is None:
         # Preserve the established default state locations while new leagues

@@ -58,6 +58,104 @@ page exists, *not* that the direct fallback yields a named-book moneyline per
 fixture on those boards — that per-fixture pricing behaviour is **unprobed** and
 stays probationary.
 
+## Lane status: retired, off-season, active
+
+`ingestion/league_registry.py` carries a `LaneStatus` per competition, applied
+from one table (`_RETIRED_ON_2026_11_24`, `_OFFSEASON_ON_2026_11_24`) so the
+decision is auditable in a single place rather than scattered across specs.
+
+The rule the table encodes: **retire a lane when its source refuses us or
+serves nothing usable — not when its season is merely quiet, and not when it
+merely lacks a price route.** Measured zero priced rows on an in-season
+fixtures page, or no compliant schedule/result route at all, is a fight worth
+ending. A lane with a working adapter keeps its place even while unpriced,
+because prices can arrive later without re-deriving the fixtures.
+
+Measured on 2026-11-24 and **retired**: Spain ACB, Italy LBA, Basketball
+Champions League, Basketball Africa League, Argentina Liga Nacional, France LNB
+Pro A, Germany BBL, Turkey BSL, Brazil NBB. Each of those ran for roughly 750
+scheduled runs and acquired **six games between all nine of them** (ACB, BCL,
+BAL, Argentina, France, Germany, Brazil: zero; LBA: six), per their own committed
+archive manifests.
+
+**ABA League was considered and rejected.** It looked like a fighter on the
+fixtures page — 0 of 100 rows priced — but that page only ever serves a site
+*average*, which is research-only here. Its ticket route is the direct
+named-book comparison, and it demonstrably worked: on 2026-11-22 it froze three
+priced picks (Stake.com 1.06 / 1.78 / 1.25, `named_book`, pre-match) out of 30
+logical picks, and it holds 4,252 games with finals reconciled back to 2004.
+Those three were CAUTION rather than clean only because calibration held n=13
+against a minimum of 30 walk-forward samples. A lane waiting to mature is not a
+source refusing us. `_KEPT_AFTER_REVIEW` records this, and a test asserts that
+no retired lane has a matched-price pick in its own state — the guard that
+caught the wrong call.
+The WNBA is **off-season** (April–October calendar), which is a calendar fact
+and must never be reported as a failure. The Chinese CBA stays **active**: its
+empty fixture page on the 17th–18th was the league's own break between round 8
+(2 November) and round 9 (4 December), not a refusal and not an off-season.
+
+Retirement is operational, not destructive. A retired lane keeps its enum
+member, contract, state key, price policies, adapter, stored finals and
+`localdata/` history — so it can still settle what it already holds — but it is
+never scheduled, never probed for a schedule, and never counted as work:
+
+* `adaptive_gate` decides a dark lane **before** any state read or schedule
+  probe and reports `should_run: false` with `lane_retired: …` /
+  `lane_offseason: …`; the lane therefore leaves the workflow matrix without
+  anyone editing a workflow file.
+* `scripts/daily.py` refuses a retired league with exit code 2 and a JSON
+  reason, so a stale cron line cannot silently resurrect it. `--run-retired`
+  is the deliberate override, for inspection or revival only.
+* `scripts/daily.py --league NBA --list-lanes` prints the whole table
+  (`league`, status, schedule source, price provenance/permission, reason).
+
+Revival is a one-line flip: `dataclasses.replace(spec, status=LaneStatus.ACTIVE)`
+restores a fully schedulable lane, and a test asserts exactly that.
+
+## The fixtures-table lanes (added 2026-11-24)
+
+Four competitions that had no schedule route of their own, plus Greece revived
+on the same adapter, now take both fixtures and prices from a single fixtures
+page each (`ingestion/providers/betexplorer_fixtures.py`, which reuses the row
+parser in `betexplorer.py` rather than growing a second one):
+
+| lane | page | measured 2026-11-24 (rows / priced / blank kickoff) |
+|---|---|---|
+| WCBA Women (`CHINA_WCBA_W`) | `/basketball/china/wcba-women/fixtures/` | 255 / 3 / 2 |
+| Lithuania NKL (`LITHUANIA_NKL`) | `/basketball/lithuania/nkl/fixtures/` | 167 / 7 / 99 |
+| WNBL Women (`AUSTRALIA_WNBL_W`) | `/basketball/australia/wnbl-women/fixtures/` | 67 / 3 / 0 |
+| Israel Liga Leumit (`ISRAEL_LIGA_LEUMIT`) | `/basketball/israel/liga-leumit/fixtures/` | 161 / 5 / 83 |
+| Greece Basket League (`GREECE_BASKET_LEAGUE`) | `/basketball/greece/basket-league/fixtures/` | 126 / 7 / 2 |
+
+Five properties of that page decide how the lane behaves, each measured rather
+than assumed:
+
+1. **The clock is the site's own CET/CEST wall clock for every competition** —
+   not the league's local time, and there is no ISO attribute on the page to
+   read. The label is parsed as naive `Europe/Paris` and converted to UTC, and
+   every game records that reconstruction in its evidence.
+2. **Identity is the 8-character match code in the row href.** The table serves
+   transliterated names with sponsor suffixes, colliding city fragments
+   (`Paris`, `Dubai`) and a ` W` suffix on women's clubs, so a name join would
+   be a guess. Games and their price observations share
+   `betexplorer:<match_id>`, which is what makes the join exact.
+3. **Rows with a blank kickoff cell carry no time the server ever sends.** They
+   are counted and reported (`fixtures_kickoff_missing`), never dated by
+   assumption and never emitted as games.
+4. **A slate with no quote says so** (`fixtures_price_coverage`) instead of
+   looking like a page that was never read; a page that failed to serve a table
+   raises rather than returning an empty slate.
+5. **No settlement route.** These pages serve no final score, so
+   `results_source` is `source_unavailable` and the run emits an
+   `official_results` gap by name. The lanes produce fixtures, forecasts and
+   research-only prices; they cannot settle, and the code says that instead of
+   implying otherwise.
+
+Prices on these lanes are an aggregate consensus from an unreviewed source
+(`SourcePermission.UNRESOLVED`), so they are research-only and never
+ticket-eligible. The gate fails open for this source — the page is season-wide,
+so a half-hour gate must not pull it and call the read a probe.
+
 ## Order of work
 
 Done: EuroCup, Spain ACB (schedule only, gated header), Israel Premier League,
