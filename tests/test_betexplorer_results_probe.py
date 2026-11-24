@@ -456,3 +456,61 @@ def test_an_age_gate_is_saved_as_evidence_but_never_counted_as_a_match(tmp_path)
 
 def test_a_real_body_is_not_mistaken_for_a_gate():
     assert probe.gate_reason("<table><tr><td>Q1</td></tr></table>") is None
+
+
+def test_the_cooldown_holds_off_between_runs_not_only_inside_one(tmp_path):
+    """Three runs a few seconds apart are a burst; the stamp is on disk so the
+    next run sees what the last one did."""
+
+    stamp = tmp_path / ".host-cooldown"
+    slept = []
+
+    first = probe.HostCooldown(stamp, seconds=30)
+    assert first.wait(now=1000.0, sleep=slept.append) == 0.0
+    assert slept == []
+
+    second = probe.HostCooldown(stamp, seconds=30)
+    assert second.wait(now=1005.0, sleep=slept.append) == 25.0
+    assert slept == [25.0]
+
+    # The second run acted at 1030, so the third may not act before 1060: asking
+    # at 1050 owes ten seconds. The gap between actions stays 30, which is the
+    # property that matters -- a wait cannot be banked and spent early.
+    third = probe.HostCooldown(stamp, seconds=30)
+    assert third.wait(now=1050.0, sleep=slept.append) == 10.0
+    assert slept == [25.0, 10.0]
+
+
+def test_a_capture_reports_the_wait_it_served(tmp_path):
+    stamp = tmp_path / ".host-cooldown"
+    probe.HostCooldown(stamp, seconds=30).wait(now=probe.time.time(), sleep=lambda _: None)
+
+    payload = probe.capture_match_pages(
+        "AUSTRALIA_WNBL_W",
+        matches=[{"code": "AbCd1234", "url": "/basketball/australia/wnbl-women/a-b/AbCd1234/"}],
+        out_dir=tmp_path,
+        read_text=lambda url: "<html>ok</html>",
+        sleep=lambda _: None,
+        limit=1,
+        cooldown=probe.HostCooldown(stamp, seconds=30),
+    )
+
+    assert 29.0 <= payload["cooldown_seconds_waited"] <= 30.0
+    assert payload["age_gate_authorisation"].startswith("Operator authorisation")
+
+
+def test_gate_hints_read_what_the_accept_button_writes():
+    """Passing a gate means reproducing what it records, not guessing its name."""
+
+    body = (
+        "<script>"
+        "document.getElementById('ageYes').onclick=function(){"
+        "document.cookie='be_age_verified=1; path=/; max-age=31536000';"
+        "localStorage.setItem('ageAccepted', 'true');"
+        "};</script>"
+    )
+
+    hints = probe.gate_hints(body)
+
+    assert "be_age_verified=1; path=/; max-age=31536000" in hints
+    assert "ageAccepted" in hints

@@ -784,3 +784,42 @@ Whether to go further is an operator decision and it has two branches: pass the 
 leave the lane as verification and take settlement from federations. This project has
 already recorded one such decision — the Greek terms — as the operator's, in the lane's own
 `source_detail`, rather than making it quietly.
+
+## The age gate, authorised (2026-11-24T15:3xZ)
+
+The operator states they meet the site's 18+ requirement, so the self-declaration is
+theirs. That authority is now carried in every capture as
+`age_gate_authorisation`, for the same reason the Greek terms were written into the lane's
+own registry entry: a gate passed without a named authority is exactly the kind of quiet
+decision this project keeps out of its pipelines.
+
+It is explicitly **not** a robots exception. Path-only URLs, no query shapes, no per-game
+burst, and the spacing rules are unchanged. What changes is only the consent the site asks
+a person for, which a person has now given.
+
+### What passing the gate actually requires
+
+Not a guess. `--gate-hints PATH` reads a saved gate page and reports what its accept button
+writes — `document.cookie=…`, `localStorage.setItem(…)` — because the way to pass a gate is
+to reproduce what it records, and the way to fail is to try plausible names until the host
+gets annoyed. No request is made to answer this.
+
+### Not being throttled, in one mechanism
+
+Three match pages a few seconds apart drew a 429, and the pause inside a run could not have
+helped: the *runs* were the burst. So the cooldown is a stamp on disk —
+`results_probe/.host-cooldown` — holding the earliest instant the next run may act:
+
+| run | asks at | waits | acts at |
+|---|---|---|---|
+| 1 | 1000 | 0 | 1000 |
+| 2 | 1005 | 25 | 1030 |
+| 3 | 1050 | 10 | 1060 |
+
+The gap between actions stays 30 seconds, and a wait cannot be banked and spent early. Two
+independent runs invoked a second apart now behave like one polite client, because the
+stamp is the only place they meet.
+
+Three other behaviours, all already in place and all cheap: a 429 ends the run rather than
+retrying into a host that has answered; match pages are spaced ten seconds apart *inside* a
+run; and `--match N` caps at twelve pages so a typo cannot turn into a crawl.

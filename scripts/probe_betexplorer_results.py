@@ -76,6 +76,21 @@ MATCH_INTERVAL_SECONDS = 10.0
 _COLON_SCORE_RE = re.compile(r"\b\d{1,3}:\d{1,3}\b")
 _SCOREBOARD_RE = re.compile(r"scoreboard", re.IGNORECASE)
 
+#: The authority this tool acts under when a page is behind a consent gate.
+#: Carried in every capture: a gate passed without a named authority is the sort
+#: of quiet decision this project keeps out of its pipelines.
+AGE_GATE_AUTHORISATION = (
+    "Operator authorisation, 2026-11-24: the operator states they meet this site's 18+ "
+    "requirement, so the age self-declaration is theirs and travels with every capture "
+    "taken past the gate. It is not a robots exception: path-only URLs, no query shapes, "
+    "no per-game burst, and the spacing rules are unchanged."
+)
+
+#: Seconds between runs against this host.  Three match pages a few seconds apart
+#: drew a 429 on 2026-11-24; a pause inside one run does not help when the runs are
+#: the burst, so the stamp lives on disk and the next run honours it.
+COOLDOWN_SECONDS = 30.0
+
 #: An age gate is not a match page, and it is 110 KB of modal and banners that
 #: looks exactly like a captured page to everything downstream.
 _GATE_MARKERS = (
@@ -85,6 +100,65 @@ _GATE_MARKERS = (
     "age verification",
     "age-verification",
 )
+
+
+_GATE_WRITE_RES = (
+    re.compile(r"document\.cookie\s*=\s*[\"'`](?P<value>[^\"'`]+)"),
+    re.compile(r"(?:local|session)Storage\.setItem\(\s*[\"'](?P<key>[^\"']+)[\"']"),
+    re.compile(r"[\"'](?P<key>[A-Za-z0-9_-]*age[A-Za-z0-9_-]*)[\"']"),
+)
+
+
+def gate_hints(body: str) -> list[str]:
+    """What a gate writes when its accept button is pressed.
+
+    A gate is passed by reproducing what it records, and guessing the name is how
+    a project ends up arguing with a host. These are read from the page's own
+    script, in document order.
+    """
+
+    hints: list[str] = []
+    for pattern in _GATE_WRITE_RES:
+        for match in pattern.finditer(body or ""):
+            value = match.group(match.lastindex or 0).strip()
+            if value and value not in hints:
+                hints.append(value)
+    return hints[:12]
+
+
+def cooldown_wait(previous: float | None, now: float, seconds: float) -> float:
+    """Seconds still owed before this run may touch the host.
+
+    The stamp records the earliest instant the *next* run may act, so a run that
+    had to wait does not bank the wait and let the one after it fire early.
+    """
+
+    if previous is None:
+        return 0.0
+    return max(0.0, (float(previous) + float(seconds)) - float(now))
+
+
+class HostCooldown:
+    """A stamp on disk, so separate runs cannot add up to a burst."""
+
+    def __init__(self, path: Path, seconds: float = COOLDOWN_SECONDS):
+        self.path = Path(path)
+        self.seconds = float(seconds)
+
+    def previous(self) -> float | None:
+        try:
+            return float(self.path.read_text(encoding="utf-8").strip())
+        except (OSError, ValueError):
+            return None
+
+    def wait(self, *, now: float | None = None, sleep=time.sleep) -> float:
+        current = time.time() if now is None else float(now)
+        delay = cooldown_wait(self.previous(), current, self.seconds)
+        if delay > 0:
+            sleep(delay)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.write_text(f"{current + delay:.3f}\n", encoding="utf-8")
+        return delay
 
 
 def gate_reason(body: str) -> str | None:
@@ -319,6 +393,7 @@ def capture_match_pages(
     read_text,
     sleep=time.sleep,
     limit: int = 1,
+    cooldown: "HostCooldown | None" = None,
 ) -> dict[str, object]:
     """Fetch the league's own match pages for the first ``limit`` codes.
 
@@ -330,6 +405,7 @@ def capture_match_pages(
 
     wanted = matches[: max(0, min(int(limit), MAX_CAPTURE))]
     out_dir.mkdir(parents=True, exist_ok=True)
+    waited = cooldown.wait(sleep=sleep) if cooldown is not None else 0.0
     captured: list[dict[str, object]] = []
     throttled = False
     for position, match in enumerate(wanted):
@@ -397,6 +473,8 @@ def capture_match_pages(
         "requested": len(wanted),
         "stopped_on_429": throttled,
         "gated": sum(1 for page in captured if page["status"] == "gated"),
+        "cooldown_seconds_waited": round(waited, 3),
+        "age_gate_authorisation": AGE_GATE_AUTHORISATION,
         "note": (
             "Match pages saved verbatim. period_markers counts Q1..Q4/OT-shaped "
             "tokens, which is what a reconciliation record would need and what a "
@@ -508,6 +586,23 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", default="results_probe", help="directory for saved bodies")
     parser.add_argument("--now", help="override the observation instant (UTC ISO)")
     parser.add_argument(
+        "--gate-hints",
+        metavar="PATH",
+        help=(
+            "print what a saved gate page writes when its accept button is pressed "
+            "(a cookie or a storage key), with no request at all"
+        ),
+    )
+    parser.add_argument(
+        "--cooldown",
+        type=float,
+        default=COOLDOWN_SECONDS,
+        help=(
+            "seconds this run must wait since the last one touched the host; "
+            "0 disables the on-disk stamp"
+        ),
+    )
+    parser.add_argument(
         "--match",
         type=int,
         default=0,
@@ -542,18 +637,40 @@ def main(argv: list[str] | None = None) -> int:
         if args.now
         else datetime.now(timezone.utc)
     )
+    if args.gate_hints:
+        body = Path(args.gate_hints).read_text(encoding="utf-8", errors="replace")
+        print(
+            json.dumps(
+                {
+                    "path": args.gate_hints,
+                    "gate": gate_reason(body),
+                    "hints": gate_hints(body),
+                    "age_gate_authorisation": AGE_GATE_AUTHORISATION,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0 if gate_hints(body) else 1
+
     if args.match:
         from ingestion.providers.betexplorer import _text_fetch
 
         index_path = Path(args.out) / args.league / "results-index.html"
         if not index_path.exists():
             parser.error(f"no captured results index at {index_path}; run --index first")
+        cooldown = (
+            HostCooldown(Path(args.out) / ".host-cooldown", args.cooldown)
+            if args.cooldown > 0
+            else None
+        )
         payload = capture_match_pages(
             args.league,
             matches=index_matches(index_path.read_text(encoding="utf-8")),
             out_dir=Path(args.out) / args.league,
             read_text=_text_fetch(None, None),
             limit=args.match,
+            cooldown=cooldown,
         )
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0 if any(page["status"] == "captured" for page in payload["pages"]) else 1
