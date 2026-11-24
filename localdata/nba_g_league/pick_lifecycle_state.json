@@ -13,12 +13,14 @@
       "frozen_fixtures": 6
     },
     "2026-11-23": {
+      "evidence_rows": 3,
       "frozen_fixtures": 0,
       "logical_picks": 3
     },
     "2026-11-24": {
+      "evidence_rows": 12,
       "frozen_fixtures": 1,
-      "logical_picks": 12
+      "logical_picks": 9
     }
   },
   "frozen_by_date": {
@@ -3550,11 +3552,6 @@
     }
   },
   "league": "NBA_G_LEAGUE",
-  "pending_frozen_games": [
-    [
-      "401914597",
-      "2026-11-24T19:00:00Z"
-    ]
-  ],
+  "pending_frozen_games": [],
   "schema_version": "magolide.pick_lifecycle_state"
 }

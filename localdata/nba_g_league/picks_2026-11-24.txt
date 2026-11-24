@@ -1,6 +1,6 @@
 Ma Golide Picks — NBA_G_LEAGUE 2026-11-24
 ========================================================================
-Generated at: 2026-11-24 22:40 SAST
+Generated at: 2026-11-24 23:40 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -24,37 +24,41 @@ WATCHLIST — NO MATCHED ODDS
   [team_history_empirical/team_history_empirical] Oklahoma City Blue vs Austin Spurs · KO 2026-11-25 03:00 SAST
       MONEYLINE full_game -> AWAY · p=69.2% (raw 69.2%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market · prediction=history
+      evidence_advisories=insufficient_walk_forward_samples,insufficient_team_specific_history
+      thin team evidence · effective games home=7.1/8.0 away=5.5/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
+      collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:history_model, team_history_empirical
   [team_history_empirical/team_history_empirical] Oklahoma City Blue vs Austin Spurs · KO 2026-11-25 03:00 SAST
       MONEYLINE H1 -> AWAY · p=69.2% (raw 69.2%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [provider:history_model/team_history_empirical] Oklahoma City Blue vs Austin Spurs · KO 2026-11-25 03:00 SAST
-      MONEYLINE full_game -> AWAY · p=69.2% (raw 69.2%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=5 · latest_evidence_utc=2026-11-24T20:39:38Z
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market · prediction=history
+      evidence_advisories=insufficient_walk_forward_samples,insufficient_team_specific_history
+      thin team evidence · effective games home=7.1/8.0 away=5.5/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
   [team_history_empirical/team_history_empirical] Laketown Squadron vs Osceola Magic · KO 2026-11-25 02:30 SAST
       MONEYLINE H1 -> AWAY · p=65.4% (raw 65.4%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [provider:history_model/team_history_empirical] Laketown Squadron vs Osceola Magic · KO 2026-11-25 02:30 SAST
-      MONEYLINE full_game -> AWAY · p=57.7% (raw 57.7%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history_model
-      archived_revisions=5 · latest_evidence_utc=2026-11-24T20:39:38Z
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market · prediction=history
+      evidence_advisories=insufficient_walk_forward_samples,insufficient_team_specific_history
+      thin team evidence · effective games home=4.7/8.0 away=4.7/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
   [team_history_empirical/team_history_empirical] Laketown Squadron vs Osceola Magic · KO 2026-11-25 02:30 SAST
       MONEYLINE full_game -> AWAY · p=57.7% (raw 57.7%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market · prediction=history
+      evidence_advisories=insufficient_walk_forward_samples,insufficient_team_specific_history
+      thin team evidence · effective games home=4.7/8.0 away=4.7/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
+      collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:history_model, team_history_empirical
   [team_history_empirical/team_history_empirical] Laketown Squadron vs Osceola Magic · KO 2026-11-25 02:30 SAST
       HIGHEST QUARTER full_game -> Q2 · p=44.9% (raw 44.9%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+      evidence_advisories=insufficient_walk_forward_samples,insufficient_team_specific_history
+      thin team evidence · effective games home=4.7/8.0 away=4.7/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
   [team_history_empirical/team_history_empirical] Oklahoma City Blue vs Austin Spurs · KO 2026-11-25 03:00 SAST
       HIGHEST QUARTER full_game -> Q2 · p=42.3% (raw 42.3%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+      evidence_advisories=insufficient_walk_forward_samples,insufficient_team_specific_history
+      thin team evidence · effective games home=7.1/8.0 away=5.5/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
 
 WATCHLIST — INSUFFICIENT CONTEXT
 ========================================================================
@@ -66,31 +70,28 @@ SKIPPED — INELIGIBLE
 
 IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
-  [team_history_empirical/team_history_empirical] Capital City Go-Go vs Long Island Nets · KO 2026-11-24 21:00 SAST
-      MONEYLINE H1 -> AWAY · p=65.4% (raw 65.4%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:40:33Z
-      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [team_history_empirical/team_history_empirical] Capital City Go-Go vs Long Island Nets · KO 2026-11-24 21:00 SAST
-      MONEYLINE full_game -> AWAY · p=65.4% (raw 65.4%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:40:33Z
-      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
-  [provider:history_model/team_history_empirical] Capital City Go-Go vs Long Island Nets · KO 2026-11-24 21:00 SAST
-      MONEYLINE full_game -> AWAY · p=65.4% (raw 65.4%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:40:33Z
-      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples · prediction=history_model
-  [team_history_empirical/team_history_empirical] Capital City Go-Go vs Long Island Nets · KO 2026-11-24 21:00 SAST
-      HIGHEST QUARTER full_game -> Q2 · p=38.5% (raw 38.5%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-24T17:40:33Z
-      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
+  (none)
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
-  (none)
+  [team_history_empirical/team_history_empirical] Capital City Go-Go vs Long Island Nets · KO 2026-11-24 21:00 SAST
+      MONEYLINE H1 -> AWAY · p=65.4% (raw 65.4%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T17:40:33Z
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+  [team_history_empirical/team_history_empirical] Capital City Go-Go vs Long Island Nets · KO 2026-11-24 21:00 SAST
+      MONEYLINE full_game -> AWAY · p=65.4% (raw 65.4%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T17:40:33Z
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history · prediction=history
+      collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:history_model, team_history_empirical
+  [team_history_empirical/team_history_empirical] Capital City Go-Go vs Long Island Nets · KO 2026-11-24 21:00 SAST
+      HIGHEST QUARTER full_game -> Q2 · p=38.5% (raw 38.5%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T17:40:33Z
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,insufficient_walk_forward_samples,insufficient_team_specific_history,below_calibrated_probability_floor · prediction=history
 
-Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=8 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=6 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=4 SETTLED=0
-Logical picks shown: 12 · superseded observations: 8
-Total archived pick evidence rows: 20
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=3
+Logical picks shown: 9 · superseded observations: 10 · book/model rows collapsed: 3
+Total archived pick evidence rows: 22
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.

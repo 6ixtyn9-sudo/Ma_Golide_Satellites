@@ -1,28 +1,34 @@
 {
   "dated_reports": {
     "2026-11-19": {
+      "evidence_rows": 15,
       "frozen_fixtures": 6,
       "logical_picks": 15
     },
     "2026-11-20": {
+      "evidence_rows": 13,
       "frozen_fixtures": 4,
       "logical_picks": 13
     },
     "2026-11-21": {
+      "evidence_rows": 0,
       "frozen_fixtures": 0,
       "logical_picks": 0
     },
     "2026-11-22": {
+      "evidence_rows": 0,
       "frozen_fixtures": 0,
       "logical_picks": 0
     },
     "2026-11-23": {
+      "evidence_rows": 0,
       "frozen_fixtures": 0,
       "logical_picks": 0
     },
     "2026-11-24": {
+      "evidence_rows": 48,
       "frozen_fixtures": 6,
-      "logical_picks": 48
+      "logical_picks": 18
     }
   },
   "frozen_by_date": {
@@ -4249,19 +4255,6 @@
     }
   },
   "league": "EUROLEAGUE",
-  "pending_frozen_games": [
-    [
-      "E2026-135",
-      "2026-11-24T19:30:00Z"
-    ],
-    [
-      "E2026-136",
-      "2026-11-24T19:45:00Z"
-    ],
-    [
-      "E2026-133",
-      "2026-11-24T20:00:00Z"
-    ]
-  ],
+  "pending_frozen_games": [],
   "schema_version": "magolide.pick_lifecycle_state"
 }
