@@ -35,9 +35,17 @@ to fail closed and to *count* what it cannot resolve rather than guessing:
 * an unresolvable month label or missing season context leaves the date unknown,
   and an unknown date cannot settle anything.
 
+A live read on 2026-11-24 settled the question this module was built to answer:
+one request, 133,247 B, sha256 ``8a2ebdb9…``, and counts of containers 7, rows 7,
+``with_final`` 7, ``unresolved_date`` 0 — seven games, seven identities, seven
+totals, seven dates.
+
 Nothing in this module writes, and nothing in it decides that a lane may settle.
-The registry stays on ``source_unavailable`` until a live read of this reader has
-been replayed against captured bytes.
+The registry stays on ``source_unavailable`` for a reason this reader does not
+answer: ``ActualResult.reconciles()`` needs Q1–Q4 (or H1/H2) that sum to the
+final, and a final alone is not a settlement record. The page carries quarters in
+its hidden per-quarter row, but that row is not parsed here, and a quarter parser
+written from collapsed text would be a guess wearing a date.
 
 Terms, as the operator decided them
 -----------------------------------
@@ -150,12 +158,14 @@ def checksum(body: str) -> str:
 #: excludes the script literal; the lookahead excludes the row's own parts.
 _ROW_RE = re.compile(r'class="[^"]*esake-program-game(?![\w-])[^"]*"', re.IGNORECASE)
 _LINK_RE = re.compile(r"EsakegameView\?idgame=([0-9A-Fa-f]{8})", re.IGNORECASE)
-_SPAN_RE = re.compile(r"<span\b[^>]*>(.*?)</span>", re.DOTALL | re.IGNORECASE)
+_SPAN_TAG_RE = re.compile(r"<span\b[^>]*>|</span\s*>", re.IGNORECASE)
 _TAG_RE = re.compile(r"<[^>]+>")
 _GAP = r"(?:&nbsp;|&#160;|&#xa0;|\u00a0|\s)*"
 _SCORE_RE = re.compile(rf"(?<!\d)(\d{{1,3}}){_GAP}[-–]{_GAP}(\d{{1,3}})(?!\d)")
 _TIME_RE = re.compile(r"\b([01]?\d|2[0-3]):([0-5]\d)\b")
 _DAY_MONTH_RE = re.compile(r"\b(\d{1,2})\s+([^\W\d_]{3,})", re.UNICODE)
+#: The same pair with no whitespace at all, for cells that break inside a word.
+_UNSPACED_DATE_RE = re.compile(r"(?<!\d)(\d{1,2})([^\W\d_]{3,})", re.UNICODE)
 
 #: Month labels, matched on 4 letters first because ΙΟΥΝ/ΙΟΥΛ share a prefix.
 #: Only «Νοε» is byte-verified; the rest are the conventional Greek abbreviations
@@ -177,10 +187,25 @@ _MONTHS_3 = {
 }
 
 _FINISHED_CLASS = "esake-program-game-final-score"
+#: The row's own clock cell, captured 2026-11-24:
+#: ``<div class="esake-program-game-info one-col"><img ...clock.svg...>Σαβ 21 Νοε - 15:00</div>``.
+#: Reading the date from *here* rather than from the whole row is what keeps an
+#: unrelated day in some other part of the page from being read as this game's.
+_DATE_CELL_CLASS = "esake-program-game-info"
 #: The per-quarter row, hidden behind the toggle.  It repeats both club names and
 #: carries four numbers per club, so reading club spans from the whole container
 #: would find four names and call every finished game ambiguous.
 _HIDDEN_CLASS = "esake-program-game-hidden-row"
+#: The period table, captured 2026-11-24 inside the hidden row:
+#: ``<tr><td>15</td><td>Q1</td><td>15</td></tr>`` -- home on the left, the period
+#: label in the middle, away on the right.  Overtime rows are «ΟΦ1», «ΟΦ2».
+_HALF_SCORES_CLASS = "esake-program-game-half-scores"
+_HALF_ROW_RE = re.compile(
+    r"<td[^>]*>\s*(?P<home>\d{1,3})\s*</td>\s*"
+    r"<td[^>]*>\s*(?P<label>[^<]*?)\s*</td>\s*"
+    r"<td[^>]*>\s*(?P<away>\d{1,3})\s*</td>",
+    re.DOTALL,
+)
 
 
 def _fold(text: str) -> str:
@@ -237,11 +262,34 @@ def _looks_like_when(text: str) -> bool:
     return any(month_from_label(token) is not None for token in stripped.split())
 
 
+def _spans(fragment: str) -> List[str]:
+    """The contents of every outermost span, in document order.
+
+    Depth, not a non-greedy match: a club cell can nest a span inside a span, and
+    ``<span>(.*?)</span>`` stops at the *inner* close tag -- which trims the name
+    to whatever followed it rather than reading the whole cell.
+    """
+
+    found: List[str] = []
+    depth = 0
+    start = 0
+    for tag in _SPAN_TAG_RE.finditer(fragment):
+        if tag.group(0)[1] != "/":
+            if depth == 0:
+                start = tag.end()
+            depth += 1
+        else:
+            depth = max(0, depth - 1)
+            if depth == 0:
+                found.append(fragment[start : tag.start()])
+    return found
+
+
 def _club_spans(chunk: str) -> List[str]:
     """Club names in document order, from the row's own spans."""
 
     names: List[str] = []
-    for raw in _SPAN_RE.findall(chunk):
+    for raw in _spans(chunk):
         visible = _text(raw)
         if not visible or not any(ch.isalpha() for ch in visible):
             continue
@@ -252,6 +300,59 @@ def _club_spans(chunk: str) -> List[str]:
             continue
         names.append(visible)
     return names
+
+
+@dataclass(frozen=True)
+class Periods:
+    """A game's regulation quarters and its overtime, as the page lists them."""
+
+    home: Tuple[int, ...]
+    away: Tuple[int, ...]
+    home_overtime: Optional[int] = None
+    away_overtime: Optional[int] = None
+    overtime_periods: int = 0
+
+    @property
+    def complete(self) -> bool:
+        return len(self.home) == 4 and len(self.away) == 4
+
+
+def _periods(chunk: str) -> Optional[Periods]:
+    """The period table, when the row has one and it reads cleanly.
+
+    ``None`` when the table is absent or its labels are not the four quarters plus
+    optional overtime: a period record that cannot be trusted is not one.
+    """
+
+    at = chunk.find(_HALF_SCORES_CLASS)
+    if at < 0:
+        return None
+    end = chunk.find("</table>", at)
+    block = chunk[at : end if end > at else at + 1200]
+
+    quarters: List[Tuple[int, int, int]] = []
+    overtime: List[Tuple[int, int]] = []
+    for match in _HALF_ROW_RE.finditer(block):
+        label = _fold(match.group("label"))
+        home, away = int(match.group("home")), int(match.group("away"))
+        if len(label) == 2 and label[0] == "Q" and label[1] in "1234":
+            quarters.append((int(label[1]), home, away))
+        elif label.startswith(("ΟΦ", "OT")) and label[2:].isdigit():
+            overtime.append((home, away))
+        else:
+            return None
+    if [index for index, _, _ in quarters] != [1, 2, 3, 4]:
+        return None
+
+    home_ot = sum(value for value, _ in overtime) if overtime else None
+    away_ot = sum(value for _, value in overtime) if overtime else None
+    return Periods(
+        home=tuple(value for _, value, _ in quarters),
+        away=tuple(value for _, _, value in quarters),
+        home_overtime=home_ot,
+        away_overtime=away_ot,
+        overtime_periods=len(overtime),
+    )
 
 
 def _final_block(chunk: str) -> str:
@@ -311,11 +412,65 @@ def _tip(chunk: str) -> Optional[str]:
     return f"{match.group(1).zfill(2)}:{match.group(2)}" if match else None
 
 
+def _date_cell_text(chunk: str) -> str:
+    """The visible text of the row's first info cell, which is the clock cell."""
+
+    at = chunk.find(_DATE_CELL_CLASS)
+    if at < 0:
+        return ""
+    opened = chunk.find(">", at)
+    start = opened + 1 if opened >= 0 else at
+    end = chunk.find("</div>", start)
+    return _text(chunk[start : end if end > start else start + 400])
+
+
+def date_probe(chunk: str) -> Dict[str, object]:
+    """What the date reader sees, for when the page and the reader disagree.
+
+    The whole-row read and the clock-cell read are reported side by side with the
+    matches each produced, because "the page shows a date and the reader says
+    None" has two very different causes -- text the reader never received, and a
+    pattern that did not match text it did receive -- and one call should tell
+    them apart.
+    """
+
+    cell = _date_cell_text(chunk)
+    text = _text(chunk)
+    return {
+        "cell_text": cell[:160],
+        "cell_matches": [list(pair) for pair in _DAY_MONTH_RE.findall(cell)],
+        "cell_result": _day_and_month(cell) if cell else None,
+        "text_head": text[:160],
+        "text_matches": [list(pair) for pair in _DAY_MONTH_RE.findall(text)][:5],
+        "result": _day_and_month(chunk),
+    }
+
+
 def _day_and_month(chunk: str) -> Tuple[Optional[int], Optional[int]]:
-    for day_text, label in _DAY_MONTH_RE.findall(_text(chunk)):
-        month = month_from_label(label)
-        if month is not None:
-            return int(day_text), month
+    """The day and the Greek month, reading around the page's own line breaks.
+
+    The served date cell wraps inside the month name -- the raw bytes carry
+    newlines and indentation between «Νοε» and «μβρίου» -- so a regex that
+    demands ``21<space>Νοεμβρίου`` finds nothing on a page that plainly shows a
+    date.  Whitespace inside a word is a rendering artifact, so the second pass
+    removes all of it: «Σαβ 21 Νοεμβρίου 19:00» becomes «Σαβ21Νοεμβρίου19:00»
+    and the day still bounds itself because a month name is letters.
+    """
+
+    # The clock cell first: it is the row's own date, and a smaller input cannot
+    # be broken by anything else on the page.  The whole row is the fallback.
+    for scope in (_date_cell_text(chunk), _text(chunk)):
+        if not scope:
+            continue
+        for day_text, label in _DAY_MONTH_RE.findall(scope):
+            month = month_from_label(label)
+            if month is not None:
+                return int(day_text), month
+        squeezed = "".join(scope.split())
+        for day_text, label in _UNSPACED_DATE_RE.findall(squeezed):
+            month = month_from_label(label)
+            if month is not None:
+                return int(day_text), month
     return None, None
 
 
@@ -348,6 +503,7 @@ class ResultRow:
     played_on: Optional[date]
     tip_local: Optional[str]
     url: str
+    periods: Optional[Periods] = None
     source: str = SOURCE
 
     @property
@@ -359,6 +515,32 @@ class ResultRow:
             and self.away is not None
             and self.home_score is not None
             and self.away_score is not None
+        )
+
+    def to_actual_result(self):
+        """An ``ActualResult`` this row can stand behind, or ``None``.
+
+        A total is not a settlement record: reconciliation needs the four quarters
+        (plus any overtime) that add up to it.  When the row has no period table,
+        or one that does not add up, this returns ``None`` rather than a record
+        that would fail its own check downstream.
+        """
+
+        from ..models import ActualResult, PeriodKind
+
+        periods = self.periods
+        if periods is None or not periods.complete:
+            return None
+        return ActualResult(
+            period_kind=PeriodKind.QUARTERS,
+            home_quarters=[float(value) for value in periods.home],
+            away_quarters=[float(value) for value in periods.away],
+            home_overtime=None if periods.home_overtime is None else float(periods.home_overtime),
+            away_overtime=None if periods.away_overtime is None else float(periods.away_overtime),
+            home_final=None if self.home_score is None else float(self.home_score),
+            away_final=None if self.away_score is None else float(self.away_score),
+            overtime_periods=periods.overtime_periods,
+            source=self.source,
         )
 
     @property
@@ -388,6 +570,17 @@ class ResultPage:
                     "played_on": row.played_on.isoformat() if row.played_on else None,
                     "tip_local": row.tip_local,
                     "url": row.url,
+                    "periods": (
+                        None
+                        if row.periods is None
+                        else {
+                            "home": list(row.periods.home),
+                            "away": list(row.periods.away),
+                            "home_overtime": row.periods.home_overtime,
+                            "away_overtime": row.periods.away_overtime,
+                            "overtime_periods": row.periods.overtime_periods,
+                        }
+                    ),
                     "source": row.source,
                 }
                 for row in self.finals
@@ -444,6 +637,7 @@ def parse_results(html: str, *, season_start_year: Optional[int] = None) -> Resu
 
         names = _club_names(chunk)
         score = _score(chunk)
+        periods = _periods(chunk)
         day, month = _day_and_month(chunk)
         played_on = _resolve_date(day, month, season_start_year)
         tip = _tip(chunk)
@@ -465,6 +659,7 @@ def parse_results(html: str, *, season_start_year: Optional[int] = None) -> Resu
             played_on=played_on,
             tip_local=tip,
             url=game_url(idgame),
+            periods=periods,
         )
         counts["rows"] += 1
 
@@ -492,6 +687,7 @@ __all__ = [
     "CHAMPIONSHIP_GBL",
     "GAME_PATH",
     "MIN_INTERVAL_SECONDS",
+    "Periods",
     "PHASE_REGULAR",
     "PROVIDER",
     "REQUEST_BUDGET",
@@ -502,6 +698,7 @@ __all__ = [
     "SITE",
     "SOURCE",
     "checksum",
+    "date_probe",
     "default_fetch",
     "game_url",
     "month_from_label",

@@ -276,3 +276,229 @@ def test_the_captured_fragment_yields_identity_where_the_page_once_yielded_none(
     assert page.counts["no_identity"] == 0
     assert page.rows[0].idgame == "3C7521D5"
     assert page.counts["with_final"] == 0
+
+
+def test_a_date_cell_that_breaks_inside_the_month_name_still_reads():
+    """The served page wraps «Νοεμβρίου» across lines; a date is still a date.
+
+    Captured raw bytes carry newlines and indentation between «Νοε» and
+    «μβρίου», so the whitespace-tolerant pass is what turns 7 finals that could
+    not be dated into 7 finals that can.
+    """
+
+    html = (
+        '<div class="esake-program-game">'
+        "<h5>08η Αγωνιστική</h5>"
+        "<div>Σαβ 21 Νοε\n                μβρίου 19:00 μμ</div>"
+        '<div class="esake-program-game-final-score row equal">'
+        '<div class="col-lg-5 text-right"><span>ΑΡΗΣ</span></div>'
+        '<div class="col-lg-2 text-center"><span>84&nbsp;-&nbsp;87</span></div>'
+        '<div class="col-lg-5 text-left"><span>ΑΕΚ</span></div>'
+        "</div>"
+        '<a href="/el/action/EsakegameView?idgame=3C7521D5&mode=2">p</a>'
+        "</div>"
+    )
+
+    page = _parse(html)
+
+    assert page.counts["unresolved_date"] == 0
+    assert len(page.finals) == 1
+    assert page.finals[0].played_on == date(2026, 11, 21)
+
+
+def test_a_club_cell_that_nests_a_span_keeps_the_whole_name():
+    """`<span>(.*?)</span>` stops at the inner close tag and trims the club."""
+
+    html = (
+        '<div class="esake-program-game">'
+        '<div>Σαβ 21 Νοεμβρίου 19:00</div>'
+        '<div class="esake-program-game-final-score row equal">'
+        '<div class="col-lg-5 text-right"><span>ΚΟΛΟΣΣΟΣ <span class="x">H</span> '
+        "HOTELS</span></div>"
+        '<div class="col-lg-2 text-center"><span>99&nbsp;-&nbsp;77</span></div>'
+        '<div class="col-lg-5 text-left"><span>ΑΡΗΣ</span></div>'
+        "</div>"
+        '<a href="/el/action/EsakegameView?idgame=95F2FDAA&mode=2">p</a>'
+        "</div>"
+    )
+
+    page = _parse(html)
+
+    assert page.counts["names_ambiguous"] == 0
+    assert page.finals[0].home == "ΚΟΛΟΣΣΟΣ H HOTELS"
+
+
+def test_the_date_comes_from_the_clock_cell_not_from_anywhere_on_the_row():
+    """A day in another cell is not this game's day.
+
+    The row carries venue and TV cells, and the page carries plenty of other
+    dates.  Reading the clock cell first is what keeps «12 Μαρτίου» from some
+    heading out of a November fixture.
+    """
+
+    html = (
+        '<div class="esake-program-game">'
+        "<h5>12 Μαρτίου - deadline</h5>"
+        '<div class="esake-program-game-info one-col"><img src="/skn/clock.svg" class="mr-xs">'
+        "Σαβ 21 Νοε - 15:00</div>"
+        '<div class="esake-program-game-final-score row equal">'
+        '<div class="col-lg-5 text-right"><span>ΑΡΗΣ</span></div>'
+        '<div class="col-lg-2 text-center"><span>84&nbsp;-&nbsp;87</span></div>'
+        '<div class="col-lg-5 text-left"><span>ΑΕΚ</span></div>'
+        "</div>"
+        '<a href="/el/action/EsakegameView?idgame=3C7521D5&mode=2">p</a>'
+        "</div>"
+    )
+
+    page = _parse(html)
+
+    assert page.finals[0].played_on == date(2026, 11, 21)
+
+
+def test_the_probe_reports_the_cell_and_the_row_side_by_side():
+    """`date_probe` exists because a reader saying None has two causes, and one
+    call should tell "never received" from "did not match"."""
+
+    html = (
+        '<div class="esake-program-game">'
+        '<div class="esake-program-game-info one-col">Σαβ 21 Νοε - 15:00</div>'
+        "</div>"
+    )
+
+    probe = esake.date_probe(html)
+
+    assert probe["cell_text"].startswith("Σαβ 21 Νοε")
+    assert probe["cell_matches"] == [["21", "Νοε"]]
+    assert probe["cell_result"] == (21, 11)
+    assert probe["result"] == (21, 11)
+    assert "\u039d\u03bf\u03b5" in probe["text_head"]
+
+
+def test_a_latin1_decoded_capture_hides_the_date_and_repairing_it_restores_it():
+    """The whole Greek saga in one test.
+
+    A UTF-8 page decoded as ISO-8859-1 -- requests' default when a host declares
+    no charset -- turns «Νοε» into two latin-1 characters, one of them the control
+    code U+009D. Nothing about the row changes except its characters, so the
+    totals still read, the names still read, and only the date disappears: the
+    month table has no entry for «Î\\x9dÎ¿Îµ». Re-encoding to latin-1 and decoding
+    as UTF-8 is the whole repair, and it is done at the boundary rather than
+    guessed at inside the parser.
+    """
+
+    captured = (
+        '<div class="esake-program-game">'
+        '<div class="esake-program-game-info one-col">Σαβ 21 Νοε - 15:00</div>'
+        '<div class="esake-program-game-final-score row equal">'
+        '<div class="col-lg-5 text-right"><span>ΑΡΗΣ</span></div>'
+        '<div class="col-lg-2 text-center"><span>84&nbsp;-&nbsp;87</span></div>'
+        '<div class="col-lg-5 text-left"><span>ΑΕΚ</span></div>'
+        "</div>"
+        '<a href="/el/action/EsakegameView?idgame=3C7521D5&mode=2">p</a>'
+        "</div>"
+    )
+    mojibake = captured.encode("utf-8").decode("latin-1")
+
+    broken = _parse(mojibake)
+
+    assert broken.counts["rows"] == 1
+    assert broken.counts["with_final"] == 0
+    assert broken.counts["unresolved_date"] == 1
+    assert broken.rows[0].home_score == 84  # the totals survive the mojibake
+
+    repaired = _parse(mojibake.encode("latin-1").decode("utf-8"))
+
+    assert repaired.counts["with_final"] == 1
+    assert repaired.finals[0].played_on == date(2026, 11, 21)
+    assert (repaired.finals[0].home, repaired.finals[0].away) == ("ΑΡΗΣ", "ΑΕΚ")
+
+
+def test_the_captured_period_table_becomes_a_record_that_reconciles():
+    """The 2026-11-24 capture, verbatim, and it adds up.
+
+    ΗΡΑΚΛΗΣ 84-87 ΑΕΚ: quarters 15/23/19/20 against 15/17/25/20 (77-77), then
+    «ΟΦ1» 7-10 -- which is exactly what makes the final 84-87.  A totals-only
+    reader would have had no way to know the overtime existed.
+    """
+
+    html = (
+        '<div class="esake-program-game">'
+        '<div class="esake-program-game-info one-col"><img src="/skn/clock.svg">Σαβ 21 Νοε - 15:00</div>'
+        '<div class="esake-program-game-final-score row equal">'
+        '<div class="col-lg-5 text-right"><span>ΗΡΑΚΛΗΣ</span></div>'
+        '<div class="col-lg-2 text-center"><span>84&nbsp;-&nbsp;87</span></div>'
+        '<div class="col-lg-5 text-left"><span>ΑΕΚ</span></div>'
+        "</div>"
+        '<div class="esake-program-game-hidden-row">'
+        '<table class="esake-program-game-half-scores">'
+        "<tr><td>15</td><td>Q1</td><td>15</td></tr>"
+        "<tr><td>23</td><td>Q2</td><td>17</td></tr>"
+        "<tr><td>19</td><td>Q3</td><td>25</td></tr>"
+        "<tr><td>20</td><td>Q4</td><td>20</td></tr>"
+        "<tr><td>7</td><td>ΟΦ1</td><td>10</td></tr>"
+        "</table></div>"
+        '<a href="/el/action/EsakegameView?idgame=3C7521D5&mode=2">p</a>'
+        "</div>"
+    )
+
+    page = _parse(html)
+    row = page.finals[0]
+
+    assert row.periods.home == (15, 23, 19, 20)
+    assert row.periods.away == (15, 17, 25, 20)
+    assert (row.periods.home_overtime, row.periods.away_overtime) == (7, 10)
+    assert row.periods.overtime_periods == 1
+
+    actual = row.to_actual_result()
+
+    assert actual is not None
+    ok, reason = actual.reconciles()
+    assert ok is True, reason
+
+
+def test_a_row_without_a_period_table_yields_no_settlement_record():
+    """A total is not a record: no quarters, no ActualResult, no settlement."""
+
+    html = (
+        '<div class="esake-program-game">'
+        '<div class="esake-program-game-info one-col">Σαβ 21 Νοε - 15:00</div>'
+        '<div class="esake-program-game-final-score row equal">'
+        '<div class="col-lg-5 text-right"><span>ΑΡΗΣ</span></div>'
+        '<div class="col-lg-2 text-center"><span>84&nbsp;-&nbsp;87</span></div>'
+        '<div class="col-lg-5 text-left"><span>ΑΕΚ</span></div>'
+        "</div>"
+        '<a href="/el/action/EsakegameView?idgame=3C7521D5&mode=2">p</a>'
+        "</div>"
+    )
+
+    assert _parse(html).finals[0].to_actual_result() is None
+
+
+def test_a_period_table_that_does_not_add_up_is_refused_by_the_record_itself():
+    """The parser does not decide; `reconciles()` does, and it says no."""
+
+    html = (
+        '<div class="esake-program-game">'
+        '<div class="esake-program-game-info one-col">Σαβ 21 Νοε - 15:00</div>'
+        '<div class="esake-program-game-final-score row equal">'
+        '<div class="col-lg-5 text-right"><span>ΑΡΗΣ</span></div>'
+        '<div class="col-lg-2 text-center"><span>84&nbsp;-&nbsp;87</span></div>'
+        '<div class="col-lg-5 text-left"><span>ΑΕΚ</span></div>'
+        "</div>"
+        '<div class="esake-program-game-hidden-row">'
+        '<table class="esake-program-game-half-scores">'
+        "<tr><td>10</td><td>Q1</td><td>10</td></tr>"
+        "<tr><td>10</td><td>Q2</td><td>10</td></tr>"
+        "<tr><td>10</td><td>Q3</td><td>10</td></tr>"
+        "<tr><td>10</td><td>Q4</td><td>10</td></tr>"
+        "</table></div>"
+        '<a href="/el/action/EsakegameView?idgame=3C7521D5&mode=2">p</a>'
+        "</div>"
+    )
+
+    actual = _parse(html).finals[0].to_actual_result()
+
+    assert actual is not None
+    ok, reason = actual.reconciles()
+    assert ok is False
+    assert "!= final" in reason

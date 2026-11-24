@@ -144,6 +144,47 @@ def redact(text: str) -> str:
 
 GZIP_MAGIC = b"\x1f\x8b"
 
+#: ``charset=`` in a Content-Type header, quoted or not.
+CHARSET_RE = re.compile(r"charset\s*=\s*\"?([\w.:-]+)", re.IGNORECASE)
+
+
+def declared_charset(resp: Any) -> Optional[str]:
+    """The charset the response declares, or ``None`` when it declares none."""
+
+    headers = getattr(resp, "headers", None)
+    try:
+        content_type = (headers or {}).get("content-type", "") or ""
+    except AttributeError:  # pragma: no cover - a non-mapping headers object
+        return None
+    found = CHARSET_RE.search(str(content_type))
+    return found.group(1) if found else None
+
+
+def decode_body_bytes(raw: bytes, declared: Optional[str] = None) -> str:
+    """Decode a body the way it was written, not the way a 1999 default guesses.
+
+    HTML is overwhelmingly UTF-8, and a great many hosts declare no charset at
+    all. ``requests`` then falls back to ISO-8859-1, so every non-ASCII character
+    arrives as two latin-1 characters: «Σ» becomes «Î£» and «Ν» becomes a
+    printable ``Î`` followed by a *control* character ``U+009D``. That is not
+    mojibake in the terminal -- it is mojibake in the string, and any table of
+    Greek month names or club names is unmatched against it.
+
+    So: honour a declared charset; otherwise UTF-8, which is what a page that
+    does not say is almost certainly serving; and latin-1 only for bytes that are
+    not valid UTF-8, so a genuine legacy page still reads instead of raising.
+    """
+
+    if declared:
+        try:
+            return raw.decode(declared, "replace")
+        except LookupError:  # pragma: no cover - an unknown charset name
+            pass
+    try:
+        return raw.decode("utf-8")
+    except UnicodeDecodeError:
+        return raw.decode("latin-1", "replace")
+
 
 def _decoded_body(resp: Any) -> str:
     """Return the response body as text, decompressing an undeclared gzip body.
@@ -161,6 +202,8 @@ def _decoded_body(resp: Any) -> str:
     """
 
     raw = getattr(resp, "content", None)
+    if isinstance(raw, (bytes, bytearray)) and bytes(raw[:2]) != GZIP_MAGIC:
+        return decode_body_bytes(bytes(raw), declared_charset(resp))
     if isinstance(raw, (bytes, bytearray)) and bytes(raw[:2]) == GZIP_MAGIC:
         try:
             return gzip.decompress(bytes(raw)).decode("utf-8", "replace")

@@ -74,3 +74,47 @@ def test_corrupt_deflate_behind_a_valid_header_falls_back():
     response = _Response(content=bytes(raw), text="fallback text")
 
     assert _decoded_body(response) == "fallback text"
+
+
+@dataclass
+class _Encoded:
+    content: bytes
+    charset: str | None = None
+
+    @property
+    def headers(self) -> dict:
+        if self.charset is None:
+            return {"content-type": "text/html"}
+        return {"content-type": f"text/html; charset={self.charset}"}
+
+
+def test_utf8_with_no_declared_charset_is_read_as_utf8():
+    """The bug that hid a Greek date behind a control character.
+
+    ``Σαβ 21 Νοε`` served as UTF-8 with no charset header became
+    ``Î£Î±Î² 21 Î\\x9dÎ¿Îµ`` under requests' latin-1 default: two characters for
+    every Greek letter, one of them a control code. No table of Greek month names
+    can match that, and no terminal can show why.
+    """
+
+    from ingestion.http import decode_body_bytes
+
+    body = "Σαβ 21 Νοε - 15:00".encode("utf-8")
+
+    assert _decoded_body(_Encoded(content=body)) == "Σαβ 21 Νοε - 15:00"
+    assert decode_body_bytes(body) == "Σαβ 21 Νοε - 15:00"
+
+
+def test_a_declared_charset_is_still_honoured():
+    from ingestion.http import decode_body_bytes
+
+    body = "Σαβ 21 Νοε".encode("iso-8859-7")
+
+    assert decode_body_bytes(body, "iso-8859-7") == "Σαβ 21 Νοε"
+    assert _decoded_body(_Encoded(content=body, charset="iso-8859-7")) == "Σαβ 21 Νοε"
+
+
+def test_bytes_that_are_not_utf8_fall_back_to_latin1_rather_than_raising():
+    from ingestion.http import decode_body_bytes
+
+    assert decode_body_bytes(b"caf\xe9 21") == "café 21"

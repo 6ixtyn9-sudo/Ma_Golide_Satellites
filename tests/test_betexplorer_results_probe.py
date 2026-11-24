@@ -16,6 +16,7 @@ import sys
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "scripts"))
 
+import probe_betexplorer_results as probe  # noqa: E402
 from probe_betexplorer_results import (  # noqa: E402
     MAX_CAPTURE,
     MIN_INTERVAL_SECONDS,
@@ -227,3 +228,231 @@ def test_an_empty_results_page_says_so_rather_than_looking_healthy():
 
     assert signals["match_codes"] == 0
     assert signals["has_no_matches_hint"] is True
+
+
+def test_the_first_match_window_is_the_row_not_the_page():
+    """A count says the page has 34 codes; the window says what a row looks like."""
+
+    filler = "<td>padding</td>" * 200
+    body = (
+        '<table class="table-main"><tr><td>header</td></tr>'
+        + filler
+        + '<tr><td><a href="/basketball/australia/wnbl-women/perth-sydney/AbCd1234/">'
+        "Perth - Sydney</a></td><td>89:84</td></tr>"
+        + filler
+        + "</table>"
+    )
+
+    window = probe.first_match_window(body)
+
+    assert "AbCd1234" in window
+    assert "89:84" in window
+    assert len(window) <= probe.WINDOW_CHARS
+    assert len(window) < len(body)
+    # The row is the point of the file: it sits near the start, not past the
+    # middle, because a capture that ends before the row teaches nothing.
+    assert window.index("AbCd1234") < 500
+
+
+def test_a_page_with_no_match_code_has_no_window_rather_than_a_guess():
+    assert probe.first_match_window('<table class="table-main"><p>No matches found</p></table>') == ""
+
+
+def test_read_replays_a_captured_page_without_a_request(tmp_path):
+    """`--read` is the replay: the saved bytes, no network, honest counts."""
+
+    league = "AUSTRALIA_WNBL_W"
+    saved = tmp_path / league
+    saved.mkdir(parents=True)
+    (saved / "results-index.html").write_text(
+        '<table class="table-main"><tr>'
+        '<td class="h-text-left">'
+        '<a data-test="11015187" href="/basketball/australia/wnbl-women/perth-sydney/AbCd1234/"'
+        ' class="in-match"><span><strong>Perth</strong></span> - <span>Sydney</span></a></td>'
+        '<td class="h-text-center">'
+        '<a href="/basketball/australia/wnbl-women/perth-sydney/AbCd1234/">89:84</a></td>'
+        "</tr></table>",
+        encoding="utf-8",
+    )
+
+    assert probe.main(["--league", league, "--read", "--out", str(tmp_path)]) == 0
+
+
+def test_the_index_codes_come_back_distinct_and_in_order():
+    body = (
+        '<a href="/basketball/australia/wnbl-women/a-b/AbCd1234/">x</a>'
+        '<a href="/basketball/australia/wnbl-women/a-b/AbCd1234/">x</a>'
+        '<a href="/basketball/australia/wnbl-women/a-b/EfGh5678/">x</a>'
+    )
+
+    assert probe.index_codes(body) == ["AbCd1234", "EfGh5678"]
+
+
+def test_match_pages_are_fetched_bounded_spaced_and_receipted(tmp_path):
+    """One request per league answers "can this host settle?" -- no more."""
+
+    fetched = []
+    slept = []
+
+    def read_text(url):
+        fetched.append(url)
+        return (
+            "<table><tr><td>Q1</td><td>22</td><td>18</td></tr>"
+            "<tr><td>Q2</td><td>19</td><td>21</td></tr></table>"
+        )
+
+    payload = probe.capture_match_pages(
+        "AUSTRALIA_WNBL_W",
+        matches=[
+            {"code": "AbCd1234", "url": "/basketball/australia/wnbl-women/a-b/AbCd1234/"},
+            {"code": "EfGh5678", "url": "/basketball/australia/wnbl-women/c-d/EfGh5678/"},
+            {"code": "IjKl9012", "url": "/basketball/australia/wnbl-women/e-f/IjKl9012/"},
+        ],
+        out_dir=tmp_path,
+        read_text=read_text,
+        sleep=slept.append,
+        limit=2,
+    )
+
+    assert len(fetched) == 2
+    assert slept == [probe.MATCH_INTERVAL_SECONDS]  # one gap between two requests
+    assert payload["requested"] == 2
+    assert [page["status"] for page in payload["pages"]] == ["captured", "captured"]
+    assert payload["pages"][0]["period_markers"] == 2
+    assert payload["pages"][0]["period_examples"] == ["Q1", "Q2"]
+    assert (tmp_path / "match_AbCd1234.html").exists()
+    assert (tmp_path / "match-pages.json").exists()
+
+
+def test_a_failed_match_fetch_is_a_receipt_not_a_crash(tmp_path):
+    def read_text(url):
+        raise RuntimeError("429 from the host")
+
+    payload = probe.capture_match_pages(
+        "AUSTRALIA_WNBL_W",
+        matches=[{"code": "AbCd1234", "url": "/basketball/australia/wnbl-women/a-b/AbCd1234/"}],
+        out_dir=tmp_path,
+        read_text=read_text,
+        limit=1,
+    )
+
+    assert payload["pages"][0]["status"] == "fetch_failed"
+    assert "429" in payload["pages"][0]["detail"]
+
+
+def test_a_nav_tab_is_not_a_match_code():
+    """`fixtures` is eight lowercase letters and matched the code pattern.
+
+    The first `--match 1` run opened `/…/nkl/fixtures/` and reported a captured
+    page for `event_id: fixtures` -- a success that taught nothing.
+    """
+
+    body = (
+        '<a href="/basketball/lithuania/nkl/results/" class="list-tabs__item__in">Results</a>'
+        '<a href="/basketball/lithuania/nkl/fixtures/" class="list-tabs__item__in">Fixtures</a>'
+        '<a href="/basketball/lithuania/nkl/olimpas-palanga-omega-tauras/IeUABOGO/">x</a>'
+    )
+
+    assert probe.index_codes(body) == ["IeUABOGO"]
+    assert probe.index_matches(body) == [
+        {"code": "IeUABOGO", "url": "/basketball/lithuania/nkl/olimpas-palanga-omega-tauras/IeUABOGO/"}
+    ]
+
+
+def test_a_relative_href_from_the_index_is_made_absolute():
+    """`No scheme supplied` is a tool fault wearing the look of a host refusal.
+
+    The first `--match 1` run on the corrected code handed the client
+    `/basketball/...` verbatim and got `HTTP 0 ... Invalid URL`. The receipt said
+    so, which is the only reason it took one run to see.
+    """
+
+    assert probe.absolute_url("/basketball/australia/wnbl-women/a-b/AbCd1234/") == (
+        "https://www.betexplorer.com/basketball/australia/wnbl-women/a-b/AbCd1234/"
+    )
+    assert probe.absolute_url("https://example.com/x") == "https://example.com/x"
+
+
+def test_match_fetches_use_absolute_urls(tmp_path):
+    seen = []
+
+    def read_text(url):
+        seen.append(url)
+        return "<table><tr><td>Q1</td></tr></table>"
+
+    probe.capture_match_pages(
+        "AUSTRALIA_WNBL_W",
+        matches=[{"code": "EaZEfXoI", "url": "/basketball/australia/wnbl-women/a-b/EaZEfXoI/"}],
+        out_dir=tmp_path,
+        read_text=read_text,
+        limit=1,
+    )
+
+    assert seen == [
+        "https://www.betexplorer.com/basketball/australia/wnbl-women/a-b/EaZEfXoI/"
+    ]
+
+
+def test_a_429_stops_the_run_rather_than_arguing_with_the_host(tmp_path):
+    """One landed page, one throttle, and no third request.
+
+    Three match pages a few seconds apart drew a 429 on 2026-11-24. The host was
+    naming its own limit; the receipt keeps it and the run ends.
+    """
+
+    fetched = []
+
+    def read_text(url):
+        fetched.append(url)
+        if len(fetched) == 2:
+            raise RuntimeError("HTTP 429 for %s: " % url)
+        return "<html><body>ok</body></html>"
+
+    payload = probe.capture_match_pages(
+        "AUSTRALIA_WNBL_W",
+        matches=[
+            {"code": "AbCd1234", "url": "/basketball/australia/wnbl-women/a-b/AbCd1234/"},
+            {"code": "EfGh5678", "url": "/basketball/australia/wnbl-women/c-d/EfGh5678/"},
+            {"code": "IjKl9012", "url": "/basketball/australia/wnbl-women/e-f/IjKl9012/"},
+        ],
+        out_dir=tmp_path,
+        read_text=read_text,
+        sleep=lambda _: None,
+        limit=3,
+    )
+
+    assert len(fetched) == 2  # the third was never asked for
+    assert payload["stopped_on_429"] is True
+    assert [page["status"] for page in payload["pages"]] == ["captured", "fetch_failed"]
+
+
+def test_an_age_gate_is_saved_as_evidence_but_never_counted_as_a_match(tmp_path):
+    """The failure mode this catches: 110 KB that reports as a captured page.
+
+    The 2026-11-24 match "captures" were `<h1 id="ageTitle">Verificação de idade
+    obrigatória</h1>` — an 18+ modal, not a scoreboard. Size said yes; the page
+    said nothing.
+    """
+
+    gate = (
+        '<div id="ageModal" class="age__modal">'
+        '<h1 id="ageTitle">Verificação de idade obrigatória</h1></div>'
+    )
+
+    payload = probe.capture_match_pages(
+        "LITHUANIA_NKL",
+        matches=[{"code": "nRzm7OsT", "url": "/basketball/lithuania/nkl/a-b/nRzm7OsT/"}],
+        out_dir=tmp_path,
+        read_text=lambda url: gate,
+        limit=1,
+    )
+
+    page = payload["pages"][0]
+    assert page["status"] == "gated"
+    assert page["gate"].startswith("age gate")
+    assert payload["gated"] == 1
+    assert (tmp_path / "match_nRzm7OsT.html").exists()  # still evidence
+
+
+def test_a_real_body_is_not_mistaken_for_a_gate():
+    assert probe.gate_reason("<table><tr><td>Q1</td></tr></table>") is None

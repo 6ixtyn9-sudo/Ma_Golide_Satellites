@@ -279,3 +279,508 @@ Two things follow. First, the grid is a real cost: 40 requests per run, and the 
 refuses a wider sweep rather than trimming it. Second, the 42-byte body is now the
 thing to read, because an empty list and a refusal wearing a 200 look identical from
 outside, and only one of them means "no games here".
+
+## WNBL, the aggregator's own results page (2026-11-24T14:41Z)
+
+Path-only, robots-allowed, 200 in 129,186 B (`f4249ca…6115c`): a table with **67
+match-code links, 34 distinct codes and 35 colon scores**. The page also contains the
+string "No matches found", which is a hidden empty-state template rather than a verdict
+on the table — the reason `index_signals` reports that hint *beside* the counts instead
+of letting it decide anything.
+
+34 games is a season-to-date: this is the entry point the lane lacked, because its
+fixtures table holds only future rows and the capture tool derives candidates from
+finished rows on that table. `--index` was added for exactly this shape.
+
+One thing the counts cannot answer is what a row looks like, and a parser written from
+counts is a guess with a digest attached. `--index` therefore now saves a 2 KB window
+around the first match code as `results-index-window.txt`. That is the artifact the
+reader gets written against, and the same command yields one for WCBA and NKL.
+
+## China, the 42 bytes (2026-11-24T14:41Z)
+
+```json
+{"data":[],"status":0,"message":"success"}
+```
+
+Not a refusal wearing a 200: `status` is 0 and the message says success. Round 1 holds
+no game for team 1, which is a statement about the round rather than about the route.
+So the grid is accepted end to end and the remaining question is *which* round carries
+games — a scoping question, answerable by walking one team across rounds inside the same
+40-request budget.
+
+## Greece, the route reads (2026-11-24T14:45Z)
+
+The full-page replay on the fixed reader, against the same 139,358 B body:
+
+```
+{'containers': 7, 'rows': 7, 'with_final': 0, 'without_final': 0,
+ 'names_ambiguous': 0, 'unresolved_date': 7, 'duplicate_idgame': 0, 'no_identity': 0}
+84-87, 100-64, 83-87, 99-77 …
+```
+
+Every count that used to be wrong is now right. Seven containers for seven games, seven
+identities, seven totals, zero ambiguities — and `with_final: 0`, because the only thing
+still missing is the **date**.
+
+The served date cell breaks *inside* the month name: the raw bytes carry newlines and
+indentation between «Νοε» and «μβρίου», so a pattern demanding `21<space>Νοεμβρίου` finds
+nothing on a page that plainly shows a date. Whitespace inside a word is a rendering
+artifact, so the reader now retries with all whitespace removed — «Σαβ21Νοεμβρίου19:00»
+still bounds the day, because a month name is letters and a digit run is not.
+
+A second, quieter defect surfaced in the same output: one club read as the tail of its
+own name. `<span>(.*?)</span>` stops at the *inner* close tag, so a club cell that nests
+a span loses everything after it. Span extraction is now depth-aware.
+
+Both fixes are unit-tested on the shape that produced them, and neither moves the lane
+off `source_unavailable`: what gates it now is a dated final read from the served bytes.
+
+## The aggregator's results pages, three lanes (2026-11-24T14:45Z)
+
+| lane | bytes | codes | distinct matches | colon scores |
+|---|---|---|---|---|
+| WNBL | 128,973 | 67 | 34 | 35 |
+| WCBA | 122,154 | 49 | 25 | 26 |
+| NKL | 192,203 | 279 | 140 | 141 |
+
+Three lanes that could not settle now have a page, in one command each, path-only and
+robots-allowed. NKL is the striking one: the host refuses every WP-JSON namespace that
+carries a score, and its public namespace is a calendar with no score field — while a
+140-match season sits readable on the aggregator's own results page.
+
+All three pages carry the string "No matches found" and all three carry matches, which is
+the empty-state template again. A hint is not a verdict.
+
+## China, the grid exhausted (2026-11-24T14:45Z)
+
+`teamId=1` walked across `roundId` 1–30: thirty requests, every one `200` in **42 B** with
+zero games. Combined with the earlier `roundId=1 × teamId=1..30` sweep, no coordinate in
+the ranges the errors implied contains a game.
+
+The route accepts both parameters and answers politely; what is missing is a *real* team
+id or a *real* season id, and the errors do not disclose either. That is the difference
+between "unexplored" and "exhausted", and CBA is now the second: further guessing spends
+requests without buying information.
+
+## Lithuania's sitemap (2026-11-24T14:45Z)
+
+`https://nkl.lt/wp-sitemap.xml` answers **301 in 0 B** — a redirect, not an absence. Any
+read of it needs `-L`, and the hop is the one thing to record before trusting a body.
+
+## The aggregator's results reader (2026-11-24T14:52Z)
+
+The finals are on disk for three lanes; nothing reads them yet. `ingestion/providers/
+betexplorer_results.py` is the reader, and it is deliberately built from the only markup
+on that host this project has captured in full: the **fixtures** row — `in-match` link,
+two `<span>` names, a `table-main__datetime` cell — plus a result cell.
+
+The rules it holds:
+
+* a row is read only with a code, exactly two club names and exactly one score-shaped
+  pair; everything else is counted by reason, never guessed;
+* **a clock is not a score.** `20:00` satisfies the colon shape, so a pair is a final
+  only when both sides reach 25 points — an hour cannot. Forfeits (`20:0`) fall outside
+  that rule and are excluded on purpose: a missed final is recoverable, an invented one
+  is not;
+* two score-shaped pairs are an ambiguity, not a choice;
+* an undated result still reads, but carries no `played_on`, so nothing settles on it.
+
+`--read` replays the reader against the saved `results-index.html` with **no network and
+no request**, so proving it costs the host nothing. Until that replay yields rows, all
+three lanes stay `source_unavailable` and this module is a hypothesis with a digest.
+
+Provenance travels in the row: every result is labelled *aggregator result, matched by
+provider code*, so no downstream record can quietly promote an aggregator's number into a
+federation final.
+
+## A note on reading Greek in a terminal (2026-11-24T14:51Z)
+
+The Greek replay printed `"home": "ÎÎ¡ÎÎÎÎ£"` — UTF-8 bytes rendered as latin-1 by the
+terminal. That is a *display* fault, not a data fault, and the distinction matters when
+the question is whether a club name is intact. `row.home.encode("unicode_escape")` prints
+`\u039a\u039f…` and survives any terminal, which settles it without a base64 round trip.
+
+One name did look genuinely short in that output (`ΟΣΣΣ H HOTELS COLLECTION`). The
+depth-aware span fix addresses the mechanism that would cause it — a nested span closing
+early — but whether the name now reads whole is answerable only from the next replay, on
+a tree that has the fix.
+
+## Greece, the names read whole (2026-11-24T14:56Z)
+
+The replay on the fixed tree, with the names printed as escapes so the terminal cannot
+lie about them:
+
+```
+containers 7 · rows 7 · no_identity 0 · names_ambiguous 0 · with_final 0 · unresolved_date 7
+ΚΟΛΟΣΣΟΣ H HOTELS COLLECTION   100 64   ΠΡΟΜΗΘΕΑΣ ΠΑΤΡΑΣ ΒΙΚΟΣ COLA
+ΔΟΞΑ ΛΕΥΚΑΔΑΣ ELABET            83 87   ΠΕΡΙΣΤΕΡΙ Betsson
+ΠΑΝΑΘΗΝΑΪΚΟΣ AKTOR              85 72   ΜΑΡΟΥΣΙ
+```
+
+Two things are now settled. The mojibake was the terminal, not the file — the escapes
+prove it, and that costs one line rather than a base64 round trip. And the depth-aware
+span fix is **proven against served bytes**: these are complete club names including
+their title sponsors, where the old non-greedy span match trimmed them.
+
+The date is the last blocker and it has a shape now: `day=None month=None` on all seven
+rows, on a page whose *rendered* text demonstrably shows «Σαβ 21 Νοε - 15:00». So the day
+and month live somewhere `_text` does not reach — an attribute, or a cell this reader
+mistakes for markup. The next read is that cell's own escaped bytes, not another
+hypothesis about them.
+
+## A capture that taught nothing (2026-11-24T14:56Z)
+
+The first `results-index-window.txt` spent 600 characters on the page's tab bar and pushed
+the match row it existed to show out of the printed excerpt. The lead-in is now 300
+characters and the tail 1900, so the code sits near the start of the file: a window that
+ends before the row is a window that costs a round trip and returns nothing.
+
+## The aggregator row, captured and read (2026-11-24T14:59Z)
+
+```
+read: 0   rows: 40   without_code: 40
+```
+
+Zero rows on all three pages, and the reason was **attribute order**. The fixtures parser
+this project already trusts requires `href` immediately before `class="in-match"`; the
+results page writes:
+
+```html
+<a data-test="11015187" href="/basketball/australia/wnbl-women/perth-lynx-canberra-capitals/EaZEfXoI/" class="in-match">
+```
+
+`data-test` between them, so a pattern anchored on the file's own fixtures markup matched
+nothing. The page was never the problem; the assumption that one page's attribute order is
+the host's contract was.
+
+Three corrections followed from the same capture:
+
+* the anchor is matched **whole** and its `href` read out of the tag, so order stops
+  mattering;
+* both clubs live **inside** that one anchor (`<span><strong>Perth Lynx W</strong></span> -
+  <span>Canberra Capitals W</span>`), so names are read from the anchor's content and a
+  span elsewhere in the row — a round label, a tab — is no longer a third club;
+* the total is a **second unclassed link** in the next cell, not a `table-main__result`
+  cell, and it can reach three digits. A pair regex bounded at two digits silently skipped
+  every century: `113:90` produced no candidate at all. Bound is now three, with the same
+  rule that both sides must reach 25 so no clock qualifies.
+
+The captured row now reads `Perth Lynx W 113 - 90 Canberra Capitals W`.
+
+What the page does **not** carry: a date per row. Results are grouped under
+`<th colspan="2">6. Round</th>` headers, so every result from this page is undated. That
+is a design consequence, not a defect: the date must come from the forecast the result is
+matched against, and a result that cannot be dated that way cannot settle.
+
+## Greece, the date cell as served (2026-11-24T14:59Z)
+
+```html
+<div class="esake-program-game-info one-col"><img src="/skn/clock.svg" ...>Σαβ 21 Νοε - 15:00</div>
+```
+
+The day and month are plain text in the row, and a reader given exactly this prints
+`played_on = 2026-11-21`. So the remaining `unresolved_date: 7` is not about this cell's
+contents — it is about what `_text` over the *whole chunk* yields, which is the next thing
+to print rather than assume.
+
+## Lithuania reads 140 finals (2026-11-24T15:0xZ)
+
+The corrected reader on the captured NKL page:
+
+```
+read: 140   rows: 163   names_not_two: 0   score_not_one: 0
+BC Olimpas Palanga 125 - 124 Omega-Tauras
+Plunges Olimpas    101 -  78 Zalgiris Kaunas 2
+Silute              98 -  79 Mazeikiai
+```
+
+One hundred and forty finals, every one with a code, both clubs and both totals, from a
+host that refuses every score-bearing WP-JSON namespace and whose public namespace is a
+calendar with no score field. The lane was dark this morning; it has a results route now.
+
+Two properties worth naming, because they decide what wiring costs:
+
+* **the names are the aggregator's own** ("BC Olimpas Palanga", "Zalgiris Kaunas 2"), and
+  so are the fixtures this lane already forecasts from. Joining a result to a forecast is
+  therefore a same-source match, not a cross-provider alias problem — which is the single
+  most expensive thing this project knows how to do badly;
+* **every row is undated.** Results are grouped under round headers, so the date has to
+  come from the forecast being graded. A result that cannot be attached to a dated
+  forecast cannot settle, and that is a wiring question rather than a parsing one.
+
+## Greece, the date that should have matched (2026-11-24T15:0xZ)
+
+The clock cell as served is plain text — `Σαβ 21 Νοε - 15:00` — and a reader handed
+exactly that string returns `(21, 11)`, verified three ways here including from the
+operator's own escaped bytes. Yet the same call on the whole row returns `(None, None)` on
+a page where the same text is present. That is a contradiction, not a difficult parse, and
+guessing at it would cost more than asking.
+
+So two things changed rather than a theory: the date is now read **from the clock cell
+first** and only then from the row, which both shrinks the input and stops an unrelated
+day elsewhere on the page from being read as this game's; and `esake.date_probe(chunk)`
+reports the cell text, the cell's matches, the row's first 160 characters and the row's
+matches side by side. "The page shows a date and the reader says None" has two causes —
+text never received, and a pattern that did not match text it did receive — and one call
+now tells them apart.
+
+Reading the cell first is also right on its own terms: a fixture's date belongs to the
+clock cell, not to whichever day happens to appear earliest in the row's markup.
+
+## The Greek date was never the page's fault (2026-11-24T15:1xZ)
+
+`date_probe` answered it in one call:
+
+```
+cell_text:    'Î£Î±Î² 21 Î\x9dÎ¿Îµ - 15:00'
+cell_matches: []
+text_matches: [['22', 'PTS'], ['13', 'RBS'], ...]
+```
+
+Look at the second character of «Ν»: `\x9d`. That is **U+009D, a control code**, not a
+Greek letter. The page was fine; the *file* holds mojibake. `esake.gr` serves UTF-8 and
+declares no charset, so `requests` fell back to ISO-8859-1 — its default when a host says
+nothing — and every non-ASCII character became two latin-1 characters. «Νοε» arrived as
+`Î` + `U+009D` + `Î¿` + `Îµ`: four characters, one of them invisible.
+
+Everything follows from that:
+
+* the month table could never match, so `day=None month=None` on a page plainly showing a
+  date — and the whitespace fallback could not help, because the problem was characters;
+* the club names printed as `ÎÎ¡ÎÎÎ£` were **not** a terminal rendering UTF-8 as latin-1.
+  The data really was mojibake, and this session said otherwise for three turns. The
+  escapes looked like UTF-8 bytes because latin-1 characters, encoded as UTF-8, *are* the
+  original bytes;
+* `text_matches` finding `['22','PTS']` and `['13','RBS']` explains itself too: those were
+  the only day+letters pairs left once the month name had dissolved.
+
+The fix belongs at the boundary, not in any parser: `ingestion.http.decode_body_bytes`
+honours a declared charset, otherwise decodes UTF-8, and falls back to latin-1 only for
+bytes that are not valid UTF-8. A parser that silently re-decodes its input is how one
+corrupts a record; a client that decodes correctly is how one never has to.
+
+Existing captures stay broken until re-fetched. The one-line repair, for a body that was
+decoded as latin-1 and saved as UTF-8:
+
+```python
+html = html.encode("latin-1").decode("utf-8")
+```
+
+A test now holds the whole shape: the same row read from mojibake yields totals but no
+date, and read after that repair yields `2026-11-21` with the clubs intact.
+
+## WNBL and WCBA read (2026-11-24T15:1xZ)
+
+| lane | rows | read | header rows |
+|---|---|---|---|
+| WNBL | 40 | 33 | 7 |
+| WCBA | 29 | 24 | 5 |
+| NKL | 163 | 140 | 23 |
+
+`without_code` is exactly the round-header rows in every table, and `score_not_one` is zero
+throughout: no row that had a code and two clubs failed to yield a total. Three lanes that
+could not settle this morning now read 197 finals between them.
+
+## Greece reads seven dated finals (2026-11-24T15:2xZ)
+
+```
+containers 7 · rows 7 · with_final 7 · without_final 0 · names_ambiguous 0
+unresolved_date 0 · duplicate_idgame 0 · no_identity 0
+
+3C7521D5 2026-11-21 84-87  ΗΡΑΚΛΗΣ                    | ΑΕΚ
+1439C9D6 2026-11-21 100-64 ΚΟΛΟΣΣΟΣ H HOTELS COLLECTION | ΠΡΟΜΗΘΕΑΣ ΠΑΤΡΑΣ ΒΙΚΟΣ COLA
+BE8E8A17 2026-11-21 83-87  ΔΟΞΑ ΛΕΥΚΑΔΑΣ ELABET        | ΠΕΡΙΣΤΕΡΙ Betsson
+95F2FDAA 2026-11-21 99-77  ΠΑΟΚ                       | ΑΡΗΣ
+779E922D 2026-11-21 85-72  ΠΑΝΑΘΗΝΑΪΚΟΣ AKTOR          | ΜΑΡΟΥΣΙ
+6AA68E52 2026-11-22 96-83  ΜΥΚΟΝΟΣ Betsson BC          | VIKOS ΦALCONS
+C02F68B7 2026-11-22 75-81  ΚΑΡΔΙΤΣΑ ΙΑΠΩΝΙΚΗ           | ΟΛΥΜΠΙΑΚΟΣ
+```
+
+Every count is now the one the page promised, and the same run proved the encoding fix at
+the source rather than on a repaired file: one request, **200 in 133,247 B**, sha256
+`8a2ebdb9…`. The byte count is its own evidence — the file was 139,358 B while it was
+double-encoded and is 133,247 B now, and 6,111 bytes is very close to one extra byte for
+every Greek letter in the page.
+
+Two things this does **not** establish, kept separate on purpose:
+
+* **No settlement.** `ActualResult.reconciles()` needs Q1–Q4 (or H1/H2) summing to the
+  final. This reader parses finals and cuts the hidden per-quarter row away precisely
+  because it repeats both club names. The page *has* quarters — the row's collapsed text
+  shows `Q1 15 23 Q2 17 19 Q3 25 20 Q4 20 7` — but that text is interleaved with player
+  stat lines and does not sum to any of these finals, so reading it from collapsed text
+  would be a guess.
+* **No join.** The receipt's join block is `stored_games: 0, attachable: 0, unmatched: 0`:
+  the lane has stored no games, so there is nothing for a final to attach to. That is the
+  fixtures side, not the results side.
+
+Hence `results_source` stays `source_unavailable`. The reader is proven; the *adapter* it
+would need — quarters reconciled to a final, attached to a stored game — does not exist,
+and relabelling the lane before it does would be a status string with no behaviour behind
+it. The next capture is the hidden row's own markup, ~900 escaped characters.
+
+## A final is not a settlement record (2026-11-24T15:3xZ)
+
+Worth stating plainly, because 197 parsed finals make it easy to skip past:
+
+`ActualResult.reconciles()` requires Q1–Q4 (or H1/H2) that sum to the final. It refuses
+anything else — `period kind unknown is not reconcilable`, `expected exactly four quarter
+values per team`. So a results **index**, which carries finals and nothing else, cannot
+settle a forecast in this corpus. Not for NKL, not for WNBL, not for WCBA. The 197 rows are
+cross-check material and an evidence trail; they are not settlement.
+
+That leaves exactly two places a reconcilable record can come from:
+
+* the **federation** page, which for Greece carries the quarters in its hidden row — the
+  reason that lane's adapter is a quarter parser and not a totals parser;
+* the **aggregator's per-match page**, which is where period scores live on that host.
+
+The second is one request to answer, and `scripts/probe_betexplorer_results.py --match N`
+now answers it: it takes the first N codes from the captured index, fetches each match page
+at the tool's own spacing, saves the body verbatim, and reports `period_markers` — a count
+of `Q1`/`1Q`/`OT`-shaped tokens. Zero means the host does not publish what reconciliation
+needs, whatever its results table says; a positive count means the lane can settle from one
+request per game.
+
+That is deliberately one request per league and not one per game: the question is whether
+this host carries period scores at all, and answering it with 140 fetches before knowing
+would be the impatience this project keeps out of its probes.
+
+## Greece's hidden row is player cards before it is quarters (2026-11-24T15:3xZ)
+
+The 900 characters after `esake-program-game-hidden-row` are MVP cards —
+`<div class="mvp-player"><div class="mvp-player-name"><a href="/el/action/EsakeplayerView?
+idplayer=9DBC8FE2&mode="><span>FORRESTER</span><br/>JAKOB</a></div><div class="mvp-player-
+stats">22<span>PTS</span></div>…` — and the per-quarter block sits further in. So the
+window was aimed at the right element and too early inside it; the next read targets `Q1`
+inside the hidden row rather than the row's start.
+
+Nothing in this changes the finals: seven games, seven dates, both clubs each. It changes
+only what the next 900 characters should be centred on.
+
+## Greece reconciles (2026-11-24T15:3xZ)
+
+The quarter block, captured:
+
+```html
+<table class="esake-program-game-half-scores">
+<tr><td>15</td><td>Q1</td><td>15</td></tr>   <tr><td>23</td><td>Q2</td><td>17</td></tr>
+<tr><td>19</td><td>Q3</td><td>25</td></tr>   <tr><td>20</td><td>Q4</td><td>20</td></tr>
+<tr><td> 7</td><td>ΟΦ1</td><td>10</td></tr>
+</table>
+```
+
+Add it up and the mystery of a 84-87 game with quarters that sum to 77-77 disappears: the
+overtime is «ΟΦ1», 7-10. A totals-only reader had no way to know an extra period existed;
+a reader that ignores the period table would have written a record that failed its own
+reconciliation on every overtime game in the league.
+
+`ResultRow.periods` now carries it, and `to_actual_result()` builds the `ActualResult` — or
+returns `None` when there is no complete period table, because a total is not a settlement
+record. Three tests hold the edges: the captured row reconciles `(True, '')`; a row without
+a period table yields no record at all; and a table that does not add up reaches
+`reconciles()` and is refused *there*, by the same check every other provider answers to.
+
+## The nav tab that looked like a match (2026-11-24T15:3xZ)
+
+`--match 1` reported `event_id: "fixtures"` and opened
+`https://www.betexplorer.com/basketball/lithuania/nkl/fixtures/` — 183,036 bytes of
+captured page, `period_markers: 0`, and none of it a match. `fixtures` is eight lowercase
+letters and the code pattern asks for eight alphanumerics, so the tab bar matched.
+
+Two corrections: a code must mix case or contain a digit (a nav word never does), and the
+URL is now taken from the index's own `href` rather than rebuilt from a code — so a match
+page is opened at the address the host published for it, and `match_url` survives only as
+a fallback.
+
+The three `period_markers: 0` results in that run are therefore **not** evidence about
+period scores. They are evidence that the tool opened the wrong pages, which is worth
+recording precisely because it is the second time today a plausible-looking success
+(`read: 0` for three leagues, `event_id: fixtures`) carried no information at all.
+
+## The href was relative (2026-11-24T15:2xZ)
+
+`--match 1` then failed on all three lanes with one message:
+
+```
+HTTP 0 for /basketball/lithuania/nkl/alytaus-patriotai-neptunas/nRzm7OsT/:
+Invalid URL: No scheme supplied.
+```
+
+The index publishes its hrefs as paths, and taking the href verbatim -- which was the
+point of the previous fix, so a page opens at the address the host gave -- handed the
+client `/basketball/...` with no scheme. `absolute_url()` now prefixes the site, because a
+path from this host is a path on this host.
+
+Three tool faults in one afternoon, and each was caught by the receipt rather than by a
+review: `read: 0` for three leagues (attribute order), `event_id: fixtures` (a nav word is
+eight letters), and now `HTTP 0 ... No scheme supplied` (a relative href). The receipts are
+the reason none of them cost more than one run each -- a fetch that fails and says why is
+worth more than a fetch that succeeds and says nothing.
+
+## The match page is not a table (2026-11-24T15:24Z)
+
+Two of three match pages were captured — NKL 110,391 B, WCBA 109,961 B — and both report:
+
+```
+td_cells: 0    integer_cells: 0    span_cells: 32    period_markers: 0
+```
+
+A hundred kilobytes with **no table cells at all**. So the scoreboard on this host is not a
+`<tr>/<td>` structure and not a `Q1…Q4` label set; `td_cells` and `period_markers` were the
+wrong instruments, and `period_markers: 0` here says only that this page does not use the
+labels I chose to count. That is the third time today a zero needed reading carefully, and
+the lesson is the same each time: a count measures the counter's vocabulary, not the page.
+
+The WNBL request was **429**, six seconds after the NKL one. That is the host naming its own
+limit, so the probe now waits ten seconds between match pages and **stops on 429** instead of
+working through the rest of its list. Retrying would spend the budget arguing with a host
+that has already answered.
+
+What is still unknown is what those 110 KB *are*. The next read is a window of the saved
+NKL body around whatever carries the score — one command, no request, on a file that is
+already on disk.
+
+## The match page was an age gate (2026-11-24T15:2xZ)
+
+`scoreboard_mentions: 0`, and the 110 KB is this:
+
+```html
+<h1 id="ageTitle">Verificação de idade obrigatória</h1>
+… Você deve ter pelo menos 18 anos para acessar este site …
+```
+
+An eighteen-plus modal in Brazilian Portuguese, wrapped in ad banners. Not a scoreboard, not
+a table, not a match page — a consent gate. Every shape signal I had said "captured",
+because 110 KB of modal is 110 KB.
+
+Two readings are possible and the receipts cannot separate them:
+
+* match pages on this host are gated by design, and results pages are not; or
+* the host began serving the gate **after our burst** — NKL captured, WNBL 429, WCBA
+  captured — in which case it is a soft block answering our request pattern rather than a
+  property of the page.
+
+The polite response is the same either way, so nothing is attempted past it: the probe now
+labels such a body `status: "gated"` with the marker that matched, saves it as evidence, and
+counts it in `gated` rather than in `captured`. A gate that reports as a capture is the
+fourth version of today's recurring failure — a number that looks like an answer.
+
+## Where the aggregator lane now stands, honestly
+
+| what | state |
+|---|---|
+| results index (3 lanes) | **197 finals read** — codes, clubs, totals, no dates |
+| match pages | **gated**; period scores unread |
+| settlement | **impossible from what is read**, since a final does not reconcile |
+
+So the aggregator is, today, a **verification** source and not a settlement source. That is
+a scope statement, not a failure: 197 finals will catch a settlement error from any other
+source, and they cost ten requests in total across three leagues.
+
+Whether to go further is an operator decision and it has two branches: pass the age gate
+(a self-declaration of 18+, which is their consent mechanism rather than a robots rule), or
+leave the lane as verification and take settlement from federations. This project has
+already recorded one such decision — the Greek terms — as the operator's, in the lane's own
+`source_detail`, rather than making it quietly.

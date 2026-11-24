@@ -54,7 +54,7 @@ import time
 
 sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
 
-from ingestion.providers.betexplorer import FIXTURES_URLS, SITE_TZ, _rows  # noqa: E402
+from ingestion.providers.betexplorer import BASE, FIXTURES_URLS, SITE_TZ, _rows  # noqa: E402
 
 #: A game three hours past tip is certainly over; anything closer may be live,
 #: and a live page's numbers are not a final.
@@ -66,6 +66,35 @@ MIN_INTERVAL_SECONDS = 3.0
 
 #: Hard ceiling on captured games per run, regardless of ``--max``.
 MAX_CAPTURE = 12
+
+#: Match pages get a longer gap than fixtures rows: three of them, a few seconds
+#: apart, drew a 429 from this host on 2026-11-24.  Being throttled is the host
+#: telling us the interval, and the answer is to take it, not to retry.
+MATCH_INTERVAL_SECONDS = 10.0
+
+#: A score in a text cell, and the word the scoreboard tends to be named after.
+_COLON_SCORE_RE = re.compile(r"\b\d{1,3}:\d{1,3}\b")
+_SCOREBOARD_RE = re.compile(r"scoreboard", re.IGNORECASE)
+
+#: An age gate is not a match page, and it is 110 KB of modal and banners that
+#: looks exactly like a captured page to everything downstream.
+_GATE_MARKERS = (
+    'id="ageTitle"',
+    "age__modal",
+    "idade obrigat",
+    "age verification",
+    "age-verification",
+)
+
+
+def gate_reason(body: str) -> str | None:
+    """Why this body is a gate rather than the page that was asked for."""
+
+    lowered = (body or "").lower()
+    for marker in _GATE_MARKERS:
+        if marker.lower() in lowered:
+            return f"age gate ({marker})"
+    return None
 
 _INT_CELL_RE = re.compile(r">\s*(\d{1,3})\s*<")
 _INT_TOKEN_RE = re.compile(r"\b\d{1,3}\b")
@@ -101,6 +130,10 @@ def results_url(league: str) -> str:
 _CODE_LINK_RE = re.compile(
     r"/basketball/[a-z-]+/[a-z0-9-]+/(?:[a-z0-9-]+/)?([0-9A-Za-z]{8})/"
 )
+_CODE_HREF_RE = re.compile(
+    r'href="(?P<href>/basketball/[a-z-]+/[a-z0-9-]+/(?:[a-z0-9-]+/)?'
+    r'(?P<code>[0-9A-Za-z]{8})/)"'
+)
 _COLON_SCORE_RE = re.compile(r"\b(\d{1,3})\s*:\s*(\d{1,3})\b")
 
 
@@ -126,6 +159,30 @@ def index_signals(body: str) -> dict[str, object]:
     }
 
 
+#: How much of the first match's markup to keep.  Enough to hold a whole table row
+#: and the two headers above it, small enough to read in one go.  The first
+#: capture spent 600 of these on the page's tab bar and pushed the row it was
+#: meant to show out of the printed excerpt, so the lead-in is smaller than the
+#: tail: the match code belongs near the start of the file, not past its middle.
+WINDOW_CHARS = 2200
+WINDOW_LEAD_IN = 300
+
+
+def first_match_window(body: str) -> str:
+    """The bytes around the first match code: the row, not the whole page.
+
+    A count says the page carries 34 codes; it does not say what a row looks like.
+    This is the smallest artifact that does, and it is saved with the page so the
+    parser can be written against captured markup instead of a description of it.
+    """
+
+    found = _CODE_LINK_RE.search(body)
+    if not found:
+        return ""
+    start = max(0, found.start() - WINDOW_LEAD_IN)
+    return body[start : start + WINDOW_CHARS]
+
+
 def capture_index(league: str, *, out_dir: Path, read_text) -> dict[str, object]:
     """Save the league's results page verbatim and report its shape."""
 
@@ -140,12 +197,18 @@ def capture_index(league: str, *, out_dir: Path, read_text) -> dict[str, object]
     if body:
         path = out_dir / "results-index.html"
         path.write_text(body, encoding="utf-8")
+        window = first_match_window(body)
+        window_path = out_dir / "results-index-window.txt"
+        if window:
+            window_path.write_text(window, encoding="utf-8")
         record.update(
             {
                 "status": "captured",
                 "bytes": len(body.encode("utf-8")),
                 "sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
                 "path": str(path),
+                "window_chars": len(window),
+                "window_path": str(window_path) if window else None,
                 **index_signals(body),
             }
         )
@@ -190,6 +253,161 @@ def finished_candidates(
         )
     output.sort(key=lambda row: row["paris_tip"], reverse=True)
     return output[:limit]
+
+
+#: Quarter and period markers a match page would use if it carried them.
+_PERIOD_RE = re.compile(r"\b(?:[1-4]Q|Q[1-4]|OT)\b")
+
+
+#: The league's own tab paths.  Each is eight letters, so the code pattern matches
+#: them: the first `--match 1` run fetched `/.../nkl/fixtures/` and reported
+#: `event_id: fixtures`, which is the kind of "success" that teaches nothing.
+_NAV_CODES = frozenset({"fixtures", "results", "summary", "stats"})
+
+
+def absolute_url(url_or_path: str) -> str:
+    """The host's absolute URL for a path it published as a relative href.
+
+    A captured results page writes ``/basketball/...`` without a scheme, and a
+    client handed that answers ``Invalid URL ... No scheme supplied``.  That is a
+    tool fault with a misleading shape -- it looks like the host refusing -- so the
+    path is made absolute here, once, rather than at each call site.
+    """
+
+    if url_or_path.startswith(("http://", "https://")):
+        return url_or_path
+    # ``BASE`` already ends in ``/basketball``, and so does every href here.
+    site = BASE[: -len("/basketball")]
+    return site + ("" if url_or_path.startswith("/") else "/") + url_or_path
+
+
+def _is_match_code(code: str) -> bool:
+    """A real code mixes case or digits; a nav word is eight lowercase letters."""
+
+    if code in _NAV_CODES:
+        return False
+    return any(char.isdigit() or char.isupper() for char in code)
+
+
+def index_matches(body: str) -> list[dict[str, str]]:
+    """Distinct matches from a captured results page: code plus the page's own URL.
+
+    The URL comes from the href rather than being rebuilt, so a match page is
+    opened at the address the host published for it.
+    """
+
+    found: dict[str, str] = {}
+    for match in _CODE_HREF_RE.finditer(body):
+        code = match.group("code")
+        if code in found or not _is_match_code(code):
+            continue
+        found[code] = match.group("href")
+    return [{"code": code, "url": url} for code, url in found.items()]
+
+
+def index_codes(body: str) -> list[str]:
+    """Just the codes, in document order."""
+
+    return [match["code"] for match in index_matches(body)]
+
+
+def capture_match_pages(
+    league: str,
+    *,
+    matches: list[dict[str, str]],
+    out_dir: Path,
+    read_text,
+    sleep=time.sleep,
+    limit: int = 1,
+) -> dict[str, object]:
+    """Fetch the league's own match pages for the first ``limit`` codes.
+
+    The results index gives finals and nothing else, and a final does not
+    reconcile to a quarter record.  A match page is where period scores would be,
+    so this answers "can this host settle?" for the price of one request per
+    league rather than for the price of a design decision.
+    """
+
+    wanted = matches[: max(0, min(int(limit), MAX_CAPTURE))]
+    out_dir.mkdir(parents=True, exist_ok=True)
+    captured: list[dict[str, object]] = []
+    throttled = False
+    for position, match in enumerate(wanted):
+        if position:
+            sleep(MATCH_INTERVAL_SECONDS)
+        code = match["code"]
+        url = absolute_url(match.get("url") or match_url(league, code))
+        try:
+            body = read_text(url)
+        except Exception as exc:  # noqa: BLE001 - a failed capture is a receipt
+            detail = str(exc)[:200]
+            captured.append({"event_id": code, "url": url, "status": "fetch_failed",
+                             "detail": detail})
+            # 429 is the host naming its own limit. Stopping is the whole point of
+            # a receipt that carries the status: retrying would spend the budget
+            # arguing with a host that already answered.
+            if "429" in detail:
+                throttled = True
+                break
+            continue
+        path = out_dir / f"match_{code}.html"
+        path.write_text(body, encoding="utf-8")
+        gate = gate_reason(body)
+        if gate is not None:
+            # Saved, because it is evidence of what the host served, but never
+            # counted as a match page: 110 KB of age modal reads as a captured
+            # page to every check that only looks at size.
+            captured.append(
+                {
+                    "event_id": code,
+                    "url": url,
+                    "status": "gated",
+                    "gate": gate,
+                    "bytes": len(body.encode("utf-8")),
+                    "sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
+                    "path": str(path),
+                }
+            )
+            continue
+        text = re.sub(r"<[^>]+>", " ", body)
+        captured.append(
+            {
+                "event_id": code,
+                "url": url,
+                "status": "captured",
+                "bytes": len(body.encode("utf-8")),
+                "sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
+                "path": str(path),
+                "period_markers": len(_PERIOD_RE.findall(text)),
+                "period_examples": sorted(set(_PERIOD_RE.findall(text)))[:6],
+                # What a scoreboard looks like when it is not a Q1..Q4 table:
+                # a pair of numbers in a text cell, and the word the block is
+                # usually named after.
+                "colon_scores": len(_COLON_SCORE_RE.findall(text)),
+                "scoreboard_mentions": len(_SCOREBOARD_RE.findall(body)),
+                **shape_signals(body),
+            }
+        )
+
+    payload = {
+        "schema_version": "magolide.results_probe.v1",
+        "mode": "match_pages",
+        "league": league,
+        "captured_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "requested": len(wanted),
+        "stopped_on_429": throttled,
+        "gated": sum(1 for page in captured if page["status"] == "gated"),
+        "note": (
+            "Match pages saved verbatim. period_markers counts Q1..Q4/OT-shaped "
+            "tokens, which is what a reconciliation record would need and what a "
+            "results index does not carry."
+        ),
+        "pages": captured,
+    }
+    path = out_dir / "match-pages.json"
+    path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    payload["receipt_path"] = str(path)
+    return payload
 
 
 def shape_signals(body: str) -> dict[str, object]:
@@ -290,6 +508,24 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", default="results_probe", help="directory for saved bodies")
     parser.add_argument("--now", help="override the observation instant (UTC ISO)")
     parser.add_argument(
+        "--match",
+        type=int,
+        default=0,
+        metavar="N",
+        help=(
+            "fetch N match pages for the first codes of the captured results "
+            "index -- the only place period scores could be (hard cap 12)"
+        ),
+    )
+    parser.add_argument(
+        "--read",
+        action="store_true",
+        help=(
+            "replay the reader against an already-captured results-index.html: "
+            "no network, no request, just what the saved bytes say"
+        ),
+    )
+    parser.add_argument(
         "--index",
         action="store_true",
         help=(
@@ -306,6 +542,39 @@ def main(argv: list[str] | None = None) -> int:
         if args.now
         else datetime.now(timezone.utc)
     )
+    if args.match:
+        from ingestion.providers.betexplorer import _text_fetch
+
+        index_path = Path(args.out) / args.league / "results-index.html"
+        if not index_path.exists():
+            parser.error(f"no captured results index at {index_path}; run --index first")
+        payload = capture_match_pages(
+            args.league,
+            matches=index_matches(index_path.read_text(encoding="utf-8")),
+            out_dir=Path(args.out) / args.league,
+            read_text=_text_fetch(None, None),
+            limit=args.match,
+        )
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0 if any(page["status"] == "captured" for page in payload["pages"]) else 1
+
+    if args.read:
+        path = Path(args.out) / args.league / "results-index.html"
+        if not path.exists():
+            parser.error(f"no captured page at {path}; run --index first")
+        from ingestion.providers.betexplorer_results import parse_results
+
+        page = parse_results(path.read_text(encoding="utf-8"))
+        payload = {
+            "schema_version": "magolide.results_probe.v1",
+            "mode": "results_read",
+            "league": args.league,
+            "path": str(path),
+            **page.to_dict(),
+        }
+        print(json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False))
+        return 0 if page.rows else 1
+
     if args.index:
         payload = capture_index(
             args.league,
