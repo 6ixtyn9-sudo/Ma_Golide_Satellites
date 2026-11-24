@@ -76,6 +76,21 @@ MATCH_INTERVAL_SECONDS = 10.0
 _COLON_SCORE_RE = re.compile(r"\b\d{1,3}:\d{1,3}\b")
 _SCOREBOARD_RE = re.compile(r"scoreboard", re.IGNORECASE)
 
+#: The authority this tool acts under when a page is behind a consent gate.
+#: Carried in every capture: a gate passed without a named authority is the sort
+#: of quiet decision this project keeps out of its pipelines.
+AGE_GATE_AUTHORISATION = (
+    "Operator authorisation, 2026-11-24: the operator states they meet this site's 18+ "
+    "requirement, so the age self-declaration is theirs and travels with every capture "
+    "taken past the gate. It is not a robots exception: path-only URLs, no query shapes, "
+    "no per-game burst, and the spacing rules are unchanged."
+)
+
+#: Seconds between runs against this host.  Three match pages a few seconds apart
+#: drew a 429 on 2026-11-24; a pause inside one run does not help when the runs are
+#: the burst, so the stamp lives on disk and the next run honours it.
+COOLDOWN_SECONDS = 30.0
+
 #: An age gate is not a match page, and it is 110 KB of modal and banners that
 #: looks exactly like a captured page to everything downstream.
 _GATE_MARKERS = (
@@ -85,6 +100,105 @@ _GATE_MARKERS = (
     "age verification",
     "age-verification",
 )
+
+
+_GATE_WRITE_RES = (
+    re.compile(r"document\.cookie\s*=\s*[\"'`](?P<value>[^\"'`]+)"),
+    re.compile(r"(?:local|session)Storage\.setItem\(\s*[\"'](?P<key>[^\"']+)[\"']"),
+    re.compile(r"[\"'](?P<key>[A-Za-z0-9_-]*age[A-Za-z0-9_-]*)[\"']"),
+)
+
+
+def gate_hints(body: str) -> list[str]:
+    """What a gate writes when its accept button is pressed.
+
+    A gate is passed by reproducing what it records, and guessing the name is how
+    a project ends up arguing with a host. These are read from the page's own
+    script, in document order.
+    """
+
+    hints: list[str] = []
+    for pattern in _GATE_WRITE_RES:
+        for match in pattern.finditer(body or ""):
+            value = match.group(match.lastindex or 0).strip()
+            if value and value not in hints:
+                hints.append(value)
+    return hints[:12]
+
+
+_COOKIE_WRITE_RE = re.compile(
+    r"document\.cookie\s*=\s*[\"'`](?P<value>[^\"'`]+)[\"'`]"
+)
+_STORAGE_WRITE_RE = re.compile(
+    r"(?:local|session)Storage\.setItem\(\s*[\"'](?P<key>[^\"']+)[\"']\s*,"
+)
+
+
+def gate_cookies(body: str) -> list[tuple[str, str]]:
+    """The cookies a gate writes on accept, as (name, value), in page order.
+
+    These are the only thing an HTTP client can replay: a cookie travels in a
+    header. A storage key cannot, which is why ``gate_storage_keys`` exists --
+    the difference is the difference between passing the gate and pretending to.
+    """
+
+    found: list[tuple[str, str]] = []
+    for match in _COOKIE_WRITE_RE.finditer(body or ""):
+        pair = match.group("value").split(";", 1)[0].strip()
+        name, _, value = pair.partition("=")
+        name = name.strip()
+        if not name:
+            continue
+        item = (name, value.strip())
+        if item not in found:
+            found.append(item)
+    return found
+
+
+def gate_storage_keys(body: str) -> list[str]:
+    """Storage keys the accept button sets -- readable, not replayable."""
+
+    keys: list[str] = []
+    for match in _STORAGE_WRITE_RE.finditer(body or ""):
+        key = match.group("key").strip()
+        if key and key not in keys:
+            keys.append(key)
+    return keys
+
+
+def cooldown_wait(previous: float | None, now: float, seconds: float) -> float:
+    """Seconds still owed before this run may touch the host.
+
+    The stamp records the earliest instant the *next* run may act, so a run that
+    had to wait does not bank the wait and let the one after it fire early.
+    """
+
+    if previous is None:
+        return 0.0
+    return max(0.0, (float(previous) + float(seconds)) - float(now))
+
+
+class HostCooldown:
+    """A stamp on disk, so separate runs cannot add up to a burst."""
+
+    def __init__(self, path: Path, seconds: float = COOLDOWN_SECONDS):
+        self.path = Path(path)
+        self.seconds = float(seconds)
+
+    def previous(self) -> float | None:
+        try:
+            return float(self.path.read_text(encoding="utf-8").strip())
+        except (OSError, ValueError):
+            return None
+
+    def wait(self, *, now: float | None = None, sleep=time.sleep) -> float:
+        current = time.time() if now is None else float(now)
+        delay = cooldown_wait(self.previous(), current, self.seconds)
+        if delay > 0:
+            sleep(delay)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
+        self.path.write_text(f"{current + delay:.3f}\n", encoding="utf-8")
+        return delay
 
 
 def gate_reason(body: str) -> str | None:
@@ -319,6 +433,9 @@ def capture_match_pages(
     read_text,
     sleep=time.sleep,
     limit: int = 1,
+    cooldown: "HostCooldown | None" = None,
+    gate_accept: bool = False,
+    gate_read_text=None,
 ) -> dict[str, object]:
     """Fetch the league's own match pages for the first ``limit`` codes.
 
@@ -330,14 +447,17 @@ def capture_match_pages(
 
     wanted = matches[: max(0, min(int(limit), MAX_CAPTURE))]
     out_dir.mkdir(parents=True, exist_ok=True)
+    waited = cooldown.wait(sleep=sleep) if cooldown is not None else 0.0
     captured: list[dict[str, object]] = []
     throttled = False
+    requests_made = 0
     for position, match in enumerate(wanted):
         if position:
             sleep(MATCH_INTERVAL_SECONDS)
         code = match["code"]
         url = absolute_url(match.get("url") or match_url(league, code))
         try:
+            requests_made += 1
             body = read_text(url)
         except Exception as exc:  # noqa: BLE001 - a failed capture is a receipt
             detail = str(exc)[:200]
@@ -353,6 +473,33 @@ def capture_match_pages(
         path = out_dir / f"match_{code}.html"
         path.write_text(body, encoding="utf-8")
         gate = gate_reason(body)
+        passed_by = None
+        if gate is not None and gate_accept:
+            cookies = gate_cookies(body)
+            if cookies and gate_read_text is not None:
+                header = "; ".join(f"{name}={value}" for name, value in cookies)
+                try:
+                    requests_made += 1
+                    second = gate_read_text(url, header)
+                except Exception as exc:  # noqa: BLE001 - the retry is evidence too
+                    gate = f"{gate}; replay failed: {str(exc)[:120]}"
+                else:
+                    if gate_reason(second) is None:
+                        body = second
+                        path.write_text(body, encoding="utf-8")
+                        gate = None
+                        passed_by = [name for name, _ in cookies]
+                    else:
+                        gate = f"{gate}; still gated after replaying {len(cookies)} cookie(s)"
+            elif cookies:
+                gate = f"{gate}; replay requested without a fetcher"
+            elif not cookies:
+                keys = gate_storage_keys(body)
+                gate = (
+                    f"{gate}; no cookie to replay"
+                    + (f", storage keys {keys}" if keys else "")
+                    + " -- needs a browser, not a header"
+                )
         if gate is not None:
             # Saved, because it is evidence of what the host served, but never
             # counted as a match page: 110 KB of age modal reads as a captured
@@ -378,6 +525,7 @@ def capture_match_pages(
                 "bytes": len(body.encode("utf-8")),
                 "sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
                 "path": str(path),
+                **({"gate_passed_by": passed_by} if passed_by else {}),
                 "period_markers": len(_PERIOD_RE.findall(text)),
                 "period_examples": sorted(set(_PERIOD_RE.findall(text)))[:6],
                 # What a scoreboard looks like when it is not a Q1..Q4 table:
@@ -397,6 +545,10 @@ def capture_match_pages(
         "requested": len(wanted),
         "stopped_on_429": throttled,
         "gated": sum(1 for page in captured if page["status"] == "gated"),
+        "cooldown_seconds_waited": round(waited, 3),
+        "requests_made": requests_made,
+        "gate_accept": bool(gate_accept),
+        "age_gate_authorisation": AGE_GATE_AUTHORISATION,
         "note": (
             "Match pages saved verbatim. period_markers counts Q1..Q4/OT-shaped "
             "tokens, which is what a reconciliation record would need and what a "
@@ -508,6 +660,32 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", default="results_probe", help="directory for saved bodies")
     parser.add_argument("--now", help="override the observation instant (UTC ISO)")
     parser.add_argument(
+        "--gate-hints",
+        metavar="PATH",
+        help=(
+            "print what a saved gate page writes when its accept button is pressed "
+            "(a cookie or a storage key), with no request at all"
+        ),
+    )
+    parser.add_argument(
+        "--gate-accept",
+        action="store_true",
+        help=(
+            "when a page comes back as an age gate, replay the cookie its own accept "
+            "button writes (one extra request, never a loop); a gate that only sets "
+            "localStorage is reported as needing a browser rather than retried"
+        ),
+    )
+    parser.add_argument(
+        "--cooldown",
+        type=float,
+        default=COOLDOWN_SECONDS,
+        help=(
+            "seconds this run must wait since the last one touched the host; "
+            "0 disables the on-disk stamp"
+        ),
+    )
+    parser.add_argument(
         "--match",
         type=int,
         default=0,
@@ -542,18 +720,49 @@ def main(argv: list[str] | None = None) -> int:
         if args.now
         else datetime.now(timezone.utc)
     )
+    if args.gate_hints:
+        body = Path(args.gate_hints).read_text(encoding="utf-8", errors="replace")
+        print(
+            json.dumps(
+                {
+                    "path": args.gate_hints,
+                    "gate": gate_reason(body),
+                    "hints": gate_hints(body),
+                    "age_gate_authorisation": AGE_GATE_AUTHORISATION,
+                },
+                indent=2,
+                sort_keys=True,
+            )
+        )
+        return 0 if gate_hints(body) else 1
+
     if args.match:
         from ingestion.providers.betexplorer import _text_fetch
 
         index_path = Path(args.out) / args.league / "results-index.html"
         if not index_path.exists():
             parser.error(f"no captured results index at {index_path}; run --index first")
+        cooldown = (
+            HostCooldown(Path(args.out) / ".host-cooldown", args.cooldown)
+            if args.cooldown > 0
+            else None
+        )
+        gate_read_text = None
+        if args.gate_accept:
+            from ingestion.http import HttpClient
+
+            def gate_read_text(url: str, cookie: str) -> str:
+                return HttpClient().get_text(url, headers={"Cookie": cookie})
+
         payload = capture_match_pages(
             args.league,
             matches=index_matches(index_path.read_text(encoding="utf-8")),
             out_dir=Path(args.out) / args.league,
             read_text=_text_fetch(None, None),
             limit=args.match,
+            cooldown=cooldown,
+            gate_accept=args.gate_accept,
+            gate_read_text=gate_read_text,
         )
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0 if any(page["status"] == "captured" for page in payload["pages"]) else 1

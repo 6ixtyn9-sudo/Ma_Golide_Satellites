@@ -456,3 +456,150 @@ def test_an_age_gate_is_saved_as_evidence_but_never_counted_as_a_match(tmp_path)
 
 def test_a_real_body_is_not_mistaken_for_a_gate():
     assert probe.gate_reason("<table><tr><td>Q1</td></tr></table>") is None
+
+
+def test_the_cooldown_holds_off_between_runs_not_only_inside_one(tmp_path):
+    """Three runs a few seconds apart are a burst; the stamp is on disk so the
+    next run sees what the last one did."""
+
+    stamp = tmp_path / ".host-cooldown"
+    slept = []
+
+    first = probe.HostCooldown(stamp, seconds=30)
+    assert first.wait(now=1000.0, sleep=slept.append) == 0.0
+    assert slept == []
+
+    second = probe.HostCooldown(stamp, seconds=30)
+    assert second.wait(now=1005.0, sleep=slept.append) == 25.0
+    assert slept == [25.0]
+
+    # The second run acted at 1030, so the third may not act before 1060: asking
+    # at 1050 owes ten seconds. The gap between actions stays 30, which is the
+    # property that matters -- a wait cannot be banked and spent early.
+    third = probe.HostCooldown(stamp, seconds=30)
+    assert third.wait(now=1050.0, sleep=slept.append) == 10.0
+    assert slept == [25.0, 10.0]
+
+
+def test_a_capture_reports_the_wait_it_served(tmp_path):
+    stamp = tmp_path / ".host-cooldown"
+    probe.HostCooldown(stamp, seconds=30).wait(now=probe.time.time(), sleep=lambda _: None)
+
+    payload = probe.capture_match_pages(
+        "AUSTRALIA_WNBL_W",
+        matches=[{"code": "AbCd1234", "url": "/basketball/australia/wnbl-women/a-b/AbCd1234/"}],
+        out_dir=tmp_path,
+        read_text=lambda url: "<html>ok</html>",
+        sleep=lambda _: None,
+        limit=1,
+        cooldown=probe.HostCooldown(stamp, seconds=30),
+    )
+
+    assert 29.0 <= payload["cooldown_seconds_waited"] <= 30.0
+    assert payload["age_gate_authorisation"].startswith("Operator authorisation")
+
+
+def test_gate_hints_read_what_the_accept_button_writes():
+    """Passing a gate means reproducing what it records, not guessing its name."""
+
+    body = (
+        "<script>"
+        "document.getElementById('ageYes').onclick=function(){"
+        "document.cookie='be_age_verified=1; path=/; max-age=31536000';"
+        "localStorage.setItem('ageAccepted', 'true');"
+        "};</script>"
+    )
+
+    hints = probe.gate_hints(body)
+
+    assert "be_age_verified=1; path=/; max-age=31536000" in hints
+    assert "ageAccepted" in hints
+
+
+_GATED_COOKIE_PAGE = (
+    '<div class="age__modal"><h1 id="ageTitle">Verificação de idade obrigatória</h1>'
+    '<button onclick="document.cookie=\'age_verified=1; path=/; max-age=31536000\';">'
+    "Entrar</button></div>"
+)
+
+_GATED_STORAGE_PAGE = (
+    '<div class="age__modal"><h1 id="ageTitle">Verificação de idade obrigatória</h1>'
+    "<button onclick=\"localStorage.setItem('ageVerified','true');\">Entrar</button></div>"
+)
+
+_MATCH_PAGE = "<table><tr><td>Q1</td><td>88</td><td>Q2</td><td>91</td></tr></table>"
+
+
+def test_the_accept_button_writes_a_cookie_we_can_replay(tmp_path):
+    """Passing the gate means sending back what it recorded, not guessing names."""
+
+    assert probe.gate_cookies(_GATED_COOKIE_PAGE) == [("age_verified", "1")]
+
+    seen = []
+
+    def gate_read_text(url, cookie):
+        seen.append(cookie)
+        return _MATCH_PAGE
+
+    payload = probe.capture_match_pages(
+        "LITHUANIA_NKL",
+        matches=[{"code": "nRzm7OsT", "url": "/basketball/lithuania/nkl/a-b/nRzm7OsT/"}],
+        out_dir=tmp_path,
+        read_text=lambda url: _GATED_COOKIE_PAGE,
+        limit=1,
+        gate_accept=True,
+        gate_read_text=gate_read_text,
+    )
+
+    page = payload["pages"][0]
+    assert seen == ["age_verified=1"]
+    assert page["status"] == "captured"
+    assert page["gate_passed_by"] == ["age_verified"]
+    assert payload["gated"] == 0
+    assert payload["requests_made"] == 2  # one gate, one replay: never a loop
+    assert (tmp_path / "match_nRzm7OsT.html").read_text() == _MATCH_PAGE
+
+
+def test_a_storage_only_gate_says_it_needs_a_browser(tmp_path):
+    """localStorage cannot travel in a header. Claiming otherwise would be a lie
+    that only shows up as `gated: 0` with an empty page."""
+
+    calls = []
+
+    def gate_read_text(url, cookie):  # pragma: no cover - must not be reached
+        calls.append(cookie)
+        return _MATCH_PAGE
+
+    payload = probe.capture_match_pages(
+        "CHINA_WCBA_W",
+        matches=[{"code": "tOWc8ZhA", "url": "/basketball/china/wcba-women/a-b/tOWc8ZhA/"}],
+        out_dir=tmp_path,
+        read_text=lambda url: _GATED_STORAGE_PAGE,
+        limit=1,
+        gate_accept=True,
+        gate_read_text=gate_read_text,
+    )
+
+    page = payload["pages"][0]
+    assert calls == []
+    assert payload["requests_made"] == 1
+    assert page["status"] == "gated"
+    assert "needs a browser" in page["gate"]
+    assert "ageVerified" in page["gate"]
+
+
+def test_accepting_the_gate_is_off_unless_asked_for(tmp_path):
+    """The authority travels with the capture; the act of using it does not
+    happen by accident."""
+
+    payload = probe.capture_match_pages(
+        "LITHUANIA_NKL",
+        matches=[{"code": "nRzm7OsT", "url": "/basketball/lithuania/nkl/a-b/nRzm7OsT/"}],
+        out_dir=tmp_path,
+        read_text=lambda url: _GATED_COOKIE_PAGE,
+        limit=1,
+    )
+
+    assert payload["gate_accept"] is False
+    assert payload["requests_made"] == 1
+    assert payload["pages"][0]["status"] == "gated"
