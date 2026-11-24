@@ -121,6 +121,16 @@ terminal no-bet decision; the sidecar remains the durable terminal record.
   blocker is this sample minimum and whose segment has at least one graded
   non-push observation may appear in a provisional paper acca; the frozen ticket
   marks that exception explicitly.
+- **PRIOR-HEAVY — THIN TEAM EVIDENCE (PAPER ONLY)**: a real selected price
+  exists and the segment is calibrated, but the row's only remaining blocker is
+  `insufficient_team_specific_history`: one team's own recency-weighted evidence
+  is thinner than the `team_prior_games` strength the model requires, so the
+  probability leans on the league-mean prior. These rows stay strictly
+  ineligible (no acca leg, no ticket, no ROI-band promotion); they are surfaced
+  rather than discarded so the forecast is not silently lost. Each row prints
+  both teams' effective games against the required strength and the value at
+  the observed price (break-even versus p), because a prior-heavy row can be
+  clearly negative at the quote.
 - **WATCHLIST — NO MATCHED ODDS**: no exact selected bookmaker price exists.
   These rows remain visible and are not acca candidates.
 - **WATCHLIST — INSUFFICIENT CONTEXT**: priced rows whose remaining exclusion
