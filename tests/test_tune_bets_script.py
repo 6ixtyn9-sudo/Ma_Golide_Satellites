@@ -119,3 +119,94 @@ def test_the_tuned_file_is_what_the_card_then_loads(tmp_path):
 
     assert loaded.get("confidence_scale") == 40.0
     assert loaded.league_weight("LITHUANIA_NKL") == 0.7
+
+
+# -- reading the lanes' own ledgers -----------------------------------------
+
+
+def _lane(tmp_path: Path, rows, name: str = "picks_2026-11-20.json") -> Path:
+    lane = tmp_path / "LITHUANIA_NKL"
+    lane.mkdir(exist_ok=True)
+    (lane / name).write_text(json.dumps(rows))
+    return lane
+
+
+def _ledger_row(game_id: str, *, won: bool, confidence: float = 0.90) -> dict:
+    return {
+        "game_id": game_id,
+        "league": "LITHUANIA_NKL",
+        "market": "moneyline",
+        "period": "full_game",
+        "selection": "home",
+        "line": None,
+        "calibrated_probability": confidence,
+        "raw_probability": confidence,
+        "outcome": "win" if won else "loss",
+        "grade_status": "win" if won else "loss",
+    }
+
+
+def test_a_lane_directory_tunes_from_its_own_settled_ledger(tmp_path, capsys):
+    lane = _lane(tmp_path, [_ledger_row(f"g{n}", won=False) for n in range(30)])
+
+    code = tune_bets.main(
+        [
+            "--from-ledgers", str(lane),
+            "--tuned-path", str(tmp_path / "tuned.json"),
+            "--ledger-path", str(tmp_path / "ledger.jsonl"),
+        ]
+    )
+
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "settled bets: 30" in out
+    assert "ledgers read: 1 file(s)" in out
+    assert "confidence_scale: 30.0 -> 40.0" in out
+
+
+def test_pending_rows_are_reported_as_not_counted(tmp_path, capsys):
+    rows = [_ledger_row(f"g{n}", won=False) for n in range(30)]
+    rows.append({**rows[0], "game_id": "pending-1", "outcome": None, "grade_status": "pending"})
+    lane = _lane(tmp_path, [_ledger_row(f"x{n}", won=False) for n in range(5)] + rows[30:])
+
+    code = tune_bets.main(
+        [
+            "--from-ledgers", str(lane),
+            "--tuned-path", str(tmp_path / "tuned.json"),
+            "--ledger-path", str(tmp_path / "ledger.jsonl"),
+            "--dry-run",
+        ]
+    )
+
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "not counted: pending 1" in out
+
+
+def test_an_empty_lane_changes_nothing(tmp_path, capsys):
+    lane = tmp_path / "EMPTY"
+    lane.mkdir()
+
+    code = tune_bets.main(
+        [
+            "--from-ledgers", str(lane),
+            "--tuned-path", str(tmp_path / "tuned.json"),
+            "--ledger-path", str(tmp_path / "ledger.jsonl"),
+        ]
+    )
+
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "settled bets: 0" in out
+    assert "no change:" in out
+    assert not (tmp_path / "tuned.json").exists()
+
+
+def test_the_two_sources_are_mutually_exclusive(tmp_path):
+    with pytest.raises(SystemExit):
+        tune_bets.main(
+            [
+                "--results", str(tmp_path / "r.json"),
+                "--from-ledgers", str(tmp_path),
+            ]
+        )

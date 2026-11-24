@@ -836,3 +836,93 @@ def test_a_fixture_carrying_extra_bet_types_still_lends_one_leg():
 
     assert len(row.bets) == 3  # moneyline + first half + totals
     assert len(research_tickets([row])[0].legs) == 1
+
+
+# -- the tuner's league discount has to bite --------------------------------
+#
+# Config_Tuner.gs advised ``league_weight_<LEAGUE> = 0.7`` for a league under 50%.
+# A weight the card ignores would be a decorative number, so it multiplies the
+# confidence the gates compare -- and shows as ``lw=`` on the line.
+
+
+def test_a_discounted_league_lowers_the_first_half_confidence():
+    from forecasting.bet_config import default_config
+
+    discounted = default_config().with_leagues({LEAGUE: 0.9})
+    plain = research_rows(LEAGUE, [_game()], TABLE)[0]
+    cut = research_rows(LEAGUE, [_game()], TABLE, bet_config=discounted)[0]
+
+    plain_bet = _proposal(plain, "FIRST_HALF_1X2")
+    cut_bet = _proposal(cut, "FIRST_HALF_1X2")
+
+    assert cut_bet.available is True  # 79.2 * 0.9 still clears the 58 gate
+    assert cut_bet.league_weight == 0.9
+    # Each is rounded to 0.1 for printing, so compare within one print step.
+    assert cut_bet.confidence == pytest.approx(plain_bet.confidence * 0.9, abs=0.1)
+    assert "lw=0.90" in cut.as_line()
+
+
+def test_a_discount_can_take_a_borderline_first_half_bet_below_its_gate():
+    from forecasting.bet_config import default_config
+
+    heavy = default_config().with_leagues({LEAGUE: 0.6})
+    row = research_rows(LEAGUE, [_game()], TABLE, bet_config=heavy)[0]
+
+    first_half = _proposal(row, "FIRST_HALF_1X2")
+    assert first_half.available is False
+    assert first_half.reason == "confidence_below_first_half_gate"
+    # The line still names the discount that took it under, so the cause is visible.
+    assert "lw=0.60" in row.as_line()
+
+
+def test_a_discount_can_take_a_totals_bet_below_its_gate():
+    from forecasting.bet_config import default_config
+
+    heavy = default_config().with_leagues({LEAGUE: 0.6})
+    row = research_rows(
+        LEAGUE, [_game()], TABLE, snapshots=[_snapshot(), _totals()], bet_config=heavy
+    )[0]
+
+    assert _proposal(row, "FT_OU").reason == "confidence_below_ftou_gate"
+
+
+def test_an_undiscounted_league_carries_no_weight_token():
+    row = research_rows(LEAGUE, [_game()], TABLE)[0]
+
+    assert _proposal(row, "FIRST_HALF_1X2").league_weight == 1.0
+    assert "lw=" not in row.as_line()
+
+
+def test_the_scorer_runs_under_the_bet_configs_own_numbers():
+    """Otherwise the tuner's ``confidence_scale`` would move a stamp and nothing else."""
+
+    from forecasting.bet_config import default_config
+
+    # A close table, so the probability is not pinned at the confMax ceiling where
+    # every scale produces the same clamped answer.
+    close = [
+        _published("Telsiai", position=1, played=16, wins=9, losses=7, pf=1300.0, pa=1290.0),
+        _published("Rytas 2", position=6, played=16, wins=8, losses=8, pf=1295.0, pa=1296.0),
+    ]
+    shrunk = default_config().with_overrides({"confidence_scale": 60.0, "threshold": 30.0})
+
+    plain = research_rows(LEAGUE, [_game()], close)[0]
+    tuned = research_rows(LEAGUE, [_game()], close, bet_config=shrunk)[0]
+
+    assert tuned.verdict.meta["scale_factor"] == 60.0
+    assert tuned.verdict.meta["threshold"] == 30.0
+    # A wider logistic scale means the same score implies a softer probability.
+    assert tuned.verdict.uncalibrated_logistic_pct < plain.verdict.uncalibrated_logistic_pct
+
+
+def test_a_pinned_scorer_config_wins_over_the_bet_config():
+    from forecasting.bet_config import default_config
+
+    pinned = MaGolideConfig(confidence_scale=30.0)
+    shrunk = default_config().with_overrides({"confidence_scale": 60.0})
+
+    row = research_rows(
+        LEAGUE, [_game()], TABLE, config=pinned, bet_config=shrunk
+    )[0]
+
+    assert row.verdict.meta["scale_factor"] == 30.0
