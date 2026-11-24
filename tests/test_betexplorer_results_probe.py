@@ -622,3 +622,78 @@ def test_the_gate_hints_read_needs_no_league(tmp_path, capsys):
     assert "age__modal" in payload["mentions"]  # context, reported as such
     assert payload["replayable"] is True
     assert payload["age_gate_authorisation"].startswith("Operator authorisation")
+
+
+#: The shape the real page turned out to have (2026-11-24): a modal, and far from
+#: it a language switcher that clears ``lang`` plus a bare ``mode`` write. Both are
+#: cookie writes. Neither is consent -- replaying them returned the same 110 KB gate.
+_GATE_WITH_UNRELATED_WRITES = (
+    '<div class="age__modal"><h1 id="ageTitle">Verificação de idade obrigatória</h1>'
+    '<button id="ageYes">Sim</button><button id="ageNo">Não</button></div>'
+    + "<p>banner</p>" * 400
+    + "<script>document.cookie=\"lang=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/\";"
+    'document.cookie="mode";</script>'
+)
+
+
+def test_a_cookie_write_far_from_the_gate_is_not_a_hint():
+    writes = probe.gate_cookie_writes(_GATE_WITH_UNRELATED_WRITES)
+
+    assert [write["name"] for write in writes] == ["lang", "mode"]
+    assert all(write["near_gate"] is False for write in writes)
+    assert probe.gate_cookies(_GATE_WITH_UNRELATED_WRITES) == []
+
+
+def test_the_cli_calls_a_language_reset_what_it_is(tmp_path, capsys):
+    page = tmp_path / "gate.html"
+    page.write_text(_GATE_WITH_UNRELATED_WRITES, encoding="utf-8")
+
+    assert probe.main(["--gate-hints", str(page)]) == 1  # nothing replayable, and says so
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["hints"] == []
+    assert payload["replayable"] is False
+    assert payload["unrelated_writes"][0]["raw"].startswith("lang=; expires=Thu, 01 Jan 1970")
+    assert payload["unrelated_writes"][0]["distance"] > probe.GATE_PROXIMITY_CHARS
+
+
+def test_accepting_sends_nothing_when_the_only_writes_are_unrelated(tmp_path):
+    """One request, and a reason a human can check -- not a header full of noise
+    that comes back gated and reads like the host refusing."""
+
+    def must_not_be_called(url, cookie):  # pragma: no cover - must not be reached
+        raise AssertionError(f"replayed {cookie!r} for a write the gate never made")
+
+    payload = probe.capture_match_pages(
+        "LITHUANIA_NKL",
+        matches=[{"code": "nRzm7OsT", "url": "/basketball/lithuania/nkl/a-b/nRzm7OsT/"}],
+        out_dir=tmp_path,
+        read_text=lambda url: _GATE_WITH_UNRELATED_WRITES,
+        limit=1,
+        gate_accept=True,
+        gate_read_text=must_not_be_called,
+    )
+
+    page = payload["pages"][0]
+    assert payload["requests_made"] == 1
+    assert page["status"] == "gated"
+    assert "no cookie written near the accept control" in page["gate"]
+    assert "lang" in page["gate"]
+
+
+def test_the_gate_script_read_shows_the_handler_and_the_bundles(tmp_path, capsys):
+    page = tmp_path / "gate.html"
+    page.write_text(
+        '<div class="age__modal"><h1 id="ageTitle">t</h1>'
+        '<button id="ageYes" onclick="localStorage.setItem(\'ageOk\',\'1\');loc();">Sim</button></div>'
+        '<script src="/static/js/consent.bundle.js"></script>',
+        encoding="utf-8",
+    )
+
+    assert probe.main(["--gate-script", str(page)]) == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["external_scripts"] == ["/static/js/consent.bundle.js"]
+    assert payload["inline_script_blocks"] == 0
+    assert payload["accept_handlers"][0]["control"] == "ageYes"
+    assert "ageOk" in payload["accept_handlers"][0]["excerpt"]
