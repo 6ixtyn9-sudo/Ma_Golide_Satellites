@@ -411,3 +411,94 @@ def test_a_latin1_decoded_capture_hides_the_date_and_repairing_it_restores_it():
     assert repaired.counts["with_final"] == 1
     assert repaired.finals[0].played_on == date(2026, 11, 21)
     assert (repaired.finals[0].home, repaired.finals[0].away) == ("ΑΡΗΣ", "ΑΕΚ")
+
+
+def test_the_captured_period_table_becomes_a_record_that_reconciles():
+    """The 2026-11-24 capture, verbatim, and it adds up.
+
+    ΗΡΑΚΛΗΣ 84-87 ΑΕΚ: quarters 15/23/19/20 against 15/17/25/20 (77-77), then
+    «ΟΦ1» 7-10 -- which is exactly what makes the final 84-87.  A totals-only
+    reader would have had no way to know the overtime existed.
+    """
+
+    html = (
+        '<div class="esake-program-game">'
+        '<div class="esake-program-game-info one-col"><img src="/skn/clock.svg">Σαβ 21 Νοε - 15:00</div>'
+        '<div class="esake-program-game-final-score row equal">'
+        '<div class="col-lg-5 text-right"><span>ΗΡΑΚΛΗΣ</span></div>'
+        '<div class="col-lg-2 text-center"><span>84&nbsp;-&nbsp;87</span></div>'
+        '<div class="col-lg-5 text-left"><span>ΑΕΚ</span></div>'
+        "</div>"
+        '<div class="esake-program-game-hidden-row">'
+        '<table class="esake-program-game-half-scores">'
+        "<tr><td>15</td><td>Q1</td><td>15</td></tr>"
+        "<tr><td>23</td><td>Q2</td><td>17</td></tr>"
+        "<tr><td>19</td><td>Q3</td><td>25</td></tr>"
+        "<tr><td>20</td><td>Q4</td><td>20</td></tr>"
+        "<tr><td>7</td><td>ΟΦ1</td><td>10</td></tr>"
+        "</table></div>"
+        '<a href="/el/action/EsakegameView?idgame=3C7521D5&mode=2">p</a>'
+        "</div>"
+    )
+
+    page = _parse(html)
+    row = page.finals[0]
+
+    assert row.periods.home == (15, 23, 19, 20)
+    assert row.periods.away == (15, 17, 25, 20)
+    assert (row.periods.home_overtime, row.periods.away_overtime) == (7, 10)
+    assert row.periods.overtime_periods == 1
+
+    actual = row.to_actual_result()
+
+    assert actual is not None
+    ok, reason = actual.reconciles()
+    assert ok is True, reason
+
+
+def test_a_row_without_a_period_table_yields_no_settlement_record():
+    """A total is not a record: no quarters, no ActualResult, no settlement."""
+
+    html = (
+        '<div class="esake-program-game">'
+        '<div class="esake-program-game-info one-col">Σαβ 21 Νοε - 15:00</div>'
+        '<div class="esake-program-game-final-score row equal">'
+        '<div class="col-lg-5 text-right"><span>ΑΡΗΣ</span></div>'
+        '<div class="col-lg-2 text-center"><span>84&nbsp;-&nbsp;87</span></div>'
+        '<div class="col-lg-5 text-left"><span>ΑΕΚ</span></div>'
+        "</div>"
+        '<a href="/el/action/EsakegameView?idgame=3C7521D5&mode=2">p</a>'
+        "</div>"
+    )
+
+    assert _parse(html).finals[0].to_actual_result() is None
+
+
+def test_a_period_table_that_does_not_add_up_is_refused_by_the_record_itself():
+    """The parser does not decide; `reconciles()` does, and it says no."""
+
+    html = (
+        '<div class="esake-program-game">'
+        '<div class="esake-program-game-info one-col">Σαβ 21 Νοε - 15:00</div>'
+        '<div class="esake-program-game-final-score row equal">'
+        '<div class="col-lg-5 text-right"><span>ΑΡΗΣ</span></div>'
+        '<div class="col-lg-2 text-center"><span>84&nbsp;-&nbsp;87</span></div>'
+        '<div class="col-lg-5 text-left"><span>ΑΕΚ</span></div>'
+        "</div>"
+        '<div class="esake-program-game-hidden-row">'
+        '<table class="esake-program-game-half-scores">'
+        "<tr><td>10</td><td>Q1</td><td>10</td></tr>"
+        "<tr><td>10</td><td>Q2</td><td>10</td></tr>"
+        "<tr><td>10</td><td>Q3</td><td>10</td></tr>"
+        "<tr><td>10</td><td>Q4</td><td>10</td></tr>"
+        "</table></div>"
+        '<a href="/el/action/EsakegameView?idgame=3C7521D5&mode=2">p</a>'
+        "</div>"
+    )
+
+    actual = _parse(html).finals[0].to_actual_result()
+
+    assert actual is not None
+    ok, reason = actual.reconciles()
+    assert ok is False
+    assert "!= final" in reason

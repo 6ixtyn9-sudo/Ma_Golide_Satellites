@@ -196,6 +196,16 @@ _DATE_CELL_CLASS = "esake-program-game-info"
 #: carries four numbers per club, so reading club spans from the whole container
 #: would find four names and call every finished game ambiguous.
 _HIDDEN_CLASS = "esake-program-game-hidden-row"
+#: The period table, captured 2026-11-24 inside the hidden row:
+#: ``<tr><td>15</td><td>Q1</td><td>15</td></tr>`` -- home on the left, the period
+#: label in the middle, away on the right.  Overtime rows are «ΟΦ1», «ΟΦ2».
+_HALF_SCORES_CLASS = "esake-program-game-half-scores"
+_HALF_ROW_RE = re.compile(
+    r"<td[^>]*>\s*(?P<home>\d{1,3})\s*</td>\s*"
+    r"<td[^>]*>\s*(?P<label>[^<]*?)\s*</td>\s*"
+    r"<td[^>]*>\s*(?P<away>\d{1,3})\s*</td>",
+    re.DOTALL,
+)
 
 
 def _fold(text: str) -> str:
@@ -290,6 +300,59 @@ def _club_spans(chunk: str) -> List[str]:
             continue
         names.append(visible)
     return names
+
+
+@dataclass(frozen=True)
+class Periods:
+    """A game's regulation quarters and its overtime, as the page lists them."""
+
+    home: Tuple[int, ...]
+    away: Tuple[int, ...]
+    home_overtime: Optional[int] = None
+    away_overtime: Optional[int] = None
+    overtime_periods: int = 0
+
+    @property
+    def complete(self) -> bool:
+        return len(self.home) == 4 and len(self.away) == 4
+
+
+def _periods(chunk: str) -> Optional[Periods]:
+    """The period table, when the row has one and it reads cleanly.
+
+    ``None`` when the table is absent or its labels are not the four quarters plus
+    optional overtime: a period record that cannot be trusted is not one.
+    """
+
+    at = chunk.find(_HALF_SCORES_CLASS)
+    if at < 0:
+        return None
+    end = chunk.find("</table>", at)
+    block = chunk[at : end if end > at else at + 1200]
+
+    quarters: List[Tuple[int, int, int]] = []
+    overtime: List[Tuple[int, int]] = []
+    for match in _HALF_ROW_RE.finditer(block):
+        label = _fold(match.group("label"))
+        home, away = int(match.group("home")), int(match.group("away"))
+        if len(label) == 2 and label[0] == "Q" and label[1] in "1234":
+            quarters.append((int(label[1]), home, away))
+        elif label.startswith(("ΟΦ", "OT")) and label[2:].isdigit():
+            overtime.append((home, away))
+        else:
+            return None
+    if [index for index, _, _ in quarters] != [1, 2, 3, 4]:
+        return None
+
+    home_ot = sum(value for value, _ in overtime) if overtime else None
+    away_ot = sum(value for _, value in overtime) if overtime else None
+    return Periods(
+        home=tuple(value for _, value, _ in quarters),
+        away=tuple(value for _, _, value in quarters),
+        home_overtime=home_ot,
+        away_overtime=away_ot,
+        overtime_periods=len(overtime),
+    )
 
 
 def _final_block(chunk: str) -> str:
@@ -440,6 +503,7 @@ class ResultRow:
     played_on: Optional[date]
     tip_local: Optional[str]
     url: str
+    periods: Optional[Periods] = None
     source: str = SOURCE
 
     @property
@@ -451,6 +515,32 @@ class ResultRow:
             and self.away is not None
             and self.home_score is not None
             and self.away_score is not None
+        )
+
+    def to_actual_result(self):
+        """An ``ActualResult`` this row can stand behind, or ``None``.
+
+        A total is not a settlement record: reconciliation needs the four quarters
+        (plus any overtime) that add up to it.  When the row has no period table,
+        or one that does not add up, this returns ``None`` rather than a record
+        that would fail its own check downstream.
+        """
+
+        from ..models import ActualResult, PeriodKind
+
+        periods = self.periods
+        if periods is None or not periods.complete:
+            return None
+        return ActualResult(
+            period_kind=PeriodKind.QUARTERS,
+            home_quarters=[float(value) for value in periods.home],
+            away_quarters=[float(value) for value in periods.away],
+            home_overtime=None if periods.home_overtime is None else float(periods.home_overtime),
+            away_overtime=None if periods.away_overtime is None else float(periods.away_overtime),
+            home_final=None if self.home_score is None else float(self.home_score),
+            away_final=None if self.away_score is None else float(self.away_score),
+            overtime_periods=periods.overtime_periods,
+            source=self.source,
         )
 
     @property
@@ -480,6 +570,17 @@ class ResultPage:
                     "played_on": row.played_on.isoformat() if row.played_on else None,
                     "tip_local": row.tip_local,
                     "url": row.url,
+                    "periods": (
+                        None
+                        if row.periods is None
+                        else {
+                            "home": list(row.periods.home),
+                            "away": list(row.periods.away),
+                            "home_overtime": row.periods.home_overtime,
+                            "away_overtime": row.periods.away_overtime,
+                            "overtime_periods": row.periods.overtime_periods,
+                        }
+                    ),
                     "source": row.source,
                 }
                 for row in self.finals
@@ -536,6 +637,7 @@ def parse_results(html: str, *, season_start_year: Optional[int] = None) -> Resu
 
         names = _club_names(chunk)
         score = _score(chunk)
+        periods = _periods(chunk)
         day, month = _day_and_month(chunk)
         played_on = _resolve_date(day, month, season_start_year)
         tip = _tip(chunk)
@@ -557,6 +659,7 @@ def parse_results(html: str, *, season_start_year: Optional[int] = None) -> Resu
             played_on=played_on,
             tip_local=tip,
             url=game_url(idgame),
+            periods=periods,
         )
         counts["rows"] += 1
 
@@ -584,6 +687,7 @@ __all__ = [
     "CHAMPIONSHIP_GBL",
     "GAME_PATH",
     "MIN_INTERVAL_SECONDS",
+    "Periods",
     "PHASE_REGULAR",
     "PROVIDER",
     "REQUEST_BUDGET",

@@ -658,3 +658,43 @@ inside the hidden row rather than the row's start.
 
 Nothing in this changes the finals: seven games, seven dates, both clubs each. It changes
 only what the next 900 characters should be centred on.
+
+## Greece reconciles (2026-11-24T15:3xZ)
+
+The quarter block, captured:
+
+```html
+<table class="esake-program-game-half-scores">
+<tr><td>15</td><td>Q1</td><td>15</td></tr>   <tr><td>23</td><td>Q2</td><td>17</td></tr>
+<tr><td>19</td><td>Q3</td><td>25</td></tr>   <tr><td>20</td><td>Q4</td><td>20</td></tr>
+<tr><td> 7</td><td>ΟΦ1</td><td>10</td></tr>
+</table>
+```
+
+Add it up and the mystery of a 84-87 game with quarters that sum to 77-77 disappears: the
+overtime is «ΟΦ1», 7-10. A totals-only reader had no way to know an extra period existed;
+a reader that ignores the period table would have written a record that failed its own
+reconciliation on every overtime game in the league.
+
+`ResultRow.periods` now carries it, and `to_actual_result()` builds the `ActualResult` — or
+returns `None` when there is no complete period table, because a total is not a settlement
+record. Three tests hold the edges: the captured row reconciles `(True, '')`; a row without
+a period table yields no record at all; and a table that does not add up reaches
+`reconciles()` and is refused *there*, by the same check every other provider answers to.
+
+## The nav tab that looked like a match (2026-11-24T15:3xZ)
+
+`--match 1` reported `event_id: "fixtures"` and opened
+`https://www.betexplorer.com/basketball/lithuania/nkl/fixtures/` — 183,036 bytes of
+captured page, `period_markers: 0`, and none of it a match. `fixtures` is eight lowercase
+letters and the code pattern asks for eight alphanumerics, so the tab bar matched.
+
+Two corrections: a code must mix case or contain a digit (a nav word never does), and the
+URL is now taken from the index's own `href` rather than rebuilt from a code — so a match
+page is opened at the address the host published for it, and `match_url` survives only as
+a fallback.
+
+The three `period_markers: 0` results in that run are therefore **not** evidence about
+period scores. They are evidence that the tool opened the wrong pages, which is worth
+recording precisely because it is the second time today a plausible-looking success
+(`read: 0` for three leagues, `event_id: fixtures`) carried no information at all.

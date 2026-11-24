@@ -101,6 +101,10 @@ def results_url(league: str) -> str:
 _CODE_LINK_RE = re.compile(
     r"/basketball/[a-z-]+/[a-z0-9-]+/(?:[a-z0-9-]+/)?([0-9A-Za-z]{8})/"
 )
+_CODE_HREF_RE = re.compile(
+    r'href="(?P<href>/basketball/[a-z-]+/[a-z0-9-]+/(?:[a-z0-9-]+/)?'
+    r'(?P<code>[0-9A-Za-z]{8})/)"'
+)
 _COLON_SCORE_RE = re.compile(r"\b(\d{1,3})\s*:\s*(\d{1,3})\b")
 
 
@@ -226,20 +230,46 @@ def finished_candidates(
 _PERIOD_RE = re.compile(r"\b(?:[1-4]Q|Q[1-4]|OT)\b")
 
 
-def index_codes(body: str) -> list[str]:
-    """Distinct match codes from a captured results page, in document order."""
+#: The league's own tab paths.  Each is eight letters, so the code pattern matches
+#: them: the first `--match 1` run fetched `/.../nkl/fixtures/` and reported
+#: `event_id: fixtures`, which is the kind of "success" that teaches nothing.
+_NAV_CODES = frozenset({"fixtures", "results", "summary", "stats"})
 
-    seen: list[str] = []
-    for code in _CODE_LINK_RE.findall(body):
-        if code not in seen:
-            seen.append(code)
-    return seen
+
+def _is_match_code(code: str) -> bool:
+    """A real code mixes case or digits; a nav word is eight lowercase letters."""
+
+    if code in _NAV_CODES:
+        return False
+    return any(char.isdigit() or char.isupper() for char in code)
+
+
+def index_matches(body: str) -> list[dict[str, str]]:
+    """Distinct matches from a captured results page: code plus the page's own URL.
+
+    The URL comes from the href rather than being rebuilt, so a match page is
+    opened at the address the host published for it.
+    """
+
+    found: dict[str, str] = {}
+    for match in _CODE_HREF_RE.finditer(body):
+        code = match.group("code")
+        if code in found or not _is_match_code(code):
+            continue
+        found[code] = match.group("href")
+    return [{"code": code, "url": url} for code, url in found.items()]
+
+
+def index_codes(body: str) -> list[str]:
+    """Just the codes, in document order."""
+
+    return [match["code"] for match in index_matches(body)]
 
 
 def capture_match_pages(
     league: str,
     *,
-    codes: list[str],
+    matches: list[dict[str, str]],
     out_dir: Path,
     read_text,
     sleep=time.sleep,
@@ -253,13 +283,14 @@ def capture_match_pages(
     league rather than for the price of a design decision.
     """
 
-    wanted = codes[: max(0, min(int(limit), MAX_CAPTURE))]
+    wanted = matches[: max(0, min(int(limit), MAX_CAPTURE))]
     out_dir.mkdir(parents=True, exist_ok=True)
     captured: list[dict[str, object]] = []
-    for position, code in enumerate(wanted):
+    for position, match in enumerate(wanted):
         if position:
             sleep(MIN_INTERVAL_SECONDS)
-        url = match_url(league, code)
+        code = match["code"]
+        url = match.get("url") or match_url(league, code)
         try:
             body = read_text(url)
         except Exception as exc:  # noqa: BLE001 - a failed capture is a receipt
@@ -442,7 +473,7 @@ def main(argv: list[str] | None = None) -> int:
             parser.error(f"no captured results index at {index_path}; run --index first")
         payload = capture_match_pages(
             args.league,
-            codes=index_codes(index_path.read_text(encoding="utf-8")),
+            matches=index_matches(index_path.read_text(encoding="utf-8")),
             out_dir=Path(args.out) / args.league,
             read_text=_text_fetch(None, None),
             limit=args.match,

@@ -303,7 +303,11 @@ def test_match_pages_are_fetched_bounded_spaced_and_receipted(tmp_path):
 
     payload = probe.capture_match_pages(
         "AUSTRALIA_WNBL_W",
-        codes=["AbCd1234", "EfGh5678", "IjKl9012"],
+        matches=[
+            {"code": "AbCd1234", "url": "/basketball/australia/wnbl-women/a-b/AbCd1234/"},
+            {"code": "EfGh5678", "url": "/basketball/australia/wnbl-women/c-d/EfGh5678/"},
+            {"code": "IjKl9012", "url": "/basketball/australia/wnbl-women/e-f/IjKl9012/"},
+        ],
         out_dir=tmp_path,
         read_text=read_text,
         sleep=slept.append,
@@ -325,8 +329,31 @@ def test_a_failed_match_fetch_is_a_receipt_not_a_crash(tmp_path):
         raise RuntimeError("429 from the host")
 
     payload = probe.capture_match_pages(
-        "AUSTRALIA_WNBL_W", codes=["AbCd1234"], out_dir=tmp_path, read_text=read_text, limit=1
+        "AUSTRALIA_WNBL_W",
+        matches=[{"code": "AbCd1234", "url": "/basketball/australia/wnbl-women/a-b/AbCd1234/"}],
+        out_dir=tmp_path,
+        read_text=read_text,
+        limit=1,
     )
 
     assert payload["pages"][0]["status"] == "fetch_failed"
     assert "429" in payload["pages"][0]["detail"]
+
+
+def test_a_nav_tab_is_not_a_match_code():
+    """`fixtures` is eight lowercase letters and matched the code pattern.
+
+    The first `--match 1` run opened `/…/nkl/fixtures/` and reported a captured
+    page for `event_id: fixtures` -- a success that taught nothing.
+    """
+
+    body = (
+        '<a href="/basketball/lithuania/nkl/results/" class="list-tabs__item__in">Results</a>'
+        '<a href="/basketball/lithuania/nkl/fixtures/" class="list-tabs__item__in">Fixtures</a>'
+        '<a href="/basketball/lithuania/nkl/olimpas-palanga-omega-tauras/IeUABOGO/">x</a>'
+    )
+
+    assert probe.index_codes(body) == ["IeUABOGO"]
+    assert probe.index_matches(body) == [
+        {"code": "IeUABOGO", "url": "/basketball/lithuania/nkl/olimpas-palanga-omega-tauras/IeUABOGO/"}
+    ]
