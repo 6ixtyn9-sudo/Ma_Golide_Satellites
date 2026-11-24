@@ -71,6 +71,24 @@ def current_spelling(value: Any) -> Any:
 LEGACY_VERSION_TAG = "legacy"
 
 
+#: Price provenances whose observed quote may price a paper-ticket leg.
+#:
+#: ``NAMED_BOOK`` is a bookmaker's own quote. ``AGGREGATE_CONSENSUS`` is the
+#: host's representative/average quote across the books it lists: it is an
+#: observed number with a published provenance, so operator decision
+#: 2026-11-22 accepts it as a paper-ticket price. It is never relabelled a
+#: named-book quote -- every card line that carries one says
+#: ``AGGREGATE_CONSENSUS_PRICE``, and ``price_provenance_label`` carries the same
+#: statement into ticket receipts.
+#:
+#: Still outside the paper lane: ``NO_PRICE`` (there is no number) and
+#: ``EXCHANGE`` (a matched counterparty offer is nobody's bookmaker quote, and
+#: nothing about an exchange fill is a published consensus either).
+TICKET_PRICE_PROVENANCE = frozenset(
+    {PriceProvenance.NAMED_BOOK, PriceProvenance.AGGREGATE_CONSENSUS}
+)
+
+
 @dataclass(frozen=True)
 class BookEvidence:
     provider: str
@@ -140,18 +158,41 @@ class BookEvidence:
 
     @property
     def ticket_price_eligible(self) -> bool:
-        """Whether a quote may enter the named-book paper-ticket lane.
+        """Whether a quote may price a paper-ticket leg.
+
+        A named-book quote qualifies, and so does an aggregate consensus quote:
+        both are observed numbers carrying a published provenance, and operator
+        decision 2026-11-22 accepts the consensus average so that aggregate-only
+        lanes are not silently limited to zero tickets for ever. The provenance
+        is never laundered -- :attr:`price_provenance_label` and every card line
+        keep saying which of the two this is.
 
         Unresolved permission and operational-validation labels remain durable,
         visible audit metadata, but they do not suppress a paper ticket from an
-        otherwise exact, current named-book quote. An explicitly prohibited
-        source and aggregate consensus quotes remain outside that lane.
+        otherwise exact, current quote. An explicitly prohibited source, a
+        price-less record, and a bare exchange match remain outside the lane.
         """
 
         return (
-            self.price_provenance is PriceProvenance.NAMED_BOOK
+            self.price_provenance in TICKET_PRICE_PROVENANCE
             and self.source_permission is not SourcePermission.PROHIBITED
         )
+
+    @property
+    def price_provenance_label(self) -> str:
+        """Short label for a receipt, card line, or audit row.
+
+        Deliberately asymmetric: an aggregate average never gets the phrase
+        "named book".
+        """
+
+        if self.price_provenance is PriceProvenance.AGGREGATE_CONSENSUS:
+            return "AGGREGATE CONSENSUS AVERAGE — NOT A NAMED-BOOK QUOTE"
+        if self.price_provenance is PriceProvenance.EXCHANGE:
+            return "EXCHANGE MATCH — NOT A NAMED-BOOK QUOTE"
+        if self.price_provenance is PriceProvenance.NO_PRICE:
+            return "NO PRICE OBSERVED"
+        return "NAMED-BOOK QUOTE"
 
 
 def opposite_selection(
@@ -388,6 +429,7 @@ class Forecast:
                 "source_permission": self.book.source_permission.value,
                 "operational_validation": self.book.operational_validation.value,
                 "ticket_price_eligible": self.book.ticket_price_eligible,
+                "price_provenance_label": self.book.price_provenance_label,
                 "game_id": self.book.game_id,
                 "market": self.book.market,
                 "period": self.book.period,
@@ -536,6 +578,7 @@ __all__ = [
     "Forecast",
     "LEGACY_VERSION_TAG",
     "MODEL_VERSION",
+    "TICKET_PRICE_PROVENANCE",
     "current_spelling",
     "grade_forecast",
     "id_spelling",

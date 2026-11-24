@@ -121,7 +121,13 @@ def test_aba_pipeline_maps_and_restamps_aggregate_evidence(monkeypatch):
     assert snapshot.price_provenance is PriceProvenance.AGGREGATE_CONSENSUS
     assert snapshot.source_permission is SourcePermission.UNRESOLVED
     assert snapshot.operational_validation is OperationalValidation.PROBATION
-    assert not BookEvidence.from_snapshot(snapshot, frozen=False).ticket_price_eligible
+    # Operator decision 2026-11-22: an aggregate consensus quote may price a
+    # paper leg. What it may never do is pass itself off as a bookmaker's own
+    # quote, so the provenance and the label are asserted either side of it.
+    evidence = BookEvidence.from_snapshot(snapshot, frozen=False)
+    assert evidence.ticket_price_eligible
+    assert evidence.price_provenance is PriceProvenance.AGGREGATE_CONSENSUS
+    assert "NOT A NAMED-BOOK QUOTE" in evidence.price_provenance_label
 
     assert report["book_provider_status"]["betexplorer"]["status"] == "fetched"
     assert report["book_provider_status"]["betexplorer"]["snapshots_mapped"] == 1

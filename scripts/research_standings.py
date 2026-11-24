@@ -4,8 +4,10 @@
 Why a script and not the operator
 ---------------------------------
 The operator's cards are built from forecasts, and these four lanes have none:
-Greece, WCBA and WNBL never generate a forecast, and NKL's stops at
-``price_not_named_bookmaker_quote``. Rather than change how a forecast is made --
+Greece, WCBA and WNBL never generate a forecast at all. (NKL does, and since
+operator decision 2026-11-22 its aggregate price is ticket-eligible, so its own
+lane publishes real picks; this script adds the standings-only banker/robber
+view beside them.) Rather than change how a forecast is made --
 a decision that owns calibration, tickets and the bank -- this writes a section
 *beside* those cards and says, on every line, that it is research.
 
@@ -372,6 +374,15 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         default=45.0,
         help="seconds to wait before a retry",
     )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help=(
+            "read and score the lane, then print the section instead of writing "
+            "it into the cards. A manual, read-only rehearsal must not mutate a "
+            "published card, and this is the flag that keeps it from doing so"
+        ),
+    )
     args = parser.parse_args(argv)
 
     league = parse_league(args.league)
@@ -385,11 +396,21 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     read = _read_text_factory(args.delay, stamp_path)
     now_utc = _utc_now()
 
-    def fail(reason: str) -> int:
-        section = failure_section(league.value, args.date, reason)
-        written = write_section(
+    def emit(section: Sequence[str]) -> Dict[str, str]:
+        """Write the block into the cards, or print it under ``--dry-run``."""
+
+        if args.dry_run:
+            print("DRY RUN — the cards were not touched. Section follows:")
+            for line in section:
+                print(line)
+            return {}
+        return write_section(
             localdata, state_key=spec.state_key, target_date=args.date, section=section
         )
+
+    def fail(reason: str) -> int:
+        section = failure_section(league.value, args.date, reason)
+        written = emit(section)
         print(f"{league.value} {args.date}: READ FAILED — {reason}")
         for kind, path in written.items():
             print(f"  {kind}: {path}")
@@ -425,9 +446,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         target_date=args.date,
         bet_config=bet_config,
     )
-    written = write_section(
-        localdata, state_key=spec.state_key, target_date=args.date, section=section
-    )
+    written = emit(section)
     print(
         f"{league.value} {args.date}: {len(games)} fixture(s), "
         f"{len(published)} published row(s), requests={report.get('requests')}, "

@@ -534,3 +534,32 @@ def test_a_refused_shape_is_not_retried(tmp_path, monkeypatch):
     assert slept == []
     text = (tmp_path / "lithuania_nkl" / "picks_2026-12-01.txt").read_text()
     assert "head is missing" in text
+
+
+# -- read-only rehearsal -----------------------------------------------------
+
+
+def test_a_dry_run_scores_the_lane_without_touching_a_card(tmp_path, monkeypatch, capsys):
+    """The workflow's manual dispatch is a read-only rehearsal.
+
+    Writing a card during it would make a rehearsal indistinguishable from a
+    tick in Git, so ``--dry-run`` prints the block and leaves the lane alone.
+    """
+
+    _attempts_harness(tmp_path, monkeypatch, [_success()])
+
+    assert rs.main([*_main(tmp_path), "--dry-run"]) == 0
+
+    output = capsys.readouterr().out
+    assert "DRY RUN" in output
+    assert "SINGLE" in output  # the real rows were built, just not stored
+    assert not (tmp_path / "lithuania_nkl").exists()
+
+
+def test_a_dry_run_that_fails_the_read_still_writes_nothing(tmp_path, monkeypatch, capsys):
+    _attempts_harness(tmp_path, monkeypatch, [bs.IdentityError("head is missing")])
+
+    assert rs.main([*_main(tmp_path), "--dry-run"]) == 1
+
+    assert "READ FAILED" in capsys.readouterr().out
+    assert not (tmp_path / "lithuania_nkl").exists()

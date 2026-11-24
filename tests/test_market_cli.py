@@ -79,9 +79,13 @@ def test_standalone_market_cli_reads_duckdb_without_modifying_it(tmp_path, monke
     assert summary["paper_effective_legs"] is None
     assert summary["external_writes"] is False
     assert report["forecasts"][0]["market"] == "moneyline"
+    # No book is matched at all, so this row is genuinely unpriced. The short
+    # walk-forward sample is an advisory, not a second refusal.
     assert report["forecasts"][0]["eligibility"]["reasons"] == [
-        "no_exact_bookmaker_market",
-        "insufficient_walk_forward_samples",
+        "no_exact_bookmaker_market"
+    ]
+    assert report["forecasts"][0]["eligibility"]["advisories"] == [
+        "insufficient_walk_forward_samples"
     ]
     assert report["accas"]["results"] == []
     assert _digest(warehouse) == before

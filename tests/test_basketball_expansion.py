@@ -395,7 +395,7 @@ def test_registry_price_policy_is_provider_specific_and_fail_closed():
     assert unknown.operational_validation is OperationalValidation.UNVERIFIED
 
 
-def test_aggregate_price_is_visible_but_never_ticket_eligible():
+def test_aggregate_price_is_ticket_eligible_but_never_relabelled_a_book():
     evidence = BookEvidence(
         provider="betexplorer",
         book="average",
@@ -429,14 +429,19 @@ def test_aggregate_price_is_visible_but_never_ticket_eligible():
 
     calibrated = apply_profiles([forecast], {}, CalibrationConfig(min_samples=1))[0]
     assert calibrated.decimal_price == 1.8
-    assert calibrated.book.ticket_price_eligible is False
-    assert calibrated.eligibility["acca_eligible"] is False
-    assert "price_not_named_bookmaker_quote" in calibrated.eligibility["reasons"]
+    # Operator decision 2026-11-22: the consensus average is an observed number
+    # with a published provenance, so it prices a paper leg. It is never
+    # relabelled a named-book quote.
+    assert calibrated.book.ticket_price_eligible is True
+    assert calibrated.eligibility["acca_eligible"] is True
+    assert "price_not_named_bookmaker_quote" not in calibrated.eligibility["reasons"]
     assert "price_source_permission_unresolved" not in calibrated.eligibility["reasons"]
     assert "price_operational_validation_incomplete" not in calibrated.eligibility["reasons"]
+    assert "insufficient_walk_forward_samples" in calibrated.eligibility["advisories"]
     row = calibrated.to_dict()
     assert row["book"]["price_provenance"] == "aggregate_consensus"
-    assert row["book"]["ticket_price_eligible"] is False
+    assert row["book"]["ticket_price_eligible"] is True
+    assert "NOT A NAMED-BOOK QUOTE" in row["book"]["price_provenance_label"]
 
 
 def test_named_book_price_is_not_blocked_by_permission_or_validation_labels():
@@ -476,7 +481,10 @@ def test_named_book_price_is_not_blocked_by_permission_or_validation_labels():
     assert calibrated.book.ticket_price_eligible is True
     assert "price_source_permission_unresolved" not in calibrated.eligibility["reasons"]
     assert "price_operational_validation_incomplete" not in calibrated.eligibility["reasons"]
-    assert calibrated.eligibility["reasons"] == ["insufficient_walk_forward_samples"]
+    # A short walk-forward sample is an advisory now, not a refusal: the lane
+    # has to publish before it can settle the sample it is waiting for.
+    assert calibrated.eligibility["reasons"] == []
+    assert calibrated.eligibility["advisories"] == ["insufficient_walk_forward_samples"]
 
 
 def test_no_price_provenance_rejects_a_fabricated_decimal_quote():

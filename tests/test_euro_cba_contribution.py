@@ -761,8 +761,12 @@ def test_forecast_service_generates_history_forecasts_with_book_evidence():
     # calibration epoch), so the forecast stays visible but ineligible.
     assert forecast["calibration"]["status"] in {"no_history", "provisional"}
     assert forecast["calibration"].get("n", 0) < 30
-    assert "insufficient_walk_forward_samples" in forecast["eligibility"]["reasons"]
-    assert forecast["eligibility"]["acca_eligible"] is False
+    # Operator decision 2026-11-22: this is the EuroLeague case that had never
+    # produced a pick -- a real aggregate price on a team-history forecast whose
+    # prequential sample is short. The shortfall is named and the row is a pick.
+    assert "insufficient_walk_forward_samples" in forecast["eligibility"]["advisories"]
+    assert forecast["eligibility"]["reasons"] == []
+    assert forecast["eligibility"]["acca_eligible"] is True
     segments = report["walk_forward"]["segments"]
     assert any(segment["league"] == "EUROLEAGUE" for segment in segments)
 
@@ -810,7 +814,8 @@ def test_forecast_service_generates_cba_history_forecasts():
     ]
     assert forecasts and forecasts[0]["book"]["selected_decimal_price"] in (2.10, 1.72)
     assert forecasts[0]["team_history"]["sufficient_for_accas"] is True
-    assert forecasts[0]["eligibility"]["reasons"] == ["insufficient_walk_forward_samples"]
+    assert forecasts[0]["eligibility"]["reasons"] == []
+    assert forecasts[0]["eligibility"]["advisories"] == ["insufficient_walk_forward_samples"]
 
 
 # ---------------------------------------------------------------------------

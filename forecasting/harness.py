@@ -369,17 +369,28 @@ def apply_profiles(
         elif forecast.decimal_price is None:
             reasons.append("missing_selected_decimal_price")
         elif not forecast.book.ticket_price_eligible:
-            # Aggregate consensus evidence remains visible and auditable, but
-            # cannot become a paper-ticket leg. Named-book quotes retain their
-            # permission/operational labels as diagnostics without turning
-            # those labels into a blanket no-ticket gate.
+            # Still emitted for the provenances the paper lane does not accept
+            # (a price-less record, an exchange match, a prohibited source).
+            # Named-book and aggregate-consensus quotes both clear the gate;
+            # which of the two it was stays on ``price_provenance_label``.
             reasons.append("price_not_named_bookmaker_quote")
+        # Evidence-thinness is an advisory, not a refusal. Operator decision
+        # 2026-11-22: a lane must be able to publish a pick before it has
+        # settled anything, otherwise walk-forward can never accumulate the
+        # very sample it is waiting for. The shortfall is still named on every
+        # row (``advisories``), still drives the PRIOR_HEAVY/CAUTION buckets,
+        # and still keeps ``calibration.sufficient_for_accas`` false so the
+        # recency-weighted ROI band filter sees the thin sample.
+        advisories: List[str] = []
         if profile is None or not profile.sufficient:
-            reasons.append("insufficient_walk_forward_samples")
+            advisories.append("insufficient_walk_forward_samples")
         if _requires_team_history(forecast) and (forecast.team_history or {}).get(
             "sufficient_for_accas"
         ) is not True:
-            reasons.append("insufficient_team_specific_history")
+            advisories.append("insufficient_team_specific_history")
+        # These two remain hard refusals: they are facts about *this* bet (a
+        # push rule the receipt cannot express, a probability the configured
+        # floor rejects), not about how much history the lane has collected.
         if forecast.push_probability > cfg.max_push_probability:
             reasons.append("push_risk_requires_leg_void_rules")
         if probability < cfg.min_probability:
@@ -387,6 +398,7 @@ def apply_profiles(
         forecast.eligibility = {
             "acca_eligible": not reasons,
             "reasons": reasons,
+            "advisories": advisories,
             "evidence_state": (
                 "frozen_pre_tip"
                 if forecast.book is not None and forecast.book.frozen
