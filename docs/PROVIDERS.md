@@ -358,6 +358,23 @@ Important restrictions:
 - The original BetExplorer fixture-table adapter exposes only a representative
   average moneyline pair. It remains separate from `betexplorer_direct`, skips
   missing/post-tip table rows, and never emits a named-book ticket price.
+- The published-table reader (`ingestion/providers/betexplorer_standings.py`)
+  reads a competition's own league table from a **pre-match page**, not from a
+  competition route: `/basketball/<country>/<competition>/standings/` answers
+  `200` with an **empty body**, and bare competition pages are JS shells or
+  fixtures tables (`?table=table&as-ajax=1` on a competition URL returns the
+  fixtures table). A match page's stats widget writes the only working link —
+  `/standings/?table=table&table_sub=<sub>&ts=<token>&dcheck=0&as-ajax=1&l=en&event_context=<match_id>`
+  — and that fragment is server-rendered. Live-verified 2026-11-25 for
+  `LITHUANIA_NKL`: fragment `200 / 5,268 B`, head `# Team MP W L TP Pts Form`,
+  first row `Telsiai 16 15 1 1449:1186`. Cost is one match page plus one fragment
+  per sub-table (`overall`, `home`, `away`), paced at the host's measured
+  ten-second floor; the token is scoped to the run that minted it. It reads `MP`,
+  `W`, `L` and the cumulative `PF:PA` verbatim and computes `win_pct = W/MP`; it
+  does not decode `Form` glyphs (which class means a win was never observed), it
+  skips rather than repairs a self-contradicting record, and it drops a home/away
+  split that does not reconstruct the overall record. These rows are research
+  inputs for the standings scorer — never a price, never a named-book claim.
 - The direct BetExplorer fallback uses only exact full-game source surfaces:
   H/A (`ha`) for its two-way moneyline, O/U (`ou`) with the table's explicit
   total threshold and Over/Under order, and Asian Handicap (`ah`) with the
