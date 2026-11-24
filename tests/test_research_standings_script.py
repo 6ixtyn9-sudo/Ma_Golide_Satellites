@@ -363,3 +363,99 @@ def test_an_empty_slate_from_a_real_page_still_writes_the_fence(tmp_path):
     text = Path(written["picks"]).read_text()
     assert "0 fixture(s)" in text
     assert "honest zero" in text
+
+
+# -- cross-process pacing ----------------------------------------------------
+
+
+def _transport(tmp_path, *, reads=None, fail=False):
+    calls: list[str] = []
+
+    def read(url: str) -> str:
+        calls.append(url)
+        if fail:
+            raise RuntimeError("HTTP 429")
+        return "payload"
+
+    slept: list[float] = []
+    clock = {"now": 1000.0}
+    transport = bs.cooldown(
+        read,
+        tmp_path / "stamp",
+        delay=10.0,
+        sleep=slept.append,
+        now=lambda: clock["now"],
+    )
+    transport.calls_ref = calls  # type: ignore[attr-defined]
+    return transport, slept, clock, calls
+
+
+def test_a_second_process_waits_out_the_floor_the_first_one_used(tmp_path):
+    transport, slept, clock, _calls = _transport(tmp_path)
+
+    transport("a")  # no stamp yet: no wait
+    assert slept == []
+
+    clock["now"] += 3.0  # three seconds later, in another process
+    transport("b")
+
+    assert slept == [7.0]
+    assert transport.waited == 7.0
+
+
+def test_the_stamp_is_written_so_the_next_invocation_can_see_it(tmp_path):
+    transport, _slept, clock, _calls = _transport(tmp_path)
+
+    transport("a")
+
+    assert float((tmp_path / "stamp").read_text()) == 1000.0
+
+
+def test_a_failed_request_still_spends_the_host_tolerance(tmp_path):
+    transport, _slept, clock, _calls = _transport(tmp_path, fail=True)
+
+    with pytest.raises(RuntimeError):
+        transport("a")
+
+    assert float((tmp_path / "stamp").read_text()) == 1000.0
+
+
+def test_a_zero_delay_disables_the_wait_and_the_stamp(tmp_path):
+    transport, slept, clock, _calls = _transport(tmp_path)
+    transport._delay = 0.0
+
+    transport("a")
+    transport("b")
+
+    assert slept == []
+    assert not (tmp_path / "stamp").exists()
+
+
+# -- the failure block -------------------------------------------------------
+
+
+def test_a_failed_read_replaces_a_stale_empty_slate_block(tmp_path):
+    stale = rs.upsert_section(
+        "",
+        rs.build_section("LITHUANIA_NKL", [], TABLE, {}, target_date="2026-11-25"),
+    )
+    assert "honest zero" in stale
+
+    section = rs.failure_section(
+        "LITHUANIA_NKL", "2026-11-25", "HttpError: HTTP 429 for .../fixtures/"
+    )
+    out = rs.upsert_section(stale, section)
+
+    assert "honest zero" not in out  # the claim that a read happened is gone
+    assert "READ FAILED" in out
+    assert "HTTP 429" in out
+    assert out.count(rs.MARKER_START) == 1
+
+
+def test_the_failure_block_says_why_the_old_block_was_not_kept():
+    text = "\n".join(
+        rs.failure_section("LITHUANIA_NKL", "2026-11-25", "IdentityError: no table")
+    )
+
+    assert "replaced, not kept" in text
+    assert "claim a read that did not happen" in text

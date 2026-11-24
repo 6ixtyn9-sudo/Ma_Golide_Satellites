@@ -70,7 +70,9 @@ the same lane are the site average, and the rows are research-scoped.
 from __future__ import annotations
 
 import re
+import time
 from dataclasses import dataclass, field
+from pathlib import Path
 from typing import Callable, Dict, List, Optional, Tuple
 
 from ..identity import canonical_team_name
@@ -478,6 +480,75 @@ def fetch_standings(
     )
 
 
+class CooldownTransport:
+    """A transport that honours the host's floor *between processes*.
+
+    ``PacedReader`` spaces the requests of one run. It cannot see a run that
+    happened two seconds earlier in another process, which is exactly how this
+    host answered 429 on 2026-11-25: a one-request diagnostic, then the script,
+    seconds apart. A stamp on disk is the only thing both processes share.
+
+    The stamp is written in ``finally``: a request that failed still spent the
+    host's tolerance, so the next caller must wait just the same. ``delay <= 0``
+    disables both the wait and the write, which is what tests use.
+    """
+
+    def __init__(
+        self,
+        read_text: Callable[[str], str],
+        stamp_path,
+        *,
+        delay: Optional[float] = None,
+        sleep: Optional[Callable[[float], None]] = None,
+        now: Optional[Callable[[], float]] = None,
+    ) -> None:
+        self._read_text = read_text
+        self._stem = Path(stamp_path)
+        self._delay = max(0.0, float(CRAWL_DELAY_SECONDS if delay is None else delay))
+        self._sleep = sleep or time.sleep
+        self._now = now or time.time
+        self.calls = 0
+        self.waited = 0.0
+
+    def _last_request(self) -> Optional[float]:
+        try:
+            return float(self._stem.read_text().strip())
+        except (OSError, ValueError):
+            return None
+
+    def __call__(self, url: str) -> str:
+        if self._delay:
+            last = self._last_request()
+            if last is not None:
+                remaining = self._delay - (self._now() - last)
+                if remaining > 0:
+                    self._sleep(remaining)
+                    self.waited += remaining
+        self.calls += 1
+        try:
+            return self._read_text(url)
+        finally:
+            if self._delay:
+                try:
+                    self._stem.parent.mkdir(parents=True, exist_ok=True)
+                    self._stem.write_text(f"{self._now():.3f}", encoding="utf-8")
+                except OSError:  # pragma: no cover - a read-only workspace
+                    pass
+
+
+def cooldown(
+    read_text: Callable[[str], str],
+    stamp_path,
+    *,
+    delay: Optional[float] = None,
+    sleep: Optional[Callable[[float], None]] = None,
+    now: Optional[Callable[[], float]] = None,
+) -> CooldownTransport:
+    """The transport a cross-process run should pass in."""
+
+    return CooldownTransport(read_text, stamp_path, delay=delay, sleep=sleep, now=now)
+
+
 def paced(read_text: Callable[[str], str], *, delay: Optional[float] = None,
           sleep: Optional[Callable[[float], None]] = None) -> PacedReader:
     """The reader a standings run should pass in, so the delay cannot be forgotten."""
@@ -489,6 +560,8 @@ def paced(read_text: Callable[[str], str], *, delay: Optional[float] = None,
 
 __all__ = [
     "CRAWL_DELAY_SECONDS",
+    "CooldownTransport",
+    "cooldown",
     "EVIDENCE",
     "PROVIDER",
     "REQUIRED_HEADERS",
