@@ -956,6 +956,48 @@ without knowing how many bodies came back; the receipt now says so.
 The cooldown did its job in passing: `cooldown_seconds_waited: 20.58` between the bundle
 request and the match request, honoured from the on-disk stamp rather than from memory.
 
+### The key is `age_verified`, and the gate is a coat of paint (2026-11-24T16:1xZ)
+
+`--bundle-read` on the saved `all.min.js` (no request) produced the mechanism in full:
+
+```js
+init_age_wall(){
+  t = ageOverlay, a = ageModal, s = ageYes, n = ageNo
+  ageYes.onclick → set_cookie("age_verified","true",365,"/","","")
+  ageNo.onclick  → set_cookie("age_verified","false",365,"/","","") ; blocked wall
+  wall shows if  t.getAttribute("data-age-wall-enabled") === "1"  ||  currentGeoLocation === "br"
+  and after that:  "true" !== get_cookie("age_verified")  →  show / block
+}
+```
+
+So the key is `age_verified=true`, 365 days, path `/` — read from the host's own code, not
+guessed. Alongside it the page sets `js_cookie=1`, and `gate_keys` also caught `my_timezone`,
+which is a clock, not consent; the 4,000-character window around the wall is what separates
+them.
+
+And the part that matters more than the key: **the wall is client-side.** `init_age_wall`
+writes the modal into `#ageOverlay` with `innerHTML` and toggles `document.body`, and the
+served HTML already contains that modal's markup. Nothing in the receipt suggests the server
+refuses; the 110 KB body arrives either way. Passing the gate therefore changes what a browser
+*shows*, not what an HTTP client *receives* — which is why the gate was never the thing
+standing between these lanes and a quarter table.
+
+Two consequences, both now in the code:
+
+- A page carrying the modal **and** content is `captured`, with `gate_markup` recorded, not
+  `gated`. Marker presence alone is not a refusal — on a host that ships the modal everywhere,
+  treating it as one makes an honest capture unreachable. The test for `gated` stays
+  zero-vs-nonzero (`td_cells == 0 and period_markers == 0`), with no threshold to tune.
+- The gate's own cookie pairs no longer overwrite the caller's `cookies` inside the loop. The
+  old code assigned `cookies = gate_cookies(body)` in the replay branch, so on a multi-page run
+  the operator's key would have become a `lang=` reset on the very next request — the same
+  overwrite as the header bug, one iteration later.
+
+What is left is a question the gate cannot answer: does the served match page contain the
+quarter table, or does `stats.js.php` draw it? That is one request with
+`--cookie "age_verified=true"` and a look at `period_markers`, and it is the last one this
+route gets before the honest answer is "verification only".
+
 Every receipt now names the build that produced it — `tool: {script, git_commit, modified}` —
 because three sessions were spent reading output from a checkout one merge behind, where the
 flags existed in the repository and not in the file being run. `git_commit: null` means the
