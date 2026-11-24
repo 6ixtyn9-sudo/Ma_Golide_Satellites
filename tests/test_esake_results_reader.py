@@ -372,3 +372,42 @@ def test_the_probe_reports_the_cell_and_the_row_side_by_side():
     assert probe["cell_result"] == (21, 11)
     assert probe["result"] == (21, 11)
     assert "\u039d\u03bf\u03b5" in probe["text_head"]
+
+
+def test_a_latin1_decoded_capture_hides_the_date_and_repairing_it_restores_it():
+    """The whole Greek saga in one test.
+
+    A UTF-8 page decoded as ISO-8859-1 -- requests' default when a host declares
+    no charset -- turns «Νοε» into two latin-1 characters, one of them the control
+    code U+009D. Nothing about the row changes except its characters, so the
+    totals still read, the names still read, and only the date disappears: the
+    month table has no entry for «Î\\x9dÎ¿Îµ». Re-encoding to latin-1 and decoding
+    as UTF-8 is the whole repair, and it is done at the boundary rather than
+    guessed at inside the parser.
+    """
+
+    captured = (
+        '<div class="esake-program-game">'
+        '<div class="esake-program-game-info one-col">Σαβ 21 Νοε - 15:00</div>'
+        '<div class="esake-program-game-final-score row equal">'
+        '<div class="col-lg-5 text-right"><span>ΑΡΗΣ</span></div>'
+        '<div class="col-lg-2 text-center"><span>84&nbsp;-&nbsp;87</span></div>'
+        '<div class="col-lg-5 text-left"><span>ΑΕΚ</span></div>'
+        "</div>"
+        '<a href="/el/action/EsakegameView?idgame=3C7521D5&mode=2">p</a>'
+        "</div>"
+    )
+    mojibake = captured.encode("utf-8").decode("latin-1")
+
+    broken = _parse(mojibake)
+
+    assert broken.counts["rows"] == 1
+    assert broken.counts["with_final"] == 0
+    assert broken.counts["unresolved_date"] == 1
+    assert broken.rows[0].home_score == 84  # the totals survive the mojibake
+
+    repaired = _parse(mojibake.encode("latin-1").decode("utf-8"))
+
+    assert repaired.counts["with_final"] == 1
+    assert repaired.finals[0].played_on == date(2026, 11, 21)
+    assert (repaired.finals[0].home, repaired.finals[0].away) == ("ΑΡΗΣ", "ΑΕΚ")

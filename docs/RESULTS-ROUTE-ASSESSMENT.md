@@ -527,3 +527,57 @@ now tells them apart.
 
 Reading the cell first is also right on its own terms: a fixture's date belongs to the
 clock cell, not to whichever day happens to appear earliest in the row's markup.
+
+## The Greek date was never the page's fault (2026-11-24T15:1xZ)
+
+`date_probe` answered it in one call:
+
+```
+cell_text:    'Î£Î±Î² 21 Î\x9dÎ¿Îµ - 15:00'
+cell_matches: []
+text_matches: [['22', 'PTS'], ['13', 'RBS'], ...]
+```
+
+Look at the second character of «Ν»: `\x9d`. That is **U+009D, a control code**, not a
+Greek letter. The page was fine; the *file* holds mojibake. `esake.gr` serves UTF-8 and
+declares no charset, so `requests` fell back to ISO-8859-1 — its default when a host says
+nothing — and every non-ASCII character became two latin-1 characters. «Νοε» arrived as
+`Î` + `U+009D` + `Î¿` + `Îµ`: four characters, one of them invisible.
+
+Everything follows from that:
+
+* the month table could never match, so `day=None month=None` on a page plainly showing a
+  date — and the whitespace fallback could not help, because the problem was characters;
+* the club names printed as `ÎÎ¡ÎÎÎ£` were **not** a terminal rendering UTF-8 as latin-1.
+  The data really was mojibake, and this session said otherwise for three turns. The
+  escapes looked like UTF-8 bytes because latin-1 characters, encoded as UTF-8, *are* the
+  original bytes;
+* `text_matches` finding `['22','PTS']` and `['13','RBS']` explains itself too: those were
+  the only day+letters pairs left once the month name had dissolved.
+
+The fix belongs at the boundary, not in any parser: `ingestion.http.decode_body_bytes`
+honours a declared charset, otherwise decodes UTF-8, and falls back to latin-1 only for
+bytes that are not valid UTF-8. A parser that silently re-decodes its input is how one
+corrupts a record; a client that decodes correctly is how one never has to.
+
+Existing captures stay broken until re-fetched. The one-line repair, for a body that was
+decoded as latin-1 and saved as UTF-8:
+
+```python
+html = html.encode("latin-1").decode("utf-8")
+```
+
+A test now holds the whole shape: the same row read from mojibake yields totals but no
+date, and read after that repair yields `2026-11-21` with the clubs intact.
+
+## WNBL and WCBA read (2026-11-24T15:1xZ)
+
+| lane | rows | read | header rows |
+|---|---|---|---|
+| WNBL | 40 | 33 | 7 |
+| WCBA | 29 | 24 | 5 |
+| NKL | 163 | 140 | 23 |
+
+`without_code` is exactly the round-header rows in every table, and `score_not_one` is zero
+throughout: no row that had a code and two clubs failed to yield a total. Three lanes that
+could not settle this morning now read 197 finals between them.
