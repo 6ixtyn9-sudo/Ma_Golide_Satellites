@@ -741,3 +741,32 @@ def test_the_gate_read_reports_whether_a_match_page_is_under_the_modal(tmp_path,
 
     shape = json.loads(capsys.readouterr().out)["shape"]
     assert shape["td_cells"] == 0 and shape["period_markers"] == 0
+
+
+def test_every_receipt_names_the_build_that_made_it(tmp_path, capsys):
+    """Three sessions were spent reading output from a checkout one merge behind.
+    A receipt that cannot name its own build cannot be told apart from a host
+    answering badly."""
+
+    page = tmp_path / "gate.html"
+    page.write_text(_GATED_COOKIE_PAGE, encoding="utf-8")
+
+    probe.main(["--gate-script", str(page)])
+    payload = json.loads(capsys.readouterr().out)
+
+    assert payload["tool"]["script"] == "probe_betexplorer_results.py"
+    assert set(payload["tool"]) == {"script", "git_commit", "modified"}
+    # Whatever git says, it says something -- None is "I could not tell", which
+    # is a different statement from a commit hash and is allowed to appear.
+    assert payload["tool"]["git_commit"] is None or isinstance(payload["tool"]["git_commit"], str)
+
+
+def test_the_build_stamp_survives_a_missing_git(monkeypatch):
+    def no_git(*args, **kwargs):
+        raise OSError("git not found")
+
+    monkeypatch.setattr(probe.subprocess, "run", no_git)
+
+    build = probe.probe_build()
+
+    assert build == {"script": "probe_betexplorer_results.py", "git_commit": None, "modified": None}
