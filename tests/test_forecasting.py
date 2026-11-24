@@ -304,12 +304,15 @@ def test_all_old_markets_are_forecast_and_accas_use_calibrated_probabilities():
     ) == sum(row["calibration"]["status"] == "no_history" for row in report["forecasts"])
     accas = report["accas"]["results"]
     assert accas
-    probabilities = [row["estimated_joint_win_probability"] for row in accas]
-    assert probabilities == sorted(probabilities, reverse=True)
+    # Ranking is the probability/price blend, so joint probability is no longer
+    # monotonic across the returned tickets; the score is.
+    scores = [row["ranking_score"] for row in accas]
+    assert scores == sorted(scores, reverse=True)
     for acca in accas:
         assert len({leg["game_id"] for leg in acca["legs"]}) == 2
         assert all(leg["book"]["selected_decimal_price"] for leg in acca["legs"])
-        assert acca["ranking_metric"] == "calibrated_joint_win_probability"
+        assert acca["ranking_metric"] == "probability_price_blend"
+        assert acca["ranking_price_weight"] == 0.15
         assert acca["ranking_status"] == "highest_estimated_not_guaranteed"
         assert acca["provisional_sample_gate_bypassed"] is False
     assert report["accas"]["strict_results"] == accas
@@ -1065,6 +1068,34 @@ def _forecast(game_id: str, probability: float, *, outcome=None) -> Forecast:
     )
 
 
+def test_a_ticket_leg_above_the_configured_ceiling_is_never_used():
+    """The ceiling keeps the price-aware ranking inside credible quotes.
+
+    2026-11-24 NCAA_M: the model rated Rice at p=72% against a 3.50 quote, a
+    claimed +152% edge. A blend free to reach that leg assembled a 10.4 acca
+    claiming +194% EV; with ``maxTicketLegOdds`` at 3.00 the same slate's best
+    ticket was @2.09 at 48.9% joint probability.
+    """
+
+    from forecasting.accas import MAX_TICKET_LEG_DECIMAL
+    from forecasting.bet_config import DEFAULTS
+
+    assert MAX_TICKET_LEG_DECIMAL == DEFAULTS["maxTicketLegOdds"] == 3.0
+
+    inside = [
+        _roi_forecast("inside-a", 0.9, 2.9, None),
+        _roi_forecast("inside-b", 0.9, 2.95, None),
+    ]
+    assert len(build_accas(inside, legs=2, limit=1)) == 1
+
+    over = [
+        _roi_forecast("over-a", 0.9, 3.01, None),
+        _roi_forecast("over-b", 0.9, 2.95, None),
+    ]
+    assert build_accas(over, legs=2, limit=1) == []
+    assert build_accas([_roi_forecast("over-c", 0.9, 15.0, None)], legs=2, limit=1) == []
+
+
 def test_a_ticket_leg_below_the_configured_price_floor_is_never_used():
     """A leg that cannot pay for its own risk is not a leg.
 
@@ -1615,20 +1646,44 @@ def test_paper_accas_do_not_bypass_other_gates_or_no_history(calibration, reason
     assert build_accas([rejected, strict], legs=2, limit=1, allow_provisional=True) == []
 
 
-def test_bookmaker_price_never_breaks_acca_probability_ties():
-    forecasts = []
-    for game_id, price in (("g0", 2.0), ("g1", 3.0), ("g2", 15.0)):
-        row = _forecast(game_id, 0.78)
-        row.calibrated_probability = 0.78
-        row.eligibility = {"acca_eligible": True}
-        assert row.book is not None
-        row.book.prices["home"] = price
-        forecasts.append(row)
+def test_bookmaker_price_now_breaks_acca_ties_by_configuration():
+    """Reversal, operator decision 2026-11-24: price is part of the ranking.
 
-    result = build_accas(forecasts, legs=2, limit=1)
-    assert len(result) == 1
-    assert [leg["game_id"] for leg in result[0]["legs"]] == ["g0", "g1"]
-    assert result[0]["combined_decimal_odds"] == 6.0
+    The previous rule was "price is payout evidence, never a ranking signal",
+    under which three equally-probable legs always produced the *shortest*
+    priced pair. That is exactly how the 2026-11-24 NCAA_M card assembled
+    @1.003 tickets, so the ticket ranking is now a configurable blend
+    (``ticketRankingPriceWeight``). At equal probability the better-priced leg
+    must win the tie; at weight 0.0 the old behaviour is reproducible.
+    """
+
+    import forecasting.accas as accas_module
+
+    def build(weight):
+        forecasts = []
+        for game_id, price in (("g0", 2.0), ("g1", 2.4), ("g2", 2.8)):
+            row = _forecast(game_id, 0.78)
+            row.calibrated_probability = 0.78
+            row.eligibility = {"acca_eligible": True}
+            assert row.book is not None
+            row.book.prices["home"] = price
+            forecasts.append(row)
+        original = accas_module.TICKET_RANKING_PRICE_WEIGHT
+        accas_module.TICKET_RANKING_PRICE_WEIGHT = weight
+        try:
+            return build_accas(forecasts, legs=2, limit=1)
+        finally:
+            accas_module.TICKET_RANKING_PRICE_WEIGHT = original
+
+    priced = build(0.15)
+    assert len(priced) == 1
+    assert [leg["game_id"] for leg in priced[0]["legs"]] == ["g2", "g1"]
+    assert priced[0]["combined_decimal_odds"] == pytest.approx(2.8 * 2.4)
+
+    # The retired behaviour is still reachable, which keeps the change auditable.
+    probability_only = build(0.0)
+    assert [leg["game_id"] for leg in probability_only[0]["legs"]] == ["g0", "g1"]
+    assert probability_only[0]["combined_decimal_odds"] == pytest.approx(2.0 * 2.4)
 
 
 def test_invalid_calibrated_probabilities_never_reach_acca_logarithms():

@@ -286,25 +286,47 @@ lopsided games; the lane's own plausibility floor in `ingestion/books.py`
 (`1.01`) already called that price implausible, but the relay path never applied
 it.
 
-The rule is now explicit and lives in configuration, not in the builder:
+Three rules now bound a paper ticket, and all three live in configuration so a
+tuned file can move them and every ticket still carries the `CFG_` hash of the
+values that built it:
 
-| where | what |
-|---|---|
-| `config/magolide_bets.json` → `minTicketLegOdds: 1.20` | the shipped value, stamped into every ticket's `CFG_` hash |
-| `forecasting/bet_config.KEYS` | same default, bounds `1.0–5.0`, so a tuned file can move it |
-| `forecasting/accas.py` → `MIN_TICKET_LEG_DECIMAL` | applied in `_eligible_candidate_picks`, before bands, singles or acca legs exist |
+| key | default | what it does |
+|---|---|---|
+| `minTicketLegOdds` | `1.20` | no leg cheaper than this — a `@1.001` leg risks a unit for 0.1% |
+| `maxTicketLegOdds` | `3.00` | no leg dearer than this — a ceiling keeps the ranking inside quotes the model can speak about |
+| `ticketRankingPriceWeight` | `0.15` | how much of the ticket ranking is price rather than probability |
 
-Consequences, stated plainly:
+`forecasting/accas.py` reads them as `MIN_TICKET_LEG_DECIMAL`,
+`MAX_TICKET_LEG_DECIMAL` and `TICKET_RANKING_PRICE_WEIGHT`, and applies the band
+in `_eligible_candidate_picks` — before bands, singles or acca legs exist — so
+every downstream count agrees on what is on the table.
 
-- a leg cheaper than the floor is *not* a candidate, so it cannot become a
-  single, an acca leg, or a ROI-band row;
-- the floor is a floor, not a target: a 2-leg ticket is now at least `1.44`
-  and a 3-leg at least `1.728`, but the builder still optimises probability;
-- it costs the lane almost nothing. NCAA_M had **376 priced, eligible picks at
-  1.20 or better** on the same slate the absurd tickets were built from, and
-  only **6 rows** below 1.01.
+**The ranking change is a deliberate reversal.** `build_accas` used to maximise
+joint probability, and the code said so out loud: *"price is payout evidence,
+never a ranking signal"*. That rule is what walked the NCAA_M card to `@1.003`.
+Tickets are now ranked by `_ticket_ranking_score`, the blend
+`(1-w)·log p + w·log price`, which is additive so the k-best walk stays exact.
+What did **not** change: choosing which row represents a fixture
+(`_best_leg_per_game`) is still calibrated-probability-first, so a long-priced
+row can never stand in for a short-priced row of the same game.
 
-The card is unaffected: a sub-floor forecast still appears as a pick with its
+**Why 0.15 and 3.00.** Measured on the real 2026-11-24 NCAA_M card, 55 usable
+legs at one-per-fixture:
+
+| weight | ceiling | best ticket | joint p | EV |
+|---|---|---|---|---|
+| 0.00 | 3.00 | @2.09 | 48.9% | +2% |
+| 0.15 | 3.00 | @2.09 | 48.9% | +2% |
+| 0.20 | 3.00 | @2.67 | 46.7% | +25% |
+| 0.35 | 3.00 | @10.41 | 28.2% | +194% |
+| 0.10 | none | @5.58 | 45.4% | +153% |
+
+The last two rows are the warning, not the target: at that weight the ranking
+starts buying the model's own overclaims (Rice was rated p=72% against a 3.50
+quote, a claimed +152% edge). A higher weight is a value bet on the model being
+right about that; it is not free odds.
+
+The card is unaffected: a forecast outside the ticket band still appears with its
 price and its eligibility blockers. It just cannot be sold as a ticket.
 
 ## Publication and freeze
