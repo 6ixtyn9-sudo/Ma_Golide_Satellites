@@ -367,3 +367,41 @@ requests without buying information.
 
 `https://nkl.lt/wp-sitemap.xml` answers **301 in 0 B** — a redirect, not an absence. Any
 read of it needs `-L`, and the hop is the one thing to record before trusting a body.
+
+## The aggregator's results reader (2026-11-24T14:52Z)
+
+The finals are on disk for three lanes; nothing reads them yet. `ingestion/providers/
+betexplorer_results.py` is the reader, and it is deliberately built from the only markup
+on that host this project has captured in full: the **fixtures** row — `in-match` link,
+two `<span>` names, a `table-main__datetime` cell — plus a result cell.
+
+The rules it holds:
+
+* a row is read only with a code, exactly two club names and exactly one score-shaped
+  pair; everything else is counted by reason, never guessed;
+* **a clock is not a score.** `20:00` satisfies the colon shape, so a pair is a final
+  only when both sides reach 25 points — an hour cannot. Forfeits (`20:0`) fall outside
+  that rule and are excluded on purpose: a missed final is recoverable, an invented one
+  is not;
+* two score-shaped pairs are an ambiguity, not a choice;
+* an undated result still reads, but carries no `played_on`, so nothing settles on it.
+
+`--read` replays the reader against the saved `results-index.html` with **no network and
+no request**, so proving it costs the host nothing. Until that replay yields rows, all
+three lanes stay `source_unavailable` and this module is a hypothesis with a digest.
+
+Provenance travels in the row: every result is labelled *aggregator result, matched by
+provider code*, so no downstream record can quietly promote an aggregator's number into a
+federation final.
+
+## A note on reading Greek in a terminal (2026-11-24T14:51Z)
+
+The Greek replay printed `"home": "ÎÎ¡ÎÎÎÎ£"` — UTF-8 bytes rendered as latin-1 by the
+terminal. That is a *display* fault, not a data fault, and the distinction matters when
+the question is whether a club name is intact. `row.home.encode("unicode_escape")` prints
+`\u039a\u039f…` and survives any terminal, which settles it without a base64 round trip.
+
+One name did look genuinely short in that output (`ΟΣΣΣ H HOTELS COLLECTION`). The
+depth-aware span fix addresses the mechanism that would cause it — a nested span closing
+early — but whether the name now reads whole is answerable only from the next replay, on
+a tree that has the fix.

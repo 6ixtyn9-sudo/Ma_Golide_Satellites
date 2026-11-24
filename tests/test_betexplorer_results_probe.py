@@ -253,3 +253,24 @@ def test_the_first_match_window_is_the_row_not_the_page():
 
 def test_a_page_with_no_match_code_has_no_window_rather_than_a_guess():
     assert probe.first_match_window('<table class="table-main"><p>No matches found</p></table>') == ""
+
+
+def test_read_replays_a_captured_page_without_a_request(tmp_path):
+    """`--read` is the replay: the saved bytes, no network, honest counts."""
+
+    league = "AUSTRALIA_WNBL_W"
+    saved = tmp_path / league
+    saved.mkdir(parents=True)
+    (saved / "results-index.html").write_text(
+        '<table class="table-main"><tr>'
+        '<td class="table-main__datetime">22.11.2026 04:00</td>'
+        '<td><a href="/basketball/australia/wnbl-women/perth-sydney/AbCd1234/" class="in-match">'
+        "<span>Perth</span></a></td>"
+        '<td><a href="/basketball/australia/wnbl-women/perth-sydney/AbCd1234/" class="in-match">'
+        "<span>Sydney</span></a></td>"
+        '<td class="table-main__result">89:84</td>'
+        "</tr></table>",
+        encoding="utf-8",
+    )
+
+    assert probe.main(["--league", league, "--read", "--out", str(tmp_path)]) == 0

@@ -316,6 +316,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--out", default="results_probe", help="directory for saved bodies")
     parser.add_argument("--now", help="override the observation instant (UTC ISO)")
     parser.add_argument(
+        "--read",
+        action="store_true",
+        help=(
+            "replay the reader against an already-captured results-index.html: "
+            "no network, no request, just what the saved bytes say"
+        ),
+    )
+    parser.add_argument(
         "--index",
         action="store_true",
         help=(
@@ -332,6 +340,23 @@ def main(argv: list[str] | None = None) -> int:
         if args.now
         else datetime.now(timezone.utc)
     )
+    if args.read:
+        path = Path(args.out) / args.league / "results-index.html"
+        if not path.exists():
+            parser.error(f"no captured page at {path}; run --index first")
+        from ingestion.providers.betexplorer_results import parse_results
+
+        page = parse_results(path.read_text(encoding="utf-8"))
+        payload = {
+            "schema_version": "magolide.results_probe.v1",
+            "mode": "results_read",
+            "league": args.league,
+            "path": str(path),
+            **page.to_dict(),
+        }
+        print(json.dumps(payload, indent=2, sort_keys=True, ensure_ascii=False))
+        return 0 if page.rows else 1
+
     if args.index:
         payload = capture_index(
             args.league,
