@@ -33,7 +33,7 @@
       "logical_picks": 132
     },
     "2026-11-24": {
-      "frozen_fixtures": 16,
+      "frozen_fixtures": 19,
       "logical_picks": 225
     }
   },
@@ -39277,6 +39277,145 @@
       }
     },
     "2026-11-24": {
+      "401915902": {
+        "decision_cutoff_utc": "2026-11-24T19:00:00Z",
+        "frozen_at": "2026-11-24T19:16:24Z",
+        "game_id": "401915902",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "James Madison Dukes",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.509451,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 425,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "828869cdc9f3e432bc593b8b29ad57d7fcdd95a0cbd4e7254d4c8598097e7878",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a6a6c5b96d5ecc537a37",
+            "game_id": "401915902",
+            "grade_status": "pending",
+            "home": "Winthrop Eagles",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "a6a6c5b96d5ecc537a37",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-24T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "James Madison Dukes",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.936674,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 236,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "904a6022b8e78ee7d835403f2e2e98b9176d0317d3396420725cfcd3a337fbf9",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "30b3576afdeed276dc2f",
+            "game_id": "401915902",
+            "grade_status": "pending",
+            "home": "Winthrop Eagles",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "30b3576afdeed276dc2f",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-24T18:41:03Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9741,
+            "role": null,
+            "scheduled_utc": "2026-11-24T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "James Madison Dukes",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.607251,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 421,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "bba4fda8771a03fd0fc442927a107f4aa1943e60bbc5e65de136095b7f576116",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5fc467812c7372c7d961",
+            "game_id": "401915902",
+            "grade_status": "pending",
+            "home": "Winthrop Eagles",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "5fc467812c7372c7d961",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.67,
+            "role": null,
+            "scheduled_utc": "2026-11-24T21:00:00Z",
+            "selection": "away"
+          }
+        ],
+        "scheduled_utc": "2026-11-24T21:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-24"
+      },
       "401917187": {
         "decision_cutoff_utc": "2026-11-24T14:00:00Z",
         "frozen_at": "2026-11-24T14:04:13Z",
@@ -41570,6 +41709,428 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-24"
       },
+      "401923670": {
+        "decision_cutoff_utc": "2026-11-24T19:00:00Z",
+        "frozen_at": "2026-11-24T19:16:24Z",
+        "game_id": "401923670",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Oklahoma Sooners",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.609451,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 425,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "505bbcc04de138d2f84b53850800697ef4b8c8fb6a540cabc69cc317f0c284d3",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "65897126592a8bbf2d05",
+            "game_id": "401923670",
+            "grade_status": "pending",
+            "home": "Montana State Bobcats",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "65897126592a8bbf2d05",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.69,
+            "role": null,
+            "scheduled_utc": "2026-11-24T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Oklahoma Sooners",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923670",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T18:40:58Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.0357142857142858,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.899074,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 236,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "b9ba711a370aab432109b7c6803538a32a03fbb9a1ede41ad9632615a315f9f7",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4a0c7c3920eabbf67205",
+            "game_id": "401923670",
+            "grade_status": "pending",
+            "home": "Montana State Bobcats",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.065678,
+              "historical_pick_count": 6,
+              "individual_odds_band": "1.00-<1.20",
+              "losses": 0,
+              "market": "moneyline",
+              "observed_roi": 0.077497,
+              "period": "full_game",
+              "probability_band": "0.80-<0.90",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.08007,
+              "wins": 6
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "4a0c7c3920eabbf67205",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-24T18:41:03Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.9365,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-24T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Oklahoma Sooners",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923670",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T18:40:58Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.0357142857142858,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "PRIOR_HEAVY",
+            "calibrated_probability": 0.727251,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 421,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "7880dc9d82967cba3280575c0cface9e1ff9565c37d3e8814fb15971f215fe98",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "cf504ee4ac2d27bea83e",
+            "game_id": "401923670",
+            "grade_status": "pending",
+            "home": "Montana State Bobcats",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "cf504ee4ac2d27bea83e",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.79,
+            "role": null,
+            "scheduled_utc": "2026-11-24T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Oklahoma Sooners",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923670",
+              "line": 18.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-24T12:41:46Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.452881,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "143aa4f6a41390439fa477c925b678cfc51177563e8570d8791c619bfd653b30",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "161c5bd99fb5a68ca290",
+            "game_id": "401923670",
+            "grade_status": "pending",
+            "home": "Montana State Bobcats",
+            "league": "NCAA_W",
+            "line": 18.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "161c5bd99fb5a68ca290",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-24T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Oklahoma Sooners",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923670",
+              "line": 20.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-24T18:40:58Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.442881,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "de618897ff915f0aafedcc597c003433928b90f935a38e0268c471109edfffc7",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "80007dca8579291c3c33",
+            "game_id": "401923670",
+            "grade_status": "pending",
+            "home": "Montana State Bobcats",
+            "league": "NCAA_W",
+            "line": 20.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "80007dca8579291c3c33",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-24T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Oklahoma Sooners",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923670",
+              "line": 19.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-24T14:41:14Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.452881,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "9ed66bce62b401cf9f5c70b66945685bc8389edd1a775307bd75714506e058e2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d60fe0a34963067f5784",
+            "game_id": "401923670",
+            "grade_status": "pending",
+            "home": "Montana State Bobcats",
+            "league": "NCAA_W",
+            "line": 19.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "d60fe0a34963067f5784",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-24T21:00:00Z",
+            "selection": "away"
+          },
+          {
+            "away": "Oklahoma Sooners",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401923670",
+              "line": 150.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-24T18:40:58Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.534211,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "4568211a9a4e9bd9abe1fbb7a510168aca8ee0977a80addcaad83a2041b220a3",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "insufficient_team_specific_history"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "118c7a9d7c462d0ecde3",
+            "game_id": "401923670",
+            "grade_status": "pending",
+            "home": "Montana State Bobcats",
+            "league": "NCAA_W",
+            "line": 150.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "118c7a9d7c462d0ecde3",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-24T21:00:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-24T21:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-24"
+      },
       "401927023": {
         "decision_cutoff_utc": "2026-11-24T17:00:00Z",
         "frozen_at": "2026-11-24T17:03:58Z",
@@ -41848,6 +42409,508 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-24"
       },
+      "401928216": {
+        "decision_cutoff_utc": "2026-11-24T18:30:00Z",
+        "frozen_at": "2026-11-24T19:16:24Z",
+        "game_id": "401928216",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Florida Gators",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.799451,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 425,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "5d848dcfe6c345d05300046c0feae7c0363bb66d68ef62556379c0badae83834",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "929d61b31a089b940464",
+            "game_id": "401928216",
+            "grade_status": "pending",
+            "home": "West Virginia Mountaineers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "929d61b31a089b940464",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.88,
+            "role": null,
+            "scheduled_utc": "2026-11-24T20:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Florida Gators",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401928216",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T18:40:58Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.2439024390243902,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.792674,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 236,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "456eb49d8bbaf8874ecbcf2854125c6859a83056c1104ca9a26a0c9d22407f2d",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4be85e0949e3f8b5789c",
+            "game_id": "401928216",
+            "grade_status": "pending",
+            "home": "West Virginia Mountaineers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "4be85e0949e3f8b5789c",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-24T18:41:03Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.8301,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-24T20:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Florida Gators",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401928216",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-24T18:40:58Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.2439024390243902,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.857251,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 421,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "863c026c1c269e36e63fa2ae68734ac418b3ad6940e7b1cb00e1eea57029d51a",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "c74964b92a7933d24fee",
+            "game_id": "401928216",
+            "grade_status": "pending",
+            "home": "West Virginia Mountaineers",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.246018,
+              "historical_pick_count": 1,
+              "individual_odds_band": "1.20-<1.50",
+              "losses": 0,
+              "market": "moneyline",
+              "observed_roi": 0.243902,
+              "period": "full_game",
+              "probability_band": "0.80-<0.90",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.243902,
+              "wins": 1
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "c74964b92a7933d24fee",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.92,
+            "role": null,
+            "scheduled_utc": "2026-11-24T20:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Florida Gators",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401928216",
+              "line": -6.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-24T12:41:46Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.452881,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "b271abe4497c1b47afbcb6b45ac094b44ab49f925489b6101b328b2e3840c0be",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4909b677871fe7f67d0d",
+            "game_id": "401928216",
+            "grade_status": "pending",
+            "home": "West Virginia Mountaineers",
+            "league": "NCAA_W",
+            "line": -6.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "4909b677871fe7f67d0d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-24T20:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Florida Gators",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401928216",
+              "line": -8.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-24T18:40:58Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.442881,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "a866608b3caf05b550188d079c1e8abf37d194f350624aa16f5e038798162c46",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "80bf217137bdd362e321",
+            "game_id": "401928216",
+            "grade_status": "pending",
+            "home": "West Virginia Mountaineers",
+            "league": "NCAA_W",
+            "line": -8.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "80bf217137bdd362e321",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-24T20:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Florida Gators",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401928216",
+              "line": -7.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-24T15:41:25Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "WATCHLIST_INSUFFICIENT_CONTEXT",
+            "calibrated_probability": 0.452881,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 29,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "bc774802607dabf9540e97173508b47d0cde3013b84dc1371d611407594191f5",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e46716869b5f2776f9b9",
+            "game_id": "401928216",
+            "grade_status": "pending",
+            "home": "West Virginia Mountaineers",
+            "league": "NCAA_W",
+            "line": -7.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "e46716869b5f2776f9b9",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.56,
+            "role": null,
+            "scheduled_utc": "2026-11-24T20:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Florida Gators",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401928216",
+              "line": 139.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-24T14:41:14Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.525714,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 26,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "62b4c6cb1729c423232389ce8d4d039506ff7bf8a154bb4bad2cf7c52668ce04",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "60dbf713a6c3015a70c8",
+            "game_id": "401928216",
+            "grade_status": "pending",
+            "home": "West Virginia Mountaineers",
+            "league": "NCAA_W",
+            "line": 139.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.063462,
+              "historical_pick_count": 45,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 20,
+              "market": "total",
+              "observed_roi": 0.059148,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.076078,
+              "wins": 25
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "60dbf713a6c3015a70c8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-24T20:30:00Z",
+            "selection": "over"
+          },
+          {
+            "away": "Florida Gators",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401928216",
+              "line": 139.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-24T15:41:25Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "CAUTION",
+            "calibrated_probability": 0.534211,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 27,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-24",
+            "detailed_evidence_sha256": "b0be3189bae72d7328a7d1ad71f68ce232bb8f0a41f36650e0f8985524667408",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "insufficient_walk_forward_samples"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "68079d31db5b00eb023d",
+            "game_id": "401928216",
+            "grade_status": "pending",
+            "home": "West Virginia Mountaineers",
+            "league": "NCAA_W",
+            "line": 139.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.063437,
+              "historical_pick_count": 45,
+              "individual_odds_band": "1.50-<2.00",
+              "losses": 20,
+              "market": "total",
+              "observed_roi": 0.059148,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.076078,
+              "wins": 25
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "68079d31db5b00eb023d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-24T20:30:00Z",
+            "selection": "under"
+          }
+        ],
+        "scheduled_utc": "2026-11-24T20:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-24"
+      },
       "401929239": {
         "decision_cutoff_utc": "2026-11-24T15:00:00Z",
         "frozen_at": "2026-11-24T15:16:48Z",
@@ -42041,22 +43104,6 @@
   "league": "NCAA_W",
   "pending_frozen_games": [
     [
-      "401921151",
-      "2026-11-24T16:30:00Z"
-    ],
-    [
-      "401918727",
-      "2026-11-24T17:00:00Z"
-    ],
-    [
-      "401921217",
-      "2026-11-24T17:00:00Z"
-    ],
-    [
-      "401929239",
-      "2026-11-24T17:00:00Z"
-    ],
-    [
       "401918586",
       "2026-11-24T18:00:00Z"
     ],
@@ -42091,6 +43138,18 @@
     [
       "401927950",
       "2026-11-24T20:00:00Z"
+    ],
+    [
+      "401928216",
+      "2026-11-24T20:30:00Z"
+    ],
+    [
+      "401915902",
+      "2026-11-24T21:00:00Z"
+    ],
+    [
+      "401923670",
+      "2026-11-24T21:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
