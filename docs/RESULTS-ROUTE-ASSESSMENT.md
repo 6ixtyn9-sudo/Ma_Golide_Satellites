@@ -856,6 +856,22 @@ One incidental datum worth keeping: the same page was 110,391 bytes with sha `7c
 session earlier and 110,501 with sha `8a1e9f05…` now. The body varies per request, so byte
 size and digest are evidence that *a* body was saved, never that it is the same body.
 
+The same read, one step further (`--gate-script`, 2026-11-24T15:52Z): `ageYes` carries no
+inline handler. Its window starts at `<button id="ageYes" class="age__btn age__btn--yes">Sim,
+confirmo que tenho 18 anos ou mais</button>` and runs straight into `lsadvert` banner
+iframes. The page loads nine external scripts — `otSDKStub.js` (OneTrust), jQuery,
+`all.min.js`, `odds-format.js.php`, `stats.js.php` — and has 19 inline blocks. So the gate's
+behaviour is attached somewhere in that set, and the first occurrence of the id (the markup)
+is not where it is.
+
+That is a reading failure in the tool, not a fact about the host: the reader showed only the
+first occurrence of the control id and concluded from the markup. It now reports every
+occurrence of each control with an offset and a `looks_like_code` flag, names which inline
+block mentions a control and whether that block writes a cookie or storage, and reports the
+body's own shape alongside — `td_cells`, `period_markers`, `colon_scores` — so "is there a
+match page under this modal" is answered by the same vocabulary as the capture receipt
+instead of by inspecting the modal.
+
 Where the consent actually lives is still unknown, and guessing again is not the plan.
 `--gate-script` reads a saved gate page offline and prints what the accept control does —
 inline handler excerpts, the external bundle list, how many inline blocks there are. If the
