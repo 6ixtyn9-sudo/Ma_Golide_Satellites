@@ -8,7 +8,9 @@ robots ``Crawl-delay: 10``), not invented.
 
 from __future__ import annotations
 
-from datetime import date
+from datetime import date, datetime
+
+from zoneinfo import ZoneInfo
 
 from ingestion.providers import nkl
 
@@ -355,3 +357,43 @@ def test_quarters_that_disagree_with_the_final_are_refused_not_written():
 
     assert settlement.result is None
     assert "do not reconcile" in settlement.reasons[0]
+
+
+def test_a_miss_says_which_kind_of_miss_it_is():
+    """'no row' was the sentence that cost a live run: it is the same words for an
+    empty page, a page of other dates, and a name-spelling mismatch."""
+
+    rows, _ = nkl.parse_club_page(_LISTING)
+
+    empty = nkl.explain_miss([], played_on=date(2026, 10, 1), home="Kretinga",
+                             away="Neptunas 2")
+    wrong_day = nkl.explain_miss(rows, played_on=date(2026, 10, 5), home="Kretinga",
+                                 away="Neptunas 2")
+    right_day = nkl.explain_miss(rows, played_on=date(2026, 10, 1), home="Someone",
+                                 away="Neptunas 2")
+
+    assert "no fixture rows at all" in empty[0]
+    assert "no fixture row on 2026-10-05" in wrong_day[0]
+    assert "rows between 2026-10-01 and 2026-10-03" in wrong_day[0]
+    # The names are printed as the page spells them, so a mapping gap is visible.
+    assert "Kretingos Kretinga-FlexBlow v Klaipėdos Neptūnas-II" in right_day[0]
+
+
+def test_a_miss_caused_by_an_unmapped_name_is_named_as_such():
+    rows = [
+        nkl.ListingRow(
+            match_id="1",
+            url="https://nkl.lt/matches/1/",
+            kickoff_local=datetime(2026, 10, 1, 19, 0, tzinfo=ZoneInfo("Europe/Vilnius")),
+            home_name="Kretingos Kretinga-FlexBlow",
+            away_name="KlaipÄ—dos NeptÅ«nas-II",  # a latin-1 decode of UTF-8
+            home_score=76.0,
+            away_score=91.0,
+        )
+    ]
+
+    reasons = nkl.explain_miss(rows, played_on=date(2026, 10, 1), home="Kretinga",
+                               away="Neptunas 2")
+
+    assert "no BetExplorer mapping for" in reasons[0]
+    assert "KlaipÄ—dos" in reasons[0]
