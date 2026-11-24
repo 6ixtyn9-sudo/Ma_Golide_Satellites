@@ -514,3 +514,92 @@ def test_gate_hints_read_what_the_accept_button_writes():
 
     assert "be_age_verified=1; path=/; max-age=31536000" in hints
     assert "ageAccepted" in hints
+
+
+_GATED_COOKIE_PAGE = (
+    '<div class="age__modal"><h1 id="ageTitle">Verificação de idade obrigatória</h1>'
+    '<button onclick="document.cookie=\'age_verified=1; path=/; max-age=31536000\';">'
+    "Entrar</button></div>"
+)
+
+_GATED_STORAGE_PAGE = (
+    '<div class="age__modal"><h1 id="ageTitle">Verificação de idade obrigatória</h1>'
+    "<button onclick=\"localStorage.setItem('ageVerified','true');\">Entrar</button></div>"
+)
+
+_MATCH_PAGE = "<table><tr><td>Q1</td><td>88</td><td>Q2</td><td>91</td></tr></table>"
+
+
+def test_the_accept_button_writes_a_cookie_we_can_replay(tmp_path):
+    """Passing the gate means sending back what it recorded, not guessing names."""
+
+    assert probe.gate_cookies(_GATED_COOKIE_PAGE) == [("age_verified", "1")]
+
+    seen = []
+
+    def gate_read_text(url, cookie):
+        seen.append(cookie)
+        return _MATCH_PAGE
+
+    payload = probe.capture_match_pages(
+        "LITHUANIA_NKL",
+        matches=[{"code": "nRzm7OsT", "url": "/basketball/lithuania/nkl/a-b/nRzm7OsT/"}],
+        out_dir=tmp_path,
+        read_text=lambda url: _GATED_COOKIE_PAGE,
+        limit=1,
+        gate_accept=True,
+        gate_read_text=gate_read_text,
+    )
+
+    page = payload["pages"][0]
+    assert seen == ["age_verified=1"]
+    assert page["status"] == "captured"
+    assert page["gate_passed_by"] == ["age_verified"]
+    assert payload["gated"] == 0
+    assert payload["requests_made"] == 2  # one gate, one replay: never a loop
+    assert (tmp_path / "match_nRzm7OsT.html").read_text() == _MATCH_PAGE
+
+
+def test_a_storage_only_gate_says_it_needs_a_browser(tmp_path):
+    """localStorage cannot travel in a header. Claiming otherwise would be a lie
+    that only shows up as `gated: 0` with an empty page."""
+
+    calls = []
+
+    def gate_read_text(url, cookie):  # pragma: no cover - must not be reached
+        calls.append(cookie)
+        return _MATCH_PAGE
+
+    payload = probe.capture_match_pages(
+        "CHINA_WCBA_W",
+        matches=[{"code": "tOWc8ZhA", "url": "/basketball/china/wcba-women/a-b/tOWc8ZhA/"}],
+        out_dir=tmp_path,
+        read_text=lambda url: _GATED_STORAGE_PAGE,
+        limit=1,
+        gate_accept=True,
+        gate_read_text=gate_read_text,
+    )
+
+    page = payload["pages"][0]
+    assert calls == []
+    assert payload["requests_made"] == 1
+    assert page["status"] == "gated"
+    assert "needs a browser" in page["gate"]
+    assert "ageVerified" in page["gate"]
+
+
+def test_accepting_the_gate_is_off_unless_asked_for(tmp_path):
+    """The authority travels with the capture; the act of using it does not
+    happen by accident."""
+
+    payload = probe.capture_match_pages(
+        "LITHUANIA_NKL",
+        matches=[{"code": "nRzm7OsT", "url": "/basketball/lithuania/nkl/a-b/nRzm7OsT/"}],
+        out_dir=tmp_path,
+        read_text=lambda url: _GATED_COOKIE_PAGE,
+        limit=1,
+    )
+
+    assert payload["gate_accept"] is False
+    assert payload["requests_made"] == 1
+    assert payload["pages"][0]["status"] == "gated"

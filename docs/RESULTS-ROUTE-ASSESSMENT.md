@@ -804,6 +804,25 @@ writes — `document.cookie=…`, `localStorage.setItem(…)` — because the wa
 to reproduce what it records, and the way to fail is to try plausible names until the host
 gets annoyed. No request is made to answer this.
 
+`--gate-accept` then replays exactly that cookie, once. Two requests per gated page, never a
+loop, and the receipt says which happened:
+
+| what the gate recorded | what the capture says |
+|---|---|
+| a cookie | `captured`, `gate_passed_by: ["age_verified"]`, `requests_made: 2` |
+| only localStorage | `gated`, `… no cookie to replay, storage keys ['ageVerified'] -- needs a browser` |
+| a cookie, still gated | `gated`, `… still gated after replaying 1 cookie(s)` |
+| nothing, not asked | `gated`, `requests_made: 1`, `gate_accept: false` |
+
+The third row is the one worth keeping. A gate that answers the cookie and shows the modal
+anyway is not a consent gate at all — it is the host refusing, and the honest reading is the
+same 429 lesson: stop, and write down that it answered.
+
+What is *not* claimed: that passing the gate yields period scores. The 110 KB bodies carry a
+0 in every shape signal, so the modal may be incidental to a scoreboard that is drawn by a
+script we have not read yet. The next run answers that; this change only makes the question
+askable.
+
 ### Not being throttled, in one mechanism
 
 Three match pages a few seconds apart drew a 429, and the pause inside a run could not have

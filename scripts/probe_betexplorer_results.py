@@ -126,6 +126,46 @@ def gate_hints(body: str) -> list[str]:
     return hints[:12]
 
 
+_COOKIE_WRITE_RE = re.compile(
+    r"document\.cookie\s*=\s*[\"'`](?P<value>[^\"'`]+)[\"'`]"
+)
+_STORAGE_WRITE_RE = re.compile(
+    r"(?:local|session)Storage\.setItem\(\s*[\"'](?P<key>[^\"']+)[\"']\s*,"
+)
+
+
+def gate_cookies(body: str) -> list[tuple[str, str]]:
+    """The cookies a gate writes on accept, as (name, value), in page order.
+
+    These are the only thing an HTTP client can replay: a cookie travels in a
+    header. A storage key cannot, which is why ``gate_storage_keys`` exists --
+    the difference is the difference between passing the gate and pretending to.
+    """
+
+    found: list[tuple[str, str]] = []
+    for match in _COOKIE_WRITE_RE.finditer(body or ""):
+        pair = match.group("value").split(";", 1)[0].strip()
+        name, _, value = pair.partition("=")
+        name = name.strip()
+        if not name:
+            continue
+        item = (name, value.strip())
+        if item not in found:
+            found.append(item)
+    return found
+
+
+def gate_storage_keys(body: str) -> list[str]:
+    """Storage keys the accept button sets -- readable, not replayable."""
+
+    keys: list[str] = []
+    for match in _STORAGE_WRITE_RE.finditer(body or ""):
+        key = match.group("key").strip()
+        if key and key not in keys:
+            keys.append(key)
+    return keys
+
+
 def cooldown_wait(previous: float | None, now: float, seconds: float) -> float:
     """Seconds still owed before this run may touch the host.
 
@@ -394,6 +434,8 @@ def capture_match_pages(
     sleep=time.sleep,
     limit: int = 1,
     cooldown: "HostCooldown | None" = None,
+    gate_accept: bool = False,
+    gate_read_text=None,
 ) -> dict[str, object]:
     """Fetch the league's own match pages for the first ``limit`` codes.
 
@@ -408,12 +450,14 @@ def capture_match_pages(
     waited = cooldown.wait(sleep=sleep) if cooldown is not None else 0.0
     captured: list[dict[str, object]] = []
     throttled = False
+    requests_made = 0
     for position, match in enumerate(wanted):
         if position:
             sleep(MATCH_INTERVAL_SECONDS)
         code = match["code"]
         url = absolute_url(match.get("url") or match_url(league, code))
         try:
+            requests_made += 1
             body = read_text(url)
         except Exception as exc:  # noqa: BLE001 - a failed capture is a receipt
             detail = str(exc)[:200]
@@ -429,6 +473,33 @@ def capture_match_pages(
         path = out_dir / f"match_{code}.html"
         path.write_text(body, encoding="utf-8")
         gate = gate_reason(body)
+        passed_by = None
+        if gate is not None and gate_accept:
+            cookies = gate_cookies(body)
+            if cookies and gate_read_text is not None:
+                header = "; ".join(f"{name}={value}" for name, value in cookies)
+                try:
+                    requests_made += 1
+                    second = gate_read_text(url, header)
+                except Exception as exc:  # noqa: BLE001 - the retry is evidence too
+                    gate = f"{gate}; replay failed: {str(exc)[:120]}"
+                else:
+                    if gate_reason(second) is None:
+                        body = second
+                        path.write_text(body, encoding="utf-8")
+                        gate = None
+                        passed_by = [name for name, _ in cookies]
+                    else:
+                        gate = f"{gate}; still gated after replaying {len(cookies)} cookie(s)"
+            elif cookies:
+                gate = f"{gate}; replay requested without a fetcher"
+            elif not cookies:
+                keys = gate_storage_keys(body)
+                gate = (
+                    f"{gate}; no cookie to replay"
+                    + (f", storage keys {keys}" if keys else "")
+                    + " -- needs a browser, not a header"
+                )
         if gate is not None:
             # Saved, because it is evidence of what the host served, but never
             # counted as a match page: 110 KB of age modal reads as a captured
@@ -454,6 +525,7 @@ def capture_match_pages(
                 "bytes": len(body.encode("utf-8")),
                 "sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
                 "path": str(path),
+                **({"gate_passed_by": passed_by} if passed_by else {}),
                 "period_markers": len(_PERIOD_RE.findall(text)),
                 "period_examples": sorted(set(_PERIOD_RE.findall(text)))[:6],
                 # What a scoreboard looks like when it is not a Q1..Q4 table:
@@ -474,6 +546,8 @@ def capture_match_pages(
         "stopped_on_429": throttled,
         "gated": sum(1 for page in captured if page["status"] == "gated"),
         "cooldown_seconds_waited": round(waited, 3),
+        "requests_made": requests_made,
+        "gate_accept": bool(gate_accept),
         "age_gate_authorisation": AGE_GATE_AUTHORISATION,
         "note": (
             "Match pages saved verbatim. period_markers counts Q1..Q4/OT-shaped "
@@ -594,6 +668,15 @@ def main(argv: list[str] | None = None) -> int:
         ),
     )
     parser.add_argument(
+        "--gate-accept",
+        action="store_true",
+        help=(
+            "when a page comes back as an age gate, replay the cookie its own accept "
+            "button writes (one extra request, never a loop); a gate that only sets "
+            "localStorage is reported as needing a browser rather than retried"
+        ),
+    )
+    parser.add_argument(
         "--cooldown",
         type=float,
         default=COOLDOWN_SECONDS,
@@ -664,6 +747,13 @@ def main(argv: list[str] | None = None) -> int:
             if args.cooldown > 0
             else None
         )
+        gate_read_text = None
+        if args.gate_accept:
+            from ingestion.http import HttpClient
+
+            def gate_read_text(url: str, cookie: str) -> str:
+                return HttpClient().get_text(url, headers={"Cookie": cookie})
+
         payload = capture_match_pages(
             args.league,
             matches=index_matches(index_path.read_text(encoding="utf-8")),
@@ -671,6 +761,8 @@ def main(argv: list[str] | None = None) -> int:
             read_text=_text_fetch(None, None),
             limit=args.match,
             cooldown=cooldown,
+            gate_accept=args.gate_accept,
+            gate_read_text=gate_read_text,
         )
         print(json.dumps(payload, indent=2, sort_keys=True))
         return 0 if any(page["status"] == "captured" for page in payload["pages"]) else 1
