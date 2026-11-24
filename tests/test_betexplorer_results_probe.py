@@ -514,6 +514,8 @@ def test_gate_hints_read_what_the_accept_button_writes():
 
     assert "be_age_verified=1; path=/; max-age=31536000" in hints
     assert "ageAccepted" in hints
+    # A class name is not a way in. It is reported, but never as a hint.
+    assert "age__modal" not in hints
 
 
 _GATED_COOKIE_PAGE = (
@@ -603,3 +605,20 @@ def test_accepting_the_gate_is_off_unless_asked_for(tmp_path):
     assert payload["gate_accept"] is False
     assert payload["requests_made"] == 1
     assert payload["pages"][0]["status"] == "gated"
+
+
+def test_the_gate_hints_read_needs_no_league(tmp_path, capsys):
+    """Reading a saved page is offline work; demanding a lane for it made the one
+    command that answers the gate question fail with a usage error."""
+
+    page = tmp_path / "gate.html"
+    page.write_text(_GATED_COOKIE_PAGE, encoding="utf-8")
+
+    assert probe.main(["--gate-hints", str(page)]) == 0
+
+    payload = json.loads(capsys.readouterr().out)
+    assert payload["gate"].startswith("age gate")
+    assert payload["hints"] == ["age_verified=1; path=/; max-age=31536000"]
+    assert "age__modal" in payload["mentions"]  # context, reported as such
+    assert payload["replayable"] is True
+    assert payload["age_gate_authorisation"].startswith("Operator authorisation")

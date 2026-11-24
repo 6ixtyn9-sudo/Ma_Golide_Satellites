@@ -804,6 +804,12 @@ writes — `document.cookie=…`, `localStorage.setItem(…)` — because the wa
 to reproduce what it records, and the way to fail is to try plausible names until the host
 gets annoyed. No request is made to answer this.
 
+The output keeps two things apart that a single list would merge: `hints` are writes (a
+cookie value, a storage key), `mentions` are identifiers that merely contain "age" — a CSS
+class, an element id, a vendor name. Only the first kind is a way in; a list that mixed them
+would invite replaying `age__modal`. `replayable` says whether an HTTP client can act on the
+hints at all.
+
 `--gate-accept` then replays exactly that cookie, once. Two requests per gated page, never a
 loop, and the receipt says which happened:
 
