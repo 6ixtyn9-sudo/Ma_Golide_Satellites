@@ -21,7 +21,9 @@ from probe_betexplorer_results import (  # noqa: E402
     MIN_INTERVAL_SECONDS,
     capture,
     finished_candidates,
+    index_signals,
     match_url,
+    results_url,
     shape_signals,
 )
 
@@ -187,3 +189,41 @@ def test_shape_signals_describe_markup_without_interpreting_it():
     assert signals["first_integer_cells"]
     # Counts only: no key may claim a score.
     assert not {"home_score", "away_score", "final"} & set(signals)
+
+
+def test_the_results_index_url_is_the_same_slug_without_a_query():
+    """Path-only, like every other page this tool reads: robots allows paths."""
+
+    from ingestion.providers.betexplorer import FIXTURES_URLS
+
+    url = results_url("AUSTRALIA_WNBL_W")
+    assert url == FIXTURES_URLS["AUSTRALIA_WNBL_W"].replace("fixtures/", "results/")
+    assert url.endswith("/australia/wnbl-women/results/")
+    assert "?" not in url
+
+
+def test_the_index_signals_count_what_the_page_offers_without_parsing_a_score():
+    body = (
+        '<table class="table-main">'
+        '<tr><td><a href="/basketball/australia/wnbl-women/perth-sydney/AbCd1234/">'
+        "Perth - Sydney</a></td><td>89:84</td></tr>"
+        '<tr><td><a href="/basketball/australia/wnbl-women/melbourne-adelaide/EfGh5678/">'
+        "Melbourne - Adelaide</a></td><td>77 : 80</td></tr>"
+        "</table>"
+    )
+
+    signals = index_signals(body)
+
+    assert signals["has_table"] is True
+    assert signals["match_codes"] == 2
+    assert signals["distinct_match_codes"] == 2
+    assert signals["colon_scores"] == 2
+    assert signals["first_codes"] == ["AbCd1234", "EfGh5678"]
+    assert signals["has_no_matches_hint"] is False
+
+
+def test_an_empty_results_page_says_so_rather_than_looking_healthy():
+    signals = index_signals('<table class="table-main"><p>No matches found</p></table>')
+
+    assert signals["match_codes"] == 0
+    assert signals["has_no_matches_hint"] is True

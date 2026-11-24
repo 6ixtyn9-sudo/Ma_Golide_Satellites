@@ -83,6 +83,88 @@ def match_url(league: str, event_id: str) -> str:
     return url
 
 
+def results_url(league: str) -> str:
+    """The league's own results page: same slug, ``results/`` instead of ``fixtures/``."""
+
+    base = FIXTURES_URLS[league]
+    if not base.endswith("fixtures/"):
+        raise ValueError(f"unexpected fixtures path for {league}: {base}")
+    url = base[: -len("fixtures/")] + "results/"
+    if "?" in url:  # pragma: no cover - defensive: query shapes are disallowed
+        raise ValueError(f"refusing a query-shaped URL: {url}")
+    return url
+
+
+#: A match link is ``/basketball/<country>/<league>/[<match-slug>/]<CODE>/``; the
+#: slug is optional, because ``match_url`` builds the short form and the served
+#: pages carry the long one.
+_CODE_LINK_RE = re.compile(
+    r"/basketball/[a-z-]+/[a-z0-9-]+/(?:[a-z0-9-]+/)?([0-9A-Za-z]{8})/"
+)
+_COLON_SCORE_RE = re.compile(r"\b(\d{1,3})\s*:\s*(\d{1,3})\b")
+
+
+def index_signals(body: str) -> dict[str, object]:
+    """What the results page offers, as counts rather than as a parse.
+
+    A lane whose fixtures table carries only future rows has no finished game to
+    open, so the results page is the only way in.  This reports whether the page
+    is a table, how many match codes it carries, and how many colon-separated
+    score strings appear -- enough to decide whether a parser is worth writing,
+    without writing one blind.
+    """
+
+    codes = _CODE_LINK_RE.findall(body)
+    return {
+        "chars": len(body),
+        "has_table": "table-main" in body,
+        "match_codes": len(codes),
+        "distinct_match_codes": len(set(codes)),
+        "colon_scores": len(_COLON_SCORE_RE.findall(body)),
+        "first_codes": sorted(set(codes))[:8],
+        "has_no_matches_hint": "No matches found" in body,
+    }
+
+
+def capture_index(league: str, *, out_dir: Path, read_text) -> dict[str, object]:
+    """Save the league's results page verbatim and report its shape."""
+
+    url = results_url(league)
+    out_dir.mkdir(parents=True, exist_ok=True)
+    record: dict[str, object] = {"league": league, "url": url}
+    try:
+        body = read_text(url)
+    except Exception as exc:  # noqa: BLE001 - a failed read is a receipt
+        record.update({"status": "fetch_failed", "detail": str(exc)[:200]})
+        body = ""
+    if body:
+        path = out_dir / "results-index.html"
+        path.write_text(body, encoding="utf-8")
+        record.update(
+            {
+                "status": "captured",
+                "bytes": len(body.encode("utf-8")),
+                "sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
+                "path": str(path),
+                **index_signals(body),
+            }
+        )
+    index_path = out_dir / "results-index.json"
+    payload = {
+        "schema_version": "magolide.results_probe.v1",
+        "mode": "results_index",
+        "captured_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "note": (
+            "A served page saved verbatim. No score is parsed and no ActualResult "
+            "is produced; this answers what the page carries, not what a game was."
+        ),
+        **record,
+    }
+    index_path.write_text(json.dumps(payload, indent=2, sort_keys=True) + "\n", encoding="utf-8")
+    payload["index_path"] = str(index_path)
+    return payload
+
+
 def finished_candidates(
     league: str, html: str, *, now: datetime, limit: int
 ) -> list[dict[str, str]]:
@@ -207,6 +289,14 @@ def main(argv: list[str] | None = None) -> int:
     parser.add_argument("--date", help="only rows tipping on/before this YYYY-MM-DD")
     parser.add_argument("--out", default="results_probe", help="directory for saved bodies")
     parser.add_argument("--now", help="override the observation instant (UTC ISO)")
+    parser.add_argument(
+        "--index",
+        action="store_true",
+        help=(
+            "capture the league's own results page instead of match pages -- the "
+            "entry point for a lane whose fixtures table holds only future rows"
+        ),
+    )
     args = parser.parse_args(argv)
 
     from ingestion.providers.betexplorer import _text_fetch
@@ -216,6 +306,15 @@ def main(argv: list[str] | None = None) -> int:
         if args.now
         else datetime.now(timezone.utc)
     )
+    if args.index:
+        payload = capture_index(
+            args.league,
+            out_dir=Path(args.out) / args.league,
+            read_text=_text_fetch(None, None),
+        )
+        print(json.dumps(payload, indent=2, sort_keys=True))
+        return 0 if payload.get("status") == "captured" else 1
+
     payload = capture(
         args.league,
         max_games=args.max,
