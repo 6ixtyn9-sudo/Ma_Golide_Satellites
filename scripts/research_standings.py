@@ -27,6 +27,7 @@ from __future__ import annotations
 
 import argparse
 import sys
+from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Dict, Iterable, List, Mapping, Optional, Sequence, Tuple
@@ -95,6 +96,65 @@ def write_section(
     return written
 
 
+@dataclass(frozen=True)
+class Fixture:
+    """The four fields a research row reads, without inventing a canonical Game.
+
+    ``forecasting.research_slate.research_rows`` touches only ``game_id``,
+    ``home_name``, ``away_name`` and ``scheduled_utc``, so a fixture taken straight
+    from a published page needs no store, no season, and no status.
+    """
+
+    game_id: str
+    home_name: str
+    away_name: str
+    scheduled_utc: str
+
+
+def slate_from_page(
+    league: str, target_date: str, read_text, *, now_utc: str
+) -> Tuple[List[Fixture], Dict[str, List[BookSnapshot]], str, int]:
+    """The day's slate and its aggregate prices, straight from the fixtures page.
+
+    One read serves two purposes: the page lists the fixtures *and* the match pages
+    whose token mints the standings table. ``betexplorer.fetch_odds`` then parses
+    the same bytes for prices, so a lane with no warehouse is still scoreable --
+    which is the state these four lanes are actually in.
+
+    Returns ``(fixtures, snapshots_by_game, fixtures_html, reads)``.
+    """
+
+    league_key = betexplorer._require_league(league)
+    fixtures_url = betexplorer.FIXTURES_URLS[league_key]
+    fixtures_html = read_text(fixtures_url)
+    reads = 1
+
+    def cached(url: str) -> str:
+        nonlocal reads
+        if url == fixtures_url:
+            return fixtures_html
+        reads += 1
+        return read_text(url)
+
+    snapshots = betexplorer.fetch_odds(
+        league_key, target_date, text_fetch=cached, now_utc=now_utc
+    )
+    by_game: Dict[str, List[BookSnapshot]] = {}
+    for snapshot in snapshots:
+        by_game.setdefault(snapshot.game_id, []).append(snapshot)
+
+    fixtures = [
+        Fixture(
+            game_id=game_id,
+            home_name=str(rows[0].home_name or ""),
+            away_name=str(rows[0].away_name or ""),
+            scheduled_utc=str(rows[0].scheduled_utc or ""),
+        )
+        for game_id, rows in by_game.items()
+    ]
+    return fixtures, by_game, fixtures_html, reads
+
+
 def slate_games(
     games: Sequence[Game], target_date: str, *, tz_offset_hours: int = 0
 ) -> List[Game]:
@@ -121,6 +181,7 @@ def fetch_published(
     read_text,
     *,
     match_url: Optional[str] = None,
+    fixtures_html: Optional[str] = None,
     delay: Optional[float] = None,
 ) -> Tuple[List[StandingsRow], Dict[str, object]]:
     """Published standings for a lane, finding a match page when not given one.
@@ -132,8 +193,10 @@ def fetch_published(
 
     league_key = betexplorer._require_league(league)
     if match_url is None:
-        fixture_html = read_text(betexplorer.FIXTURES_URLS[league_key])
-        links = betexplorer.match_links(fixture_html)
+        page = fixtures_html
+        if page is None:
+            page = read_text(betexplorer.FIXTURES_URLS[league_key])
+        links = betexplorer.match_links(page)
         if not links:
             raise betexplorer_standings.IdentityError(
                 f"{league_key}: fixtures page carried no match links, so no match "
@@ -193,12 +256,27 @@ def _read_text_factory(delay: float):
     return betexplorer_standings.paced(read, delay=delay)
 
 
+def _utc_now() -> str:
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
 def main(argv: Optional[Sequence[str]] = None) -> int:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--league", required=True)
     parser.add_argument("--date", required=True, help="YYYY-MM-DD, the card's date")
     parser.add_argument("--localdata", default="localdata")
-    parser.add_argument("--warehouse", default=None)
+    parser.add_argument(
+        "--from-store",
+        action="store_true",
+        help="score the warehouse's own games instead of the fixtures page",
+    )
+    parser.add_argument("--warehouse", default="localdata/warehouse.duckdb")
+    parser.add_argument(
+        "--tz-offset-hours",
+        type=int,
+        default=0,
+        help="lane wall-clock offset from UTC, for --from-store slate selection",
+    )
     parser.add_argument(
         "--delay",
         type=float,
@@ -210,17 +288,35 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     league = parse_league(args.league)
     spec = league_spec(league)
     localdata = Path(args.localdata)
+    read = _read_text_factory(args.delay)
+    now_utc = _utc_now()
 
-    from ingestion.duckdb_store import DuckDBStore
+    if args.from_store:
+        from ingestion.duckdb_store import DuckDBStore
 
-    store = DuckDBStore(args.warehouse or "localdata/warehouse.duckdb")
-    try:
-        games = slate_games(store.list_games(league=league), args.date)
-        snapshots = {game.game_id: store.get_book_snapshots(game.game_id) for game in games}
-        read = _read_text_factory(args.delay)
+        store = DuckDBStore(args.warehouse)
+        try:
+            games = slate_games(
+                store.list_games(league=league),
+                args.date,
+                tz_offset_hours=args.tz_offset_hours,
+            )
+            snapshots = {
+                game.game_id: store.get_book_snapshots(game.game_id) for game in games
+            }
+        finally:
+            store.close()
         published, report = fetch_published(league.value, read, delay=0.0)
-    finally:
-        store.close()
+    else:
+        # Default: the fixtures page is both the slate and the route to a match
+        # page, so a lane with no warehouse is still scoreable.
+        games, snapshots, fixtures_html, page_reads = slate_from_page(
+            league.value, args.date, read, now_utc=now_utc
+        )
+        published, report = fetch_published(
+            league.value, read, fixtures_html=fixtures_html, delay=0.0
+        )
+        report["requests"] = int(report.get("requests") or 0) + page_reads
 
     section = build_section(
         league.value, games, published, snapshots, target_date=args.date
