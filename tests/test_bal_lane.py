@@ -186,3 +186,95 @@ def test_gate_reads_the_blob_and_derives_state_from_scores(monkeypatch):
     assert slate[0].status == "scheduled"
     assert slate[0].scheduled_utc == datetime(2026, 3, 27, 14, 0, tzinfo=timezone.utc)
     assert adaptive_gate._bal_schedule(config, "2026-03-28") == []
+
+
+def _payload_with(rows: List[Any], season_year: int = 2026) -> Dict[str, Any]:
+    """A one-game-date envelope carrying the supplied rows verbatim."""
+
+    return {
+        "props": {
+            "pageProps": {
+                "gameDates": [{"seasonYear": season_year, "games": rows}],
+            }
+        }
+    }
+
+
+def test_off_date_rows_are_counted_not_silently_dropped():
+    """Run 45250804751: ``rows: 42``, ``games: 0``, ``off_date_dropped: 0``.
+
+    The bare ``continue`` upstream of every counter made those three numbers
+    consistent with a lane that read 42 rows and explained none of them.
+    """
+
+    row = _row()
+    off_date = json.loads(json.dumps(row))
+    off_date["gameDateTimeUTC"] = "2026-03-28T18:00:00Z"
+    payload = _payload_with([row, off_date, json.loads(json.dumps(off_date))])
+
+    games = bal.discover_games("2026-03-27", _fetch(payload))
+
+    assert [g.game_id for g in games] == ["BAL-1122600001"]
+    probe = bal.last_probe()
+    assert probe["rows"] == 3
+    assert probe["games"] == 1
+    assert probe["off_date_dropped"] == 2
+    assert probe["missing_stamp_dropped"] == 0
+    assert probe["non_dict_rows"] == 0
+
+
+def test_a_row_without_a_stamp_is_counted_under_its_own_reason():
+    row = _row()
+    stampless = json.loads(json.dumps(row))
+    stampless["gameDateTimeUTC"] = None
+    empty = json.loads(json.dumps(row))
+    empty["gameDateTimeUTC"] = ""
+
+    games = bal.discover_games("2026-03-27", _fetch(_payload_with([row, stampless, empty])))
+
+    assert [g.game_id for g in games] == ["BAL-1122600001"]
+    probe = bal.last_probe()
+    assert probe["missing_stamp_dropped"] == 2
+    assert probe["off_date_dropped"] == 0
+
+
+def test_non_dict_rows_are_counted_rather_than_skipped():
+    payload = _payload_with([_row(), "not-a-row", None, ["also", "not", "a", "row"]])
+
+    games = bal.discover_games("2026-03-27", _fetch(payload))
+
+    assert [g.game_id for g in games] == ["BAL-1122600001"]
+    assert bal.last_probe()["non_dict_rows"] == 3
+    assert bal.last_probe()["rows"] == 4
+
+
+def test_unfiltered_read_counts_nothing_as_dropped():
+    """With no date filter there is no drop decision to count."""
+
+    bal.discover_games(None, _fetch())
+
+    probe = bal.last_probe()
+    assert probe["games"] == 1
+    assert probe["off_date_dropped"] == 0
+    assert probe["missing_stamp_dropped"] == 0
+    assert probe["non_dict_rows"] == 0
+
+
+def test_pipeline_receipt_prints_the_bal_counters():
+    from ingestion.pipeline import Pipeline, PipelineConfig
+    from ingestion.store import InMemoryStore
+
+    row = _row()
+    off_date = json.loads(json.dumps(row))
+    off_date["gameDateTimeUTC"] = "2026-03-28T18:00:00Z"
+    page = _html(_payload_with([row, off_date]))
+    payload = PipelineConfig(league="BASKETBALL_AFRICA_LEAGUE", date_yyyymmdd="20260327")
+    pipeline = Pipeline(payload, InMemoryStore(), fetch=lambda url: page, allow_writes=False)
+
+    assert pipeline._discover_games()
+
+    row_out = next(h for h in pipeline._health_written if h["provider"] == "bal")
+    assert row_out["coverage"]["off_date_dropped"] == 1
+    assert row_out["coverage"]["missing_stamp_dropped"] == 0
+    assert row_out["coverage"]["non_dict_rows"] == 0
+    assert "off_date_dropped=1" in row_out["detail"]

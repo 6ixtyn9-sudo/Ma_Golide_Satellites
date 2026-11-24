@@ -1023,10 +1023,16 @@ class Pipeline:
                             "game_dates": probe.get("game_dates", 0),
                             "rows": probe.get("rows", 0),
                             "off_date_dropped": probe.get("off_date_dropped", 0),
+                            "missing_stamp_dropped": probe.get("missing_stamp_dropped", 0),
+                            "non_dict_rows": probe.get("non_dict_rows", 0),
                         },
                         detail=(
                             f"url={probe.get('url')} bytes={probe.get('bytes')} "
-                            f"sha256={probe.get('sha256')}"
+                            f"sha256={probe.get('sha256')} "
+                            f"rows={probe.get('rows')} games={len(games)} "
+                            f"off_date_dropped={probe.get('off_date_dropped')} "
+                            f"missing_stamp_dropped={probe.get('missing_stamp_dropped')} "
+                            f"non_dict_rows={probe.get('non_dict_rows')}"
                         )[:500],
                     )
                 )
