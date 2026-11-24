@@ -184,11 +184,12 @@ def test_shadow_lane_leagues_is_exactly_the_fixtures_only_class():
     values = {spec.league.value for spec in leagues}
     # Leumit was retired on 2026-11-24 (no permitted results route), and a
     # retired lane never qualifies whatever its sources say -- which is the
-    # behaviour this set is asserting.
+    # behaviour this set is asserting. NKL left this set the same day for the
+    # opposite reason: it now settles from the federation's own pages, so it is
+    # no longer a lane that can never be graded.
     assert values == {
         "GREECE_BASKET_LEAGUE",
         "CHINA_WCBA_W",
-        "LITHUANIA_NKL",
         "AUSTRALIA_WNBL_W",
     }
     for spec in leagues:

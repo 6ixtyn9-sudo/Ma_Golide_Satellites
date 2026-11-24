@@ -665,28 +665,36 @@ _SPECS: Tuple[LeagueSpec, ...] = (
         "Europe/Vilnius",
         "Europe/Paris",
         "betexplorer_fixtures",
-        "source_unavailable",
+        "nkl",
         "betexplorer_fixtures",
         source_detail=(
             "Fixtures table '/basketball/lithuania/nkl/fixtures/' (h1 'NKL 2026/2027 "
             "Fixtures', served 2026-11-24: 167 rows, 7 priced of which 6 still future, "
             "99 rows with no kickoff cell). Clock is the site's CET/CEST wall clock. "
             "Page average, not a named book; source terms unreviewed. No results route."
-            " WP-JSON surface exercised 2026-11-24T14:03Z from an egress host: the namespace index answers 200 in 398,405 B and lists nkl-calendar/v1; nkl-calendar/v1/teams?season=2026 answers 200 in 1,390 B as {\"season\":2026,\"teams\":[{\"id\":3386,\"name\":\"Alytaus Patriotai\",\"slug\":\"alytaus-patriotai\"}]}. But the single-game object answers schedule only: keys id, summary, location, start_local, start_utc, end_utc, url, ics -- no score, no status. So the earlier \"endpoint family proven\" reading overstated it: this namespace is a calendar, not a results source, and the scores have to come from another route (the index also lists nkl/v1 and nkl-advanced-statistics/v1, neither yet read). Re-read 2026-11-24T14:2xZ: urbo-nkl/v1/games answers 401 rest_unauthorized ('Trūksta Authorization Bearer antraštės') and nkl/v1/live-scores answers 200 with an empty array, so the score-bearing namespaces observed so far are token-gated or empty rather than merely unread; nkl-amw/v1/games answers 401 rest_forbidden ('Deja, Jūs negalite to daryti') and nkl/v1/live-scores?date=2026-11-24 answers 200 with the same empty array, so every score-bearing namespace observed on this host is auth-gated or empty and the WP-JSON surface has no public results route left to try; the next read is the site's own match pages. The aggregator's own results page for this lane was then captured at 14:45Z -- 200, 192,203 B, sha256 07a382c1774d...16de, 279 match-code links resolving to 140 distinct matches and 141 colon scores -- so the finals this host will not serve over WP-JSON are readable from a path-only, robots-allowed page. robots.txt carries Crawl-delay 10 with no Disallow; the host publishes no terms document. Licence gate open (operator_acceptance). See docs/RESULTS-ROUTE-ASSESSMENT.md."
+            " WP-JSON surface exercised 2026-11-24T14:03Z from an egress host: the namespace index answers 200 in 398,405 B and lists nkl-calendar/v1; nkl-calendar/v1/teams?season=2026 answers 200 in 1,390 B as {\"season\":2026,\"teams\":[{\"id\":3386,\"name\":\"Alytaus Patriotai\",\"slug\":\"alytaus-patriotai\"}]}. But the single-game object answers schedule only: keys id, summary, location, start_local, start_utc, end_utc, url, ics -- no score, no status. So the earlier \"endpoint family proven\" reading overstated it: this namespace is a calendar, not a results source, and the scores have to come from another route (the index also lists nkl/v1 and nkl-advanced-statistics/v1, neither yet read). Re-read 2026-11-24T14:2xZ: urbo-nkl/v1/games answers 401 rest_unauthorized ('Trūksta Authorization Bearer antraštės') and nkl/v1/live-scores answers 200 with an empty array, so the score-bearing namespaces observed so far are token-gated or empty rather than merely unread; nkl-amw/v1/games answers 401 rest_forbidden ('Deja, Jūs negalite to daryti') and nkl/v1/live-scores?date=2026-11-24 answers 200 with the same empty array, so every score-bearing namespace observed on this host is auth-gated or empty and the WP-JSON surface has no public results route left to try; the next read is the site's own match pages. The aggregator's own results page for this lane was then captured at 14:45Z -- 200, 192,203 B, sha256 07a382c1774d...16de, 279 match-code links resolving to 140 distinct matches and 141 colon scores -- so the finals this host will not serve over WP-JSON are readable from a path-only, robots-allowed page. robots.txt carries Crawl-delay 10 with no Disallow; the host publishes no terms document. Licence gate open (operator_acceptance). Results lane activated 2026-11-24 on a live run, not on an argument: ingestion/providers/nkl.py settles a forecast in two requests from an egress host -- the club fixture page (which lists a whole season and is reused for every game of that club) then the match page -- and three games settled with quarters summing to the stated final: 2026-10-01 Kretinga 76-91 Neptunas 2 (125749, 2 requests), 2026-10-03 Vilkaviskis 84-65 Kretinga (125760, 2), 2026-10-10 Kretinga 95-99 Ukmerges Stekas (125775, 1), five requests total, every final agreeing with the club listing observed independently. The run found two defects that no single-game test had: the reader reported no row for three games the listings plainly contain, which is one sentence for three faults, and the club page prints a played fixture three times byte-identically, so the ambiguity rule refused every game on it -- identical repeats now collapse (collapse) while one match id carrying contradictory data still refuses. urllib and HttpClient return identical bytes (452,698 chars, 59 rows, same counts), so the mojibake class of bug was excluded by measurement rather than assumed. reads are paced to the host's own Crawl-delay 10 by PacedReader rather than by a caller who remembers to sleep. Settlement is store-driven: the fixtures lane discovers SCHEDULED rows with no score, so the results tick settles stored pending games from the club and match pages (Pipeline._nkl_settle) and writes nothing for a game whose quarters fail to reconcile. See docs/NKL-SETTLEMENT-LIVE-RUN.md."
         ),
         price_sources=(_aggregate_research_only("betexplorer"),),
         operator_acceptance=OperatorAcceptance(
             decided_by="operator",
             decided_on="2026-11-24",
             basis=(
-                "nkl.lt publishes no terms document -- its sitemap lists only cookie "
-                "and privacy policies -- so there is no licence to read, comply with, "
-                "or breach. Operator instruction 2026-11-24, activate NKL now."
+                "nkl.lt publishes no terms document of its own -- its sitemap lists "
+                "only cookie and privacy policies -- so there is no licence to read, "
+                "comply with, or breach. Operator instruction 2026-11-24, activate NKL "
+                "now; operator statement the same day that the site's published "
+                "notices were read and the read is accepted for this record. The "
+                "absence of a separate terms document is recorded rather than "
+                "resolved by assumption: nothing here claims a licence the host never "
+                "granted, and the decision is the operator's, by name and date."
             ),
             scope=(
-                "Read the documented nkl.lt WP-JSON namespace (teams by season, game by "
-                "id) for this paper-only record, honouring its Crawl-delay: 10 and one "
-                "page per game. No redistribution, attribution on every row."
+                "Read nkl.lt club pages (/komandos/<slug>/) and match pages "
+                "(/matches/<id>/) for this paper-only record: one club page per club "
+                "per run, one match page per game, paced to the host's own "
+                "Crawl-delay: 10. Results are written only when the periods reconcile "
+                "with the stated final. No redistribution, no ticket use, attribution "
+                "on every row."
             ),
         ),
     ),

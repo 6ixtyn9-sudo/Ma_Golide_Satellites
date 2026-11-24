@@ -73,6 +73,7 @@ from .providers import (
     israel_ibl,
     kbl,
     lba,
+    nkl,
     tbf,
 )
 
@@ -238,6 +239,8 @@ class Pipeline:
             else fiba_euroleague_w.FibaClient()
         )
         self._injected_fetch = fetch is not None
+        self._nkl_reader: Optional[nkl.PacedReader] = None
+        self._nkl_cache: Dict[str, List[nkl.ListingRow]] = {}
         self.fetch = fetch or HttpClient().get_json
         cache_dir = None
         store_path = getattr(store, "path", None)
@@ -284,6 +287,17 @@ class Pipeline:
 
         return self.fetch if self._injected_fetch else None
 
+    def _nkl_text_fetch(self):
+        """Injected transports serve HTML fixtures in tests; live runs read text.
+
+        ``self.fetch`` is JSON-oriented (``HttpClient().get_json``).  nkl.lt
+        publishes server-rendered match pages, so a live run must use the text
+        client -- but an injected transport is preserved so no test touches the
+        network.
+        """
+
+        return self.fetch if self._injected_fetch else None
+
     def _aba_text_fetch(self):
         """Use an injected fixture transport, else the adapter's text client.
 
@@ -306,6 +320,11 @@ class Pipeline:
         self.prediction_provider_status = {}
         self._history_model_declines = {}
         self.history_repair: Dict[str, Any] = {}
+        # The NKL reader and its club-page cache are per *run*, not per date
+        # batch: a slate spanning two dates must still read each club page once,
+        # and the crawl delay has to hold across the batch boundary too.
+        self._nkl_reader: Optional[nkl.PacedReader] = None
+        self._nkl_cache: Dict[str, List[nkl.ListingRow]] = {}
 
     def _stamp_book_evidence(self, snapshot: BookSnapshot) -> BookSnapshot:
         """Apply the registry evidence contract to every acquired price quote.
@@ -4078,6 +4097,12 @@ class Pipeline:
             return self._euroleague_finals(self._discover_games())
         if league is League.EUROLEAGUE_W:
             return self._fiba_euroleague_w_finals(self._discover_games())
+        if league is League.LITHUANIA_NKL:
+            # Settlement is store-driven (see _nkl_settle): the fixtures lane only
+            # ever discovers SCHEDULED rows, so there is no result feed to request
+            # for the run's own day. Pending games are settled by the re-check,
+            # which asks the store which fixtures have actually gone past.
+            return []
         spec = league_spec(league)
         self._unsupported_source_gap(
             "official_results",
@@ -4088,6 +4113,77 @@ class Pipeline:
             ),
         )
         return []
+
+    def _nkl_settle(self, pending: Dict[str, "Game"]) -> List["Game"]:
+        """Settle stored NKL fixtures from the federation's own match pages.
+
+        Store-driven on purpose. The fixtures lane discovers *scheduled* rows with
+        no score, so there is no result feed to ask for a day; what exists is the
+        club page, which lists a whole season, and the match page, which carries
+        the quarters. One club read is reused for every game of that club in the
+        run, so two requests settle the first game and one settles each after it.
+
+        Reads are paced to nkl.lt's own ``Crawl-delay: 10`` by the reader rather
+        than by whoever remembers to sleep. A game whose quarters do not reconcile
+        with the stated final becomes a gap, never a result -- that is the whole
+        reason to read the match page instead of the final alone.
+        """
+
+        if self._nkl_reader is None:
+            self._nkl_reader = nkl.paced(self._nkl_text_fetch() or HttpClient().get_text)
+        read, cache = self._nkl_reader, self._nkl_cache
+        settled: List[Game] = []
+        for game in pending.values():
+            played_on = (
+                parse_utc(game.scheduled_utc)
+                .astimezone(ZoneInfo(self.config.timezone))
+                .date()
+            )
+            try:
+                settlement = nkl.settle_forecast(
+                    read,
+                    played_on=played_on,
+                    home=game.home_name,
+                    away=game.away_name,
+                    cache=cache,
+                )
+            except Exception as exc:  # one bad game never blocks the others
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="nkl_result",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider=nkl.PROVIDER,
+                        detail=str(exc)[:180],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            if settlement.result is None:
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="nkl_result",
+                        reason=CoverageState.MISSING,
+                        provider=nkl.PROVIDER,
+                        detail="; ".join(settlement.reasons)[:200]
+                        or "no reconcilable result on the match page",
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            provider_ids = dict(game.provider_ids)
+            if settlement.match_id:
+                provider_ids[nkl.PROVIDER] = settlement.match_id
+            settled.append(
+                replace(
+                    game,
+                    status=GameStatus.FINAL,
+                    actual=settlement.result,
+                    provider_ids=provider_ids,
+                )
+            )
+        return settled
 
     def _lba_finals(self, games: List[Game]) -> List[Game]:
         """Refresh LBA finals from per-match play-by-play (periods authoritative).
@@ -4466,6 +4562,7 @@ class Pipeline:
             League.EUROLEAGUE,
             League.EUROLEAGUE_W,
             League.CBA,
+            League.LITHUANIA_NKL,
         }:
             spec = league_spec(league)
             self._unsupported_source_gap(
@@ -4501,6 +4598,14 @@ class Pipeline:
                 elif league in ESPN_LEAGUES:
                     day = espn.fetch_recent_results(
                         date, self.espn_fetch, league, observed_utc=self._now_iso()
+                    )
+                elif league is League.LITHUANIA_NKL:
+                    day = self._nkl_settle(
+                        {
+                            game_id: game
+                            for game_id, game in pending.items()
+                            if self._ledger_date_for(game) == date
+                        }
                     )
                 elif league is League.ABA_LEAGUE:
                     day = aba_liga.fetch_recent_results(

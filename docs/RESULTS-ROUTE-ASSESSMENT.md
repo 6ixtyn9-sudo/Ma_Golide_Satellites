@@ -18,7 +18,7 @@ final), never as a verdict.
 |---|---|---|---|---|
 | `GREECE_BASKET_LEAGUE` | **PASS candidate** | `esake.gr/el/action/EsakeResults?idchampionship=184645B9&idseason=00000001&series=N` + `EsakegameView?idgame=<HEX>` | **10/10** (incl. an OT game) | Only the ToS reading (below). No code blocker. |
 | `CHINA_WCBA_W` | Endpoint proven, **STOPPED at the ToS gate** | `cba.net.cn/datahub/cbamatch/games/matchschedules?competitionId=56&seasonId=2286` | 10/10 | Host publishes **no terms document at all** |
-| `LITHUANIA_NKL` | Endpoint family proven, **STOPPED at the ToS gate** | `nkl.lt/wp-json/nkl-calendar/v1/teams?season=` + `/game/{id}` | not computed (stopped) | Host publishes **no terms document**; sitemap lists only cookie/privacy pages |
+| `LITHUANIA_NKL` | **LIT (2026-11-24)** — settles from the federation's own pages | `nkl.lt/komandos/<slug>/` (season fixtures, cached per run) + `/matches/<id>/` (quarters) | 3/3 games settled, quarters reconciling | Nothing blocking; the WP-JSON surface still has no score, which is why the route is the HTML |
 | `ISRAEL_LIGA_LEUMIT` | **Nothing passes — documented** | none | 0/10 on every candidate | `one.co.il` disallows `/api/` in robots (the only path with scores); `safsal.co.il` has no ToS page; the federation host `basketball.org.il` timed out ×3 over two days; `basket.co.il` serves only the Premier board |
 | `AUSTRALIA_WNBL_W` | **Not delivered** | — | — | The probe log shows real work (`prod.rosetta.nbl.com.au/get/wnbl/matches/in/season/{2025,2026}/regular` → 200; `wnbl.com.au/terms-and-conditions` → 200) but no report or verdict was handed back |
 
@@ -144,13 +144,24 @@ comment: who decided, when, what may be read, and on what basis.
 |---|---|---|
 | `GREECE_BASKET_LEAGUE` | esake.gr terms scope copying to personal, non-commercial use | that clause, for this paper record |
 | `CHINA_WCBA_W` | cba.net.cn publishes **no terms document at all** | read the documented data-hub endpoint, paper-only, no redistribution |
-| `LITHUANIA_NKL` | nkl.lt publishes **no terms document** (sitemap: cookie + privacy only) | read the documented WP-JSON surface, honouring `Crawl-delay: 10` |
+| `LITHUANIA_NKL` | nkl.lt publishes **no terms document** (sitemap: cookie + privacy only); the operator read the site's published notices on 2026-11-24 and accepted the read for this record | club pages and match pages, one club page per club per run, one match page per game, paced to `Crawl-delay: 10` |
 | `AUSTRALIA_WNBL_W` | route assessment never completed; wnbl.com.au publishes terms | read the rosetta per-season route and those terms, paper-only |
 
-**An acceptance is not an activation.** All four lanes still report
+**An acceptance is not an activation.** Three of these four lanes still report
 `results_source = source_unavailable`, because the remaining gate is not a licence
 — it is a served page the parser has been replayed against. `tests/test_operator_acceptance.py`
 asserts exactly that, so a future edit cannot turn a decision into a fake lane.
+
+`LITHUANIA_NKL` is the exception, and it earned it the same way: its reader was
+replayed against served pages and settled three games from an egress host on
+2026-11-24 (76-91, 84-65, 95-99, quarters reconciling with each stated final;
+`docs/NKL-SETTLEMENT-LIVE-RUN.md`). The gate that was crossed is the one this
+section describes — a captured page the parser has read — not the licence, which
+the operator had already accepted. The lane's `results_source` is `nkl`, and the
+scheduled results tick settles stored pending fixtures through
+`Pipeline._nkl_settle`: one club page per club per run, one match page per game,
+paced to the host's own ten seconds, and a gap rather than a result whenever the
+quarters fail to reconcile.
 
 `ISRAEL_LIGA_LEUMIT` was retired on the same day, for the same reason as the nine
 retired lanes before it: the schedule side is served, every candidate results
