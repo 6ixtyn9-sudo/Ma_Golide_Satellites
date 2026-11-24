@@ -872,6 +872,13 @@ body's own shape alongside — `td_cells`, `period_markers`, `colon_scores` — 
 match page under this modal" is answered by the same vocabulary as the capture receipt
 instead of by inspecting the modal.
 
+Every receipt now names the build that produced it — `tool: {script, git_commit, modified}` —
+because three sessions were spent reading output from a checkout one merge behind, where the
+flags existed in the repository and not in the file being run. `git_commit: null` means the
+tool could not tell, which is a different claim from a hash and is printed as such. A receipt
+that cannot name its own build cannot be told apart from a host answering badly — the same
+rule the `sha256` on every saved body follows, applied to the thing doing the asking.
+
 Where the consent actually lives is still unknown, and guessing again is not the plan.
 `--gate-script` reads a saved gate page offline and prints what the accept control does —
 inline handler excerpts, the external bundle list, how many inline blocks there are. If the

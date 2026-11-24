@@ -49,6 +49,7 @@ import hashlib
 import json
 from pathlib import Path
 import re
+import subprocess
 import sys
 import time
 
@@ -305,6 +306,43 @@ def gate_storage_keys(body: str) -> list[str]:
     return keys
 
 
+def probe_build() -> dict[str, object]:
+    """Which copy of this script produced the receipt.
+
+    Three sessions in a row were spent reading output from a checkout that was
+    one merge behind: the flags existed in the repository and not in the file
+    being run. A receipt that does not name its own build cannot tell that
+    apart from a host answering badly, so this asks git and reports what it
+    finds, or says plainly that it could not tell.
+    """
+
+    root = Path(__file__).resolve().parent.parent
+    try:
+        commit = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "--short", "HEAD"],
+            capture_output=True,
+            text=True,
+            timeout=5,
+            check=False,
+        ).stdout.strip()
+        dirty = bool(
+            subprocess.run(
+                ["git", "-C", str(root), "status", "--porcelain", "--", str(Path(__file__))],
+                capture_output=True,
+                text=True,
+                timeout=5,
+                check=False,
+            ).stdout.strip()
+        )
+    except (OSError, subprocess.SubprocessError):
+        return {"script": Path(__file__).name, "git_commit": None, "modified": None}
+    return {
+        "script": Path(__file__).name,
+        "git_commit": commit or None,
+        "modified": dirty,
+    }
+
+
 def cooldown_wait(previous: float | None, now: float, seconds: float) -> float:
     """Seconds still owed before this run may touch the host.
 
@@ -468,6 +506,7 @@ def capture_index(league: str, *, out_dir: Path, read_text) -> dict[str, object]
     index_path = out_dir / "results-index.json"
     payload = {
         "schema_version": "magolide.results_probe.v1",
+        "tool": probe_build(),
         "mode": "results_index",
         "captured_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "note": (
@@ -685,6 +724,7 @@ def capture_match_pages(
 
     payload = {
         "schema_version": "magolide.results_probe.v1",
+        "tool": probe_build(),
         "mode": "match_pages",
         "league": league,
         "captured_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -886,6 +926,7 @@ def main(argv: list[str] | None = None) -> int:
         print(
             json.dumps(
                 {
+                    "tool": probe_build(),
                     "path": args.gate_script,
                     "gate": gate_reason(body),
                     **gate_script(body),
@@ -901,6 +942,7 @@ def main(argv: list[str] | None = None) -> int:
         print(
             json.dumps(
                 {
+                    "tool": probe_build(),
                     "path": args.gate_hints,
                     "gate": gate_reason(body),
                     "hints": [
@@ -971,6 +1013,7 @@ def main(argv: list[str] | None = None) -> int:
         page = parse_results(path.read_text(encoding="utf-8"))
         payload = {
             "schema_version": "magolide.results_probe.v1",
+            "tool": probe_build(),
             "mode": "results_read",
             "league": args.league,
             "path": str(path),
