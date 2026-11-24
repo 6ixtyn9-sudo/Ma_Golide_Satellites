@@ -741,3 +741,46 @@ that has already answered.
 What is still unknown is what those 110 KB *are*. The next read is a window of the saved
 NKL body around whatever carries the score — one command, no request, on a file that is
 already on disk.
+
+## The match page was an age gate (2026-11-24T15:2xZ)
+
+`scoreboard_mentions: 0`, and the 110 KB is this:
+
+```html
+<h1 id="ageTitle">Verificação de idade obrigatória</h1>
+… Você deve ter pelo menos 18 anos para acessar este site …
+```
+
+An eighteen-plus modal in Brazilian Portuguese, wrapped in ad banners. Not a scoreboard, not
+a table, not a match page — a consent gate. Every shape signal I had said "captured",
+because 110 KB of modal is 110 KB.
+
+Two readings are possible and the receipts cannot separate them:
+
+* match pages on this host are gated by design, and results pages are not; or
+* the host began serving the gate **after our burst** — NKL captured, WNBL 429, WCBA
+  captured — in which case it is a soft block answering our request pattern rather than a
+  property of the page.
+
+The polite response is the same either way, so nothing is attempted past it: the probe now
+labels such a body `status: "gated"` with the marker that matched, saves it as evidence, and
+counts it in `gated` rather than in `captured`. A gate that reports as a capture is the
+fourth version of today's recurring failure — a number that looks like an answer.
+
+## Where the aggregator lane now stands, honestly
+
+| what | state |
+|---|---|
+| results index (3 lanes) | **197 finals read** — codes, clubs, totals, no dates |
+| match pages | **gated**; period scores unread |
+| settlement | **impossible from what is read**, since a final does not reconcile |
+
+So the aggregator is, today, a **verification** source and not a settlement source. That is
+a scope statement, not a failure: 197 finals will catch a settlement error from any other
+source, and they cost ten requests in total across three leagues.
+
+Whether to go further is an operator decision and it has two branches: pass the age gate
+(a self-declaration of 18+, which is their consent mechanism rather than a robots rule), or
+leave the lane as verification and take settlement from federations. This project has
+already recorded one such decision — the Greek terms — as the operator's, in the lane's own
+`source_detail`, rather than making it quietly.

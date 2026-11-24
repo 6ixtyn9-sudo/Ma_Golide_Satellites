@@ -424,3 +424,35 @@ def test_a_429_stops_the_run_rather_than_arguing_with_the_host(tmp_path):
     assert len(fetched) == 2  # the third was never asked for
     assert payload["stopped_on_429"] is True
     assert [page["status"] for page in payload["pages"]] == ["captured", "fetch_failed"]
+
+
+def test_an_age_gate_is_saved_as_evidence_but_never_counted_as_a_match(tmp_path):
+    """The failure mode this catches: 110 KB that reports as a captured page.
+
+    The 2026-11-24 match "captures" were `<h1 id="ageTitle">Verificação de idade
+    obrigatória</h1>` — an 18+ modal, not a scoreboard. Size said yes; the page
+    said nothing.
+    """
+
+    gate = (
+        '<div id="ageModal" class="age__modal">'
+        '<h1 id="ageTitle">Verificação de idade obrigatória</h1></div>'
+    )
+
+    payload = probe.capture_match_pages(
+        "LITHUANIA_NKL",
+        matches=[{"code": "nRzm7OsT", "url": "/basketball/lithuania/nkl/a-b/nRzm7OsT/"}],
+        out_dir=tmp_path,
+        read_text=lambda url: gate,
+        limit=1,
+    )
+
+    page = payload["pages"][0]
+    assert page["status"] == "gated"
+    assert page["gate"].startswith("age gate")
+    assert payload["gated"] == 1
+    assert (tmp_path / "match_nRzm7OsT.html").exists()  # still evidence
+
+
+def test_a_real_body_is_not_mistaken_for_a_gate():
+    assert probe.gate_reason("<table><tr><td>Q1</td></tr></table>") is None

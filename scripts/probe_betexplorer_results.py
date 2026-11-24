@@ -76,6 +76,26 @@ MATCH_INTERVAL_SECONDS = 10.0
 _COLON_SCORE_RE = re.compile(r"\b\d{1,3}:\d{1,3}\b")
 _SCOREBOARD_RE = re.compile(r"scoreboard", re.IGNORECASE)
 
+#: An age gate is not a match page, and it is 110 KB of modal and banners that
+#: looks exactly like a captured page to everything downstream.
+_GATE_MARKERS = (
+    'id="ageTitle"',
+    "age__modal",
+    "idade obrigat",
+    "age verification",
+    "age-verification",
+)
+
+
+def gate_reason(body: str) -> str | None:
+    """Why this body is a gate rather than the page that was asked for."""
+
+    lowered = (body or "").lower()
+    for marker in _GATE_MARKERS:
+        if marker.lower() in lowered:
+            return f"age gate ({marker})"
+    return None
+
 _INT_CELL_RE = re.compile(r">\s*(\d{1,3})\s*<")
 _INT_TOKEN_RE = re.compile(r"\b\d{1,3}\b")
 
@@ -332,6 +352,23 @@ def capture_match_pages(
             continue
         path = out_dir / f"match_{code}.html"
         path.write_text(body, encoding="utf-8")
+        gate = gate_reason(body)
+        if gate is not None:
+            # Saved, because it is evidence of what the host served, but never
+            # counted as a match page: 110 KB of age modal reads as a captured
+            # page to every check that only looks at size.
+            captured.append(
+                {
+                    "event_id": code,
+                    "url": url,
+                    "status": "gated",
+                    "gate": gate,
+                    "bytes": len(body.encode("utf-8")),
+                    "sha256": hashlib.sha256(body.encode("utf-8")).hexdigest(),
+                    "path": str(path),
+                }
+            )
+            continue
         text = re.sub(r"<[^>]+>", " ", body)
         captured.append(
             {
@@ -359,6 +396,7 @@ def capture_match_pages(
         "captured_utc": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
         "requested": len(wanted),
         "stopped_on_429": throttled,
+        "gated": sum(1 for page in captured if page["status"] == "gated"),
         "note": (
             "Match pages saved verbatim. period_markers counts Q1..Q4/OT-shaped "
             "tokens, which is what a reconciliation record would need and what a "
