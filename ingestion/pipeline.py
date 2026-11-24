@@ -1386,13 +1386,40 @@ class Pipeline:
         elif league_spec(league).schedule_source == "betexplorer_fixtures":
             # One page yields the slate; the price read reuses the same page in
             # ``betexplorer`` and is keyed by the identical match code.
-            games = betexplorer_fixtures.fetch_slate(
-                league,
-                self.config.date_yyyymmdd,
-                text_fetch=self._betexplorer_text_fetch(),
-            )
-            self.gaps.extend(betexplorer_fixtures.last_gaps())
-            probe = betexplorer_fixtures.last_probe()
+            try:
+                games = betexplorer_fixtures.fetch_slate(
+                    league,
+                    self.config.date_yyyymmdd,
+                    text_fetch=self._betexplorer_text_fetch(),
+                )
+            except HttpError as exc:
+                # Run 45376480832 (2026-11-24T10:40Z): BetExplorer answered
+                # ``HTTP 429`` to ISRAEL_LIGA_LEUMIT's fixtures page after the
+                # transport's two retries, the adapter raised through this
+                # branch, and the tick exited 1 -- a *refused* read was reported
+                # as a failed day, with no card, no gap and no lifecycle work.
+                # That is the same failure class the EuroLeague branch above
+                # already survives, and it gets the same answer: name the
+                # refusal, run on the stored slate, let settlement continue.
+                # A refusal is not an empty slate, and it is not a verdict on
+                # the lane.
+                #
+                # Only transport failures degrade.  ``IdentityError`` (a page
+                # arrived but its table is gone) still raises: a source we can
+                # read but no longer parse is a code failure, not the host's.
+                games = self._degrade_schedule_to_stored_slate(
+                    provider=betexplorer_fixtures.SCHEDULE_SOURCE,
+                    coverage={"http_status": exc.status},
+                    context=(
+                        f"{betexplorer_fixtures.SCHEDULE_SOURCE} refused the "
+                        f"fixtures page for {league_spec(league).label}"
+                    ),
+                    exc=exc,
+                )
+                probe = None
+            else:
+                self.gaps.extend(betexplorer_fixtures.last_gaps())
+                probe = betexplorer_fixtures.last_probe()
             # The page was read, so an empty slate is an answer, not a void.
             read_receipt = bool(probe)
             if probe:

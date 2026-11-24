@@ -567,3 +567,24 @@ bounded count and age retention. Replaying an identical summary returns
   by deleting evidence.
 - Check `provider_health`, stage `gaps`, and `uncovered_games` before assuming
   a market is unsupported.
+
+### Refused and unreachable schedule reads
+
+A schedule host that refuses us costs the lane its slate, never the tick. An
+`HttpError` on the `betexplorer_fixtures` and EuroLeague schedule branches
+becomes a named `official_schedule` `provider_error` gap (a refusal also records
+`coverage.http_status`, e.g. `429`) plus a `provider_error` health row, and the
+run continues on the canonical stored slate so settlement, grading and the
+market report still happen. An unreadable source is named as unreadable; it is
+never rendered as an empty slate, and it never unwinds to
+`{"status": "failed"}` with nothing recorded.
+
+Run 45376480832 (2026-11-24T10:40Z, `ISRAEL_LIGA_LEUMIT`) is the fixture case:
+`HTTP 429` on `/basketball/israel/liga-leumit/fixtures/` after the transport's
+two retries exited 1 with no card, no gap and no lifecycle work.
+
+A `Retry-After` header is honoured when the host sends one, clamped to
+`ingestion.http.MAX_RETRY_AFTER_SECONDS`; a longer one means "come back later",
+which is a degradation, not a reason to sleep through the tick. A page that
+arrives *without* its fixtures table (`IdentityError`) still raises: a source we
+can read but no longer parse is a code failure, not a host's bad day.
