@@ -1,0 +1,101 @@
+Ma Golide Picks — NBA_G_LEAGUE 2026-11-25
+========================================================================
+Generated at: 2026-11-25 08:39 SAST
+PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
+Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
+Only FROZEN rows are immutable settlement evidence; all final grades use official results.
+Started and settled games are retained separately as archive status.
+
+
+ELIGIBLE CLEAN PICKS
+========================================================================
+  (none)
+
+CAUTION PICKS
+========================================================================
+  (none)
+
+PRIOR-HEAVY — THIN TEAM EVIDENCE (PAPER ONLY)
+========================================================================
+  (none)
+
+WATCHLIST — NO MATCHED ODDS
+========================================================================
+  [team_history_empirical/team_history_empirical] Westchester Knicks vs Greensboro Swarm · KO 2026-11-26 02:00 SAST
+      MONEYLINE H1 -> AWAY · p=66.7% (raw 66.7%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market · prediction=history
+      evidence_advisories=insufficient_walk_forward_samples,insufficient_team_specific_history
+      thin team evidence · effective games home=4.7/8.0 away=5.5/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
+  [team_history_empirical/team_history_empirical] Laketown Squadron vs Osceola Magic · KO 2026-11-26 02:30 SAST
+      MONEYLINE H1 -> AWAY · p=64.2% (raw 64.2%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market · prediction=history
+      evidence_advisories=insufficient_walk_forward_samples,insufficient_team_specific_history
+      thin team evidence · effective games home=5.5/8.0 away=5.5/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
+  [provider:history_model/team_history_empirical] Westchester Knicks vs Greensboro Swarm · KO 2026-11-26 02:00 SAST
+      MONEYLINE full_game -> AWAY · p=62.0% (raw 61.7%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=3 · reasons=no_exact_bookmaker_market · prediction=history_model
+      evidence_advisories=insufficient_walk_forward_samples
+      collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:history_model, team_history_empirical
+  [provider:history_model/team_history_empirical] Laketown Squadron vs Osceola Magic · KO 2026-11-26 02:30 SAST
+      MONEYLINE full_game -> AWAY · p=58.3% (raw 58.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=3 · reasons=no_exact_bookmaker_market · prediction=history_model
+      evidence_advisories=insufficient_walk_forward_samples
+      collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:history_model, team_history_empirical
+  [provider:history_model/team_history_empirical] Sioux Falls Skyforce vs Cleveland Charge · KO 2026-11-26 02:30 SAST
+      MONEYLINE full_game -> HOME · p=55.9% (raw 55.6%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=provisional n=3 · reasons=no_exact_bookmaker_market · prediction=history_model
+      evidence_advisories=insufficient_walk_forward_samples
+      collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:history_model, team_history_empirical
+  [team_history_empirical/team_history_empirical] Sioux Falls Skyforce vs Cleveland Charge · KO 2026-11-26 02:30 SAST
+      MONEYLINE H1 -> AWAY · p=51.9% (raw 51.9%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market · prediction=history
+      evidence_advisories=insufficient_walk_forward_samples,insufficient_team_specific_history
+      thin team evidence · effective games home=5.5/8.0 away=4.7/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
+  [team_history_empirical/team_history_empirical] Laketown Squadron vs Osceola Magic · KO 2026-11-26 02:30 SAST
+      HIGHEST QUARTER full_game -> Q2 · p=39.5% (raw 39.5%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+      evidence_advisories=insufficient_walk_forward_samples,insufficient_team_specific_history
+      thin team evidence · effective games home=5.5/8.0 away=5.5/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
+  [team_history_empirical/team_history_empirical] Westchester Knicks vs Greensboro Swarm · KO 2026-11-26 02:00 SAST
+      HIGHEST QUARTER full_game -> Q2 · p=37.0% (raw 37.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+      evidence_advisories=insufficient_walk_forward_samples,insufficient_team_specific_history
+      thin team evidence · effective games home=4.7/8.0 away=5.5/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
+  [team_history_empirical/team_history_empirical] Sioux Falls Skyforce vs Cleveland Charge · KO 2026-11-26 02:30 SAST
+      HIGHEST QUARTER full_game -> Q2 · p=34.6% (raw 34.6%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=no_history n=0 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+      evidence_advisories=insufficient_walk_forward_samples,insufficient_team_specific_history
+      thin team evidence · effective games home=5.5/8.0 away=4.7/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
+
+WATCHLIST — INSUFFICIENT CONTEXT
+========================================================================
+  (none)
+
+SKIPPED — INELIGIBLE
+========================================================================
+  (none)
+
+IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
+========================================================================
+  (none)
+
+SETTLED PICKS — ARCHIVE ONLY
+========================================================================
+  (none)
+
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=9 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
+ROI-qualified individual paper singles: 0
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=0
+Logical picks shown: 9 · superseded observations: 0 · book/model rows collapsed: 3
+Total archived pick evidence rows: 12
+Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
+Bet only what you can afford to lose.
