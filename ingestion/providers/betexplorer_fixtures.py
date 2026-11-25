@@ -159,6 +159,7 @@ def fetch_slate(
     blank_kickoff_with_date = 0
     slate_priced = 0
     page_priced = 0
+    next_fixture_date: Optional[str] = None
     for local_dt, match_id, _slug, home, away, odds, raw_label in parsed:
         if not raw_label:
             # A row whose own datetime cell is blank has no served kickoff
@@ -194,7 +195,12 @@ def fetch_slate(
             continue
         if odds:
             page_priced += 1
-        if local_dt.strftime("%Y%m%d") != target:
+        row_yyyymmdd = local_dt.strftime("%Y%m%d")
+        if row_yyyymmdd >= target:
+            row_iso = local_dt.strftime("%Y-%m-%d")
+            if next_fixture_date is None or row_iso < next_fixture_date:
+                next_fixture_date = row_iso
+        if row_yyyymmdd != target:
             continue
         if odds:
             slate_priced += 1
@@ -248,6 +254,7 @@ def fetch_slate(
         # carry nothing.
         "slate_priced_rows": slate_priced,
         "page_priced_rows": page_priced,
+        "next_fixture_date": next_fixture_date,
     }
 
     if games and not slate_priced:

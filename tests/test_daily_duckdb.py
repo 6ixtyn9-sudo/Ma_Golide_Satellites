@@ -415,3 +415,75 @@ def test_the_daily_tick_can_skip_tuning(tmp_path):
     summary = run_daily(_args(tmp_path, skip_tuning=True))
 
     assert summary["tuning"] == {"enabled": False, "status": "skipped"}
+
+
+EXPECTED_STAGE_KEYS = {
+    "store_open",
+    "backfill",
+    "acquisition",
+    "predictions",
+    "odds",
+    "pregame_rows",
+    "pregame_persist",
+    "forecast",
+    "freeze",
+    "settle",
+    "retention",
+    "publish",
+    "tuning",
+    "exports",
+    "notification",
+    "summary_write",
+    "store_close",
+}
+
+
+def test_stage_seconds_covers_the_full_tick_and_reconciles_with_wall_time(tmp_path):
+    """Every stage of run_daily is timed once; persisted receipt matches wall time."""
+
+    import time
+
+    started = time.perf_counter()
+    summary = run_daily(_args(tmp_path))
+    wall_seconds = time.perf_counter() - started
+
+    pregame_stages = summary["commands"]["pregame"]["stage_seconds"]
+    assert set(pregame_stages) == {"acquisition", "predictions", "odds", "pregame_rows"}
+    assert all(isinstance(v, float) and v >= 0.0 for v in pregame_stages.values())
+
+    stages = summary["stage_seconds"]
+    assert set(stages) == EXPECTED_STAGE_KEYS
+    assert "pregame" not in stages  # must not double-count pregame sub-stages
+    assert all(isinstance(v, float) and v >= 0.0 for v in stages.values())
+
+    persisted = json.loads(Path(summary["report_path"]).read_text())
+    assert persisted["stage_seconds"] == stages
+
+    total = sum(stages.values())
+    assert abs(total - wall_seconds) <= 5.0
+    # Guard against double-counting: sum of disjoint stages cannot exceed wall
+    # time by more than rounding granularity across 17 keys.
+    assert total <= wall_seconds + 0.2
+
+    # Skipping optional stages preserves the schema with explicit 0.0 entries.
+    skipped = run_daily(
+        _args(tmp_path / "skip", skip_backfill=True, skip_results=True, skip_markets=True)
+    )
+    assert set(skipped["stage_seconds"]) == EXPECTED_STAGE_KEYS
+    assert skipped["stage_seconds"]["backfill"] == 0.0
+    assert skipped["stage_seconds"]["settle"] == 0.0
+    assert skipped["stage_seconds"]["forecast"] == 0.0
+
+
+def test_stage_seconds_finally_handles_mid_tick_failure_cleanly(tmp_path, monkeypatch):
+    """An exception before summary creation must propagate unmodified after store.close()."""
+
+    from ingestion.pipeline import Pipeline
+
+    def _boom(self):
+        raise RuntimeError("injected_pregame_failure")
+
+    monkeypatch.setattr(Pipeline, "pregame", _boom)
+    with pytest.raises(RuntimeError, match="injected_pregame_failure"):
+        run_daily(_args(tmp_path))
+

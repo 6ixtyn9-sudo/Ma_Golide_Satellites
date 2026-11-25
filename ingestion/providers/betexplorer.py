@@ -47,6 +47,8 @@ from ..http import HttpClient
 from ..identity import canonical_team_name, now_utc_iso, parse_utc, to_utc_iso
 from ..models import (
     BookSnapshot,
+    CoverageGap,
+    CoverageState,
     League,
     Market,
     OperationalValidation,
@@ -163,6 +165,8 @@ _CLOCK_RE = re.compile(r"^(?P<today>Today|Tomorrow)?\s*(?P<hour>\d{1,2}):(?P<min
 
 TextFetch = Callable[[str], str]
 
+_LAST_GAPS: List[CoverageGap] = []
+
 
 def is_enabled() -> bool:
     return True  # keyless public pages
@@ -170,6 +174,22 @@ def is_enabled() -> bool:
 
 def last_quota() -> Dict[str, Any]:
     return {}
+
+
+def last_gaps() -> List[CoverageGap]:
+    return list(_LAST_GAPS)
+
+
+def _gap(required_field: str, detail: str, game_id: Optional[str] = None) -> None:
+    _LAST_GAPS.append(
+        CoverageGap(
+            game_id=game_id,
+            required_field=required_field,
+            reason=CoverageState.MISSING,
+            provider=PROVIDER,
+            detail=detail[:500],
+        )
+    )
 
 
 def _require_league(league: League | str) -> str:
@@ -347,6 +367,7 @@ def fetch_odds(
     also the configured acquisition timezone for EuroLeague and the ledger
     timezone for CBA display.
     """
+    _LAST_GAPS.clear()
     league_key = _require_league(league)
     observed_text = now_utc or now_utc_iso()
     observed = parse_utc(observed_text)
@@ -360,10 +381,39 @@ def fetch_odds(
         )
 
     snapshots: List[BookSnapshot] = []
+    seen_undated: set[str] = set()
     for local_dt, match_id, slug, home, away, odds, raw_label in _rows(html, observed):
-        if not raw_label or local_dt is None:
+        if not raw_label:
             # Never date a snapshot or run the pre-tip guard on a tip inherited
             # from an earlier row when this row's own kickoff cell is blank.
+            # When the row actually carries both quotes and belongs to the
+            # target date (or has no round date context to rule it out), emit a
+            # named price-side gap rather than skipping silently.
+            if odds and match_id not in seen_undated:
+                if local_dt is None or local_dt.strftime("%Y%m%d") == target:
+                    seen_undated.add(match_id)
+                    matchup = f"{home.strip()} vs {away.strip()}"
+                    if local_dt is not None:
+                        round_date = local_dt.strftime("%Y-%m-%d")
+                        detail = (
+                            f"{league_key}: priced row {match_id} ({matchup}, "
+                            f"round context {round_date}) has no kickoff time "
+                            "served yet; price skipped rather than dated by "
+                            "inheritance"
+                        )
+                    else:
+                        detail = (
+                            f"{league_key}: priced row {match_id} ({matchup}) "
+                            "has no kickoff date or time served yet; price "
+                            "skipped rather than dated by inheritance"
+                        )
+                    _gap(
+                        "fixtures_kickoff_missing",
+                        detail,
+                        game_id=f"{PROVIDER}:{match_id}",
+                    )
+            continue
+        if local_dt is None:
             continue
         if not odds:
             continue
@@ -453,6 +503,7 @@ __all__ = [
     "match_links",
     "fetch_odds",
     "is_enabled",
+    "last_gaps",
     "last_quota",
     "smoke",
 ]

@@ -546,3 +546,121 @@ def test_betexplorer_smoke_does_not_count_blank_kickoff_rows_as_dated_or_priced(
     assert cba_smoke["rows_with_prices"] == 0
     assert cba_smoke["slate_date_rows_with_prices"] == 0
 
+
+def test_pipeline_forwards_fixture_now_utc_to_betexplorer_fixtures_fetch_slate():
+    """Relative labels ('Today'/'Tomorrow') must resolve against fixture_now_utc."""
+
+    from ingestion.pipeline import Pipeline, PipelineConfig
+    from ingestion.store import InMemoryStore
+
+    # 1) Replay at a clock far from wall clock: 'Tomorrow 17:00' on 2026-11-16
+    #    must land on 2026-11-17T16:00:00Z (17:00 CET), never on host tomorrow.
+    page = _page()
+    shifted = Pipeline(
+        PipelineConfig(
+            league="LITHUANIA_NKL",
+            date_yyyymmdd="20261117",
+            fixture_now_utc="2026-11-16T06:12:00Z",
+        ),
+        InMemoryStore(),
+        fetch=lambda _url: page,
+        allow_writes=False,
+    )
+    shifted_games = {game.game_id: game for game in shifted._discover_games()}
+    assert "betexplorer:UkWOzxk1" in shifted_games
+    assert shifted_games["betexplorer:UkWOzxk1"].scheduled_utc == "2026-11-17T16:00:00Z"
+
+    # 2) Replay at OBSERVED (2026-11-23T06:12:00Z) on 20261124 captures both
+    #    the 6 relative 'Tomorrow' rows and the 6 dated '24.11.' rows (12 total).
+    pinned = Pipeline(
+        PipelineConfig(
+            league="LITHUANIA_NKL",
+            date_yyyymmdd="20261124",
+            fixture_now_utc=OBSERVED,
+        ),
+        InMemoryStore(),
+        fetch=lambda _url: page,
+        allow_writes=False,
+    )
+    pinned_games = {game.game_id: game for game in pinned._discover_games()}
+    assert len(pinned_games) == 12
+    assert pinned_games["betexplorer:UkWOzxk1"].scheduled_utc == "2026-11-24T16:00:00Z"
+
+    # 3) Live mode (fixture_now_utc=None) leaves now_utc unset so wall clock stays default.
+    seen_now_utc: list = []
+    real_fetch_slate = betexplorer_fixtures.fetch_slate
+
+    def _spy_fetch_slate(*args, **kwargs):
+        seen_now_utc.append(kwargs.get("now_utc"))
+        return real_fetch_slate(*args, **kwargs)
+
+    live = Pipeline(
+        PipelineConfig(
+            league="LITHUANIA_NKL",
+            date_yyyymmdd="20261124",
+            fixture_now_utc=None,
+        ),
+        InMemoryStore(),
+        fetch=lambda _url: page,
+        allow_writes=False,
+    )
+    betexplorer_fixtures.fetch_slate = _spy_fetch_slate
+    try:
+        live._discover_games()
+    finally:
+        betexplorer_fixtures.fetch_slate = real_fetch_slate
+    assert seen_now_utc == [None]
+
+
+def test_empty_slate_probe_reports_next_fixture_date_without_widening_the_slate():
+    """An empty target date keeps slate_games=0 while naming the next dated fixture."""
+
+    from ingestion.pipeline import Pipeline, PipelineConfig
+    from ingestion.store import InMemoryStore
+
+    # The captured page has no games on 2026-11-26; the next dated fixture is 2026-12-03.
+    empty_games = betexplorer_fixtures.fetch_slate(
+        "LITHUANIA_NKL",
+        "20261126",
+        text_fetch=lambda _url: _page(),
+        now_utc=OBSERVED,
+    )
+    assert empty_games == []
+    probe = betexplorer_fixtures.last_probe()
+    assert probe is not None
+    assert probe["slate_games"] == 0
+    assert probe["next_fixture_date"] == "2026-12-03"
+
+    # When the asked date is after every dated fixture on the page, next_fixture_date is None.
+    past_all = betexplorer_fixtures.fetch_slate(
+        "LITHUANIA_NKL",
+        "20270501",
+        text_fetch=lambda _url: _page(),
+        now_utc=OBSERVED,
+    )
+    assert past_all == []
+    assert betexplorer_fixtures.last_probe()["next_fixture_date"] is None
+
+    # Pipeline surfaces next_fixture_date in ProviderHealth without adding off-date games.
+    pipeline = Pipeline(
+        PipelineConfig(
+            league="LITHUANIA_NKL",
+            date_yyyymmdd="20261126",
+            fixture_now_utc=OBSERVED,
+        ),
+        InMemoryStore(),
+        fetch=lambda _url: _page(),
+        allow_writes=False,
+    )
+    assert pipeline._discover_games() == []
+    health = next(
+        row
+        for row in pipeline._health_written
+        if row["provider"] == betexplorer_fixtures.SCHEDULE_SOURCE
+    )
+    assert health["coverage"]["slate_games"] == 0
+    assert health["coverage"]["next_fixture_date"] == "2026-12-03"
+    assert "next_fixture_date=2026-12-03" in health["detail"]
+
+
+

@@ -458,6 +458,99 @@ def test_betexplorer_cba_rows_with_prices_map_canonical_names():
     assert snapshot.scheduled_utc == "2026-12-04T11:35:00Z"
 
 
+def test_betexplorer_fetch_odds_reports_priced_undated_rows_as_named_gaps():
+    """Priced rows skipped for a blank kickoff cell must surface as named gaps."""
+
+    snapshots = betexplorer.fetch_odds(
+        "EUROLEAGUE", "20261117", None, now_utc=OBSERVED, text_fetch=_be_text_fetch()
+    )
+    assert len(snapshots) == 6
+    gaps = betexplorer.last_gaps()
+    assert len(gaps) == 3
+    by_id = {gap.game_id: gap for gap in gaps}
+    assert set(by_id) == {
+        "betexplorer:xGZWYFJD",
+        "betexplorer:8I2fZqVg",
+        "betexplorer:0hany60s",
+    }
+    for gap in gaps:
+        assert gap.required_field == "fixtures_kickoff_missing"
+        assert gap.provider == "betexplorer"
+        assert "2026-11-17" in gap.detail
+    assert "Zalgiris Kaunas vs Bayern" in by_id["betexplorer:xGZWYFJD"].detail
+    assert "Olimpia Milano vs Crvena Zvezda Meridianbet" in by_id["betexplorer:8I2fZqVg"].detail
+    assert "Baskonia vs Hapoel Tel Aviv" in by_id["betexplorer:0hany60s"].detail
+
+    # Asking a different date clears prior gaps and does not emit gaps for
+    # undated rows whose round context belongs to another day.
+    other_day = betexplorer.fetch_odds(
+        "EUROLEAGUE", "20261119", None, now_utc=OBSERVED, text_fetch=_be_text_fetch()
+    )
+    assert other_day
+    assert betexplorer.last_gaps() == []
+
+    # A priced undated row appearing before any dated row has no round date
+    # context (local_dt=None): still reported without claiming a date, while an
+    # unpriced undated row emits no price-side gap and duplicates collapse to one.
+    leading_undated = (
+        '<table class="table-main">'
+        '<tr><td class="table-main__datetime">&nbsp;</td>'
+        '<td><a href="/basketball/china/cba/alpha-beta/AaBb1122/" class="in-match">'
+        '<span>Alpha</span> - <span>Beta</span></a></td>'
+        '<td data-odd="1.75"></td><td data-odd="2.10"></td></tr>'
+        '<tr><td class="table-main__datetime">&nbsp;</td>'
+        '<td><a href="/basketball/china/cba/alpha-beta/AaBb1122/" class="in-match">'
+        '<span>Alpha</span> - <span>Beta</span></a></td>'
+        '<td data-odd="1.75"></td><td data-odd="2.10"></td></tr>'
+        '<tr><td class="table-main__datetime">&nbsp;</td>'
+        '<td><a href="/basketball/china/cba/gamma-delta/CcDd3344/" class="in-match">'
+        '<span>Gamma</span> - <span>Delta</span></a></td></tr>'
+        "</table>"
+    )
+    assert (
+        betexplorer.fetch_odds(
+            "CBA", "20261204", None, now_utc=OBSERVED, text_fetch=lambda _url: leading_undated
+        )
+        == []
+    )
+    leading_gaps = betexplorer.last_gaps()
+    assert [gap.game_id for gap in leading_gaps] == ["betexplorer:AaBb1122"]
+    assert "Alpha vs Beta" in leading_gaps[0].detail
+    assert "2026-12-04" not in leading_gaps[0].detail
+
+    # A subsequent error must clear stale gaps rather than leaking them.
+    with pytest.raises(Exception):
+        betexplorer.fetch_odds(
+            "CBA", "20261204", None, now_utc=OBSERVED, text_fetch=lambda _url: "<html>bad</html>"
+        )
+    assert betexplorer.last_gaps() == []
+
+
+def test_euroleague_pregame_surfaces_betexplorer_price_side_undated_gaps():
+    """Pipeline.pregame collects betexplorer.last_gaps() onto the run report."""
+
+    report, store = _pregame(
+        "EUROLEAGUE",
+        "20261117",
+        _el_fetch(),
+        _be_text_fetch(),
+        fixture_now_utc=OBSERVED,
+    )
+    assert report["fixtures_found"] == 9
+    price_gaps = [
+        gap
+        for gap in report["gaps"]
+        if gap.get("provider") == "betexplorer"
+        and gap.get("required_field") == "fixtures_kickoff_missing"
+    ]
+    assert {gap["game_id"] for gap in price_gaps} == {
+        "betexplorer:xGZWYFJD",
+        "betexplorer:8I2fZqVg",
+        "betexplorer:0hany60s",
+    }
+    assert all("2026-11-17" in gap["detail"] for gap in price_gaps)
+
+
 # ---------------------------------------------------------------------------
 # Pipeline traversal: real pregame path for both leagues
 # ---------------------------------------------------------------------------
