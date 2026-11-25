@@ -1079,3 +1079,37 @@ stamp is the only place they meet.
 Three other behaviours, all already in place and all cheap: a 429 ends the run rather than
 retrying into a host that has answered; match pages are spaced ten seconds apart *inside* a
 run; and `--match N` caps at twelve pages so a typo cannot turn into a crawl.
+
+## Correction, 2026-11-25: the split is served, and the counters were the wrong instruments
+
+The conclusion above — *verification only, permanently, and now by measurement* — is wrong, and the
+measurement is why. The probes asked two questions of the match page: are there `<td>` table cells,
+and are there `Q1..Q4` labels. BetExplorer answers neither, and it does not need to. For the same
+match code (`McCqxqs3`, NKL, served 2026-11-25) the page states:
+
+```
+24.11.2026 - 12:00
+93:107
+(15:25, 30:28, 17:27, 31:27)
+```
+
+15+30+17+31 = 93 and 25+28+27+27 = 107. The split adds up to the final the same page states, which
+is exactly what `ActualResult.reconciles()` asks for; the periods are a parenthesised colon list in
+a paragraph, so `td_cells 0` and `period_markers 0` were both true and both irrelevant. Three
+receipts recorded that as "no period table in the HTML at all". It was a statement about the probe's
+vocabulary, and the document said so in two places without following the observation through.
+
+What this changes, and what it does not:
+
+* identity needs no join — the 8-character code in the URL is the code the fixtures table already
+  assigns, so a final attaches to a stored fixture by provider code, not by club name;
+* the date still comes from the fixture row, because the page's own date is one game's, not a
+  season's;
+* `betexplorer_results.parse_match_page` now reads that shape and refuses anything ambiguous: no
+  split, two splits, fewer than four periods, or a split that does not add up to the total beside it.
+  A missed settlement is recoverable; an invented one is not;
+* the lanes stay labelled as they are for now. A label that moves before the pipeline calls the
+  reader is a status string with no behaviour behind it, which is the mistake this document was
+  written to avoid. The promotion is one change: results stage, registry label and the research
+  block's admission rule together, because flipping the label alone would make
+  `magolide_score.shadow_lane_leagues()` refuse the lanes it exists to score.
