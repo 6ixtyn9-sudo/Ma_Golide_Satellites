@@ -1,0 +1,90 @@
+Ma Golide Picks — EUROLEAGUE 2026-11-25
+========================================================================
+Generated at: 2026-11-25 03:43 SAST
+PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
+Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
+Only FROZEN rows are immutable settlement evidence; all final grades use official results.
+Started and settled games are retained separately as archive status.
+
+
+ELIGIBLE CLEAN PICKS
+========================================================================
+  [team_history_empirical/team_history_empirical] Olympiacos Piraeus vs Hapoel IBI Tel Aviv · KO 2026-11-25 21:15 SAST
+      MONEYLINE full_game -> HOME · p=59.8% (raw 60.0%) @1.310 average
+      bucket=ELIGIBLE_CLEAN · price_evidence=AGGREGATE_CONSENSUS_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=32 · reasons=none · prediction=history
+      collapsed_observations=2 · books_quoted=1: average · surfaces=provider:history_model, team_history_empirical
+  [team_history_empirical/team_history_empirical] Kosner Baskonia Vitoria-Gasteiz vs Anadolu Efes Istanbul · KO 2026-11-25 21:30 SAST
+      MONEYLINE full_game -> AWAY · p=55.8% (raw 56.0%) @1.670 average
+      bucket=ELIGIBLE_CLEAN · price_evidence=AGGREGATE_CONSENSUS_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=32 · reasons=none · prediction=history
+      collapsed_observations=2 · books_quoted=1: average · surfaces=provider:history_model, team_history_empirical
+  [team_history_empirical/team_history_empirical] Dubai Basketball vs Partizan Mozzart Bet Belgrade · KO 2026-11-25 18:00 SAST
+      MONEYLINE full_game -> HOME · p=54.8% (raw 55.0%) @1.360 average
+      bucket=ELIGIBLE_CLEAN · price_evidence=AGGREGATE_CONSENSUS_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=32 · reasons=none · prediction=history
+      collapsed_observations=2 · books_quoted=1: average · surfaces=provider:history_model, team_history_empirical
+  [team_history_empirical/team_history_empirical] Real Madrid vs Zalgiris Kaunas · KO 2026-11-25 21:45 SAST
+      MONEYLINE full_game -> HOME · p=54.8% (raw 55.0%) @1.350 average
+      bucket=ELIGIBLE_CLEAN · price_evidence=AGGREGATE_CONSENSUS_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=32 · reasons=none · prediction=history
+      collapsed_observations=2 · books_quoted=1: average · surfaces=provider:history_model, team_history_empirical
+
+CAUTION PICKS
+========================================================================
+  (none)
+
+PRIOR-HEAVY — THIN TEAM EVIDENCE (PAPER ONLY)
+========================================================================
+  (none)
+
+WATCHLIST — NO MATCHED ODDS
+========================================================================
+  [team_history_empirical/team_history_empirical] Olympiacos Piraeus vs Hapoel IBI Tel Aviv · KO 2026-11-25 21:15 SAST
+      MONEYLINE H1 -> HOME · p=67.3% (raw 67.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=34 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Dubai Basketball vs Partizan Mozzart Bet Belgrade · KO 2026-11-25 18:00 SAST
+      MONEYLINE H1 -> HOME · p=64.3% (raw 64.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=34 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Real Madrid vs Zalgiris Kaunas · KO 2026-11-25 21:45 SAST
+      MONEYLINE H1 -> HOME · p=64.3% (raw 64.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=34 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Kosner Baskonia Vitoria-Gasteiz vs Anadolu Efes Istanbul · KO 2026-11-25 21:30 SAST
+      MONEYLINE H1 -> AWAY · p=51.3% (raw 51.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=34 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Olympiacos Piraeus vs Hapoel IBI Tel Aviv · KO 2026-11-25 21:15 SAST
+      HIGHEST QUARTER full_game -> Q1 · p=31.7% (raw 28.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=32 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Kosner Baskonia Vitoria-Gasteiz vs Anadolu Efes Istanbul · KO 2026-11-25 21:30 SAST
+      HIGHEST QUARTER full_game -> Q1 · p=30.7% (raw 27.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=32 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+
+WATCHLIST — INSUFFICIENT CONTEXT
+========================================================================
+  (none)
+
+SKIPPED — INELIGIBLE
+========================================================================
+  (none)
+
+IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
+========================================================================
+  (none)
+
+SETTLED PICKS — ARCHIVE ONLY
+========================================================================
+  (none)
+
+Active summary: ELIGIBLE_CLEAN=4 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=6 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
+ROI-qualified individual paper singles: 0
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=0
+Logical picks shown: 10 · superseded observations: 0 · book/model rows collapsed: 4
+Total archived pick evidence rows: 14
+Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
+Bet only what you can afford to lose.
