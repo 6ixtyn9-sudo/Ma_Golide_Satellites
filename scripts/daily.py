@@ -415,9 +415,12 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
     if os.environ.get("GITHUB_RUN_ATTEMPT"):
         run_id = f"{run_id}_attempt_{os.environ['GITHUB_RUN_ATTEMPT']}"
 
+    store_open_started = time.perf_counter()
     store = DuckDBStore(args.warehouse, persist=args.write)
     reports: Dict[str, Any] = {}
     ledgers: Dict[str, Any] = {}
+    stage_seconds: Dict[str, float] = {}
+    summary: Dict[str, Any] | None = None
     try:
         if getattr(args, "write", False):
             assert_checkpoint_not_regressed(args, store)
@@ -455,14 +458,13 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             fetch_factory=fetch_factory,
             allow_writes=args.write,
         )
+        stage_seconds["store_open"] = round(time.perf_counter() - store_open_started, 3)
 
-        stage_seconds: Dict[str, float] = {}
+        backfill_started = time.perf_counter()
         if getattr(args, "skip_backfill", False):
             backfill_report = _skipped_backfill_report()
         else:
-            started = time.perf_counter()
             backfill_report = pipeline.backfill()
-            stage_seconds["backfill"] = round(time.perf_counter() - started, 3)
         deep_history = backfill_report["backfill"].get("deep_history") or {}
         history_receipts_path = None
         if config.league_enum.value == "ABA_LEAGUE":
@@ -491,38 +493,79 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
                         str(localdata / "ledgers"),
                         config.timezone,
                     )
+        stage_seconds["backfill"] = (
+            0.0
+            if getattr(args, "skip_backfill", False) and history_receipts_path is None
+            else round(time.perf_counter() - backfill_started, 3)
+        )
 
         commands = ["pregame", "freeze"] + ([] if args.skip_results else ["results"])
         market_report = None
         market_report_path = None
+        stage_seconds["forecast"] = 0.0
+        stage_seconds["settle"] = 0.0
         for command in commands:
-            started = time.perf_counter()
-            report = getattr(pipeline, command)()
-            stage_seconds[command] = round(time.perf_counter() - started, 3)
-            reports[command] = report
-            store.record_run(run_id, command, args.date, report)
-            if args.write:
-                ledgers[command] = write_canonical_ledger(
-                    store,
-                    config.league_enum,
-                    args.date,
-                    command,
-                    str(localdata / "ledgers"),
-                    config.timezone,
-                )
-                # Late finals for earlier days belong in those days' ledgers.
-                for date in report.get("rechecked_dates") or []:
-                    ledgers[f"{command}:{date}"] = write_canonical_ledger(
+            if command == "pregame":
+                report = pipeline.pregame()
+                for sub_stage in ("acquisition", "predictions", "odds", "pregame_rows"):
+                    stage_seconds[sub_stage] = float(
+                        (report.get("stage_seconds") or {}).get(sub_stage, 0.0)
+                    )
+                persist_started = time.perf_counter()
+                reports[command] = report
+                store.record_run(run_id, command, args.date, report)
+                if args.write:
+                    ledgers[command] = write_canonical_ledger(
                         store,
                         config.league_enum,
-                        date,
+                        args.date,
                         command,
                         str(localdata / "ledgers"),
                         config.timezone,
                     )
+                    # Late finals for earlier days belong in those days' ledgers.
+                    for date in report.get("rechecked_dates") or []:
+                        ledgers[f"{command}:{date}"] = write_canonical_ledger(
+                            store,
+                            config.league_enum,
+                            date,
+                            command,
+                            str(localdata / "ledgers"),
+                            config.timezone,
+                        )
+                stage_seconds["pregame_persist"] = round(
+                    time.perf_counter() - persist_started, 3
+                )
+            else:
+                stage_key = "settle" if command == "results" else command
+                started = time.perf_counter()
+                report = getattr(pipeline, command)()
+                reports[command] = report
+                store.record_run(run_id, command, args.date, report)
+                if args.write:
+                    ledgers[command] = write_canonical_ledger(
+                        store,
+                        config.league_enum,
+                        args.date,
+                        command,
+                        str(localdata / "ledgers"),
+                        config.timezone,
+                    )
+                    # Late finals for earlier days belong in those days' ledgers.
+                    for date in report.get("rechecked_dates") or []:
+                        ledgers[f"{command}:{date}"] = write_canonical_ledger(
+                            store,
+                            config.league_enum,
+                            date,
+                            command,
+                            str(localdata / "ledgers"),
+                            config.timezone,
+                        )
+                stage_seconds[stage_key] = round(time.perf_counter() - started, 3)
             # Current markets use visible pre-tip evidence. The following
             # freeze stage preserves tip-passed rows for later grading.
             if command == "pregame" and not getattr(args, "skip_markets", False):
+                forecast_started = time.perf_counter()
                 market_report = MarketForecastService(
                     store,
                     config.league_enum,
@@ -541,7 +584,9 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
                     ),
                     market_report,
                 )
+                stage_seconds["forecast"] = round(time.perf_counter() - forecast_started, 3)
 
+        retention_started = time.perf_counter()
         cutoff_utc = (datetime.now(timezone.utc) - timedelta(days=args.keep_days)).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )
@@ -549,10 +594,12 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
         # Dry-run schedules also write reports, so retention cannot depend on
         # canonical writes being enabled.
         pruned_reports = _prune_report_files(localdata, cutoff_utc)
+        stage_seconds["retention"] = round(time.perf_counter() - retention_started, 3)
 
         # Live acquisition and forecasting can take minutes. Use the actual
         # publication time for the pre-tip ticket decision rather than process
         # start, while fixtures retain their fixed replay timestamp.
+        publish_started = time.perf_counter()
         operator_generated_utc = args.started_utc if args.offline_fixture else _utc_now()
         operator = publish_operator_reports(
             store,
@@ -564,17 +611,21 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             run_id=run_id,
             slate_timezone_name=config.timezone,
         )
+        stage_seconds["publish"] = round(time.perf_counter() - publish_started, 3)
 
         # Tuning runs inside the tick, on this lane's own settled ledgers. It is
         # deliberately after publish_operator_reports(): that is what writes the
         # outcomes this reads. A failure here is reported, never fatal -- the
         # canonical acquisition state is already committed.
+        tuning_started = time.perf_counter()
         tuning = _tune_from_ledgers(
             localdata,
             write=bool(args.write),
             skip=bool(getattr(args, "skip_tuning", False)),
         )
+        stage_seconds["tuning"] = round(time.perf_counter() - tuning_started, 3)
 
+        exports_started = time.perf_counter()
         assay = mine_prediction_assay(store, config.league_enum)
         assay_path = (
             write_assay(str(localdata / f"assay_{args.league}.json"), assay) if args.write else None
@@ -593,6 +644,8 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
                 (pregame_report.get("acquisition") or {}).get("transport_errors")
             ),
         )
+        counts = store.counts()
+        stage_seconds["exports"] = round(time.perf_counter() - exports_started, 3)
 
         summary = {
             "schema_version": "magolide.daily",
@@ -628,7 +681,7 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             "assay_path": assay_path,
             "csv_exports": exports,
             "coverage_gap_marker": coverage_gap_marker,
-            "counts": store.counts(),
+            "counts": counts,
             "retention": {
                 "keep_days": args.keep_days,
                 "pipeline_runs_pruned": pruned_runs,
@@ -637,6 +690,7 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
         }
         notification: Dict[str, Any] = {"enabled": args.notify, "status": "disabled"}
         if args.notify:
+            notify_started = time.perf_counter()
             from scripts.notify import notify_summary
 
             try:
@@ -655,11 +709,20 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
                     "status": "failed",
                     "error": f"{type(exc).__name__}: {str(exc)[:200]}",
                 }
+            stage_seconds["notification"] = round(time.perf_counter() - notify_started, 3)
+        else:
+            stage_seconds["notification"] = 0.0
         summary["notification"] = notification
+        write_started = time.perf_counter()
         summary["report_path"] = _write_run_report(localdata, run_id, summary)
+        stage_seconds["summary_write"] = round(time.perf_counter() - write_started, 3)
         return summary
     finally:
+        close_started = time.perf_counter()
         store.close()
+        stage_seconds["store_close"] = round(time.perf_counter() - close_started, 3)
+        if summary is not None and summary.get("report_path"):
+            _write_run_report(localdata, run_id, summary)
 
 
 #: Where a lane keeps its tuned bet config and its config ledger. Lane-local on

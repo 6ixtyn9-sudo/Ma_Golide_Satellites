@@ -563,13 +563,21 @@ class Pipeline:
         """Acquire fixtures, coherent predictions, and observed book evidence."""
 
         self._reset_stage()
+        stage_seconds: Dict[str, float] = {}
         # Repair first: the corpus this run forecasts from is whatever the store
         # can reconcile *now*, and a settled totals-only row silently starves
         # the empirical model instead of failing it.
+        t0 = time.perf_counter()
         self.history_repair = self._repair_unreconciled_history()
         games = self._discover_games()
         games = self._acquire_context(games)
+        stage_seconds["acquisition"] = round(time.perf_counter() - t0, 3)
+
+        t0 = time.perf_counter()
         selections = self._acquire_predictions(games)
+        stage_seconds["predictions"] = round(time.perf_counter() - t0, 3)
+
+        t0 = time.perf_counter()
         if self.config.acquire_book_lines:
             self._acquire_book_lines(games)
         else:
@@ -599,7 +607,9 @@ class Pipeline:
                     observed_utc=self._now_iso(),
                 )
             )
+        stage_seconds["odds"] = round(time.perf_counter() - t0, 3)
 
+        t0 = time.perf_counter()
         rows = []
         for game in games:
             selection = selections[game.game_id]
@@ -634,6 +644,7 @@ class Pipeline:
                     "book_evidence": book_evidence,
                 }
             )
+        stage_seconds["pregame_rows"] = round(time.perf_counter() - t0, 3)
 
         return self._report(
             mode="write" if self.allow_writes else "dry_run",
@@ -647,6 +658,7 @@ class Pipeline:
                 "book_provider_status": self.book_provider_status,
                 "espn_context": self.context_report,
                 "history_repair": self.history_repair,
+                "stage_seconds": stage_seconds,
             },
         )
 
