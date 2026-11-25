@@ -5155,10 +5155,13 @@ def publish_operator_reports(
         _pick_row(row, target_date)
         for row in deepcopy((market_report or {}).get("forecasts") or [])
     ]
+    preview_rows = [row for row in current if row.get("preview") is True]
+    preview_game_ids = {str(row["game_id"]) for row in preview_rows}
+    non_preview_current = [row for row in current if row.get("preview") is not True]
     ticket_decision = _ticket_decision_window(
         games,
         league=league,
-        forecast_rows=current,
+        forecast_rows=non_preview_current,
         target_date=target_date,
         generated_utc=generated_utc,
         slate_timezone_name=slate_timezone_name,
@@ -5196,8 +5199,13 @@ def publish_operator_reports(
         pick_lifecycle_state, target_date=target_date, league=league.value
     )
     frozen_game_ids = set(existing_pick_freezes)
+    # Preview rows stay on picks_today.json so operators can inspect them, but
+    # never enter the dated ledger (picks_{target_date}.json) or the pick-freeze
+    # input: a preview fixture must not freeze on an earlier day's card.
     archivable_current = [
-        row for row in current if str(row["game_id"]) not in frozen_game_ids
+        row
+        for row in non_preview_current
+        if str(row["game_id"]) not in frozen_game_ids
     ]
     merged = {str(row["pick_id"]): row for row in prior}
     merged.update({row["pick_id"]: row for row in archivable_current})
@@ -5274,7 +5282,7 @@ def publish_operator_reports(
     # examples can calibrate the separate contract but can never become new
     # tickets or change prior paper-bank results.
     derived_spread_candidates, derived_spread_history = _derived_spread_ticket_candidates(
-        _latest_logical_rows(current),
+        _latest_logical_rows(non_preview_current),
         settled_history,
         generated_utc=generated_utc,
         target_date=target_date,
@@ -5301,6 +5309,22 @@ def publish_operator_reports(
     # spreads are separately governed and have already passed their own
     # frozen named-book/cover-rate/ROI contract above.
     ticket_candidates.extend(deepcopy(derived_spread_candidates))
+    # Defense-in-depth: never let any candidate referencing a preview fixture
+    # reach ticket selection even if a caller bypassed service-level filtering.
+    if preview_game_ids:
+        ticket_candidates = [
+            candidate
+            for candidate in ticket_candidates
+            if isinstance(candidate, dict)
+            and not any(
+                isinstance(leg, dict)
+                and (
+                    leg.get("preview") is True
+                    or str(leg.get("game_id")) in preview_game_ids
+                )
+                for leg in (candidate.get("legs") or ())
+            )
+        ]
     pre_tip_ticket_candidates = [
         candidate
         for candidate in ticket_candidates
@@ -5308,6 +5332,8 @@ def publish_operator_reports(
     ]
     ticket_decision["candidate_tickets_seen"] = len(ticket_candidates)
     ticket_decision["candidate_tickets_pre_tip"] = len(pre_tip_ticket_candidates)
+    ticket_decision["preview_rows_seen"] = len(preview_rows)
+    ticket_decision["preview_rows_excluded_from_tickets"] = len(preview_rows)
     ticket_decision["derived_spread_candidates_seen"] = len(derived_spread_candidates)
     ticket_decision["derived_spread_history"] = deepcopy(derived_spread_history)
     ticket_decision["market_report_available"] = market_report is not None

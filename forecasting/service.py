@@ -532,6 +532,7 @@ class MarketForecastService:
         timezone_name: str = "UTC",
         acca_legs: int = 3,
         acca_limit: int = 5,
+        slate_window: Optional[Dict[str, Any]] = None,
     ) -> Dict[str, Any]:
         as_of = parse_utc(as_of_utc)
         games = self.store.list_games(league=self.league)
@@ -625,18 +626,49 @@ class MarketForecastService:
             available_records, self.calibration_config
         )
         upcoming = []
+        preview_game_ids: set[str] = set()
+        target_yyyymmdd = date_yyyymmdd.replace("-", "") if date_yyyymmdd else None
+        window_yyyymmdd: Optional[set[str]] = None
+        if slate_window is not None and target_yyyymmdd:
+            window_yyyymmdd = {target_yyyymmdd}
+            for item in slate_window.get("window_dates") or ():
+                text = str(item).strip().replace("-", "")
+                if text:
+                    window_yyyymmdd.add(text)
+            preview_raw = slate_window.get("preview_date")
+            if isinstance(preview_raw, str) and preview_raw.strip():
+                window_yyyymmdd.add(preview_raw.strip().replace("-", ""))
+        service_dropped_beyond_window = 0
+        service_dropped_past_target = 0
         for game in games:
             if game.status is not GameStatus.SCHEDULED:
                 continue
             if parse_utc(game.scheduled_utc) <= as_of:
                 continue
-            if date_yyyymmdd:
-                local_date = (
-                    parse_utc(game.scheduled_utc)
-                    .astimezone(ZoneInfo(timezone_name))
-                    .strftime("%Y%m%d")
+            if target_yyyymmdd:
+                stamped = (
+                    game.evidence.get("slate_date")
+                    if isinstance(game.evidence, dict)
+                    else None
                 )
-                if local_date != date_yyyymmdd.replace("-", ""):
+                if isinstance(stamped, str) and stamped.strip():
+                    bucket_date = stamped.strip().replace("-", "")
+                else:
+                    bucket_date = (
+                        parse_utc(game.scheduled_utc)
+                        .astimezone(ZoneInfo(timezone_name))
+                        .strftime("%Y%m%d")
+                    )
+                if window_yyyymmdd is not None:
+                    if bucket_date not in window_yyyymmdd:
+                        if bucket_date < target_yyyymmdd:
+                            service_dropped_past_target += 1
+                        else:
+                            service_dropped_beyond_window += 1
+                        continue
+                    if bucket_date != target_yyyymmdd:
+                        preview_game_ids.add(game.game_id)
+                elif bucket_date != target_yyyymmdd:
                     continue
             upcoming.append(game)
         upcoming.sort(key=lambda game: (parse_utc(game.scheduled_utc), game.game_id))
@@ -813,7 +845,12 @@ class MarketForecastService:
             },
             "segments": replay_diagnostic_segments,
         }
-        strict_accas = build_accas(current, legs=acca_legs, limit=acca_limit)
+        # Preview fixtures are forecasted for the card only; they never enter
+        # strict accas, paper single picks, or paper acca pools.
+        ticket_eligible_current = [
+            forecast for forecast in current if forecast.game_id not in preview_game_ids
+        ]
+        strict_accas = build_accas(ticket_eligible_current, legs=acca_legs, limit=acca_limit)
         paper_history = (
             available_records
             if self.paper_pick_history is None
@@ -841,7 +878,7 @@ class MarketForecastService:
             # never inherit a priced-value paper lane from another league.
             paper_lane_options = {}
         paper_candidates, paper_pick_filter = filter_paper_candidate_picks(
-            current,
+            ticket_eligible_current,
             paper_history,
             as_of_utc=as_of_utc,
             history_source=paper_history_source,
@@ -859,7 +896,7 @@ class MarketForecastService:
             # settled outcomes and exact pre-tip prices, and current forecasts
             # retain all normal eligibility gates.
             paper_candidates, paper_pick_filter = filter_paper_candidate_picks(
-                current,
+                ticket_eligible_current,
                 available_records,
                 as_of_utc=as_of_utc,
                 history_source="prequential_settled_individual_forecasts_cold_start_fallback",
@@ -937,12 +974,35 @@ class MarketForecastService:
             replay_records=records,
             profiles=current_profiles,
         )
+        serialized_forecasts = []
+        for forecast in current:
+            row = forecast.to_dict()
+            if slate_window is not None:
+                row["preview"] = forecast.game_id in preview_game_ids
+            serialized_forecasts.append(row)
+        slate_window_report: Optional[Dict[str, Any]] = None
+        if slate_window is not None:
+            preview_forecast_rows = sum(
+                1 for forecast in current if forecast.game_id in preview_game_ids
+            )
+            slate_window_report = {
+                **slate_window,
+                "preview_games_forecasted": len(preview_game_ids),
+                "preview_forecast_rows": preview_forecast_rows,
+                "service_dropped_beyond_window": service_dropped_beyond_window,
+                "service_dropped_past_target": service_dropped_past_target,
+            }
         return {
             "schema_version": "magolide.market_forecasts",
             "status": "decision_support_only",
             "league": self.league.value,
             "generated_utc": as_of_utc,
             "target_date": date_yyyymmdd,
+            **(
+                {"slate_window": slate_window_report}
+                if slate_window_report is not None
+                else {}
+            ),
             "model_version": MODEL_VERSION,
             "execution": {
                 "external_betting_writes": False,
@@ -1030,7 +1090,7 @@ class MarketForecastService:
             },
             "feature_use_manifest": feature_use_manifest,
             "espn_player_context_candidates": espn_player_context_candidates,
-            "forecasts": [forecast.to_dict() for forecast in current],
+            "forecasts": serialized_forecasts,
             "accas": {
                 "mode": "paper_only",
                 "pricing_evidence_status": "priced_lane_policy_applies",

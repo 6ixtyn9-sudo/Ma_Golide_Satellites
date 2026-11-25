@@ -351,7 +351,66 @@ class Pipeline:
         self.gaps = []
         self.quota = {}
         self._health_written: List[Dict[str, Any]] = []
+        self._slate_window_probe: Optional[Dict[str, Any]] = None
         reset_transport_meter()
+
+    @staticmethod
+    def _game_slate_date(game: Game, timezone_name: str) -> str:
+        """Return YYYYMMDD for the game's slate bucket.
+
+        BetExplorer fixtures lanes stamp ``evidence["slate_date"]`` from the
+        provider's own Paris-date bucket (so a Paris-date game crossing midnight
+        in a lane timezone like Asia/Shanghai is never mislabelled as preview).
+        Every other provider has no marker and falls back to lane-timezone
+        conversion, keeping all non-window lanes byte-identical.
+        """
+
+        if isinstance(game.evidence, dict):
+            stamped = game.evidence.get("slate_date")
+            if isinstance(stamped, str) and stamped.strip():
+                return stamped.strip().replace("-", "")
+        return (
+            parse_utc(game.scheduled_utc)
+            .astimezone(ZoneInfo(timezone_name))
+            .strftime("%Y%m%d")
+        )
+
+    def _slate_window_report(self, games: List[Game]) -> Optional[Dict[str, Any]]:
+        """Return the widened-window receipt for betexplorer_fixtures lanes only."""
+
+        if league_spec(self.config.league_enum).schedule_source != "betexplorer_fixtures":
+            return None
+        probe = self._slate_window_probe or {}
+        target = self.config.date_yyyymmdd.replace("-", "")
+        target_iso = _iso(target)
+        preview_date = probe.get("preview_date")
+        target_count = 0
+        preview_count = 0
+        for game in games:
+            if self._game_slate_date(game, self.config.timezone) == target:
+                target_count += 1
+            else:
+                preview_count += 1
+        window_dates = [target_iso]
+        if isinstance(preview_date, str) and preview_date and preview_date not in window_dates:
+            window_dates.append(preview_date)
+        return {
+            "mode": str(probe.get("slate_window_mode") or "next_fixture_day"),
+            "target_date": target_iso,
+            "window_dates": window_dates,
+            "target_games": target_count,
+            "preview_date": preview_date,
+            "preview_games": preview_count,
+            "dropped_out_of_window": int(probe.get("dropped_out_of_window", 0)),
+            "dropped_out_of_window_reason": str(
+                probe.get("dropped_out_of_window_reason")
+                or "dated_rows_beyond_next_fixture_day"
+            ),
+            "dropped_past_target": int(probe.get("dropped_past_target", 0)),
+            "blank_kickoff_rows": int(probe.get("blank_kickoff_rows", 0)),
+            "unparsed_rows": int(probe.get("unparsed_rows", 0)),
+            "next_fixture_date": preview_date or probe.get("next_fixture_date"),
+        }
         self.context_report = {}
         self.book_provider_status = {}
         self.prediction_provider_status = {}
@@ -613,6 +672,8 @@ class Pipeline:
         stage_seconds["odds"] = round(time.perf_counter() - t0, 3)
 
         t0 = time.perf_counter()
+        slate_window = self._slate_window_report(games)
+        target_yyyymmdd = self.config.date_yyyymmdd.replace("-", "")
         rows = []
         for game in games:
             selection = selections[game.game_id]
@@ -623,46 +684,52 @@ class Pipeline:
             )
             self.gaps.extend(book_gaps)
             odds, odds_evidence = self._odds_evidence_for(snapshots, pred)
-            rows.append(
-                {
-                    "game_id": game.game_id,
-                    "matchup": f"{game.away_name} @ {game.home_name}",
-                    "tip_utc": game.scheduled_utc,
-                    "prediction_provider": selection.provider,
-                    "prediction_reason": selection.reason,
-                    "prediction": _prediction_facts(pred),
-                    "prediction_frozen": bool(
-                        pred and self.store.is_prediction_frozen(game.game_id, pred.provider)
-                    ),
-                    "odds": odds,
-                    "odds_evidence": odds_evidence,
-                    "full_game_line": full_game_line,
-                    "quarters": (
-                        quarter_lines if game.league not in {League.NCAA_M, League.NCAA_W} else {}
-                    ),
-                    "halves": (
-                        quarter_lines if game.league in {League.NCAA_M, League.NCAA_W} else {}
-                    ),
-                    "native_periods": quarter_lines,
-                    "book_evidence": book_evidence,
-                }
-            )
+            row: Dict[str, Any] = {
+                "game_id": game.game_id,
+                "matchup": f"{game.away_name} @ {game.home_name}",
+                "tip_utc": game.scheduled_utc,
+                "prediction_provider": selection.provider,
+                "prediction_reason": selection.reason,
+                "prediction": _prediction_facts(pred),
+                "prediction_frozen": bool(
+                    pred and self.store.is_prediction_frozen(game.game_id, pred.provider)
+                ),
+                "odds": odds,
+                "odds_evidence": odds_evidence,
+                "full_game_line": full_game_line,
+                "quarters": (
+                    quarter_lines if game.league not in {League.NCAA_M, League.NCAA_W} else {}
+                ),
+                "halves": (
+                    quarter_lines if game.league in {League.NCAA_M, League.NCAA_W} else {}
+                ),
+                "native_periods": quarter_lines,
+                "book_evidence": book_evidence,
+            }
+            if slate_window is not None:
+                row["preview"] = (
+                    self._game_slate_date(game, self.config.timezone) != target_yyyymmdd
+                )
+            rows.append(row)
         stage_seconds["pregame_rows"] = round(time.perf_counter() - t0, 3)
 
+        extra: Dict[str, Any] = {
+            "rows": rows,
+            "predictions_selected": _count_by(
+                [s.provider for s in selections.values() if s.provider]
+            ),
+            "prediction_provider_status": self.prediction_provider_status,
+            "book_provider_status": self.book_provider_status,
+            "espn_context": self.context_report,
+            "history_repair": self.history_repair,
+            "stage_seconds": stage_seconds,
+        }
+        if slate_window is not None:
+            extra["slate_window"] = slate_window
         return self._report(
             mode="write" if self.allow_writes else "dry_run",
             fixtures_found=len(games),
-            extra={
-                "rows": rows,
-                "predictions_selected": _count_by(
-                    [s.provider for s in selections.values() if s.provider]
-                ),
-                "prediction_provider_status": self.prediction_provider_status,
-                "book_provider_status": self.book_provider_status,
-                "espn_context": self.context_report,
-                "history_repair": self.history_repair,
-                "stage_seconds": stage_seconds,
-            },
+            extra=extra,
         )
 
     def freeze(self) -> Dict[str, Any]:
@@ -1493,6 +1560,7 @@ class Pipeline:
             else:
                 self.gaps.extend(betexplorer_fixtures.last_gaps())
                 probe = betexplorer_fixtures.last_probe()
+            self._slate_window_probe = probe
             # The page was read, so an empty slate is an answer, not a void.
             read_receipt = bool(probe)
             if probe:
@@ -1508,20 +1576,30 @@ class Pipeline:
                             "games": len(games),
                             "rows": probe.get("rows", 0),
                             "slate_games": probe.get("slate_games", 0),
+                            "target_games": probe.get("target_games", 0),
+                            "preview_date": probe.get("preview_date"),
+                            "preview_games": probe.get("preview_games", 0),
                             "slate_priced_rows": probe.get("slate_priced_rows", 0),
+                            "preview_priced_rows": probe.get("preview_priced_rows", 0),
                             "blank_kickoff_rows": probe.get("blank_kickoff_rows", 0),
                             "blank_kickoff_rows_with_date": probe.get(
                                 "blank_kickoff_rows_with_date", 0
                             ),
+                            "dropped_out_of_window": probe.get("dropped_out_of_window", 0),
+                            "dropped_past_target": probe.get("dropped_past_target", 0),
                             "next_fixture_date": probe.get("next_fixture_date"),
                         },
                         detail=(
                             f"url={probe.get('url')} rows={probe.get('rows')} "
                             f"slate_games={probe.get('slate_games')} "
+                            f"target_games={probe.get('target_games', 0)} "
+                            f"preview_games={probe.get('preview_games', 0)} "
                             f"slate_priced_rows={probe.get('slate_priced_rows')} "
                             f"blank_kickoff_rows={probe.get('blank_kickoff_rows')} "
                             f"blank_kickoff_rows_with_date="
                             f"{probe.get('blank_kickoff_rows_with_date')} "
+                            f"dropped_out_of_window={probe.get('dropped_out_of_window', 0)} "
+                            f"dropped_past_target={probe.get('dropped_past_target', 0)} "
                             f"next_fixture_date={probe.get('next_fixture_date') or 'none'}"
                         )[:500],
                     )

@@ -173,6 +173,11 @@ def test_unreadable_page_raises_instead_of_returning_an_empty_slate():
 
 
 def test_a_read_page_with_no_games_on_the_date_is_an_answer_not_a_void():
+    # Policy update (PR B, next-fixture-day preview window): on off-season target
+    # 2026-06-15 the capture spans 2026-11-18..2027-04-16, so target_games stays 0
+    # while the earliest later fixture day (2026-11-18, 1 game) enters as preview.
+    # Before PR B: len(games) == 0, slate_games == 0.
+    # After PR B: target_games == 0, preview_games == 1 (2026-11-18), dropped_out_of_window == 226.
     games = betexplorer_fixtures.fetch_slate(
         "AUSTRALIA_WNBL_W",
         "2026-06-15",  # off-season: the capture spans 2026-11-18 .. 2027-04-16
@@ -180,13 +185,35 @@ def test_a_read_page_with_no_games_on_the_date_is_an_answer_not_a_void():
         now_utc=OBSERVED,
     )
 
-    assert games == []
-    # The read still left a receipt, so the pipeline can tell "read and empty"
-    # from "never read".
+    assert len(games) == 1
+    assert games[0].evidence["slate_date"] == "2026-11-18"
+    assert games[0].evidence["slate_role"] == "preview"
+    # The read still left a receipt, so the pipeline can tell "read and empty
+    # on target" from "never read".
     probe = betexplorer_fixtures.last_probe()
     assert probe is not None
-    assert probe["parsed_rows"] > 0
-    assert probe["slate_games"] == 0
+    assert probe["parsed_rows"] == 270
+    assert probe["target_games"] == 0
+    assert probe["preview_games"] == 1
+    assert probe["preview_date"] == "2026-11-18"
+    assert probe["slate_games"] == 1
+    assert probe["dropped_out_of_window"] == 226
+    assert probe["dropped_past_target"] == 0
+
+    # A date past every row on the page still yields a genuinely empty window.
+    empty_window = betexplorer_fixtures.fetch_slate(
+        "AUSTRALIA_WNBL_W",
+        "2027-05-01",
+        text_fetch=lambda _url: _page(),
+        now_utc=OBSERVED,
+    )
+    assert empty_window == []
+    empty_probe = betexplorer_fixtures.last_probe()
+    assert empty_probe is not None
+    assert empty_probe["parsed_rows"] == 270
+    assert empty_probe["slate_games"] == 0
+    assert empty_probe["target_games"] == 0
+    assert empty_probe["preview_games"] == 0
 
 
 def test_price_read_attaches_to_the_same_identity_as_the_schedule():
@@ -392,9 +419,13 @@ def test_a_blank_kickoff_row_is_a_named_dated_gap_and_never_a_game():
 
     On the real EuroLeague capture (observed 2026-11-23, slate 2026-11-24),
     ``xGZWYFJD``, ``8I2fZqVg``, and ``0hany60s`` carry ``&nbsp;`` in their
-    datetime cell; only the 12 rows carrying their own served datetime may
-    become games, and every blank-cell fixture emits a named gap carrying its
-    match code, teams, and round date when a preceding row establishes one.
+    datetime cell; only rows carrying their own served datetime may become games,
+    and every blank-cell fixture emits a named gap carrying its match code,
+    teams, and round date when a preceding row establishes one.
+
+    Policy update (PR B, next-fixture-day preview window):
+    - Before PR B: len(games) == 12 (2026-11-24 target only).
+    - After PR B: len(games) == 16 (12 target on 2026-11-24 + 4 preview on 2026-11-25).
     """
 
     games = _slate("CHINA_WCBA_W")
@@ -405,7 +436,9 @@ def test_a_blank_kickoff_row_is_a_named_dated_gap_and_never_a_game():
     undated_slate_codes = {"xGZWYFJD", "8I2fZqVg", "0hany60s"}
     fabricated = sorted(emitted_codes & undated_slate_codes)
     assert not fabricated, f"blank-kickoff rows must never become a game with an inherited tip: {fabricated}"
-    assert len(games) == 12
+    assert len(games) == 16
+    assert sum(g.evidence["slate_role"] == "target" for g in games) == 12
+    assert sum(g.evidence["slate_role"] == "preview" for g in games) == 4
 
     snapshots = betexplorer.fetch_odds(
         "CHINA_WCBA_W", SLATE_DATE, now_utc=OBSERVED, text_fetch=lambda _url: _page()
@@ -570,8 +603,9 @@ def test_pipeline_forwards_fixture_now_utc_to_betexplorer_fixtures_fetch_slate()
     assert "betexplorer:UkWOzxk1" in shifted_games
     assert shifted_games["betexplorer:UkWOzxk1"].scheduled_utc == "2026-11-17T16:00:00Z"
 
-    # 2) Replay at OBSERVED (2026-11-23T06:12:00Z) on 20261124 captures both
-    #    the 6 relative 'Tomorrow' rows and the 6 dated '24.11.' rows (12 total).
+    # 2) Replay at OBSERVED (2026-11-23T06:12:00Z) on 20261124 captures the
+    #    12 target rows (6 relative 'Tomorrow' + 6 dated '24.11.') plus the 4
+    #    next-fixture-day preview rows on 2026-11-25 (16 total; before PR B: 12).
     pinned = Pipeline(
         PipelineConfig(
             league="LITHUANIA_NKL",
@@ -583,7 +617,9 @@ def test_pipeline_forwards_fixture_now_utc_to_betexplorer_fixtures_fetch_slate()
         allow_writes=False,
     )
     pinned_games = {game.game_id: game for game in pinned._discover_games()}
-    assert len(pinned_games) == 12
+    assert len(pinned_games) == 16
+    assert sum(g.evidence["slate_role"] == "target" for g in pinned_games.values()) == 12
+    assert sum(g.evidence["slate_role"] == "preview" for g in pinned_games.values()) == 4
     assert pinned_games["betexplorer:UkWOzxk1"].scheduled_utc == "2026-11-24T16:00:00Z"
 
     # 3) Live mode (fixture_now_utc=None) leaves now_utc unset so wall clock stays default.
@@ -613,25 +649,51 @@ def test_pipeline_forwards_fixture_now_utc_to_betexplorer_fixtures_fetch_slate()
 
 
 def test_empty_slate_probe_reports_next_fixture_date_without_widening_the_slate():
-    """An empty target date keeps slate_games=0 while naming the next dated fixture."""
+    """Empty target date surfaces next-fixture-day previews while preserving exact accounting.
+
+    Policy update (PR B, next-fixture-day preview window):
+    - Before PR B: target 2026-11-26 returned [] (slate_games=0, next_fixture_date=2026-12-03).
+    - After PR B: target 2026-11-26 has target_games=0 and 6 preview games on
+      2026-12-03 (dropped_out_of_window=194 beyond 2026-12-03, dropped_past_target=27,
+      blank_kickoff_rows=43, unparsed_rows=27; 0+6+194+27+43 == 270 == parsed_rows).
+    - Past-all target 2027-05-01 remains genuinely empty (games=[], next_fixture_date=None).
+    """
 
     from ingestion.pipeline import Pipeline, PipelineConfig
     from ingestion.store import InMemoryStore
 
-    # The captured page has no games on 2026-11-26; the next dated fixture is 2026-12-03.
-    empty_games = betexplorer_fixtures.fetch_slate(
+    # The captured page has no games on 2026-11-26; the next dated fixture day is 2026-12-03.
+    window_games = betexplorer_fixtures.fetch_slate(
         "LITHUANIA_NKL",
         "20261126",
         text_fetch=lambda _url: _page(),
         now_utc=OBSERVED,
     )
-    assert empty_games == []
+    assert len(window_games) == 6
+    assert all(game.evidence["slate_role"] == "preview" for game in window_games)
+    assert all(game.evidence["slate_date"] == "2026-12-03" for game in window_games)
     probe = betexplorer_fixtures.last_probe()
     assert probe is not None
-    assert probe["slate_games"] == 0
+    assert probe["target_games"] == 0
+    assert probe["preview_games"] == 6
+    assert probe["preview_date"] == "2026-12-03"
+    assert probe["slate_games"] == 6
     assert probe["next_fixture_date"] == "2026-12-03"
+    assert probe["dropped_out_of_window"] == 194
+    assert probe["dropped_out_of_window_reason"] == "dated_rows_beyond_next_fixture_day"
+    assert probe["dropped_past_target"] == 27
+    assert probe["blank_kickoff_rows"] == 43
+    assert probe["unparsed_rows"] == 27
+    assert (
+        probe["target_games"]
+        + probe["preview_games"]
+        + probe["dropped_out_of_window"]
+        + probe["dropped_past_target"]
+        + probe["blank_kickoff_rows"]
+        == probe["parsed_rows"]
+    )
 
-    # When the asked date is after every dated fixture on the page, next_fixture_date is None.
+    # When the asked date is after every dated fixture on the page, window is empty.
     past_all = betexplorer_fixtures.fetch_slate(
         "LITHUANIA_NKL",
         "20270501",
@@ -639,9 +701,14 @@ def test_empty_slate_probe_reports_next_fixture_date_without_widening_the_slate(
         now_utc=OBSERVED,
     )
     assert past_all == []
-    assert betexplorer_fixtures.last_probe()["next_fixture_date"] is None
+    past_probe = betexplorer_fixtures.last_probe()
+    assert past_probe is not None
+    assert past_probe["next_fixture_date"] is None
+    assert past_probe["preview_date"] is None
+    assert past_probe["dropped_out_of_window"] == 0
+    assert past_probe["dropped_past_target"] == 227
 
-    # Pipeline surfaces next_fixture_date in ProviderHealth without adding off-date games.
+    # Pipeline surfaces next_fixture_date and window breakdown in ProviderHealth.
     pipeline = Pipeline(
         PipelineConfig(
             league="LITHUANIA_NKL",
@@ -652,15 +719,175 @@ def test_empty_slate_probe_reports_next_fixture_date_without_widening_the_slate(
         fetch=lambda _url: _page(),
         allow_writes=False,
     )
-    assert pipeline._discover_games() == []
+    discovered = pipeline._discover_games()
+    assert len(discovered) == 6
     health = next(
         row
         for row in pipeline._health_written
         if row["provider"] == betexplorer_fixtures.SCHEDULE_SOURCE
     )
-    assert health["coverage"]["slate_games"] == 0
+    assert health["coverage"]["target_games"] == 0
+    assert health["coverage"]["preview_games"] == 6
+    assert health["coverage"]["dropped_out_of_window"] == 194
+    assert health["coverage"]["dropped_past_target"] == 27
     assert health["coverage"]["next_fixture_date"] == "2026-12-03"
     assert "next_fixture_date=2026-12-03" in health["detail"]
+
+
+def test_widened_slate_window_end_to_end_preview_isolation_and_non_inheritance():
+    """Provider bucket survives DuckDB, marks 4 previews cleanly, excludes them from tickets, and never leaks to other lanes."""
+
+    from forecasting.model import ForecastConfig
+    from forecasting.service import MarketForecastService
+    from ingestion.duckdb_store import DuckDBStore
+    from ingestion.models import ActualResult, Game, GameStatus, PeriodKind
+    from ingestion.pipeline import Pipeline, PipelineConfig
+
+    store = DuckDBStore(":memory:", persist=False)
+    try:
+        # Seed minimal reconciled history so the empirical surface generates forecasts
+        # for both target (2026-11-24) and preview (2026-11-25) WCBA fixtures.
+        teams = [
+            ("Fenerbahce", "Hapoel Tel Aviv"),
+            ("Partizan", "Panathinaikos"),
+            ("Real Madrid", "Zalgiris Kaunas"),
+            ("Barcelona", "Bayern"),
+        ]
+        for idx in range(28):
+            home, away = teams[idx % len(teams)]
+            day = 1 + (idx % 20)
+            delta = (idx % 7) - 3
+            hq = [20 + delta, 22 - (idx % 3), 19 + (idx % 4), 21 + (idx % 5)]
+            aq = [18 - (idx % 2), 20 + (idx % 4), 21 - (idx % 3), 17 + (idx % 6)]
+            store.upsert_game(
+                Game(
+                    game_id=f"hist:{idx}",
+                    league=League.CHINA_WCBA_W,
+                    season="2026-2027",
+                    home_team_id="",
+                    away_team_id="",
+                    home_name=home,
+                    away_name=away,
+                    scheduled_utc=f"2026-11-{day:02d}T10:00:00Z",
+                    status=GameStatus.FINAL,
+                    actual=ActualResult(
+                        period_kind=PeriodKind.QUARTERS,
+                        home_quarters=hq,
+                        away_quarters=aq,
+                        home_final=sum(hq),
+                        away_final=sum(aq),
+                        source="test",
+                    ),
+                )
+            )
+        # Seed one far-future game already in the store to prove service counts
+        # out-of-window store rows instead of silently skipping them.
+        store.upsert_game(
+            Game(
+                game_id="betexplorer:FARFUT01",
+                league=League.CHINA_WCBA_W,
+                season="2026-2027",
+                home_team_id="",
+                away_team_id="",
+                home_name="Fenerbahce",
+                away_name="Partizan",
+                scheduled_utc="2026-12-20T18:00:00Z",
+                status=GameStatus.SCHEDULED,
+                evidence={"slate_date": "2026-12-20", "slate_role": "preview"},
+            )
+        )
+
+        # CHINA_WCBA_W uses Asia/Shanghai (+08:00): Paris 17:00+ CET rows cross
+        # Shanghai midnight, proving provider-bucket marking avoids the 12-of-16
+        # timezone mislabelling bug while DuckDB round-trips Game.evidence.
+        pipeline = Pipeline(
+            PipelineConfig(
+                league="CHINA_WCBA_W",
+                date_yyyymmdd=SLATE_DATE,
+                fixture_now_utc=OBSERVED,
+                offline_fixture=True,
+            ),
+            store,
+            fetch=lambda _url: _page(),
+            allow_writes=True,
+        )
+        pregame = pipeline.pregame()
+        window = pregame["slate_window"]
+        assert window["mode"] == "next_fixture_day"
+        assert window["target_date"] == "2026-11-24"
+        assert window["preview_date"] == "2026-11-25"
+        assert window["target_games"] == 12
+        assert window["preview_games"] == 4
+        assert window["dropped_out_of_window"] == 200
+        assert window["dropped_out_of_window_reason"] == "dated_rows_beyond_next_fixture_day"
+        assert window["dropped_past_target"] == 11
+        assert window["blank_kickoff_rows"] == 43
+        assert window["unparsed_rows"] == 27
+        assert window["next_fixture_date"] == "2026-11-25"
+
+        target_rows = [row for row in pregame["rows"] if row["preview"] is False]
+        preview_rows = [row for row in pregame["rows"] if row["preview"] is True]
+        assert len(target_rows) == 12
+        assert len(preview_rows) == 4
+        preview_ids = {row["game_id"] for row in preview_rows}
+
+        market_report = MarketForecastService(
+            store,
+            League.CHINA_WCBA_W,
+            forecast_config=ForecastConfig(min_history_games=4, min_residual_games=4),
+        ).build_report(
+            as_of_utc=OBSERVED,
+            date_yyyymmdd=SLATE_DATE,
+            timezone_name="Asia/Shanghai",
+            slate_window=window,
+        )
+        assert market_report["slate_window"]["preview_games_forecasted"] == 4
+        assert market_report["slate_window"]["service_dropped_beyond_window"] == 1
+        assert market_report["slate_window"]["service_dropped_past_target"] == 0
+
+        forecast_target_games = {
+            row["game_id"] for row in market_report["forecasts"] if row["preview"] is False
+        }
+        forecast_preview_games = {
+            row["game_id"] for row in market_report["forecasts"] if row["preview"] is True
+        }
+        assert len(forecast_target_games) == 12
+        assert forecast_preview_games == preview_ids
+
+        # Zero preview games may enter strict accas, paper accas, or paper singles.
+        for acca_row in market_report["accas"]["results"] + market_report["accas"]["paper_results"]:
+            assert not ({leg["game_id"] for leg in acca_row["legs"]} & preview_ids)
+        for single in market_report["accas"]["paper_single_picks"]:
+            assert single["game_id"] not in preview_ids
+
+        # Non-betexplorer_fixtures games without evidence["slate_date"] keep
+        # exact lane-timezone bucketing and emit no slate_window block.
+        store.upsert_game(
+            Game(
+                game_id="nba:tzcheck",
+                league=League.NBA,
+                season="2026-2027",
+                home_team_id="",
+                away_team_id="",
+                home_name="Lakers",
+                away_name="Celtics",
+                # 2026-11-25T01:30:00Z is 2026-11-24 20:30 America/New_York
+                scheduled_utc="2026-11-25T01:30:00Z",
+                status=GameStatus.SCHEDULED,
+            )
+        )
+        nba_report = MarketForecastService(store, League.NBA).build_report(
+            as_of_utc=OBSERVED,
+            date_yyyymmdd="20261124",
+            timezone_name="America/New_York",
+        )
+        assert "slate_window" not in nba_report
+        assert any(
+            row["game_id"] == "nba:tzcheck" for row in nba_report["uncovered_games"]
+        )
+    finally:
+        store.close()
+
 
 
 

@@ -3434,3 +3434,69 @@ def test_a_fixture_already_frozen_on_one_date_cannot_be_frozen_again_on_another_
         == 1.85
     )
 
+
+def test_a_preview_row_is_marked_never_frozen_and_never_a_ticket(tmp_path):
+    """Preview fixtures stay visible on picks_today but never freeze or enter tickets.
+
+    Both fixtures sit inside tip - 120m at 22:45Z (target tips 23:30Z, preview
+    tips 00:15Z next day). Only the target fixture may freeze at its own
+    tip - 120m (21:30Z); the preview row must stay out of picks_{target_date},
+    out of every frozen_by_date bucket, and out of ticket candidates even if a
+    caller injects a candidate referencing the preview fixture.
+    """
+
+    target_game = game(1, scheduled_utc="2026-11-07T23:30:00Z")
+    preview_game = game(2, scheduled_utc="2026-11-08T00:15:00Z")
+
+    target_row = forecast(1, price=1.90)
+    target_row["scheduled_utc"] = target_game.scheduled_utc
+    target_row["preview"] = False
+
+    preview_row = forecast(2, price=2.05)
+    preview_row["scheduled_utc"] = preview_game.scheduled_utc
+    preview_row["preview"] = True
+
+    preview_acca = acca([target_row, preview_row], acca_id="sneaky-preview-acca")
+    localdata = tmp_path / "preview_guard"
+
+    published = publish_operator_reports(
+        Store([target_game, preview_game]),
+        League.CHINA_WCBA_W,
+        report([target_row, preview_row], [preview_acca]),
+        localdata,
+        target_date=DATE,
+        generated_utc="2026-11-07T22:45:00Z",
+        run_id="preview-freeze-and-ticket-guard",
+    )
+
+    # Preview stays marked on picks_today.json, excluded from dated picks ledger.
+    today_rows = json.loads(Path(published["picks_today"]).read_text())
+    dated_rows = json.loads(Path(published["dated_picks"]).read_text())
+    assert {row["game_id"]: row.get("preview") for row in today_rows} == {
+        target_game.game_id: False,
+        preview_game.game_id: True,
+    }
+    assert [row["game_id"] for row in dated_rows] == [target_game.game_id]
+
+    # Only target_game freezes, at its own tip - 120m (21:30Z); no bucket holds preview.
+    assert published["pick_freezes"] == 1
+    lifecycle_state = json.loads((localdata / "pick_lifecycle_state.json").read_text())
+    assert list(lifecycle_state["frozen_by_date"][DATE]) == [target_game.game_id]
+    assert (
+        lifecycle_state["frozen_by_date"][DATE][target_game.game_id]["decision_cutoff_utc"]
+        == "2026-11-07T21:30:00Z"
+    )
+    assert all(
+        preview_game.game_id not in bucket
+        for bucket in lifecycle_state["frozen_by_date"].values()
+    )
+
+    # Ticket decision records preview exclusion and rejects the preview candidate.
+    decision = published["ticket_decision"]
+    assert decision["preview_rows_seen"] == 1
+    assert decision["preview_rows_excluded_from_tickets"] == 1
+    assert decision["candidate_tickets_seen"] == 0
+    assert decision["candidate_tickets_pre_tip"] == 0
+    assert published["ticket_receipt"] is None
+
+

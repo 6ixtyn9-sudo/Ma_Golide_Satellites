@@ -73,6 +73,37 @@ def _safe_run_id(value: str) -> str:
     return re.sub(r"[^A-Za-z0-9_.-]", "_", value)
 
 
+def _slate_window_line(market_report: Dict[str, Any] | None) -> str | None:
+    """Format the one-line slate-window log receipt for window lanes only.
+
+    Returns ``None`` on every lane without a ``slate_window`` block so
+    non-window lanes emit nothing.  Includes the explicit reason and non-window
+    breakdown so ``dropped_out_of_window`` can never be confused with past rows,
+    blank-kickoff rows, or unparseable rows.
+    """
+
+    if not isinstance(market_report, dict):
+        return None
+    window = market_report.get("slate_window")
+    if not isinstance(window, dict):
+        return None
+    mode = window.get("mode") or "next_fixture_day"
+    preview = int(window.get("preview_games") or 0)
+    dropped = int(window.get("dropped_out_of_window") or 0)
+    reason = window.get("dropped_out_of_window_reason") or "dated_rows_beyond_next_fixture_day"
+    past_target = int(window.get("dropped_past_target") or 0)
+    blank_kickoff = int(window.get("blank_kickoff_rows") or 0)
+    unparsed = int(window.get("unparsed_rows") or 0)
+    next_fixture_date = window.get("next_fixture_date") or "none"
+    return (
+        f"slate_window={mode} preview={preview} "
+        f"dropped_out_of_window={dropped} "
+        f"dropped_out_of_window_reason={reason} "
+        f"past_target={past_target} blank_kickoff={blank_kickoff} "
+        f"unparsed={unparsed} next_fixture_date={next_fixture_date}"
+    )
+
+
 def _write_run_report(localdata: Path, run_id: str, report: dict) -> str:
     target = localdata / "reports" / f"daily_{_safe_run_id(run_id)}.json"
     target.parent.mkdir(parents=True, exist_ok=True)
@@ -578,6 +609,7 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
                     timezone_name=config.timezone,
                     acca_legs=getattr(args, "acca_legs", 3),
                     acca_limit=getattr(args, "acca_limit", 5),
+                    slate_window=report.get("slate_window"),
                 )
                 market_report_path = write_market_report(
                     str(
@@ -585,6 +617,9 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
                     ),
                     market_report,
                 )
+                window_line = _slate_window_line(market_report)
+                if window_line is not None:
+                    print(window_line, file=sys.stderr)
                 stage_seconds["forecast"] = round(time.perf_counter() - forecast_started, 3)
 
         retention_started = time.perf_counter()
