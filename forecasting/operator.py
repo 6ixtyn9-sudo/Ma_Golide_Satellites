@@ -325,17 +325,27 @@ def _ticket_decision_window(
             "slate_timezone": slate_timezone_name,
         }
 
-    earliest_tip = min(slate_tips)
-    pre_tip_cutoff = earliest_tip - TICKET_DECISION_LEAD_TIME
-    cutoff = min(publication_cutoff, pre_tip_cutoff)
-    if generated < cutoff:
-        status = "pending_cutoff"
-    elif generated < earliest_tip:
-        status = "due"
-    else:
-        # Do not create a fresh position after the earliest slate game has
+    # Only a game that has not yet tipped can still be decided. A game that has
+    # already started earlier in the same slate date must not speak for the
+    # ones still ahead of it: on 2026-11-25 an 07:30 SAST fixture closed the
+    # whole NCAA_M date as missed at 09:11 SAST, twelve hours before the 117
+    # games that actually carried picks tipped (17:00-22:00 SAST). Per-leg
+    # safety is enforced where legs are chosen -- ``_ticket_candidate_is_pre_tip``
+    # refuses any candidate with a leg that is not strictly pre-tip -- so this
+    # gate only has to answer whether any of the slate is still ahead.
+    ahead = [tip for tip in slate_tips if tip > generated]
+    if not ahead:
+        # Do not create a fresh position after every game on the date has
         # tipped merely because a later scan has a new price/candidate.
+        earliest_tip = min(slate_tips)
+        pre_tip_cutoff = earliest_tip - TICKET_DECISION_LEAD_TIME
+        cutoff = min(publication_cutoff, pre_tip_cutoff)
         status = "missed_pre_tip_window"
+    else:
+        earliest_tip = min(ahead)
+        pre_tip_cutoff = earliest_tip - TICKET_DECISION_LEAD_TIME
+        cutoff = min(publication_cutoff, pre_tip_cutoff)
+        status = "pending_cutoff" if generated < cutoff else "due"
     return {
         "status": status,
         "policy": publication_policy,

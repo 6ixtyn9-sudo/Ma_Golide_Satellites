@@ -584,6 +584,58 @@ def test_ticket_waits_for_the_pre_tip_decision_window_and_uses_later_price(tmp_p
     assert receipt["accas"][0]["legs"][0]["book"]["selected_decimal_price"] == 1.95
 
 
+def test_a_game_that_already_tipped_does_not_close_the_rest_of_the_date(tmp_path):
+    """One finished fixture must not speak for the ones still ahead of it.
+
+    Measured failure, 2026-11-25: an 07:30 SAST NCAA_M game had already tipped
+    when the 09:11 SAST scan generated its card, so ``earliest_tip`` sat in the
+    past, the date was frozen ``missed_pre_tip_window``, and the 117 games that
+    actually carried picks -- all tipping 17:00-22:00 SAST -- could never become
+    a ticket. The slate-level gate only has to know whether any of the date is
+    still ahead; a started leg is refused where legs are chosen.
+    """
+
+    played = game(0, scheduled_utc="2026-11-07T05:30:00Z")
+    store = Store([played, game(1), game(2), game(3)])
+    rows = [forecast(number) for number in (1, 2, 3)]
+
+    published = publish(
+        tmp_path,
+        store,
+        report(rows, [acca(rows)]),
+        run_id="early-game-already-tipped",
+        generated_utc=TICKET_DECISION_AS_OF,
+    )
+
+    decision = published["ticket_decision"]
+    assert decision["status"] == "due"
+    # The binding tip is the earliest one still ahead, not the finished game.
+    assert decision["earliest_slate_tip_utc"] == "2026-11-07T20:00:00Z"
+    assert decision["planned_cutoff_utc"] == "2026-11-07T10:00:00Z"
+    assert published["ticket_receipt"] is not None
+
+
+def test_every_fixture_on_the_date_having_tipped_is_still_a_miss(tmp_path):
+    """The guard the promotion of 2026-11-25 kept: no fresh position on a dead slate."""
+
+    store = Store([game(number, scheduled_utc="2026-11-07T05:30:00Z") for number in (1, 2, 3)])
+    rows = [forecast(number) for number in (1, 2, 3)]
+
+    published = publish(
+        tmp_path,
+        store,
+        report(rows, [acca(rows)]),
+        run_id="whole-date-already-tipped",
+        generated_utc=TICKET_DECISION_AS_OF,
+    )
+
+    assert published["ticket_receipt"] is None
+    assert published["ticket_decision"]["status"] == "missed_pre_tip_window"
+    frozen = json.loads(Path(published["ticket_state"]).read_text())["frozen_by_date"][DATE]
+    assert frozen["no_bet"] is True
+    assert frozen["lock_source"] == "inline_state_no_bet"
+
+
 def _named_price_draft_rows():
     rows = []
     for number in (1, 2, 3):
