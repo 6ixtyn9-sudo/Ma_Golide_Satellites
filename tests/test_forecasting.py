@@ -8,6 +8,7 @@ import math
 import pytest
 
 from forecasting.accas import build_accas, filter_paper_candidate_picks
+from forecasting.harness import resolve_calibration_twins
 from forecasting.harness import (
     CalibrationConfig,
     apply_profiles,
@@ -1217,6 +1218,92 @@ def _roi_forecast(
         line=line,
     )
     return row
+
+
+def _twin(game_id: str, probability: float, *, n: int, sufficient: bool, version: str, eligible: bool, reasons):
+    row = _roi_forecast(game_id, probability, 1.34, "win")
+    row.calibration_version = version
+    row.calibration = {"n": n, "sufficient_for_accas": sufficient}
+    row.eligibility = {"acca_eligible": eligible, "reasons": list(reasons), "advisories": []}
+    return row
+
+
+def test_one_betting_key_yields_one_wager_eligible_row():
+    """The probability floor must be a property of the bet, not of the model.
+
+    2026-11-25 EuroLeague, every priced key: a `provider_prediction` twin at
+    p≈0.484 blocked by the floor and a `team_history_empirical` twin at p≈0.548
+    eligible — same fixture, market, period, side and price. Evaluating each row
+    independently made the same bet both eligible and ineligible, so the floor
+    was selectable by choosing a calibration. The row with more evidence wins and
+    the other stays on the card as audit-only, disagreement stated.
+
+    Not "strictest verdict wins": that is the same bug inverted, handing a veto
+    to whichever model is worst and letting a lane block every bet by also
+    emitting a pessimistic twin.
+    """
+
+    strong = _twin(
+        "g1",
+        0.548,
+        n=32,
+        sufficient=True,
+        version="team_history_empirical-cb419eb48826",
+        eligible=True,
+        reasons=[],
+    )
+    weak = _twin(
+        "g1",
+        0.484,
+        n=6,
+        sufficient=False,
+        version="provider_prediction-1a8e07eab6ae",
+        eligible=False,
+        reasons=["below_calibrated_probability_floor"],
+    )
+
+    resolved = resolve_calibration_twins([weak, strong])
+
+    eligible = [row for row in resolved if row.eligibility["acca_eligible"]]
+    assert len(eligible) == 1
+    assert eligible[0] is strong
+    assert "superseded_by_calibration_twin" in weak.eligibility["reasons"]
+    assert weak.eligibility["superseded_by_forecast_id"] == strong.forecast_id
+    assert (
+        weak.eligibility["superseded_by_calibration_version"]
+        == "team_history_empirical-cb419eb48826"
+    )
+    assert "calibration_twin_disagreement" in weak.eligibility["advisories"]
+
+    # Same answer whichever order the lane emitted them in.
+    strong_again = _twin(
+        "g1",
+        0.548,
+        n=32,
+        sufficient=True,
+        version="team_history_empirical-cb419eb48826",
+        eligible=True,
+        reasons=[],
+    )
+    weak_again = _twin(
+        "g1",
+        0.484,
+        n=6,
+        sufficient=False,
+        version="provider_prediction-1a8e07eab6ae",
+        eligible=False,
+        reasons=["below_calibrated_probability_floor"],
+    )
+    reversed_rows = resolve_calibration_twins([strong_again, weak_again])
+    assert [row.eligibility["acca_eligible"] for row in reversed_rows] == [True, False]
+
+    # A different bet on the same fixture is not a twin and keeps its verdict.
+    other_selection = _roi_forecast("g1", 0.52, 1.98, "win", selection="away")
+    other_selection.calibration_version = "team_history_empirical-cb419eb48826"
+    other_selection.calibration = {"n": 32, "sufficient_for_accas": True}
+    other_selection.eligibility = {"acca_eligible": True, "reasons": [], "advisories": []}
+    untouched = resolve_calibration_twins([strong_again, other_selection])
+    assert all(row.eligibility["acca_eligible"] for row in untouched)
 
 
 def test_a_named_book_lane_never_prices_from_an_aggregate_consensus_quote():

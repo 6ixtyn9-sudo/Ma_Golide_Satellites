@@ -340,6 +340,97 @@ def build_profiles(
     return profiles
 
 
+#: Reason stamped on a row that is a calibration twin of a better-evidenced row.
+TWIN_SUPERSEDED_REASON = "superseded_by_calibration_twin"
+#: Advisory stamped when the twins would have disagreed about eligibility.
+TWIN_DISAGREEMENT_ADVISORY = "calibration_twin_disagreement"
+
+
+def _wager_identity(forecast: Forecast) -> tuple:
+    """The identity of a *bet*, independent of which model produced it.
+
+    Two rows that agree on all six fields price the same wager. When they come
+    from different calibration segments they are twins, not two bets.
+    """
+
+    return (
+        forecast.league,
+        forecast.game_id,
+        forecast.market,
+        forecast.period,
+        forecast.selection,
+        forecast.line,
+    )
+
+
+def _calibration_evidence_rank(forecast: Forecast) -> tuple:
+    """Order twins by how much calibration evidence stands behind them.
+
+    Sufficiency first, then sample size, then probability, then the row id so the
+    winner never depends on emission order. Deliberately *not* "the stricter
+    verdict wins": that reads as cautious, but it hands a veto to whichever model
+    is worse, and a lane could then block every bet by also emitting a
+    badly-calibrated pessimistic twin. The floor has to be a property of the bet,
+    decided by its best evidence, not of the model someone chose to consult.
+    """
+
+    calibration = forecast.calibration or {}
+    sample = calibration.get("n")
+    return (
+        1 if calibration.get("sufficient_for_accas") is True else 0,
+        int(sample) if isinstance(sample, int) and not isinstance(sample, bool) else 0,
+        float(forecast.calibrated_probability or 0.0),
+        str(forecast.forecast_id),
+    )
+
+
+def resolve_calibration_twins(forecasts: Iterable[Forecast]) -> List[Forecast]:
+    """Make one betting key yield exactly one wager-eligible row.
+
+    A lane can emit one priced row per calibration segment -- on 2026-11-25
+    EuroLeague did it for every priced key: a ``provider_prediction`` twin at
+    p≈0.48 (blocked by the probability floor) and a ``team_history_empirical``
+    twin at p≈0.55 (eligible), same fixture, market, period, side and price.
+    Evaluating them independently made the floor selectable by choosing a
+    calibration: the same bet was eligible or not depending on which twin the
+    gate happened to read, and the pick card showed both verdicts at once.
+
+    The better-evidenced row wins (:func:`_calibration_evidence_rank`); every
+    other twin stays on the card as audit-only, carrying
+    ``superseded_by_calibration_twin``, the winner's id and version, and -- when
+    the verdicts would have differed -- a ``calibration_twin_disagreement``
+    advisory so the disagreement is stated rather than resolved silently.
+    """
+
+    rows = list(forecasts)
+    groups: Dict[tuple, List[Forecast]] = {}
+    for forecast in rows:
+        groups.setdefault(_wager_identity(forecast), []).append(forecast)
+    for group in groups.values():
+        if len(group) < 2:
+            continue
+        canonical = max(group, key=_calibration_evidence_rank)
+        canonical_eligible = bool((canonical.eligibility or {}).get("acca_eligible"))
+        for row in group:
+            if row is canonical:
+                continue
+            eligibility = dict(row.eligibility or {})
+            reasons = list(eligibility.get("reasons") or [])
+            if TWIN_SUPERSEDED_REASON not in reasons:
+                reasons.append(TWIN_SUPERSEDED_REASON)
+            advisories = list(eligibility.get("advisories") or [])
+            if bool(eligibility.get("acca_eligible")) != canonical_eligible:
+                if TWIN_DISAGREEMENT_ADVISORY not in advisories:
+                    advisories.append(TWIN_DISAGREEMENT_ADVISORY)
+            eligibility["reasons"] = reasons
+            eligibility["advisories"] = advisories
+            eligibility["acca_eligible"] = False
+            eligibility["superseded_by_forecast_id"] = canonical.forecast_id
+            eligibility["superseded_by_calibration_version"] = canonical.calibration_version
+            row.eligibility = eligibility
+    return rows
+
+
 def apply_profiles(
     forecasts: Iterable[Forecast],
     profiles: Mapping[SegmentKey, CalibrationProfile],
@@ -406,7 +497,7 @@ def apply_profiles(
             ),
         }
         calibrated.append(forecast)
-    return calibrated
+    return resolve_calibration_twins(calibrated)
 
 
 def probability_metrics(

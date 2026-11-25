@@ -71,6 +71,83 @@ def test_source_unavailable_coverage_marker_is_stable_and_write_gated(tmp_path):
     ) is None
 
 
+def test_a_failed_scan_writes_a_marker_and_an_empty_slate_does_not(tmp_path):
+    """Zero rows must say which zero it was.
+
+    2026-11-25: nine lanes scanned zero rows and published no marker, after
+    writing markers for days beforehand. The writer only fired for
+    `schedule_source == "source_unavailable"`, so the day a real provider started
+    failing -- exactly when the operator needed the signal -- the markers stopped.
+    """
+
+    provider_gap = {
+        "game_id": None,
+        "required_field": "schedule",
+        "reason": "provider_error",
+        "provider": "betexplorer",
+        "detail": "U2001: eurocup schedule for U2001 is empty; a wrong season code answers 200 with no rows",
+        "observed_utc": "2026-11-25T04:00:00Z",
+    }
+
+    path = _write_coverage_gap_marker(
+        tmp_path,
+        league="EUROCUP",
+        target_date="2026-11-25",
+        write_enabled=True,
+        scan_rows=0,
+        fixtures_found=0,
+        gaps=(provider_gap,),
+    )
+    assert path is not None
+    marker = json.loads(Path(path).read_text())
+    assert marker["status"] == "scan_failed"
+    assert marker["gap_reasons"] == ["provider_error"]
+    assert "U2001" in marker["detail"]
+    assert marker["attempted_utc"]
+    assert marker["scan_rows"] == 0
+
+    # An honest empty slate is not a gap: no fixtures and no failure says nothing
+    # about whether the lane is broken.
+    assert (
+        _write_coverage_gap_marker(
+            tmp_path,
+            league="NBA",
+            target_date="2026-11-25",
+            write_enabled=True,
+            scan_rows=0,
+            fixtures_found=0,
+            gaps=(),
+        )
+        is None
+    )
+    # A lane that scanned rows is not a gap either, whatever its gaps list says.
+    assert (
+        _write_coverage_gap_marker(
+            tmp_path,
+            league="EUROCUP",
+            target_date="2026-11-26",
+            write_enabled=True,
+            scan_rows=26,
+            fixtures_found=4,
+            gaps=(provider_gap,),
+        )
+        is None
+    )
+    # A transport failure with no recorded gap is still a failed scan.
+    transport = _write_coverage_gap_marker(
+        tmp_path,
+        league="GREECE_BASKET_LEAGUE",
+        target_date="2026-11-25",
+        write_enabled=True,
+        scan_rows=0,
+        fixtures_found=0,
+        gaps=(),
+        transport_errors=12,
+    )
+    assert transport is not None
+    assert json.loads(Path(transport).read_text())["transport_errors"] == 12
+
+
 def test_aba_history_receipts_publish_only_completed_historical_seasons(tmp_path):
     historical = {
         "season_end_year": 2026,

@@ -1119,6 +1119,23 @@ class MarketForecastService:
                 "paper_excluded_no_named_book_quote_rows": int(
                     paper_pick_filter.get("excluded_no_named_book_quote_count") or 0
                 ),
+                # A calibration twin is the same bet priced by a second model.
+                # Only the better-evidenced row is wager-eligible (see
+                # harness.resolve_calibration_twins); the rest stay on the card
+                # as audit-only. Both counts make that demotion visible instead
+                # of leaving it to be inferred from a missing eligible row.
+                "calibration_twin_superseded_rows": sum(
+                    1
+                    for forecast in current
+                    if "superseded_by_calibration_twin"
+                    in ((forecast.eligibility or {}).get("reasons") or [])
+                ),
+                "calibration_twin_disagreement_rows": sum(
+                    1
+                    for forecast in current
+                    if "calibration_twin_disagreement"
+                    in ((forecast.eligibility or {}).get("advisories") or [])
+                ),
                 "paper_quality_candidate_games": len(paper_quality_candidate_games),
                 "ranking": "probability_price_blend_after_pick_filter",
                 "paper_acca_eligible_games": acca_pool_games,
