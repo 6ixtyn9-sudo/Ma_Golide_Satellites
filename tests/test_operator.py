@@ -3328,3 +3328,109 @@ def test_a_frozen_pick_whose_fixture_is_gone_says_so_instead_of_pending(tmp_path
     card = Path(second["picks_text"]).read_text()
     assert "lifecycle=FROZEN_NO_FIXTURE" in card
     assert "grade=\u23f3 PENDING" in card
+
+
+def test_slate_window_invariants_isolate_future_date_games_from_today_ticket_window(tmp_path):
+    """Future-date fixtures in the store must never move or reopen today's ticket window.
+
+    Guards the Item 5 slate-window policy boundary:
+    1. A date with zero today fixtures and only a tomorrow fixture stays
+       ``no_slate_game`` (never locks a premature ticket on today's card).
+    2. A date whose own fixtures have all already tipped stays
+       ``missed_pre_tip_window`` even when tomorrow's fixtures exist (#253).
+    3. Per-leg pre-tip refusal rejects a candidate mixing a tipped leg with a
+       future-day leg.
+    """
+
+    tomorrow_game = game(10, scheduled_utc="2026-11-08T18:00:00Z")
+    no_today = publish(
+        tmp_path / "no_today",
+        Store([tomorrow_game]),
+        report([], []),
+        run_id="only-tomorrow-in-store",
+        generated_utc=TICKET_DECISION_AS_OF,
+    )
+    assert no_today["ticket_decision"]["status"] == "no_slate_game"
+    assert no_today["ticket_receipt"] is None
+
+    tipped_today = game(1, scheduled_utc="2026-11-07T05:30:00Z")
+    tomorrow_row = forecast(10)
+    tomorrow_row["scheduled_utc"] = tomorrow_game.scheduled_utc
+    dead_today = publish(
+        tmp_path / "dead_today",
+        Store([tipped_today, tomorrow_game]),
+        report([forecast(1), tomorrow_row], [acca([forecast(1), tomorrow_row])]),
+        run_id="today-tipped-tomorrow-ahead",
+        generated_utc=TICKET_DECISION_AS_OF,
+    )
+    assert dead_today["ticket_decision"]["status"] == "missed_pre_tip_window"
+    assert dead_today["ticket_receipt"] is None
+
+    # Per-leg pre-tip refusal still rejects any ticket containing a started leg
+    # even while another same-date fixture keeps the ticket window open.
+    ahead_today = game(2, scheduled_utc="2026-11-07T20:00:00Z")
+    tipped_row = forecast(1)
+    tipped_row["scheduled_utc"] = tipped_today.scheduled_utc
+    ahead_row = forecast(2)
+    mixed = publish(
+        tmp_path / "mixed_legs",
+        Store([tipped_today, ahead_today, tomorrow_game]),
+        report(
+            [tipped_row, ahead_row, tomorrow_row],
+            [acca([tipped_row, ahead_row, tomorrow_row], acca_id="mixed-started-leg")],
+        ),
+        run_id="started-leg-with-future-leg",
+        generated_utc=TICKET_DECISION_AS_OF,
+    )
+    assert mixed["ticket_decision"]["status"] == "due"
+    assert mixed["ticket_decision"]["candidate_tickets_pre_tip"] == 0
+    assert mixed["ticket_receipt"] is None
+
+
+def test_a_fixture_already_frozen_on_one_date_cannot_be_frozen_again_on_another_date(tmp_path):
+    """Cross-day duplicate-freeze guard: one fixture gets at most one immutable freeze."""
+
+    midnight_game = game(1, scheduled_utc="2026-11-08T00:30:00Z")
+    first_row = forecast(1, price=1.85)
+    first_row["scheduled_utc"] = midnight_game.scheduled_utc
+    localdata = tmp_path / "cross_day"
+
+    # First freeze inside tip - 120m (22:30Z..00:30Z) while target_date is 2026-11-07.
+    publish_operator_reports(
+        Store([midnight_game]),
+        League.NBA,
+        report([first_row], []),
+        localdata,
+        target_date="2026-11-07",
+        generated_utc="2026-11-07T23:00:00Z",
+        run_id="freeze-day-one",
+    )
+
+    # Second tick on 2026-11-08 still inside tip - 120m with a drifted price must
+    # NOT create a second immutable freeze for the same game_id under 2026-11-08.
+    drifted_row = forecast(1, price=2.15)
+    drifted_row["scheduled_utc"] = midnight_game.scheduled_utc
+    publish_operator_reports(
+        Store([midnight_game]),
+        League.NBA,
+        report([drifted_row], []),
+        localdata,
+        target_date="2026-11-08",
+        generated_utc="2026-11-08T00:05:00Z",
+        run_id="freeze-day-two",
+    )
+
+    state = json.loads((localdata / "pick_lifecycle_state.json").read_text())
+    frozen_dates = [
+        date_key
+        for date_key, bucket in state["frozen_by_date"].items()
+        if midnight_game.game_id in bucket
+    ]
+    assert frozen_dates == ["2026-11-07"]
+    assert (
+        state["frozen_by_date"]["2026-11-07"][midnight_game.game_id]["rows"][0]["book"][
+            "selected_decimal_price"
+        ]
+        == 1.85
+    )
+

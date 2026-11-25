@@ -1350,6 +1350,12 @@ def _freeze_due_pick_fixtures(
 
     now = parse_utc(generated_utc)
     existing = _load_pick_freezes(lifecycle_state, target_date=target_date, league=league)
+    frozen_any_date = {
+        str(gid)
+        for date_bucket in (lifecycle_state.get("frozen_by_date") or {}).values()
+        if isinstance(date_bucket, dict)
+        for gid in date_bucket
+    }
     frozen_by_date = lifecycle_state["frozen_by_date"].setdefault(target_date, {})
     froze_any = False
     for game_id, fixture_rows in itertools.groupby(
@@ -1361,7 +1367,7 @@ def _freeze_due_pick_fixtures(
             raise ValueError(f"pick freeze fixture has inconsistent scheduled_utc: {game_id}")
         tip = parse_utc(tips.pop())
         cutoff = tip - TICKET_DECISION_LEAD_TIME
-        if game_id in existing or not (cutoff <= now < tip):
+        if game_id in existing or game_id in frozen_any_date or not (cutoff <= now < tip):
             continue
         frozen_rows = deepcopy(fixture_rows)
         for row in frozen_rows:
