@@ -1,6 +1,6 @@
 Ma Golide Picks — NCAA_W 2026-11-24
 ========================================================================
-Generated at: 2026-11-25 06:08 SAST
+Generated at: 2026-11-25 07:20 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -33,18 +33,7 @@ SKIPPED — INELIGIBLE
 
 IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
-  [provider:espn/team_history_empirical] Portland State Vikings vs Cal State Fullerton Titans · KO 2026-11-25 05:00 SAST
-      MONEYLINE full_game -> HOME · p=55.5% (raw 60.2%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T01:37:40Z
-      calibration=calibrated n=252 · reasons=no_exact_bookmaker_market · prediction=espn
-  [team_history_empirical/team_history_empirical] Portland State Vikings vs Cal State Fullerton Titans · KO 2026-11-25 05:00 SAST
-      MONEYLINE full_game -> AWAY · p=46.7% (raw 53.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T01:37:40Z
-      calibration=calibrated n=438 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Portland State Vikings vs Cal State Fullerton Titans · KO 2026-11-25 05:00 SAST
-      MONEYLINE H1 -> HOME · p=46.1% (raw 54.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T01:37:40Z
-      calibration=calibrated n=444 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  (none)
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
@@ -507,6 +496,10 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE full_game -> AWAY · p=55.8% (raw 62.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T22:10:45Z
       calibration=calibrated n=432 · reasons=no_exact_bookmaker_market · prediction=history
+  [provider:espn/team_history_empirical] Portland State Vikings vs Cal State Fullerton Titans · KO 2026-11-25 05:00 SAST
+      MONEYLINE full_game -> HOME · p=55.5% (raw 60.2%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T01:37:40Z
+      calibration=calibrated n=252 · reasons=no_exact_bookmaker_market · prediction=espn
   [team_history_empirical/team_history_empirical] Cleveland State Vikings vs Georgia Southern Eagles · KO 2026-11-25 01:00 SAST
       MONEYLINE H1 -> AWAY · p=55.3% (raw 63.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-24T21:08:17Z
@@ -734,6 +727,10 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-24T21:08:17Z
       calibration=calibrated n=429 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
       collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:espn, team_history_empirical
+  [team_history_empirical/team_history_empirical] Portland State Vikings vs Cal State Fullerton Titans · KO 2026-11-25 05:00 SAST
+      MONEYLINE full_game -> AWAY · p=46.7% (raw 53.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T01:37:40Z
+      calibration=calibrated n=438 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
   [provider:espn/team_history_empirical] Sam Houston Bearkats vs Pepperdine Waves · KO 2026-11-24 22:00 SAST
       MONEYLINE full_game -> AWAY · p=46.5% (raw 50.2%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T18:09:36Z
@@ -749,6 +746,10 @@ SETTLED PICKS — ARCHIVE ONLY
   [team_history_empirical/team_history_empirical] Montana Lady Griz vs Carroll (MT) Fighting Saints · KO 2026-11-25 04:00 SAST
       MONEYLINE H1 -> HOME · p=46.1% (raw 54.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T01:37:40Z
+      calibration=calibrated n=444 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Portland State Vikings vs Cal State Fullerton Titans · KO 2026-11-25 05:00 SAST
+      MONEYLINE H1 -> HOME · p=46.1% (raw 54.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T01:37:40Z
       calibration=calibrated n=444 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] UC San Diego Tritons vs Whittier Poets · KO 2026-11-25 04:00 SAST
       MONEYLINE H1 -> HOME · p=46.1% (raw 54.0%) @n/a no matched book
@@ -862,7 +863,7 @@ SETTLED PICKS — ARCHIVE ONLY
 
 Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=0 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=3 SETTLED=178
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=181
 Logical picks shown: 181 · superseded observations: 229 · book/model rows collapsed: 45
 Total archived pick evidence rows: 455
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
