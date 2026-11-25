@@ -1,6 +1,6 @@
 Ma Golide Picks — EUROLEAGUE 2026-11-25
 ========================================================================
-Generated at: 2026-11-25 22:37 SAST
+Generated at: 2026-11-25 23:23 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -33,19 +33,10 @@ SKIPPED — INELIGIBLE
 
 IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
-  [team_history_empirical/team_history_empirical] Olympiacos Piraeus vs Hapoel IBI Tel Aviv · KO 2026-11-25 21:15 SAST
-      MONEYLINE H1 -> HOME · p=67.3% (raw 67.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T17:24:13Z
-      calibration=calibrated n=34 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical/team_history_empirical] Real Madrid vs Zalgiris Kaunas · KO 2026-11-25 21:45 SAST
       MONEYLINE H1 -> HOME · p=64.3% (raw 64.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T18:18:38Z
       calibration=calibrated n=34 · reasons=no_exact_bookmaker_market · prediction=history
-  [team_history_empirical/team_history_empirical] Olympiacos Piraeus vs Hapoel IBI Tel Aviv · KO 2026-11-25 21:15 SAST
-      MONEYLINE full_game -> HOME · p=59.8% (raw 60.0%) @1.310 Stake.com
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T17:24:13Z
-      calibration=calibrated n=32 · reasons=superseded_by_calibration_twin · prediction=history
-      collapsed_observations=8 · books_quoted=4: BetMGM.us, Stake.com, average, bet365.us · surfaces=provider:history_model, team_history_empirical
   [team_history_empirical/team_history_empirical] Kosner Baskonia Vitoria-Gasteiz vs Anadolu Efes Istanbul · KO 2026-11-25 21:30 SAST
       MONEYLINE full_game -> AWAY · p=55.8% (raw 56.0%) @1.710 Stake.com
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T18:18:38Z
@@ -60,10 +51,6 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       MONEYLINE H1 -> AWAY · p=51.3% (raw 51.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T18:18:38Z
       calibration=calibrated n=34 · reasons=no_exact_bookmaker_market · prediction=history
-  [team_history_empirical/team_history_empirical] Olympiacos Piraeus vs Hapoel IBI Tel Aviv · KO 2026-11-25 21:15 SAST
-      HIGHEST QUARTER full_game -> Q1 · p=31.7% (raw 28.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T17:24:13Z
-      calibration=calibrated n=32 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Kosner Baskonia Vitoria-Gasteiz vs Anadolu Efes Istanbul · KO 2026-11-25 21:30 SAST
       HIGHEST QUARTER full_game -> Q1 · p=30.7% (raw 27.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T18:18:38Z
@@ -71,19 +58,32 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
+  [team_history_empirical/team_history_empirical] Olympiacos Piraeus vs Hapoel IBI Tel Aviv · KO 2026-11-25 21:15 SAST
+      MONEYLINE H1 -> HOME · p=67.3% (raw 67.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T17:24:13Z
+      calibration=calibrated n=34 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical/team_history_empirical] Dubai Basketball vs Partizan Mozzart Bet Belgrade · KO 2026-11-25 18:00 SAST
       MONEYLINE H1 -> HOME · p=64.3% (raw 64.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T14:19:27Z
       calibration=calibrated n=34 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Olympiacos Piraeus vs Hapoel IBI Tel Aviv · KO 2026-11-25 21:15 SAST
+      MONEYLINE full_game -> HOME · p=59.8% (raw 60.0%) @1.310 Stake.com
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T17:24:13Z
+      calibration=calibrated n=32 · reasons=superseded_by_calibration_twin · prediction=history
+      collapsed_observations=8 · books_quoted=4: BetMGM.us, Stake.com, average, bet365.us · surfaces=provider:history_model, team_history_empirical
   [team_history_empirical/team_history_empirical] Dubai Basketball vs Partizan Mozzart Bet Belgrade · KO 2026-11-25 18:00 SAST
       MONEYLINE full_game -> HOME · p=54.8% (raw 55.0%) @1.300 BetMGM.us
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T14:19:27Z
       calibration=calibrated n=32 · reasons=superseded_by_calibration_twin · prediction=history
       collapsed_observations=8 · books_quoted=4: BetMGM.us, Stake.com, average, bet365.us · surfaces=provider:history_model, team_history_empirical
+  [team_history_empirical/team_history_empirical] Olympiacos Piraeus vs Hapoel IBI Tel Aviv · KO 2026-11-25 21:15 SAST
+      HIGHEST QUARTER full_game -> Q1 · p=31.7% (raw 28.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T17:24:13Z
+      calibration=calibrated n=32 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
 
 Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=0 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=8 SETTLED=2
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=5 SETTLED=5
 Logical picks shown: 10 · superseded observations: 0 · book/model rows collapsed: 28
 Total archived pick evidence rows: 38
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.

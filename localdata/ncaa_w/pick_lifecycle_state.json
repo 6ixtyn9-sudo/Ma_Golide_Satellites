@@ -46,9 +46,9 @@
       "logical_picks": 181
     },
     "2026-11-25": {
-      "evidence_rows": 158,
-      "frozen_fixtures": 40,
-      "logical_picks": 123
+      "evidence_rows": 159,
+      "frozen_fixtures": 42,
+      "logical_picks": 124
     }
   },
   "frozen_by_date": {
@@ -50861,6 +50861,146 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-25"
       },
+      "401918775": {
+        "decision_cutoff_utc": "2026-11-25T20:30:00Z",
+        "frozen_at": "2026-11-25T21:28:42Z",
+        "game_id": "401918775",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Oral Roberts Golden Eagles",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.619771,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 494,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "cdf5e3dd4fe5c59c480e1d85805f6438907aa2ee4b1563706ffa1a3f8ab5ea8e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d11fe3a58654722e5ff1",
+            "game_id": "401918775",
+            "grade_status": "pending",
+            "home": "Butler Bulldogs",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "d11fe3a58654722e5ff1",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.69,
+            "role": null,
+            "scheduled_utc": "2026-11-25T22:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Oral Roberts Golden Eagles",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.72431,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 492,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "4e3e74cc2427c9b46470ff4a78efcf504cd9393b83358cb951318ac9a2ce10ef",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a8cb194b64ad4a514ff6",
+            "game_id": "401918775",
+            "grade_status": "pending",
+            "home": "Butler Bulldogs",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "a8cb194b64ad4a514ff6",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.78,
+            "role": null,
+            "scheduled_utc": "2026-11-25T22:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Oral Roberts Golden Eagles",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.925205,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 302,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "d89202b5653617c7d93d12ffcf2745002ae9912e142b2bba2e9d2d3d7f7b79d4",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d6be5b1cbcc7d6753daa",
+            "game_id": "401918775",
+            "grade_status": "pending",
+            "home": "Butler Bulldogs",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "d6be5b1cbcc7d6753daa",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-25T20:49:02Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9687,
+            "role": null,
+            "scheduled_utc": "2026-11-25T22:30:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-25T22:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-25"
+      },
       "401918891": {
         "decision_cutoff_utc": "2026-11-25T15:30:00Z",
         "frozen_at": "2026-11-25T16:15:45Z",
@@ -53599,6 +53739,147 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-25"
       },
+      "401928201": {
+        "decision_cutoff_utc": "2026-11-25T21:00:00Z",
+        "frozen_at": "2026-11-25T21:28:42Z",
+        "game_id": "401928201",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Campbell Fighting Camels",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.499771,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 494,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "901d3575e0f56491299f9df1659c634acb37acffa3f559e8cbad43e047ffc15e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "9babcbb618d0e0f78e8b",
+            "game_id": "401928201",
+            "grade_status": "pending",
+            "home": "Mercer Bears",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "9babcbb618d0e0f78e8b",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-25T23:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Campbell Fighting Camels",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.51431,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 492,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "68033e90af871600f1ffd17f6544e583cc4fcd82336648b9344a2a855ab74bd4",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "32d2502e210b130c98d3",
+            "game_id": "401928201",
+            "grade_status": "pending",
+            "home": "Mercer Bears",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "32d2502e210b130c98d3",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.57,
+            "role": null,
+            "scheduled_utc": "2026-11-25T23:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Campbell Fighting Camels",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.652605,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 302,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "cdca68bf0d24c17b007f1bfd27ab058d74edd550772437b2dce0799d8f34464c",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a29524861e1624f14127",
+            "game_id": "401928201",
+            "grade_status": "pending",
+            "home": "Mercer Bears",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "a29524861e1624f14127",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-25T20:49:02Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.6961,
+            "role": null,
+            "scheduled_utc": "2026-11-25T23:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-25T23:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-25"
+      },
       "401929032": {
         "decision_cutoff_utc": "2026-11-25T16:00:00Z",
         "frozen_at": "2026-11-25T16:15:45Z",
@@ -54307,26 +54588,6 @@
   "league": "NCAA_W",
   "pending_frozen_games": [
     [
-      "401913060",
-      "2026-11-25T18:30:00Z"
-    ],
-    [
-      "401913803",
-      "2026-11-25T19:00:00Z"
-    ],
-    [
-      "401917722",
-      "2026-11-25T19:00:00Z"
-    ],
-    [
-      "401927935",
-      "2026-11-25T19:00:00Z"
-    ],
-    [
-      "401927998",
-      "2026-11-25T19:00:00Z"
-    ],
-    [
       "401917718",
       "2026-11-25T20:00:00Z"
     ],
@@ -54369,6 +54630,14 @@
     [
       "401917724",
       "2026-11-25T22:00:00Z"
+    ],
+    [
+      "401918775",
+      "2026-11-25T22:30:00Z"
+    ],
+    [
+      "401928201",
+      "2026-11-25T23:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
