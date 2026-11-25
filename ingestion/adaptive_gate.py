@@ -234,6 +234,60 @@ def _coverage_gap_marker_path(state_dir: Path, target_date: str) -> Path:
     return state_dir / f"coverage_gap_{target_date}.json"
 
 
+def _read_coverage_marker(
+    state_dir: Path, *, config: LeagueGateConfig, target_date: str
+) -> dict[str, Any] | None:
+    """Load today's coverage marker, validating identity before any use."""
+
+    marker_path = _coverage_gap_marker_path(state_dir, target_date)
+    if not marker_path.exists():
+        return None
+    marker = _read_json(marker_path, description="coverage-gap marker")
+    if (
+        marker.get("schema_version") != COVERAGE_GAP_MARKER_SCHEMA
+        or marker.get("league") != config.league_key
+        or marker.get("target_date") != target_date
+    ):
+        raise GateUncertain("coverage-gap marker has an unknown identity or schema")
+    status = marker.get("status")
+    if status is None:
+        # Markers written before the status field existed are unambiguously
+        # source-unavailable lanes: that was the only kind the writer produced.
+        if marker.get("schedule_source") == "source_unavailable":
+            status = "source_unavailable"
+        else:
+            raise GateUncertain("coverage-gap marker has an unknown status")
+    if status not in {"source_unavailable", "scan_failed"}:
+        raise GateUncertain("coverage-gap marker has an unknown status")
+    return marker
+
+
+def _scan_failed_reasons(
+    state_dir: Path, *, config: LeagueGateConfig, target_date: str
+) -> list[str]:
+    """Surface a failed scan as a retry, never as permission to skip.
+
+    ``scan_failed`` means the lane has a source and the source did not answer
+    usefully: a provider error, an empty season code, a refused page. Unlike a
+    ``source_unavailable`` marker this must not stand the lane down for the day —
+    a source can recover inside the hour — so the reason is returned and the lane
+    runs again. On 2026-11-25 nine lanes scanned zero rows and published no
+    marker at all, so the operator could not tell an empty slate from a dead
+    source; the marker now exists and the gate repeats its detail every tick.
+
+    Source-unavailable lanes keep their own throttle; this never double-reports
+    them.
+    """
+
+    if config.schedule_source == "source_unavailable":
+        return []
+    marker = _read_coverage_marker(state_dir, config=config, target_date=target_date)
+    if marker is None or marker.get("status") != "scan_failed":
+        return []
+    detail = str(marker.get("detail") or "").strip()
+    return [f"coverage_gap_scan_failed: {detail}" if detail else "coverage_gap_scan_failed"]
+
+
 def _source_unavailable_reasons(
     state_dir: Path, *, config: LeagueGateConfig, target_date: str
 ) -> list[str]:
@@ -247,13 +301,13 @@ def _source_unavailable_reasons(
     marker_path = _coverage_gap_marker_path(state_dir, target_date)
     if not marker_path.exists():
         return ["coverage_gap_publication_due"]
-    marker = _read_json(marker_path, description="coverage-gap marker")
-    if (
-        marker.get("schema_version") != COVERAGE_GAP_MARKER_SCHEMA
-        or marker.get("league") != config.league_key
-        or marker.get("target_date") != target_date
-        or marker.get("schedule_source") != "source_unavailable"
-    ):
+    marker = _read_coverage_marker(state_dir, config=config, target_date=target_date)
+    if marker is not None and marker.get("status") == "scan_failed":
+        detail = str(marker.get("detail") or "").strip()
+        return [
+            f"coverage_gap_scan_failed: {detail}" if detail else "coverage_gap_scan_failed"
+        ]
+    if marker is not None and marker.get("schedule_source") != "source_unavailable":
         raise GateUncertain("coverage-gap marker has an unknown identity or schema")
     # The gate cannot discover a source-unavailable fixture itself. A dated
     # durable text card is therefore proof of a manually supplied lifecycle
@@ -644,6 +698,7 @@ def evaluate_league(
         reasons.extend(_settlement_view_reasons(state_dir, performance))
         reasons.extend(_historical_pending_card_reasons(state_dir, target_date=target_date))
         reasons.extend(_legacy_compact_pick_card_reasons(state_dir))
+        reasons.extend(_scan_failed_reasons(state_dir, config=config, target_date=target_date))
     except GateUncertain as exc:
         return GateDecision(
             config, target_date, True, (f"state_uncertain: {exc}",), schedule_count

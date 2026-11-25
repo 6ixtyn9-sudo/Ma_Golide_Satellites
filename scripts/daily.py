@@ -216,29 +216,109 @@ def _write_aba_history_receipts(
     return str(target)
 
 
-def _write_coverage_gap_marker(
-    localdata: Path, *, league: str, target_date: str, write_enabled: bool
-) -> str | None:
-    """Publish one stable daily marker for a known-unavailable source lane.
+#: Failure reasons a recorded gap can carry. A lane that returns no fixtures
+#: *without* one of these saw an empty slate; a lane that returns no fixtures
+#: *with* one of these could not scan, and must say so.
+SCAN_FAILURE_GAP_REASONS = frozenset(
+    {
+        "source_unavailable",
+        "provider_error",
+        "unsupported",
+        "parse_error",
+        "transport_error",
+        "refused",
+    }
+)
 
-    The marker is not sports evidence and does not claim an empty slate. It is
-    the gate's durable proof that the explicit CoverageGap already ran today,
-    allowing idle unavailable lanes to avoid repeating a full pipeline every
-    scheduler tick while still fail-opening on missing/corrupt state.
+
+def _write_coverage_gap_marker(
+    localdata: Path,
+    *,
+    league: str,
+    target_date: str,
+    write_enabled: bool,
+    scan_rows: int = 0,
+    fixtures_found: int | None = None,
+    gaps: "list[dict] | tuple[dict, ...]" = (),
+    transport_errors: int | None = None,
+) -> str | None:
+    """Publish one stable daily marker for a lane that could not be scanned.
+
+    The marker is not sports evidence and does not claim an empty slate. Two
+    statuses exist, and the difference matters to the gate:
+
+    ``source_unavailable``
+        The registry itself has no compliant adapter. The marker is proof that
+        today's explicit CoverageGap already ran, so an idle lane may skip the
+        rest of the day's ticks.
+
+    ``scan_failed``
+        The lane *has* a source and it did not answer usefully today: provider
+        errors, an empty season code, a refused page. The lane must keep
+        retrying -- a source can recover within the hour -- so this marker is
+        published evidence, never permission to skip.
+
+    A lane that legitimately has no fixtures today writes nothing: zero
+    fixtures with no recorded failure is an honest empty slate, and calling it a
+    gap would be exactly the label blur this distinction exists to prevent.
     """
 
     spec = league_spec(parse_league(league))
-    if not write_enabled or spec.schedule_source != "source_unavailable":
+    if not write_enabled:
         return None
-    payload = {
-        "schema_version": "magolide.coverage_gap_marker",
-        "league": spec.league.value,
-        "target_date": target_date,
-        "schedule_source": spec.schedule_source,
-        "results_source": spec.results_source,
-        "status": "source_unavailable",
-        "detail": spec.source_detail,
-    }
+    attempted_utc = datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+    failure_gaps = [
+        dict(gap)
+        for gap in gaps or ()
+        if str((gap or {}).get("reason") or "") in SCAN_FAILURE_GAP_REASONS
+    ]
+    source_unavailable = spec.schedule_source == "source_unavailable"
+    if not source_unavailable:
+        if int(scan_rows or 0) > 0:
+            return None
+        if fixtures_found:
+            return None
+        if not failure_gaps and not transport_errors:
+            # No fixtures and no failure: an empty slate, not a gap.
+            return None
+    if source_unavailable:
+        payload = {
+            "schema_version": "magolide.coverage_gap_marker",
+            "league": spec.league.value,
+            "target_date": target_date,
+            "schedule_source": spec.schedule_source,
+            "results_source": spec.results_source,
+            "status": "source_unavailable",
+            "detail": spec.source_detail,
+            "attempted_utc": attempted_utc,
+            "scan_rows": int(scan_rows or 0),
+        }
+    else:
+        first = failure_gaps[0] if failure_gaps else {}
+        detail = str(first.get("detail") or "").strip()
+        if not detail:
+            detail = (
+                "the schedule answered but produced no usable fixtures for this "
+                "date; the slate is unverified, not empty"
+            )
+        provider = str(first.get("provider") or "").strip()
+        payload = {
+            "schema_version": "magolide.coverage_gap_marker",
+            "league": spec.league.value,
+            "target_date": target_date,
+            "schedule_source": spec.schedule_source,
+            "results_source": spec.results_source,
+            "status": "scan_failed",
+            "detail": f"{provider}: {detail}" if provider else detail,
+            "gap_reasons": sorted({str(gap.get("reason") or "") for gap in failure_gaps}),
+            "required_fields": sorted(
+                {str(gap.get("required_field") or "") for gap in failure_gaps}
+            ),
+            "fixtures_found": int(fixtures_found or 0),
+            "scan_rows": int(scan_rows or 0),
+            "transport_errors": int(transport_errors or 0),
+            "attempted_utc": attempted_utc,
+        }
     target = localdata / f"coverage_gap_{target_date}.json"
     raw = json.dumps(payload, indent=2, sort_keys=True) + "\n"
     if target.is_file() and target.read_text() == raw:
@@ -466,11 +546,18 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             write_assay(str(localdata / f"assay_{args.league}.json"), assay) if args.write else None
         )
         exports = store.export_csv(str(localdata / "csv")) if args.write else {}
+        pregame_report = reports.get("pregame") or {}
         coverage_gap_marker = _write_coverage_gap_marker(
             localdata,
             league=config.league_enum.value,
             target_date=args.date,
             write_enabled=args.write,
+            scan_rows=len(((market_report or {}).get("forecasts")) or []),
+            fixtures_found=pregame_report.get("fixtures_found"),
+            gaps=pregame_report.get("gaps") or (),
+            transport_errors=(
+                (pregame_report.get("acquisition") or {}).get("transport_errors")
+            ),
         )
 
         summary = {

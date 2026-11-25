@@ -454,6 +454,64 @@ gate's own runner, in a run whose preflight had installed `requests` and passed
 `environment_error: <detail>`: the lane still runs, but the label says CI rot
 rather than a league without fixtures.
 
+## One bet, one row
+
+A lane can price the same bet twice. On 2026-11-25 EuroLeague did it for every
+priced key: a `provider_prediction` twin at p≈0.484 blocked by the probability
+floor, and a `team_history_empirical` twin at p≈0.548 that passed — same fixture,
+market, period, side and price, two calibration versions, two verdicts.
+
+Both rows were *evaluated independently*, which made the floor selectable: the
+same bet was eligible or ineligible depending on which twin the gate read, and
+the pick card showed both verdicts at once. The 11-eligible-rows funnel was
+counting rows, not bets.
+
+`harness.resolve_calibration_twins` now enforces one wager-eligible row per
+betting key `(league, game_id, market, period, selection, line)`:
+
+- the winner is the row with the most calibration evidence — `sufficient_for_accas`
+  first, then `calibration.n`, then probability, then row id (so the answer never
+  depends on emission order);
+- every other twin stays on the card as audit-only, carrying
+  `superseded_by_calibration_twin`, `superseded_by_forecast_id` and
+  `superseded_by_calibration_version`;
+- when the twins would have disagreed, the loser also carries a
+  `calibration_twin_disagreement` advisory, so the disagreement is stated rather
+  than resolved in silence;
+- `candidate_funnel.calibration_twin_superseded_rows` and
+  `calibration_twin_disagreement_rows` count both.
+
+**Not "the strictest verdict wins".** That reads as the cautious choice and is the
+same bug inverted: it hands a veto to whichever model is worst, so a lane could
+block every bet by also emitting a badly-calibrated pessimistic twin. The floor
+has to be a property of the bet, decided by its best evidence — not of the model
+someone chose to consult.
+
+## A failed scan says so, and keeps retrying
+
+Coverage markers used to be written only for lanes whose registry entry says
+`source_unavailable`. That is a static contract, and on 2026-11-25 it produced a
+cliff: Greece wrote markers through 11-24, EuroCup and Israel through 11-22,
+Japan Premier through 11-23 — and then nothing, exactly on the day nine lanes
+scanned zero rows because providers started failing. The signal appeared for days
+and vanished the moment it mattered.
+
+Two marker statuses now exist, and the difference is what the gate does with them:
+
+| status | means | gate |
+|---|---|---|
+| `source_unavailable` | the registry has no compliant adapter | may skip the lane for the rest of the day |
+| `scan_failed` | the lane has a source and it did not answer usefully | **never skips** — reports `coverage_gap_scan_failed: <detail>` and retries |
+
+A `scan_failed` marker carries the provider's own words (`detail`), the failure
+`gap_reasons`, `required_fields`, `fixtures_found`, `scan_rows`,
+`transport_errors` and `attempted_utc`. Writing it requires evidence of failure —
+a gap whose reason is a failure state, or transport errors. **Zero fixtures with
+no recorded failure writes nothing**: that is an honest empty slate, and calling
+it a gap is exactly the label blur the distinction exists to prevent. Markers
+written before the `status` field existed are still read as `source_unavailable`,
+which was the only kind the writer produced.
+
 ## Publication and freeze
 
 When `accas.paper_results` is present, the operator uses that paper-only

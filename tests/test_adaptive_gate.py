@@ -440,6 +440,48 @@ def test_source_unavailable_lane_runs_once_for_a_durable_coverage_gap_then_skips
     assert lifecycle.reasons == ("source_unavailable_pick_lifecycle_due",)
 
 
+def test_a_failed_scan_marker_is_retried_and_never_skips_the_lane(tmp_path: Path):
+    """A dead source must be reported every tick and retried every tick.
+
+    `source_unavailable` is a static contract: the marker lets the gate stand the
+    lane down for the day. `scan_failed` is the opposite -- the source exists and
+    failed, and it can recover within the hour -- so the marker is published
+    evidence with the provider's own words, and the lane still runs.
+    """
+
+    nba = LEAGUES[0]
+    _operator_state(tmp_path, nba, date="2026-11-18")
+    _write_json(
+        tmp_path / nba.state_key / "coverage_gap_2026-11-18.json",
+        {
+            "schema_version": "magolide.coverage_gap_marker",
+            "league": nba.league_key,
+            "target_date": "2026-11-18",
+            "schedule_source": nba.schedule_source,
+            # The marker's results_source is descriptive; the gate validates
+            # schema, league and date.
+            "results_source": "espn",
+            "status": "scan_failed",
+            "detail": "espn: the scoreboard answered 200 with no events for this date",
+            "attempted_utc": "2026-11-18T10:00:00Z",
+            "scan_rows": 0,
+        },
+    )
+
+    decision = evaluate_league(
+        nba,
+        state_root=tmp_path,
+        now=NOW,
+        schedule_fetcher=_schedule(ScheduleGame(NOW + timedelta(hours=8), "scheduled")),
+    )
+
+    assert decision.should_run
+    assert any(
+        reason.startswith("coverage_gap_scan_failed:") for reason in decision.reasons
+    ), decision.reasons
+    assert "no_work" not in decision.reasons
+
+
 def test_g_league_gate_uses_its_validated_espn_route():
     import ingestion.adaptive_gate as gate
 
