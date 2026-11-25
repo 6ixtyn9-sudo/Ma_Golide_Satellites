@@ -1,6 +1,6 @@
 Ma Golide Picks — EUROLEAGUE 2026-11-24
 ========================================================================
-Generated at: 2026-11-25 23:23 SAST
+Generated at: 2026-11-26 00:36 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -80,7 +80,7 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE full_game -> HOME · p=59.9% (raw 57.0%) @1.850 BetMGM.us
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-24T18:24:41Z
       calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=5 · recency ROI -28.6% / adjusted -17.5%
+      ROI-BAND BLOCKED · EUROLEAGUE moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=5 · recency ROI -28.6% / adjusted -17.5%
       collapsed_observations=6 · books_quoted=3: BetMGM.us, Stake.com, bet365.us · surfaces=provider:history_model, team_history_empirical
   [team_history_empirical/team_history_empirical] FC Barcelona vs Fenerbahce Tarfin Istanbul · KO 2026-11-24 22:00 SAST
       MONEYLINE full_game -> HOME · p=54.9% (raw 52.0%) @2.450 bet365.us
@@ -91,7 +91,7 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE full_game -> AWAY · p=53.9% (raw 51.0%) @1.900 BetMGM.us
       bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-24T18:24:41Z
       calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history
-      ROI-BAND BLOCKED · moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=5 · recency ROI -28.6% / adjusted -17.5%
+      ROI-BAND BLOCKED · EUROLEAGUE moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=5 · recency ROI -28.6% / adjusted -17.5%
       collapsed_observations=6 · books_quoted=3: BetMGM.us, Stake.com, bet365.us · surfaces=provider:history_model, team_history_empirical
   [team_history_empirical/team_history_empirical] Crvena Zvezda Meridianbet Belgrade vs Virtus Bologna · KO 2026-11-24 20:00 SAST
       HIGHEST QUARTER full_game -> Q1 · p=37.8% (raw 33.0%) @n/a no matched book
