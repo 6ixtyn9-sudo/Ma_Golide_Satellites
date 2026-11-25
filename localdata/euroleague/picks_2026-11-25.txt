@@ -1,6 +1,6 @@
 Ma Golide Picks — EUROLEAGUE 2026-11-25
 ========================================================================
-Generated at: 2026-11-25 18:37 SAST
+Generated at: 2026-11-25 19:24 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -23,7 +23,7 @@ WATCHLIST — NO MATCHED ODDS
 ========================================================================
   [team_history_empirical/team_history_empirical] Olympiacos Piraeus vs Hapoel IBI Tel Aviv · KO 2026-11-25 21:15 SAST
       MONEYLINE H1 -> HOME · p=67.3% (raw 67.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T17:24:13Z
       calibration=calibrated n=34 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical/team_history_empirical] Real Madrid vs Zalgiris Kaunas · KO 2026-11-25 21:45 SAST
       MONEYLINE H1 -> HOME · p=64.3% (raw 64.0%) @n/a no matched book
@@ -35,7 +35,7 @@ WATCHLIST — NO MATCHED ODDS
       calibration=calibrated n=34 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical/team_history_empirical] Olympiacos Piraeus vs Hapoel IBI Tel Aviv · KO 2026-11-25 21:15 SAST
       HIGHEST QUARTER full_game -> Q1 · p=31.7% (raw 28.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T17:24:13Z
       calibration=calibrated n=32 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Kosner Baskonia Vitoria-Gasteiz vs Anadolu Efes Istanbul · KO 2026-11-25 21:30 SAST
       HIGHEST QUARTER full_game -> Q1 · p=30.7% (raw 27.0%) @n/a no matched book
@@ -50,7 +50,7 @@ SKIPPED — INELIGIBLE
 ========================================================================
   [team_history_empirical/team_history_empirical] Olympiacos Piraeus vs Hapoel IBI Tel Aviv · KO 2026-11-25 21:15 SAST
       MONEYLINE full_game -> HOME · p=59.8% (raw 60.0%) @1.310 Stake.com
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T17:24:13Z
       calibration=calibrated n=32 · reasons=superseded_by_calibration_twin · prediction=history
       collapsed_observations=8 · books_quoted=4: BetMGM.us, Stake.com, average, bet365.us · surfaces=provider:history_model, team_history_empirical
   [team_history_empirical/team_history_empirical] Kosner Baskonia Vitoria-Gasteiz vs Anadolu Efes Istanbul · KO 2026-11-25 21:30 SAST
@@ -84,7 +84,7 @@ SETTLED PICKS — ARCHIVE ONLY
 Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=5 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=3
 ROI-qualified individual paper singles: 0
 Archive status: IN_PROGRESS_OR_AWAITING_RESULT=2 SETTLED=0
-Logical picks shown: 10 · superseded observations: 180 · book/model rows collapsed: 28
-Total archived pick evidence rows: 218
+Logical picks shown: 10 · superseded observations: 145 · book/model rows collapsed: 28
+Total archived pick evidence rows: 183
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.
