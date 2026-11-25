@@ -18,7 +18,6 @@ withdrawn receipt.
 from __future__ import annotations
 
 import argparse
-from collections import Counter
 import hashlib
 import json
 import os
@@ -106,6 +105,9 @@ _CARD_GRADE_TOKEN_RE = re.compile(
     r"lifecycle=SETTLED(?:_[A-Z_]+)?|"
     r"(?:grade=)?(?:[✅❌➖⚪⏳]\s+)?(?:PENDING|WIN|LOSS|PUSH|VOID)\b"
 )
+_PICK_HEADER_RE = re.compile(r"^  \[[^\]]+\] (.+)$")
+_PICK_SELECTION_RE = re.compile(r"^      (.+?) · p=")
+_PICK_COLLAPSED_RE = re.compile(r"^      collapsed_observations=(\d+)\b")
 MAX_FILE_BYTES = 25 * 1024 * 1024
 MAX_TOTAL_BYTES = 100 * 1024 * 1024
 
@@ -639,29 +641,48 @@ def _merge_pick_lifecycle_state(
 DATED_CARD_NAMES = re.compile(rf"(?:picks|auto_tickets)_{DATE}\.txt")
 
 
-def _card_grade_entries(text: str) -> list[tuple[str, str]]:
-    """Return stable line fingerprints for unambiguous rendered grade states.
+def _card_grade_entries(text: str) -> list[tuple[str, str, int]]:
+    """Return stable ``(state, subject, observations)`` entries for graded lines.
 
     A dated card can legitimately contain both settled early games and a late
-    pending game.  The publisher must therefore compare the state of each
-    rendered line rather than treating *any* pending badge as a whole-card
-    rollback.  Summary lines are harmless extra entries; exact line matching
-    plus the settled-count fallback below keeps the guard conservative for
-    older, less structured card formats.
+    pending game, and pick cards collapse repeated book/model observations of
+    one bet onto a single line annotated with ``collapsed_observations=N``
+    (``forecasting/operator.py``).  Keying structured pick blocks by their
+    fixture and selection — and weighting each rendered pick by the
+    observations it represents (default 1) — keeps the anti-rollback comparison
+    invariant across that display collapse while still rejecting any stale
+    artifact that drops settled observations or re-opens a settled pick as
+    ``PENDING``.
     """
 
-    entries: list[tuple[str, str]] = []
-    for line in text.splitlines():
+    lines = text.splitlines()
+    entries: list[tuple[str, str, int]] = []
+    for index, line in enumerate(lines):
         is_pending = PENDING_GRADE_RE.search(line) is not None
         is_settled = SETTLED_GRADE_RE.search(line) is not None
         if is_pending == is_settled:
             # Ignore ungraded text and deliberately ambiguous aggregate lines.
             continue
+        state = "pending" if is_pending else "settled"
+        header = _PICK_HEADER_RE.match(lines[index - 2]) if index >= 2 else None
+        selection = _PICK_SELECTION_RE.match(lines[index - 1]) if index >= 1 else None
+        if header and selection:
+            fingerprint = f"{header.group(1)} | {selection.group(1)}"
+            observations = 1
+            lookahead = index + 1
+            while lookahead < len(lines) and lines[lookahead].startswith("      "):
+                collapsed = _PICK_COLLAPSED_RE.match(lines[lookahead])
+                if collapsed:
+                    observations = max(1, int(collapsed.group(1)))
+                    break
+                lookahead += 1
+            entries.append((state, fingerprint, observations))
+            continue
         fingerprint = _CARD_GRADE_TOKEN_RE.sub("", line)
         fingerprint = re.sub(r"[\[\]]", "", fingerprint)
         fingerprint = " ".join(fingerprint.split())
         if fingerprint:
-            entries.append(("pending" if is_pending else "settled", fingerprint))
+            entries.append((state, fingerprint, 1))
     return entries
 
 
@@ -671,8 +692,10 @@ def _would_regress_settled_card(destination: Path, artifact_bytes: bytes) -> boo
     A settled line can never become ``PENDING`` because an older matrix job
     reaches the publisher after newer main state.  In contrast, a card with a
     late live game must be able to publish its newer, progressively settled
-    lines while that one game remains pending.  A count fallback preserves the
-    legacy no-identity guard for simple cards that cannot be line-matched.
+    lines while that one game remains pending, and a post-collapse pick card
+    representing the same or more settled observations must replace an older
+    uncollapsed one.  An observation-count fallback preserves the legacy
+    no-identity guard for simple cards that cannot be line-matched.
     """
 
     # Only dated cards are progressive settlement evidence. The rolling
@@ -691,19 +714,26 @@ def _would_regress_settled_card(destination: Path, artifact_bytes: bytes) -> boo
 
     current_entries = _card_grade_entries(current)
     incoming_entries = _card_grade_entries(incoming)
-    settled = Counter(fingerprint for state, fingerprint in current_entries if state == "settled")
-    if not settled:
+    settled_subjects = {
+        fingerprint for state, fingerprint, _count in current_entries if state == "settled"
+    }
+    if not settled_subjects:
         return False
-    incoming_pending = Counter(
-        fingerprint for state, fingerprint in incoming_entries if state == "pending"
-    )
+    incoming_pending_subjects = {
+        fingerprint for state, fingerprint, _count in incoming_entries if state == "pending"
+    }
     # Same rendered subject, explicitly downgraded to pending: always reject.
-    if settled.keys() & incoming_pending.keys():
+    if settled_subjects & incoming_pending_subjects:
         return True
-    incoming_settled = sum(state == "settled" for state, _fingerprint in incoming_entries)
+    current_settled = sum(
+        count for state, _fingerprint, count in current_entries if state == "settled"
+    )
+    incoming_settled = sum(
+        count for state, _fingerprint, count in incoming_entries if state == "settled"
+    )
     # Older cards do not always expose a stable per-row subject.  Never accept
-    # fewer rendered settled entries than the repository already has.
-    return incoming_settled < sum(settled.values())
+    # fewer settled observations than the repository already has.
+    return incoming_settled < current_settled
 
 
 def _withdrawn_decision_ids(localdata: Path) -> frozenset[str]:
