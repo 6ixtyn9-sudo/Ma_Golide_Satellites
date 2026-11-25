@@ -47,7 +47,7 @@
     },
     "2026-11-25": {
       "evidence_rows": 158,
-      "frozen_fixtures": 39,
+      "frozen_fixtures": 40,
       "logical_picks": 123
     }
   },
@@ -50398,6 +50398,146 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-25"
       },
+      "401917724": {
+        "decision_cutoff_utc": "2026-11-25T20:00:00Z",
+        "frozen_at": "2026-11-25T20:25:20Z",
+        "game_id": "401917724",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "UC Santa Barbara Gauchos",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.51531,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 486,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "4cd112978924ffd150689564560a7eade3047efd1390d8d9f9c3b74adb82d5ec",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "77f0bbbd3b7f87bbac68",
+            "game_id": "401917724",
+            "grade_status": "pending",
+            "home": "Portland Pilots",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "77f0bbbd3b7f87bbac68",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-25T22:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UC Santa Barbara Gauchos",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.667064,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 299,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "a98fff28aa11b5540139af8e154b601bcce53267883d7cf420a76d52bb9acb6f",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6ca40bea7789ef6db41b",
+            "game_id": "401917724",
+            "grade_status": "pending",
+            "home": "Portland Pilots",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6ca40bea7789ef6db41b",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-25T19:48:34Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.7111,
+            "role": null,
+            "scheduled_utc": "2026-11-25T22:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "UC Santa Barbara Gauchos",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.562086,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 483,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "aec0d73e3a8b93de7437ecca2250427076eff14f8e9135e334e3915698a13d18",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "ea711d0d81ea1ac50da2",
+            "game_id": "401917724",
+            "grade_status": "pending",
+            "home": "Portland Pilots",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "ea711d0d81ea1ac50da2",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.62,
+            "role": null,
+            "scheduled_utc": "2026-11-25T22:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-25T22:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-25"
+      },
       "401918689": {
         "decision_cutoff_utc": "2026-11-25T15:00:00Z",
         "frozen_at": "2026-11-25T15:16:40Z",
@@ -54167,67 +54307,7 @@
   "league": "NCAA_W",
   "pending_frozen_games": [
     [
-      "401913862",
-      "2026-11-25T17:00:00Z"
-    ],
-    [
-      "401919711",
-      "2026-11-25T17:00:00Z"
-    ],
-    [
-      "401918891",
-      "2026-11-25T17:30:00Z"
-    ],
-    [
-      "401913835",
-      "2026-11-25T18:00:00Z"
-    ],
-    [
-      "401915597",
-      "2026-11-25T18:00:00Z"
-    ],
-    [
-      "401915779",
-      "2026-11-25T18:00:00Z"
-    ],
-    [
-      "401918699",
-      "2026-11-25T18:00:00Z"
-    ],
-    [
-      "401923417",
-      "2026-11-25T18:00:00Z"
-    ],
-    [
-      "401926017",
-      "2026-11-25T18:00:00Z"
-    ],
-    [
-      "401927039",
-      "2026-11-25T18:00:00Z"
-    ],
-    [
-      "401929032",
-      "2026-11-25T18:00:00Z"
-    ],
-    [
-      "401929305",
-      "2026-11-25T18:00:00Z"
-    ],
-    [
-      "401929342",
-      "2026-11-25T18:00:00Z"
-    ],
-    [
-      "401915874",
-      "2026-11-25T18:15:00Z"
-    ],
-    [
       "401913060",
-      "2026-11-25T18:30:00Z"
-    ],
-    [
-      "401927070",
       "2026-11-25T18:30:00Z"
     ],
     [
@@ -54285,6 +54365,10 @@
     [
       "401929205",
       "2026-11-25T21:00:00Z"
+    ],
+    [
+      "401917724",
+      "2026-11-25T22:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
