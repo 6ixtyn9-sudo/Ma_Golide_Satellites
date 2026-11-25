@@ -1472,6 +1472,8 @@ def _render_picks(
     target_date: str,
     generated_utc: str,
     timezone_name: str,
+    preview_rows: Optional[List[Dict[str, Any]]] = None,
+    slate_window: Optional[Dict[str, Any]] = None,
 ) -> str:
     logical_rows = _latest_logical_rows(rows)
     # What the reader counts is bets, not evidence rows: one line per modelled
@@ -1484,16 +1486,72 @@ def _render_picks(
     upcoming = [row for row in pending if parse_utc(row["scheduled_utc"]) > generated]
     started = [row for row in pending if parse_utc(row["scheduled_utc"]) <= generated]
 
+    preview_list = list(preview_rows or ())
+    preview_display = (
+        _collapse_display_observations(_latest_logical_rows(preview_list))
+        if preview_list
+        else []
+    )
+    window_info = slate_window if isinstance(slate_window, dict) else None
+    preview_date: Optional[str] = None
+    if window_info is not None:
+        raw_preview_date = window_info.get("preview_date")
+        if isinstance(raw_preview_date, str) and raw_preview_date.strip():
+            preview_date = raw_preview_date.strip()
+    if preview_date is None and preview_display:
+        dated_previews = sorted(
+            str(row.get("scheduled_utc") or "")[:10]
+            for row in preview_display
+            if row.get("scheduled_utc")
+        )
+        if dated_previews:
+            preview_date = dated_previews[0]
+
+    target_games_count = (
+        int(window_info.get("target_games") or 0)
+        if window_info is not None
+        else len(display_rows)
+    )
+    is_preview_only = bool(
+        preview_date and target_games_count == 0 and len(display_rows) == 0
+    )
+    title = (
+        f"Ma Golide Picks — {league} {target_date} "
+        f"(0 games today · preview of {preview_date})"
+        if is_preview_only
+        else f"Ma Golide Picks — {league} {target_date}"
+    )
+
     lines = [
-        f"Ma Golide Picks — {league} {target_date}",
+        title,
         "=" * 72,
         f"Generated at: {_local_time(generated_utc, timezone_name)}",
-        "PAPER ONLY · eligibility labels are evidence states, not profit guarantees.",
-        "Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.",
-        "Only FROZEN rows are immutable settlement evidence; all final grades use official results.",
-        "Started and settled games are retained separately as archive status.",
-        "",
     ]
+    if is_preview_only:
+        lines.append(
+            f"Slate window: 0 games today · preview of {preview_date} "
+            "(preview only — not frozen, not ticket-eligible)"
+        )
+    elif preview_date and (window_info is not None or preview_display):
+        preview_fixture_count = (
+            int(window_info.get("preview_games") or 0)
+            if window_info is not None
+            else len({str(row.get("game_id")) for row in preview_display})
+        )
+        lines.append(
+            f"Slate window: {target_games_count} game(s) today · "
+            f"preview of {preview_date} ({preview_fixture_count} preview fixture(s) "
+            "— not frozen, not ticket-eligible)"
+        )
+    lines.extend(
+        [
+            "PAPER ONLY · eligibility labels are evidence states, not profit guarantees.",
+            "Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.",
+            "Only FROZEN rows are immutable settlement evidence; all final grades use official results.",
+            "Started and settled games are retained separately as archive status.",
+            "",
+        ]
+    )
     grouped: Dict[str, List[Dict[str, Any]]] = defaultdict(list)
     for row in upcoming:
         grouped[str(row.get("bucket") or "UNKNOWN")].append(row)
@@ -1621,6 +1679,64 @@ def _render_picks(
         for row in picks:
             append_pick(row)
 
+    if preview_date and (window_info is not None or preview_display):
+        # Preview rows are strictly informational: they never enter the dated
+        # ledger, never freeze, never become tickets, and never print a PENDING
+        # grade token (which would falsely wake adaptive_gate historical
+        # recovery on the next calendar day).
+        lines.extend(
+            [
+                "",
+                f"PREVIEW ONLY — NEXT FIXTURE DAY ({preview_date} · NOT FROZEN · NOT TICKET-ELIGIBLE)",
+                "=" * 72,
+            ]
+        )
+        if not preview_display:
+            preview_fixture_count = (
+                int(window_info.get("preview_games") or 0)
+                if window_info is not None
+                else 0
+            )
+            lines.append(
+                f"  (no forecast rows yet for {preview_date}; "
+                f"{preview_fixture_count} preview fixture(s) listed — awaiting corpus/history)"
+            )
+        else:
+            sort_picks(preview_display)
+            for row in preview_display:
+                bucket = str(row.get("bucket") or "UNKNOWN")
+                probability = row.get("calibrated_probability")
+                if probability is None:
+                    probability = row["raw_probability"]
+                price = (row.get("book") or {}).get("selected_decimal_price")
+                price_text = f"@{float(price):.3f}" if price is not None else "@n/a"
+                book_name = (
+                    _canonical_book_for_key((row.get("book") or {}).get("book"))
+                    or "no matched book"
+                )
+                eligibility = row.get("eligibility") or {}
+                reasons = ",".join(eligibility.get("reasons") or []) or "none"
+                calibration = row.get("calibration") or {}
+                lines.append(
+                    f"  [{row.get('model')}/{row.get('model_version')}] "
+                    f"{row['home']} vs {row['away']} · "
+                    f"KO {_local_time(row['scheduled_utc'], timezone_name)}"
+                )
+                lines.append(
+                    f"      {_selection_label(row)} · p={probability:.1%} "
+                    f"(raw {row['raw_probability']:.1%}) {price_text} {book_name}"
+                )
+                lines.append(
+                    f"      bucket={bucket} · price_evidence={row['price_evidence']} "
+                    "· acca_eligible=False · grade=PREVIEW (not graded) "
+                    "· lifecycle=PREVIEW_ONLY"
+                )
+                lines.append(
+                    f"      calibration={calibration.get('status', 'unknown')} "
+                    f"n={calibration.get('n', 0)} · reasons={reasons} "
+                    f"· prediction={(row.get('prediction') or {}).get('provider', 'history')}"
+                )
+
     rendered = len(upcoming) + len(started) + len(settled)
     if rendered != len(display_rows):
         raise RuntimeError(
@@ -1657,6 +1773,9 @@ def _refresh_dated_pick_reports(
     league: str,
     generated_utc: str,
     timezone_name: str,
+    current_target_date: Optional[str] = None,
+    preview_rows: Optional[List[Dict[str, Any]]] = None,
+    slate_window: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Regrade cards and render drafts/frozen evidence as one lifecycle view."""
 
@@ -1688,6 +1807,7 @@ def _refresh_dated_pick_reports(
             "rows": lifecycle_rows,
         }
         _write_json(localdata / f"picks_{target_date}_lifecycle.json", lifecycle)
+        is_current_card = current_target_date is not None and target_date == current_target_date
         _write_text(
             path.with_suffix(".txt"),
             _render_picks(
@@ -1696,6 +1816,8 @@ def _refresh_dated_pick_reports(
                 target_date=target_date,
                 generated_utc=generated_utc,
                 timezone_name=timezone_name,
+                preview_rows=preview_rows if is_current_card else None,
+                slate_window=slate_window if is_current_card else None,
             ),
         )
         # ``logical_picks`` counts bets, so it uses the same collapse the card
@@ -5254,6 +5376,9 @@ def publish_operator_reports(
         league=league.value,
         generated_utc=generated_utc,
         timezone_name=timezone_name,
+        current_target_date=target_date,
+        preview_rows=preview_rows,
+        slate_window=(market_report or {}).get("slate_window"),
     )
     audit = _write_pick_audit(
         localdata,

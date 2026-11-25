@@ -3500,3 +3500,142 @@ def test_a_preview_row_is_marked_never_frozen_and_never_a_ticket(tmp_path):
     assert published["ticket_receipt"] is None
 
 
+def test_preview_only_pick_card_carries_unmistakable_header_and_never_triggers_pending_recovery(
+    tmp_path,
+):
+    """A preview-only card must state '0 games today · preview of YYYY-MM-DD' unmistakably.
+
+    Covers:
+    1. Greece preview-only day with 0 target games and 0 preview forecasts yet
+       (corpus ramp) still renders '0 games today · preview of 2026-12-05'.
+    2. WNBL 5-month-out preview-only day (2026-06-15 -> 2026-11-18) with a
+       forecasted preview row renders the row ONLY in the dedicated PREVIEW ONLY
+       section with lifecycle=PREVIEW_ONLY, NEVER matches PENDING_GRADE_RE (so
+       adaptive_gate historical recovery never wakes), and leaves dated_picks empty.
+    3. Mixed target+preview day keeps today's slate separate from the preview section.
+    4. Non-window lanes render zero preview headers or sections.
+    """
+
+    from scripts.publish_localdata import PENDING_GRADE_RE, _card_grade_entries
+
+    # 1) Greece: 0 games today, preview of 2026-12-05, no forecast rows yet.
+    greece_market = report([], [])
+    greece_market["slate_window"] = {
+        "mode": "next_fixture_day",
+        "target_date": "2026-11-25",
+        "window_dates": ["2026-11-25", "2026-12-05"],
+        "target_games": 0,
+        "preview_date": "2026-12-05",
+        "preview_games": 2,
+        "next_fixture_date": "2026-12-05",
+    }
+    greece = publish_operator_reports(
+        Store([]),
+        League.GREECE_BASKET_LEAGUE,
+        greece_market,
+        tmp_path / "greece",
+        target_date="2026-11-25",
+        generated_utc="2026-11-25T10:00:00Z",
+        run_id="greece-preview-only-ramp",
+    )
+    greece_card = Path(greece["picks_text"]).read_text(encoding="utf-8")
+    assert (
+        "Ma Golide Picks — GREECE_BASKET_LEAGUE 2026-11-25 "
+        "(0 games today · preview of 2026-12-05)" in greece_card
+    )
+    assert "0 games today · preview of 2026-12-05" in greece_card
+    assert "PREVIEW ONLY — NEXT FIXTURE DAY (2026-12-05" in greece_card
+    assert PENDING_GRADE_RE.search(greece_card) is None
+    assert _card_grade_entries(greece_card) == []
+    assert greece["pick_freezes"] == 0
+    assert greece["ticket_receipt"] is None
+
+    # 2) WNBL: 5-month-out preview (2026-06-15 -> 2026-11-18) with a forecast row.
+    wnbl_preview_game = game(1, scheduled_utc="2026-11-18T08:00:00Z")
+    wnbl_preview_row = forecast(1, price=1.92)
+    wnbl_preview_row["scheduled_utc"] = wnbl_preview_game.scheduled_utc
+    wnbl_preview_row["preview"] = True
+    wnbl_market = report([wnbl_preview_row], [])
+    wnbl_market["slate_window"] = {
+        "mode": "next_fixture_day",
+        "target_date": "2026-06-15",
+        "window_dates": ["2026-06-15", "2026-11-18"],
+        "target_games": 0,
+        "preview_date": "2026-11-18",
+        "preview_games": 1,
+        "next_fixture_date": "2026-11-18",
+    }
+    wnbl = publish_operator_reports(
+        Store([wnbl_preview_game]),
+        League.AUSTRALIA_WNBL_W,
+        wnbl_market,
+        tmp_path / "wnbl",
+        target_date="2026-06-15",
+        generated_utc="2026-06-15T10:00:00Z",
+        run_id="wnbl-offseason-preview",
+    )
+    wnbl_card = Path(wnbl["picks_text"]).read_text(encoding="utf-8")
+    assert (
+        "Ma Golide Picks — AUSTRALIA_WNBL_W 2026-06-15 "
+        "(0 games today · preview of 2026-11-18)" in wnbl_card
+    )
+    assert "PREVIEW ONLY — NEXT FIXTURE DAY (2026-11-18" in wnbl_card
+    assert "lifecycle=PREVIEW_ONLY" in wnbl_card
+    assert "grade=PREVIEW (not graded)" in wnbl_card
+    assert "Logical picks shown: 0" in wnbl_card
+    # Critical red-team invariant: preview rows must never match PENDING_GRADE_RE
+    # or create pending entries in publish_localdata / adaptive_gate recovery.
+    assert PENDING_GRADE_RE.search(wnbl_card) is None
+    assert _card_grade_entries(wnbl_card) == []
+    assert json.loads(Path(wnbl["dated_picks"]).read_text()) == []
+    assert wnbl["pick_freezes"] == 0
+
+    # 3) Mixed day: 1 target game + 1 preview game keeps today's header distinct.
+    mixed_target = game(1, scheduled_utc="2026-11-24T16:00:00Z")
+    mixed_preview = game(2, scheduled_utc="2026-11-25T16:00:00Z")
+    t_row = forecast(1, price=1.88)
+    t_row["scheduled_utc"] = mixed_target.scheduled_utc
+    t_row["preview"] = False
+    p_row = forecast(2, price=2.05)
+    p_row["scheduled_utc"] = mixed_preview.scheduled_utc
+    p_row["preview"] = True
+    mixed_market = report([t_row, p_row], [])
+    mixed_market["slate_window"] = {
+        "mode": "next_fixture_day",
+        "target_date": "2026-11-24",
+        "window_dates": ["2026-11-24", "2026-11-25"],
+        "target_games": 1,
+        "preview_date": "2026-11-25",
+        "preview_games": 1,
+        "next_fixture_date": "2026-11-25",
+    }
+    mixed = publish_operator_reports(
+        Store([mixed_target, mixed_preview]),
+        League.CHINA_WCBA_W,
+        mixed_market,
+        tmp_path / "wcba_mixed",
+        target_date="2026-11-24",
+        generated_utc="2026-11-24T10:00:00Z",
+        run_id="wcba-mixed-preview",
+    )
+    mixed_card = Path(mixed["picks_text"]).read_text(encoding="utf-8")
+    assert "Ma Golide Picks — CHINA_WCBA_W 2026-11-24\n" in mixed_card
+    assert "0 games today" not in mixed_card
+    assert "Slate window: 1 game(s) today · preview of 2026-11-25" in mixed_card
+    assert "PREVIEW ONLY — NEXT FIXTURE DAY (2026-11-25" in mixed_card
+    assert "lifecycle=PREVIEW_ONLY" in mixed_card
+
+    # 4) Non-window lane (NBA): unchanged header, no Slate window / PREVIEW ONLY block.
+    nba = publish(
+        tmp_path / "nba_plain",
+        Store([game(1)]),
+        report([forecast(1)], []),
+        run_id="nba-no-preview",
+        generated_utc=TICKET_DECISION_AS_OF,
+    )
+    nba_card = Path(nba["picks_text"]).read_text(encoding="utf-8")
+    assert "Slate window:" not in nba_card
+    assert "PREVIEW ONLY" not in nba_card
+
+
+
