@@ -4702,7 +4702,32 @@ def _render_empty_ticket_scan(
         elif paper_single_games < 2:
             game_reason = f"only {paper_single_games} distinct games qualify; 2 are required"
         else:
-            game_reason = "no multi-leg acca was produced"
+            # Two games qualify for singles but no ticket was built: say which
+            # gate stopped it. "no multi-leg acca was produced" is true and
+            # useless -- on 2026-11-24 nine NCAA_W picks passed individual-pick
+            # ROI, none was acca_eligible, and the card blamed the acca step.
+            ticket_games = candidate_funnel.get("paper_acca_eligible_games")
+            if isinstance(ticket_games, int) and ticket_games < 2:
+                blockers = [
+                    str(reason)
+                    for reason in (candidate_funnel.get("paper_acca_blockers") or [])
+                ]
+                if ticket_games == 1:
+                    game_reason = (
+                        "only 1 distinct game is ticket-eligible (the acca builder "
+                        "applies the price band and eligibility gates on top of the "
+                        "ROI filter)"
+                    )
+                else:
+                    game_reason = (
+                        "no ROI-qualified pick is ticket-eligible (the acca builder "
+                        "applies the price band and eligibility gates on top of the "
+                        "ROI filter)"
+                    )
+                if blockers:
+                    game_reason += f"; blockers: {','.join(blockers)}"
+            else:
+                game_reason = "no multi-leg acca was produced"
         scan_status = f"NO MULTI-LEG PAPER ACCA — {roi_summary}; {game_reason}."
     else:
         scan_rows = int(candidate_funnel.get("scan_rows") or 0)

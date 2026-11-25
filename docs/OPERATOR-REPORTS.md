@@ -329,6 +329,51 @@ right about that; it is not free odds.
 The card is unaffected: a forecast outside the ticket band still appears with its
 price and its eligibility blockers. It just cannot be sold as a ticket.
 
+### Why a ticket card can say "no acca" while singles qualified
+
+A single and a multi-leg ticket ask different questions. `filter_paper_candidate_picks`
+admits a row when its `(market, probability band, odds band)` has positive
+settled ROI; `build_accas` additionally requires `acca_eligible` (or the
+provisional-sample-only exception) **and** the ticket price band. So a lane can
+honestly report nine ROI-qualified picks and still have nothing to combine.
+
+The card used to answer that with "no multi-leg acca was produced", which is
+true and useless. The funnel now carries `paper_acca_eligible_games`,
+`paper_acca_eligible_rows` and `paper_acca_blockers` computed from
+`accas.ticket_leg_pool` — the builder's own pool — and the card names the gate:
+
+```
+NO MULTI-LEG PAPER ACCA — 9 of 14 candidate picks passed individual-pick ROI;
+no ROI-qualified pick is ticket-eligible (the acca builder applies the price band
+and eligibility gates on top of the ROI filter); blockers: no_exact_bookmaker_market.
+```
+
+Measured case: NCAA_W, 2026-11-24.
+
+### NBA: what the provisional-sample relaxation actually bought
+
+Operator decision 2026-11-22 relaxed the walk-forward sample gate so a leg whose
+only blocker is `insufficient_walk_forward_samples` may still price a provisional
+paper ticket. The NBA lane is where that bites, so its settled tickets were split
+by whether the provisional gate was used:
+
+| tickets | n | wins | hit | staked | returned | ROI |
+|---|---|---|---|---|---|---|
+| provisional gate, 3-leg accas | 21 | 3 | **14.3%** | 21.00 | 20.462 | **−2.6%** |
+| strict gates, singles | 2 | 2 | 100% | 2.00 | 3.693 | +84.7% |
+| provisional gate, single | 1 | 1 | 100% | 1.00 | 1.769 | +76.9% |
+
+Read it carefully rather than optimistically:
+
+- every NBA multi-leg ticket in the archive rode the relaxation — there is no
+  strict-gate acca to compare it against;
+- a 3-leg acca of ~0.68 legs should land near 31%; 14.3% of 21 is well below
+  that, which is what a leg whose probability has not cleared walk-forward
+  samples looks like on the card;
+- the lane's headline `ROI +8.0%` comes from two 7× wins plus three singles, not
+  from the accas, which are a small net loser;
+- n=21 is still small, so this is a reason to keep watching, not a verdict.
+
 ## Publication and freeze
 
 When `accas.paper_results` is present, the operator uses that paper-only
