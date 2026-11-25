@@ -47,6 +47,7 @@ def _args(tmp_path, **changes):
         # tests/test_daily_checkpoint_guard.py, which exercises both outcomes
         # against a manifest it controls.
         allow_checkpoint_regression=True,
+        skip_backfill=False,
     )
     values.update(changes)
     return argparse.Namespace(**values)

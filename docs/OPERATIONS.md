@@ -146,6 +146,43 @@ dated text cards to `main`; structured dated pick JSON, detailed
 lifecycle renders, current-scan pick JSON, and expanded audits stay in cache and
 bounded workflow artifacts.
 
+### What a tick costs
+
+Wall clock is a scheduling input, not an afterthought. A tick used to cost the
+same whether a lane had a live slate or not: on 2026-11-25 all 13 lanes ran the
+full pipeline (history acquisition, replay, forecast, freeze, results, tuner) to
+produce **two** live scans, and ten of them discovered nothing at all. Ticks grew
+past an hour, the scheduler kept dispatching, and the concurrency group
+(`group: magolide-automatic-available-leagues`, `cancel-in-progress: false`)
+meant each new tick replaced the one already queued — so ticks were silently
+dropped as well as slow.
+
+Two things changed, and one measurement was added.
+
+**A lane's mode is now part of the matrix.** `adaptive_gate` classifies each
+selected lane from the reasons it is due:
+
+| mode | reasons | tick |
+|---|---|---|
+| `full` | a draft, a freeze, a ticket window, anything unclassified | the whole pipeline |
+| `settle_only` | settlement, reconciliation, settlement-view refresh, coverage-gap retry, `schedule_uncertain`, `environment_error`, `state_uncertain` | scan, but `--skip-backfill --skip-tuning` |
+
+The classification fails safe: one unrecognised reason means `full`. A
+settlement-only tick still runs the scan — a fixture that appears late must not
+be missed — but skips the two most expensive stages, neither of which can change
+a settled result. The next full tick replays history normally, and the skipped
+backfill is recorded as `status: skipped_settle_only_tick` rather than as an
+empty history.
+
+**The matrix has no `max-parallel` cap.** A cap of 8 over 13 lanes ran in two
+waves, so a tick cost roughly twice its slowest lane while the second wave had
+idle capacity. The matrix itself is the cap.
+
+**Every tick now names where it went.** `summary.stage_seconds` records elapsed
+seconds per stage — `backfill`, each command (`pregame`, `freeze`, `results`) —
+so the next optimisation is chosen from the run's own numbers instead of from
+the log's line counts. Read it before proposing another change to this workflow.
+
 ### Reliable external trigger
 
 GitHub cron is best-effort and may delay or drop scheduled events, so it is

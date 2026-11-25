@@ -85,6 +85,46 @@ PUBLIC_CBA_AES_KEY = b"uVayqL4ONKjFbVzQ"
 
 # This is kept in the same order as the workflow matrix so its JSON ``include``
 # rows can be consumed directly by GitHub Actions.
+#: Reason stems that need no new forecast state: the lane is awake to settle, to
+#: reconcile history, or to retry a source that did not answer. Any other reason
+#: -- a draft, a freeze, a ticket window -- means the full pipeline must run.
+#:
+#: This exists because a tick used to cost the same whether a lane had a live
+#: slate or not: on 2026-11-25 all 13 lanes ran the full pipeline (history
+#: replay, forecast, freeze, results, tuner) to produce two live scans, and ten of
+#: them discovered nothing at all. Wall clock grew past an hour per tick while the
+#: scheduler kept dispatching.
+SETTLEMENT_ONLY_REASON_STEMS: tuple[str, ...] = (
+    "pending_settlement",
+    "result_reconciliation",
+    "frozen_pick_settlement_due",
+    "historical_",
+    "settlement_view_refresh_due",
+    "coverage_gap_publication_due",
+    "coverage_gap_scan_failed",
+    "schedule_uncertain",
+    "environment_error",
+    "state_uncertain",
+)
+
+
+def is_settlement_only_reasons(reasons: Iterable[str]) -> bool:
+    """Whether every due reason can be served without a new forecast scan.
+
+    Fails safe: an unrecognised reason means the full pipeline runs. A lane is
+    only allowed the cheap tick when *nothing* it owes needs fresh forecast,
+    freeze or ticket state.
+    """
+
+    rows = [str(reason) for reason in reasons]
+    if not rows:
+        return False
+    return all(
+        any(reason.startswith(stem) for stem in SETTLEMENT_ONLY_REASON_STEMS)
+        for reason in rows
+    )
+
+
 @dataclass(frozen=True)
 class LeagueGateConfig:
     label: str
@@ -143,7 +183,7 @@ class ScheduleGame:
     game_id: str = ""
 
 
-@dataclass(frozen=True)
+@dataclass
 class GateDecision:
     """One league's read-only gate decision."""
 
@@ -152,6 +192,14 @@ class GateDecision:
     should_run: bool
     reasons: tuple[str, ...]
     scheduled_game_count: int | None
+
+    @property
+    def mode(self) -> str:
+        """``settle_only`` when this tick owes no new forecast state."""
+
+        if not self.should_run:
+            return "idle"
+        return "settle_only" if is_settlement_only_reasons(self.reasons) else "full"
 
     def as_dict(self) -> dict[str, Any]:
         return {
@@ -163,6 +211,7 @@ class GateDecision:
             "lane_status": self.config.status,
             "should_run": self.should_run,
             "reasons": list(self.reasons),
+            "mode": self.mode,
             "scheduled_game_count": self.scheduled_game_count,
         }
 
@@ -174,6 +223,7 @@ class GateDecision:
             "state_key": self.config.state_key,
             "target_date": self.target_date,
             "gate_reason": "; ".join(self.reasons),
+            "mode": self.mode,
         }
 
 
