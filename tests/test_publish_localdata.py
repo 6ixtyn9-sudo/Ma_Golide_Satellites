@@ -981,3 +981,301 @@ def test_a_later_freeze_for_a_released_date_still_publishes(tmp_path):
 
     published = json.loads(destination.read_text())
     assert published["frozen_by_date"]["2026-11-25"]["decision_id"] == later["decision_id"]
+
+
+def _euroleague_pick_block(
+    *,
+    model: str,
+    matchup: str,
+    ko_local: str,
+    selection: str,
+    grade: str,
+    lifecycle: str,
+    frozen_at: str,
+    collapsed_observations: int | None = None,
+) -> str:
+    lines = [
+        f"  [{model}/team_history_empirical] {matchup} · KO {ko_local}",
+        f"      {selection} · p=59.9% (raw 57.0%) @1.850 BetMGM.us",
+        (
+            "      bucket=CAUTION · price_evidence=NAMED_BOOKMAKER_PRICE "
+            f"· acca_eligible=False · grade={grade} · lifecycle={lifecycle} "
+            f"· frozen_at={frozen_at}"
+        ),
+        "      calibration=provisional n=27 · reasons=insufficient_walk_forward_samples · prediction=history",
+    ]
+    if collapsed_observations is not None:
+        lines.append(
+            f"      collapsed_observations={collapsed_observations} "
+            "· books_quoted=3: BetMGM.us, Stake.com, bet365.us "
+            "· surfaces=provider:history_model, team_history_empirical"
+        )
+    return "\n".join(lines)
+
+
+def _euroleague_card_2026_11_24(*, collapsed: bool, late_settled: bool) -> str:
+    early = [
+        ("Crvena Zvezda vs Virtus Bologna", "2026-11-24 20:00 SAST", "2026-11-24T16:06:52Z"),
+        ("Besiktas vs Paris Basketball", "2026-11-24 19:00 SAST", "2026-11-24T15:06:31Z"),
+        ("FC Bayern Munich vs Maccabi Tel Aviv", "2026-11-24 21:00 SAST", "2026-11-24T17:25:57Z"),
+    ]
+    late = [
+        ("Valencia Basket vs Panathinaikos", "2026-11-24 21:30 SAST", "2026-11-24T18:24:41Z"),
+        ("LDLC ASVEL vs Armani Olimpia Milan", "2026-11-24 21:45 SAST", "2026-11-24T18:24:41Z"),
+        ("FC Barcelona vs Fenerbahce", "2026-11-24 22:00 SAST", "2026-11-24T18:24:41Z"),
+    ]
+    pending_blocks: list[str] = []
+    settled_blocks: list[str] = []
+
+    def add_fixture(matchup: str, ko_local: str, frozen_at: str, *, is_settled: bool) -> None:
+        target = settled_blocks if is_settled else pending_blocks
+        grade = "❌ LOSS" if is_settled else "⏳ PENDING"
+        lifecycle = "SETTLED" if is_settled else "FROZEN"
+        target.append(
+            _euroleague_pick_block(
+                model="team_history_empirical",
+                matchup=matchup,
+                ko_local=ko_local,
+                selection="MONEYLINE H1 -> HOME",
+                grade=grade,
+                lifecycle=lifecycle,
+                frozen_at=frozen_at,
+            )
+        )
+        if collapsed:
+            target.append(
+                _euroleague_pick_block(
+                    model="team_history_empirical",
+                    matchup=matchup,
+                    ko_local=ko_local,
+                    selection="MONEYLINE full_game -> HOME",
+                    grade=grade,
+                    lifecycle=lifecycle,
+                    frozen_at=frozen_at,
+                    collapsed_observations=6,
+                )
+            )
+        else:
+            for model in ("team_history_empirical", "provider:history_model"):
+                for _ in range(3):
+                    target.append(
+                        _euroleague_pick_block(
+                            model=model,
+                            matchup=matchup,
+                            ko_local=ko_local,
+                            selection="MONEYLINE full_game -> HOME",
+                            grade=grade,
+                            lifecycle=lifecycle,
+                            frozen_at=frozen_at,
+                        )
+                    )
+        target.append(
+            _euroleague_pick_block(
+                model="team_history_empirical",
+                matchup=matchup,
+                ko_local=ko_local,
+                selection="HIGHEST QUARTER full_game -> Q1",
+                grade=grade,
+                lifecycle=lifecycle,
+                frozen_at=frozen_at,
+            )
+        )
+
+    for matchup, ko_local, frozen_at in early:
+        add_fixture(matchup, ko_local, frozen_at, is_settled=True)
+    for matchup, ko_local, frozen_at in late:
+        add_fixture(matchup, ko_local, frozen_at, is_settled=late_settled)
+
+    return "\n".join(
+        [
+            "Ma Golide Picks — EUROLEAGUE 2026-11-24",
+            "=" * 72,
+            "IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY",
+            "=" * 72,
+            *(pending_blocks or ["  (none)"]),
+            "",
+            "SETTLED PICKS — ARCHIVE ONLY",
+            "=" * 72,
+            *(settled_blocks or ["  (none)"]),
+            "",
+        ]
+    )
+
+
+def test_publisher_accepts_collapsed_all_settled_pick_card_over_uncollapsed_partial(tmp_path):
+    """EuroLeague 2026-11-24: 18 collapsed settled bets (48 obs) replace 24+24 uncollapsed lines.
+
+    Before PR #240 the card printed 8 uncollapsed rows per fixture (24 settled
+    lines for 3 early games + 24 pending lines for 3 late games). Once PR #240
+    collapsed repeated book/model observations into one row per bet and the 3
+    late games settled, the new card had 18 settled lines representing 48
+    settled observations and 0 pending lines — which a raw line-count check
+    falsely rejected (18 < 24).
+    """
+
+    uncollapsed_partial = _euroleague_card_2026_11_24(collapsed=False, late_settled=False)
+    collapsed_all_settled = _euroleague_card_2026_11_24(collapsed=True, late_settled=True)
+
+    repo = tmp_path / "repo"
+    destination = repo / "localdata" / "euroleague" / "picks_2026-11-24.txt"
+    destination.parent.mkdir(parents=True)
+    destination.write_text(uncollapsed_partial, encoding="utf-8")
+
+    artifact_file(
+        tmp_path,
+        "euroleague-artifact",
+        "euroleague",
+        "picks_2026-11-24.txt",
+        collapsed_all_settled.encode("utf-8"),
+    )
+
+    first = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert first["settled_card_regressions_skipped"] == []
+    assert first["copied"] == ["localdata/euroleague/picks_2026-11-24.txt"]
+    published = destination.read_text(encoding="utf-8")
+    assert "⏳ PENDING" not in published
+    assert published.count("lifecycle=SETTLED") == 18
+
+    # Idempotent: a repeat run with nothing new changes no bytes.
+    second = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert second["settled_card_regressions_skipped"] == []
+    assert second["copied"] == []
+    assert second["unchanged"] == ["localdata/euroleague/picks_2026-11-24.txt"]
+    assert destination.read_text(encoding="utf-8") == published
+
+
+def test_publisher_accepts_collapsed_pick_card_with_unchanged_pending_rows(tmp_path):
+    """Collapsing multi-surface rows must not block a card that still has pending fixtures."""
+
+    uncollapsed_partial = _euroleague_card_2026_11_24(collapsed=False, late_settled=False)
+    collapsed_partial = _euroleague_card_2026_11_24(collapsed=True, late_settled=False)
+
+    repo = tmp_path / "repo"
+    destination = repo / "localdata" / "euroleague" / "picks_2026-11-24.txt"
+    destination.parent.mkdir(parents=True)
+    destination.write_text(uncollapsed_partial, encoding="utf-8")
+
+    artifact_file(
+        tmp_path,
+        "euroleague-artifact",
+        "euroleague",
+        "picks_2026-11-24.txt",
+        collapsed_partial.encode("utf-8"),
+    )
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert report["settled_card_regressions_skipped"] == []
+    assert report["copied"] == ["localdata/euroleague/picks_2026-11-24.txt"]
+
+
+def test_publisher_still_blocks_settled_pick_card_regressions_with_collapse(tmp_path):
+    """Anti-rollback still rejects stale uncollapsed, downgraded-subject, and truncated cards."""
+
+    collapsed_all_settled = _euroleague_card_2026_11_24(collapsed=True, late_settled=True)
+    uncollapsed_partial = _euroleague_card_2026_11_24(collapsed=False, late_settled=False)
+
+    repo = tmp_path / "repo"
+    destination = repo / "localdata" / "euroleague" / "picks_2026-11-24.txt"
+    destination.parent.mkdir(parents=True)
+    destination.write_text(collapsed_all_settled, encoding="utf-8")
+
+    # 1. Stale pre-collapse partial card must not overwrite a collapsed settled card.
+    artifact_file(
+        tmp_path,
+        "stale-artifact",
+        "euroleague",
+        "picks_2026-11-24.txt",
+        uncollapsed_partial.encode("utf-8"),
+    )
+    stale = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert stale["settled_card_regressions_skipped"] == ["localdata/euroleague/picks_2026-11-24.txt"]
+    assert destination.read_text(encoding="utf-8") == collapsed_all_settled
+
+    # 2. Truncated collapsed card losing even one settled observation is rejected.
+    truncated = collapsed_all_settled.replace("collapsed_observations=6", "collapsed_observations=5", 1)
+    artifact_file(
+        tmp_path,
+        "stale-artifact",
+        "euroleague",
+        "picks_2026-11-24.txt",
+        truncated.encode("utf-8"),
+    )
+    dropped = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert dropped["settled_card_regressions_skipped"] == [
+        "localdata/euroleague/picks_2026-11-24.txt"
+    ]
+    assert destination.read_text(encoding="utf-8") == collapsed_all_settled
+
+    # 3. Downgrading a settled pick back to PENDING is rejected even if other picks settle.
+    current_partial = "\n".join(
+        [
+            _euroleague_pick_block(
+                model="team_history_empirical",
+                matchup="Crvena Zvezda vs Virtus Bologna",
+                ko_local="2026-11-24 20:00 SAST",
+                selection="MONEYLINE full_game -> HOME",
+                grade="❌ LOSS",
+                lifecycle="SETTLED",
+                frozen_at="2026-11-24T16:06:52Z",
+                collapsed_observations=6,
+            ),
+            _euroleague_pick_block(
+                model="team_history_empirical",
+                matchup="Valencia Basket vs Panathinaikos",
+                ko_local="2026-11-24 21:30 SAST",
+                selection="MONEYLINE full_game -> HOME",
+                grade="⏳ PENDING",
+                lifecycle="FROZEN",
+                frozen_at="2026-11-24T18:24:41Z",
+                collapsed_observations=6,
+            ),
+        ]
+    )
+    swapped_regression = "\n".join(
+        [
+            _euroleague_pick_block(
+                model="team_history_empirical",
+                matchup="Crvena Zvezda vs Virtus Bologna",
+                ko_local="2026-11-24 20:00 SAST",
+                selection="MONEYLINE full_game -> HOME",
+                grade="⏳ PENDING",
+                lifecycle="FROZEN",
+                frozen_at="2026-11-24T16:06:52Z",
+                collapsed_observations=6,
+            ),
+            _euroleague_pick_block(
+                model="team_history_empirical",
+                matchup="Valencia Basket vs Panathinaikos",
+                ko_local="2026-11-24 21:30 SAST",
+                selection="MONEYLINE full_game -> HOME",
+                grade="✅ WIN",
+                lifecycle="SETTLED",
+                frozen_at="2026-11-24T18:24:41Z",
+                collapsed_observations=6,
+            ),
+            _euroleague_pick_block(
+                model="team_history_empirical",
+                matchup="FC Barcelona vs Fenerbahce",
+                ko_local="2026-11-24 22:00 SAST",
+                selection="MONEYLINE full_game -> HOME",
+                grade="✅ WIN",
+                lifecycle="SETTLED",
+                frozen_at="2026-11-24T18:24:41Z",
+                collapsed_observations=6,
+            ),
+        ]
+    )
+    destination.write_text(current_partial, encoding="utf-8")
+    artifact_file(
+        tmp_path,
+        "stale-artifact",
+        "euroleague",
+        "picks_2026-11-24.txt",
+        swapped_regression.encode("utf-8"),
+    )
+    regressed = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert regressed["settled_card_regressions_skipped"] == [
+        "localdata/euroleague/picks_2026-11-24.txt"
+    ]
+    assert destination.read_text(encoding="utf-8") == current_partial
+
