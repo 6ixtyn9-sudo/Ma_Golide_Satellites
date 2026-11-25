@@ -136,3 +136,72 @@ def test_the_same_match_twice_is_read_once():
 def test_an_empty_body_raises_rather_than_reading_as_no_finals():
     with pytest.raises(ValueError):
         reader.parse_results("  ")
+
+
+# --- the match page: the split the page states beside the total ---------------
+#
+# Observed on the served page on 2026-11-25 (NKL, code McCqxqs3):
+#
+#     24.11.2026 - 12:00
+#     93:107
+#     (15:25, 30:28, 17:27, 31:27)
+#
+# The wrapper elements were not captured, so these fixtures are written at the
+# text level on purpose: the reader must work from what the page *says*, not from
+# a tag name that was guessed at.  The numbers and the shape are the observed
+# ones.
+
+
+def _match_page(final: str = "93:107", split: str = "(15:25, 30:28, 17:27, 31:27)") -> str:
+    return (
+        "<html><body><div class='wrap'>"
+        "<h3>Jurbarkas</h3><p class='detail'>24.11.2026 - 12:00</p>"
+        f"<p class='score'>{final}</p>"
+        f"<p class='score-detail'>{split}</p>"
+        "<p>Head-to-head</p>"
+        "<table><tr><td>Jurbarkas</td><td>92:86</td><td>22.01.2026</td></tr></table>"
+        "</div></body></html>"
+    )
+
+
+def test_the_match_page_split_reconciles_with_its_own_total():
+    periods = reader.parse_match_page(_match_page())
+
+    assert periods is not None
+    assert (periods.home_final, periods.away_final) == (93, 107)
+    assert periods.home_quarters == (15.0, 30.0, 17.0, 31.0)
+    assert periods.away_quarters == (25.0, 28.0, 27.0, 27.0)
+    assert periods.overtime == ()
+    assert periods.matches
+
+
+def test_a_split_that_does_not_add_up_is_refused():
+    # 15+30+17+31 = 93, so a stated total of 94 is not this split's total.
+    assert reader.parse_match_page(_match_page(final="94:107")) is None
+
+
+def test_an_overtime_period_is_carried_not_dropped():
+    periods = reader.parse_match_page(_match_page("100:107", "(15:25, 30:28, 17:27, 31:27, 7:0)"))
+
+    assert periods is not None
+    assert len(periods.regulation) == 4
+    assert periods.home_overtime == 7.0 and periods.away_overtime == 0.0
+    assert periods.matches
+
+
+def test_a_page_with_no_split_yields_nothing():
+    assert reader.parse_match_page(_match_page(split="")) is None
+
+
+def test_two_splits_on_one_page_are_an_ambiguity_not_a_choice():
+    page = _match_page() + _match_page()
+    assert reader.parse_match_page(page) is None
+
+
+def test_a_split_with_too_few_periods_is_refused():
+    assert reader.parse_match_page(_match_page("62:81", "(31:40, 31:41)")) is None
+
+
+def test_a_split_without_a_total_beside_it_is_refused():
+    page = "<html><body><p>(15:25, 30:28, 17:27, 31:27)</p></body></html>"
+    assert reader.parse_match_page(page) is None

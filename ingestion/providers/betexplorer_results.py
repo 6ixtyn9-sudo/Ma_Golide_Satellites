@@ -262,8 +262,109 @@ def parse_results(html: str) -> ResultPage:
     return ResultPage(rows=tuple(rows), skipped=tuple(skipped), counts=counts)
 
 
+# ---------------------------------------------------------------------------
+# The match page: a final and the split the page states beside it
+# ---------------------------------------------------------------------------
+#
+# The results index gives totals.  The match page for the same code states the
+# split directly under the final, as a parenthesised colon list on 2026-11-25:
+#
+#     24.11.2026 - 12:00
+#     93:107
+#     (15:25, 30:28, 17:27, 31:27)
+#
+# 15+30+17+31 = 93 and 25+28+27+27 = 107, so this is a record
+# ``ActualResult.reconciles()`` accepts -- no quarter labels, no table cells, no
+# script, and no name join: the code in the URL is the code the fixtures table
+# already assigns.  That matters because the route was once recorded as closed
+# "by measurement": the probe looked for ``<td>`` cells and ``Q1..Q4`` labels and
+# reported ``td_cells 0, period_markers 0`` on a page that carries the split in
+# neither shape.  Those counters measured the probe's vocabulary, not the page.
+_SPLIT_RE = re.compile(
+    r"\(\s*(?P<body>\d{1,3}\s*:\s*\d{1,3}(?:\s*,\s*\d{1,3}\s*:\s*\d{1,3}){2,})\s*\)"
+)
+_REGULATION_PERIODS = 4
+#: One entry of the split: home on the left, away on the right.
+_QUAD_ENTRY_RE = re.compile(r"(\d{1,3})\s*:\s*(\d{1,3})")
+
+
+@dataclass(frozen=True)
+class MatchPeriods:
+    """One finished match, with the split the page states next to its total."""
+
+    home_final: int
+    away_final: int
+    regulation: Tuple[Tuple[int, int], ...]
+    overtime: Tuple[Tuple[int, int], ...] = ()
+
+    @property
+    def home_quarters(self) -> Tuple[float, ...]:
+        return tuple(float(home) for home, _ in self.regulation)
+
+    @property
+    def away_quarters(self) -> Tuple[float, ...]:
+        return tuple(float(away) for _, away in self.regulation)
+
+    @property
+    def home_overtime(self) -> Optional[float]:
+        return float(sum(home for home, _ in self.overtime)) if self.overtime else None
+
+    @property
+    def away_overtime(self) -> Optional[float]:
+        return float(sum(away for _, away in self.overtime)) if self.overtime else None
+
+    @property
+    def matches(self) -> bool:
+        """Whether the split adds up to the total the same page states."""
+
+        home = sum(home for home, _ in self.regulation) + sum(h for h, _ in self.overtime)
+        away = sum(away for _, away in self.regulation) + sum(a for _, a in self.overtime)
+        return (home, away) == (self.home_final, self.away_final)
+
+
+def parse_match_page(html: str) -> Optional[MatchPeriods]:
+    """The final and split on one match page, or ``None``.
+
+    Refuses -- rather than guesses -- when the page states no split, states more
+    than one (a page is one match, so two splits mean the read is wrong), states
+    fewer than four periods, or states a split that does not add up to the
+    total beside it.  A wrong settlement is unrecoverable; a missing one is not.
+    """
+
+    plain = _text(html or "")
+    splits = list(_SPLIT_RE.finditer(plain))
+    if len(splits) != 1:
+        return None
+    split = splits[0]
+    # The final sits immediately above the split: the last clock-shaped pair
+    # (a time's hour is at most 23, so it cannot pass MIN_FINAL_POINTS).
+    finals = [
+        (int(left), int(right))
+        for left, right in _PAIR_RE.findall(plain[: split.start()])
+        if int(left) >= MIN_FINAL_POINTS and int(right) >= MIN_FINAL_POINTS
+    ]
+    if not finals:
+        return None
+    home_final, away_final = finals[-1]
+
+    periods = [
+        (int(home), int(away)) for home, away in _QUAD_ENTRY_RE.findall(split.group("body"))
+    ]
+    if len(periods) < _REGULATION_PERIODS:
+        return None
+    result = MatchPeriods(
+        home_final=home_final,
+        away_final=away_final,
+        regulation=tuple(periods[:_REGULATION_PERIODS]),
+        overtime=tuple(periods[_REGULATION_PERIODS:]),
+    )
+    return result if result.matches else None
+
+
 __all__ = [
     "MIN_FINAL_POINTS",
+    "MatchPeriods",
+    "parse_match_page",
     "PROVIDER",
     "ResultPage",
     "ResultRow",
