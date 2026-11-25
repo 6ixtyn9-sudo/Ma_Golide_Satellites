@@ -316,6 +316,74 @@ def test_gate_fails_open_when_a_schedule_cannot_be_read(tmp_path: Path):
     assert decision.reasons == ("schedule_uncertain: temporary provider outage",)
 
 
+def test_a_settlement_only_tick_is_not_a_full_pipeline_tick(tmp_path: Path):
+    """A tick must cost what the lane actually owes.
+
+    On 2026-11-25 all 13 lanes ran the full pipeline -- history replay, forecast,
+    freeze, results, tuner -- and ten of them discovered nothing at all, because
+    their only due work was settlement or a source that had already failed. The
+    matrix now carries a `mode`, and only `full` pays for the replay and tuner.
+    """
+
+    from ingestion.adaptive_gate import GateDecision, is_settlement_only_reasons
+
+    nba = LEAGUES[0]
+    # Frozen ticket for the date: the lane's decision is recorded, so the only
+    # work left is settling the positions that decision opened.
+    _operator_state(tmp_path, nba, date="2026-11-18", frozen="ticket")
+    performance_path = tmp_path / nba.state_key / "auto_tickets_performance.json"
+    performance = json.loads(performance_path.read_text())
+    performance.update({"pending_positions": 1, "awaiting_game_legs": 3})
+    _write_json(performance_path, performance)
+
+    decision = evaluate_league(
+        nba,
+        state_root=tmp_path,
+        now=NOW,
+        schedule_fetcher=_schedule(ScheduleGame(NOW + timedelta(hours=8), "scheduled")),
+    )
+
+    assert decision.should_run
+    assert decision.mode == "settle_only"
+    assert decision.matrix_row()["mode"] == "settle_only"
+    assert decision.as_dict()["mode"] == "settle_only"
+
+    # Anything that needs fresh forecast, freeze or ticket state is a full tick.
+    assert not is_settlement_only_reasons(["fixture_pick_freeze_due"])
+    assert not is_settlement_only_reasons(["pick_draft_publication_due"])
+    assert not is_settlement_only_reasons(["ticket_creation_or_acquisition_due"])
+    assert not is_settlement_only_reasons(["pending_settlement", "fixture_pick_freeze_due"])
+    # Fail safe on a reason nobody classified: it gets the full pipeline.
+    assert not is_settlement_only_reasons(["something_new_we_have_not_classified"])
+    assert not is_settlement_only_reasons([])
+
+    # Settlement, reconciliation and retry families are all cheap.
+    for reasons in (
+        ["pending_settlement", "result_reconciliation"],
+        ["historical_auto_tickets_reconciliation_due:2026-11-15"],
+        ["frozen_pick_settlement_due"],
+        ["schedule_uncertain: no verified date-bounded source"],
+        ["environment_error: No module named 'requests'"],
+        ["coverage_gap_scan_failed: espn: no events"],
+    ):
+        assert is_settlement_only_reasons(reasons), reasons
+
+    idle = GateDecision(nba, "2026-11-18", False, ("no_work",), 0)
+    assert idle.mode == "idle"
+
+
+def test_a_skipped_backfill_reports_itself_instead_of_an_empty_history():
+    """A settlement-only tick must not look like a lane with no history."""
+
+    from scripts.daily import _skipped_backfill_report
+
+    report = _skipped_backfill_report()["backfill"]
+    assert report["status"] == "skipped_settle_only_tick"
+    assert report["deep_history"] == {}
+    assert report["ledger_dates"] == []
+    assert "settlement-only" in report["detail"]
+
+
 def test_a_missing_module_is_an_environment_error_not_a_schedule_property(tmp_path: Path):
     """2026-11-25: both Japan lanes read `schedule_uncertain: No module named
     'requests'` and went dark. The schedule had nothing to do with it: the gate's

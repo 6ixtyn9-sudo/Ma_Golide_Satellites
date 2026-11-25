@@ -18,6 +18,7 @@ import os
 from pathlib import Path
 import re
 import sys
+import time
 from typing import Any, Dict
 from zoneinfo import ZoneInfo
 
@@ -231,6 +232,27 @@ SCAN_FAILURE_GAP_REASONS = frozenset(
 )
 
 
+def _skipped_backfill_report() -> Dict[str, Any]:
+    """The backfill report a settlement-only tick records instead of running it.
+
+    Shape-compatible with ``Pipeline.backfill()`` so every downstream reader keeps
+    working, and explicit enough that the summary cannot be mistaken for a lane
+    that found no history.
+    """
+
+    return {
+        "backfill": {
+            "status": "skipped_settle_only_tick",
+            "deep_history": {},
+            "ledger_dates": [],
+            "detail": (
+                "scheduler tick was settlement-only: no forecast, freeze or ticket "
+                "work was due, so history acquisition and replay were skipped"
+            ),
+        }
+    }
+
+
 def _write_coverage_gap_marker(
     localdata: Path,
     *,
@@ -434,7 +456,13 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             allow_writes=args.write,
         )
 
-        backfill_report = pipeline.backfill()
+        stage_seconds: Dict[str, float] = {}
+        if getattr(args, "skip_backfill", False):
+            backfill_report = _skipped_backfill_report()
+        else:
+            started = time.perf_counter()
+            backfill_report = pipeline.backfill()
+            stage_seconds["backfill"] = round(time.perf_counter() - started, 3)
         deep_history = backfill_report["backfill"].get("deep_history") or {}
         history_receipts_path = None
         if config.league_enum.value == "ABA_LEAGUE":
@@ -447,7 +475,11 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
                 current_season_end_year=current_aba_season,
             )
         backfill_ledgers: Dict[str, Any] = {}
-        if backfill_report["backfill"]["status"] not in {"disabled", "unsupported_league"}:
+        if backfill_report["backfill"]["status"] not in {
+            "disabled",
+            "unsupported_league",
+            "skipped_settle_only_tick",
+        }:
             store.record_run(run_id, "backfill", args.date, backfill_report)
             if args.write:
                 for date in backfill_report["backfill"].get("ledger_dates", []):
@@ -464,7 +496,9 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
         market_report = None
         market_report_path = None
         for command in commands:
+            started = time.perf_counter()
             report = getattr(pipeline, command)()
+            stage_seconds[command] = round(time.perf_counter() - started, 3)
             reports[command] = report
             store.record_run(run_id, command, args.date, report)
             if args.write:
@@ -578,6 +612,10 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
                 "effective_history_request_budget": config.history_request_budget,
             },
             "backfill": backfill_report,
+            # Where the tick went. GitHub shows per-step durations, but a lane's
+            # step covers several stages and the expensive one has to be named
+            # before it can be optimised.
+            "stage_seconds": stage_seconds,
             "backfill_ledgers": backfill_ledgers,
             "history_receipts_path": history_receipts_path,
             "commands": reports,
@@ -789,6 +827,15 @@ def main() -> int:
         help="maximum indexed historical events per write-enabled league run",
     )
     parser.add_argument("--skip-results", action="store_true")
+    parser.add_argument(
+        "--skip-backfill",
+        action="store_true",
+        help=(
+            "do not acquire or replay historical evidence in this tick; set by the "
+            "scheduler for a settlement-only tick, where nothing the lane owes needs "
+            "new history and the replay is the most expensive stage"
+        ),
+    )
     parser.add_argument("--skip-markets", action="store_true")
     parser.add_argument(
         "--skip-tuning",
