@@ -86,14 +86,15 @@
       "frozen_at": "2026-11-24T10:07:12Z",
       "lock_source": "state",
       "receipt_path": "auto_tickets_2026-11-24_decision.json"
-    }
-  },
-  "no_bet_releases": {
+    },
     "2026-11-25": {
-      "basis": "The 2026-11-25 no-bet was written by a gate defect, not by a missed window: decision_cutoff_utc 03:30Z back-solves through the 120-minute lead to a 05:30Z earliest slate tip, an already-started fixture, while every game carrying a pick tips 15:00Z or later. The gate was corrected in #253 (c96ab36) and this release re-decides the date under it. The frozen decision is preserved here rather than deleted.",
-      "released_at": "2026-11-25T08:03:12Z",
-      "released_by": "operator authorisation, 2026-11-25",
-      "released_lock": {
+      "decision_cutoff_utc": "2026-11-25T03:30:00Z",
+      "decision_id": "45561930144_ncaa_m_1_attempt_1",
+      "final": true,
+      "frozen_at": "2026-11-25T07:11:22Z",
+      "lock_source": "inline_state_no_bet",
+      "no_bet": true,
+      "no_bet_decision": {
         "decision_id": "45561930144_ncaa_m_1_attempt_1",
         "frozen_at": "2026-11-25T07:11:22Z",
         "league": "NCAA_M",
