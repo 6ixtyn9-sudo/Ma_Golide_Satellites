@@ -533,6 +533,46 @@ def _pick_lifecycle_state_bytes(state: dict[str, Any]) -> bytes:
     return (json.dumps(state, indent=2, sort_keys=True, default=str) + "\n").encode()
 
 
+def _merge_no_bet_releases(destination: Path, incoming_raw: bytes, *, relative: str) -> bytes:
+    """Keep a deliberate release from being undone by an artifact cut before it.
+
+    A lane restores Git state when it starts, so a run cut before a release
+    publishes a state file that still carries the released no-bet and knows
+    nothing about the release. On 2026-11-25 two such runs put the same freeze
+    back, twice. Releases union forward; the released decision is dropped from
+    the incoming copy only when it is the very decision that was released, so a
+    later, legitimately different freeze for that date still publishes.
+    """
+
+    try:
+        incoming = json.loads(incoming_raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid ticket state JSON: {relative}") from exc
+    if not isinstance(incoming, dict):
+        raise ValueError(f"ticket state must be an object: {relative}")
+    if not destination.exists():
+        return incoming_raw
+    existing = json.loads(destination.read_bytes())
+    releases = existing.get("no_bet_releases") or {}
+    if not isinstance(releases, dict) or not releases:
+        return incoming_raw
+    merged = dict(incoming)
+    merged_releases = dict(merged.get("no_bet_releases") or {})
+    merged_releases.update(releases)
+    frozen = dict(merged.get("frozen_by_date") or {})
+    for target_date, release in merged_releases.items():
+        released = (release or {}).get("released_lock") or {}
+        decision_id = released.get("decision_id")
+        lock = frozen.get(target_date)
+        if isinstance(lock, dict) and decision_id and lock.get("decision_id") == decision_id:
+            # The freeze this run is publishing is the one the operator released,
+            # not a new one. It keeps its place in the release record below.
+            frozen.pop(target_date, None)
+    merged["frozen_by_date"] = frozen
+    merged["no_bet_releases"] = merged_releases
+    return (json.dumps(merged, indent=2, sort_keys=True, default=str) + "\n").encode()
+
+
 def _merge_pick_lifecycle_state(
     destination: Path, incoming_raw: bytes, *, relative: str
 ) -> bytes:
@@ -848,6 +888,8 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                 compact_pick_markers_skipped.append(relative)
                 continue
             raw = _git_durable_bytes_from_raw(source_raw, name=source.name, source=source)
+            if source.name == "auto_tickets_state.json":
+                raw = _merge_no_bet_releases(destination, raw, relative=relative)
             if source.name == "pick_lifecycle_state.json":
                 raw = _merge_pick_lifecycle_state(destination, raw, relative=relative)
             elif source.name == ABA_HISTORY_RECEIPTS_FILE:

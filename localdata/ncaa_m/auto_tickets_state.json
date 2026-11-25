@@ -90,8 +90,8 @@
   },
   "no_bet_releases": {
     "2026-11-25": {
-      "basis": "The 2026-11-25 no-bet was written by a gate defect, not by a missed window: decision_cutoff_utc 03:30Z back-solves through the 120-minute lead to a 05:30Z earliest slate tip, an already-started fixture, while every game carrying a pick tips 15:00Z or later. The gate was corrected in #253 (c96ab36) and this release re-decides the date under it. The frozen decision is preserved here rather than deleted.",
-      "released_at": "2026-11-25T08:03:12Z",
+      "basis": "The 2026-11-25 no-bet was written by a gate defect, not by a missed window: decision_cutoff_utc 03:30Z back-solves through the 120-minute lead to a 05:30Z earliest slate tip, an already-started fixture, while every game carrying a pick tips 15:00Z or later. The gate was corrected in #253 (c96ab36); this release re-decides the date under it. Two runs cut before the release re-froze the date, so it is applied again with publisher-side protection against the same resurrection.",
+      "released_at": "2026-11-25T09:37:47Z",
       "released_by": "operator authorisation, 2026-11-25",
       "released_lock": {
         "decision_id": "45561930144_ncaa_m_1_attempt_1",

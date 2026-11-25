@@ -905,3 +905,79 @@ def test_publisher_still_blocks_a_dated_card_reopening_settled_lines(tmp_path):
 
     assert report["settled_card_regressions_skipped"] == ["localdata/nba/picks_2026-11-18.txt"]
     assert "LOSS" in card.read_text()
+
+def _ticket_state_with(*, frozen=None, releases=None):
+    state = {
+        "base_paper_units": 100.0,
+        "frozen_by_date": {},
+        "paper_bank_units": 100.0,
+        "schema_version": "magolide.paper_ticket_state",
+        "stake_units_per_acca": 1.0,
+    }
+    if frozen is not None:
+        state["frozen_by_date"]["2026-11-25"] = frozen
+    if releases is not None:
+        state["no_bet_releases"] = {"2026-11-25": releases}
+    return json.dumps(state, indent=2, sort_keys=True).encode()
+
+
+_RELEASED_LOCK = {
+    "decision_id": "45561930144_ncaa_m_1_attempt_1",
+    "reason": "decision_window_missed_before_publication",
+    "status": "frozen_no_bet",
+    "target_date": "2026-11-25",
+}
+
+
+def test_a_release_survives_an_artifact_cut_before_it(tmp_path):
+    """Two runs started before the 2026-11-25 release re-froze the date.
+
+    A lane restores Git state when it starts, so its artifact knows nothing of a
+    release merged while it was running. The publisher unions releases forward
+    and refuses to let the released decision come back.
+    """
+
+    repo = tmp_path / "repo"
+    destination = repo / "localdata" / "ncaa_m" / "auto_tickets_state.json"
+    destination.parent.mkdir(parents=True)
+    destination.write_bytes(
+        _ticket_state_with(
+            frozen=None,
+            releases={"released_at": "2026-11-25T08:12:00Z", "released_lock": _RELEASED_LOCK},
+        )
+    )
+    stale = _ticket_state_with(frozen={**_RELEASED_LOCK, "no_bet": True}, releases=None)
+    artifact_file(tmp_path, "ncaa_m-artifact", "ncaa_m", "auto_tickets_state.json", stale)
+
+    merge_downloaded_localdata(tmp_path / "artifacts", repo)
+
+    published = json.loads(destination.read_text())
+    assert "2026-11-25" not in published["frozen_by_date"]
+    assert published["no_bet_releases"]["2026-11-25"]["released_lock"] == _RELEASED_LOCK
+
+
+def test_a_later_freeze_for_a_released_date_still_publishes(tmp_path):
+    """Releasing one decision must not immunise the date against a new one."""
+
+    repo = tmp_path / "repo"
+    destination = repo / "localdata" / "ncaa_m" / "auto_tickets_state.json"
+    destination.parent.mkdir(parents=True)
+    destination.write_bytes(
+        _ticket_state_with(
+            frozen=None,
+            releases={"released_at": "2026-11-25T08:12:00Z", "released_lock": _RELEASED_LOCK},
+        )
+    )
+    later = {**_RELEASED_LOCK, "decision_id": "45599999999_ncaa_m_1_attempt_1", "no_bet": True}
+    artifact_file(
+        tmp_path,
+        "ncaa_m-artifact",
+        "ncaa_m",
+        "auto_tickets_state.json",
+        _ticket_state_with(frozen=later, releases=None),
+    )
+
+    merge_downloaded_localdata(tmp_path / "artifacts", repo)
+
+    published = json.loads(destination.read_text())
+    assert published["frozen_by_date"]["2026-11-25"]["decision_id"] == later["decision_id"]
