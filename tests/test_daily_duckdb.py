@@ -487,3 +487,66 @@ def test_stage_seconds_finally_handles_mid_tick_failure_cleanly(tmp_path, monkey
     with pytest.raises(RuntimeError, match="injected_pregame_failure"):
         run_daily(_args(tmp_path))
 
+
+def test_an_offline_fixture_tick_touches_no_network(tmp_path):
+    """Offline fixture replay must never make live HTTP requests or block on network."""
+
+    from ingestion.pipeline import PipelineConfig
+
+    # Default stays False so non-offline callers and injected-fetch tests are untouched.
+    assert PipelineConfig(league="NBA", date_yyyymmdd="20261107").offline_fixture is False
+
+    summary = run_daily(_args(tmp_path))
+    pregame = summary["commands"]["pregame"]
+    acquisition = pregame["acquisition"]
+
+    assert acquisition["transport_attempts"] == 0
+    assert acquisition["transport_errors"] == 0
+    assert summary["stage_seconds"]["odds"] < 5.0
+
+    book_status = pregame["book_provider_status"]
+    for provider in ("theoddsapi", "betexplorer_direct"):
+        assert provider in book_status
+        assert book_status[provider]["enabled"] is False
+        assert book_status[provider]["status"] == "disabled"
+        assert "offline fixture replay" in book_status[provider]["detail"]
+
+
+def test_slate_window_line_formats_window_lanes_and_is_silent_on_other_lanes(tmp_path, capsys):
+    """Window lanes emit the full breakdown log line; non-window lanes emit nothing."""
+
+    from scripts.daily import _slate_window_line
+
+    assert _slate_window_line(None) is None
+    assert _slate_window_line({"league": "NBA"}) is None
+
+    line = _slate_window_line(
+        {
+            "slate_window": {
+                "mode": "next_fixture_day",
+                "preview_games": 4,
+                "dropped_out_of_window": 200,
+                "dropped_out_of_window_reason": "dated_rows_beyond_next_fixture_day",
+                "dropped_past_target": 11,
+                "blank_kickoff_rows": 43,
+                "unparsed_rows": 27,
+                "next_fixture_date": "2026-11-25",
+            }
+        }
+    )
+    assert line == (
+        "slate_window=next_fixture_day preview=4 dropped_out_of_window=200 "
+        "dropped_out_of_window_reason=dated_rows_beyond_next_fixture_day "
+        "past_target=11 blank_kickoff=43 unparsed=27 next_fixture_date=2026-11-25"
+    )
+
+    # Non-window NBA tick must not inherit slate_window or emit the log line.
+    summary = run_daily(_args(tmp_path))
+    captured = capsys.readouterr()
+    assert "slate_window" not in summary["commands"]["pregame"]
+    assert "slate_window" not in (summary["markets"] or {})
+    assert "slate_window=" not in captured.err
+    assert "slate_window=" not in captured.out
+
+
+

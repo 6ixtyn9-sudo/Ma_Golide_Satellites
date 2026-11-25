@@ -123,11 +123,14 @@ def fetch_slate(
     fetch_factory: Optional[Callable[[Any], Any]] = None,
     now_utc: Optional[str] = None,
 ) -> List[Game]:
-    """Return the fixtures the page lists for one site-local (Paris) date.
+    """Return fixtures for ``date_yyyymmdd`` plus the next scheduled fixture day.
 
-    An empty result on a date the page was read for is a real empty slate, and
-    the caller can tell it apart from a broken read because
-    :func:`last_probe` is populated either way.
+    The window spans the site-local (Paris) target date plus the earliest later
+    own-dated fixture day on the same page (preview-only downstream).  Every
+    returned :class:`Game` stamps ``evidence["slate_date"]`` with its provider
+    Paris date and ``evidence["slate_role"]`` as ``"target"`` or ``"preview"``.
+    Own-dated rows beyond the preview day are counted in
+    ``last_probe()["dropped_out_of_window"]`` rather than discarded silently.
     """
 
     key = _require_lane(league)
@@ -152,13 +155,36 @@ def fetch_slate(
     raw_rows = html.count("<tr>")
     unparsed = max(0, raw_rows - len(parsed))
 
+    # Find the earliest own-dated fixture strictly after target from the same
+    # parsed rows (calendar property of the competition page, not tick time).
+    preview_yyyymmdd: Optional[str] = None
+    for local_dt, _match_id, _slug, _home, _away, _odds, raw_label in parsed:
+        if not raw_label or local_dt is None:
+            continue
+        row_yyyymmdd = local_dt.strftime("%Y%m%d")
+        if row_yyyymmdd > target and (
+            preview_yyyymmdd is None or row_yyyymmdd < preview_yyyymmdd
+        ):
+            preview_yyyymmdd = row_yyyymmdd
+
+    preview_iso = (
+        f"{preview_yyyymmdd[:4]}-{preview_yyyymmdd[4:6]}-{preview_yyyymmdd[6:]}"
+        if preview_yyyymmdd
+        else None
+    )
+
     games: List[Game] = []
     seen: set[str] = set()
     seen_undated: set[str] = set()
     blank_kickoff = 0
     blank_kickoff_with_date = 0
+    target_games = 0
+    preview_games = 0
     slate_priced = 0
+    preview_priced = 0
     page_priced = 0
+    dropped_out_of_window = 0
+    dropped_past_target = 0
     next_fixture_date: Optional[str] = None
     for local_dt, match_id, _slug, home, away, odds, raw_label in parsed:
         if not raw_label:
@@ -196,17 +222,32 @@ def fetch_slate(
         if odds:
             page_priced += 1
         row_yyyymmdd = local_dt.strftime("%Y%m%d")
+        row_iso = local_dt.strftime("%Y-%m-%d")
         if row_yyyymmdd >= target:
-            row_iso = local_dt.strftime("%Y-%m-%d")
             if next_fixture_date is None or row_iso < next_fixture_date:
                 next_fixture_date = row_iso
-        if row_yyyymmdd != target:
+        if row_yyyymmdd < target:
+            dropped_past_target += 1
+            continue
+        if row_yyyymmdd == target:
+            is_preview = False
+        elif preview_yyyymmdd is not None and row_yyyymmdd == preview_yyyymmdd:
+            is_preview = True
+        else:
+            dropped_out_of_window += 1
             continue
         if odds:
-            slate_priced += 1
+            if is_preview:
+                preview_priced += 1
+            else:
+                slate_priced += 1
         if match_id in seen:
             continue
         seen.add(match_id)
+        if is_preview:
+            preview_games += 1
+        else:
+            target_games += 1
         scheduled_utc = to_utc_iso(local_dt)
         games.append(
             Game(
@@ -229,6 +270,8 @@ def fetch_slate(
                 evidence={
                     "tip_clock": "site CET/CEST wall clock, no ISO attribute served",
                     "tip_timezone_assumed": SITE_TZ,
+                    "slate_date": row_iso,
+                    "slate_role": "preview" if is_preview else "target",
                     "identity": "provider match code from the row href",
                     "name_join": "not used",
                     "source_permission": "unresolved",
@@ -243,27 +286,36 @@ def fetch_slate(
         "league": key,
         "url": url,
         "target_date": target,
+        "slate_window_mode": "next_fixture_day",
         "rows": raw_rows,
         "parsed_rows": len(parsed),
         "blank_kickoff_rows": blank_kickoff,
         "blank_kickoff_rows_with_date": blank_kickoff_with_date,
         "unparsed_rows": unparsed,
         "slate_games": len(games),
+        "target_games": target_games,
+        "preview_date": preview_iso,
+        "preview_games": preview_games,
         # Scope matters: the page prices a handful of rows per day, so a
         # whole-page count would report a slate as priced when its own rows
         # carry nothing.
         "slate_priced_rows": slate_priced,
+        "preview_priced_rows": preview_priced,
         "page_priced_rows": page_priced,
+        "dropped_out_of_window": dropped_out_of_window,
+        "dropped_out_of_window_reason": "dated_rows_beyond_next_fixture_day",
+        "dropped_past_target": dropped_past_target,
         "next_fixture_date": next_fixture_date,
     }
 
-    if games and not slate_priced:
+    if games and not (slate_priced + preview_priced):
         # Not an error: the page was read and had no quote.  It is a fact the
         # run must state, because "no odds" and "no page" look identical in a
         # report that only prints counts.
         _gap(
             "fixtures_price_coverage",
-            f"{key}: {len(games)} fixtures on {target} and none carried a "
-            "both-sided quote",
+            f"{key}: {len(games)} fixture(s) in window starting {target} "
+            f"(target={target_games}, preview={preview_games}) and none "
+            "carried a both-sided quote",
         )
     return games
