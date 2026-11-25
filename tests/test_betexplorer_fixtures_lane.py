@@ -81,11 +81,18 @@ def test_lane_is_active_and_its_price_is_aggregate_and_unresolved(league):
     policy = price_evidence_policy(parse_league(league), "betexplorer")
     assert policy.price_provenance is PriceProvenance.AGGREGATE_CONSENSUS
     assert policy.source_permission is SourcePermission.UNRESOLVED
-    # This page is a fixtures page: it carries no settlement route, and the price
-    # evidence stays aggregate and unresolved whatever the lane can settle from.
-    # NKL settles from the federation's own club and match pages, activated
-    # 2026-11-24 on a live run -- so its results_source names that reader.
-    expected_results = "nkl" if league == "LITHUANIA_NKL" else "source_unavailable"
+    # The price evidence stays aggregate and unresolved whatever the lane can
+    # settle from. NKL settles from the federation's own club and match pages
+    # (2026-11-24, live); the other three settle from the aggregator's match
+    # page, whose split beside the total adds up (promoted 2026-11-25). Leumit
+    # was retired before either route existed.
+    expected_results = {
+        "LITHUANIA_NKL": "nkl",
+        "GREECE_BASKET_LEAGUE": "betexplorer_results",
+        "CHINA_WCBA_W": "betexplorer_results",
+        "AUSTRALIA_WNBL_W": "betexplorer_results",
+        "ISRAEL_LIGA_LEUMIT": "source_unavailable",
+    }[league]
     assert spec.results_source == expected_results
 
 
@@ -320,10 +327,21 @@ DARK_LANE_BLOCKERS = {
 }
 
 
+#: Blockers recorded on 2026-11-24 for lanes whose route was dark then. Three of
+#: them were promoted on 2026-11-25 once the aggregator's match page was read for
+#: what it actually says, so what this asserts today is narrower: a lane that is
+#: *still* dark must name its own blocker, and a promoted lane must say so.
+PROMOTED = {"GREECE_BASKET_LEAGUE", "CHINA_WCBA_W", "AUSTRALIA_WNBL_W"}
+
+
 @pytest.mark.parametrize("league", sorted(DARK_LANE_BLOCKERS))
 def test_a_dark_results_lane_names_the_state_of_its_own_route(league):
     spec = league_spec(parse_league(league))
 
+    if league in PROMOTED:
+        assert spec.results_source == "betexplorer_results"
+        assert "Results route promoted 2026-11-25" in spec.source_detail
+        return
     assert spec.results_source == "source_unavailable"
     assert "2026-11-24" in spec.source_detail
     assert DARK_LANE_BLOCKERS[league] in spec.source_detail

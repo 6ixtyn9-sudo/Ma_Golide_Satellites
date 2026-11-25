@@ -44,18 +44,41 @@ def test_every_recorded_acceptance_names_who_decided_and_what_they_accepted(leag
 #: Lanes whose acceptance opened the licence gate but whose adapter has not yet
 #: been replayed against served pages. NKL is deliberately absent: its adapter was
 #: replayed live on 2026-11-24 and settled three games, which is the only thing
-#: that turns an acceptance into a lit lane.
-ACCEPTED_BUT_DARK = tuple(league for league in ACCEPTED if league != "LITHUANIA_NKL")
+#: that turns an acceptance into a lit lane. Greece, WCBA and WNBL left this list
+#: on 2026-11-25 for the same reason and not a different one: their match pages
+#: were read for what they actually serve -- the split beside the total -- and the
+#: reader refuses anything that does not add up. The acceptance alone moved none
+#: of them; a reader replayed against served bytes did.
+LIT_BY_A_READER = {"LITHUANIA_NKL", "GREECE_BASKET_LEAGUE", "CHINA_WCBA_W", "AUSTRALIA_WNBL_W"}
 
 
-@pytest.mark.parametrize("league", ACCEPTED_BUT_DARK)
+def test_a_lit_lane_says_what_lit_it():
+    for league in sorted(LIT_BY_A_READER):
+        spec = league_spec(parse_league(league))
+
+        assert spec.results_source != "source_unavailable", league
+        assert "2026-11-2" in spec.source_detail, league
+
+
+@pytest.mark.parametrize("league", ACCEPTED)
 def test_an_acceptance_does_not_by_itself_switch_a_results_lane_on(league):
-    """The rule the whole project runs on: a decision is not a served page."""
+    """The rule the whole project runs on: a decision is not a served page.
+
+    Parametrised over every accepted lane rather than only the currently dark
+    ones, because the interesting half of the rule is what a *lit* lane had to
+    show for itself. A parametrisation over an empty dark set would have left
+    the rule untested at exactly the moment every accepted lane went live.
+    """
 
     spec = league_spec(parse_league(league))
     assert spec.operator_acceptance is not None
-    assert spec.results_source == "source_unavailable", (
-        f"{league} must stay dark until an adapter is replayed against a captured page"
+    if spec.results_source == "source_unavailable":
+        # Still dark: the licence bought nothing on its own, which is the rule.
+        return
+    # A lit lane carries a dated account of the read that lit it -- not just a
+    # licence. The date is the claim: a route is lit on the day somebody read it.
+    assert "2026-11" in spec.source_detail, (
+        f"{league} is lit without a dated account of the read that lit it"
     )
 
 

@@ -10,6 +10,7 @@ from __future__ import annotations
 
 from datetime import datetime, timedelta
 import logging
+import time
 from dataclasses import dataclass, field, replace
 from typing import Any, Callable, Dict, List, Optional, Sequence
 from zoneinfo import ZoneInfo
@@ -32,6 +33,7 @@ from .identity import (
     to_utc_iso,
 )
 from .models import (
+    ActualResult,
     BookSnapshot,
     CoverageGap,
     CoverageReport,
@@ -41,6 +43,7 @@ from .models import (
     GameStatus,
     League,
     Period,
+    PeriodKind,
     Prediction,
     PriceProvenance,
     ProviderHealth,
@@ -58,6 +61,7 @@ from .league_registry import SPECS, league_spec, parse_league, price_evidence_po
 from .leagues import native_periods
 from .providers import (
     aba_liga,
+    betexplorer_results,
     acb,
     bcl,
     bal,
@@ -109,6 +113,24 @@ PAID_BOOK_PROVIDERS = frozenset({"theoddsapi", "predixsport"})
 # narrower allow-lists in the adapter; a new scoreboard lane must not inherit
 # either one by association.
 ESPN_LEAGUES = {spec.league for spec in SPECS if spec.schedule_source == "espn"}
+#: Lanes whose settlement record is the aggregator's own match page: the total
+#: and, beside it, the split it was made of. Promoted 2026-11-25 on served
+#: bytes -- ``93:107`` then ``(15:25, 30:28, 17:27, 31:27)`` -- after the route
+#: was wrongly recorded as carrying no periods because the probes counted
+#: ``<td>`` cells and ``Q1..Q4`` labels and the page uses neither.
+AGGREGATOR_MATCH_LEAGUES = frozenset(
+    {
+        League.GREECE_BASKET_LEAGUE,
+        League.CHINA_WCBA_W,
+        League.AUSTRALIA_WNBL_W,
+    }
+)
+#: The host answered 429 to three match pages a few seconds apart on
+#: 2026-11-24, so pages are spaced here rather than by whoever remembers to
+#: sleep. A pending game settles once, which bounds the cost of a run.
+MATCH_PAGE_PACING_SECONDS = 10.0
+#: A cap, so a bad store cannot turn one tick into a crawl.
+MATCH_PAGE_CAP = 8
 ESPN_DEEP_HISTORY_LEAGUES = frozenset(espn.HISTORY_FLOORS)
 ESPN_BPI_LEAGUES = espn.BPI_LEAGUES
 #: Provider name carried by lane-local empirical predictions derived from
@@ -250,6 +272,8 @@ class Pipeline:
         )
         self._injected_fetch = fetch is not None
         self._nkl_reader: Optional[nkl.PacedReader] = None
+        #: Paced per match page; tests replace this instead of sleeping.
+        self._pause: Callable[[float], None] = time.sleep
         self._nkl_cache: Dict[str, List[nkl.ListingRow]] = {}
         self.fetch = fetch or HttpClient().get_json
         cache_dir = None
@@ -4135,6 +4159,89 @@ class Pipeline:
         )
         return []
 
+    def _betexplorer_match_settle(self, pending: Dict[str, "Game"]) -> List["Game"]:
+        """Settle stored fixtures from the aggregator's own match page.
+
+        Store-driven, like the NKL reader beside it: the fixtures lane discovers
+        *scheduled* rows with no score, so there is no result feed to ask for a
+        day. What exists is the page the fixture row already links to, keyed by
+        the same 8-character code, carrying the total and the split beside it.
+
+        A page that states no split, two splits, fewer than four periods, or a
+        split that does not add up to its own total produces a gap -- never a
+        result. That check is the reason to read the page at all: the index
+        beside it offers a final with nothing to verify it against.
+        """
+
+        read = self._betexplorer_text_fetch() or HttpClient().get_text
+        league = self.config.league_enum
+        settled: List[Game] = []
+        for index, game in enumerate(list(pending.values())[:MATCH_PAGE_CAP]):
+            if index:
+                self._pause(MATCH_PAGE_PACING_SECONDS)
+            code = str(game.provider_ids.get("betexplorer") or "")
+            slug = str(game.provider_ids.get("betexplorer_slug") or "")
+            if not code or not slug:
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="aggregator_match_identity",
+                        reason=CoverageState.MISSING,
+                        provider=betexplorer_results.PROVIDER,
+                        detail="the stored fixture carries no match code to fetch a page for",
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            try:
+                url = betexplorer_results.match_page_url(league.value, slug, code)
+                periods = betexplorer_results.parse_match_page(read(url))
+            except Exception as exc:  # one unreadable page never blocks the others
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="aggregator_match_result",
+                        reason=CoverageState.PROVIDER_ERROR,
+                        provider=betexplorer_results.PROVIDER,
+                        detail=str(exc)[:180],
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            if periods is None:
+                self.gaps.append(
+                    CoverageGap(
+                        game_id=game.game_id,
+                        required_field="aggregator_match_result",
+                        reason=CoverageState.MISSING,
+                        provider=betexplorer_results.PROVIDER,
+                        detail=(
+                            "no split on the match page that adds up to its own total; "
+                            "a final alone is not a settlement record"
+                        ),
+                        observed_utc=self._now_iso(),
+                    )
+                )
+                continue
+            settled.append(
+                replace(
+                    game,
+                    status=GameStatus.FINAL,
+                    actual=ActualResult(
+                        period_kind=PeriodKind.QUARTERS,
+                        home_quarters=list(periods.home_quarters),
+                        away_quarters=list(periods.away_quarters),
+                        home_overtime=periods.home_overtime,
+                        away_overtime=periods.away_overtime,
+                        home_final=float(periods.home_final),
+                        away_final=float(periods.away_final),
+                        overtime_periods=len(periods.overtime),
+                        source=betexplorer_results.SOURCE,
+                    ),
+                )
+            )
+        return settled
+
     def _nkl_settle(self, pending: Dict[str, "Game"]) -> List["Game"]:
         """Settle stored NKL fixtures from the federation's own match pages.
 
@@ -4584,7 +4691,7 @@ class Pipeline:
             League.EUROLEAGUE_W,
             League.CBA,
             League.LITHUANIA_NKL,
-        }:
+        } | AGGREGATOR_MATCH_LEAGUES:
             spec = league_spec(league)
             self._unsupported_source_gap(
                 "pending_results_recheck",
@@ -4619,6 +4726,14 @@ class Pipeline:
                 elif league in ESPN_LEAGUES:
                     day = espn.fetch_recent_results(
                         date, self.espn_fetch, league, observed_utc=self._now_iso()
+                    )
+                elif league in AGGREGATOR_MATCH_LEAGUES:
+                    day = self._betexplorer_match_settle(
+                        {
+                            game_id: game
+                            for game_id, game in pending.items()
+                            if self._ledger_date_for(game) == date
+                        }
                     )
                 elif league is League.LITHUANIA_NKL:
                     day = self._nkl_settle(

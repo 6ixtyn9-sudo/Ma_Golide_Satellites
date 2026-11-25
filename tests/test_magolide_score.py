@@ -182,19 +182,20 @@ def test_l10_form_beats_streak_proxy_when_present():
 def test_shadow_lane_leagues_is_exactly_the_fixtures_only_class():
     leagues = shadow_lane_leagues()
     values = {spec.league.value for spec in leagues}
-    # Leumit was retired on 2026-11-24 (no permitted results route), and a
-    # retired lane never qualifies whatever its sources say -- which is the
-    # behaviour this set is asserting. NKL left this set the same day for the
-    # opposite reason: it now settles from the federation's own pages, so it is
-    # no longer a lane that can never be graded.
+    # Leumit was retired on 2026-11-24 and a retired lane never qualifies,
+    # whatever its sources say -- which is what this set asserts. NKL is in it
+    # now: the admission rule stopped keying on "cannot be graded" (three lanes
+    # gained a settlement route on 2026-11-25) and keyed on "no calibrated model
+    # of its own", which is the reason this module exists.
     assert values == {
         "GREECE_BASKET_LEAGUE",
         "CHINA_WCBA_W",
         "AUSTRALIA_WNBL_W",
+        "LITHUANIA_NKL",
     }
     for spec in leagues:
-        assert spec.results_source == "source_unavailable"
         assert spec.schedule_source == "betexplorer_fixtures"
+        assert spec.status.value == "active"
 
 
 def test_shadow_rows_refuse_lanes_with_results_machinery():
