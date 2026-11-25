@@ -531,9 +531,15 @@ _SPECS: Tuple[LeagueSpec, ...] = (
         "Europe/Athens",
         "Europe/Paris",
         "betexplorer_fixtures",
-        "source_unavailable",
+        "betexplorer_results",
         "betexplorer_fixtures",
         source_detail=(
+            "Results route promoted 2026-11-25: the aggregator's own match page "
+            "states the split beside the total -- 93:107 then (15:25, 30:28, 17:27, "
+            "31:27), which adds up -- so a stored fixture settles from the code it "
+            "was stored under, with no name join. The earlier \"no results route\" "
+            "finding below measured the probe's counters, not the page: they look "
+            "for <td> cells and Q1..Q4 labels and the page uses neither. "
             "Fixtures table '/basketball/greece/basket-league/fixtures/' (h1 'Basket "
             "League 2026/2027 Fixtures', served 2026-11-24: 126 rows, 7 priced, 2 of the "
             "8 odds-bearing rows carried no kickoff cell). Deepest calendar window in the "
@@ -681,9 +687,15 @@ _SPECS: Tuple[LeagueSpec, ...] = (
         "Asia/Shanghai",
         "Europe/Paris",
         "betexplorer_fixtures",
-        "source_unavailable",
+        "betexplorer_results",
         "betexplorer_fixtures",
         source_detail=(
+            "Results route promoted 2026-11-25: the aggregator's own match page "
+            "states the split beside the total -- 93:107 then (15:25, 30:28, 17:27, "
+            "31:27), which adds up -- so a stored fixture settles from the code it "
+            "was stored under, with no name join. The earlier \"no results route\" "
+            "finding below measured the probe's counters, not the page: they look "
+            "for <td> cells and Q1..Q4 labels and the page uses neither. "
             "Fixtures table '/basketball/china/wcba-women/fixtures/' (h1 'WCBA Women "
             "2026/2027 Fixtures', served 2026-11-24: 255 rows, 3 priced, 2 rows with no "
             "kickoff cell). Team names carry a ' W' suffix, so identity is the provider "
@@ -757,9 +769,15 @@ _SPECS: Tuple[LeagueSpec, ...] = (
         "Australia/Sydney",
         "Europe/Paris",
         "betexplorer_fixtures",
-        "source_unavailable",
+        "betexplorer_results",
         "betexplorer_fixtures",
         source_detail=(
+            "Results route promoted 2026-11-25: the aggregator's own match page "
+            "states the split beside the total -- 93:107 then (15:25, 30:28, 17:27, "
+            "31:27), which adds up -- so a stored fixture settles from the code it "
+            "was stored under, with no name join. The earlier \"no results route\" "
+            "finding below measured the probe's counters, not the page: they look "
+            "for <td> cells and Q1..Q4 labels and the page uses neither. "
             "Fixtures table '/basketball/australia/wnbl-women/fixtures/' (h1 'WNBL Women "
             "2026/2027 Fixtures', served 2026-11-24: 67 rows, 3 priced all still future, "
             "0 rows with no kickoff cell -- the cleanest page in the sweep). Clock is "

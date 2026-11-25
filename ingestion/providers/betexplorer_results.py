@@ -322,6 +322,34 @@ class MatchPeriods:
         return (home, away) == (self.home_final, self.away_final)
 
 
+_CODE_RE = re.compile(r"[A-Za-z0-9]{8}")
+_SLUG_RE = re.compile(r"[a-z0-9-]+")
+
+
+def match_page_url(league: str, slug: str, code: str) -> str:
+    """The game's own page, rebuilt from the league's verified fixtures path.
+
+    The fixtures row already carries both halves of this URL: the slug it links
+    to and the 8-character code in the same href.  Rebuilding it here means
+    settlement needs no name join and no second index read -- the code the
+    fixture was stored under is the code whose page is fetched.
+    """
+
+    from .betexplorer import FIXTURES_URLS
+
+    base = FIXTURES_URLS.get(str(league).upper())
+    if base is None:
+        raise ValueError(f"{league!r} has no verified fixtures path")
+    if not base.endswith("fixtures/"):
+        raise ValueError(f"unexpected fixtures path for {league}: {base}")
+    if not _SLUG_RE.fullmatch(slug or "") or not _CODE_RE.fullmatch(code or ""):
+        raise ValueError(f"refusing a malformed match page identity: {slug!r}/{code!r}")
+    url = base[: -len("fixtures/")] + f"{slug}/{code}/"
+    if "?" in url:  # pragma: no cover - defensive: query shapes are disallowed
+        raise ValueError(f"refusing a query-shaped URL: {url}")
+    return url
+
+
 def parse_match_page(html: str) -> Optional[MatchPeriods]:
     """The final and split on one match page, or ``None``.
 
@@ -364,6 +392,7 @@ def parse_match_page(html: str) -> Optional[MatchPeriods]:
 __all__ = [
     "MIN_FINAL_POINTS",
     "MatchPeriods",
+    "match_page_url",
     "parse_match_page",
     "PROVIDER",
     "ResultPage",

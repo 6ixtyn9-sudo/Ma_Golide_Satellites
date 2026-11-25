@@ -1108,8 +1108,9 @@ What this changes, and what it does not:
 * `betexplorer_results.parse_match_page` now reads that shape and refuses anything ambiguous: no
   split, two splits, fewer than four periods, or a split that does not add up to the total beside it.
   A missed settlement is recoverable; an invented one is not;
-* the lanes stay labelled as they are for now. A label that moves before the pipeline calls the
-  reader is a status string with no behaviour behind it, which is the mistake this document was
-  written to avoid. The promotion is one change: results stage, registry label and the research
-  block's admission rule together, because flipping the label alone would make
-  `magolide_score.shadow_lane_leagues()` refuse the lanes it exists to score.
+* the lanes were promoted on the same day as one change, not a label: the pipeline's pending-final
+  re-check settles them from the match page (`_betexplorer_match_settle`), the registry's
+  `results_source` names that reader, and `magolide_score.shadow_lane_leagues()` stopped selecting
+  lanes by "cannot be graded" so that the research block keeps scoring them. A label that moves
+  before the pipeline calls the reader is a status string with no behaviour behind it, which is the
+  mistake this document was written to avoid — so the three moved together.

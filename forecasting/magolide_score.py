@@ -325,18 +325,22 @@ def _nonzero(value: float) -> bool:
 def shadow_lane_leagues() -> List[LeagueSpec]:
     """The lanes this module may run on, straight from the registry contract.
 
-    A lane qualifies only when its schedule source is validated
-    (``betexplorer_fixtures``) while its results source is explicitly
-    unavailable — exactly the "fixtures exist, predictions do not" class.
+    A lane qualifies when its schedule rides the aggregate-price fixtures table
+    and it is active — the "fixtures exist, no model of their own" class.
     Retired and off-season lanes never qualify, whatever their sources say.
+
+    The results source is deliberately *not* part of this rule any more. Three of
+    these lanes gained a settlement route on 2026-11-25 (the aggregator's match
+    page states the split beside the total), and a rule keyed on "no results
+    route" would have stopped scoring exactly the lanes that can now be graded.
+    What makes this module their scorer is that no calibrated model runs on them,
+    and that has not changed.
     """
 
     return [
         spec
         for spec in SPECS
-        if spec.schedule_source == "betexplorer_fixtures"
-        and spec.results_source == "source_unavailable"
-        and spec.status.value == "active"
+        if spec.schedule_source == "betexplorer_fixtures" and spec.status.value == "active"
     ]
 
 
