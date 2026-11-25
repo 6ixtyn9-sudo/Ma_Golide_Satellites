@@ -32,7 +32,7 @@
     },
     "2026-11-25": {
       "evidence_rows": 38,
-      "frozen_fixtures": 0,
+      "frozen_fixtures": 1,
       "logical_picks": 10
     }
   },
@@ -4257,9 +4257,557 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-24"
       }
+    },
+    "2026-11-25": {
+      "E2026-137": {
+        "decision_cutoff_utc": "2026-11-25T14:00:00Z",
+        "frozen_at": "2026-11-25T14:19:27Z",
+        "game_id": "E2026-137",
+        "league": "EUROLEAGUE",
+        "rows": [
+          {
+            "away": "Partizan Mozzart Bet Belgrade",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.642969,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 34,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "806fa81ab40e49847a525998460b6b41833725be0f7025eab30d01f8daca2ca8",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "77ac1f7010c73663a5bb",
+            "game_id": "E2026-137",
+            "grade_status": "pending",
+            "home": "Dubai Basketball",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "77ac1f7010c73663a5bb",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.64,
+            "role": null,
+            "scheduled_utc": "2026-11-25T16:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Partizan Mozzart Bet Belgrade",
+            "book": {
+              "book": "bet365.us",
+              "frozen": false,
+              "game_id": "E2026-137",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-25T13:48:08Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.23,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.548226,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 32,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "512b3bedcc324857f81a3cd7ab4023e9d8537654ff566c3514587957fbedc12d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "02394a4c12e8f94bac58",
+            "game_id": "E2026-137",
+            "grade_status": "pending",
+            "home": "Dubai Basketball",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "02394a4c12e8f94bac58",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-25T16:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Partizan Mozzart Bet Belgrade",
+            "book": {
+              "book": "average",
+              "frozen": false,
+              "game_id": "E2026-137",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-25T12:48:24Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "aggregate_consensus",
+              "provider": "betexplorer",
+              "selected_decimal_price": 1.28,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.484444,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 6,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "eea5f5e6bde4f1b369e8b4901007905aac0af13677ca9c6e0dd80610a57c12e6",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor",
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5adbde0f8403bc309534",
+            "game_id": "E2026-137",
+            "grade_status": "pending",
+            "home": "Dubai Basketball",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "5adbde0f8403bc309534",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-25T13:47:56Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "AGGREGATE_CONSENSUS_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-25T16:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Partizan Mozzart Bet Belgrade",
+            "book": {
+              "book": "Stake.com",
+              "frozen": false,
+              "game_id": "E2026-137",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-25T13:48:08Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.29,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.484444,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 6,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "dd697d4a21c8db924217a021a47ba2e4f08e8fa5608be601c6280ffbad4fc0a0",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor",
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "623aee9efcf2e65c913c",
+            "game_id": "E2026-137",
+            "grade_status": "pending",
+            "home": "Dubai Basketball",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "623aee9efcf2e65c913c",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-25T13:47:56Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-25T16:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Partizan Mozzart Bet Belgrade",
+            "book": {
+              "book": "BetMGM.us",
+              "frozen": false,
+              "game_id": "E2026-137",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-25T13:48:08Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.3,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.484444,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 6,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "5d3d3d6cf54296e9165bca79b056a696013b44baf3e3d8b0f1072c5109b4f770",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor",
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7fd16aaaccc370d51f70",
+            "game_id": "E2026-137",
+            "grade_status": "pending",
+            "home": "Dubai Basketball",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "7fd16aaaccc370d51f70",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-25T13:47:56Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-25T16:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Partizan Mozzart Bet Belgrade",
+            "book": {
+              "book": "Stake.com",
+              "frozen": false,
+              "game_id": "E2026-137",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-25T13:48:08Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.29,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.548226,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 32,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "f2532a036a341eb095dbd92fd0bbcd5019e16d581258b7535014e500d3dae93a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "87abc449c3388be8e0ed",
+            "game_id": "E2026-137",
+            "grade_status": "pending",
+            "home": "Dubai Basketball",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "87abc449c3388be8e0ed",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-25T16:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Partizan Mozzart Bet Belgrade",
+            "book": {
+              "book": "bet365.us",
+              "frozen": false,
+              "game_id": "E2026-137",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-25T13:48:08Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.23,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.484444,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 6,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "ca4d6bd67ae5b2cb6dfa6bec7419e83b2da1ee4f2240b16543bb89efc95d4dd8",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor",
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "96b10ce5673438d21bf3",
+            "game_id": "E2026-137",
+            "grade_status": "pending",
+            "home": "Dubai Basketball",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "96b10ce5673438d21bf3",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-25T13:47:56Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-25T16:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Partizan Mozzart Bet Belgrade",
+            "book": {
+              "book": "BetMGM.us",
+              "frozen": false,
+              "game_id": "E2026-137",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-25T13:48:08Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "betexplorer_direct",
+              "selected_decimal_price": 1.3,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.548226,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 32,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "dc34d5692c42afabcd1e85cb73a4ca1dd8f8982e829850ef4fd7fdb1e5249ea4",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "c641c52d5ddbb1444400",
+            "game_id": "E2026-137",
+            "grade_status": "pending",
+            "home": "Dubai Basketball",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "c641c52d5ddbb1444400",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-25T16:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Partizan Mozzart Bet Belgrade",
+            "book": {
+              "book": "average",
+              "frozen": false,
+              "game_id": "E2026-137",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-25T12:48:24Z",
+              "operational_validation": "probation",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "aggregate_consensus",
+              "provider": "betexplorer",
+              "selected_decimal_price": 1.28,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.548226,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 32,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "7acee51f5566c41213c30f0992d82b04442f9a56b36b9e87a4a0a7ecedc7b1b3",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e3276fc201083fa0abe7",
+            "game_id": "E2026-137",
+            "grade_status": "pending",
+            "home": "Dubai Basketball",
+            "league": "EUROLEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "e3276fc201083fa0abe7",
+            "price_evidence": "AGGREGATE_CONSENSUS_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-25T16:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-25T16:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-25"
+      }
     }
   },
   "league": "EUROLEAGUE",
-  "pending_frozen_games": [],
+  "pending_frozen_games": [
+    [
+      "E2026-137",
+      "2026-11-25T16:00:00Z"
+    ]
+  ],
   "schema_version": "magolide.pick_lifecycle_state"
 }

@@ -1,6 +1,6 @@
 Ma Golide Picks — NCAA_W 2026-11-25
 ========================================================================
-Generated at: 2026-11-25 15:13 SAST
+Generated at: 2026-11-25 16:19 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -9,7 +9,25 @@ Started and settled games are retained separately as archive status.
 
 ELIGIBLE CLEAN PICKS
 ========================================================================
-  (none)
+  [provider:espn/team_history_empirical] Oregon State Beavers vs Vanderbilt Commodores · KO 2026-11-26 01:30 SAST
+      MONEYLINE full_game -> AWAY · p=93.3% (raw 97.8%) @1.022 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=298 · reasons=none · prediction=espn
+  [team_history_empirical/team_history_empirical] Michigan Wolverines vs Toledo Rockets · KO 2026-11-25 20:30 SAST
+      MONEYLINE full_game -> HOME · p=82.3% (raw 88.0%) @1.002 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=473 · reasons=none · prediction=history
+      collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
+  [team_history_empirical/team_history_empirical] Iowa Hawkeyes vs Navy Midshipmen · KO 2026-11-25 18:00 SAST
+      TOTAL full_game 147.5 -> UNDER · p=57.7% (raw 59.0%) @1.909 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T14:19:32Z
+      calibration=calibrated n=31 · reasons=none · prediction=history
+      PAPER SINGLE · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=56 · recency ROI +6.8% / adjusted +5.9%
+  [team_history_empirical/team_history_empirical] Texas Longhorns vs SE Louisiana Lady Lions · KO 2026-11-26 02:00 SAST
+      TOTAL full_game 142.5 -> UNDER · p=54.7% (raw 56.0%) @1.909 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=31 · reasons=none · prediction=history
+      PAPER SINGLE · total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=56 · recency ROI +6.8% / adjusted +5.9%
 
 CAUTION PICKS
 ========================================================================
@@ -25,17 +43,12 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE full_game -> HOME · p=95.3% (raw 99.7%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=298 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-25T12:49:17Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-25T13:48:48Z
   [team_history_empirical/team_history_empirical] Texas Longhorns vs SE Louisiana Lady Lions · KO 2026-11-26 02:00 SAST
       MONEYLINE full_game -> HOME · p=94.3% (raw 100.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=473 · reasons=no_exact_bookmaker_market · prediction=history
       collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:espn, team_history_empirical
-  [provider:espn/team_history_empirical] Oregon State Beavers vs Vanderbilt Commodores · KO 2026-11-26 01:30 SAST
-      MONEYLINE full_game -> AWAY · p=93.3% (raw 97.8%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=298 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-25T12:49:18Z
   [team_history_empirical/team_history_empirical] Texas Longhorns vs SE Louisiana Lady Lions · KO 2026-11-26 02:00 SAST
       MONEYLINE H1 -> HOME · p=91.5% (raw 99.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -50,16 +63,11 @@ WATCHLIST — NO MATCHED ODDS
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T13:13:21Z
       calibration=calibrated n=473 · reasons=no_exact_bookmaker_market · prediction=history
       collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:espn, team_history_empirical
-  [team_history_empirical/team_history_empirical] Michigan Wolverines vs Toledo Rockets · KO 2026-11-25 20:30 SAST
-      MONEYLINE full_game -> HOME · p=82.3% (raw 88.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=473 · reasons=no_exact_bookmaker_market · prediction=history
-      collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:espn, team_history_empirical
   [provider:espn/team_history_empirical] Saint Peter's Peacocks vs NJIT Highlanders · KO 2026-11-25 19:00 SAST
       MONEYLINE full_game -> AWAY · p=81.9% (raw 86.3%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=298 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-25T12:49:17Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-25T13:48:47Z
   [team_history_empirical/team_history_empirical] Rice Owls vs UT Rio Grande Valley Vaqueros · KO 2026-11-25 20:00 SAST
       MONEYLINE full_game -> HOME · p=81.3% (raw 87.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -69,7 +77,7 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE full_game -> AWAY · p=80.8% (raw 85.2%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=298 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-25T12:49:17Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-25T13:48:48Z
   [team_history_empirical/team_history_empirical] Alabama Crimson Tide vs Samford Bulldogs · KO 2026-11-26 02:00 SAST
       MONEYLINE full_game -> HOME · p=80.3% (raw 86.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -93,7 +101,7 @@ WATCHLIST — NO MATCHED ODDS
       thin team evidence · effective games home=6.3/8.0 away=17.8/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
   [team_history_empirical/team_history_empirical] Iowa Hawkeyes vs Navy Midshipmen · KO 2026-11-25 18:00 SAST
       MONEYLINE full_game -> HOME · p=76.3% (raw 82.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T14:19:32Z
       calibration=calibrated n=473 · reasons=no_exact_bookmaker_market · prediction=history
       collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:espn, team_history_empirical
   [team_history_empirical/team_history_empirical] UNLV Lady Rebels vs Loyola Marymount Lions · KO 2026-11-25 22:00 SAST
@@ -114,12 +122,12 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE full_game -> AWAY · p=72.9% (raw 77.3%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=298 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-25T12:49:17Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-25T13:48:48Z
   [provider:espn/team_history_empirical] Georgia State Panthers vs Chattanooga Mocs · KO 2026-11-25 19:00 SAST
       MONEYLINE full_game -> AWAY · p=72.8% (raw 77.2%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=298 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-25T12:49:17Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-25T13:48:47Z
   [team_history_empirical/team_history_empirical] Alabama Crimson Tide vs Samford Bulldogs · KO 2026-11-26 02:00 SAST
       MONEYLINE H1 -> HOME · p=72.5% (raw 80.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -153,7 +161,7 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE full_game -> AWAY · p=69.2% (raw 73.6%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=298 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-25T12:49:18Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-25T13:48:49Z
   [team_history_empirical/team_history_empirical] Texas State Bobcats vs Pacific Tigers · KO 2026-11-26 02:00 SAST
       MONEYLINE full_game -> HOME · p=67.3% (raw 73.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -182,12 +190,12 @@ WATCHLIST — NO MATCHED ODDS
       thin team evidence · effective games home=6.3/8.0 away=17.8/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
   [team_history_empirical/team_history_empirical] Texas Southern Tigers vs Vermont Catamounts · KO 2026-11-25 18:00 SAST
       MONEYLINE full_game -> AWAY · p=65.3% (raw 71.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T14:19:32Z
       calibration=calibrated n=473 · reasons=no_exact_bookmaker_market · prediction=history
       collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:espn, team_history_empirical
   [team_history_empirical/team_history_empirical] Texas Southern Tigers vs Vermont Catamounts · KO 2026-11-25 18:00 SAST
       MONEYLINE H1 -> AWAY · p=63.5% (raw 71.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T14:19:32Z
       calibration=calibrated n=478 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical/team_history_empirical] Texas State Bobcats vs Pacific Tigers · KO 2026-11-26 02:00 SAST
       MONEYLINE H1 -> HOME · p=63.5% (raw 71.0%) @n/a no matched book
@@ -210,7 +218,7 @@ WATCHLIST — NO MATCHED ODDS
       collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:espn, team_history_empirical
   [team_history_empirical/team_history_empirical] Iowa Hawkeyes vs Navy Midshipmen · KO 2026-11-25 18:00 SAST
       MONEYLINE H1 -> HOME · p=62.5% (raw 70.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T14:19:32Z
       calibration=calibrated n=478 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical/team_history_empirical] Kennesaw State Owls vs Florida A&M Rattlers · KO 2026-11-25 21:00 SAST
       MONEYLINE H1 -> HOME · p=62.5% (raw 70.0%) @n/a no matched book
@@ -260,7 +268,7 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE full_game -> AWAY · p=60.9% (raw 65.4%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=298 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-25T12:49:18Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-25T13:48:49Z
   [team_history_empirical/team_history_empirical] Old Dominion Monarchs vs Saint Mary's Gaels · KO 2026-11-25 20:00 SAST
       MONEYLINE H1 -> HOME · p=60.5% (raw 68.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -273,7 +281,7 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE full_game -> AWAY · p=59.1% (raw 63.5%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=298 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-25T12:49:17Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-25T13:48:48Z
   [team_history_empirical/team_history_empirical] Memphis Tigers vs SMU Mustangs · KO 2026-11-25 23:00 SAST
       MONEYLINE H1 -> HOME · p=58.5% (raw 66.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -284,7 +292,7 @@ WATCHLIST — NO MATCHED ODDS
       calibration=calibrated n=478 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical/team_history_empirical] UNC Greensboro Spartans vs Montreat Cavaliers · KO 2026-11-25 18:00 SAST
       MONEYLINE H1 -> HOME · p=58.5% (raw 66.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T14:19:32Z
       calibration=calibrated n=478 · reasons=no_exact_bookmaker_market · prediction=history
       evidence_advisories=insufficient_team_specific_history
       thin team evidence · effective games home=12.5/8.0 away=1.0/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
@@ -325,7 +333,7 @@ WATCHLIST — NO MATCHED ODDS
       collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:espn, team_history_empirical
   [team_history_empirical/team_history_empirical] UNC Greensboro Spartans vs Montreat Cavaliers · KO 2026-11-25 18:00 SAST
       MONEYLINE full_game -> HOME · p=56.3% (raw 62.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T14:19:32Z
       calibration=calibrated n=473 · reasons=no_exact_bookmaker_market · prediction=history
       evidence_advisories=insufficient_team_specific_history
       thin team evidence · effective games home=12.5/8.0 away=1.0/8.0 · recency-weighted and shrunk to the league mean · still a paper pick, not a sufficient-sample claim
@@ -334,7 +342,7 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE full_game -> AWAY · p=55.8% (raw 60.3%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=298 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-25T12:49:17Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-25T13:48:47Z
   [team_history_empirical/team_history_empirical] Harvard Crimson vs Illinois State Redbirds · KO 2026-11-25 19:00 SAST
       MONEYLINE full_game -> HOME · p=54.3% (raw 60.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -349,7 +357,7 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE full_game -> AWAY · p=52.8% (raw 57.2%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=298 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-25T12:49:18Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-25T13:48:49Z
   [team_history_empirical/team_history_empirical] Montana State Bobcats vs Middle Tennessee Blue Raiders · KO 2026-11-25 23:00 SAST
       MONEYLINE H1 -> HOME · p=52.5% (raw 60.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -375,7 +383,7 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE full_game -> AWAY · p=51.5% (raw 56.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=298 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-25T12:49:17Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-25T13:48:47Z
   [team_history_empirical/team_history_empirical] Presbyterian Blue Hose vs Furman Paladins · KO 2026-11-25 20:00 SAST
       MONEYLINE full_game -> AWAY · p=51.3% (raw 57.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -392,7 +400,7 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE full_game -> AWAY · p=51.1% (raw 55.5%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=298 · reasons=no_exact_bookmaker_market · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-25T12:49:17Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-25T13:48:47Z
   [team_history_empirical/team_history_empirical] Bradley Braves vs UTEP Miners · KO 2026-11-25 23:00 SAST
       MONEYLINE H1 -> AWAY · p=50.5% (raw 58.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -492,7 +500,7 @@ WATCHLIST — NO MATCHED ODDS
       MONEYLINE full_game -> AWAY · p=47.1% (raw 51.5%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=298 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=espn
-      archived_revisions=7 · latest_evidence_utc=2026-11-25T12:49:17Z
+      archived_revisions=8 · latest_evidence_utc=2026-11-25T13:48:48Z
   [team_history_empirical/team_history_empirical] Cleveland State Vikings vs Lindenwood Lions · KO 2026-11-25 22:00 SAST
       MONEYLINE H1 -> HOME · p=46.5% (raw 54.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -526,10 +534,6 @@ WATCHLIST — NO MATCHED ODDS
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=473 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
       collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:espn, team_history_empirical
-  [team_history_empirical/team_history_empirical] Oregon State Beavers vs Vanderbilt Commodores · KO 2026-11-26 01:30 SAST
-      MONEYLINE full_game -> HOME · p=45.3% (raw 51.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=473 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Stetson Hatters vs Robert Morris Colonials · KO 2026-11-25 20:15 SAST
       MONEYLINE full_game -> HOME · p=45.3% (raw 51.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -575,7 +579,26 @@ WATCHLIST — INSUFFICIENT CONTEXT
 
 SKIPPED — INELIGIBLE
 ========================================================================
-  (none)
+  [team_history_empirical/team_history_empirical] Iowa Hawkeyes vs Navy Midshipmen · KO 2026-11-25 18:00 SAST
+      SPREAD full_game +30.5 -> AWAY · p=47.9% (raw 61.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T14:19:32Z
+      calibration=calibrated n=37 · reasons=below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Texas Longhorns vs SE Louisiana Lady Lions · KO 2026-11-26 02:00 SAST
+      SPREAD full_game +58.5 -> AWAY · p=47.9% (raw 61.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=37 · reasons=below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Michigan Wolverines vs Toledo Rockets · KO 2026-11-25 20:30 SAST
+      SPREAD full_game +30.5 -> AWAY · p=46.9% (raw 60.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=37 · reasons=below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Oregon State Beavers vs Vanderbilt Commodores · KO 2026-11-26 01:30 SAST
+      MONEYLINE full_game -> HOME · p=45.3% (raw 51.0%) @18.000 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=473 · reasons=below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Oregon State Beavers vs Vanderbilt Commodores · KO 2026-11-26 01:30 SAST
+      SPREAD full_game +21.5 -> HOME · p=41.9% (raw 55.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=37 · reasons=below_calibrated_probability_floor · prediction=history
 
 IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
@@ -585,10 +608,10 @@ SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
   (none)
 
-Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=113 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
-ROI-qualified individual paper singles: 0
+Active summary: ELIGIBLE_CLEAN=4 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=110 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=5
+ROI-qualified individual paper singles: 2
 Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=0
-Logical picks shown: 113 · superseded observations: 288 · book/model rows collapsed: 35
-Total archived pick evidence rows: 436
+Logical picks shown: 119 · superseded observations: 317 · book/model rows collapsed: 35
+Total archived pick evidence rows: 471
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.
