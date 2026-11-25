@@ -1448,6 +1448,7 @@ class Pipeline:
                     league,
                     self.config.date_yyyymmdd,
                     text_fetch=self._betexplorer_text_fetch(),
+                    now_utc=self.config.fixture_now_utc,
                 )
             except HttpError as exc:
                 # Run 45376480832 (2026-11-24T10:40Z): BetExplorer answered
