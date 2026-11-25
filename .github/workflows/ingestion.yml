@@ -218,11 +218,18 @@ jobs:
       # The gate emits only leagues with due work. One unavailable/failed
       # league never cancels any other selected league.
       fail-fast: false
-      max-parallel: 8
+      # No max-parallel cap. A cap of 8 over 13 lanes ran the matrix in two
+      # waves, so a tick cost ~2x its slowest lane even though the second wave
+      # had idle capacity to spare. The matrix itself is the cap; the lane count
+      # is bounded by the registry, and settlement-only ticks (see `mode` below)
+      # are now cheap enough to run alongside the rest.
       matrix: ${{ fromJSON(needs.gate.outputs.matrix) }}
     name: ${{ matrix.label }}
     env:
       STATE_KEY: ${{ matrix.state_key }}
+      # `full` when the lane owes forecast, freeze or ticket work; `settle_only`
+      # when it is awake only to settle, reconcile or retry a source.
+      GATE_MODE: ${{ matrix.mode }}
       LOCALDATA: localdata/${{ matrix.state_key }}
       MAGOLIDE_WAREHOUSE: localdata/${{ matrix.state_key }}/warehouse.duckdb
       # Predixsport is a prediction-only source. The Odds API key is withheld
@@ -460,6 +467,15 @@ jobs:
           if [ -z "${THE_ODDS_API_PERMIT:-}" ]; then
             ARGS+=(--skip-book-acquisition)
           fi
+          # Settlement-only tick: nothing this lane owes needs new forecast or
+          # ticket state. History replay and the bet-config tuner are the two
+          # most expensive stages and neither can change a settled result, so
+          # both are skipped. The scan still runs -- a fixture that appears late
+          # must not be missed -- and the next full tick replays history normally.
+          if [ "${GATE_MODE:-full}" = "settle_only" ]; then
+            ARGS+=(--skip-backfill --skip-tuning)
+            echo "Settlement-only tick for $LEAGUE: history replay and tuning skipped."
+          fi
 
           # Only the strictly named external dispatch may persist canonical
           # state. Manual dispatch stays a live, all-league read-only rehearsal.
@@ -497,6 +513,7 @@ jobs:
         # ticket card, or settlement evidence from the upload below.
         if: >-
           steps.capability.outputs.available == 'true' &&
+          env.GATE_MODE != 'settle_only' &&
           contains(
             fromJSON('["GREECE_BASKET_LEAGUE","CHINA_WCBA_W","AUSTRALIA_WNBL_W","LITHUANIA_NKL"]'),
             matrix.league
