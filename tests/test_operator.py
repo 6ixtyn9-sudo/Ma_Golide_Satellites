@@ -3292,3 +3292,39 @@ def test_derived_spread_lane_issues_future_ticket_with_separate_cover_roi_contra
     assert performance["wins"] == 1
     assert performance["paper_bank_units"] == pytest.approx(100.91)
     assert performance["selected_leg_brier_score"] is None
+
+def test_a_frozen_pick_whose_fixture_is_gone_says_so_instead_of_pending(tmp_path):
+    """A stale row must not pose as one whose result simply has not arrived.
+
+    EuroLeague's 2026-11-24 card was rewritten through several runs and its last
+    three fixtures stayed at ``lifecycle=FROZEN`` / ``grade=PENDING`` while the
+    lane's own state reported nothing pending. A missing fixture in the game map
+    left the row indistinguishable from a live one; it now names the condition.
+    """
+
+    rows = [forecast(1)]
+    fixture = game(1, scheduled_utc="2026-11-07T20:00:00Z")
+    localdata = tmp_path / "euroleague"
+
+    publish_operator_reports(
+        Store([fixture]),
+        League.EUROLEAGUE,
+        report(rows, [acca(rows)]),
+        localdata,
+        target_date=DATE,
+        generated_utc=FIXTURE_FREEZE_AS_OF,
+        run_id="freeze-then-lose-the-fixture",
+    )
+    second = publish_operator_reports(
+        Store([]),
+        League.EUROLEAGUE,
+        report([], []),
+        localdata,
+        target_date=DATE,
+        generated_utc="2026-11-07T23:30:00Z",
+        run_id="fixture-no-longer-in-store",
+    )
+
+    card = Path(second["picks_text"]).read_text()
+    assert "lifecycle=FROZEN_NO_FIXTURE" in card
+    assert "grade=\u23f3 PENDING" in card
