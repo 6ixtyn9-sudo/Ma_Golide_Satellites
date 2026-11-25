@@ -1664,6 +1664,12 @@ def test_pick_buckets_render_latest_logical_rows_and_audit_excludes_same_day(tmp
         "calibration_sufficient_rows": 2,
         "priced_and_calibrated_rows": 2,
         "eligible_rows": 1,
+        "eligible_rows_without_calibration_sufficiency": 0,
+        "funnel_reconciliation": {
+            "eligible_rows_exceed_calibrated_rows": False,
+            "explained_by_rows_admitted_without_calibration_sufficiency": 0,
+            "unexplained_eligible_rows": 0,
+        },
         "eligible_games": 1,
         "provisional_sample_only_rows": 1,
         "provisional_sample_only_games": 1,
@@ -1804,6 +1810,13 @@ def test_roi_qualified_pick_is_published_as_a_paper_single_without_an_acca(tmp_p
     assert ticket_state["scans"][-1]["fresh_single_tickets"] == 1
     assert result["counts"]["published_accas"] == 0
     assert result["counts"]["published_singles"] == 1
+    # These counters describe the stored receipt, not this run's funnel: on
+    # 2026-11-24 NCAA_M's receipt was frozen holding five accas built before the
+    # leg-price floor existed, and reading it beside a zero-acca funnel looked
+    # like a contradiction. The label makes the scope explicit.
+    assert result["counts"]["published_counts_scope"] == "stored_receipt_not_this_run_funnel"
+    assert result["counts"]["published_receipt_decision_id"] is not None
+    assert result["counts"]["published_receipt_frozen_at"] is not None
     assert result["counts"]["pending_positions"] == 1
     assert result["counts"]["pending_singles"] == 1
     assert result["counts"]["paper_single_picks"] == 1

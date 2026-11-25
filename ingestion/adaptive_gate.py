@@ -695,6 +695,22 @@ def evaluate_league(
                 raise GateUncertain("schedule source returned a timezone-naive tip")
             if game.status not in {"scheduled", "live", "final"}:
                 raise GateUncertain("schedule source returned an unknown game status")
+    except (ImportError, ModuleNotFoundError) as exc:
+        # Not schedule evidence. A missing dependency in the gate's own runner is
+        # an environment failure and must not be recorded as a property of the
+        # timetable -- on 2026-11-25 both Japan lanes read
+        # `schedule_uncertain: No module named 'requests'` and went dark for a
+        # reason that no schedule had anything to do with, while preflight in the
+        # same run passed 1672 tests. Fail open (the lane still runs) but label
+        # the cause so the operator sees CI rot, not a league without fixtures.
+        detail = str(exc).strip() or type(exc).__name__
+        return GateDecision(
+            config,
+            target_date,
+            True,
+            tuple(dict.fromkeys([*reasons, f"environment_error: {detail}"])),
+            schedule_count,
+        )
     except Exception as exc:  # fail open for provider/network/parser uncertainty
         detail = str(exc).strip() or type(exc).__name__
         return GateDecision(

@@ -829,6 +829,12 @@ class MarketForecastService:
                 "minimum_historical_picks_for_band": 10,
                 "require_positive_expected_value": True,
                 "require_point_in_time_price": True,
+                # The lane's own declaration, made operative: `paper_lane` below
+                # prints requires_named_book_quote / "aggregate consensus quotes
+                # are excluded", and until this flag existed nothing read it, so
+                # the strict lane priced tickets on consensus averages
+                # (2026-11-25: 5 of 11 eligible rows, 4 of 4 strict accas).
+                "require_named_book_quote": True,
             }
         else:
             # These source contracts have no validated named-book feed, so they
@@ -1059,7 +1065,15 @@ class MarketForecastService:
                         "name": "EUROLEAGUE_STRICT_NAMED_BOOK_VALUE_TICKET_LANE",
                         "role": "strict ticket-only lane; aggregate consensus quotes are excluded",
                         "requires_exact_selected_side_pre_tip_price": True,
-                        "requires_named_book_quote": True,
+                        "requires_named_book_quote": bool(
+                            paper_lane_options.get("require_named_book_quote")
+                        ),
+                        "named_book_requirement_enforced": bool(
+                            paper_lane_options.get("require_named_book_quote")
+                        ),
+                        "excluded_no_named_book_quote_candidates": int(
+                            paper_pick_filter.get("excluded_no_named_book_quote_count") or 0
+                        ),
                         "requires_positive_calibrated_expected_value": True,
                         "minimum_prior_settled_picks_in_matching_roi_band": 10,
                         "roi_band_scope": [
@@ -1102,6 +1116,9 @@ class MarketForecastService:
                 "provisional_sample_only_games": len(provisional_games),
                 "paper_candidate_games": len(paper_candidate_games),
                 "paper_quality_candidate_picks": paper_pick_filter["qualifying_pick_count"],
+                "paper_excluded_no_named_book_quote_rows": int(
+                    paper_pick_filter.get("excluded_no_named_book_quote_count") or 0
+                ),
                 "paper_quality_candidate_games": len(paper_quality_candidate_games),
                 "ranking": "probability_price_blend_after_pick_filter",
                 "paper_acca_eligible_games": acca_pool_games,

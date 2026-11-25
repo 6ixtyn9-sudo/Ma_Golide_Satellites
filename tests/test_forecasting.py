@@ -20,6 +20,7 @@ from forecasting.service import MarketForecastService
 from forecasting.types import BookEvidence, Forecast, grade_forecast, opposite_selection
 from ingestion.models import (
     ActualResult,
+    PriceProvenance,
     BookSnapshot,
     Game,
     GameStatus,
@@ -1216,6 +1217,72 @@ def _roi_forecast(
         line=line,
     )
     return row
+
+
+def test_a_named_book_lane_never_prices_from_an_aggregate_consensus_quote():
+    """The strict lane's declaration has to be code, not prose.
+
+    EUROLEAGUE_STRICT_NAMED_BOOK_VALUE_TICKET_LANE has always printed
+    `requires_named_book_quote: true` and "aggregate consensus quotes are
+    excluded", while the shared policy accepts a consensus average so that
+    aggregate-only lanes can price paper tickets. On 2026-11-25 the strict lane
+    inherited that policy: 5 of its 11 eligible rows, and all four of its strict
+    acca candidates, were priced on quotes the data itself labels "AGGREGATE
+    CONSENSUS AVERAGE — NOT A NAMED-BOOK QUOTE". Nothing said so, because no
+    reason token covers provenance.
+    """
+
+    named_book = _roi_forecast("g1", 0.60, 1.90, "win")
+    consensus = _roi_forecast("g2", 0.60, 1.90, "win")
+    consensus.book = replace(
+        consensus.book, price_provenance=PriceProvenance.AGGREGATE_CONSENSUS
+    )
+
+    _, strict_report = filter_paper_candidate_picks(
+        [named_book, consensus], as_of_utc="2026-02-08T19:00:00Z", require_named_book_quote=True
+    )
+    assert strict_report["require_named_book_quote"] is True
+    assert strict_report["excluded_no_named_book_quote_count"] == 1
+    assert strict_report["candidate_with_point_in_time_price_count"] == 1
+
+    # The shared policy is unchanged: a lane that does not declare the stricter
+    # contract still prices a consensus average, exactly as operator decision
+    # 2026-11-22 intended for aggregate-only lanes.
+    _, shared_report = filter_paper_candidate_picks(
+        [named_book, consensus], as_of_utc="2026-02-08T19:00:00Z"
+    )
+    assert shared_report["require_named_book_quote"] is False
+    assert shared_report["excluded_no_named_book_quote_count"] == 0
+    assert shared_report["candidate_with_point_in_time_price_count"] == 2
+
+
+def test_a_funnel_gap_between_eligible_and_calibrated_rows_is_explained():
+    """`eligible_rows` may exceed `priced_and_calibrated_rows`, and must say why.
+
+    2026-11-25 EuroLeague published `eligible_rows: 11` over
+    `priced_and_calibrated_rows: 10` in one object. That is not a counting bug in
+    either number: eligibility also admits rows whose calibration did not reach
+    `sufficient_for_accas` (provisional admission, or a floor that passed on a
+    thin sample). The funnel now counts that population, so the two numbers
+    reconcile instead of contradicting.
+    """
+
+    row = _roi_forecast("g1", 0.60, 1.90, "win").to_dict()
+    row["book"]["selected_decimal_price"] = 1.90
+    row["calibration"] = {"sufficient_for_accas": False}
+    row["eligibility"] = {"acca_eligible": True, "reasons": []}
+
+    from forecasting.operator import _ticket_candidate_funnel
+
+    funnel = _ticket_candidate_funnel({"forecasts": [row]})
+    assert funnel["eligible_rows"] == 1
+    assert funnel["priced_and_calibrated_rows"] == 0
+    assert funnel["eligible_rows_without_calibration_sufficiency"] == 1
+    assert funnel["funnel_reconciliation"] == {
+        "eligible_rows_exceed_calibrated_rows": True,
+        "explained_by_rows_admitted_without_calibration_sufficiency": 1,
+        "unexplained_eligible_rows": 0,
+    }
 
 
 def _paper_leg_key(leg):
