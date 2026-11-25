@@ -1129,20 +1129,22 @@ def _kbl_schedule(config: LeagueGateConfig, target_date: str) -> list[ScheduleGa
 
     The host answers a window inside one calendar year in a single request, so
     the half-hour gate reads exactly the KST target day plus the UTC day either
-    side of it - never a season. Rows whose tip falls outside the target UTC
+    side of it -- never a season. Rows whose tip falls outside the target UTC
     date are dropped, and an unreadable body fails open instead of asserting an
     empty slate.
+
+    ``season`` is deliberately absent.  It takes a *seasonCode* (49 is
+    2026-2027), not an end year; the 2026-11-23 audit that
+    :mod:`ingestion.providers.kbl` records established that any year answers
+    ``[]``.  This gate sent one anyway, so every KBL day read as an empty slate
+    and the lane acquired no games in 732 runs.
     """
 
     day = datetime.strptime(target_date.replace("-", ""), "%Y%m%d")
     local = day.replace(tzinfo=timezone.utc) + timedelta(hours=9)
     start = (local - timedelta(days=1)).strftime("%Y%m%d")
     end = (local + timedelta(days=1)).strftime("%Y%m%d")
-    season = local.year + 1 if local.month >= 8 else local.year
-    url = (
-        f"https://api.kbl.or.kr/match/list?season={season}"
-        f"&fromDate={start}&toDate={end}"
-    )
+    url = f"https://api.kbl.or.kr/match/list?fromDate={start}&toDate={end}"
     body = _read_json_response(url, headers={"Channel": "WEB", "TeamCode": "XX"})
     rows = body if isinstance(body, list) else None
     if rows is None and isinstance(body, dict):

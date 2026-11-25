@@ -121,11 +121,13 @@ def test_probe_records_url_bytes_digest_and_row_keys():
 
 
 def test_gate_reads_the_same_date_window_and_never_a_season(monkeypatch):
-    monkeypatch.setattr(
-        adaptive_gate,
-        "_read_json_response",
-        lambda url, headers=None: _load("match_list_shape.json")["data"],
-    )
+    seen: list[str] = []
+
+    def read(url, headers=None):
+        seen.append(url)
+        return _load("match_list_shape.json")["data"]
+
+    monkeypatch.setattr(adaptive_gate, "_read_json_response", read)
     config = adaptive_gate.LeagueGateConfig(
         label="South Korea KBL",
         league="SOUTH_KOREA_KBL",
@@ -140,6 +142,13 @@ def test_gate_reads_the_same_date_window_and_never_a_season(monkeypatch):
     assert len(games) == 3
     assert games[0].scheduled_utc == datetime(2026, 11, 23, 10, 0, tzinfo=timezone.utc)
     assert games[0].game_id == "KBL-S47G01N49"
+    # Assert the URL, not just the result: the probe sent ``season=2027`` (an
+    # end year where the host wants a seasonCode), which the audited adapter
+    # records as answering ``[]``, while a monkeypatched transport made this
+    # test pass anyway.
+    assert len(seen) == 1
+    assert "/match/list?fromDate=20261122&toDate=20261124" in seen[0]
+    assert "season=" not in seen[0]
 
 
 def test_gate_fails_open_when_the_body_has_no_row_list(monkeypatch):
