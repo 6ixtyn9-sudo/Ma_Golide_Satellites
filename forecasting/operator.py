@@ -1423,7 +1423,16 @@ def _pick_lifecycle_rows(
             game = games.get(game_id)
             if row["grade_status"] in {"win", "loss", "push", "void"}:
                 lifecycle = "SETTLED"
-            elif game is not None and game.status is GameStatus.FINAL:
+            elif game is None:
+                # The fixture this row was frozen against is not in this run's
+                # game map, so nothing can grade it -- and silently labelling
+                # that "FROZEN" made a stale row indistinguishable from one
+                # whose result simply has not arrived yet. EuroLeague's
+                # 2026-11-24 card sat at PENDING through several rewrites on
+                # exactly this path.
+                lifecycle = "FROZEN_NO_FIXTURE"
+                fixture_pending = True
+            elif game.status is GameStatus.FINAL:
                 lifecycle = "RESULT_UNRESOLVABLE"
                 fixture_pending = True
             else:
