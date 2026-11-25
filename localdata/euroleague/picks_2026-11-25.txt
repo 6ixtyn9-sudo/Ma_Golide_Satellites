@@ -1,6 +1,6 @@
 Ma Golide Picks — EUROLEAGUE 2026-11-25
 ========================================================================
-Generated at: 2026-11-25 17:24 SAST
+Generated at: 2026-11-25 18:37 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -24,10 +24,6 @@ WATCHLIST — NO MATCHED ODDS
   [team_history_empirical/team_history_empirical] Olympiacos Piraeus vs Hapoel IBI Tel Aviv · KO 2026-11-25 21:15 SAST
       MONEYLINE H1 -> HOME · p=67.3% (raw 67.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=34 · reasons=no_exact_bookmaker_market · prediction=history
-  [team_history_empirical/team_history_empirical] Dubai Basketball vs Partizan Mozzart Bet Belgrade · KO 2026-11-25 18:00 SAST
-      MONEYLINE H1 -> HOME · p=64.3% (raw 64.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T14:19:27Z
       calibration=calibrated n=34 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical/team_history_empirical] Real Madrid vs Zalgiris Kaunas · KO 2026-11-25 21:45 SAST
       MONEYLINE H1 -> HOME · p=64.3% (raw 64.0%) @n/a no matched book
@@ -63,11 +59,6 @@ SKIPPED — INELIGIBLE
       calibration=calibrated n=32 · reasons=superseded_by_calibration_twin · prediction=history
       collapsed_observations=8 · books_quoted=4: BetMGM.us, Stake.com, average, bet365.us · surfaces=provider:history_model, team_history_empirical
       archived_revisions=4 · latest_evidence_utc=2026-11-25T08:40:04Z
-  [team_history_empirical/team_history_empirical] Dubai Basketball vs Partizan Mozzart Bet Belgrade · KO 2026-11-25 18:00 SAST
-      MONEYLINE full_game -> HOME · p=54.8% (raw 55.0%) @1.300 BetMGM.us
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T14:19:27Z
-      calibration=calibrated n=32 · reasons=superseded_by_calibration_twin · prediction=history
-      collapsed_observations=8 · books_quoted=4: BetMGM.us, Stake.com, average, bet365.us · surfaces=provider:history_model, team_history_empirical
   [team_history_empirical/team_history_empirical] Real Madrid vs Zalgiris Kaunas · KO 2026-11-25 21:45 SAST
       MONEYLINE full_game -> HOME · p=54.8% (raw 55.0%) @1.400 BetMGM.us
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -76,16 +67,24 @@ SKIPPED — INELIGIBLE
 
 IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
-  (none)
+  [team_history_empirical/team_history_empirical] Dubai Basketball vs Partizan Mozzart Bet Belgrade · KO 2026-11-25 18:00 SAST
+      MONEYLINE H1 -> HOME · p=64.3% (raw 64.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T14:19:27Z
+      calibration=calibrated n=34 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Dubai Basketball vs Partizan Mozzart Bet Belgrade · KO 2026-11-25 18:00 SAST
+      MONEYLINE full_game -> HOME · p=54.8% (raw 55.0%) @1.300 BetMGM.us
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T14:19:27Z
+      calibration=calibrated n=32 · reasons=superseded_by_calibration_twin · prediction=history
+      collapsed_observations=8 · books_quoted=4: BetMGM.us, Stake.com, average, bet365.us · surfaces=provider:history_model, team_history_empirical
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
   (none)
 
-Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=6 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=4
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=5 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=3
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=0
-Logical picks shown: 10 · superseded observations: 165 · book/model rows collapsed: 28
-Total archived pick evidence rows: 203
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=2 SETTLED=0
+Logical picks shown: 10 · superseded observations: 180 · book/model rows collapsed: 28
+Total archived pick evidence rows: 218
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.
