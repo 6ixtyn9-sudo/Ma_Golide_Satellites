@@ -260,6 +260,10 @@ class Forecast:
     # Availability-adjustment metadata; populated only on the separate
     # context_availability surface, always None on base and provider surfaces.
     context: Optional[Dict[str, Any]] = None
+    # Observational venue/rest evidence captured at pick time (tri-state
+    # neutral_site + per-side rest hours/back-to-back). Evidence only; never
+    # hashed into forecast_id and never alters gates or probabilities.
+    venue_rest_evidence: Optional[Dict[str, Any]] = None
 
     def __post_init__(self) -> None:
         if self.calibration_version is not None and (
@@ -463,6 +467,11 @@ class Forecast:
             "expected_margin": self.expected_margin,
             "expected_total": self.expected_total,
             "context": self.context,
+            "venue_rest_evidence": (
+                dict(self.venue_rest_evidence)
+                if self.venue_rest_evidence is not None
+                else None
+            ),
             "model": self.source,
             "model_version": MODEL_VERSION,
             "calibration_version": self.calibration_version,

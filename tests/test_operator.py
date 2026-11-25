@@ -1823,7 +1823,7 @@ def test_roi_qualified_pick_is_published_as_a_paper_single_without_an_acca(tmp_p
     assert today[0]["paper_roi_band_eligible"] is True
     assert today[0]["paper_roi_band"]["qualifies"] is True
     picks_text = Path(result["picks_text"]).read_text()
-    assert "PAPER SINGLE · moneyline full_game" in picks_text
+    assert "PAPER SINGLE · NBA moneyline full_game" in picks_text
     assert "ROI-qualified individual paper singles: 1" in picks_text
     assert result["ticket_receipt"] is not None
     receipt = json.loads(Path(result["ticket_receipt"]).read_text())
@@ -1843,7 +1843,7 @@ def test_roi_qualified_pick_is_published_as_a_paper_single_without_an_acca(tmp_p
     ticket_text = Path(result["ticket_text"]).read_text()
     assert "[PAPER SINGLE #1]" in ticket_text
     assert "1 paper single · 1 ticket publication" in ticket_text
-    assert "ROI band: moneyline full_game" in ticket_text
+    assert "ROI band: NBA moneyline full_game" in ticket_text
     assert "NO MULTI-LEG PAPER ACCA" not in ticket_text
     assert "CANDIDATE FUNNEL" not in ticket_text
     assert "recency ROI" not in ticket_text
@@ -2137,7 +2137,7 @@ def test_provisional_sample_only_acca_is_frozen_as_labeled_paper_evidence(tmp_pa
         "bands; 30 unique settled picks · status=applied."
     ) in ticket_text
     assert (
-        "ROI band: moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · "
+        "ROI band: NBA moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · "
         "n=30 W-L-P=18-12-0 · ROI +12.0% observed / +9.0% adjusted."
     ) in ticket_text
     assert "PROVISIONAL PAPER ONLY — sample-size gate bypassed" not in ticket_text

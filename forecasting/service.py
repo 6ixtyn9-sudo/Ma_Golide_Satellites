@@ -16,7 +16,7 @@ from ingestion.books import (
     select_spread_snapshots,
     select_total_snapshots,
 )
-from ingestion.identity import parse_utc
+from ingestion.identity import canonical_team_key, parse_utc
 from ingestion.leagues import line_periods, supports_highest_quarter
 from ingestion.models import (
     BookSnapshot,
@@ -55,6 +55,160 @@ from .shadow import (
     prequential_shadow_evaluation,
 )
 from .types import Forecast, MODEL_VERSION, grade_forecast
+
+_VENUE_REST_BACK_TO_BACK_MAX_HOURS = 26.0
+_VENUE_REST_RELIST_SKIP_MAX_HOURS = 6.0
+_REST_EXCLUDED_STATUSES = frozenset(
+    {
+        GameStatus.POSTPONED,
+        GameStatus.CANCELLED,
+        GameStatus.ABANDONED,
+    }
+)
+
+
+def _extract_neutral_site(game: Game) -> tuple[Optional[bool], Optional[str]]:
+    """Return tri-state ``(neutral_site, source)`` from provider evidence.
+
+    Never defaults unknown/absent flags to ``False``. Checks ESPN scoreboard
+    context first (``evidence["espn"]["scoreboard"]["neutral_site"]``), then
+    BAL/top-level provider evidence (``evidence["neutral"]`` and
+    ``evidence["neutral_site"]``).
+    """
+    evidence = game.evidence if isinstance(game.evidence, dict) else {}
+    espn = evidence.get("espn")
+    if isinstance(espn, dict):
+        scoreboard = espn.get("scoreboard")
+        if isinstance(scoreboard, dict):
+            raw = scoreboard.get("neutral_site")
+            if isinstance(raw, bool):
+                return raw, "espn.scoreboard"
+    raw_bal = evidence.get("neutral")
+    if isinstance(raw_bal, bool):
+        provider = evidence.get("provider")
+        source = str(provider).strip() if isinstance(provider, str) and provider.strip() else "game.evidence"
+        return raw_bal, source
+    raw_direct = evidence.get("neutral_site")
+    if isinstance(raw_direct, bool):
+        provider = evidence.get("provider")
+        source = str(provider).strip() if isinstance(provider, str) and provider.strip() else "game.evidence"
+        return raw_direct, source
+    return None, None
+
+
+def _side_rest_evidence(
+    team_name: str,
+    game: Game,
+    games: Sequence[Game],
+    *,
+    as_of_utc: str,
+) -> Dict[str, Any]:
+    """Find the most recent strictly prior eligible fixture for ``team_name``."""
+    team_key = canonical_team_key(team_name)
+    game_dt = parse_utc(game.scheduled_utc)
+    as_of_dt = parse_utc(as_of_utc)
+    best_game: Optional[Game] = None
+    best_dt = None
+    best_gap_hours: Optional[float] = None
+
+    for prev in games:
+        if prev.game_id == game.game_id:
+            continue
+        if prev.status in _REST_EXCLUDED_STATUSES:
+            continue
+        try:
+            prev_dt = parse_utc(prev.scheduled_utc)
+        except (TypeError, ValueError):
+            continue
+        if prev_dt >= game_dt or prev_dt > as_of_dt:
+            continue
+        gap_hours = (game_dt - prev_dt).total_seconds() / 3600.0
+        if gap_hours <= _VENUE_REST_RELIST_SKIP_MAX_HOURS:
+            # Skip re-listed / duplicate fixtures within 6 hours.
+            continue
+        if (
+            canonical_team_key(prev.home_name) != team_key
+            and canonical_team_key(prev.away_name) != team_key
+        ):
+            continue
+        if best_dt is None or (prev_dt, prev.game_id) > (best_dt, best_game.game_id):
+            best_dt = prev_dt
+            best_game = prev
+            best_gap_hours = gap_hours
+
+    if best_game is None or best_gap_hours is None:
+        return {
+            "rest_hours": None,
+            "back_to_back": None,
+            "prev_fixture_id": None,
+            "prev_fixture_date": None,
+            "prev_source": None,
+        }
+
+    provider_names = sorted(
+        str(name).strip()
+        for name in (best_game.provider_ids or {})
+        if isinstance(name, str) and name.strip()
+    )
+    if provider_names:
+        prev_source = ",".join(provider_names)
+    elif isinstance(best_game.evidence, dict) and isinstance(
+        best_game.evidence.get("provider"), str
+    ) and best_game.evidence["provider"].strip():
+        prev_source = best_game.evidence["provider"].strip()
+    else:
+        prev_source = "store"
+
+    return {
+        "rest_hours": round(best_gap_hours, 2),
+        "back_to_back": best_gap_hours < _VENUE_REST_BACK_TO_BACK_MAX_HOURS,
+        "prev_fixture_id": best_game.game_id,
+        "prev_fixture_date": best_game.scheduled_utc[:10],
+        "prev_source": prev_source,
+    }
+
+
+def _venue_rest_evidence(
+    game: Game,
+    games: Sequence[Game],
+    *,
+    as_of_utc: str,
+) -> Dict[str, Any]:
+    """Capture observational venue and rest evidence at pick time."""
+    neutral_site, neutral_source = _extract_neutral_site(game)
+    home = _side_rest_evidence(game.home_name, game, games, as_of_utc=as_of_utc)
+    away = _side_rest_evidence(game.away_name, game, games, as_of_utc=as_of_utc)
+    rest_diff_hours: Optional[float] = None
+    if home["rest_hours"] is not None and away["rest_hours"] is not None:
+        rest_diff_hours = round(home["rest_hours"] - away["rest_hours"], 2)
+    home_b2b = home["back_to_back"]
+    away_b2b = away["back_to_back"]
+    if home_b2b is True or away_b2b is True:
+        any_b2b: Optional[bool] = True
+    elif home_b2b is False and away_b2b is False:
+        any_b2b = False
+    else:
+        any_b2b = None
+    return {
+        "neutral_site": neutral_site,
+        "neutral_site_source": neutral_source,
+        "home_rest_hours": home["rest_hours"],
+        "away_rest_hours": away["rest_hours"],
+        "rest_diff_hours": rest_diff_hours,
+        "home_back_to_back": home_b2b,
+        "away_back_to_back": away_b2b,
+        "any_back_to_back": any_b2b,
+        "home_prev_fixture_id": home["prev_fixture_id"],
+        "home_prev_fixture_date": home["prev_fixture_date"],
+        "home_prev_source": home["prev_source"],
+        "away_prev_fixture_id": away["prev_fixture_id"],
+        "away_prev_fixture_date": away["prev_fixture_date"],
+        "away_prev_source": away["prev_source"],
+        "definition": {
+            "back_to_back_max_hours": _VENUE_REST_BACK_TO_BACK_MAX_HOURS,
+            "relist_skip_max_hours": _VENUE_REST_RELIST_SKIP_MAX_HOURS,
+        },
+    }
 
 
 class MarketForecastService:
@@ -684,6 +838,10 @@ class MarketForecastService:
                         "reason": "insufficient_history_predictions_or_exact_book_facts",
                     }
                 )
+            else:
+                venue_rest = _venue_rest_evidence(game, games, as_of_utc=as_of_utc)
+                for forecast in generated:
+                    forecast.venue_rest_evidence = dict(venue_rest)
             current.extend(generated)
         current = apply_profiles(current, current_profiles, self.calibration_config)
         espn_player_context_candidates: Dict[str, Dict[str, Any]] = {}

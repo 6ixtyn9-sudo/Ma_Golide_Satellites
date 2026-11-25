@@ -142,6 +142,31 @@ class _TeamPrefix:
     weights: Tuple[float, ...]
 
 
+def _game_neutral_site(game: Game) -> Optional[bool]:
+    """Return tri-state neutral-site venue flag from provider evidence.
+
+    ``True`` means explicit neutral site (zero home-court advantage, excluded
+    from league home-advantage estimation). ``False`` and ``None`` preserve
+    normal home-court advantage so lanes without a venue flag never silently
+    lose home-court signal.
+    """
+    evidence = game.evidence if isinstance(game.evidence, dict) else {}
+    espn = evidence.get("espn")
+    if isinstance(espn, dict):
+        scoreboard = espn.get("scoreboard")
+        if isinstance(scoreboard, dict):
+            raw = scoreboard.get("neutral_site")
+            if isinstance(raw, bool):
+                return raw
+    raw_bal = evidence.get("neutral")
+    if isinstance(raw_bal, bool):
+        return raw_bal
+    raw_direct = evidence.get("neutral_site")
+    if isinstance(raw_direct, bool):
+        return raw_direct
+    return None
+
+
 class _PeriodHistoryIndex:
     """Prefix sums for league and exponentially weighted team evidence."""
 
@@ -149,6 +174,8 @@ class _PeriodHistoryIndex:
         league_home = [0.0]
         league_away = [0.0]
         league_count = [0]
+        ha_diff = [0.0]
+        ha_count = [0]
         team_games: Dict[str, List[int]] = {}
         team_for: Dict[str, List[float]] = {}
         team_against: Dict[str, List[float]] = {}
@@ -171,11 +198,19 @@ class _PeriodHistoryIndex:
                 league_home.append(league_home[-1])
                 league_away.append(league_away[-1])
                 league_count.append(league_count[-1])
+                ha_diff.append(ha_diff[-1])
+                ha_count.append(ha_count[-1])
                 continue
             home, away = scores
             league_home.append(league_home[-1] + home)
             league_away.append(league_away[-1] + away)
             league_count.append(league_count[-1] + 1)
+            if _game_neutral_site(game) is True:
+                ha_diff.append(ha_diff[-1])
+                ha_count.append(ha_count[-1])
+            else:
+                ha_diff.append(ha_diff[-1] + (home - away))
+                ha_count.append(ha_count[-1] + 1)
             home_team = canonical_team_key(game.home_name)
             away_team = canonical_team_key(game.away_name)
             add_team(home_team, index, home, away)
@@ -185,6 +220,8 @@ class _PeriodHistoryIndex:
         self.league_home = tuple(league_home)
         self.league_away = tuple(league_away)
         self.league_count = tuple(league_count)
+        self.ha_diff = tuple(ha_diff)
+        self.ha_count = tuple(ha_count)
         self.teams = {
             team: _TeamPrefix(
                 tuple(team_games[team]),
@@ -202,7 +239,9 @@ class _PeriodHistoryIndex:
             return None
         home = self.league_home[end] - self.league_home[start]
         away = self.league_away[end] - self.league_away[start]
-        return (home + away) / (2 * count), (home - away) / count
+        ha_n = self.ha_count[end] - self.ha_count[start]
+        home_advantage = (self.ha_diff[end] - self.ha_diff[start]) / ha_n if ha_n else 0.0
+        return (home + away) / (2 * count), home_advantage
 
     @staticmethod
     def _team_state(values: Tuple[float, ...], lo: int, hi: int, decay: float) -> float:
@@ -429,16 +468,21 @@ class HistoryModel:
     ) -> Optional[tuple[float, float]]:
         home_scores: List[float] = []
         away_scores: List[float] = []
+        non_neutral_diffs: List[float] = []
         for game in history:
             scores = _period_scores(game, period)
             if scores is not None:
                 home_scores.append(scores[0])
                 away_scores.append(scores[1])
+                if _game_neutral_site(game) is not True:
+                    non_neutral_diffs.append(scores[0] - scores[1])
         if not home_scores:
             return None
         per_team = (sum(home_scores) + sum(away_scores)) / (2 * len(home_scores))
-        home_advantage = sum(home - away for home, away in zip(home_scores, away_scores)) / len(
-            home_scores
+        home_advantage = (
+            sum(non_neutral_diffs) / len(non_neutral_diffs)
+            if non_neutral_diffs
+            else 0.0
         )
         return per_team, home_advantage
 
@@ -500,12 +544,13 @@ class HistoryModel:
         away_rates = stats.team_rates(
             game.away_name, start, end, self.config.recent_half_life_games
         )
+        applied_home_advantage = 0.0 if _game_neutral_site(game) is True else home_advantage
         expected_home = (
             shrunk(home_rates, "points_for") + shrunk(away_rates, "points_against")
-        ) / 2 + home_advantage / 2
+        ) / 2 + applied_home_advantage / 2
         expected_away = (
             shrunk(away_rates, "points_for") + shrunk(home_rates, "points_against")
-        ) / 2 - home_advantage / 2
+        ) / 2 - applied_home_advantage / 2
         return Baseline(
             expected_home,
             expected_away,
@@ -536,12 +581,13 @@ class HistoryModel:
 
         home_rates = self._team_rates(game.home_name, history, period)
         away_rates = self._team_rates(game.away_name, history, period)
+        applied_home_advantage = 0.0 if _game_neutral_site(game) is True else home_advantage
         expected_home = (
             shrunk(home_rates, "points_for") + shrunk(away_rates, "points_against")
-        ) / 2 + home_advantage / 2
+        ) / 2 + applied_home_advantage / 2
         expected_away = (
             shrunk(away_rates, "points_for") + shrunk(home_rates, "points_against")
-        ) / 2 - home_advantage / 2
+        ) / 2 - applied_home_advantage / 2
         return Baseline(
             expected_home,
             expected_away,

@@ -18,6 +18,7 @@ withdrawn receipt.
 from __future__ import annotations
 
 import argparse
+from copy import deepcopy
 import hashlib
 import json
 import os
@@ -258,6 +259,7 @@ def _compact_roi_band(value: object) -> dict[str, Any] | None:
     return _subset(
         value,
         (
+            "league",
             "market",
             "period",
             "probability_band",
@@ -377,6 +379,9 @@ def _compact_frozen_forecast(row: object) -> object:
     band = _compact_roi_band(row.get("paper_roi_band"))
     if band:
         compact["paper_roi_band"] = band
+    venue_rest = row.get("venue_rest_evidence")
+    if isinstance(venue_rest, dict):
+        compact["venue_rest_evidence"] = deepcopy(venue_rest)
     return compact
 
 
