@@ -12,19 +12,12 @@
     "2026-11-22": {
       "frozen_fixtures": 6
     },
-    "2026-11-23": {
-      "evidence_rows": 3,
-      "frozen_fixtures": 0,
-      "logical_picks": 3
-    },
     "2026-11-24": {
-      "evidence_rows": 12,
-      "frozen_fixtures": 2,
-      "logical_picks": 9
+      "frozen_fixtures": 2
     },
     "2026-11-25": {
       "evidence_rows": 12,
-      "frozen_fixtures": 0,
+      "frozen_fixtures": 3,
       "logical_picks": 9
     }
   },
@@ -3731,9 +3724,798 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-24"
       }
+    },
+    "2026-11-25": {
+      "401914600": {
+        "decision_cutoff_utc": "2026-11-25T22:00:00Z",
+        "frozen_at": "2026-11-25T22:47:50Z",
+        "game_id": "401914600",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Greensboro Swarm",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.37037,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "43e58c61b7d1083d56d3f0922848281499a7e76b69eda3587693046ab8d4cf4d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "697d089b17ef5fc18362",
+            "game_id": "401914600",
+            "grade_status": "pending",
+            "home": "Westchester Knicks",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "697d089b17ef5fc18362",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.37037,
+            "role": null,
+            "scheduled_utc": "2026-11-26T00:00:00Z",
+            "selection": "Q2",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-18",
+              "away_prev_fixture_id": "401914567",
+              "away_prev_source": "espn",
+              "away_rest_hours": 176.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-22",
+              "home_prev_fixture_id": "401914592",
+              "home_prev_source": "espn",
+              "home_rest_hours": 77.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": -99.0
+            }
+          },
+          {
+            "away": "Greensboro Swarm",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.666667,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "3849e826e2cec8ddb335c0769b988298fded3dc5469724c2320fca600b54b616",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0f4e1b5e3d013504fba5",
+            "game_id": "401914600",
+            "grade_status": "pending",
+            "home": "Westchester Knicks",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "0f4e1b5e3d013504fba5",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.666667,
+            "role": null,
+            "scheduled_utc": "2026-11-26T00:00:00Z",
+            "selection": "away",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-18",
+              "away_prev_fixture_id": "401914567",
+              "away_prev_source": "espn",
+              "away_rest_hours": 176.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-22",
+              "home_prev_fixture_id": "401914592",
+              "home_prev_source": "espn",
+              "home_rest_hours": 77.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": -99.0
+            }
+          },
+          {
+            "away": "Greensboro Swarm",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.620264,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 3,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "8d709565b39b8533bc3a2a8eec156aa440d1a7d58231ba190769e6a72b665d9d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "88ffff4a000acce1b9bd",
+            "game_id": "401914600",
+            "grade_status": "pending",
+            "home": "Westchester Knicks",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "88ffff4a000acce1b9bd",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-25T22:47:14Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.617284,
+            "role": null,
+            "scheduled_utc": "2026-11-26T00:00:00Z",
+            "selection": "away",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-18",
+              "away_prev_fixture_id": "401914567",
+              "away_prev_source": "espn",
+              "away_rest_hours": 176.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-22",
+              "home_prev_fixture_id": "401914592",
+              "home_prev_source": "espn",
+              "home_rest_hours": 77.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": -99.0
+            }
+          },
+          {
+            "away": "Greensboro Swarm",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.617284,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "e6a0d2bc7abb7f0df3611a6799d666bf7ab0e18baccc7393457b31158553f9a6",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "8e09b4701734f8f040ca",
+            "game_id": "401914600",
+            "grade_status": "pending",
+            "home": "Westchester Knicks",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "8e09b4701734f8f040ca",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.617284,
+            "role": null,
+            "scheduled_utc": "2026-11-26T00:00:00Z",
+            "selection": "away",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-18",
+              "away_prev_fixture_id": "401914567",
+              "away_prev_source": "espn",
+              "away_rest_hours": 176.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-22",
+              "home_prev_fixture_id": "401914592",
+              "home_prev_source": "espn",
+              "home_rest_hours": 77.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": -99.0
+            }
+          }
+        ],
+        "scheduled_utc": "2026-11-26T00:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-25"
+      },
+      "401914601": {
+        "decision_cutoff_utc": "2026-11-25T22:30:00Z",
+        "frozen_at": "2026-11-25T22:47:50Z",
+        "game_id": "401914601",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Osceola Magic",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.395062,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "b37cf9c5d0237af0bcd4ac9c5b95d82ffe91d3d8b3511b4bb13e2549ae515ba2",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "2f72ea3c2f16c64b5244",
+            "game_id": "401914601",
+            "grade_status": "pending",
+            "home": "Laketown Squadron",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "2f72ea3c2f16c64b5244",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.395062,
+            "role": null,
+            "scheduled_utc": "2026-11-26T00:30:00Z",
+            "selection": "Q2",
+            "venue_rest_evidence": {
+              "any_back_to_back": true,
+              "away_back_to_back": true,
+              "away_prev_fixture_date": "2026-11-25",
+              "away_prev_fixture_id": "401914598",
+              "away_prev_source": "espn",
+              "away_rest_hours": 24.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": true,
+              "home_prev_fixture_date": "2026-11-25",
+              "home_prev_fixture_id": "401914598",
+              "home_prev_source": "espn",
+              "home_rest_hours": 24.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 0.0
+            }
+          },
+          {
+            "away": "Osceola Magic",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.641975,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "c3723370f9bd026b6b7c57d969cd5d3944bf6ffc056d557e44f3689e18f9c0ef",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "3686f423876b2e1d0645",
+            "game_id": "401914601",
+            "grade_status": "pending",
+            "home": "Laketown Squadron",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "3686f423876b2e1d0645",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.641975,
+            "role": null,
+            "scheduled_utc": "2026-11-26T00:30:00Z",
+            "selection": "away",
+            "venue_rest_evidence": {
+              "any_back_to_back": true,
+              "away_back_to_back": true,
+              "away_prev_fixture_date": "2026-11-25",
+              "away_prev_fixture_id": "401914598",
+              "away_prev_source": "espn",
+              "away_rest_hours": 24.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": true,
+              "home_prev_fixture_date": "2026-11-25",
+              "home_prev_fixture_id": "401914598",
+              "home_prev_source": "espn",
+              "home_rest_hours": 24.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 0.0
+            }
+          },
+          {
+            "away": "Osceola Magic",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.580247,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "8457a12d1858c932b966c7fc8359bade9dece3a02a4db665601048992bef0476",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "6f3a6fa84c9dd633fe0c",
+            "game_id": "401914601",
+            "grade_status": "pending",
+            "home": "Laketown Squadron",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "6f3a6fa84c9dd633fe0c",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.580247,
+            "role": null,
+            "scheduled_utc": "2026-11-26T00:30:00Z",
+            "selection": "away",
+            "venue_rest_evidence": {
+              "any_back_to_back": true,
+              "away_back_to_back": true,
+              "away_prev_fixture_date": "2026-11-25",
+              "away_prev_fixture_id": "401914598",
+              "away_prev_source": "espn",
+              "away_rest_hours": 24.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": true,
+              "home_prev_fixture_date": "2026-11-25",
+              "home_prev_fixture_id": "401914598",
+              "home_prev_source": "espn",
+              "home_rest_hours": 24.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 0.0
+            }
+          },
+          {
+            "away": "Osceola Magic",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.583227,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 3,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "cc662a065576b2df2b173fdeb9987c8e856efe2326b8bcf26c937eb186c4ac85",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "ae3f3cc68ca5bba532a5",
+            "game_id": "401914601",
+            "grade_status": "pending",
+            "home": "Laketown Squadron",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "ae3f3cc68ca5bba532a5",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-25T22:47:14Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.580247,
+            "role": null,
+            "scheduled_utc": "2026-11-26T00:30:00Z",
+            "selection": "away",
+            "venue_rest_evidence": {
+              "any_back_to_back": true,
+              "away_back_to_back": true,
+              "away_prev_fixture_date": "2026-11-25",
+              "away_prev_fixture_id": "401914598",
+              "away_prev_source": "espn",
+              "away_rest_hours": 24.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": true,
+              "home_prev_fixture_date": "2026-11-25",
+              "home_prev_fixture_id": "401914598",
+              "home_prev_source": "espn",
+              "home_rest_hours": 24.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 0.0
+            }
+          }
+        ],
+        "scheduled_utc": "2026-11-26T00:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-25"
+      },
+      "401914602": {
+        "decision_cutoff_utc": "2026-11-25T22:30:00Z",
+        "frozen_at": "2026-11-25T22:47:50Z",
+        "game_id": "401914602",
+        "league": "NBA_G_LEAGUE",
+        "rows": [
+          {
+            "away": "Cleveland Charge",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.345679,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "1a89661c53a5613403fc19ba52ad1037d8e3e19da1b2260575b396196ce77291",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a94d798c718450fa95d7",
+            "game_id": "401914602",
+            "grade_status": "pending",
+            "home": "Sioux Falls Skyforce",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "highest_quarter",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "a94d798c718450fa95d7",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.345679,
+            "role": null,
+            "scheduled_utc": "2026-11-26T00:30:00Z",
+            "selection": "Q2",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-22",
+              "away_prev_fixture_id": "401914593",
+              "away_prev_source": "espn",
+              "away_rest_hours": 76.5,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-22",
+              "home_prev_fixture_id": "401914586",
+              "home_prev_source": "espn",
+              "home_rest_hours": 95.5,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 19.0
+            }
+          },
+          {
+            "away": "Cleveland Charge",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.518519,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "d5ea310459c82522ede95ad16bbaa66dbdcbd58f669d503ae7f281c966a58af5",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1408674185a14b3d5fcd",
+            "game_id": "401914602",
+            "grade_status": "pending",
+            "home": "Sioux Falls Skyforce",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "1408674185a14b3d5fcd",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.518519,
+            "role": null,
+            "scheduled_utc": "2026-11-26T00:30:00Z",
+            "selection": "away",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-22",
+              "away_prev_fixture_id": "401914593",
+              "away_prev_source": "espn",
+              "away_rest_hours": 76.5,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-22",
+              "home_prev_fixture_id": "401914586",
+              "home_prev_source": "espn",
+              "home_rest_hours": 95.5,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 19.0
+            }
+          },
+          {
+            "away": "Cleveland Charge",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.558536,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 3,
+              "status": "provisional",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "provider_prediction-1a8e07eab6ae",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "4997c24eb10c1da565db857348ad9f422716e22d3f7b69476d6c63a921034239",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "71f63b3c226a1a9b08bd",
+            "game_id": "401914602",
+            "grade_status": "pending",
+            "home": "Sioux Falls Skyforce",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:history_model",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "71f63b3c226a1a9b08bd",
+            "prediction": {
+              "frozen": false,
+              "model": "team_history_empirical",
+              "model_version": "team_history_empirical-cb419eb48826",
+              "observed_utc": "2026-11-25T22:47:14Z",
+              "produced_by": "empirical_walk_forward_history",
+              "provider": "history_model"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.555556,
+            "role": null,
+            "scheduled_utc": "2026-11-26T00:30:00Z",
+            "selection": "home",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-22",
+              "away_prev_fixture_id": "401914593",
+              "away_prev_source": "espn",
+              "away_rest_hours": 76.5,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-22",
+              "home_prev_fixture_id": "401914586",
+              "home_prev_source": "espn",
+              "home_rest_hours": 95.5,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 19.0
+            }
+          },
+          {
+            "away": "Cleveland Charge",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.555556,
+            "calibration": {
+              "n": 0,
+              "status": "no_history",
+              "sufficient_for_accas": false
+            },
+            "calibration_version": "team_history_empirical-cb419eb48826",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "3a12fbed0942c7060ca13c103886e63d35ce22567bec6325268081f2855c118e",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "c0904374e512b9fcf474",
+            "game_id": "401914602",
+            "grade_status": "pending",
+            "home": "Sioux Falls Skyforce",
+            "league": "NBA_G_LEAGUE",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "c0904374e512b9fcf474",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.555556,
+            "role": null,
+            "scheduled_utc": "2026-11-26T00:30:00Z",
+            "selection": "home",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-22",
+              "away_prev_fixture_id": "401914593",
+              "away_prev_source": "espn",
+              "away_rest_hours": 76.5,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-22",
+              "home_prev_fixture_id": "401914586",
+              "home_prev_source": "espn",
+              "home_rest_hours": 95.5,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 19.0
+            }
+          }
+        ],
+        "scheduled_utc": "2026-11-26T00:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-25"
+      }
     }
   },
   "league": "NBA_G_LEAGUE",
-  "pending_frozen_games": [],
+  "pending_frozen_games": [
+    [
+      "401914600",
+      "2026-11-26T00:00:00Z"
+    ],
+    [
+      "401914601",
+      "2026-11-26T00:30:00Z"
+    ],
+    [
+      "401914602",
+      "2026-11-26T00:30:00Z"
+    ]
+  ],
   "schema_version": "magolide.pick_lifecycle_state"
 }

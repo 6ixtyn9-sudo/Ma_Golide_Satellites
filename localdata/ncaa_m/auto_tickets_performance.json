@@ -1,6 +1,6 @@
 {
-  "awaiting_game_legs": 10,
-  "awaiting_game_legs_open": 8,
+  "awaiting_game_legs": 7,
+  "awaiting_game_legs_open": 3,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -2066,31 +2066,31 @@
       "wins": 5
     },
     {
-      "awaiting_game_legs": 10,
-      "bank_units": 106.93577729065612,
+      "awaiting_game_legs": 7,
+      "bank_units": 104.93577729065612,
       "date": "2026-11-25",
       "decision_id": "45588367951_ncaa_m_1_attempt_1",
       "frozen_at": "2026-11-25T10:15:16Z",
       "league": "NCAA_M",
-      "losses": 1,
-      "pending_accas": 4,
-      "pending_positions": 4,
+      "losses": 3,
+      "pending_accas": 2,
+      "pending_positions": 2,
       "pending_singles": 0,
-      "pending_units": 4.0,
+      "pending_units": 2.0,
       "positions": [
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 7.128,
           "effective_decimal_odds": 7.128000000000001,
           "estimated_joint_win_probability": 0.32975279,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
             null,
-            null,
+            "loss",
             "win"
           ],
           "legs": [
@@ -2116,12 +2116,12 @@
               "book_provider": "espn",
               "forecast_id": "60166700d1c752050c71",
               "game_id": "401928359",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Florida International Panthers",
               "market": "moneyline",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "60166700d1c752050c71",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-25T20:30:00Z",
               "selected_decimal_price": 1.8,
               "selection": "home"
@@ -2144,6 +2144,7 @@
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 1,
@@ -2153,21 +2154,21 @@
           "stake_units": 1.0,
           "ticket_id": "113f8891fbc85b0af9d2",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 3.8824,
           "effective_decimal_odds": 3.8823529411764706,
           "estimated_joint_win_probability": 0.32982188,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
-            null,
+            "loss",
+            "loss",
             null
           ],
           "legs": [
@@ -2177,12 +2178,12 @@
               "book_provider": "espn",
               "forecast_id": "a240fe470178d123b77d",
               "game_id": "401924737",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Liberty Flames",
               "market": "moneyline",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "a240fe470178d123b77d",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-25T21:00:00Z",
               "selected_decimal_price": 1.5882352941176472,
               "selection": "home"
@@ -2193,12 +2194,12 @@
               "book_provider": "espn",
               "forecast_id": "61f90490e1d1a604c984",
               "game_id": "401925050",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "LSU New Orleans Privateers",
               "market": "moneyline",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "61f90490e1d1a604c984",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-25T21:00:00Z",
               "selected_decimal_price": 1.5714285714285714,
               "selection": "home"
@@ -2221,6 +2222,7 @@
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 2,
@@ -2230,7 +2232,7 @@
           "stake_units": 1.0,
           "ticket_id": "0289d9420e6641964431",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 1
         },
         {
           "awaiting_game_legs": 2,
@@ -2469,41 +2471,41 @@
           "unresolved_legs": 1
         }
       ],
-      "profit_units": -1.0,
+      "profit_units": -3.0,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-25_decision.json",
       "result_unresolvable_legs": 0,
       "returned_units": 0.0,
-      "settled_accas": 1,
-      "settled_positions": 1,
+      "settled_accas": 3,
+      "settled_positions": 3,
       "settled_singles": 0,
-      "staked_units": 1.0,
-      "unresolved_result_legs": 10,
+      "staked_units": 3.0,
+      "unresolved_result_legs": 7,
       "wins": 0
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.52,
+  "hit_rate": 0.48148148148148145,
   "league": "NCAA_M",
-  "losses": 12,
-  "paper_bank_units": 106.9357772906561,
-  "paper_committed_units": 4.0,
+  "losses": 14,
+  "paper_bank_units": 104.9357772906561,
+  "paper_committed_units": 2.0,
   "paper_free_units": 102.9357772906561,
   "paper_only": true,
-  "pending_accas": 4,
-  "pending_positions": 4,
+  "pending_accas": 2,
+  "pending_positions": 2,
   "pending_singles": 0,
-  "profit_units": 6.935777290656103,
+  "profit_units": 4.935777290656103,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": 0.27743109162624413,
+  "roi": 0.1828065663205964,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.16391601759415994,
-  "settled_accas": 24,
-  "settled_positions": 25,
+  "selected_leg_brier_score": 0.17597185086838452,
+  "settled_accas": 26,
+  "settled_positions": 27,
   "settled_singles": 1,
-  "settled_stake_units": 25.0,
+  "settled_stake_units": 27.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 10,
+  "unresolved_result_legs": 7,
   "wins": 13
 }
