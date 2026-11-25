@@ -22,7 +22,16 @@ import re
 import time
 from typing import Any, Callable, Dict, Optional
 
-import requests
+try:  # pragma: no cover - the minimal gate environment is the only path here
+    import requests
+except ModuleNotFoundError:  # pragma: no cover
+    # The scheduler gate runs on a bare Python with no dependencies installed.
+    # It still imports provider modules to reach their *parsers* -- the gate does
+    # its own page reads with urllib -- so a hard dependency here made both Japan
+    # lanes report `schedule_uncertain: No module named 'requests'` on 2026-11-25
+    # and go dark for a reason no schedule had anything to do with. Parsing must
+    # work without a transport; only an actual fetch may demand one.
+    requests = None  # type: ignore[assignment]
 
 logger = logging.getLogger(__name__)
 
@@ -228,7 +237,7 @@ class HttpClient:
         retries: int = DEFAULT_RETRIES,
         backoff: float = DEFAULT_BACKOFF,
         user_agent: str = "MaGolideIngestion/0.1 (unattended acquisition)",
-        session: Optional[requests.Session] = None,
+        session: Optional["requests.Session"] = None,
         sleep: Callable[[float], None] = time.sleep,
         default_headers: Optional[Dict[str, str]] = None,
     ) -> None:
@@ -236,6 +245,12 @@ class HttpClient:
         self.retries = retries
         self.backoff = backoff
         self.user_agent = user_agent
+        if requests is None:  # pragma: no cover - gate-only minimal environment
+            raise RuntimeError(
+                "the HTTP client needs the `requests` package, which this interpreter "
+                "does not have; parsers stay importable without it, so install "
+                "`requests` or supply an injected fetch instead of constructing one"
+            )
         self.session = session or requests.Session()
         self.sleep = sleep
         self.default_headers = dict(default_headers or {})
@@ -305,7 +320,7 @@ class HttpClient:
 
     # -- internals ----------------------------------------------------------
 
-    def _retry_delay(self, resp: requests.Response, attempt: int) -> float:
+    def _retry_delay(self, resp: "requests.Response", attempt: int) -> float:
         """Bounded wait before retry: the host's ``Retry-After``, else backoff.
 
         ``Retry-After`` is evidence about the host, not a preference of ours, so
@@ -319,7 +334,7 @@ class HttpClient:
             return min(promised, MAX_RETRY_AFTER_SECONDS)
         return self.backoff**attempt
 
-    def _capture_quota(self, resp: requests.Response) -> None:
+    def _capture_quota(self, resp: "requests.Response") -> None:
         quota: Dict[str, str] = {}
         for name in QUOTA_HEADERS:
             value = resp.headers.get(name)

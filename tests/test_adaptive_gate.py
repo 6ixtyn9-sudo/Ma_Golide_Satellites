@@ -316,6 +316,71 @@ def test_gate_fails_open_when_a_schedule_cannot_be_read(tmp_path: Path):
     assert decision.reasons == ("schedule_uncertain: temporary provider outage",)
 
 
+def test_the_gate_reaches_japan_without_the_requests_package(monkeypatch, tmp_path: Path):
+    """The gate runs on a bare interpreter; parsers must not need a transport.
+
+    2026-11-25: both Japan lanes were gated with `schedule_uncertain: No module
+    named 'requests'`. Nothing about the timetable was uncertain -- `ingestion.http`
+    imported `requests` at module scope, and the gate imports provider modules to
+    reach their *parsers* while doing its own reads with urllib. A parser has no
+    business requiring a transport, so the import is now guarded and an actual
+    fetch asks for the dependency explicitly.
+    """
+
+    import subprocess
+    import sys
+
+    repo = Path(__file__).resolve().parents[1]
+    script = tmp_path / "gate_without_requests.py"
+    script.write_text(
+        """import sys
+
+sys.modules["requests"] = None  # emulate the gate's bare interpreter
+
+import ingestion.adaptive_gate  # noqa: F401
+from ingestion.http import HttpClient
+from ingestion.providers import bal, bcl, bleague  # noqa: F401
+
+assert bleague.parse_slate("<ul id='schedule-b1'></ul>") == []
+
+try:
+    HttpClient()
+except RuntimeError as exc:
+    assert "requests" in str(exc)
+else:
+    raise AssertionError("HttpClient must refuse when requests is unavailable")
+
+print("ok")
+"""
+    )
+    import os
+
+    env = {**os.environ, "PYTHONPATH": str(repo)}
+    proc = subprocess.run(
+        [sys.executable, str(script)], cwd=repo, capture_output=True, text=True, env=env
+    )
+    assert proc.returncode == 0, proc.stderr
+    assert "ok" in proc.stdout
+
+    # And the probe itself, on the vendored slate capture, with no network.
+    from ingestion.adaptive_gate import _bleague_schedule
+
+    japan = next(config for config in LEAGUES if config.league_key == "JAPAN_B_LEAGUE")
+    fixture = (
+        repo / "tests" / "fixtures" / "bleague" / "captures" / "schedule-2026-10-04-excerpt.html"
+    )
+    html = fixture.read_text()
+    monkeypatch.setattr("ingestion.adaptive_gate._read_limited_response", lambda url: html)
+
+    games = _bleague_schedule(japan, "2026-10-04")
+
+    assert len(games) == 1
+    assert games[0].game_id == "BLEAGUE-506418"
+    assert games[0].status == "final"
+    # 14:05 JST on 2026-10-04 is 05:05 UTC the same day.
+    assert games[0].scheduled_utc.strftime("%Y-%m-%dT%H:%M:%SZ") == "2026-10-04T05:05:00Z"
+
+
 def test_a_settlement_only_tick_is_not_a_full_pipeline_tick(tmp_path: Path):
     """A tick must cost what the lane actually owes.
 
