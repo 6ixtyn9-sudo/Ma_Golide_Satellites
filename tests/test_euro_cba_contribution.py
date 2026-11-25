@@ -388,8 +388,12 @@ def test_betexplorer_euroleague_fixtures_parse_prices_and_identity():
     snapshots = betexplorer.fetch_odds(
         "EUROLEAGUE", "20261117", None, now_utc=OBSERVED, text_fetch=_be_text_fetch()
     )
-    assert len(snapshots) == 9
+    # 9 priced rows sit in the 2026-11-17 block of el_fixtures_table.html, but
+    # 3 (xGZWYFJD, 8I2fZqVg, 0hany60s) carry `<td class="table-main__datetime">&nbsp;</td>`
+    # and must never be dated by inheritance; only the 6 own-dated rows emit snapshots.
+    assert len(snapshots) == 6
     by_event = {snapshot.provider_event_id: snapshot for snapshot in snapshots}
+    assert {"xGZWYFJD", "8I2fZqVg", "0hany60s"}.isdisjoint(by_event)
     dubai = by_event["UkWOzxk1"]
     assert dubai.book == "average" and dubai.provider == "betexplorer"
     assert dubai.market is Market.MONEYLINE and dubai.period is Period.FULL_GAME
@@ -501,8 +505,12 @@ def test_euroleague_pregame_reaches_downstream_rows_with_prices():
         for snapshot in store.get_book_snapshots(game_id)
         if snapshot.market is Market.MONEYLINE
     ]
-    assert len(moneylines) == 9, "every slate game carries its BetExplorer pair"
-    assert {snapshot.game_id for snapshot in moneylines} == game_ids
+    # E2026-112 (xGZWYFJD), E2026-114 (0hany60s), and E2026-115 (8I2fZqVg) each
+    # own `<td class="table-main__datetime">&nbsp;</td>` in el_fixtures_table.html,
+    # so fetch_odds skips them rather than attaching an inherited tip.
+    undated_games = {"E2026-112", "E2026-114", "E2026-115"}
+    assert len(moneylines) == 6, "every own-dated slate game carries its BetExplorer pair"
+    assert {snapshot.game_id for snapshot in moneylines} == game_ids - undated_games
     # Rows carry per-period total-line evidence (None for full_game, since
     # this source exposes no totals); the moneyline prices live on the
     # canonical snapshots asserted above.
@@ -515,6 +523,9 @@ def test_euroleague_pregame_reaches_downstream_rows_with_prices():
 
 
 def test_cba_pregame_joins_official_slate_with_betexplorer_prices():
+    # Both synthetic rows carry their own served tip (matching official CBA
+    # 19:35 Beijing = 12:35 CET); the second row previously used `&nbsp;`, which
+    # relied on tip inheritance and is now rejected by fetch_odds.
     priced = (
         "<tr><td class=\"table-main__datetime\">04.12. 12:35</td>"
         "<td class=\"h-text-left\"><a href=\"/basketball/china/cba/jiangsu-dragons-sichuan/v7jNw7e2/\" "
@@ -522,7 +533,7 @@ def test_cba_pregame_joins_official_slate_with_betexplorer_prices():
         "<td class=\"h-text-center\">&nbsp;</td><td class=\"table-main__bs\">8</td>"
         "<td class=\"table-main__odds\" data-oid=\"a1\"><button data-odd=\"1.55\"></button></td>"
         "<td class=\"table-main__odds\" data-oid=\"a2\"><button data-odd=\"2.50\"></button></td></tr>"
-        "<tr><td class=\"table-main__datetime\">&nbsp;</td>"
+        "<tr><td class=\"table-main__datetime\">04.12. 12:35</td>"
         "<td class=\"h-text-left\"><a href=\"/basketball/china/cba/jilin-liaoning/8tV6oJE8/\" "
         "class=\"in-match\"><span>Jilin</span> - <span>Liaoning</span></a></td>"
         "<td class=\"h-text-center\">&nbsp;</td><td class=\"table-main__bs\">8</td>"

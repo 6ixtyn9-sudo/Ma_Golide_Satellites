@@ -278,16 +278,22 @@ def _parse_datetime(label: str, observed: datetime) -> Optional[datetime]:
 
 def _rows(
     html: str, observed: datetime
-) -> List[Tuple[Optional[datetime], str, str, str, str, Tuple[str, str]]]:
-    """Parse fixture rows into (local_dt, match_id, slug, home, away, odds).
+) -> List[Tuple[Optional[datetime], str, str, str, str, Tuple[str, str], str]]:
+    """Parse fixture rows into ``(local_dt, match_id, slug, home, away, odds, raw_label)``.
 
     Only rows carrying BOTH decimal quotes produce an odds tuple; rows with
     capped or absent prices keep an empty tuple (a missing quote stays
-    missing). Datetime labels resolve against the observation time so a
-    blank cell repeats the previous row's datetime and relative
-    ``Today``/``Tomorrow`` labels stay deterministic for a pinned ``now``.
+    missing). ``raw_label`` is the row's own cleaned datetime cell text
+    (``""`` when the cell is blank or ``&nbsp;``). Blank cells still repeat
+    the previous row's resolved datetime in ``local_dt`` so callers can tell
+    the page's round date context from an own-dated kickoff (rows appearing
+    before any dated row keep ``local_dt=None``); schedule and price callers
+    check ``raw_label`` so undated rows are never promoted into games or
+    snapshots by inheritance.
     """
-    output: List[Tuple[Optional[datetime], str, str, str, str, Tuple[str, str]]] = []
+    output: List[
+        Tuple[Optional[datetime], str, str, str, str, Tuple[str, str], str]
+    ] = []
     previous: Optional[datetime] = None
     for row in _ROW_RE.findall(html):
         link = _LINK_RE.search(row)
@@ -299,15 +305,19 @@ def _rows(
         if len(names) != 2:
             continue
         cell = _DATETIME_RE.search(row)
-        local_dt = None
-        if cell is not None:
-            local_dt = _parse_datetime(cell.group("label"), observed)
-        if local_dt is None:
+        raw_label = (
+            cell.group("label").replace("&nbsp;", " ").strip()
+            if cell is not None
+            else ""
+        )
+        own_dt = _parse_datetime(raw_label, observed) if raw_label else None
+        if own_dt is not None:
+            local_dt: Optional[datetime] = own_dt
+            previous = own_dt
+        elif not raw_label:
             local_dt = previous
         else:
-            previous = local_dt
-        if local_dt is None:
-            continue
+            local_dt = None
         odds = tuple(_ODD_RE.findall(row))
         if len(odds) != 2:
             odds = ()
@@ -317,7 +327,7 @@ def _rows(
                     odds = ()
             except ValueError:
                 odds = ()
-        output.append((local_dt, match_id, slug, names[0], names[1], odds))
+        output.append((local_dt, match_id, slug, names[0], names[1], odds, raw_label))
     return output
 
 
@@ -350,7 +360,11 @@ def fetch_odds(
         )
 
     snapshots: List[BookSnapshot] = []
-    for local_dt, match_id, slug, home, away, odds in _rows(html, observed):
+    for local_dt, match_id, slug, home, away, odds, raw_label in _rows(html, observed):
+        if not raw_label or local_dt is None:
+            # Never date a snapshot or run the pre-tip guard on a tip inherited
+            # from an earlier row when this row's own kickoff cell is blank.
+            continue
         if not odds:
             continue
         if local_dt.strftime("%Y%m%d") != target:
@@ -409,7 +423,7 @@ def smoke(
     fetch_text = _text_fetch(fetch_factory, text_fetch)
     html = fetch_text(FIXTURES_URLS[league_key])
     rows = _rows(html, observed)
-    dated = [row for row in rows if row[0] is not None]
+    dated = [row for row in rows if row[0] is not None and row[6]]
     priced = [row for row in dated if row[5]]
     slated = [row for row in priced if row[0].strftime("%Y%m%d") == target]
     return {
