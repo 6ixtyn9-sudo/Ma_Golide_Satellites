@@ -471,6 +471,41 @@ def _thin_evidence_disclosure(row: Dict[str, Any]) -> str:
     )
 
 
+def _venue_rest_evidence_line(row: Dict[str, Any]) -> Optional[str]:
+    """Render observational venue/rest evidence on a pick card; never invent 0h/False."""
+    ev = row.get("venue_rest_evidence")
+    if not isinstance(ev, dict):
+        return None
+
+    def _tri_bool(value: Any) -> str:
+        if value is True:
+            return "true"
+        if value is False:
+            return "false"
+        return "unknown"
+
+    def _hours(value: Any, *, signed: bool = False) -> str:
+        if isinstance(value, bool) or not isinstance(value, (int, float)):
+            return "unknown"
+        if signed:
+            return f"{float(value):+.1f}h"
+        return f"{float(value):.1f}h"
+
+    home_rest = _hours(ev.get("home_rest_hours"))
+    away_rest = _hours(ev.get("away_rest_hours"))
+    home_b2b = ev.get("home_back_to_back")
+    away_b2b = ev.get("away_back_to_back")
+    home_text = f"{home_rest} (b2b={_tri_bool(home_b2b)})" if home_rest != "unknown" else "unknown"
+    away_text = f"{away_rest} (b2b={_tri_bool(away_b2b)})" if away_rest != "unknown" else "unknown"
+    return (
+        "      venue/rest (evidence only) · "
+        f"neutral_site={_tri_bool(ev.get('neutral_site'))} · "
+        f"home_rest={home_text} · away_rest={away_text} · "
+        f"diff={_hours(ev.get('rest_diff_hours'), signed=True)} · "
+        f"any_b2b={_tri_bool(ev.get('any_back_to_back'))}"
+    )
+
+
 def _price_evidence(forecast: Dict[str, Any]) -> str:
     """Render price provenance without upgrading an aggregate quote to a book."""
 
@@ -869,6 +904,11 @@ def _forecast_from_row(row: Dict[str, Any]) -> Forecast:
         shadow_calibration=shadow_calibration,
         calibration=dict(row.get("calibration") or {}),
         eligibility=dict(row.get("eligibility") or {}),
+        venue_rest_evidence=(
+            dict(row["venue_rest_evidence"])
+            if isinstance(row.get("venue_rest_evidence"), dict)
+            else None
+        ),
     )
 
 
@@ -1593,6 +1633,9 @@ def _render_picks(
             f"n={calibration.get('n', 0)} · reasons={reasons} "
             f"· prediction={(row.get('prediction') or {}).get('provider', 'history')}"
         )
+        venue_rest_line = _venue_rest_evidence_line(row)
+        if venue_rest_line is not None:
+            lines.append(venue_rest_line)
         advisory_list = list(eligibility.get("advisories") or [])
         advisories = ",".join(advisory_list)
         if advisories:
@@ -1736,6 +1779,9 @@ def _render_picks(
                     f"n={calibration.get('n', 0)} · reasons={reasons} "
                     f"· prediction={(row.get('prediction') or {}).get('provider', 'history')}"
                 )
+                venue_rest_line = _venue_rest_evidence_line(row)
+                if venue_rest_line is not None:
+                    lines.append(venue_rest_line)
 
     rendered = len(upcoming) + len(started) + len(settled)
     if rendered != len(display_rows):

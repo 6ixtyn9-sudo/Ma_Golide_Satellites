@@ -151,10 +151,17 @@ def test_serialization_is_stable():
 def test_to_dict_key_surface_stays_backward_compatible():
     forecast = _priced_forecast()
     keys = set(forecast.to_dict())
-    # "context" is a deliberate additive key: availability-adjustment metadata,
-    # populated only on the context_availability surface (None elsewhere).
-    assert keys == LEGACY_TO_DICT_KEYS | {"calibration_version", "explanation", "context"}
+    # "context" and "venue_rest_evidence" are deliberate additive keys:
+    # availability-adjustment metadata on the context_availability surface and
+    # observational venue/rest evidence captured at pick time (None by default).
+    assert keys == LEGACY_TO_DICT_KEYS | {
+        "calibration_version",
+        "explanation",
+        "context",
+        "venue_rest_evidence",
+    }
     assert forecast.to_dict()["calibration_version"] is None
+    assert forecast.to_dict()["venue_rest_evidence"] is None
 
 
 def test_no_invented_fields_or_labels():
