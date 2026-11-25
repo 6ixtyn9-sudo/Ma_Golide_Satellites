@@ -1,0 +1,752 @@
+# Ma Golide automatic multi-league acquisition, with no dispatch selections.
+# - The registry schedules every supported basketball league.  Lanes without a
+#   compliant official adapter run fail-closed and publish explicit coverage
+#   gaps rather than fabricated fixtures, results, or named-book prices.
+# - Optional provider secrets are passed only to the adapters that already
+#   support them; an absent secret leaves that adapter explicitly disabled.
+# - Named external-dispatch runs persist canonical state; manual dispatch
+#   remains a live read-only rehearsal so it cannot advance state.
+# Immutable decisions, compact ticket state, settlement summaries, readable dated
+# pick cards, and inline per-fixture snapshots in lifecycle state may be committed
+# to localdata/<league>. Full canonical CSV and structured/expanded evidence live
+# in checksummed GitHub Release checkpoint assets, not Git history.
+# Structured dated pick JSON, detailed lifecycle renders, raw current-scan
+# forecast JSON, and expanded audits remain cache/artifact-only.
+# Install as .github/workflows/ingestion.yml (editing that path requires the
+# GitHub `workflows` permission).
+
+name: "Ma Golide"
+
+on:
+  # Deliberately no league/date/mode/write inputs: one click runs everything.
+  # This is a read-only rehearsal, not the external scheduler endpoint.
+  workflow_dispatch: {}
+  # A trusted external scheduler calls the repository dispatch API with this
+  # exact event type. It is a durable automated tick, not a manual rehearsal.
+  repository_dispatch:
+    types: [magolide-scheduled-tick]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: magolide-automatic-available-leagues
+  cancel-in-progress: false
+
+jobs:
+  gate:
+    name: Adaptive schedule and operator-state gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run_any: ${{ steps.decide.outputs.run_any }}
+      matrix: ${{ steps.decide.outputs.matrix }}
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up lightweight gate Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Recover latest Git-authoritative compact operator state
+        id: state
+        run: |
+          set -euo pipefail
+          # An event SHA can predate a serialized publisher commit. The gate
+          # must inspect the same latest-main receipts/performance summaries
+          # that the eventual matrix jobs restore after cache recovery.
+          if git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main \
+            && git restore --source=refs/remotes/origin/main --worktree -- localdata; then
+            echo "force_reason=" >> "$GITHUB_OUTPUT"
+          else
+            # Never turn a fetch/restore failure into a false no-work result.
+            echo "::warning::Could not recover latest main operator state; running every league."
+            echo "force_reason=latest_main_operator_state_unavailable" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Decide the adaptive league matrix
+        id: decide
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          STATE_FORCE_REASON: ${{ steps.state.outputs.force_reason }}
+        run: |
+          set -euo pipefail
+          FORCE_REASON="$STATE_FORCE_REASON"
+          # Manual dispatch deliberately remains the existing all-league,
+          # read-only rehearsal. The adaptive skip applies to external ticks.
+          if [ "$EVENT_NAME" = "workflow_dispatch" ]; then
+            FORCE_REASON="manual_read_only_rehearsal"
+          fi
+          ARGS=(--state-root localdata --github-output "$GITHUB_OUTPUT")
+          if [ -n "$FORCE_REASON" ]; then
+            ARGS+=(--force-all-reason "$FORCE_REASON")
+          fi
+          python scripts/adaptive_gate.py "${ARGS[@]}" > gate-report.json
+
+      - name: Publish gate decision summary
+        if: always()
+        run: |
+          if [ -f gate-report.json ]; then
+            echo "## Adaptive scheduler gate" >> "$GITHUB_STEP_SUMMARY"
+            echo '```json' >> "$GITHUB_STEP_SUMMARY"
+            cat gate-report.json >> "$GITHUB_STEP_SUMMARY"
+            echo '```' >> "$GITHUB_STEP_SUMMARY"
+          else
+            echo "The gate failed before producing a matrix; matrix jobs are fail-closed. Preflight runs independently so the import/configuration error is visible." >> "$GITHUB_STEP_SUMMARY"
+          fi
+
+  preflight:
+    # Keep import/configuration regressions observable even if the lightweight
+    # gate itself cannot start and therefore cannot emit fail-open outputs.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+      - name: Install project and test dependencies
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install '.[dev]'
+      - name: Static checks
+        run: ruff check .
+      - name: Hermetic regression tests
+        run: python -m pytest -q
+
+  odds-budget:
+    # A provider key is never enough to authorise a price request. This small,
+    # serialized reservation commits the maximum three-credit cost before the
+    # parallel matrix receives any Odds API credential. If it cannot publish a
+    # reservation, downstream price acquisition stays disabled.
+    name: Reserve The Odds API free-tier budget
+    needs: [gate, preflight]
+    if: needs.gate.outputs.run_any == 'true' && needs.preflight.result == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    outputs:
+      permits: ${{ steps.reserve.outputs.permits }}
+    steps:
+      - name: Check out latest budget ledger
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Reserve routine full-game permits before matrix fan-out
+        id: reserve
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          GATE_MATRIX: ${{ needs.gate.outputs.matrix }}
+          RUN_ID: ${{ github.run_id }}_${{ github.run_attempt }}
+        run: |
+          set -euo pipefail
+          # Manual workflow dispatch is intentionally a credential-free,
+          # read-only rehearsal. It must never reserve or spend a quota slot.
+          if [ "$EVENT_NAME:$EVENT_ACTION" != "repository_dispatch:magolide-scheduled-tick" ]; then
+            echo 'permits={}' >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          git reset --hard refs/remotes/origin/main
+          STATE_FILE=localdata/theoddsapi_budget.json
+          python scripts/odds_budget.py reserve \
+            --state-file "$STATE_FILE" \
+            --matrix "$GATE_MATRIX" \
+            --run-id "$RUN_ID" \
+            --automated-tick \
+            --output-file odds-permits.json
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -- "$STATE_FILE"
+          # The workflow-level concurrency group prevents simultaneous run
+          # writers, but a human/main update can still race this reservation.
+          # Rebase and recompute from the newest durable ledger; never expose
+          # a permit until its reservation has been pushed successfully.
+          PUBLISHED=false
+          for attempt in 1 2 3; do
+            if git diff --cached --quiet; then
+              # A duplicate/no-capacity reservation is already safe in the
+              # durable ledger. It intentionally has no new runner permits.
+              PUBLISHED=true
+              break
+            fi
+            git commit -m "chore: reserve Odds API budget ${RUN_ID}"
+            if git push origin HEAD:main; then
+              PUBLISHED=true
+              break
+            fi
+            if [ "$attempt" = 3 ]; then
+              echo "Could not publish Odds API reservation after three attempts." >&2
+              exit 1
+            fi
+            git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+            git reset --hard refs/remotes/origin/main
+            python scripts/odds_budget.py reserve \
+              --state-file "$STATE_FILE" \
+              --matrix "$GATE_MATRIX" \
+              --run-id "$RUN_ID" \
+              --automated-tick \
+              --output-file odds-permits.json
+            git add -- "$STATE_FILE"
+          done
+          if [ "$PUBLISHED" != true ]; then
+            echo "Odds API reservation was not durably published." >&2
+            exit 1
+          fi
+          echo "permits=$(cat odds-permits.json)" >> "$GITHUB_OUTPUT"
+
+  league:
+    needs: [gate, preflight, odds-budget]
+    if: >-
+      needs.gate.outputs.run_any == 'true' &&
+      needs.preflight.result == 'success' &&
+      needs.odds-budget.result == 'success'
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+    timeout-minutes: 360
+    strategy:
+      # The gate emits only leagues with due work. One unavailable/failed
+      # league never cancels any other selected league.
+      fail-fast: false
+      # No max-parallel cap. A cap of 8 over 13 lanes ran the matrix in two
+      # waves, so a tick cost ~2x its slowest lane even though the second wave
+      # had idle capacity to spare. The matrix itself is the cap; the lane count
+      # is bounded by the registry, and settlement-only ticks (see `mode` below)
+      # are now cheap enough to run alongside the rest.
+      matrix: ${{ fromJSON(needs.gate.outputs.matrix) }}
+    name: ${{ matrix.label }}
+    env:
+      STATE_KEY: ${{ matrix.state_key }}
+      # `full` when the lane owes forecast, freeze or ticket work; `settle_only`
+      # when it is awake only to settle, reconcile or retry a source.
+      GATE_MODE: ${{ matrix.mode }}
+      LOCALDATA: localdata/${{ matrix.state_key }}
+      MAGOLIDE_WAREHOUSE: localdata/${{ matrix.state_key }}/warehouse.duckdb
+      # Predixsport is a prediction-only source. The Odds API key is withheld
+      # here and injected only by the permit step below for an automated,
+      # budget-reserved ticket-acquisition window.
+      PREDIXSPORT_API_KEY: ${{ secrets.PREDIXSPORT_API_KEY }}
+      ALLOW_MAGOLIDE_WRITES: "true"
+      ALLOW_NOTIFICATION_WRITES: "false"
+
+    steps:
+      - name: Enable registered league lifecycle
+        id: capability
+        env:
+          LEAGUE: ${{ matrix.league }}
+        run: |
+          set -euo pipefail
+          echo "available=true" >> "$GITHUB_OUTPUT"
+          echo "$LEAGUE enabled through its registry contract; unavailable source capabilities are reported as coverage gaps."
+
+      - name: Check out repository
+        if: steps.capability.outputs.available == 'true'
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        if: steps.capability.outputs.available == 'true'
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: pip
+
+      - name: Install project dependencies
+        if: steps.capability.outputs.available == 'true'
+        run: |
+          set -euo pipefail
+          python -m pip install --upgrade pip
+          python -m pip install .
+
+      - name: Restore league-isolated evidence-verified cache epoch
+        # Every league starts a fresh cache epoch. No pre-guard warehouse or
+        # artifact cache can bypass the current event/source evidence policy.
+        if: steps.capability.outputs.available == 'true'
+        uses: actions/cache/restore@v4
+        with:
+          path: ${{ env.LOCALDATA }}
+          key: magolide-localdata-evidence-v1-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          restore-keys: |
+            magolide-localdata-evidence-v1-${{ matrix.state_key }}-
+
+      - name: Restore Git-durable operator reports after cache recovery
+        if: steps.capability.outputs.available == 'true'
+        run: |
+          set -euo pipefail
+          STATE_DIR="localdata/${{ matrix.state_key }}"
+          # Runs are pinned to their event SHA, which may predate a serialized
+          # publisher commit that added a frozen receipt. Fetch the
+          # latest Git-authoritative operator state before using the cache.
+          git fetch --no-tags origin +refs/heads/main:refs/remotes/origin/main
+          MAIN_REF=refs/remotes/origin/main
+          # Delete only Git-durable compact operator state, dated text cards,
+          # and fixture-freeze evidence recovered from the cache before
+          # restoring it. Structured dated pick JSON, detailed lifecycle
+          # renders, full current-scan JSON, and expanded audits remain
+          # cache/artifact-only. Canonical data,
+          # ledgers, nested evidence, and unapproved files are not touched.
+          python - "$STATE_DIR" <<'PY'
+          from pathlib import Path
+          import re
+          import sys
+
+          state_dir = Path(sys.argv[1])
+          date = r"\d{4}-\d{2}-\d{2}"
+          allowed = tuple(
+              re.compile(pattern)
+              for pattern in (
+                  rf"picks_{date}\.txt",
+                  r"pick_lifecycle_state\.json",
+                  rf"coverage_gap_{date}\.json",
+                  r"archive_manifest\.json",
+                  r"auto_tickets_state\.json",
+                  r"auto_tickets_performance\.json",
+                  r"auto_tickets_performance\.txt",
+                  rf"auto_tickets_{date}\.txt",
+                  rf"auto_tickets_{date}_decision\.json",
+                  rf"auto_tickets_{date}_withdrawn\.json",
+                  # One count-only ABA historical receipt summary is Git
+                  # durable. It contains no raw source bodies or tickets.
+                  r"history_receipts\.json",
+              )
+          )
+          if state_dir.is_dir():
+              for path in state_dir.iterdir():
+                  if (
+                      path.is_file()
+                      and not path.is_symlink()
+                      and any(pattern.fullmatch(path.name) for pattern in allowed)
+                  ):
+                      path.unlink()
+          PY
+          if git cat-file -e "${MAIN_REF}:${STATE_DIR}" 2>/dev/null; then
+            git restore --source="$MAIN_REF" --worktree -- "$STATE_DIR"
+          fi
+
+      - name: Restore verified canonical checkpoint after a cold cache
+        if: steps.capability.outputs.available == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # The release checkpoint is only a cold-cache recovery source. A
+          # warm cache's DuckDB is newer and therefore wins; never overwrite it
+          # with a monthly/current release asset. It must, however, still hold
+          # every canonical row the committed checkpoint promises: a cache that
+          # lost its corpus can otherwise keep winning and re-pack itself as the
+          # new canonical state.
+          MANIFEST="$LOCALDATA/archive_manifest.json"
+          if [ -f "$MAGOLIDE_WAREHOUSE" ]; then
+            if python scripts/verify_checkpoint.py \
+              --warehouse "$MAGOLIDE_WAREHOUSE" \
+              --manifest "$MANIFEST" \
+              --state-key "$STATE_KEY"; then
+              echo "Warm warehouse verified against the committed checkpoint; release checkpoint not needed."
+              exit 0
+            fi
+            echo "::warning::Warm warehouse holds fewer canonical rows than the committed checkpoint; discarding it and recovering from the release asset."
+            rm -f "$MAGOLIDE_WAREHOUSE"
+          fi
+          if [ ! -f "$MANIFEST" ]; then
+            echo "No compact release checkpoint has been published for $STATE_KEY yet."
+            exit 0
+          fi
+          ASSET=$(python - "$MANIFEST" <<'PY'
+          import json
+          import sys
+          with open(sys.argv[1], encoding="utf-8") as handle:
+              manifest = json.load(handle)
+          print(manifest["asset_name"])
+          PY
+          )
+          TAG=$(python - "$MANIFEST" <<'PY'
+          import json
+          import sys
+          with open(sys.argv[1], encoding="utf-8") as handle:
+              manifest = json.load(handle)
+          print(manifest["release_tag"])
+          PY
+          )
+          ARCHIVE_DIR="$RUNNER_TEMP/magolide-release-$STATE_KEY"
+          mkdir -p "$ARCHIVE_DIR"
+          # A manifest in latest main is a durability promise. Do not silently
+          # replace it with an empty warehouse if its checked release asset is
+          # unavailable or corrupt.
+          gh release download "$TAG" --repo "$GITHUB_REPOSITORY" \
+            --pattern "$ASSET" --dir "$ARCHIVE_DIR" --clobber
+          python scripts/release_archive.py restore \
+            --archive "$ARCHIVE_DIR/$ASSET" \
+            --state-key "$STATE_KEY" \
+            --destination "$LOCALDATA" \
+            --expected-manifest "$MANIFEST"
+          ALLOW_MAGOLIDE_WRITES=true python scripts/recover_warehouse.py \
+            --warehouse "$MAGOLIDE_WAREHOUSE" \
+            --csv-dir "$LOCALDATA/csv"
+
+      - name: Recover retained artifact-only pick ledgers after a cold cache
+        if: steps.capability.outputs.available == 'true'
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          TARGET_DATE: ${{ matrix.target_date }}
+          STATE_KEY: ${{ matrix.state_key }}
+        run: |
+          set -euo pipefail
+          # Public dated cards deliberately omit raw structured pick evidence.
+          # After Git restores those cards, recover only prior pending card
+          # ledgers from this lane's retained Actions artifacts before grading.
+          python scripts/recover_pick_ledgers.py \
+            --localdata "$LOCALDATA" \
+            --target-date "$TARGET_DATE" \
+            --state-key "$STATE_KEY" \
+            --repository "$GITHUB_REPOSITORY"
+
+      - name: Authorise a cost-bounded Odds API request when reserved
+        if: steps.capability.outputs.available == 'true'
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+          LEAGUE: ${{ matrix.league }}
+          TARGET_DATE: ${{ matrix.target_date }}
+          PERMITS: ${{ needs.odds-budget.outputs.permits }}
+          ODDS_API_SECRET: ${{ secrets.THE_ODDS_API_KEY }}
+        run: |
+          set -euo pipefail
+          if [ "$EVENT_NAME:$EVENT_ACTION" != "repository_dispatch:magolide-scheduled-tick" ]; then
+            echo "No Odds API credential on manual rehearsal."
+            exit 0
+          fi
+          PERMIT=$(python - <<'PY'
+          import json
+          import os
+
+          permits = json.loads(os.environ.get("PERMITS") or "{}")
+          key = f"{os.environ['LEAGUE']}|{os.environ['TARGET_DATE']}"
+          permit = permits.get(key)
+          print(json.dumps(permit, sort_keys=True, separators=(",", ":")) if permit else "")
+          PY
+          )
+          if [ -z "$PERMIT" ] || [ -z "$ODDS_API_SECRET" ]; then
+            echo "No reserved Odds API permit or configured credential for this lane."
+            exit 0
+          fi
+          # GITHUB_ENV is not printed. The adapter validates this non-secret
+          # permit again before making the documented paid request.
+          printf 'THE_ODDS_API_KEY=%s\n' "$ODDS_API_SECRET" >> "$GITHUB_ENV"
+          printf 'THE_ODDS_API_PERMIT=%s\n' "$PERMIT" >> "$GITHUB_ENV"
+          echo 'THE_ODDS_API_REQUIRE_PERMIT=true' >> "$GITHUB_ENV"
+
+      - name: Execute every available stage automatically
+        if: steps.capability.outputs.available == 'true'
+        env:
+          LEAGUE: ${{ matrix.league }}
+          TARGET_DATE: ${{ matrix.target_date }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+        run: |
+          set -euo pipefail
+          ARGS=(
+            --auto-once
+            --league "$LEAGUE"
+            --date "$TARGET_DATE"
+            --warehouse "$MAGOLIDE_WAREHOUSE"
+            --localdata "$LOCALDATA"
+            --run-id "${GITHUB_RUN_ID}_${LEAGUE,,}_${GITHUB_RUN_ATTEMPT}"
+          )
+          # Result reconciliation, draft rendering, uncertainty, and manual
+          # rehearsal reuse retained evidence. They never invoke a paid book
+          # provider without the reservation job's explicit permit.
+          if [ -z "${THE_ODDS_API_PERMIT:-}" ]; then
+            ARGS+=(--skip-book-acquisition)
+          fi
+          # Settlement-only tick: nothing this lane owes needs new forecast or
+          # ticket state. History replay and the bet-config tuner are the two
+          # most expensive stages and neither can change a settled result, so
+          # both are skipped. The scan still runs -- a fixture that appears late
+          # must not be missed -- and the next full tick replays history normally.
+          if [ "${GATE_MODE:-full}" = "settle_only" ]; then
+            ARGS+=(--skip-backfill --skip-tuning)
+            echo "Settlement-only tick for $LEAGUE: history replay and tuning skipped."
+          fi
+
+          # Only the strictly named external dispatch may persist canonical
+          # state. Manual dispatch stays a live, all-league read-only rehearsal.
+          AUTOMATED_TICK=false
+          case "$EVENT_NAME:$EVENT_ACTION" in
+            repository_dispatch:magolide-scheduled-tick)
+              AUTOMATED_TICK=true
+              ;;
+          esac
+          if [ "$AUTOMATED_TICK" = "true" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
+            ARGS+=(--write)
+            if [ "$ALLOW_NOTIFICATION_WRITES" = "true" ]; then
+              ARGS+=(--notify --send-notifications)
+            fi
+          else
+            echo "Live dry run for $LEAGUE; canonical writes are disabled for this dispatch."
+          fi
+
+          python scripts/daily.py "${ARGS[@]}" | tee daily-output.json
+
+      - name: Score aggregate-price lanes with MAGOLIDE_SCORE
+        # Greece, WCBA and WNBL carry a fixtures page, an aggregate price and a
+        # published table, but no compliant schedule/result adapter -- so the
+        # forecast path that builds every other lane's card never runs for them.
+        # Scoring them from the published table is the only honest option left,
+        # and it now happens on every tick instead of only when a human
+        # remembered the script existed. NKL is here too: its results route is
+        # separate from its standings route, so this block is its only
+        # banker/robber view.
+        #
+        # The script paces every request at the host's measured ten-second
+        # floor, and reads one fixtures page, one match page, and one fragment
+        # per sub-table, so this costs seconds. `continue-on-error` is deliberate:
+        # a throttled research read must never suppress the lane's real picks,
+        # ticket card, or settlement evidence from the upload below.
+        if: >-
+          steps.capability.outputs.available == 'true' &&
+          env.GATE_MODE != 'settle_only' &&
+          contains(
+            fromJSON('["GREECE_BASKET_LEAGUE","CHINA_WCBA_W","AUSTRALIA_WNBL_W","LITHUANIA_NKL"]'),
+            matrix.league
+          )
+        continue-on-error: true
+        env:
+          LEAGUE: ${{ matrix.league }}
+          TARGET_DATE: ${{ matrix.target_date }}
+          EVENT_NAME: ${{ github.event_name }}
+          EVENT_ACTION: ${{ github.event.action }}
+        run: |
+          set -euo pipefail
+          ARGS=(
+            --league "$LEAGUE"
+            --date "$TARGET_DATE"
+            --localdata "$LOCALDATA"
+          )
+          # A manual dispatch stays the repository's read-only rehearsal: it
+          # scores the lane and prints the block without touching a card.
+          AUTOMATED_TICK=false
+          case "$EVENT_NAME:$EVENT_ACTION" in
+            repository_dispatch:magolide-scheduled-tick)
+              AUTOMATED_TICK=true
+              ;;
+          esac
+          if [ "$AUTOMATED_TICK" = "true" ] && [ "$ALLOW_MAGOLIDE_WRITES" = "true" ]; then
+            :
+          else
+            ARGS+=(--dry-run)
+            echo "Read-only rehearsal for $LEAGUE; the research block is printed, not written."
+          fi
+          python scripts/research_standings.py "${ARGS[@]}" | tee research-output.txt
+
+      - name: Publish MAGOLIDE_SCORE research summary
+        if: always()
+        run: |
+          set -euo pipefail
+          if [ ! -s research-output.txt ]; then
+            exit 0
+          fi
+          {
+            echo "## MAGOLIDE_SCORE research lane"
+            echo '```'
+            head -40 research-output.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish redacted operational summary
+        if: always()
+        env:
+          LEAGUE: ${{ matrix.league }}
+        run: |
+          python scripts/render_step_summary.py >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Persist league-isolated evidence-verified cache epoch
+        if: >-
+          success() &&
+          steps.capability.outputs.available == 'true' &&
+          github.event_name == 'repository_dispatch' &&
+          github.event.action == 'magolide-scheduled-tick'
+        uses: actions/cache/save@v4
+        with:
+          path: ${{ env.LOCALDATA }}
+          key: magolide-localdata-evidence-v1-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+
+      - name: Upload successful league reports and recovery evidence
+        # A failed pipeline can leave a partially rendered mutable card beside
+        # an older compact summary. Only a successful lane may publish its
+        # ticket/performance state, but a failed sibling must not suppress
+        # publication from every other successful matrix lane.
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: MaGolide-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            daily-output.json
+            ${{ env.LOCALDATA }}/reports/*.json
+            ${{ env.LOCALDATA }}/ledgers/
+            ${{ env.LOCALDATA }}/assay_*.json
+            ${{ env.LOCALDATA }}/picks_*.json
+            ${{ env.LOCALDATA }}/picks_*.txt
+            ${{ env.LOCALDATA }}/picks_audit_*.md
+            ${{ env.LOCALDATA }}/pick_lifecycle_state.json
+            ${{ env.LOCALDATA }}/coverage_gap_*.json
+            ${{ env.LOCALDATA }}/history_receipts.json
+            ${{ env.LOCALDATA }}/auto_tickets_*.json
+            ${{ env.LOCALDATA }}/auto_tickets_*.txt
+            ${{ env.LOCALDATA }}/csv/*.csv.gz
+          if-no-files-found: ignore
+          retention-days: 14
+
+      - name: Preserve durable pick lifecycle evidence from an interrupted lane
+        # Inline lifecycle locks are immutable and atomic. If a later
+        # non-ticket stage fails, retain the complete pick lifecycle needed to
+        # replay/settle that fixture, but never publish a partial ticket card,
+        # receipt, or compact performance summary from a failed lane.
+        if: >-
+          failure() &&
+          steps.capability.outputs.available == 'true' &&
+          github.event_name == 'repository_dispatch' &&
+          github.event.action == 'magolide-scheduled-tick'
+        uses: actions/upload-artifact@v4
+        with:
+          name: MaGolide-lifecycle-${{ matrix.state_key }}-${{ github.run_id }}-${{ github.run_attempt }}
+          path: |
+            ${{ env.LOCALDATA }}/picks_*.json
+            ${{ env.LOCALDATA }}/picks_*.txt
+            ${{ env.LOCALDATA }}/pick_lifecycle_state.json
+          if-no-files-found: ignore
+          retention-days: 14
+
+  publish-localdata:
+    name: Publish localdata to repository
+    needs: [gate, preflight, odds-budget, league]
+    # Only the strictly named external tick may make live operator evidence
+    # durable. Manual dispatch uploads artifacts but cannot publish. The matrix
+    # result is deliberately not a global publication veto: only successful-lane
+    # artifacts (and restricted lifecycle recovery artifacts) exist to merge,
+    # so an unrelated failed lane cannot strand completed settlement evidence.
+    if: >-
+      always() &&
+      needs.gate.outputs.run_any == 'true' &&
+      needs.preflight.result == 'success' &&
+      github.ref == 'refs/heads/main' &&
+      github.event_name == 'repository_dispatch' &&
+      github.event.action == 'magolide-scheduled-tick'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - name: Check out latest repository operator state
+        uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+
+      - name: Download this run's league artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: MaGolide-*-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/magolide-artifacts
+
+      - name: Reconcile authoritative Odds API quota headers
+        # Reservations are intentionally never released on a failed worker.
+        # Completed pregame reports can only tighten the next run's remaining
+        # quota view using provider-returned numeric headers.
+        run: |
+          set -euo pipefail
+          python scripts/odds_budget.py reconcile \
+            --state-file localdata/theoddsapi_budget.json \
+            --artifacts "${{ runner.temp }}/magolide-artifacts"
+
+      - name: Merge derived league reports without deleting history
+        run: |
+          set -euo pipefail
+          python scripts/publish_localdata.py \
+            --artifacts "${{ runner.temp }}/magolide-artifacts" \
+            --repo .
+
+      - name: Build compact canonical release checkpoints
+        env:
+          ARCHIVE_DIR: ${{ runner.temp }}/magolide-release
+          ARCHIVE_TAG: magolide-state-current
+        run: |
+          set -euo pipefail
+          python scripts/release_archive.py build \
+            --artifacts "${{ runner.temp }}/magolide-artifacts" \
+            --repo . \
+            --output "$ARCHIVE_DIR" \
+            --release-tag "$ARCHIVE_TAG"
+
+      - name: Upload verified checkpoints to GitHub Releases
+        id: release-checkpoints
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARCHIVE_DIR: ${{ runner.temp }}/magolide-release
+          ARCHIVE_TAG: magolide-state-current
+        run: |
+          set -euo pipefail
+          shopt -s nullglob
+          assets=("$ARCHIVE_DIR"/magolide-state-*.tar.gz)
+          if [ "${#assets[@]}" -eq 0 ]; then
+            echo "No successful canonical CSV artifacts to checkpoint."
+            echo "available=false" >> "$GITHUB_OUTPUT"
+            exit 0
+          fi
+          if ! gh release view "$ARCHIVE_TAG" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            gh release create "$ARCHIVE_TAG" --repo "$GITHUB_REPOSITORY" \
+              --target main \
+              --title "Ma Golide compact canonical checkpoint" \
+              --notes "Rolling, checksummed canonical checkpoint assets. Git retains only compact manifests."
+          fi
+          gh release upload "$ARCHIVE_TAG" "${assets[@]}" --repo "$GITHUB_REPOSITORY" --clobber
+          gh release upload "$ARCHIVE_TAG" "$ARCHIVE_DIR/release-index.json" \
+            --repo "$GITHUB_REPOSITORY" --clobber
+          echo "available=true" >> "$GITHUB_OUTPUT"
+
+      - name: Compact mutable Git state after checkpoint upload
+        # Detailed cards remain Git-visible; this idempotent migration only
+        # compacts mutable state summaries after verified checkpoint upload.
+        if: steps.release-checkpoints.outputs.available == 'true'
+        run: |
+          set -euo pipefail
+          python scripts/publish_localdata.py \
+            --artifacts "${{ runner.temp }}/magolide-artifacts" \
+            --repo . \
+            --compact-existing
+
+      - name: Commit and publish durable localdata
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -d localdata ]; then
+            git add -A -- localdata
+          fi
+          if git diff --cached --quiet; then
+            echo "No derived localdata changes to publish."
+            exit 0
+          fi
+          git commit -m "chore: publish localdata run ${GITHUB_RUN_ID} attempt ${GITHUB_RUN_ATTEMPT}"
+
+          # Never force-push. A concurrent human/bot update is rebased first;
+          # conflicting immutable receipts fail visibly for operator review.
+          for attempt in 1 2 3; do
+            git pull --rebase origin main
+            if git push origin HEAD:main; then
+              echo "Published localdata on attempt ${attempt}."
+              exit 0
+            fi
+            sleep "$((attempt * 5))"
+          done
+          echo "Could not publish localdata after three synchronized attempts." >&2
+          exit 1
