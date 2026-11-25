@@ -119,6 +119,22 @@ def _candidate_rank(row: Forecast) -> tuple:
     )
 
 
+def _is_named_book_priced(forecast: Forecast) -> bool:
+    """Whether a row's quote is a bookmaker's own, not an aggregate average.
+
+    A lane that declares ``requires_named_book_quote`` may not be priced by a
+    consensus average, however exact the number is. ``price_provenance`` is the
+    only field that says which this is -- ``price_provenance_label`` exists so
+    the answer is also legible on a card.
+    """
+
+    book = forecast.book
+    if book is None:
+        return False
+    provenance = getattr(book, "price_provenance", None)
+    return str(getattr(provenance, "value", provenance)) == "named_book"
+
+
 def _eligible_candidate_picks(
     forecasts: Iterable[Forecast], *, allow_provisional: bool = False
 ) -> List[Forecast]:
@@ -314,6 +330,7 @@ def filter_paper_candidate_picks(
     minimum_historical_picks_for_band: int = 1,
     require_positive_expected_value: bool = False,
     require_point_in_time_price: bool = False,
+    require_named_book_quote: bool = False,
     admit_cold_start_bands: bool = True,
 ) -> tuple[List[Forecast], dict]:
     """Route paper picks through adaptive, market-specific positive-ROI bands.
@@ -326,6 +343,19 @@ def filter_paper_candidate_picks(
     pick, positive recency-weighted ROI, and positive adjusted ROI. There is no
     long sample-size qualification period and an unseen band cannot inherit
     eligibility merely from a positive parent baseline.
+
+    Named-book lanes (strict contract)
+    ----------------------------------
+    ``require_named_book_quote`` makes a lane's *declared* contract operative.
+    ``EUROLEAGUE_STRICT_NAMED_BOOK_VALUE_TICKET_LANE`` has always said
+    "aggregate consensus quotes are excluded" and set
+    ``requires_named_book_quote: true``, but nothing read it: the global policy
+    accepts a consensus average so aggregate-only lanes can price paper tickets,
+    and the strict lane inherited that as if it were its own. On 2026-11-25 that
+    lane priced 5 of 11 eligible rows and all 4 strict acca candidates on quotes
+    its own data labels "AGGREGATE CONSENSUS AVERAGE — NOT A NAMED-BOOK QUOTE".
+    A lane that declares the stricter contract now gets it, and the excluded
+    count is reported instead of the rows vanishing.
 
     Cold start (operator decision 2026-11-22)
     -----------------------------------------
@@ -363,6 +393,8 @@ def filter_paper_candidate_picks(
         raise ValueError("require_positive_expected_value must be a boolean")
     if not isinstance(require_point_in_time_price, bool):
         raise ValueError("require_point_in_time_price must be a boolean")
+    if not isinstance(require_named_book_quote, bool):
+        raise ValueError("require_named_book_quote must be a boolean")
     if not isinstance(admit_cold_start_bands, bool):
         raise ValueError("admit_cold_start_bands must be a boolean")
     as_of = parse_utc(as_of_utc)
@@ -381,6 +413,11 @@ def filter_paper_candidate_picks(
             scoped_candidates.append(row)
     else:
         scoped_candidates = candidate_pool
+    excluded_no_named_book_quote = 0
+    if require_named_book_quote:
+        named_book_only = [row for row in scoped_candidates if _is_named_book_priced(row)]
+        excluded_no_named_book_quote = len(scoped_candidates) - len(named_book_only)
+        scoped_candidates = named_book_only
     candidates = (
         [
             row
@@ -608,6 +645,8 @@ def filter_paper_candidate_picks(
         "minimum_historical_pick_count_for_band": minimum_historical_picks_for_band,
         "require_positive_expected_value": require_positive_expected_value,
         "require_point_in_time_price": require_point_in_time_price,
+        "require_named_book_quote": require_named_book_quote,
+        "excluded_no_named_book_quote_count": excluded_no_named_book_quote,
         "cold_start_admission": {
             "enabled": admit_cold_start_bands,
             "applies_when_lane_settled_pick_count_is_zero": True,

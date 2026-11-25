@@ -316,6 +316,27 @@ def test_gate_fails_open_when_a_schedule_cannot_be_read(tmp_path: Path):
     assert decision.reasons == ("schedule_uncertain: temporary provider outage",)
 
 
+def test_a_missing_module_is_an_environment_error_not_a_schedule_property(tmp_path: Path):
+    """2026-11-25: both Japan lanes read `schedule_uncertain: No module named
+    'requests'` and went dark. The schedule had nothing to do with it: the gate's
+    own runner lacked the dependency, while preflight in the same run installed
+    `requests` and passed 1672 tests. A missing import must never be reported as
+    timetable evidence -- the lane still fails open, but the label says why.
+    """
+
+    nba = LEAGUES[0]
+    _operator_state(tmp_path, nba, date="2026-11-18")
+
+    def unavailable(_config, _date):
+        raise ModuleNotFoundError("No module named 'requests'")
+
+    decision = evaluate_league(nba, state_root=tmp_path, now=NOW, schedule_fetcher=unavailable)
+
+    assert decision.should_run
+    assert decision.reasons == ("environment_error: No module named 'requests'",)
+    assert not any("schedule_uncertain" in reason for reason in decision.reasons)
+
+
 def test_gate_fails_open_when_performance_is_from_the_wrong_league(tmp_path: Path):
     nba = LEAGUES[0]
     _operator_state(tmp_path, nba, date="2026-11-18")

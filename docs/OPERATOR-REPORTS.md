@@ -374,6 +374,86 @@ Read it carefully rather than optimistically:
   from the accas, which are a small net loser;
 - n=21 is still small, so this is a reason to keep watching, not a verdict.
 
+## The strict lane's declaration is code
+
+`EUROLEAGUE_STRICT_NAMED_BOOK_VALUE_TICKET_LANE` has always printed
+`requires_named_book_quote: true` and *"aggregate consensus quotes are excluded"*.
+Until 2026-11-25 that was prose. The shared paper policy accepts an aggregate
+consensus average so that aggregate-only lanes are not permanently limited to
+zero tickets (operator decision 2026-11-22, `BookEvidence.ticket_price_eligible`),
+and the strict lane inherited that acceptance as though it were its own.
+
+On 2026-11-25 the run showed what that cost: of 11 eligible EuroLeague rows, 5
+were priced on quotes whose own label reads *"AGGREGATE CONSENSUS AVERAGE — NOT A
+NAMED-BOOK QUOTE"*, and all four strict acca candidates carried one or two such
+legs. Nothing on any card could have said so — the reason vocabulary had no token
+for provenance. The tickets did not publish, because the positive-EV gate blocked
+every candidate independently (best EV −0.450/unit). That was luck, not a gate.
+
+`filter_paper_candidate_picks(require_named_book_quote=True)` now enforces the
+declared contract: `price_provenance` must be `named_book`, and the excluded rows
+are counted rather than dropped silently.
+
+| where | key |
+|---|---|
+| `paper_pick_filter` | `require_named_book_quote`, `excluded_no_named_book_quote_count` |
+| `candidate_funnel` | `paper_excluded_no_named_book_quote_rows` |
+| `paper_lane` (EuroLeague only) | `named_book_requirement_enforced`, `excluded_no_named_book_quote_candidates` |
+
+The shared policy is untouched: a lane that does not declare the strict contract
+still prices consensus averages, and every card line still carries the
+provenance label.
+
+## Two funnel numbers that legitimately disagree
+
+`candidate_funnel.eligible_rows` and `priced_and_calibrated_rows` count different
+populations. Eligibility also admits a row whose calibration did not reach
+`sufficient_for_accas` — a provisional admission, or a probability floor that
+passed on a thin sample. So `eligible_rows` may exceed
+`priced_and_calibrated_rows`; on 2026-11-25 EuroLeague printed 11 over 10, one
+line apart, and the arithmetic looked broken.
+
+It was not. The funnel now names the gap instead of hiding it:
+
+```
+"eligible_rows_without_calibration_sufficiency": 1,
+"funnel_reconciliation": {
+  "eligible_rows_exceed_calibrated_rows": true,
+  "explained_by_rows_admitted_without_calibration_sufficiency": 1,
+  "unexplained_eligible_rows": 0
+}
+```
+
+`unexplained_eligible_rows` is the number that matters: it should always be zero.
+A non-zero value is a real counting bug.
+
+## Counters that describe a receipt, not a scan
+
+`counts.published_accas` and `counts.published_singles` count tickets in the
+**stored receipt** for that date. That receipt may have been frozen by an earlier
+run, under earlier rules — on 2026-11-24, NCAA_M's was frozen at 10:07Z holding
+five accas built before the leg-price floor existed. Read beside a current
+`paper_accas: 0` it looks like a contradiction; it is history.
+
+Both counters are now labelled:
+
+```
+"published_counts_scope": "stored_receipt_not_this_run_funnel",
+"published_receipt_decision_id": "45366895912_ncaa_m_1_attempt_1",
+"published_receipt_frozen_at": "2026-11-24T10:07:12Z"
+```
+
+## A missing import is not a timetable
+
+The adaptive gate fails open when a schedule cannot be read, recording
+`schedule_uncertain: <detail>`. It used to do that for every exception, so on
+2026-11-25 both Japan lanes went dark recording
+`schedule_uncertain: No module named 'requests'` — a broken dependency in the
+gate's own runner, in a run whose preflight had installed `requests` and passed
+1672 tests ten minutes earlier. A `ModuleNotFoundError` now yields
+`environment_error: <detail>`: the lane still runs, but the label says CI rot
+rather than a league without fixtures.
+
 ## Publication and freeze
 
 When `accas.paper_results` is present, the operator uses that paper-only

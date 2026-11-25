@@ -4489,15 +4489,42 @@ def _ticket_candidate_funnel(market_report: Dict[str, Any] | None) -> Dict[str, 
         required_games = int(acca_report.get("requested_legs") or 3)
     except (TypeError, ValueError):
         required_games = 3
+    # Two different populations, and the funnel must say so. `eligible_rows`
+    # counts rows the gates admitted; `priced_and_calibrated_rows` counts rows
+    # whose calibration was sufficient. A row admitted provisionally, or on a
+    # probability floor that passed while the sample stayed thin, is eligible
+    # without being "calibrated", so the second number can legitimately sit
+    # below the first. On 2026-11-25 EuroLeague published `eligible_rows: 11`
+    # over `priced_and_calibrated_rows: 10` with nothing to explain the gap,
+    # which reads as a counting bug. The gap is not fudged here: it is counted
+    # and named, so the arithmetic reconciles on the card.
+    priced_and_calibrated_rows = sum(
+        exact_price(row) and (row.get("calibration") or {}).get("sufficient_for_accas") is True
+        for row in rows
+    )
+    eligible_without_calibration = sum(
+        1
+        for row in eligible
+        if (row.get("calibration") or {}).get("sufficient_for_accas") is not True
+    )
     funnel = {
         "scan_rows": len(rows),
         "exact_priced_rows": len(priced),
         "calibration_sufficient_rows": len(calibrated),
-        "priced_and_calibrated_rows": sum(
-            exact_price(row) and (row.get("calibration") or {}).get("sufficient_for_accas") is True
-            for row in rows
-        ),
+        "priced_and_calibrated_rows": priced_and_calibrated_rows,
         "eligible_rows": len(eligible),
+        # Why `eligible_rows` may exceed `priced_and_calibrated_rows`.
+        "eligible_rows_without_calibration_sufficiency": eligible_without_calibration,
+        "funnel_reconciliation": {
+            "eligible_rows_exceed_calibrated_rows": len(eligible) > priced_and_calibrated_rows,
+            "explained_by_rows_admitted_without_calibration_sufficiency": (
+                eligible_without_calibration
+            ),
+            "unexplained_eligible_rows": max(
+                0,
+                len(eligible) - priced_and_calibrated_rows - eligible_without_calibration,
+            ),
+        },
         "eligible_games": len(eligible_games),
         "provisional_sample_only_rows": len(provisional),
         "provisional_sample_only_games": len(provisional_games),
@@ -5552,8 +5579,17 @@ def publish_operator_reports(
             "graded_picks": audit["settled_picks"],
             # Backward-compatible alias; this now includes same-day finals.
             "graded_prior_picks": audit["settled_picks"],
+            # These two describe the *stored receipt*, which may have been
+            # frozen by an earlier run on the same date under earlier rules.
+            # They are not this run's funnel, and the labels below are what stop
+            # a reader (or a triage) pairing them with `paper_accas` and calling
+            # it a contradiction: on 2026-11-24 NCAA_M's receipt was frozen at
+            # 10:07Z holding five accas built before the leg-price floor existed.
             "published_accas": len(receipt.get("accas") or []) if receipt else 0,
             "published_singles": len(receipt.get("singles") or []) if receipt else 0,
+            "published_counts_scope": "stored_receipt_not_this_run_funnel",
+            "published_receipt_decision_id": receipt.get("decision_id") if receipt else None,
+            "published_receipt_frozen_at": receipt.get("frozen_at") if receipt else None,
             "settled_positions": performance["settled_positions"],
             "pending_positions": performance["pending_positions"],
             "settled_accas": performance["settled_accas"],
