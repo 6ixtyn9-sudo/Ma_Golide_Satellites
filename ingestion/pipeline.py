@@ -239,6 +239,9 @@ class PipelineConfig:
     acquire_book_lines: bool = True
     # Used only by committed offline fixtures so replay evidence is stable.
     fixture_now_utc: Optional[str] = None
+    # True only for committed offline fixture replays (--offline-fixture);
+    # disables external book fetches so offline ticks never touch the network.
+    offline_fixture: bool = False
 
     @property
     def league_enum(self) -> League:
@@ -2210,9 +2213,24 @@ class Pipeline:
         """
 
         raw_snapshots: List[BookSnapshot] = []
+        configured_providers = _book_providers(self.config.league)
+        if self.config.offline_fixture:
+            # Offline fixture replays must be completely hermetic: disable
+            # every configured book source by name rather than letting
+            # transport-owning fallbacks (e.g. betexplorer_direct) hit the wire.
+            for provider in configured_providers:
+                self.book_provider_status[provider] = {
+                    "enabled": False,
+                    "status": "disabled",
+                    "detail": (
+                        "offline fixture replay: no network reads; "
+                        "committed fixtures carry no live prices"
+                    ),
+                }
+            return {}
         providers = tuple(
             provider
-            for provider in _book_providers(self.config.league)
+            for provider in configured_providers
             if not (paid_sources_deferred and provider in PAID_BOOK_PROVIDERS)
         )
         if paid_sources_deferred:

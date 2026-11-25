@@ -450,6 +450,7 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
             fixture_now_utc=(
                 f"{args.date.replace('-', '')}T00:00:00Z" if args.offline_fixture else None
             ),
+            offline_fixture=bool(args.offline_fixture),
         )
         pipeline = Pipeline(
             config,

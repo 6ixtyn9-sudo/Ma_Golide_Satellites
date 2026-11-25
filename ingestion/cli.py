@@ -153,6 +153,7 @@ def main(argv: Optional[List[str]] = None) -> int:
         fixture_now_utc=(
             f"{args.date.replace('-', '')}T00:00:00Z" if args.offline_fixture else None
         ),
+        offline_fixture=bool(args.offline_fixture),
     )
     store = (
         InMemoryStore()

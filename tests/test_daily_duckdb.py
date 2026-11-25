@@ -487,3 +487,28 @@ def test_stage_seconds_finally_handles_mid_tick_failure_cleanly(tmp_path, monkey
     with pytest.raises(RuntimeError, match="injected_pregame_failure"):
         run_daily(_args(tmp_path))
 
+
+def test_an_offline_fixture_tick_touches_no_network(tmp_path):
+    """Offline fixture replay must never make live HTTP requests or block on network."""
+
+    from ingestion.pipeline import PipelineConfig
+
+    # Default stays False so non-offline callers and injected-fetch tests are untouched.
+    assert PipelineConfig(league="NBA", date_yyyymmdd="20261107").offline_fixture is False
+
+    summary = run_daily(_args(tmp_path))
+    pregame = summary["commands"]["pregame"]
+    acquisition = pregame["acquisition"]
+
+    assert acquisition["transport_attempts"] == 0
+    assert acquisition["transport_errors"] == 0
+    assert summary["stage_seconds"]["odds"] < 5.0
+
+    book_status = pregame["book_provider_status"]
+    for provider in ("theoddsapi", "betexplorer_direct"):
+        assert provider in book_status
+        assert book_status[provider]["enabled"] is False
+        assert book_status[provider]["status"] == "disabled"
+        assert "offline fixture replay" in book_status[provider]["detail"]
+
+
