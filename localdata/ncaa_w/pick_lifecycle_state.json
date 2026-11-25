@@ -47,7 +47,7 @@
     },
     "2026-11-25": {
       "evidence_rows": 148,
-      "frozen_fixtures": 0,
+      "frozen_fixtures": 1,
       "logical_picks": 113
     }
   },
@@ -48433,9 +48433,156 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-24"
       }
+    },
+    "2026-11-25": {
+      "401921393": {
+        "decision_cutoff_utc": "2026-11-25T13:00:00Z",
+        "frozen_at": "2026-11-25T13:13:21Z",
+        "game_id": "401921393",
+        "league": "NCAA_W",
+        "rows": [
+          {
+            "away": "Southern Jaguars",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.725118,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 478,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "8f76b8999a063b1d1e8cfea933fd21a6f6bf446aab217d69070f92b60e313640",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "721d51f36f6430b14e25",
+            "game_id": "401921393",
+            "grade_status": "pending",
+            "home": "Syracuse Orange",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "721d51f36f6430b14e25",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.8,
+            "role": null,
+            "scheduled_utc": "2026-11-25T15:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Southern Jaguars",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.921827,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 298,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "6115c68e57dc9cb833b7c8a3765cad53dc02a4e52bb0f74fcbd75b7cdad65720",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "11ed833e5945487cbf4f",
+            "game_id": "401921393",
+            "grade_status": "pending",
+            "home": "Syracuse Orange",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "11ed833e5945487cbf4f",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-25T12:49:17Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9661,
+            "role": null,
+            "scheduled_utc": "2026-11-25T15:00:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Southern Jaguars",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.8534,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 473,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "ef27d76324acc02930da0f549bdb2f7b2d9bd373f5393523c9f7f78701546801",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "66546ef04edc1430896d",
+            "game_id": "401921393",
+            "grade_status": "pending",
+            "home": "Syracuse Orange",
+            "league": "NCAA_W",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "66546ef04edc1430896d",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.91,
+            "role": null,
+            "scheduled_utc": "2026-11-25T15:00:00Z",
+            "selection": "home"
+          }
+        ],
+        "scheduled_utc": "2026-11-25T15:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-25"
+      }
     }
   },
   "league": "NCAA_W",
-  "pending_frozen_games": [],
+  "pending_frozen_games": [
+    [
+      "401921393",
+      "2026-11-25T15:00:00Z"
+    ]
+  ],
   "schema_version": "magolide.pick_lifecycle_state"
 }
