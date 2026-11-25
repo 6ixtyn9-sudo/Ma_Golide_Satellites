@@ -1666,8 +1666,10 @@ def _render_picks(
                 and roi_band.get("qualification_basis") == "cold_start_no_settled_history"
             ):
                 status = "PAPER SINGLE · COLD START (lane has settled nothing yet)"
+            band_league = roi_band.get("league") or row.get("league") or league
+            league_prefix = f"{band_league} " if band_league else ""
             lines.append(
-                f"      {status} · {roi_band.get('market', 'unknown')} "
+                f"      {status} · {league_prefix}{roi_band.get('market', 'unknown')} "
                 f"{roi_band.get('period', 'unknown')} · p {roi_band.get('probability_band', 'unknown')} "
                 f"· odds {roi_band.get('individual_odds_band', 'unknown')} · "
                 f"n={int(roi_band.get('historical_pick_count') or 0)} · "
@@ -4533,8 +4535,12 @@ def _render_ticket_card(
                     if isinstance(adjusted_roi, (int, float)) and not isinstance(adjusted_roi, bool)
                     else "n/a"
                 )
+                band_league = (
+                    details.get("league") or leg.get("league") or receipt.get("league")
+                )
+                league_prefix = f"{band_league} " if band_league else ""
                 lines.append(
-                    f"      ROI band: {details.get('market', leg.get('market'))} "
+                    f"      ROI band: {league_prefix}{details.get('market', leg.get('market'))} "
                     f"{details.get('period', leg.get('period'))} · "
                     f"p {details.get('probability_band', 'unknown')} · "
                     f"odds {details.get('individual_odds_band', 'unknown')} · "

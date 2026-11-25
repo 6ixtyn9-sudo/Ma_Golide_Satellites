@@ -259,6 +259,7 @@ def _compact_roi_band(value: object) -> dict[str, Any] | None:
     return _subset(
         value,
         (
+            "league",
             "market",
             "period",
             "probability_band",
