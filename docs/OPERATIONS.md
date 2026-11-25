@@ -146,6 +146,32 @@ dated text cards to `main`; structured dated pick JSON, detailed
 lifecycle renders, current-scan pick JSON, and expanded audits stay in cache and
 bounded workflow artifacts.
 
+### The gate imports no third-party packages
+
+`gate` runs on a bare `setup-python` with nothing installed — deliberately, so a
+dependency failure in the pipeline cannot take the scheduler down with it. The
+gate still imports provider modules, because it needs their **parsers**; it does
+its own page reads with `urllib`.
+
+That contract holds only while a parser stays transport-free. It did not:
+`ingestion/http.py` imported `requests` at module scope, so importing the
+B.League adapter to reach `parse_slate` raised `ModuleNotFoundError` and both
+Japan lanes were gated on 2026-11-25 with
+
+```
+schedule_uncertain: No module named 'requests'
+```
+
+for a reason no schedule had anything to do with, while preflight in the same run
+had installed the package and passed its suite. `requests` is now optional at
+import time, and constructing an actual `HttpClient` without it raises a message
+that says which dependency is missing. `tests/test_adaptive_gate.py` runs the gate
+in a subprocess with `sys.modules["requests"] = None` to keep that true.
+
+Rule for new adapters: a module the gate imports must parse without a transport.
+Put network calls behind an injected `fetch`, or lazily inside the function that
+needs them.
+
 ### What a tick costs
 
 Wall clock is a scheduling input, not an afterthought. A tick used to cost the
