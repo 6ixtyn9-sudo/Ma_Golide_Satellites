@@ -11,8 +11,9 @@ never be a ticket, a price-backed pick, or a settlement grade:
 
 * the feature weights are the retired tuner's *baseline*, not a measured fit
   for any lane this module may run on;
-* the lanes it targets have ``results_source="source_unavailable"`` — there is
-  no reconciled final to calibrate against or to settle with;
+* the lanes it targets have no calibrated model of their own. Until 2026-11-25
+  they also had no reconciled final to calibrate against; three of the four now
+  settle, so what this module still lacks is a measurement, not a route;
 * the repo's walk-forward and sample gates (30-row minimum, Wilson/shrinkage)
   apply to any future promotion and none of them can pass on a lane without
   results.
