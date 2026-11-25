@@ -1494,12 +1494,17 @@ class Pipeline:
                             "slate_games": probe.get("slate_games", 0),
                             "slate_priced_rows": probe.get("slate_priced_rows", 0),
                             "blank_kickoff_rows": probe.get("blank_kickoff_rows", 0),
+                            "blank_kickoff_rows_with_date": probe.get(
+                                "blank_kickoff_rows_with_date", 0
+                            ),
                         },
                         detail=(
                             f"url={probe.get('url')} rows={probe.get('rows')} "
                             f"slate_games={probe.get('slate_games')} "
                             f"slate_priced_rows={probe.get('slate_priced_rows')} "
-                            f"blank_kickoff_rows={probe.get('blank_kickoff_rows')}"
+                            f"blank_kickoff_rows={probe.get('blank_kickoff_rows')} "
+                            f"blank_kickoff_rows_with_date="
+                            f"{probe.get('blank_kickoff_rows_with_date')}"
                         )[:500],
                     )
                 )

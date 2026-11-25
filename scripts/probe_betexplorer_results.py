@@ -674,8 +674,8 @@ def finished_candidates(
     cutoff = now - LIVE_GUARD
     output: list[dict[str, str]] = []
     seen: set[str] = set()
-    for local_dt, match_id, _slug, home, away, _odds in _rows(html, now):
-        if local_dt >= cutoff or match_id in seen:
+    for local_dt, match_id, _slug, home, away, _odds, raw_label in _rows(html, now):
+        if local_dt is None or not raw_label or local_dt >= cutoff or match_id in seen:
             continue
         seen.add(match_id)
         output.append(

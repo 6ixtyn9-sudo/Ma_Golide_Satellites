@@ -275,6 +275,14 @@ def test_pipeline_dispatch_writes_the_slate_and_its_receipt():
     )
     assert health["coverage"]["slate_games"] == len(games)
     assert health["coverage"]["blank_kickoff_rows"] > 0
+    assert (
+        health["coverage"]["blank_kickoff_rows_with_date"]
+        == health["coverage"]["blank_kickoff_rows"]
+    )
+    assert (
+        f"blank_kickoff_rows_with_date={health['coverage']['blank_kickoff_rows_with_date']}"
+        in health["detail"]
+    )
     # NKL's results are store-driven: a fixtures page holds no result, so the
     # same-day finals path returns nothing *without* claiming the route is
     # missing. Pending games are settled by the re-check from the club and match
@@ -377,3 +385,164 @@ def test_leumit_is_retired_because_it_could_never_settle():
     refusal = retirement_guard(parse_league("ISRAEL_LIGA_LEUMIT"))
     assert refusal and "retired" in refusal
     assert retirement_guard(parse_league("ISRAEL_LIGA_LEUMIT"), allow_retired=True) is None
+
+
+def test_a_blank_kickoff_row_is_a_named_dated_gap_and_never_a_game():
+    """Rows whose own datetime cell is blank never inherit a tip into games or odds.
+
+    On the real EuroLeague capture (observed 2026-11-23, slate 2026-11-24),
+    ``xGZWYFJD``, ``8I2fZqVg``, and ``0hany60s`` carry ``&nbsp;`` in their
+    datetime cell; only the 12 rows carrying their own served datetime may
+    become games, and every blank-cell fixture emits a named gap carrying its
+    match code, teams, and round date when a preceding row establishes one.
+    """
+
+    games = _slate("CHINA_WCBA_W")
+    probe = betexplorer_fixtures.last_probe()
+    gaps = betexplorer_fixtures.last_gaps()
+
+    emitted_codes = {game.game_id.split(":", 1)[1] for game in games}
+    undated_slate_codes = {"xGZWYFJD", "8I2fZqVg", "0hany60s"}
+    fabricated = sorted(emitted_codes & undated_slate_codes)
+    assert not fabricated, f"blank-kickoff rows must never become a game with an inherited tip: {fabricated}"
+    assert len(games) == 12
+
+    snapshots = betexplorer.fetch_odds(
+        "CHINA_WCBA_W", SLATE_DATE, now_utc=OBSERVED, text_fetch=lambda _url: _page()
+    )
+    priced_codes = {snapshot.provider_event_id for snapshot in snapshots}
+    assert not (priced_codes & undated_slate_codes)
+    assert len(snapshots) == 6
+
+    assert probe is not None
+    assert probe["blank_kickoff_rows"] == 43
+    assert probe["blank_kickoff_rows_with_date"] == 43
+
+    kickoff_gaps = [gap for gap in gaps if gap.required_field == "fixtures_kickoff_missing"]
+    assert len(kickoff_gaps) == 43
+    by_id = {gap.game_id: gap for gap in kickoff_gaps}
+    assert "betexplorer:xGZWYFJD" in by_id
+    detail = by_id["betexplorer:xGZWYFJD"].detail
+    assert "xGZWYFJD" in detail
+    assert "Zalgiris Kaunas vs Bayern" in detail
+    assert "2026-11-24" in detail
+
+    # A blank-kickoff row appearing BEFORE the first dated row has no date context:
+    # it counts in blank_kickoff_rows, not blank_kickoff_rows_with_date, and still
+    # emits a named gap without claiming a date.
+    leading_blank = (
+        '<table class="table-main">'
+        '<tr><td class="table-main__datetime">&nbsp;</td>'
+        '<td><a href="/basketball/greece/basket-league/maroussi-iraklis/EZPWbIy3/"'
+        ' class="in-match"><span>Maroussi</span> - <span>Iraklis</span></a></td></tr>'
+        '<tr><td class="table-main__datetime">24.11. 18:00</td>'
+        '<td><a href="/basketball/greece/basket-league/paok-aris/AbCd1234/"'
+        ' class="in-match"><span>PAOK</span> - <span>Aris</span></a></td></tr>'
+        '<tr><td class="table-main__datetime">&nbsp;</td>'
+        '<td><a href="/basketball/greece/basket-league/aek-panionios/EfGh5678/"'
+        ' class="in-match"><span>AEK</span> - <span>Panionios</span></a></td></tr>'
+        "</table>"
+    )
+    leading_games = betexplorer_fixtures.fetch_slate(
+        "GREECE_BASKET_LEAGUE",
+        SLATE_DATE,
+        text_fetch=lambda _url: leading_blank,
+        now_utc=OBSERVED,
+    )
+    leading_probe = betexplorer_fixtures.last_probe()
+    leading_gaps = {
+        gap.game_id: gap.detail
+        for gap in betexplorer_fixtures.last_gaps()
+        if gap.required_field == "fixtures_kickoff_missing"
+    }
+    assert [game.game_id for game in leading_games] == ["betexplorer:AbCd1234"]
+    assert leading_probe is not None
+    assert leading_probe["blank_kickoff_rows"] == 2
+    assert leading_probe["blank_kickoff_rows_with_date"] == 1
+    assert set(leading_gaps) == {"betexplorer:EZPWbIy3", "betexplorer:EfGh5678"}
+    assert "2026-11-24" not in leading_gaps["betexplorer:EZPWbIy3"]
+    assert "2026-11-24" in leading_gaps["betexplorer:EfGh5678"]
+
+
+def test_the_same_row_with_a_time_produces_one_game_on_the_stated_clock():
+    """Once the host publishes a kickoff time on the cell, that exact row becomes a game."""
+
+    page = _page()
+    target_snippet = (
+        '<td class="table-main__datetime">&nbsp;</td>\n'
+        '<td class="h-text-left"><a href="/basketball/europe/euroleague/'
+        'zalgiris-kaunas-bayern/xGZWYFJD/"'
+    )
+    assert target_snippet in page
+
+    before_games = betexplorer_fixtures.fetch_slate(
+        "CHINA_WCBA_W", SLATE_DATE, text_fetch=lambda _url: page, now_utc=OBSERVED
+    )
+    assert "betexplorer:xGZWYFJD" not in {game.game_id for game in before_games}
+    before_gap_ids = {
+        gap.game_id
+        for gap in betexplorer_fixtures.last_gaps()
+        if gap.required_field == "fixtures_kickoff_missing"
+    }
+    assert "betexplorer:xGZWYFJD" in before_gap_ids
+
+    timed_page = page.replace(
+        target_snippet,
+        target_snippet.replace("&nbsp;", "Tomorrow 19:00", 1),
+        1,
+    )
+    after_games = betexplorer_fixtures.fetch_slate(
+        "CHINA_WCBA_W", SLATE_DATE, text_fetch=lambda _url: timed_page, now_utc=OBSERVED
+    )
+    after_probe = betexplorer_fixtures.last_probe()
+    after_gap_ids = {
+        gap.game_id
+        for gap in betexplorer_fixtures.last_gaps()
+        if gap.required_field == "fixtures_kickoff_missing"
+    }
+    zalgiris = [game for game in after_games if game.game_id == "betexplorer:xGZWYFJD"]
+    assert len(zalgiris) == 1
+    assert zalgiris[0].scheduled_utc == "2026-11-24T18:00:00Z"  # 19:00 CET -> 18:00 UTC
+    assert len(after_games) == len(before_games) + 1
+    assert "betexplorer:xGZWYFJD" not in after_gap_ids
+    assert after_probe is not None
+    assert after_probe["blank_kickoff_rows"] == 42
+    assert after_probe["blank_kickoff_rows_with_date"] == 42
+
+    after_snapshots = betexplorer.fetch_odds(
+        "CHINA_WCBA_W", SLATE_DATE, now_utc=OBSERVED, text_fetch=lambda _url: timed_page
+    )
+    zalgiris_snaps = [s for s in after_snapshots if s.provider_event_id == "xGZWYFJD"]
+    assert len(zalgiris_snaps) == 1
+    assert zalgiris_snaps[0].scheduled_utc == "2026-11-24T18:00:00Z"
+
+
+def test_betexplorer_smoke_does_not_count_blank_kickoff_rows_as_dated_or_priced():
+    """smoke() must agree with fetch_odds() and exclude inherited blank-cell tips."""
+
+    cba_page = (
+        Path(__file__).resolve().parent / "fixtures" / "betexplorer" / "cba_fixtures_table.html"
+    ).read_text(encoding="utf-8")
+
+    el_smoke = betexplorer.smoke(
+        "EUROLEAGUE",
+        date_yyyymmdd="20261117",
+        now_utc="2026-11-16T12:00:00Z",
+        text_fetch=lambda _url: _page(),
+    )
+    assert el_smoke["rows_seen"] == 270
+    assert el_smoke["rows_with_datetime"] == 227  # 270 - 43 blank-cell rows
+    assert el_smoke["rows_with_prices"] == 17  # 20 - 3 blank-cell priced rows
+    assert el_smoke["slate_date_rows_with_prices"] == 6  # matches fetch_odds()
+
+    cba_smoke = betexplorer.smoke(
+        "CBA",
+        date_yyyymmdd="20261204",
+        now_utc="2026-11-16T12:00:00Z",
+        text_fetch=lambda _url: cba_page,
+    )
+    assert cba_smoke["rows_seen"] == 28
+    assert cba_smoke["rows_with_datetime"] == 9  # 28 - 19 blank-cell rows
+    assert cba_smoke["rows_with_prices"] == 0
+    assert cba_smoke["slate_date_rows_with_prices"] == 0
+

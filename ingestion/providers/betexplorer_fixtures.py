@@ -149,18 +149,51 @@ def fetch_slate(
         raise IdentityError(f"{PROVIDER} {key}: fixtures page did not return a results table")
 
     parsed = _rows(html, observed)
-    # ``_rows`` drops rows whose datetime cell is empty.  Count the blank cells
-    # directly so the loss is reported as the fact it is, and keep the wider
-    # "rows that produced no fixture" figure as a bound that also covers round
-    # headers and rows without a fixture link.
     raw_rows = html.count("<tr>")
-    blank_kickoff = html.count('class="table-main__datetime">&nbsp;')
     unparsed = max(0, raw_rows - len(parsed))
 
     games: List[Game] = []
     seen: set[str] = set()
+    seen_undated: set[str] = set()
+    blank_kickoff = 0
+    blank_kickoff_with_date = 0
     slate_priced = 0
-    for local_dt, match_id, _slug, home, away, odds in parsed:
+    page_priced = 0
+    for local_dt, match_id, _slug, home, away, odds, raw_label in parsed:
+        if not raw_label:
+            # A row whose own datetime cell is blank has no served kickoff
+            # time. Never promote an inherited previous-row clock into a Game;
+            # emit one named gap per undated fixture carrying the page's round
+            # date when a preceding row established one.
+            blank_kickoff += 1
+            if local_dt is not None:
+                blank_kickoff_with_date += 1
+            if match_id not in seen_undated:
+                seen_undated.add(match_id)
+                matchup = f"{home.strip()} vs {away.strip()}"
+                if local_dt is not None:
+                    fixture_date = local_dt.strftime("%Y-%m-%d")
+                    detail = (
+                        f"{key}: fixture {match_id} ({matchup}) on {fixture_date} "
+                        "has no kickoff time served yet; not dated by assumption "
+                        "(becomes a game on a later refresh once the host "
+                        "publishes the tip)"
+                    )
+                else:
+                    detail = (
+                        f"{key}: fixture {match_id} ({matchup}) has no kickoff "
+                        "date or time served yet; not dated by assumption"
+                    )
+                _gap(
+                    "fixtures_kickoff_missing",
+                    detail,
+                    game_id=f"betexplorer:{match_id}",
+                )
+            continue
+        if local_dt is None:
+            continue
+        if odds:
+            page_priced += 1
         if local_dt.strftime("%Y%m%d") != target:
             continue
         if odds:
@@ -207,13 +240,14 @@ def fetch_slate(
         "rows": raw_rows,
         "parsed_rows": len(parsed),
         "blank_kickoff_rows": blank_kickoff,
+        "blank_kickoff_rows_with_date": blank_kickoff_with_date,
         "unparsed_rows": unparsed,
         "slate_games": len(games),
         # Scope matters: the page prices a handful of rows per day, so a
         # whole-page count would report a slate as priced when its own rows
         # carry nothing.
         "slate_priced_rows": slate_priced,
-        "page_priced_rows": sum(1 for row in parsed if row[5]),
+        "page_priced_rows": page_priced,
     }
 
     if games and not slate_priced:
@@ -224,11 +258,5 @@ def fetch_slate(
             "fixtures_price_coverage",
             f"{key}: {len(games)} fixtures on {target} and none carried a "
             "both-sided quote",
-        )
-    if blank_kickoff:
-        _gap(
-            "fixtures_kickoff_missing",
-            f"{key}: {blank_kickoff} fixture rows served no kickoff time; "
-            "not dated by assumption",
         )
     return games
