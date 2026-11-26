@@ -1031,6 +1031,25 @@ class MarketForecastService:
                 # (2026-11-25: 5 of 11 eligible rows, 4 of 4 strict accas).
                 "require_named_book_quote": True,
             }
+        elif self.league is League.NBA:
+            # Once NBA has walk-forward calibrated (n >= minimum_samples)
+            # segments, keep provisional experimental surfaces (e.g. n=3)
+            # audit-only, reject calibrated segments whose walk-forward Brier
+            # is no better than a 50/50 coin flip (>= 0.25), require positive
+            # calibrated EV at exact pre-tip named-book quotes, and require at
+            # least 5 prior settled picks in the matching ROI band.
+            nba_has_calibrated_candidates = any(
+                (row.calibration or {}).get("sufficient_for_accas") is True
+                for row in ticket_eligible_current
+            )
+            paper_lane_options = {
+                "minimum_historical_picks_for_band": 5,
+                "require_positive_expected_value": True,
+                "require_point_in_time_price": True,
+                "require_named_book_quote": True,
+                "require_calibrated_segment": nba_has_calibrated_candidates,
+                "maximum_segment_brier_score": 0.25,
+            }
         else:
             # These source contracts have no validated named-book feed, so they
             # never inherit a priced-value paper lane from another league.
@@ -1101,8 +1120,9 @@ class MarketForecastService:
                 paper_candidates,
                 legs=effective_paper_legs,
                 limit=acca_limit,
-                allow_provisional=True,
+                allow_provisional=not bool(paper_lane_options.get("require_calibrated_segment")),
                 require_disjoint_legs=True,
+                forbid_conflicting_game_sides=(self.league is League.NBA),
             )
         for acca in paper_accas:
             acca["individual_pick_filter"] = dict(paper_pick_filter)
@@ -1171,6 +1191,8 @@ class MarketForecastService:
                 "league_operator_policy": (
                     "euroleague_strict_named_book_ticket_lane"
                     if self.league is League.EUROLEAGUE
+                    else "nba_calibrated_value_ticket_lane"
+                    if self.league is League.NBA
                     else "fiba_elw_empirical_history_with_betexplorer_direct_fallback"
                     if self.league is League.EUROLEAGUE_W
                     else "nba_g_league_empirical_history_with_betexplorer_direct_fallback"
@@ -1266,6 +1288,11 @@ class MarketForecastService:
                         "positive calibrated expected value, and at least ten prior settled picks "
                         "in the matching model/market/period/probability/odds band"
                         if self.league is League.EUROLEAGUE
+                        else "; NBA additionally requires calibrated segments once calibrated history "
+                        "exists, walk-forward Brier < 0.25, exact pre-tip named-book quotes, "
+                        "positive calibrated expected value, at least five prior settled picks in "
+                        "the matching ROI band, and no opposing game sides across accas"
+                        if self.league is League.NBA
                         else ""
                     )
                 ),
@@ -1275,6 +1302,8 @@ class MarketForecastService:
                     + (
                         "_plus_EUROLEAGUE_exact_pretip_price_positive_EV_and_10_pick_band_gate"
                         if self.league is League.EUROLEAGUE
+                        else "_plus_NBA_calibrated_brier_skill_positive_EV_and_5_pick_band_gate"
+                        if self.league is League.NBA
                         else ""
                     )
                 ),
@@ -1310,12 +1339,55 @@ class MarketForecastService:
                         "qualifying_picks": paper_pick_filter["qualifying_pick_count"],
                     }
                     if self.league is League.EUROLEAGUE
+                    else {
+                        "name": "NBA_CALIBRATED_VALUE_TICKET_LANE",
+                        "role": "calibrated skill-gated named-book value lane",
+                        "requires_exact_selected_side_pre_tip_price": True,
+                        "requires_named_book_quote": True,
+                        "requires_calibrated_segment": bool(
+                            paper_lane_options.get("require_calibrated_segment")
+                        ),
+                        "maximum_segment_brier_score": 0.25,
+                        "excluded_uncalibrated_segment_candidates": int(
+                            paper_pick_filter.get("excluded_uncalibrated_segment_count") or 0
+                        ),
+                        "excluded_segment_brier_candidates": int(
+                            paper_pick_filter.get("excluded_segment_brier_count") or 0
+                        ),
+                        "requires_positive_calibrated_expected_value": True,
+                        "minimum_prior_settled_picks_in_matching_roi_band": 5,
+                        "forbids_conflicting_game_sides_across_accas": True,
+                        "roi_band_scope": [
+                            "league", "market", "period", "model", "calibrated_probability_band",
+                            "individual_odds_band",
+                        ],
+                        "history_is_past_only_with_result_delay": True,
+                        "status": paper_pick_filter["status"],
+                        "candidate_pool_picks": paper_pick_filter.get(
+                            "candidate_pool_pick_count",
+                            paper_pick_filter["candidate_pick_count"],
+                        ),
+                        "point_in_time_priced_candidates": paper_pick_filter.get(
+                            "candidate_with_point_in_time_price_count",
+                            paper_pick_filter["candidate_pick_count"],
+                        ),
+                        "positive_expected_value_candidates": paper_pick_filter.get(
+                            "candidate_positive_expected_value_count",
+                            paper_pick_filter["candidate_pick_count"],
+                        ),
+                        "qualifying_picks": paper_pick_filter["qualifying_pick_count"],
+                    }
+                    if self.league is League.NBA
                     else None
                 ),
                 "paper_pick_filter": paper_pick_filter,
                 "paper_single_picks": paper_single_picks,
                 "paper_single_pick_count": len(paper_single_picks),
-                "paper_ticket_leg_reuse_policy": "no_reused_wager_selections",
+                "paper_ticket_leg_reuse_policy": (
+                    "no_reused_wager_selections_or_opposing_game_sides"
+                    if self.league is League.NBA
+                    else "no_reused_wager_selections"
+                ),
                 "paper_single_ticket_policy": (
                     "freeze_one_unit_paper_single_only_when_exactly_one_"
                     "roi_qualified_selection_exists"

@@ -384,7 +384,7 @@ def _compact_frozen_forecast(row: object) -> object:
         compact.pop("prediction")
     compact["calibration"] = _subset(
         row.get("calibration"),
-        ("status", "n", "minimum_samples", "sufficient_for_accas"),
+        ("status", "n", "minimum_samples", "sufficient_for_accas", "brier_score"),
     )
     compact["eligibility"] = _subset(
         row.get("eligibility"),

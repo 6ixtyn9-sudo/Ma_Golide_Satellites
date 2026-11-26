@@ -345,9 +345,13 @@ def test_all_old_markets_are_forecast_and_accas_use_calibrated_probabilities():
             assert band["individual_odds_band"]
         leg_keys = {_paper_leg_key(leg) for leg in acca["legs"]}
         assert used_paper_leg_keys.isdisjoint(leg_keys)
-        assert acca["ticket_leg_reuse_policy"] == "no_reused_wager_selections"
+        assert acca["ticket_leg_reuse_policy"] == (
+            "no_reused_wager_selections_or_opposing_game_sides"
+        )
         used_paper_leg_keys.update(leg_keys)
-    assert report["accas"]["paper_ticket_leg_reuse_policy"] == "no_reused_wager_selections"
+    assert report["accas"]["paper_ticket_leg_reuse_policy"] == (
+        "no_reused_wager_selections_or_opposing_game_sides"
+    )
 
 
 def test_walk_forward_diagnostics_explain_epoch_exclusions_for_current_segments():
@@ -434,8 +438,11 @@ def test_service_publishes_sample_only_candidates_as_picks():
     assert accas["results_policy"] == "strict"
     assert accas["paper_results_policy"] == (
         "strict_plus_sample_only_provisional_and_positive_roi_bands"
+        "_plus_NBA_calibrated_brier_skill_positive_EV_and_5_pick_band_gate"
     )
-    assert accas["paper_ticket_leg_reuse_policy"] == "no_reused_wager_selections"
+    assert accas["paper_ticket_leg_reuse_policy"] == (
+        "no_reused_wager_selections_or_opposing_game_sides"
+    )
     assert accas["paper_single_ticket_policy"] == (
         "freeze_one_unit_paper_single_only_when_exactly_one_"
         "roi_qualified_selection_exists"
@@ -443,7 +450,11 @@ def test_service_publishes_sample_only_candidates_as_picks():
     pick_filter = accas["paper_pick_filter"]
     assert pick_filter["history_source"] == "prequential_settled_individual_forecasts"
     assert pick_filter["performance_basis"] == "settled_individual_picks_only_not_acca_outcomes"
-    assert pick_filter["minimum_historical_pick_count_for_band"] == 1
+    assert pick_filter["minimum_historical_pick_count_for_band"] == 5
+    assert pick_filter["require_positive_expected_value"] is True
+    assert pick_filter["maximum_segment_brier_score"] == 0.25
+    # Cold-start store has 0 calibrated (n>=30) segments, so NBA does not deadlock.
+    assert pick_filter["require_calibrated_segment"] is False
     assert pick_filter["candidate_pick_count"] >= pick_filter["qualifying_pick_count"]
     assert pick_filter["qualifying_pick_count"] >= 2
     # Operator decision 2026-11-22: a short walk-forward sample is an advisory.
@@ -462,7 +473,9 @@ def test_service_publishes_sample_only_candidates_as_picks():
         assert acca["provisional_sample_gate_bypassed"] is False
         assert acca["provisional_leg_count"] == 0
         assert acca["ranking_status"] == "paper_only_strict_gates_passed"
-        assert acca["ticket_leg_reuse_policy"] == "no_reused_wager_selections"
+        assert acca["ticket_leg_reuse_policy"] == (
+            "no_reused_wager_selections_or_opposing_game_sides"
+        )
         assert acca["individual_pick_filter"] == pick_filter
         leg_keys = {_paper_leg_key(leg) for leg in acca["legs"]}
         assert used_paper_leg_keys.isdisjoint(leg_keys)
@@ -2029,3 +2042,221 @@ def test_service_generates_separate_forecasts_from_every_visible_provider_predic
         for row in score_only_hybrids
     )
     assert report["execution"]["external_betting_writes"] is False
+
+
+def test_calibration_twins_prefer_lower_brier_skill_among_sufficient_models():
+    """Among walk-forward sufficient twins (n >= minimum_samples), lower Brier
+    beats larger raw sample count so team_history_empirical (n=109, Brier 0.244)
+    cannot suppress provider:espn (n=39, Brier 0.191), while calibrated models
+    still beat thin provisional flukes (n=6, sufficient=False)."""
+
+    espn = _roi_forecast("g1", 0.64, 1.85, "win", source="provider:espn")
+    espn.calibration_version = "provider:espn-v1"
+    espn.calibration = {"n": 39, "sufficient_for_accas": True, "brier_score": 0.191}
+    espn.eligibility = {"acca_eligible": True, "reasons": [], "advisories": []}
+
+    empirical = _roi_forecast("g1", 0.66, 1.85, "win", source="team_history_empirical")
+    empirical.calibration_version = "team_history_empirical-v1"
+    empirical.calibration = {"n": 109, "sufficient_for_accas": True, "brier_score": 0.244}
+    empirical.eligibility = {"acca_eligible": True, "reasons": [], "advisories": []}
+
+    provisional_fluke = _roi_forecast("g1", 0.70, 1.85, "win", source="provider:hardwood")
+    provisional_fluke.calibration_version = "provider:hardwood-v1"
+    provisional_fluke.calibration = {"n": 6, "sufficient_for_accas": False, "brier_score": 0.05}
+    provisional_fluke.eligibility = {"acca_eligible": True, "reasons": [], "advisories": []}
+
+    resolved = resolve_calibration_twins([empirical, provisional_fluke, espn])
+    winners = [row for row in resolved if row.eligibility["acca_eligible"]]
+    assert winners == [espn]
+    assert "superseded_by_calibration_twin" in empirical.eligibility["reasons"]
+    assert "superseded_by_calibration_twin" in provisional_fluke.eligibility["reasons"]
+    assert empirical.eligibility["superseded_by_forecast_id"] == espn.forecast_id
+
+
+def test_nba_paper_filter_enforces_calibrated_skill_brier_ev_and_skill_first_history():
+    """NBA paper filtering excludes provisional segments (n<30) once calibrated
+    segments exist, rejects walk-forward Brier >= 0.25 (coin-flip floor),
+    preserves sharper model's ROI history over overconfident weak models, and
+    requires >= 5 settled picks per ROI band + positive calibrated EV."""
+
+    as_of = "2026-11-26T19:30:00Z"
+    espn_cand = _roi_forecast(
+        "g-live", 0.64, 1.85, "win", source="provider:espn", scheduled_utc="2026-11-26T20:00:00Z"
+    )
+    espn_cand.calibration = {"status": "calibrated", "n": 39, "sufficient_for_accas": True, "brier_score": 0.191}
+
+    hardwood_cand = _roi_forecast(
+        "g-hw", 0.62, 1.90, "win", market="total", selection="over", line=220.5,
+        source="provider:hardwood+team_history_empirical", scheduled_utc="2026-11-26T20:00:00Z",
+    )
+    hardwood_cand.calibration = {"status": "provisional", "n": 3, "sufficient_for_accas": False, "brier_score": 0.15}
+
+    weak_spread_cand = _roi_forecast(
+        "g-sp", 0.65, 1.90, "win", market="spread", line=-6.5,
+        source="team_history_empirical", scheduled_utc="2026-11-26T20:00:00Z",
+    )
+    weak_spread_cand.calibration = {"status": "calibrated", "n": 39, "sufficient_for_accas": True, "brier_score": 0.267}
+
+    # Build 5 historical wins where an overconfident weaker model (p=0.68, Brier 0.244)
+    # priced the exact same wager as provider:espn (p=0.64, Brier 0.191).
+    # Skill-first deduplication must keep provider:espn's settled history intact.
+    history = []
+    for idx in range(5):
+        h_espn = _roi_forecast(
+            f"h-{idx}", 0.64, 1.85, "win", source="provider:espn", scheduled_utc=f"2026-11-{15 + idx:02d}T20:00:00Z"
+        )
+        h_espn.calibration = {"status": "calibrated", "n": 39, "sufficient_for_accas": True, "brier_score": 0.191}
+        h_weak = _roi_forecast(
+            f"h-{idx}", 0.68, 1.85, "win", source="team_history_empirical", scheduled_utc=f"2026-11-{15 + idx:02d}T20:00:00Z"
+        )
+        h_weak.calibration = {"status": "calibrated", "n": 109, "sufficient_for_accas": True, "brier_score": 0.244}
+        history.extend([h_weak, h_espn])
+
+    qualifying, summary = filter_paper_candidate_picks(
+        [espn_cand, hardwood_cand, weak_spread_cand],
+        history,
+        as_of_utc=as_of,
+        minimum_historical_picks_for_band=5,
+        require_positive_expected_value=True,
+        require_point_in_time_price=True,
+        require_named_book_quote=True,
+        require_calibrated_segment=True,
+        maximum_segment_brier_score=0.25,
+    )
+
+    assert qualifying == [espn_cand]
+    assert summary["excluded_uncalibrated_segment_count"] == 1
+    assert summary["excluded_segment_brier_count"] == 1
+    assert summary["candidate_band_details"][espn_cand.forecast_id]["historical_pick_count"] == 5
+
+    # Only coin-flip-or-worse candidates -> explicit no_calibrated_skill_candidates status.
+    none_skilled, skill_summary = filter_paper_candidate_picks(
+        [weak_spread_cand],
+        history,
+        as_of_utc=as_of,
+        maximum_segment_brier_score=0.25,
+    )
+    assert none_skilled == []
+    assert skill_summary["status"] == "no_calibrated_skill_candidates"
+
+
+def test_build_accas_forbids_opposing_game_sides_across_tickets_when_enabled():
+    """NBA paper accas must never bet home ML on a game in Acca #1 and away
+    spread/ML on the exact same game in Accas #2-#3."""
+
+    g1_home_ml = _roi_forecast("g1", 0.64, 1.86, "win", market="moneyline", selection="home")
+    g1_away_sp = _roi_forecast("g1", 0.63, 1.88, "win", market="spread", selection="away", line=-1.5)
+    g1_away_ml = _roi_forecast("g1", 0.62, 2.05, "win", market="moneyline", selection="away")
+    g1_home_sp = _roi_forecast("g1", 0.61, 1.90, "win", market="spread", selection="home", line=-1.5)
+    g2_ml = _roi_forecast("g2", 0.65, 1.85, "win", market="moneyline", selection="home")
+    g2_sp = _roi_forecast("g2", 0.60, 1.90, "win", market="spread", selection="home", line=-3.5)
+    g3_ml = _roi_forecast("g3", 0.66, 1.85, "win", market="moneyline", selection="away")
+
+    tickets = build_accas(
+        [g1_home_ml, g1_away_sp, g1_away_ml, g1_home_sp, g2_ml, g2_sp, g3_ml],
+        legs=2,
+        limit=5,
+        require_disjoint_legs=True,
+        forbid_conflicting_game_sides=True,
+    )
+    assert len(tickets) >= 2
+    g1_sides = {
+        leg["selection"]
+        for ticket in tickets
+        for leg in ticket["legs"]
+        if leg["game_id"] == "g1" and leg["market"] in {"moneyline", "spread"}
+    }
+    assert g1_sides == {"home"}
+
+
+def test_nba_service_enforces_calibrated_value_lane_while_ncaa_m_stays_standard():
+    nba_report = service(populated_store()).build_report(as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4)
+    assert nba_report["capabilities"]["league_operator_policy"] == "nba_calibrated_value_ticket_lane"
+    nba_lane = nba_report["accas"]["paper_lane"]
+    assert nba_lane["name"] == "NBA_CALIBRATED_VALUE_TICKET_LANE"
+    assert nba_lane["requires_calibrated_segment"] is True
+    assert nba_lane["maximum_segment_brier_score"] == 0.25
+    assert nba_lane["minimum_prior_settled_picks_in_matching_roi_band"] == 5
+    assert nba_lane["requires_positive_calibrated_expected_value"] is True
+    assert nba_lane["forbids_conflicting_game_sides_across_accas"] is True
+
+    ncaa_report = MarketForecastService(populated_store(), League.NCAA_M).build_report(
+        as_of_utc=iso(AS_OF)
+    )
+    assert ncaa_report["capabilities"]["league_operator_policy"] == "standard_policy"
+    assert ncaa_report["accas"]["paper_lane"] is None
+    assert ncaa_report["accas"]["paper_pick_filter"]["minimum_historical_pick_count_for_band"] == 1
+    assert ncaa_report["accas"]["paper_pick_filter"]["require_positive_expected_value"] is False
+    assert ncaa_report["accas"]["paper_pick_filter"]["maximum_segment_brier_score"] is None
+
+
+def test_history_dedup_uses_empirical_segment_brier_for_legacy_compacted_rows():
+    """Legacy compacted settled-audit rows omit calibration.brier_score; the
+    ROI filter still computes past-only empirical segment Brier so a sharper
+    model (provider:espn) keeps its settled history over an overconfident twin."""
+
+    from scripts.publish_localdata import _compact_frozen_forecast
+
+    compacted = _compact_frozen_forecast(
+        {
+            "game_id": "g1",
+            "league": "NBA",
+            "scheduled_utc": "2026-11-25T20:00:00Z",
+            "home": "Home",
+            "away": "Away",
+            "market": "moneyline",
+            "period": "full_game",
+            "selection": "home",
+            "raw_probability": 0.64,
+            "calibration": {
+                "status": "calibrated",
+                "n": 39,
+                "minimum_samples": 30,
+                "sufficient_for_accas": True,
+                "brier_score": 0.191,
+            },
+        }
+    )
+    assert compacted["calibration"]["brier_score"] == 0.191
+
+    as_of = "2026-11-26T19:30:00Z"
+    espn_cand = _roi_forecast(
+        "g-live", 0.64, 1.85, "win", source="provider:espn", scheduled_utc="2026-11-26T20:00:00Z"
+    )
+    espn_cand.calibration = {"status": "calibrated", "n": 39, "sufficient_for_accas": True, "brier_score": 0.191}
+
+    history = []
+    # 5 shared games (4W-1L): espn calibrated at 0.64 (Brier ~0.185), weak overconfident at 0.78 on loss + 0.68 on wins (worse Brier)
+    # Plus 3 extra losses for weak model to push its empirical Brier clearly worse than espn's.
+    for idx, outcome in enumerate(["win", "win", "win", "win", "loss"]):
+        h_espn = _roi_forecast(
+            f"shared-{idx}", 0.64, 1.85, outcome, source="provider:espn", scheduled_utc=f"2026-11-{15 + idx:02d}T20:00:00Z"
+        )
+        h_espn.calibration = {"status": "calibrated", "n": 39, "sufficient_for_accas": True}
+        h_weak = _roi_forecast(
+            f"shared-{idx}", 0.72, 1.85, outcome, source="team_history_empirical", scheduled_utc=f"2026-11-{15 + idx:02d}T20:00:00Z"
+        )
+        h_weak.calibration = {"status": "calibrated", "n": 109, "sufficient_for_accas": True}
+        history.extend([h_weak, h_espn])
+    for idx in range(3):
+        h_weak_loss = _roi_forecast(
+            f"weak-extra-{idx}", 0.72, 1.85, "loss", source="team_history_empirical", scheduled_utc=f"2026-11-{10 + idx:02d}T20:00:00Z"
+        )
+        h_weak_loss.calibration = {"status": "calibrated", "n": 109, "sufficient_for_accas": True}
+        history.append(h_weak_loss)
+
+    qualifying, summary = filter_paper_candidate_picks(
+        [espn_cand],
+        history,
+        as_of_utc=as_of,
+        minimum_historical_picks_for_band=5,
+        require_positive_expected_value=True,
+        require_point_in_time_price=True,
+        require_named_book_quote=True,
+        require_calibrated_segment=True,
+        maximum_segment_brier_score=0.25,
+    )
+    assert qualifying == [espn_cand]
+    assert summary["candidate_band_details"][espn_cand.forecast_id]["historical_pick_count"] == 5
+
+
