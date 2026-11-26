@@ -37,7 +37,7 @@
     },
     "2026-11-25": {
       "evidence_rows": 485,
-      "frozen_fixtures": 65,
+      "frozen_fixtures": 66,
       "logical_picks": 426
     }
   },
@@ -130192,6 +130192,851 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-25"
       },
+      "401917544": {
+        "decision_cutoff_utc": "2026-11-26T01:30:00Z",
+        "frozen_at": "2026-11-26T02:30:44Z",
+        "game_id": "401917544",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Pacific Tigers",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.537441,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 517,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "ea1fc3b34845ea7918e114d80fe93864afb4fd9d175bae313f2a250499507bac",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d0d12a9d33f0c70dd9ae",
+            "game_id": "401917544",
+            "grade_status": "pending",
+            "home": "Jacksonville State Gamecocks",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "d0d12a9d33f0c70dd9ae",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.61,
+            "role": null,
+            "scheduled_utc": "2026-11-26T03:30:00Z",
+            "selection": "home",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-22",
+              "away_prev_fixture_id": "401917537",
+              "away_prev_source": "espn",
+              "away_rest_hours": 96.5,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-21",
+              "home_prev_fixture_id": "401926782",
+              "home_prev_source": "espn",
+              "home_rest_hours": 123.5,
+              "neutral_site": true,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 27.0
+            }
+          },
+          {
+            "away": "Pacific Tigers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917544",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-26T01:49:11Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.5405405405405406,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.578023,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 351,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "ff0d9dac5b5e7b8b80fabcd2be24f027c07180fc48c359505aaf72c953b8ba0a",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "3805444bcc3c9d08bd3d",
+            "game_id": "401917544",
+            "grade_status": "pending",
+            "home": "Jacksonville State Gamecocks",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.039952,
+              "historical_pick_count": 28,
+              "individual_odds_band": "1.50-<2.00",
+              "league": "NCAA_M",
+              "losses": 12,
+              "market": "moneyline",
+              "observed_roi": -0.026307,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.035536,
+              "wins": 16
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "3805444bcc3c9d08bd3d",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-26T01:49:17Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.6319,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-26T03:30:00Z",
+            "selection": "away",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-22",
+              "away_prev_fixture_id": "401917537",
+              "away_prev_source": "espn",
+              "away_rest_hours": 96.5,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-21",
+              "home_prev_fixture_id": "401926782",
+              "home_prev_source": "espn",
+              "home_rest_hours": 123.5,
+              "neutral_site": true,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 27.0
+            }
+          },
+          {
+            "away": "Pacific Tigers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917544",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-26T01:49:11Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 2.54,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.467354,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 518,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "44ddea127f6fa43a0907c8f4e782822701e13b83ff24df9f071a01d9f414d7cf",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "1ba12beaa4a2f64c64e2",
+            "game_id": "401917544",
+            "grade_status": "pending",
+            "home": "Jacksonville State Gamecocks",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "1ba12beaa4a2f64c64e2",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-26T03:30:00Z",
+            "selection": "home",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-22",
+              "away_prev_fixture_id": "401917537",
+              "away_prev_source": "espn",
+              "away_rest_hours": 96.5,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-21",
+              "home_prev_fixture_id": "401926782",
+              "home_prev_source": "espn",
+              "home_rest_hours": 123.5,
+              "neutral_site": true,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 27.0
+            }
+          },
+          {
+            "away": "Pacific Tigers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917544",
+              "line": 4.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-25T15:49:23Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.4996,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 245,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "27491011e6bff4f55430572e387d46453a124c6f28fb921eb0f8cc393cb8cd03",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "66d1bda18a8c9302d756",
+            "game_id": "401917544",
+            "grade_status": "pending",
+            "home": "Jacksonville State Gamecocks",
+            "league": "NCAA_M",
+            "line": 4.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "66d1bda18a8c9302d756",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-26T03:30:00Z",
+            "selection": "away",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-22",
+              "away_prev_fixture_id": "401917537",
+              "away_prev_source": "espn",
+              "away_rest_hours": 96.5,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-21",
+              "home_prev_fixture_id": "401926782",
+              "home_prev_source": "espn",
+              "home_rest_hours": 123.5,
+              "neutral_site": true,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 27.0
+            }
+          },
+          {
+            "away": "Pacific Tigers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917544",
+              "line": 5.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-25T14:48:59Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.4996,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 245,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "d67da43dc8bd0bd8f7384df3d82c527e1cd944fec910f3c68c153e5c982d204d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "838ce8331cf61f78f604",
+            "game_id": "401917544",
+            "grade_status": "pending",
+            "home": "Jacksonville State Gamecocks",
+            "league": "NCAA_M",
+            "line": 5.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "838ce8331cf61f78f604",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-26T03:30:00Z",
+            "selection": "away",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-22",
+              "away_prev_fixture_id": "401917537",
+              "away_prev_source": "espn",
+              "away_rest_hours": 96.5,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-21",
+              "home_prev_fixture_id": "401926782",
+              "home_prev_source": "espn",
+              "home_rest_hours": 123.5,
+              "neutral_site": true,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 27.0
+            }
+          },
+          {
+            "away": "Pacific Tigers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917544",
+              "line": 3.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-26T01:49:11Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.4996,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 245,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "0cdfb0fd09ddd9ea754ac179106b9bf1a9f9790f5055f986c88405af0ee96ff6",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "ee3068a27e82ab1e3491",
+            "game_id": "401917544",
+            "grade_status": "pending",
+            "home": "Jacksonville State Gamecocks",
+            "league": "NCAA_M",
+            "line": 3.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "ee3068a27e82ab1e3491",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-26T03:30:00Z",
+            "selection": "away",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-22",
+              "away_prev_fixture_id": "401917537",
+              "away_prev_source": "espn",
+              "away_rest_hours": 96.5,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-21",
+              "home_prev_fixture_id": "401926782",
+              "home_prev_source": "espn",
+              "home_rest_hours": 123.5,
+              "neutral_site": true,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 27.0
+            }
+          },
+          {
+            "away": "Pacific Tigers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917544",
+              "line": 5.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-25T14:48:59Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.502429,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 217,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "47c4366e9fa92a05247c4e870677cf9302f94409a9c72e7667ef873673a6e454",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "0721ca4c109967a9c7e8",
+            "game_id": "401917544",
+            "grade_status": "pending",
+            "home": "Jacksonville State Gamecocks",
+            "league": "NCAA_M",
+            "line": 5.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.0051,
+              "historical_pick_count": 370,
+              "individual_odds_band": "1.50-<2.00",
+              "league": "NCAA_M",
+              "losses": 177,
+              "market": "spread",
+              "observed_roi": -0.005355,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.004921,
+              "wins": 193
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "0721ca4c109967a9c7e8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.55,
+            "role": null,
+            "scheduled_utc": "2026-11-26T03:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Pacific Tigers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917544",
+              "line": 4.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-25T15:49:23Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.492429,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 217,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "bdac317bfcc25bc3457464b72bc8df16ddce8fef71d2c34acb8e7866f20cd90d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "676f2dfefbe0850b6b7e",
+            "game_id": "401917544",
+            "grade_status": "pending",
+            "home": "Jacksonville State Gamecocks",
+            "league": "NCAA_M",
+            "line": 4.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "676f2dfefbe0850b6b7e",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-26T03:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Pacific Tigers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917544",
+              "line": 3.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-25T20:48:38Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.925925925925926,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.492429,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 217,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "7636220e5ac6dc17ca9f02f038d69ea5be3bb7bb718ee77bafbeb07caf900a8d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a09ba0fd6b7c3ccf0445",
+            "game_id": "401917544",
+            "grade_status": "pending",
+            "home": "Jacksonville State Gamecocks",
+            "league": "NCAA_M",
+            "line": 3.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "a09ba0fd6b7c3ccf0445",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.54,
+            "role": null,
+            "scheduled_utc": "2026-11-26T03:30:00Z",
+            "selection": "home"
+          },
+          {
+            "away": "Pacific Tigers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917544",
+              "line": 133.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-25T16:49:10Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.587435,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 239,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "bb66c616570b523afa8f043a85ca08d589088d03ba4aa44335098d12af39904a",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "2a162895c1cf1715080b",
+            "game_id": "401917544",
+            "grade_status": "pending",
+            "home": "Jacksonville State Gamecocks",
+            "league": "NCAA_M",
+            "line": 133.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.115938,
+              "historical_pick_count": 607,
+              "individual_odds_band": "1.50-<2.00",
+              "league": "NCAA_M",
+              "losses": 251,
+              "market": "total",
+              "observed_roi": 0.118388,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.116177,
+              "wins": 356
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "2a162895c1cf1715080b",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-26T03:30:00Z",
+            "selection": "over",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-22",
+              "away_prev_fixture_id": "401917537",
+              "away_prev_source": "espn",
+              "away_rest_hours": 96.5,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-21",
+              "home_prev_fixture_id": "401926782",
+              "home_prev_source": "espn",
+              "home_rest_hours": 123.5,
+              "neutral_site": true,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 27.0
+            }
+          },
+          {
+            "away": "Pacific Tigers",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917544",
+              "line": 132.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-26T01:49:11Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.587435,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 239,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "3bc501b46fe8229d66fe937def076338d8c28d35e6f089e478a7d226896188d6",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "67328a498179c45f8eb8",
+            "game_id": "401917544",
+            "grade_status": "pending",
+            "home": "Jacksonville State Gamecocks",
+            "league": "NCAA_M",
+            "line": 132.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.115938,
+              "historical_pick_count": 607,
+              "individual_odds_band": "1.50-<2.00",
+              "league": "NCAA_M",
+              "losses": 251,
+              "market": "total",
+              "observed_roi": 0.118388,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.116177,
+              "wins": 356
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "67328a498179c45f8eb8",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-26T03:30:00Z",
+            "selection": "over",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-22",
+              "away_prev_fixture_id": "401917537",
+              "away_prev_source": "espn",
+              "away_rest_hours": 96.5,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-21",
+              "home_prev_fixture_id": "401926782",
+              "home_prev_source": "espn",
+              "home_rest_hours": 123.5,
+              "neutral_site": true,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 27.0
+            }
+          }
+        ],
+        "scheduled_utc": "2026-11-26T03:30:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-25"
+      },
       "401917545": {
         "decision_cutoff_utc": "2026-11-26T00:00:00Z",
         "frozen_at": "2026-11-26T00:24:16Z",
@@ -157109,51 +157954,11 @@
   "league": "NCAA_M",
   "pending_frozen_games": [
     [
-      "401917182",
-      "2026-11-25T22:00:00Z"
-    ],
-    [
-      "401920549",
-      "2026-11-25T23:00:00Z"
-    ],
-    [
-      "401909568",
-      "2026-11-26T00:00:00Z"
-    ],
-    [
-      "401911028",
-      "2026-11-26T00:00:00Z"
-    ],
-    [
-      "401918960",
-      "2026-11-26T00:00:00Z"
-    ],
-    [
       "401918971",
       "2026-11-26T00:00:00Z"
     ],
     [
-      "401920076",
-      "2026-11-26T00:00:00Z"
-    ],
-    [
       "401920847",
-      "2026-11-26T00:00:00Z"
-    ],
-    [
-      "401920916",
-      "2026-11-26T00:00:00Z"
-    ],
-    [
-      "401921108",
-      "2026-11-26T00:00:00Z"
-    ],
-    [
-      "401921170",
-      "2026-11-26T00:00:00Z"
-    ],
-    [
-      "401922285",
       "2026-11-26T00:00:00Z"
     ],
     [
@@ -157191,6 +157996,10 @@
     [
       "401921713",
       "2026-11-26T03:00:00Z"
+    ],
+    [
+      "401917544",
+      "2026-11-26T03:30:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"

@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 4,
+  "awaiting_game_legs": 2,
   "awaiting_game_legs_open": 1,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
@@ -2066,7 +2066,7 @@
       "wins": 5
     },
     {
-      "awaiting_game_legs": 4,
+      "awaiting_game_legs": 2,
       "bank_units": 110.75128223659584,
       "date": "2026-11-25",
       "decision_id": "45588367951_ncaa_m_1_attempt_1",
@@ -2079,7 +2079,7 @@
       "pending_units": 1.0,
       "positions": [
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -2089,7 +2089,7 @@
           "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "win",
             "loss",
             "win"
           ],
@@ -2100,12 +2100,12 @@
               "book_provider": "espn",
               "forecast_id": "f083907d2c949538012a",
               "game_id": "401909568",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Duke Blue Devils",
               "market": "moneyline",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "f083907d2c949538012a",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T00:00:00Z",
               "selected_decimal_price": 2.2,
               "selection": "home"
@@ -2154,10 +2154,10 @@
           "stake_units": 1.0,
           "ticket_id": "113f8891fbc85b0af9d2",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -2169,7 +2169,7 @@
           "leg_outcomes": [
             "loss",
             "loss",
-            null
+            "win"
           ],
           "legs": [
             {
@@ -2210,12 +2210,12 @@
               "book_provider": "espn",
               "forecast_id": "c1c8cd5ef70a19a73484",
               "game_id": "401922285",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "The Citadel Bulldogs",
               "market": "moneyline",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "c1c8cd5ef70a19a73484",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T00:00:00Z",
               "selected_decimal_price": 1.5555555555555556,
               "selection": "home"
@@ -2232,7 +2232,7 @@
           "stake_units": 1.0,
           "ticket_id": "0289d9420e6641964431",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
           "awaiting_game_legs": 1,
@@ -2481,7 +2481,7 @@
       "settled_positions": 4,
       "settled_singles": 0,
       "staked_units": 4.0,
-      "unresolved_result_legs": 4,
+      "unresolved_result_legs": 2,
       "wins": 1
     }
   ],
@@ -2501,12 +2501,12 @@
   "result_unresolvable_legs": 0,
   "roi": 0.38397436559270826,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.17887098547138264,
+  "selected_leg_brier_score": 0.17678953673048184,
   "settled_accas": 27,
   "settled_positions": 28,
   "settled_singles": 1,
   "settled_stake_units": 28.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 4,
+  "unresolved_result_legs": 2,
   "wins": 14
 }
