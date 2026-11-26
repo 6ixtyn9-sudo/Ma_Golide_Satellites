@@ -1,6 +1,6 @@
 {
-  "awaiting_game_legs": 13,
-  "awaiting_game_legs_open": 9,
+  "awaiting_game_legs": 12,
+  "awaiting_game_legs_open": 8,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -2486,7 +2486,7 @@
       "wins": 2
     },
     {
-      "awaiting_game_legs": 13,
+      "awaiting_game_legs": 12,
       "bank_units": 112.76916599218453,
       "date": "2026-11-26",
       "decision_id": "45804223719_ncaa_m_1_attempt_1",
@@ -2741,7 +2741,7 @@
           "unresolved_legs": 2
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
@@ -2752,7 +2752,7 @@
           "leg_count": 3,
           "leg_outcomes": [
             null,
-            null,
+            "win",
             null
           ],
           "legs": [
@@ -2779,13 +2779,13 @@
               "book_provider": "espn",
               "forecast_id": "a9a5bc13b972036c6c1b",
               "game_id": "401920528",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Maryland Terrapins",
               "line": -4.5,
               "market": "spread",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "a9a5bc13b972036c6c1b",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T18:00:00Z",
               "selected_decimal_price": 1.925925925925926,
               "selection": "away"
@@ -2818,7 +2818,7 @@
           "stake_units": 1.0,
           "ticket_id": "d301274ed9e4011e6e29",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         },
         {
           "awaiting_game_legs": 3,
@@ -2910,7 +2910,7 @@
       "settled_positions": 2,
       "settled_singles": 0,
       "staked_units": 2.0,
-      "unresolved_result_legs": 13,
+      "unresolved_result_legs": 12,
       "wins": 0
     }
   ],
@@ -2930,12 +2930,12 @@
   "result_unresolvable_legs": 0,
   "roi": 0.4119085803930485,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.1836764107900229,
+  "selected_leg_brier_score": 0.18386651683660216,
   "settled_accas": 30,
   "settled_positions": 31,
   "settled_singles": 1,
   "settled_stake_units": 31.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 13,
+  "unresolved_result_legs": 12,
   "wins": 15
 }
