@@ -64,10 +64,14 @@ def _ticket_ranking_score(
     return (1.0 - weight) * math.log(probability) + weight * math.log(price)
 
 
-def _ticket_rank(row: Forecast) -> tuple:
+def _ticket_rank(row: Forecast, *, price_weight: Optional[float] = None) -> tuple:
     """Sort key: blended ticket score first, then the stable identity ties."""
 
-    return (-_ticket_ranking_score(row), row.game_id, *_candidate_rank(row)[1:])
+    return (
+        -_ticket_ranking_score(row, price_weight=price_weight),
+        row.game_id,
+        *_candidate_rank(row)[1:],
+    )
 
 
 def is_provisional_sample_only(forecast: Forecast) -> bool:
@@ -176,7 +180,12 @@ def _is_named_book_priced(forecast: Forecast) -> bool:
 
 
 def _eligible_candidate_picks(
-    forecasts: Iterable[Forecast], *, allow_provisional: bool = False
+    forecasts: Iterable[Forecast],
+    *,
+    allow_provisional: bool = False,
+    min_leg_odds: Optional[float] = None,
+    max_leg_odds: Optional[float] = None,
+    min_leg_probability: Optional[float] = None,
 ) -> List[Forecast]:
     """Return one usable model row per exact wager selection.
 
@@ -185,6 +194,9 @@ def _eligible_candidate_picks(
     acca legs are built, so every downstream count agrees on what is on the
     table.
     """
+    min_odds = MIN_TICKET_LEG_DECIMAL if min_leg_odds is None else float(min_leg_odds)
+    max_odds = MAX_TICKET_LEG_DECIMAL if max_leg_odds is None else float(max_leg_odds)
+    min_prob = None if min_leg_probability is None else float(min_leg_probability)
     by_wager: Dict[Tuple[str, str, str, str, str, str], Forecast] = {}
     for forecast in forecasts:
         if not (forecast.eligibility or {}).get("acca_eligible"):
@@ -197,9 +209,10 @@ def _eligible_candidate_picks(
             or isinstance(probability, bool)
             or not math.isfinite(probability)
             or not 0.0 < probability <= 1.0
+            or (min_prob is not None and probability < min_prob)
             or price is None
             or not math.isfinite(price)
-            or not MIN_TICKET_LEG_DECIMAL <= price <= MAX_TICKET_LEG_DECIMAL
+            or not min_odds <= price <= max_odds
         ):
             continue
         wager_key = _wager_leg_key(
@@ -217,13 +230,22 @@ def _eligible_candidate_picks(
 
 
 def _best_leg_per_game(
-    forecasts: Iterable[Forecast], *, allow_provisional: bool = False
+    forecasts: Iterable[Forecast],
+    *,
+    allow_provisional: bool = False,
+    min_leg_odds: Optional[float] = None,
+    max_leg_odds: Optional[float] = None,
+    min_leg_probability: Optional[float] = None,
 ) -> List[Forecast]:
-    grouped: Dict[str, List[Forecast]] = {}
+    grouped: Dict[Tuple[str, str], List[Forecast]] = {}
     for forecast in _eligible_candidate_picks(
-        forecasts, allow_provisional=allow_provisional
+        forecasts,
+        allow_provisional=allow_provisional,
+        min_leg_odds=min_leg_odds,
+        max_leg_odds=max_leg_odds,
+        min_leg_probability=min_leg_probability,
     ):
-        grouped.setdefault(forecast.game_id, []).append(forecast)
+        grouped.setdefault((forecast.league, forecast.game_id), []).append(forecast)
     best = [rows[0] for rows in grouped.values()]
     # One best row per fixture: calibrated probability first, then stable
     # identities. Price enters the *ticket* ranking later
@@ -233,6 +255,7 @@ def _best_leg_per_game(
     best.sort(
         key=lambda row: (
             -(row.calibrated_probability or 0.0),
+            row.league,
             row.game_id,
             row.market,
             row.period,
@@ -873,6 +896,12 @@ def build_accas(
     allow_provisional: bool = False,
     require_disjoint_legs: bool = False,
     forbid_conflicting_game_sides: bool = False,
+    min_leg_odds: Optional[float] = None,
+    max_leg_odds: Optional[float] = None,
+    min_leg_probability: Optional[float] = None,
+    price_weight: Optional[float] = None,
+    min_combined_odds: Optional[float] = None,
+    max_combined_odds: Optional[float] = None,
 ) -> List[dict]:
     """Return best-ranked accas for the requested leg count.
 
@@ -931,6 +960,12 @@ def build_accas(
                 legs=legs,
                 limit=1,
                 allow_provisional=allow_provisional,
+                min_leg_odds=min_leg_odds,
+                max_leg_odds=max_leg_odds,
+                min_leg_probability=min_leg_probability,
+                price_weight=price_weight,
+                min_combined_odds=min_combined_odds,
+                max_combined_odds=max_combined_odds,
             )
             if not best:
                 break
@@ -964,19 +999,37 @@ def build_accas(
                         used_game_sides.add(committed)
         return output
 
-    candidates = _best_leg_per_game(forecasts, allow_provisional=allow_provisional)
+    candidates = _best_leg_per_game(
+        forecasts,
+        allow_provisional=allow_provisional,
+        min_leg_odds=min_leg_odds,
+        max_leg_odds=max_leg_odds,
+        min_leg_probability=min_leg_probability,
+    )
     if len(candidates) < legs:
         return []
+    effective_price_weight = (
+        TICKET_RANKING_PRICE_WEIGHT if price_weight is None else float(price_weight)
+    )
     # Enumerate in ranked order: the k-best walk below assumes candidate index
     # order is ascending cost, so the blend has to be applied before it starts.
-    candidates.sort(key=_ticket_rank)
-    costs = [-_ticket_ranking_score(row) for row in candidates]
+    candidates.sort(key=lambda row: _ticket_rank(row, price_weight=effective_price_weight))
+    costs = [
+        -_ticket_ranking_score(row, price_weight=effective_price_weight)
+        for row in candidates
+    ]
     initial = tuple(range(legs))
     heap: List[tuple[float, Tuple[int, ...]]] = [(sum(costs[index] for index in initial), initial)]
     visited = {initial}
     output = []
+    has_odds_band = min_combined_odds is not None or max_combined_odds is not None
+    popped_states = 0
+    max_states = 5000 if has_odds_band else None
     while heap and len(output) < limit:
+        if max_states is not None and popped_states >= max_states:
+            break
         cost, state = heapq.heappop(heap)
+        popped_states += 1
         selected = [candidates[index] for index in state]
         # The cost is now a blended score, so the joint probability is read from
         # the probabilities rather than assumed to be ``exp(-cost)``.
@@ -984,41 +1037,45 @@ def build_accas(
             sum(math.log(float(row.calibrated_probability)) for row in selected)
         )
         decimal_odds = math.prod(float(row.decimal_price) for row in selected)
-        leg_ids = [row.forecast_id for row in selected]
-        provisional_leg_count = sum(is_provisional_sample_only(row) for row in selected)
-        provisional_gate_bypassed = allow_provisional and provisional_leg_count > 0
-        output.append(
-            {
-                "acca_id": hashlib.sha256("|".join(leg_ids).encode()).hexdigest()[:20],
-                "rank": len(output) + 1,
-                "provisional_sample_gate_bypassed": provisional_gate_bypassed,
-                "provisional_leg_count": provisional_leg_count,
-                "legs": [row.to_dict() for row in selected],
-                "leg_count": legs,
-                "estimated_joint_win_probability": round(joint, 8),
-                "combined_decimal_odds": round(decimal_odds, 4),
-                "bookmaker_implied_probability": round(1 / decimal_odds, 8),
-                "estimated_ev_per_unit": round(joint * decimal_odds - 1, 8),
-                "ranking_metric": "probability_price_blend",
-                "ranking_price_weight": TICKET_RANKING_PRICE_WEIGHT,
-                "ranking_score": round(-cost, 8),
-                "ranking_status": (
-                    "paper_only_provisional_sample_gate_bypassed"
-                    if provisional_gate_bypassed
-                    else "paper_only_strict_gates_passed"
-                    if allow_provisional
-                    else "highest_estimated_not_guaranteed"
-                ),
-                "dependence": {
-                    "same_game_legs": "prohibited",
-                    "cross_game_model": "conditional_independence",
-                    "limitation": (
-                        "Shared league, weather, scheduling, or other latent "
-                        "dependence is not estimated; no same-game parlay is built."
+        if not (
+            (min_combined_odds is not None and decimal_odds < float(min_combined_odds))
+            or (max_combined_odds is not None and decimal_odds > float(max_combined_odds))
+        ):
+            leg_ids = [row.forecast_id for row in selected]
+            provisional_leg_count = sum(is_provisional_sample_only(row) for row in selected)
+            provisional_gate_bypassed = allow_provisional and provisional_leg_count > 0
+            output.append(
+                {
+                    "acca_id": hashlib.sha256("|".join(leg_ids).encode()).hexdigest()[:20],
+                    "rank": len(output) + 1,
+                    "provisional_sample_gate_bypassed": provisional_gate_bypassed,
+                    "provisional_leg_count": provisional_leg_count,
+                    "legs": [row.to_dict() for row in selected],
+                    "leg_count": legs,
+                    "estimated_joint_win_probability": round(joint, 8),
+                    "combined_decimal_odds": round(decimal_odds, 4),
+                    "bookmaker_implied_probability": round(1 / decimal_odds, 8),
+                    "estimated_ev_per_unit": round(joint * decimal_odds - 1, 8),
+                    "ranking_metric": "probability_price_blend",
+                    "ranking_price_weight": effective_price_weight,
+                    "ranking_score": round(-cost, 8),
+                    "ranking_status": (
+                        "paper_only_provisional_sample_gate_bypassed"
+                        if provisional_gate_bypassed
+                        else "paper_only_strict_gates_passed"
+                        if allow_provisional
+                        else "highest_estimated_not_guaranteed"
                     ),
-                },
-            }
-        )
+                    "dependence": {
+                        "same_game_legs": "prohibited",
+                        "cross_game_model": "conditional_independence",
+                        "limitation": (
+                            "Shared league, weather, scheduling, or other latent "
+                            "dependence is not estimated; no same-game parlay is built."
+                        ),
+                    },
+                }
+            )
         for neighbor in _neighbors(state, len(candidates)):
             if neighbor in visited:
                 continue

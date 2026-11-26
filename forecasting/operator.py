@@ -58,6 +58,11 @@ from ingestion.models import (
     schema_matches,
 )
 
+from .accas import (
+    MAX_TICKET_LEG_DECIMAL,
+    MIN_TICKET_LEG_DECIMAL,
+    TICKET_RANKING_PRICE_WEIGHT,
+)
 from .types import (
     TICKET_PRICE_PROVENANCE,
     BookEvidence,
@@ -2833,6 +2838,86 @@ def _single_ticket_candidate(
     }
 
 
+def _candidate_pool_row(row: Dict[str, Any], target_date: str) -> Dict[str, Any]:
+    """Compact, replay-faithful decision-time candidate leg snapshot."""
+    picked = _pick_row(row, target_date)
+    for drop_key in (
+        "explanation",
+        "team_history",
+        "alternative_probabilities",
+        "shadow_calibration",
+        "individual_pick_roi_band",
+        "paper_roi_band",
+        "venue_rest_evidence",
+    ):
+        picked.pop(drop_key, None)
+    return picked
+
+
+def _decision_candidate_pool(
+    *,
+    single_rows: List[Dict[str, Any]],
+    derived_spread_candidates: List[Dict[str, Any]],
+    preview_game_ids: set[str],
+    generated_utc: str,
+    target_date: str,
+) -> List[Dict[str, Any]]:
+    """Return pre-tip, non-preview candidate legs visible at ticket freeze time."""
+    generated = parse_utc(generated_utc)
+    pool: List[Dict[str, Any]] = []
+    seen_ids: set[str] = set()
+
+    def _add(row: Any) -> None:
+        if not isinstance(row, dict):
+            return
+        if row.get("preview") is True or str(row.get("game_id")) in preview_game_ids:
+            return
+        try:
+            if parse_utc(str(row["scheduled_utc"])) <= generated:
+                return
+        except (KeyError, TypeError, ValueError):
+            return
+        fid = str(row.get("forecast_id") or "")
+        if not fid or fid in seen_ids:
+            return
+        seen_ids.add(fid)
+        pool.append(_candidate_pool_row(row, target_date))
+
+    for row in single_rows:
+        _add(row)
+    for candidate in derived_spread_candidates:
+        if isinstance(candidate, dict):
+            for leg in candidate.get("legs") or ():
+                _add(leg)
+    return pool
+
+
+def _selection_policy_snapshot(acca_report: Dict[str, Any], league: League) -> Dict[str, Any]:
+    """Compact record of the live build_accas knobs used for a frozen receipt."""
+    paper_lane = (
+        acca_report.get("paper_lane")
+        if isinstance(acca_report.get("paper_lane"), dict)
+        else {}
+    )
+    reuse_policy = str(acca_report.get("paper_ticket_leg_reuse_policy") or "")
+    forbid_opposing = (
+        reuse_policy == "no_reused_wager_selections_or_opposing_game_sides"
+        if reuse_policy
+        else league in {League.NBA, League.NCAA_W}
+    )
+    return {
+        "requested_legs": acca_report.get("requested_legs", 3),
+        "effective_paper_legs": acca_report.get("effective_paper_legs"),
+        "limit": acca_report.get("requested_limit", 5),
+        "allow_provisional": not bool(paper_lane.get("requires_calibrated_segment")),
+        "require_disjoint_legs": True,
+        "forbid_conflicting_game_sides": forbid_opposing,
+        "min_leg_odds": MIN_TICKET_LEG_DECIMAL,
+        "max_leg_odds": MAX_TICKET_LEG_DECIMAL,
+        "price_weight": TICKET_RANKING_PRICE_WEIGHT,
+    }
+
+
 def _new_receipt(
     *,
     league: League,
@@ -2841,6 +2926,8 @@ def _new_receipt(
     run_id: str,
     accas: List[Dict[str, Any]],
     ticket_decision: Dict[str, Any],
+    candidate_pool: Optional[List[Dict[str, Any]]] = None,
+    selection_policy: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     ticket_rows: Dict[str, List[Dict[str, Any]]] = {"acca": [], "single": []}
     for index, acca in enumerate(accas, 1):
@@ -2872,7 +2959,7 @@ def _new_receipt(
         if isinstance(pick_filter, dict):
             ticket_row["individual_pick_filter"] = deepcopy(pick_filter)
         ticket_rows[ticket_type].append(ticket_row)
-    return {
+    receipt: Dict[str, Any] = {
         "schema_version": TICKET_SCHEMA,
         "date": target_date,
         "league": league.value,
@@ -2887,6 +2974,11 @@ def _new_receipt(
         "accas": ticket_rows["acca"],
         "singles": ticket_rows["single"],
     }
+    if candidate_pool:
+        receipt["candidate_pool"] = deepcopy(candidate_pool)
+    if selection_policy:
+        receipt["selection_policy"] = deepcopy(selection_policy)
+    return receipt
 
 
 def _freeze_no_bet_decision(
@@ -2944,6 +3036,8 @@ def _ticket_receipt(
     accas: List[Dict[str, Any]],
     ticket_decision: Dict[str, Any],
     allow_new_decision: bool,
+    candidate_pool: Optional[List[Dict[str, Any]]] = None,
+    selection_policy: Optional[Dict[str, Any]] = None,
 ) -> Optional[Dict[str, Any]]:
     """Load a prior receipt or make exactly one post-cutoff decision.
 
@@ -3038,6 +3132,8 @@ def _ticket_receipt(
         run_id=run_id,
         accas=accas,
         ticket_decision=ticket_decision,
+        candidate_pool=candidate_pool,
+        selection_policy=selection_policy,
     )
     _write_json(path, receipt)
     state["frozen_by_date"][target_date] = {
@@ -3127,6 +3223,20 @@ def _grade_receipt(receipt: Dict[str, Any], games: Dict[str, Game]) -> Dict[str,
             profit = stake * (effective_odds - 1.0)
         position["grade_status"] = status
         position["profit_units"] = profit
+    pool_rows = receipt.get("candidate_pool")
+    if isinstance(pool_rows, list) and pool_rows:
+        pool_outcomes: Dict[str, str] = {}
+        for row in pool_rows:
+            if not isinstance(row, dict):
+                continue
+            fid = str(row.get("forecast_id") or row.get("pick_id") or "")
+            if not fid:
+                continue
+            outcome = _grade_row(row, games)
+            if outcome in {"win", "loss", "push"}:
+                pool_outcomes[fid] = outcome
+        if pool_outcomes:
+            graded["candidate_pool_outcomes"] = pool_outcomes
     return graded
 
 
@@ -3213,6 +3323,11 @@ def _performance(receipts: List[Dict[str, Any]], games: Dict[str, Game]) -> Dict
                 "positions": daily,
                 "accas": daily_accas,
                 "singles": daily_singles,
+                **(
+                    {"candidate_pool_outcomes": dict(receipt["candidate_pool_outcomes"])}
+                    if receipt.get("candidate_pool_outcomes")
+                    else {}
+                ),
             }
         )
     return {
@@ -3358,6 +3473,8 @@ def _compact_performance_report(report: Dict[str, Any]) -> Dict[str, Any]:
             compact_position["legs"] = compact_legs
             compact_positions.append(compact_position)
         compact_day["positions"] = compact_positions
+        if day.get("candidate_pool_outcomes"):
+            compact_day["candidate_pool_outcomes"] = dict(day["candidate_pool_outcomes"])
         compact_history.append(compact_day)
     compact["history"] = compact_history
     return compact
@@ -5711,12 +5828,28 @@ def publish_operator_reports(
     }
     if decision_status == "due":
         decision_candidates = pre_tip_ticket_candidates
+        decision_candidate_pool = _decision_candidate_pool(
+            single_rows=single_rows,
+            derived_spread_candidates=derived_spread_candidates,
+            preview_game_ids=preview_game_ids,
+            generated_utc=generated_utc,
+            target_date=target_date,
+        )
+        decision_selection_policy = (
+            _selection_policy_snapshot(acca_report, league)
+            if decision_candidate_pool
+            else None
+        )
     elif decision_status == "missed_pre_tip_window":
         # A daily decision missed before the earliest tip must fail closed; it
         # may not turn a late-arriving later-game price into a fresh ticket.
         decision_candidates = []
+        decision_candidate_pool = None
+        decision_selection_policy = None
     else:
         decision_candidates = []
+        decision_candidate_pool = None
+        decision_selection_policy = None
     receipt = _ticket_receipt(
         localdata,
         state=state,
@@ -5727,6 +5860,8 @@ def publish_operator_reports(
         accas=decision_candidates,
         ticket_decision=ticket_decision,
         allow_new_decision=allow_new_decision,
+        candidate_pool=decision_candidate_pool,
+        selection_policy=decision_selection_policy,
     )
     no_bet_decision = _read_no_bet_decision(state, target_date)
     scan_record = {

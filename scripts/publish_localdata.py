@@ -397,6 +397,9 @@ def _compact_frozen_forecast(row: object) -> object:
     venue_rest = row.get("venue_rest_evidence")
     if isinstance(venue_rest, dict):
         compact["venue_rest_evidence"] = deepcopy(venue_rest)
+    derived_spread = row.get("derived_spread")
+    if isinstance(derived_spread, dict):
+        compact["derived_spread"] = deepcopy(derived_spread)
     return compact
 
 
@@ -459,6 +462,11 @@ def _compact_ticket_receipt(data: dict[str, Any]) -> dict[str, Any]:
                 reduced["individual_pick_filter"] = pick_filter
             compact_positions.append(reduced)
         compact[collection] = compact_positions
+    candidate_pool = compact.get("candidate_pool")
+    if isinstance(candidate_pool, list):
+        compact["candidate_pool"] = [
+            _compact_frozen_forecast(entry) for entry in candidate_pool
+        ]
     return compact
 
 
