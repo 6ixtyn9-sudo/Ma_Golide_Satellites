@@ -2189,6 +2189,24 @@ def test_nba_service_enforces_calibrated_value_lane_while_ncaa_m_stays_standard(
     assert ncaa_report["accas"]["paper_pick_filter"]["require_positive_expected_value"] is False
     assert ncaa_report["accas"]["paper_pick_filter"]["maximum_segment_brier_score"] is None
 
+    ncaa_w_report = MarketForecastService(populated_store(), League.NCAA_W).build_report(
+        as_of_utc=iso(AS_OF)
+    )
+    assert (
+        ncaa_w_report["capabilities"]["league_operator_policy"]
+        == "ncaa_w_calibrated_value_ticket_lane"
+    )
+    ncaa_w_lane = ncaa_w_report["accas"]["paper_lane"]
+    assert ncaa_w_lane["name"] == "NCAA_W_CALIBRATED_VALUE_TICKET_LANE"
+    assert ncaa_w_lane["maximum_segment_brier_score"] == 0.25
+    assert ncaa_w_lane["minimum_prior_settled_picks_in_matching_roi_band"] == 5
+    assert ncaa_w_lane["requires_positive_calibrated_expected_value"] is True
+    assert ncaa_w_lane["forbids_conflicting_game_sides_across_accas"] is True
+    assert (
+        ncaa_w_report["accas"]["paper_ticket_leg_reuse_policy"]
+        == "no_reused_wager_selections_or_opposing_game_sides"
+    )
+
 
 def test_history_dedup_uses_empirical_segment_brier_for_legacy_compacted_rows():
     """Legacy compacted settled-audit rows omit calibration.brier_score; the

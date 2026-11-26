@@ -1031,14 +1031,14 @@ class MarketForecastService:
                 # (2026-11-25: 5 of 11 eligible rows, 4 of 4 strict accas).
                 "require_named_book_quote": True,
             }
-        elif self.league is League.NBA:
-            # Once NBA has walk-forward calibrated (n >= minimum_samples)
+        elif self.league in {League.NBA, League.NCAA_W}:
+            # Once NBA or NCAA_W has walk-forward calibrated (n >= minimum_samples)
             # segments, keep provisional experimental surfaces (e.g. n=3)
             # audit-only, reject calibrated segments whose walk-forward Brier
             # is no better than a 50/50 coin flip (>= 0.25), require positive
             # calibrated EV at exact pre-tip named-book quotes, and require at
             # least 5 prior settled picks in the matching ROI band.
-            nba_has_calibrated_candidates = any(
+            league_has_calibrated_candidates = any(
                 (row.calibration or {}).get("sufficient_for_accas") is True
                 for row in ticket_eligible_current
             )
@@ -1047,7 +1047,7 @@ class MarketForecastService:
                 "require_positive_expected_value": True,
                 "require_point_in_time_price": True,
                 "require_named_book_quote": True,
-                "require_calibrated_segment": nba_has_calibrated_candidates,
+                "require_calibrated_segment": league_has_calibrated_candidates,
                 "maximum_segment_brier_score": 0.25,
             }
         else:
@@ -1122,7 +1122,7 @@ class MarketForecastService:
                 limit=acca_limit,
                 allow_provisional=not bool(paper_lane_options.get("require_calibrated_segment")),
                 require_disjoint_legs=True,
-                forbid_conflicting_game_sides=(self.league is League.NBA),
+                forbid_conflicting_game_sides=(self.league in {League.NBA, League.NCAA_W}),
             )
         for acca in paper_accas:
             acca["individual_pick_filter"] = dict(paper_pick_filter)
@@ -1193,6 +1193,8 @@ class MarketForecastService:
                     if self.league is League.EUROLEAGUE
                     else "nba_calibrated_value_ticket_lane"
                     if self.league is League.NBA
+                    else "ncaa_w_calibrated_value_ticket_lane"
+                    if self.league is League.NCAA_W
                     else "fiba_elw_empirical_history_with_betexplorer_direct_fallback"
                     if self.league is League.EUROLEAGUE_W
                     else "nba_g_league_empirical_history_with_betexplorer_direct_fallback"
@@ -1288,11 +1290,11 @@ class MarketForecastService:
                         "positive calibrated expected value, and at least ten prior settled picks "
                         "in the matching model/market/period/probability/odds band"
                         if self.league is League.EUROLEAGUE
-                        else "; NBA additionally requires calibrated segments once calibrated history "
+                        else f"; {self.league.value} additionally requires calibrated segments once calibrated history "
                         "exists, walk-forward Brier < 0.25, exact pre-tip named-book quotes, "
                         "positive calibrated expected value, at least five prior settled picks in "
                         "the matching ROI band, and no opposing game sides across accas"
-                        if self.league is League.NBA
+                        if self.league in {League.NBA, League.NCAA_W}
                         else ""
                     )
                 ),
@@ -1302,8 +1304,8 @@ class MarketForecastService:
                     + (
                         "_plus_EUROLEAGUE_exact_pretip_price_positive_EV_and_10_pick_band_gate"
                         if self.league is League.EUROLEAGUE
-                        else "_plus_NBA_calibrated_brier_skill_positive_EV_and_5_pick_band_gate"
-                        if self.league is League.NBA
+                        else f"_plus_{self.league.value}_calibrated_brier_skill_positive_EV_and_5_pick_band_gate"
+                        if self.league in {League.NBA, League.NCAA_W}
                         else ""
                     )
                 ),
@@ -1340,7 +1342,7 @@ class MarketForecastService:
                     }
                     if self.league is League.EUROLEAGUE
                     else {
-                        "name": "NBA_CALIBRATED_VALUE_TICKET_LANE",
+                        "name": f"{self.league.value}_CALIBRATED_VALUE_TICKET_LANE",
                         "role": "calibrated skill-gated named-book value lane",
                         "requires_exact_selected_side_pre_tip_price": True,
                         "requires_named_book_quote": True,
@@ -1377,7 +1379,7 @@ class MarketForecastService:
                         ),
                         "qualifying_picks": paper_pick_filter["qualifying_pick_count"],
                     }
-                    if self.league is League.NBA
+                    if self.league in {League.NBA, League.NCAA_W}
                     else None
                 ),
                 "paper_pick_filter": paper_pick_filter,
@@ -1385,7 +1387,7 @@ class MarketForecastService:
                 "paper_single_pick_count": len(paper_single_picks),
                 "paper_ticket_leg_reuse_policy": (
                     "no_reused_wager_selections_or_opposing_game_sides"
-                    if self.league is League.NBA
+                    if self.league in {League.NBA, League.NCAA_W}
                     else "no_reused_wager_selections"
                 ),
                 "paper_single_ticket_policy": (

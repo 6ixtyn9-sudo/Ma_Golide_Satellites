@@ -196,14 +196,52 @@ def test_gate_wakes_at_the_universal_midday_sast_ticket_cutoff(
 
 
 @pytest.mark.parametrize("league", LEAGUES)
-def test_every_league_uses_the_universal_midday_ticket_cutoff(league):
+def test_every_league_uses_the_expected_ticket_cutoff(league):
     cutoff = _ticket_decision_cutoff(
         league,
         "2026-11-18",
         [ScheduleGame(datetime(2026, 11, 18, 23, 0, tzinfo=timezone.utc), "scheduled")],
     )
 
-    assert cutoff == datetime(2026, 11, 18, 10, 0, tzinfo=timezone.utc)
+    expected_hour_utc = 14 if league.league_key == "NCAA_W" else 10
+    assert cutoff == datetime(2026, 11, 18, expected_hour_utc, 0, tzinfo=timezone.utc)
+
+
+def test_ncaa_w_waits_until_1600_sast_for_ticket_window_and_respects_earlier_tip(
+    tmp_path: Path,
+):
+    ncaa_w = next(config for config in LEAGUES if config.league_key == "NCAA_W")
+    _operator_state(tmp_path, ncaa_w, date="2026-11-18")
+    midday_utc = datetime(2026, 11, 18, 10, 0, tzinfo=timezone.utc)
+    sixteen_sast_utc = datetime(2026, 11, 18, 14, 0, tzinfo=timezone.utc)
+    evening_tip = datetime(2026, 11, 18, 18, 0, tzinfo=timezone.utc)
+
+    # At 12:00 SAST (05:00 AM ET), NCAA_W must NOT wake for tickets yet.
+    early = evaluate_league(
+        ncaa_w,
+        state_root=tmp_path,
+        now=midday_utc,
+        schedule_fetcher=_schedule(ScheduleGame(evening_tip, "scheduled")),
+    )
+    assert "ticket_creation_or_acquisition_due" not in early.reasons
+
+    # At 16:00 SAST (09:00 AM ET), NCAA_W wakes for ticket acquisition.
+    due = evaluate_league(
+        ncaa_w,
+        state_root=tmp_path,
+        now=sixteen_sast_utc,
+        schedule_fetcher=_schedule(ScheduleGame(evening_tip, "scheduled")),
+    )
+    assert due.should_run
+    assert due.reasons == ("ticket_creation_or_acquisition_due",)
+
+    # An earlier 17:00 SAST (15:00Z) tip still caps the cutoff at tip - 120m (15:00 SAST / 13:00Z).
+    early_cutoff = _ticket_decision_cutoff(
+        ncaa_w,
+        "2026-11-18",
+        [ScheduleGame(datetime(2026, 11, 18, 15, 0, tzinfo=timezone.utc), "scheduled")],
+    )
+    assert early_cutoff == datetime(2026, 11, 18, 13, 0, tzinfo=timezone.utc)
 
 
 def test_gate_runs_for_an_unfrozen_slate_inside_the_ticket_window(tmp_path: Path):
