@@ -365,6 +365,7 @@ def _compact_frozen_forecast(row: object) -> object:
             "frozen",
             "selected_decimal_price",
             "selected_opposite_decimal_price",
+            "side_prices",
             "price_provenance",
             "source_permission",
             "operational_validation",

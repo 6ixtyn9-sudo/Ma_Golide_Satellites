@@ -419,6 +419,7 @@ def test_publisher_compacts_frozen_fixture_and_ticket_evidence_without_changing_
             "observed_utc": "2026-11-18T18:00:00Z",
             "selected_decimal_price": 1.8,
             "selected_opposite_decimal_price": 2.1,
+            "side_prices": {"home": 1.8, "away": 2.1},
             "price_provenance": "named_book",
             "source_permission": "unresolved",
             "operational_validation": "unverified",
@@ -513,6 +514,7 @@ def test_publisher_compacts_frozen_fixture_and_ticket_evidence_without_changing_
     compact_row = state["frozen_by_date"]["2026-11-18"]["game-1"]["rows"][0]
     assert compact_row["evidence_schema"] == "magolide.frozen_forecast_evidence.v1"
     assert compact_row["book"]["selected_decimal_price"] == 1.8
+    assert compact_row["book"]["side_prices"] == {"home": 1.8, "away": 2.1}
     assert compact_row["book"]["source_permission"] == "unresolved"
     assert compact_row["eligibility"] == {"acca_eligible": True, "reasons": []}
     assert "explanation" not in compact_row

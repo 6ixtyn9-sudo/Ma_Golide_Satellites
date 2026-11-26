@@ -3744,5 +3744,162 @@ def test_operator_archives_settled_old_pick_freezes_and_reloads_transparently(tm
     assert "2026-11-11" not in state["frozen_by_date"]
 
 
+def test_ncaa_w_waits_for_1600_sast_publication_cutoff_before_freezing_tickets(tmp_path):
+    """NCAA_W waits until 16:00 SAST (14:00Z / 09:00 AM ET) instead of locking a
+    no-bet at 12:00 SAST hours before US sportsbooks post women's college lines."""
+
+    ncaa_games = [
+        Game(
+            game_id=f"w{number}",
+            league=League.NCAA_W,
+            season="2026-27",
+            scheduled_utc=f"2026-11-07T{19 + number:02d}:00:00Z",
+            home_team_id=f"h{number}",
+            away_team_id=f"a{number}",
+            home_name=f"Home {number}",
+            away_name=f"Away {number}",
+            status=GameStatus.SCHEDULED,
+        )
+        for number in (1, 2, 3)
+    ]
+    ncaa_rows = [
+        {
+            **forecast(number, price=None, eligible=False, reasons=["no_exact_bookmaker_market"]),
+            "game_id": f"w{number}",
+            "league": "NCAA_W",
+            "scheduled_utc": f"2026-11-07T{19 + number:02d}:00:00Z",
+        }
+        for number in (1, 2, 3)
+    ]
+    # At 12:15 SAST (10:15Z), NCAA_W must stay pending instead of freezing no-bet.
+    midday = publish_operator_reports(
+        Store(ncaa_games),
+        League.NCAA_W,
+        {**report(ncaa_rows, []), "league": "NCAA_W", "generated_utc": "2026-11-07T10:15:00Z"},
+        tmp_path,
+        target_date=DATE,
+        generated_utc="2026-11-07T10:15:00Z",
+        run_id="ncaa-w-midday",
+        slate_timezone_name="America/New_York",
+    )
+    assert midday["ticket_receipt"] is None
+    assert midday["ticket_decision"]["status"] == "pending_cutoff"
+    assert midday["ticket_decision"]["policy"] == "1600_sast_or_first_slate_tip_minus_120_minutes"
+    assert midday["ticket_decision"]["publication_local_time"] == "16:00"
+    assert midday["ticket_decision"]["planned_cutoff_utc"] == "2026-11-07T14:00:00Z"
+    assert "16:00 SAST publication" in Path(midday["ticket_text"]).read_text()
+
+    # At 16:05 SAST (14:05Z), post-14:00 SAST DraftKings prices have arrived and freeze cleanly.
+    priced_rows = [
+        {
+            **forecast(number, price=1.85),
+            "game_id": f"w{number}",
+            "league": "NCAA_W",
+            "scheduled_utc": f"2026-11-07T{19 + number:02d}:00:00Z",
+        }
+        for number in (1, 2, 3)
+    ]
+    afternoon = publish_operator_reports(
+        Store(ncaa_games),
+        League.NCAA_W,
+        {
+            **report(priced_rows, [acca(priced_rows, acca_id="ncaa-w-afternoon")]),
+            "league": "NCAA_W",
+            "generated_utc": "2026-11-07T14:05:00Z",
+        },
+        tmp_path,
+        target_date=DATE,
+        generated_utc="2026-11-07T14:05:00Z",
+        run_id="ncaa-w-afternoon",
+        slate_timezone_name="America/New_York",
+    )
+    receipt = json.loads(Path(afternoon["ticket_receipt"]).read_text())
+    assert receipt["decision_id"] == "ncaa-w-afternoon"
+    assert receipt["ticket_decision"]["status"] == "due"
+    assert len(receipt["accas"]) == 1
+
+
+def test_compacted_spread_preserves_side_prices_for_derived_spread_history():
+    """Compacting a frozen spread row where the native model took the underdog
+    ('away') must keep book['side_prices'] so _unpriced_spread_shadow_rows and
+    _derived_spread_named_quote still recover the favorite's ('home') exact quote."""
+
+    from forecasting.operator import (
+        _derived_spread_named_quote,
+        _unpriced_spread_shadow_rows,
+    )
+    from scripts.publish_localdata import _compact_frozen_forecast
+
+    unpriced_ml_fav = {
+        "forecast_id": "ml-fav-1",
+        "game_id": "w100",
+        "league": "NCAA_W",
+        "date": "2026-11-22",
+        "scheduled_utc": "2026-11-22T20:00:00Z",
+        "home": "Minnesota Golden Gophers",
+        "away": "Central Michigan Chippewas",
+        "market": "moneyline",
+        "period": "full_game",
+        "selection": "home",
+        "line": None,
+        "raw_probability": 0.96,
+        "calibrated_probability": 0.957,
+        "model": "provider:espn",
+        "book": None,
+        "eligibility": {"acca_eligible": False, "reasons": ["no_exact_bookmaker_market"]},
+        "grade_status": "win",
+        "outcome": "win",
+    }
+    spread_underdog_raw = {
+        "forecast_id": "sp-dog-1",
+        "game_id": "w100",
+        "league": "NCAA_W",
+        "date": "2026-11-22",
+        "scheduled_utc": "2026-11-22T20:00:00Z",
+        "home": "Minnesota Golden Gophers",
+        "away": "Central Michigan Chippewas",
+        "market": "spread",
+        "period": "full_game",
+        "selection": "away",
+        "line": -43.5,
+        "raw_probability": 0.62,
+        "calibrated_probability": 0.505,
+        "model": "team_history_empirical",
+        "book": {
+            "provider": "espn",
+            "book": "DraftKings",
+            "observed_utc": "2026-11-22T15:00:00Z",
+            "pre_match": True,
+            "main_line": True,
+            "frozen": True,
+            "selected_decimal_price": 1.909,
+            "side_prices": {"home": 1.909, "away": 1.909},
+            "price_provenance": "named_book",
+            "source_permission": "unresolved",
+            "operational_validation": "unverified",
+            "game_id": "w100",
+            "market": "spread",
+            "period": "full_game",
+            "line": -43.5,
+        },
+        "eligibility": {"acca_eligible": False, "reasons": ["insufficient_walk_forward_samples"]},
+        "grade_status": "loss",
+        "outcome": "loss",
+    }
+    compacted_spread = _compact_frozen_forecast(spread_underdog_raw)
+    assert compacted_spread["book"]["side_prices"] == {"home": 1.909, "away": 1.909}
+
+    shadows = _unpriced_spread_shadow_rows([unpriced_ml_fav, compacted_spread])
+    assert len(shadows) == 1
+    assert shadows[0]["selection"] == "home"
+    assert shadows[0]["grade_status"] == "win"
+    assert shadows[0]["price"] == 1.909
+    quote = _derived_spread_named_quote(shadows[0])
+    assert quote is not None
+    assert quote["selected_decimal_price"] == 1.909
+    assert quote["book"] == "DraftKings"
+
+
+
 
 

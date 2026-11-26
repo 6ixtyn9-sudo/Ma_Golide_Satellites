@@ -125,20 +125,32 @@ TICKET_DECISION_LEAD_TIME = timedelta(minutes=120)
 TICKET_PUBLICATION_TIMEZONE = "Africa/Johannesburg"
 TICKET_PUBLICATION_LOCAL_TIME = time(hour=12)
 TICKET_DECISION_POLICY = "1200_sast_or_first_slate_tip_minus_120_minutes"
+# NCAA women's basketball named-book lines (DraftKings via ESPN, BetExplorer,
+# and The Odds API) open after 14:00 SAST (07:00 AM ET). Publishing at 12:00
+# SAST locked an immutable no-bet every day hours before prices existed, even
+# though games tip 17:00-06:00 SAST. 16:00 SAST (09:00 AM ET) waits for
+# pre-tip lines while still honoring first-tip minus 120 minutes for early
+# games. Keep aligned with ingestion.adaptive_gate.
+NCAA_W_TICKET_PUBLICATION_LOCAL_TIME = time(hour=16)
+NCAA_W_TICKET_DECISION_POLICY = "1600_sast_or_first_slate_tip_minus_120_minutes"
 # Freezes already written under the one-hour lead stay valid: the cutoff is
 # immutable evidence, and refusing to read it would strand a published snapshot.
 LEGACY_TICKET_DECISION_LEAD_TIMES = (timedelta(hours=1),)
 
 
-def _ticket_publication_local_time(_league: League) -> time:
-    """Return the single universal dated-ticket publication time."""
+def _ticket_publication_local_time(league: League) -> time:
+    """Return the dated-ticket publication time for ``league``."""
 
+    if league is League.NCAA_W:
+        return NCAA_W_TICKET_PUBLICATION_LOCAL_TIME
     return TICKET_PUBLICATION_LOCAL_TIME
 
 
-def _ticket_decision_policy(_league: League) -> str:
-    """Return the single universal dated-ticket decision policy."""
+def _ticket_decision_policy(league: League) -> str:
+    """Return the dated-ticket decision policy for ``league``."""
 
+    if league is League.NCAA_W:
+        return NCAA_W_TICKET_DECISION_POLICY
     return TICKET_DECISION_POLICY
 BUCKET_ORDER = [
     "ELIGIBLE_CLEAN",

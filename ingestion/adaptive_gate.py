@@ -58,11 +58,13 @@ DECISION_LEAD_MINUTES = 120
 # Freezes written under the previous one-hour lead remain readable evidence;
 # see the matching legacy tuple in forecasting.operator.
 LEGACY_DECISION_LEAD_MINUTES = (60,)
-# Keep this universal policy aligned with forecasting.operator. Every dated
-# ticket decision is at midday Johannesburg time, unless an earlier fixture
-# needs the ordinary 60-minute pre-tip safety cutoff.
+# Keep these publication times aligned with forecasting.operator. Most leagues
+# publish at midday Johannesburg time; NCAA women's basketball publishes at
+# 16:00 SAST (09:00 AM ET) because US bookmakers open NCAA_W lines after 14:00
+# SAST. Earlier fixtures always use the tip-minus-120-minute safety cutoff.
 TICKET_PUBLICATION_TIMEZONE = "Africa/Johannesburg"
 TICKET_PUBLICATION_LOCAL_TIME = time(hour=12)
+NCAA_W_TICKET_PUBLICATION_LOCAL_TIME = time(hour=16)
 HTTP_TIMEOUT_SECONDS = 15
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 COVERAGE_GAP_MARKER_SCHEMA = "magolide.coverage_gap_marker"
@@ -266,6 +268,12 @@ def target_date_for(config: LeagueGateConfig, now: datetime) -> str:
     return now.astimezone(ZoneInfo(config.acquisition_timezone)).strftime("%Y-%m-%d")
 
 
+def _ticket_publication_local_time(config: LeagueGateConfig) -> time:
+    if config.league_key == "NCAA_W":
+        return NCAA_W_TICKET_PUBLICATION_LOCAL_TIME
+    return TICKET_PUBLICATION_LOCAL_TIME
+
+
 def _ticket_decision_cutoff(
     config: LeagueGateConfig, target_date: str, games: Iterable[ScheduleGame]
 ) -> datetime | None:
@@ -284,7 +292,7 @@ def _ticket_decision_cutoff(
         return None
     publication = datetime.combine(
         target_day,
-        TICKET_PUBLICATION_LOCAL_TIME,
+        _ticket_publication_local_time(config),
         tzinfo=ZoneInfo(TICKET_PUBLICATION_TIMEZONE),
     ).astimezone(timezone.utc)
     return min(publication, min(tips) - timedelta(minutes=DECISION_LEAD_MINUTES))
