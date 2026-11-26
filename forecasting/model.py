@@ -170,12 +170,22 @@ def _game_neutral_site(game: Game) -> Optional[bool]:
 class _PeriodHistoryIndex:
     """Prefix sums for league and exponentially weighted team evidence."""
 
-    def __init__(self, games: Sequence[Game], period: Period, half_life: float) -> None:
+    def __init__(
+        self,
+        games: Sequence[Game],
+        period: Period,
+        half_life: float,
+        *,
+        home_keys: Optional[Tuple[str, ...]] = None,
+        away_keys: Optional[Tuple[str, ...]] = None,
+        neutral_sites: Optional[Tuple[bool, ...]] = None,
+    ) -> None:
         league_home = [0.0]
         league_away = [0.0]
         league_count = [0]
         ha_diff = [0.0]
         ha_count = [0]
+        scores_list: List[Optional[Tuple[float, float]]] = []
         team_games: Dict[str, List[int]] = {}
         team_for: Dict[str, List[float]] = {}
         team_against: Dict[str, List[float]] = {}
@@ -194,6 +204,7 @@ class _PeriodHistoryIndex:
 
         for index, game in enumerate(games):
             scores = _period_scores(game, period)
+            scores_list.append(scores)
             if scores is None:
                 league_home.append(league_home[-1])
                 league_away.append(league_away[-1])
@@ -205,18 +216,30 @@ class _PeriodHistoryIndex:
             league_home.append(league_home[-1] + home)
             league_away.append(league_away[-1] + away)
             league_count.append(league_count[-1] + 1)
-            if _game_neutral_site(game) is True:
+            is_neutral = (
+                neutral_sites[index]
+                if neutral_sites is not None
+                else (_game_neutral_site(game) is True)
+            )
+            if is_neutral:
                 ha_diff.append(ha_diff[-1])
                 ha_count.append(ha_count[-1])
             else:
                 ha_diff.append(ha_diff[-1] + (home - away))
                 ha_count.append(ha_count[-1] + 1)
-            home_team = canonical_team_key(game.home_name)
-            away_team = canonical_team_key(game.away_name)
+            home_team = (
+                home_keys[index] if home_keys is not None else canonical_team_key(game.home_name)
+            )
+            away_team = (
+                away_keys[index] if away_keys is not None else canonical_team_key(game.away_name)
+            )
             add_team(home_team, index, home, away)
             if away_team != home_team:
                 add_team(away_team, index, away, home)
 
+        self.scores = tuple(scores_list)
+        self.half_life = half_life
+        self.decay = decay
         self.league_home = tuple(league_home)
         self.league_away = tuple(league_away)
         self.league_count = tuple(league_count)
@@ -247,23 +270,28 @@ class _PeriodHistoryIndex:
     def _team_state(values: Tuple[float, ...], lo: int, hi: int, decay: float) -> float:
         return values[hi] - values[lo] * (decay ** (hi - lo))
 
-    def team_rates(
-        self, team_name: str, start: int, end: int, half_life: float
+    def team_rates_by_key(
+        self, team_key: str, start: int, end: int, half_life: float
     ) -> Optional[_TeamRates]:
-        evidence = self.teams.get(canonical_team_key(team_name))
+        evidence = self.teams.get(team_key)
         if evidence is None:
             return None
         lo = bisect_left(evidence.game_indices, start)
         hi = bisect_left(evidence.game_indices, end)
         if lo == hi:
             return None
-        decay = 0.5 ** (1.0 / half_life)
+        decay = self.decay if half_life == self.half_life else (0.5 ** (1.0 / half_life))
         weight = self._team_state(evidence.weights, lo, hi, decay)
         if weight <= 0:
             return None
         points_for = self._team_state(evidence.points_for, lo, hi, decay)
         points_against = self._team_state(evidence.points_against, lo, hi, decay)
         return _TeamRates(points_for / weight, points_against / weight, weight)
+
+    def team_rates(
+        self, team_name: str, start: int, end: int, half_life: float
+    ) -> Optional[_TeamRates]:
+        return self.team_rates_by_key(canonical_team_key(team_name), start, end, half_life)
 
 
 class _IndexedHistory(Sequence[Game]):
@@ -272,8 +300,25 @@ class _IndexedHistory(Sequence[Game]):
     def __init__(self, games: Sequence[Game], half_life: float) -> None:
         self.games = tuple(games)
         self.times = tuple(parse_utc(game.scheduled_utc) for game in self.games)
+        self.home_keys = tuple(canonical_team_key(game.home_name) for game in self.games)
+        self.away_keys = tuple(canonical_team_key(game.away_name) for game in self.games)
+        self.neutral_sites = tuple(_game_neutral_site(game) is True for game in self.games)
         self.half_life = half_life
         self._periods: Dict[Period, _PeriodHistoryIndex] = {}
+        self._residual_entry_cache: Dict[
+            Tuple[Any, ...], Optional[Tuple[float, float, float, float]]
+        ] = {}
+        self._zero_start_residuals: Dict[
+            Tuple[Any, ...],
+            List[Any],
+        ] = {}
+        self._quarter_vector_cache: Dict[
+            Tuple[Any, ...], Optional[Tuple[float, float, float, float]]
+        ] = {}
+        self._zero_start_quarter_vectors: Dict[
+            Tuple[Any, ...],
+            List[Any],
+        ] = {}
 
     def __len__(self) -> int:
         return len(self.games)
@@ -287,7 +332,14 @@ class _IndexedHistory(Sequence[Game]):
     def period(self, period: Period) -> _PeriodHistoryIndex:
         result = self._periods.get(period)
         if result is None:
-            result = _PeriodHistoryIndex(self.games, period, self.half_life)
+            result = _PeriodHistoryIndex(
+                self.games,
+                period,
+                self.half_life,
+                home_keys=self.home_keys,
+                away_keys=self.away_keys,
+                neutral_sites=self.neutral_sites,
+            )
             self._periods[period] = result
         return result
 
@@ -515,9 +567,20 @@ class HistoryModel:
             weight_sum,
         )
 
-    def _indexed_baseline(
+    def _baseline_config_signature(self) -> Tuple[Any, ...]:
+        cfg = self.config
+        return (
+            cfg.min_history_games,
+            cfg.team_prior_games,
+            cfg.recent_half_life_games,
+            cfg.result_available_after_hours,
+        )
+
+    def _indexed_baseline_keys(
         self,
-        game: Game,
+        home_key: str,
+        away_key: str,
+        is_neutral: bool,
         index: _IndexedHistory,
         start: int,
         end: int,
@@ -531,32 +594,55 @@ class HistoryModel:
             return None
         mean, home_advantage = league
         prior = self.config.team_prior_games
+        half_life = self.config.recent_half_life_games
 
-        def shrunk(rates: Optional[_TeamRates], field: str) -> float:
-            if rates is None:
-                return mean
-            value = getattr(rates, field)
-            return (rates.effective_games * value + prior * mean) / (rates.effective_games + prior)
-
-        home_rates = stats.team_rates(
-            game.home_name, start, end, self.config.recent_half_life_games
-        )
-        away_rates = stats.team_rates(
-            game.away_name, start, end, self.config.recent_half_life_games
-        )
-        applied_home_advantage = 0.0 if _game_neutral_site(game) is True else home_advantage
-        expected_home = (
-            shrunk(home_rates, "points_for") + shrunk(away_rates, "points_against")
-        ) / 2 + applied_home_advantage / 2
-        expected_away = (
-            shrunk(away_rates, "points_for") + shrunk(home_rates, "points_against")
-        ) / 2 - applied_home_advantage / 2
+        home_rates = stats.team_rates_by_key(home_key, start, end, half_life)
+        away_rates = stats.team_rates_by_key(away_key, start, end, half_life)
+        if home_rates is None:
+            home_for = mean
+            home_against = mean
+            home_eff = 0.0
+        else:
+            home_eff = home_rates.effective_games
+            denom = home_eff + prior
+            home_for = (home_eff * home_rates.points_for + prior * mean) / denom
+            home_against = (home_eff * home_rates.points_against + prior * mean) / denom
+        if away_rates is None:
+            away_for = mean
+            away_against = mean
+            away_eff = 0.0
+        else:
+            away_eff = away_rates.effective_games
+            denom = away_eff + prior
+            away_for = (away_eff * away_rates.points_for + prior * mean) / denom
+            away_against = (away_eff * away_rates.points_against + prior * mean) / denom
+        applied_home_advantage = 0.0 if is_neutral else home_advantage
+        expected_home = (home_for + away_against) / 2 + applied_home_advantage / 2
+        expected_away = (away_for + home_against) / 2 - applied_home_advantage / 2
         return Baseline(
             expected_home,
             expected_away,
             end - start,
-            home_team_effective_games=(home_rates.effective_games if home_rates else 0.0),
-            away_team_effective_games=(away_rates.effective_games if away_rates else 0.0),
+            home_team_effective_games=home_eff,
+            away_team_effective_games=away_eff,
+        )
+
+    def _indexed_baseline(
+        self,
+        game: Game,
+        index: _IndexedHistory,
+        start: int,
+        end: int,
+        period: Period,
+    ) -> Optional[Baseline]:
+        return self._indexed_baseline_keys(
+            canonical_team_key(game.home_name),
+            canonical_team_key(game.away_name),
+            _game_neutral_site(game) is True,
+            index,
+            start,
+            end,
+            period,
         )
 
     def baseline(self, game: Game, history: Sequence[Game], period: Period) -> Optional[Baseline]:
@@ -617,6 +703,41 @@ class HistoryModel:
             "sufficient_for_accas": home >= required and away >= required,
         }
 
+    def _compute_residual_entry(
+        self,
+        index: _IndexedHistory,
+        stats: _PeriodHistoryIndex,
+        start: int,
+        target_index: int,
+        period: Period,
+        delay: timedelta,
+    ) -> Optional[Tuple[float, float, float, float]]:
+        actual = stats.scores[target_index]
+        if actual is None:
+            return None
+        cutoff = index.times[target_index] - delay
+        prior_end = min(
+            target_index,
+            bisect_right(index.times, cutoff, lo=start, hi=target_index),
+        )
+        baseline = self._indexed_baseline_keys(
+            index.home_keys[target_index],
+            index.away_keys[target_index],
+            index.neutral_sites[target_index],
+            index,
+            start,
+            prior_end,
+            period,
+        )
+        if baseline is None:
+            return None
+        return (
+            baseline.margin,
+            baseline.total,
+            actual[0] - actual[1],
+            actual[0] + actual[1],
+        )
+
     def _residual_samples(
         self, history: Sequence[Game], period: Period
     ) -> List[Tuple[float, float, float, float]]:
@@ -630,37 +751,55 @@ class HistoryModel:
         else:
             index = _IndexedHistory(history, self.config.recent_half_life_games)
             start, end = 0, len(index)
+        stats = index.period(period)
+        delay = timedelta(hours=self.config.result_available_after_hours)
+        cfg_sig = self._baseline_config_signature()
+        window = self.config.residual_window
+
+        if start == 0:
+            stream_key = (period, cfg_sig)
+            stream = index._zero_start_residuals.get(stream_key)
+            if stream is not None or end <= window * 2:
+                if stream is None:
+                    stream = [0, [], []]  # [computed_upto, valid_indices, valid_samples]
+                    index._zero_start_residuals[stream_key] = stream
+                computed_upto, valid_indices, valid_samples = stream
+                while computed_upto < end:
+                    entry = self._compute_residual_entry(
+                        index, stats, 0, computed_upto, period, delay
+                    )
+                    if entry is not None:
+                        valid_indices.append(computed_upto)
+                        valid_samples.append(entry)
+                    computed_upto += 1
+                stream[0] = computed_upto
+                pos = (
+                    len(valid_indices)
+                    if end >= computed_upto
+                    else bisect_left(valid_indices, end)
+                )
+                samples = valid_samples[max(0, pos - window) : pos]
+                if isinstance(history, _HistoryView):
+                    history.residual_cache[period] = samples
+                return samples
+
         samples: List[Tuple[float, float, float, float]] = []
-        # Ensure period prefix statistics are ready for indexed baselines.
-        index.period(period)
+        entry_cache = index._residual_entry_cache
         # Residual distributions only use the most recent configured samples.
         # Walking backwards avoids recomputing old, discarded residuals.
         for target_index in range(end - 1, start - 1, -1):
-            target = index.games[target_index]
-            actual = _period_scores(target, period)
-            if actual is None:
-                continue
-            cutoff = index.times[target_index] - timedelta(
-                hours=self.config.result_available_after_hours
-            )
-            prior_end = min(
-                target_index,
-                bisect_right(index.times, cutoff, lo=start, hi=target_index),
-            )
-            baseline = self._indexed_baseline(
-                target, index, start, prior_end, period
-            )
-            if baseline is None:
-                continue
-            samples.append(
-                (
-                    baseline.margin,
-                    baseline.total,
-                    actual[0] - actual[1],
-                    actual[0] + actual[1],
+            cache_key = (start, target_index, period, cfg_sig)
+            if cache_key in entry_cache:
+                entry = entry_cache[cache_key]
+            else:
+                entry = self._compute_residual_entry(
+                    index, stats, start, target_index, period, delay
                 )
-            )
-            if len(samples) >= self.config.residual_window:
+                entry_cache[cache_key] = entry
+            if entry is None:
+                continue
+            samples.append(entry)
+            if len(samples) >= window:
                 break
         samples.reverse()
         if isinstance(history, _HistoryView):
@@ -1085,6 +1224,37 @@ class HistoryModel:
             )
         return forecasts
 
+    def _compute_quarter_vector(
+        self,
+        index: _IndexedHistory,
+        quarter_stats: Tuple[_PeriodHistoryIndex, ...],
+        start: int,
+        target_index: int,
+        delay: timedelta,
+    ) -> Optional[Tuple[float, float, float, float]]:
+        cutoff = index.times[target_index] - delay
+        prior_end = min(
+            target_index,
+            bisect_right(index.times, cutoff, lo=start, hi=target_index),
+        )
+        if prior_end - start < self.config.min_history_games:
+            return None
+        home_key = index.home_keys[target_index]
+        away_key = index.away_keys[target_index]
+        is_neutral = index.neutral_sites[target_index]
+        vector: List[float] = []
+        for period, stats in zip(QUARTERS, quarter_stats):
+            actual = stats.scores[target_index]
+            if actual is None:
+                return None
+            baseline = self._indexed_baseline_keys(
+                home_key, away_key, is_neutral, index, start, prior_end, period
+            )
+            if baseline is None:
+                return None
+            vector.append(sum(actual) - baseline.total)
+        return (vector[0], vector[1], vector[2], vector[3])
+
     def highest_quarter(self, game: Game, history: Sequence[Game]) -> List[Forecast]:
         if len(history) < self.config.min_history_games:
             return []
@@ -1096,30 +1266,66 @@ class HistoryModel:
         else:
             index = _IndexedHistory(history, self.config.recent_half_life_games)
             start, end = 0, len(index)
+        quarter_stats = tuple(index.period(period) for period in QUARTERS)
+        delay = timedelta(hours=self.config.result_available_after_hours)
+        cfg_sig = self._baseline_config_signature()
+        window = self.config.residual_window
         vectors: List[tuple[float, float, float, float]] = []
-        for target_index in range(end - 1, start - 1, -1):
-            target = index.games[target_index]
-            cutoff = index.times[target_index] - timedelta(
-                hours=self.config.result_available_after_hours
-            )
-            prior_end = min(
-                target_index,
-                bisect_right(index.times, cutoff, lo=start, hi=target_index),
-            )
-            vector: List[float] = []
-            for period in QUARTERS:
-                baseline = self._indexed_baseline(
-                    target, index, start, prior_end, period
+
+        if start == 0:
+            stream = index._zero_start_quarter_vectors.get(cfg_sig)
+            if stream is not None or end <= window * 2:
+                if stream is None:
+                    stream = [0, [], []]
+                    index._zero_start_quarter_vectors[cfg_sig] = stream
+                computed_upto, valid_indices, valid_vectors = stream
+                while computed_upto < end:
+                    vec = self._compute_quarter_vector(
+                        index, quarter_stats, 0, computed_upto, delay
+                    )
+                    if vec is not None:
+                        valid_indices.append(computed_upto)
+                        valid_vectors.append(vec)
+                    computed_upto += 1
+                stream[0] = computed_upto
+                pos = (
+                    len(valid_indices)
+                    if end >= computed_upto
+                    else bisect_left(valid_indices, end)
                 )
-                actual = _period_scores(target, period)
-                if baseline is None or actual is None:
-                    break
-                vector.append(sum(actual) - baseline.total)
-            if len(vector) == 4:
-                vectors.append(tuple(vector))
-                if len(vectors) >= self.config.residual_window:
-                    break
-        vectors.reverse()
+                vectors = valid_vectors[max(0, pos - window) : pos]
+            else:
+                vec_cache = index._quarter_vector_cache
+                for target_index in range(end - 1, start - 1, -1):
+                    cache_key = (start, target_index, cfg_sig)
+                    if cache_key in vec_cache:
+                        vec = vec_cache[cache_key]
+                    else:
+                        vec = self._compute_quarter_vector(
+                            index, quarter_stats, start, target_index, delay
+                        )
+                        vec_cache[cache_key] = vec
+                    if vec is not None:
+                        vectors.append(vec)
+                        if len(vectors) >= window:
+                            break
+                vectors.reverse()
+        else:
+            vec_cache = index._quarter_vector_cache
+            for target_index in range(end - 1, start - 1, -1):
+                cache_key = (start, target_index, cfg_sig)
+                if cache_key in vec_cache:
+                    vec = vec_cache[cache_key]
+                else:
+                    vec = self._compute_quarter_vector(
+                        index, quarter_stats, start, target_index, delay
+                    )
+                    vec_cache[cache_key] = vec
+                if vec is not None:
+                    vectors.append(vec)
+                    if len(vectors) >= window:
+                        break
+            vectors.reverse()
         if len(vectors) < self.config.min_residual_games:
             return []
         wins = {period.value: 0 for period in QUARTERS}

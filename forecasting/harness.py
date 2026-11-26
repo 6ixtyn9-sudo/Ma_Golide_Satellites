@@ -340,6 +340,103 @@ def build_profiles(
     return profiles
 
 
+class IncrementalProfileBuilder:
+    """O(1)-per-record sufficient-statistics tracker identical to ``build_profiles``.
+
+    Used by prequential walk-forward replay so advancing the availability
+    cutoff over ``N`` historical finals updates only newly settled forecasts
+    instead of rescanning and refitting every bucket from scratch on each game.
+    """
+
+    def __init__(self, config: CalibrationConfig | None = None) -> None:
+        self.cfg = config or CalibrationConfig()
+        epoch_raw = getattr(self.cfg, "calibration_epoch_utc", CALIBRATION_EPOCH_UTC)
+        try:
+            self._epoch = parse_utc(epoch_raw) if epoch_raw else None
+        except Exception:
+            self._epoch = None
+        # bucket_key -> [wins, losses, pushes, sum_raw, sum_brier, sum_log_loss]
+        self._stats: Dict[SegmentKey, List[Any]] = {}
+        self._cache: Dict[SegmentKey, CalibrationProfile] = {}
+
+    def add(self, record: Forecast) -> None:
+        if record.outcome not in {"win", "loss", "push"}:
+            return
+        if self._epoch is not None:
+            try:
+                scheduled = parse_utc(record.scheduled_utc)
+            except Exception:
+                return
+            if scheduled < self._epoch:
+                return
+        key: SegmentKey = record.versioned_segment_key
+        if (
+            _requires_team_history(record)
+            and (record.team_history or {}).get("sufficient_for_accas") is False
+        ):
+            bucket: SegmentKey = (*key, DIAG_POOL_TAG)
+        else:
+            bucket = key
+        stats = self._stats.get(bucket)
+        if stats is None:
+            stats = [0, 0, 0, 0.0, 0.0, 0.0]
+            self._stats[bucket] = stats
+        if record.outcome == "push":
+            stats[2] += 1
+        else:
+            won = record.outcome == "win"
+            if won:
+                stats[0] += 1
+            else:
+                stats[1] += 1
+            prob = record.raw_probability
+            stats[3] += prob
+            stats[4] += (prob - float(won)) ** 2
+            stats[5] += _log_loss(prob, won)
+        self._cache.pop(bucket, None)
+
+    def get(
+        self, key: SegmentKey, default: Optional[CalibrationProfile] = None
+    ) -> Optional[CalibrationProfile]:
+        cached = self._cache.get(key)
+        if cached is not None:
+            return cached
+        stats = self._stats.get(key)
+        if stats is None:
+            return default
+        wins, losses, pushes, sum_raw, sum_brier, sum_log_loss = stats
+        n = wins + losses
+        if not n:
+            return default
+        raw_mean = sum_raw / n
+        observed = wins / n
+        weight = n / (n + self.cfg.prior_strength)
+        adjustment = weight * (observed - raw_mean)
+        profile = CalibrationProfile(
+            key=key,
+            wins=wins,
+            losses=losses,
+            pushes=pushes,
+            mean_raw_probability=raw_mean,
+            observed_win_rate=observed,
+            adjustment=adjustment,
+            wilson_lower_95=wilson_lower_bound(wins, n),
+            brier_score=sum_brier / n,
+            log_loss=sum_log_loss / n,
+            min_samples=self.cfg.min_samples,
+        )
+        self._cache[key] = profile
+        return profile
+
+    def profiles(self) -> Dict[SegmentKey, CalibrationProfile]:
+        out: Dict[SegmentKey, CalibrationProfile] = {}
+        for key in self._stats:
+            profile = self.get(key)
+            if profile is not None:
+                out[key] = profile
+        return out
+
+
 #: Reason stamped on a row that is a calibration twin of a better-evidenced row.
 TWIN_SUPERSEDED_REASON = "superseded_by_calibration_twin"
 #: Advisory stamped when the twins would have disagreed about eligibility.

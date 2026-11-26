@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections import Counter
-from datetime import timedelta
+from datetime import datetime, timedelta
 import json
 import os
 from pathlib import Path
@@ -42,6 +42,7 @@ from .espn_context import build_espn_player_context, has_confirmed_out_injury
 from .feature_manifest import build_feature_use_manifest
 from .harness import (
     CalibrationConfig,
+    IncrementalProfileBuilder,
     apply_profiles,
     build_profiles,
     calibration_population_diagnostics,
@@ -713,12 +714,18 @@ class MarketForecastService:
         )
 
         records: List[Forecast] = []
+        records_with_time: List[tuple[datetime, Forecast]] = []
         prequential: List[Forecast] = []
         replay_generated_by_segment: Counter = Counter()
         replay_ungraded_by_segment: Counter = Counter()
         replay_graded_by_segment: Counter = Counter()
         replay_outcomes: Counter = Counter()
         finals_with_generated_forecasts = 0
+        availability_delay = timedelta(hours=self.forecast_config.result_available_after_hours)
+        profile_tracker = IncrementalProfileBuilder(self.calibration_config)
+        avail_cursor = 0
+        monotonic_records = True
+        max_record_time: Optional[datetime] = None
         for game in finals:
             # Simulate a forecast at tip: later finals are excluded by the
             # availability cutoff, and all prediction/book evidence is frozen.
@@ -732,8 +739,18 @@ class MarketForecastService:
             )
             if generated:
                 finals_with_generated_forecasts += 1
-            available = self._available_records(records, game.scheduled_utc)
-            profiles = build_profiles(available, self.calibration_config)
+            if monotonic_records:
+                cutoff = parse_utc(game.scheduled_utc) - availability_delay
+                while (
+                    avail_cursor < len(records_with_time)
+                    and records_with_time[avail_cursor][0] <= cutoff
+                ):
+                    profile_tracker.add(records_with_time[avail_cursor][1])
+                    avail_cursor += 1
+                profiles_lookup: Any = profile_tracker
+            else:
+                available = self._available_records(records, game.scheduled_utc)
+                profiles_lookup = build_profiles(available, self.calibration_config)
             for forecast in generated:
                 key = forecast.versioned_segment_key
                 replay_generated_by_segment[key] += 1
@@ -744,9 +761,15 @@ class MarketForecastService:
                 replay_graded_by_segment[key] += 1
                 replay_outcomes[outcome] += 1
                 forecast.outcome = outcome
-                apply_profiles([forecast], profiles, self.calibration_config)
+                apply_profiles([forecast], profiles_lookup, self.calibration_config)
                 prequential.append(forecast)
                 records.append(forecast)
+                rec_time = parse_utc(forecast.scheduled_utc)
+                if max_record_time is not None and rec_time < max_record_time:
+                    monotonic_records = False
+                else:
+                    max_record_time = rec_time
+                records_with_time.append((rec_time, forecast))
 
         shadow_profiles = None
         previous_prequential_shadow = [
