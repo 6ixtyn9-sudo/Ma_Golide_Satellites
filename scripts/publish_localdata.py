@@ -111,6 +111,10 @@ _PICK_SELECTION_RE = re.compile(r"^      (.+?) · p=")
 _PICK_COLLAPSED_RE = re.compile(r"^      collapsed_observations=(\d+)\b")
 _TICKET_LEG_HEADER_RE = re.compile(r"^   (.+? · TIP-OFF .+)$")
 _TICKET_LEG_SELECTION_RE = re.compile(r"^      (.+)$")
+_SHADOW_SUMMARY_HEADER_RE = re.compile(
+    r"^(?:(?:PRICED-INELIGIBLE|UNPRICED)\s+AUDIT-ONLY\s+SHADOW\s+GROUPS\b"
+    r"|  SHADOW\s+GROUP\s+\d+\b)"
+)
 MAX_FILE_BYTES = 25 * 1024 * 1024
 MAX_TOTAL_BYTES = 100 * 1024 * 1024
 
@@ -666,6 +670,11 @@ def _card_grade_entries(text: str) -> list[tuple[str, str, int]]:
     lines = text.splitlines()
     entries: list[tuple[str, str, int]] = []
     for index, line in enumerate(lines):
+        if _SHADOW_SUMMARY_HEADER_RE.match(line):
+            # Aggregate shadow-group summary headers duplicate individual row
+            # counts and flip from all-settled to mixed (settled + pending)
+            # whenever a later game joins the group; grade each row instead.
+            continue
         is_pending = PENDING_GRADE_RE.search(line) is not None
         is_settled = SETTLED_GRADE_RE.search(line) is not None
         if is_pending == is_settled:

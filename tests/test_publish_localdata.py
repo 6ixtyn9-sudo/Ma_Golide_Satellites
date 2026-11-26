@@ -1428,3 +1428,87 @@ def test_card_grade_entries_keys_unpriced_spread_shadow_legs_by_tipoff_header():
     assert entries[0][1] != entries[1][1]
 
 
+def test_publisher_accepts_new_pending_shadow_pick_alongside_settled_shadow_pick(tmp_path):
+    """Adding a late pending pick to an already-settled shadow group must not look like a regression."""
+
+    before = "\n".join(
+        [
+            "PRICED-INELIGIBLE AUDIT-ONLY SHADOW GROUPS (decimal odds ≥1.30; p ≥70%) — "
+            "1 picks in 1 group (1 ✅ WIN; 10 exact-priced ineligible audited)",
+            "  SHADOW GROUP 1 — 1 priced-ineligible audit-only pick (1 ✅ WIN)",
+            "    [✅ WIN] Team Alpha vs Team Beta · 2026-11-26 01:00 SAST · forecast=aaa",
+            "",
+        ]
+    )
+    after = "\n".join(
+        [
+            "PRICED-INELIGIBLE AUDIT-ONLY SHADOW GROUPS (decimal odds ≥1.30; p ≥70%) — "
+            "2 picks in 1 group (1 ✅ WIN, 1 ⏳ PENDING; 12 exact-priced ineligible audited)",
+            "  SHADOW GROUP 1 — 2 priced-ineligible audit-only picks (1 ✅ WIN, 1 ⏳ PENDING)",
+            "    [✅ WIN] Team Alpha vs Team Beta · 2026-11-26 01:00 SAST · forecast=aaa",
+            "    [⏳ PENDING] Team Gamma vs Team Delta · 2026-11-26 03:00 SAST · forecast=bbb",
+            "",
+        ]
+    )
+
+    repo = tmp_path / "repo"
+    destination = repo / "localdata" / "ncaa_m" / "auto_tickets_2026-11-26.txt"
+    destination.parent.mkdir(parents=True)
+    destination.write_text(before, encoding="utf-8")
+    artifact_file(
+        tmp_path,
+        "ncaa-m-artifact",
+        "ncaa_m",
+        "auto_tickets_2026-11-26.txt",
+        after.encode("utf-8"),
+    )
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert report["settled_card_regressions_skipped"] == []
+    assert report["copied"] == ["localdata/ncaa_m/auto_tickets_2026-11-26.txt"]
+    assert destination.read_text(encoding="utf-8") == after
+
+
+def test_publisher_still_rejects_settled_shadow_pick_downgrade(tmp_path):
+    """Ignoring aggregate shadow headers must still block downgrading an individual settled pick."""
+
+    settled = "\n".join(
+        [
+            "UNPRICED AUDIT-ONLY SHADOW GROUPS (≥70% HISTORICAL SUCCESS, n>10) — "
+            "1 picks in 1 group (1 ✅ WIN; 5 audited)",
+            "  SHADOW GROUP 1 — 1 audit-only pick (1 ✅ WIN)",
+            "    [✅ WIN] Team Alpha vs Team Beta · 2026-11-26 01:00 SAST · forecast=aaa",
+            "",
+        ]
+    )
+    regressed = "\n".join(
+        [
+            "UNPRICED AUDIT-ONLY SHADOW GROUPS (≥70% HISTORICAL SUCCESS, n>10) — "
+            "2 picks in 1 group (1 ✅ WIN, 1 ⏳ PENDING; 6 audited)",
+            "  SHADOW GROUP 1 — 2 audit-only picks (1 ✅ WIN, 1 ⏳ PENDING)",
+            "    [⏳ PENDING] Team Alpha vs Team Beta · 2026-11-26 01:00 SAST · forecast=aaa",
+            "    [✅ WIN] Team Gamma vs Team Delta · 2026-11-26 03:00 SAST · forecast=bbb",
+            "",
+        ]
+    )
+
+    repo = tmp_path / "repo"
+    destination = repo / "localdata" / "ncaa_w" / "auto_tickets_2026-11-26.txt"
+    destination.parent.mkdir(parents=True)
+    destination.write_text(settled, encoding="utf-8")
+    artifact_file(
+        tmp_path,
+        "stale-ncaa-w-artifact",
+        "ncaa_w",
+        "auto_tickets_2026-11-26.txt",
+        regressed.encode("utf-8"),
+    )
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert report["settled_card_regressions_skipped"] == [
+        "localdata/ncaa_w/auto_tickets_2026-11-26.txt"
+    ]
+    assert destination.read_text(encoding="utf-8") == settled
+
+
+
