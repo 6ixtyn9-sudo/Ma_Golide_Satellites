@@ -1,6 +1,6 @@
 {
-  "awaiting_game_legs": 12,
-  "awaiting_game_legs_open": 8,
+  "awaiting_game_legs": 9,
+  "awaiting_game_legs_open": 5,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -2486,7 +2486,7 @@
       "wins": 2
     },
     {
-      "awaiting_game_legs": 12,
+      "awaiting_game_legs": 9,
       "bank_units": 112.76916599218453,
       "date": "2026-11-26",
       "decision_id": "45804223719_ncaa_m_1_attempt_1",
@@ -2580,7 +2580,7 @@
           "unresolved_legs": 2
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
@@ -2590,7 +2590,7 @@
           "grade_status": "pending",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "win",
             null,
             null
           ],
@@ -2601,13 +2601,13 @@
               "book_provider": "espn",
               "forecast_id": "8a2f0d285d80aba7aacc",
               "game_id": "401921674",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Arizona State Sun Devils",
               "line": 139.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "8a2f0d285d80aba7aacc",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T19:00:00Z",
               "selected_decimal_price": 1.8928571428571428,
               "selection": "over"
@@ -2657,7 +2657,7 @@
           "stake_units": 1.0,
           "ticket_id": "ba7538bf8cf8eb3ccd8d",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         },
         {
           "awaiting_game_legs": 2,
@@ -2741,7 +2741,7 @@
           "unresolved_legs": 2
         },
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
@@ -2753,7 +2753,7 @@
           "leg_outcomes": [
             null,
             "win",
-            null
+            "win"
           ],
           "legs": [
             {
@@ -2796,13 +2796,13 @@
               "book_provider": "espn",
               "forecast_id": "3acbe85ab499518a5d86",
               "game_id": "401929282",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "UCF Knights",
               "line": 146.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "3acbe85ab499518a5d86",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T18:30:00Z",
               "selected_decimal_price": 1.9090909090909092,
               "selection": "over"
@@ -2818,10 +2818,10 @@
           "stake_units": 1.0,
           "ticket_id": "d301274ed9e4011e6e29",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
@@ -2832,7 +2832,7 @@
           "leg_count": 3,
           "leg_outcomes": [
             null,
-            null,
+            "win",
             null
           ],
           "legs": [
@@ -2859,13 +2859,13 @@
               "book_provider": "espn",
               "forecast_id": "f6ab3ef00e1e03712fa0",
               "game_id": "401929282",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "UCF Knights",
               "line": 145.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "f6ab3ef00e1e03712fa0",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T18:30:00Z",
               "selected_decimal_price": 1.8695652173913042,
               "selection": "over"
@@ -2898,7 +2898,7 @@
           "stake_units": 1.0,
           "ticket_id": "b8299240046473fe5120",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         }
       ],
       "profit_units": -2.0,
@@ -2910,7 +2910,7 @@
       "settled_positions": 2,
       "settled_singles": 0,
       "staked_units": 2.0,
-      "unresolved_result_legs": 12,
+      "unresolved_result_legs": 9,
       "wins": 0
     }
   ],
@@ -2930,12 +2930,12 @@
   "result_unresolvable_legs": 0,
   "roi": 0.4119085803930485,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.18386651683660216,
+  "selected_leg_brier_score": 0.1841783578866812,
   "settled_accas": 30,
   "settled_positions": 31,
   "settled_singles": 1,
   "settled_stake_units": 31.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 12,
+  "unresolved_result_legs": 9,
   "wins": 15
 }
