@@ -26,6 +26,7 @@ localdata/*/picks_audit_*.md
 # recovery. Structured dated pick JSON, including detailed lifecycle renders,
 # remains cache/Actions-artifact evidence for every league.
 !localdata/*/pick_lifecycle_state.json
+!localdata/*/picks_lifecycle_archive_*.json
 # A fixture snapshot is nested in pick_lifecycle_state.json, never one file per
 # date/game; reject stale cache sidecars explicitly.
 localdata/*/pick_freeze_*.json

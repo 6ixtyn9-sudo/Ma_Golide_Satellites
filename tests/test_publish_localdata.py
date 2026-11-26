@@ -581,7 +581,7 @@ def test_interrupted_lane_artifact_can_publish_only_durable_pick_lifecycle_evide
     assert (destination / "picks_2026-11-18.txt").read_bytes() == b"draft card\n"
     assert not (destination / retired_freeze_name).exists()
     assert (destination / "pick_lifecycle_state.json").read_bytes() == (
-        json.dumps(json.loads(lifecycle_state), indent=2, sort_keys=True) + "\n"
+        json.dumps(json.loads(lifecycle_state), separators=(",", ":"), sort_keys=True) + "\n"
     ).encode()
     assert not (destination / "auto_tickets_2026-11-18_decision.json").exists()
     assert not (destination / "auto_tickets_2026-11-18.txt").exists()
@@ -1509,6 +1509,164 @@ def test_publisher_still_rejects_settled_shadow_pick_downgrade(tmp_path):
         "localdata/ncaa_w/auto_tickets_2026-11-26.txt"
     ]
     assert destination.read_text(encoding="utf-8") == settled
+
+
+def test_publisher_merges_monthly_pick_lifecycle_archives_and_blocks_stale_resurrection(tmp_path):
+    """Settled archived freezes stay immutable in picks_lifecycle_archive_YYYY-MM.json
+    and a stale artifact carrying that date cannot re-inflate pick_lifecycle_state.json."""
+
+    import base64
+    import gzip
+
+    def _freeze(date: str, game_id: str, prob: float) -> dict:
+        return {
+            "schema_version": "magolide.pick_freeze",
+            "target_date": date,
+            "league": "NCAA_M",
+            "game_id": game_id,
+            "scheduled_utc": f"{date}T20:00:00Z",
+            "decision_cutoff_utc": f"{date}T18:00:00Z",
+            "frozen_at": f"{date}T18:05:00Z",
+            "rows": [
+                {
+                    "pick_id": f"pick-{game_id}",
+                    "forecast_id": f"pick-{game_id}",
+                    "game_id": game_id,
+                    "league": "NCAA_M",
+                    "date": date,
+                    "scheduled_utc": f"{date}T20:00:00Z",
+                    "home": "Team A",
+                    "away": "Team B",
+                    "market": "moneyline",
+                    "period": "full_game",
+                    "selection": "home",
+                    "raw_probability": prob,
+                    "calibrated_probability": prob,
+                    "bucket": "ELIGIBLE_CLEAN",
+                    "price_evidence": "NAMED_BOOKMAKER_PRICE",
+                    "grade_status": "pending",
+                }
+            ],
+        }
+
+    assert allowed_operator_file("picks_lifecycle_archive_2026-11.json")
+    assert allowed_lifecycle_recovery_file("picks_lifecycle_archive_2026-11.json")
+
+    old_freeze = _freeze("2026-11-12", "g-old", 0.65)
+    recent_freeze = _freeze("2026-11-25", "g-new", 0.72)
+    compressed = gzip.compress(
+        (
+            json.dumps({"2026-11-12": {"g-old": old_freeze}}, separators=(",", ":"), sort_keys=True)
+            + "\n"
+        ).encode(),
+        compresslevel=9,
+        mtime=0,
+    )
+    archive_envelope = {
+        "schema_version": "magolide.pick_lifecycle_archive",
+        "league": "NCAA_M",
+        "month": "2026-11",
+        "encoding": "gzip+base64",
+        "frozen_by_date_gzip_b64": base64.b64encode(compressed).decode("ascii"),
+    }
+    archive_bytes = (
+        json.dumps(archive_envelope, separators=(",", ":"), sort_keys=True) + "\n"
+    ).encode()
+    active_state = {
+        "schema_version": "magolide.pick_lifecycle_state",
+        "league": "NCAA_M",
+        "pending_frozen_games": [["g-new", "2026-11-25T20:00:00Z"]],
+        "dated_reports": {"2026-11-12": {"frozen_fixtures": 1}, "2026-11-25": {"frozen_fixtures": 1}},
+        "frozen_by_date": {"2026-11-25": {"g-new": recent_freeze}},
+    }
+
+    # Initial repo still had old_freeze inside active pick_lifecycle_state.json.
+    repo = tmp_path / "repo"
+    dest_dir = repo / "localdata" / "ncaa_m"
+    dest_dir.mkdir(parents=True)
+    (dest_dir / "pick_lifecycle_state.json").write_text(
+        json.dumps(
+            {
+                **active_state,
+                "pending_frozen_games": [
+                    ["g-old", "2026-11-12T20:00:00Z"],
+                    ["g-new", "2026-11-25T20:00:00Z"],
+                ],
+                "frozen_by_date": {
+                    "2026-11-12": {"g-old": old_freeze},
+                    "2026-11-25": {"g-new": recent_freeze},
+                },
+            }
+        )
+    )
+
+    # First run publishes both the archive and the trimmed active state.
+    artifact_file(
+        tmp_path,
+        "run-1",
+        "ncaa_m",
+        "picks_lifecycle_archive_2026-11.json",
+        archive_bytes,
+    )
+    artifact_file(
+        tmp_path,
+        "run-1",
+        "ncaa_m",
+        "pick_lifecycle_state.json",
+        json.dumps(active_state).encode(),
+    )
+    first = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert "localdata/ncaa_m/picks_lifecycle_archive_2026-11.json" in first["copied"]
+    assert "localdata/ncaa_m/pick_lifecycle_state.json" in first["copied"]
+
+    persisted_active = json.loads((dest_dir / "pick_lifecycle_state.json").read_text())
+    assert list(persisted_active["frozen_by_date"]) == ["2026-11-25"]
+    assert persisted_active["pending_frozen_games"] == [["g-new", "2026-11-25T20:00:00Z"]]
+    persisted_env = json.loads((dest_dir / "picks_lifecycle_archive_2026-11.json").read_text())
+    persisted_archive = json.loads(
+        gzip.decompress(base64.b64decode(persisted_env["frozen_by_date_gzip_b64"]))
+    )
+    assert list(persisted_archive) == ["2026-11-12"]
+
+    # Second run: a stale artifact carrying 2026-11-12 in active state must NOT resurrect it.
+    stale_dir = tmp_path / "stale-artifacts"
+    stale_path = stale_dir / "old-run" / "localdata" / "ncaa_m" / "pick_lifecycle_state.json"
+    stale_path.parent.mkdir(parents=True)
+    stale_path.write_text(
+        json.dumps(
+            {
+                **active_state,
+                "frozen_by_date": {
+                    "2026-11-12": {"g-old": old_freeze},
+                    "2026-11-25": {"g-new": recent_freeze},
+                },
+            }
+        )
+    )
+    second = merge_downloaded_localdata(stale_dir, repo)
+    assert second["copied"] == []
+    assert list(json.loads((dest_dir / "pick_lifecycle_state.json").read_text())["frozen_by_date"]) == [
+        "2026-11-25"
+    ]
+
+    # Third run: a conflicting mutation to the archived freeze MUST raise ValueError.
+    tampered_dir = tmp_path / "tampered-artifacts"
+    tampered_path = tampered_dir / "bad-run" / "localdata" / "ncaa_m" / "pick_lifecycle_state.json"
+    tampered_path.parent.mkdir(parents=True)
+    tampered_path.write_text(
+        json.dumps(
+            {
+                **active_state,
+                "frozen_by_date": {
+                    "2026-11-12": {"g-old": _freeze("2026-11-12", "g-old", 0.99)},
+                    "2026-11-25": {"g-new": recent_freeze},
+                },
+            }
+        )
+    )
+    with pytest.raises(ValueError, match="differs from archived evidence"):
+        merge_downloaded_localdata(tampered_dir, repo)
+
 
 
 

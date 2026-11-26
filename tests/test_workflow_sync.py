@@ -50,6 +50,7 @@ def test_gitignore_allows_every_git_durable_operator_artifact():
         "localdata/theoddsapi_budget.json",
         "localdata/nba/picks_2026-11-18.txt",
         "localdata/nba/pick_lifecycle_state.json",
+        "localdata/nba/picks_lifecycle_archive_2026-11.json",
         "localdata/nba/coverage_gap_2026-11-18.json",
         "localdata/nba/archive_manifest.json",
         "localdata/nba/auto_tickets_2026-11-18_decision.json",
@@ -237,6 +238,7 @@ def test_successful_lanes_publish_despite_a_failed_matrix_sibling():
         assert "MaGolide-lifecycle-${{ matrix.state_key }}" in text
         assert "pick_freeze_*.json" not in recovery
         assert "pick_lifecycle_state.json" in recovery
+        assert "picks_*.json" in recovery
         assert "auto_tickets_" not in recovery
         assert "euroleague_consensus_paper" not in recovery
         publish = text.split("publish-localdata:", 1)[1].split("runs-on:", 1)[0]

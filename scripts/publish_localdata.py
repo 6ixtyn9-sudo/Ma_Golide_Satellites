@@ -18,7 +18,9 @@ withdrawn receipt.
 from __future__ import annotations
 
 import argparse
+import base64
 from copy import deepcopy
+import gzip
 import hashlib
 import json
 import os
@@ -38,6 +40,9 @@ from ingestion.league_registry import SPECS  # noqa: E402
 # second hand-maintained allow-list forgot its state key.
 STATE_KEYS = frozenset(spec.state_key for spec in SPECS)
 DATE = r"\d{4}-\d{2}-\d{2}"
+MONTH = r"\d{4}-\d{2}"
+PICK_LIFECYCLE_ARCHIVE_SCHEMA = "magolide.pick_lifecycle_archive"
+PICK_LIFECYCLE_ARCHIVE_NAME = re.compile(rf"picks_lifecycle_archive_({MONTH})\.json")
 # The temporary 2026-11-20/21 compact marker is opaque presentation debt. A
 # stale Actions artifact must never republish it over a readable Git card.
 COMPACT_PICK_CARD_MARKER = b"Ma Golide compact pick lifecycle marker\n"
@@ -67,17 +72,20 @@ LIFECYCLE_RECOVERY_NAMES = tuple(
     for pattern in (
         rf"picks_{DATE}\.txt",
         r"pick_lifecycle_state\.json",
+        rf"picks_lifecycle_archive_{MONTH}\.json",
     )
 )
 ALLOWED_NAMES = tuple(
     re.compile(pattern)
     for pattern in (
         # Dated text cards and lifecycle state (with inline immutable fixture
-        # snapshots) are Git-durable operator evidence. Structured dated pick
-        # JSON and detailed lifecycle renders remain cache/Actions-artifact-only
+        # snapshots and deterministic monthly compressed archives for older
+        # settled freezes) are Git-durable operator evidence. Structured dated
+        # pick JSON and detailed lifecycle renders remain cache/Actions-artifact-only
         # for every league.
         rf"picks_{DATE}\.txt",
         r"pick_lifecycle_state\.json",
+        rf"picks_lifecycle_archive_{MONTH}\.json",
         rf"coverage_gap_{DATE}\.json",
         r"auto_tickets_state\.json",
         r"auto_tickets_performance\.json",
@@ -488,6 +496,38 @@ def _git_durable_bytes(source: Path) -> bytes:
     return _git_durable_bytes_from_raw(source.read_bytes(), name=source.name, source=source)
 
 
+def _validate_frozen_by_date(
+    frozen_by_date: object,
+    *,
+    league: str,
+    description: str,
+    expected_month: str | None = None,
+) -> dict[str, dict[str, Any]]:
+    if not isinstance(frozen_by_date, dict):
+        raise ValueError(f"invalid pick lifecycle state locks: {description}")
+    for target_date, by_game in frozen_by_date.items():
+        if not isinstance(target_date, str) or not re.fullmatch(DATE, target_date):
+            raise ValueError(f"invalid pick lifecycle state date lock: {description}")
+        if expected_month is not None and not target_date.startswith(f"{expected_month}-"):
+            raise ValueError(
+                f"pick lifecycle archive date {target_date} outside month {expected_month}: "
+                f"{description}"
+            )
+        if not isinstance(by_game, dict):
+            raise ValueError(f"invalid pick lifecycle state fixture locks: {description}")
+        for game_id, freeze in by_game.items():
+            if (
+                not isinstance(freeze, dict)
+                or str(game_id) != str(freeze.get("game_id") or "")
+                or freeze.get("schema_version") != "magolide.pick_freeze"
+                or freeze.get("target_date") != target_date
+                or freeze.get("league") != league
+                or not isinstance(freeze.get("rows"), list)
+            ):
+                raise ValueError(f"invalid inline pick freeze: {description}")
+    return frozen_by_date
+
+
 def _pick_lifecycle_state(raw: bytes, *, description: str) -> dict[str, Any]:
     """Validate the durable inline-fixture state before publishing it."""
 
@@ -504,31 +544,49 @@ def _pick_lifecycle_state(raw: bytes, *, description: str) -> dict[str, Any]:
     ):
         raise ValueError(f"invalid pick lifecycle state: {description}")
     frozen_by_date = state.setdefault("frozen_by_date", {})
-    if not isinstance(frozen_by_date, dict):
-        raise ValueError(f"invalid pick lifecycle state locks: {description}")
-    for target_date, by_game in frozen_by_date.items():
-        if not isinstance(target_date, str) or not re.fullmatch(DATE, target_date):
-            raise ValueError(f"invalid pick lifecycle state date lock: {description}")
-        if not isinstance(by_game, dict):
-            raise ValueError(f"invalid pick lifecycle state fixture locks: {description}")
-        for game_id, freeze in by_game.items():
-            if (
-                not isinstance(freeze, dict)
-                or str(game_id) != str(freeze.get("game_id") or "")
-                or freeze.get("schema_version") != "magolide.pick_freeze"
-                or freeze.get("target_date") != target_date
-                or freeze.get("league") != state["league"]
-                or not isinstance(freeze.get("rows"), list)
-            ):
-                raise ValueError(f"invalid inline pick freeze: {description}")
+    _validate_frozen_by_date(frozen_by_date, league=state["league"], description=description)
     return state
 
 
-def _compact_pick_lifecycle_state(state: dict[str, Any]) -> dict[str, Any]:
-    """Keep inline immutable fixture evidence while removing repeated model bulk."""
+def _pick_lifecycle_archive(
+    raw: bytes, *, description: str, expected_month: str
+) -> dict[str, Any]:
+    """Validate a monthly compressed archive of immutable settled fixture freezes."""
 
-    compact = dict(state)
-    frozen_by_date = state.get("frozen_by_date") or {}
+    try:
+        envelope = json.loads(raw)
+    except json.JSONDecodeError as exc:
+        raise ValueError(f"invalid pick lifecycle archive: {description}") from exc
+    if (
+        not isinstance(envelope, dict)
+        or envelope.get("schema_version") != PICK_LIFECYCLE_ARCHIVE_SCHEMA
+        or not isinstance(envelope.get("league"), str)
+        or envelope.get("month") != expected_month
+    ):
+        raise ValueError(f"invalid pick lifecycle archive: {description}")
+    encoded = envelope.get("frozen_by_date_gzip_b64")
+    if isinstance(encoded, str) and envelope.get("encoding") == "gzip+base64":
+        try:
+            frozen_by_date = json.loads(gzip.decompress(base64.b64decode(encoded)))
+        except (ValueError, OSError, EOFError, json.JSONDecodeError) as exc:
+            raise ValueError(f"invalid pick lifecycle archive payload: {description}") from exc
+    else:
+        frozen_by_date = envelope.get("frozen_by_date")
+    _validate_frozen_by_date(
+        frozen_by_date,
+        league=envelope["league"],
+        description=description,
+        expected_month=expected_month,
+    )
+    return {
+        "schema_version": PICK_LIFECYCLE_ARCHIVE_SCHEMA,
+        "league": envelope["league"],
+        "month": expected_month,
+        "frozen_by_date": frozen_by_date,
+    }
+
+
+def _compact_frozen_by_date(frozen_by_date: dict[str, Any]) -> dict[str, dict[str, Any]]:
     compact_locks: dict[str, dict[str, Any]] = {}
     for target_date, by_game in frozen_by_date.items():
         compact_locks[target_date] = {}
@@ -538,12 +596,116 @@ def _compact_pick_lifecycle_state(state: dict[str, Any]) -> dict[str, Any]:
             if isinstance(rows, list):
                 reduced["rows"] = [_compact_frozen_forecast(row) for row in rows]
             compact_locks[target_date][game_id] = reduced
-    compact["frozen_by_date"] = compact_locks
+    return compact_locks
+
+
+def _compact_pick_lifecycle_state(state: dict[str, Any]) -> dict[str, Any]:
+    """Keep inline immutable fixture evidence while removing repeated model bulk."""
+
+    compact = dict(state)
+    compact["frozen_by_date"] = _compact_frozen_by_date(state.get("frozen_by_date") or {})
+    return compact
+
+
+def _compact_pick_lifecycle_archive(archive: dict[str, Any]) -> dict[str, Any]:
+    compact = dict(archive)
+    compact["frozen_by_date"] = _compact_frozen_by_date(archive.get("frozen_by_date") or {})
     return compact
 
 
 def _pick_lifecycle_state_bytes(state: dict[str, Any]) -> bytes:
-    return (json.dumps(state, indent=2, sort_keys=True, default=str) + "\n").encode()
+    return (
+        json.dumps(state, separators=(",", ":"), sort_keys=True, default=str) + "\n"
+    ).encode()
+
+
+def _pick_lifecycle_archive_bytes(archive: dict[str, Any]) -> bytes:
+    frozen_payload = (
+        json.dumps(
+            archive["frozen_by_date"], separators=(",", ":"), sort_keys=True, default=str
+        )
+        + "\n"
+    ).encode()
+    compressed = gzip.compress(frozen_payload, compresslevel=9, mtime=0)
+    envelope = {
+        "schema_version": PICK_LIFECYCLE_ARCHIVE_SCHEMA,
+        "league": archive["league"],
+        "month": archive["month"],
+        "encoding": "gzip+base64",
+        "frozen_by_date_gzip_b64": base64.b64encode(compressed).decode("ascii"),
+    }
+    return (
+        json.dumps(envelope, separators=(",", ":"), sort_keys=True, default=str) + "\n"
+    ).encode()
+
+
+def _archived_pick_freezes_in_dir(
+    state_dir: Path, *, expected_league: str
+) -> dict[str, dict[str, Any]]:
+    """Load all compacted freezes already archived in ``state_dir``."""
+
+    archived: dict[str, dict[str, Any]] = {}
+    if not state_dir.is_dir():
+        return archived
+    for archive_path in sorted(state_dir.glob("picks_lifecycle_archive_*.json")):
+        match = PICK_LIFECYCLE_ARCHIVE_NAME.fullmatch(archive_path.name)
+        if match is None or archive_path.is_symlink() or not archive_path.is_file():
+            continue
+        parsed = _compact_pick_lifecycle_archive(
+            _pick_lifecycle_archive(
+                archive_path.read_bytes(),
+                description=str(archive_path),
+                expected_month=match.group(1),
+            )
+        )
+        if parsed["league"] != expected_league:
+            raise ValueError(
+                f"pick lifecycle archive league differs from repository evidence: {archive_path}"
+            )
+        for target_date, by_game in parsed["frozen_by_date"].items():
+            archived.setdefault(target_date, {}).update(by_game)
+    return archived
+
+
+def _merge_pick_lifecycle_archive(
+    destination: Path, incoming_raw: bytes, *, relative: str, expected_month: str
+) -> bytes:
+    """Merge immutable archived fixture freezes without accepting mutations."""
+
+    incoming = _compact_pick_lifecycle_archive(
+        _pick_lifecycle_archive(
+            incoming_raw, description=relative, expected_month=expected_month
+        )
+    )
+    if not destination.exists():
+        return _pick_lifecycle_archive_bytes(incoming)
+    existing = _compact_pick_lifecycle_archive(
+        _pick_lifecycle_archive(
+            destination.read_bytes(),
+            description=str(destination),
+            expected_month=expected_month,
+        )
+    )
+    if existing["league"] != incoming["league"]:
+        raise ValueError(
+            f"pick lifecycle archive league differs from repository evidence: {relative}"
+        )
+    merged_locks = {
+        date: dict(by_game) for date, by_game in existing["frozen_by_date"].items()
+    }
+    for target_date, by_game in incoming["frozen_by_date"].items():
+        destination_locks = merged_locks.setdefault(target_date, {})
+        for game_id, freeze in by_game.items():
+            previous = destination_locks.get(game_id)
+            if previous is not None and previous != freeze:
+                raise ValueError(
+                    "immutable archived pick freeze differs from repository evidence: "
+                    f"{relative}:{target_date}/{game_id}"
+                )
+            destination_locks[game_id] = freeze
+    merged = dict(incoming)
+    merged["frozen_by_date"] = merged_locks
+    return _pick_lifecycle_archive_bytes(merged)
 
 
 def _merge_no_bet_releases(destination: Path, incoming_raw: bytes, *, relative: str) -> bytes:
@@ -599,8 +761,32 @@ def _merge_pick_lifecycle_state(
     incoming = _compact_pick_lifecycle_state(
         _pick_lifecycle_state(incoming_raw, description=relative)
     )
+    archived_locks = _archived_pick_freezes_in_dir(
+        destination.parent, expected_league=incoming["league"]
+    )
     if not destination.exists():
-        return _pick_lifecycle_state_bytes(incoming)
+        merged = dict(incoming)
+        merged_locks = {
+            date: dict(by_game) for date, by_game in incoming["frozen_by_date"].items()
+        }
+        for target_date in sorted(list(merged_locks)):
+            archived_date = archived_locks.get(target_date)
+            if not archived_date:
+                continue
+            for game_id in sorted(list(merged_locks[target_date])):
+                archived_freeze = archived_date.get(game_id)
+                if archived_freeze is None:
+                    continue
+                if merged_locks[target_date][game_id] != archived_freeze:
+                    raise ValueError(
+                        "immutable inline pick freeze differs from archived evidence: "
+                        f"{relative}:{target_date}/{game_id}"
+                    )
+                merged_locks[target_date].pop(game_id)
+            if not merged_locks[target_date]:
+                merged_locks.pop(target_date)
+        merged["frozen_by_date"] = merged_locks
+        return _pick_lifecycle_state_bytes(merged)
     existing = _compact_pick_lifecycle_state(
         _pick_lifecycle_state(destination.read_bytes(), description=str(destination))
     )
@@ -622,11 +808,30 @@ def _merge_pick_lifecycle_state(
                     f"{relative}:{target_date}/{game_id}"
                 )
             destination_locks[game_id] = freeze
+    for target_date in sorted(list(merged_locks)):
+        archived_date = archived_locks.get(target_date)
+        if not archived_date:
+            continue
+        for game_id in sorted(list(merged_locks[target_date])):
+            archived_freeze = archived_date.get(game_id)
+            if archived_freeze is None:
+                continue
+            if merged_locks[target_date][game_id] != archived_freeze:
+                raise ValueError(
+                    "immutable inline pick freeze differs from archived evidence: "
+                    f"{relative}:{target_date}/{game_id}"
+                )
+            merged_locks[target_date].pop(game_id)
+        if not merged_locks[target_date]:
+            merged_locks.pop(target_date)
     merged["frozen_by_date"] = merged_locks
 
+    archived_game_ids = {
+        str(game_id) for by_game in archived_locks.values() for game_id in by_game
+    }
     incoming_game_ids = {
         str(game_id) for by_game in incoming_locks.values() for game_id in by_game
-    }
+    } | archived_game_ids
     pending = {
         (str(item[0]), str(item[1]))
         for item in incoming["pending_frozen_games"]
@@ -641,6 +846,12 @@ def _merge_pick_lifecycle_state(
         list(item) for item in sorted(pending, key=lambda item: (item[1], item[0]))
     ]
     for target_date, by_game in merged_locks.items():
+        report = merged["dated_reports"].get(target_date)
+        if not isinstance(report, dict):
+            report = {}
+            merged["dated_reports"][target_date] = report
+        report["frozen_fixtures"] = max(int(report.get("frozen_fixtures") or 0), len(by_game))
+    for target_date, by_game in archived_locks.items():
         report = merged["dated_reports"].get(target_date)
         if not isinstance(report, dict):
             report = {}
@@ -853,17 +1064,30 @@ def compact_repository_localdata(repo: Path) -> Dict[str, Any]:
     for state_dir in sorted((repo / "localdata").glob("*")):
         if not state_dir.is_dir() or state_dir.name not in STATE_KEYS:
             continue
-        for path in sorted(state_dir.iterdir()):
+        for path in sorted(
+            state_dir.iterdir(),
+            key=lambda p: (0 if PICK_LIFECYCLE_ARCHIVE_NAME.fullmatch(p.name) else 1, p.name),
+        ):
             if path.is_symlink() or not path.is_file() or not allowed_operator_file(path.name):
                 continue
             if path.name == ABA_HISTORY_RECEIPTS_FILE and state_dir.name != "aba_league":
                 continue
             previous = path.read_bytes()
+            archive_match = PICK_LIFECYCLE_ARCHIVE_NAME.fullmatch(path.name)
             if path.name == "pick_lifecycle_state.json":
                 compact = _compact_pick_lifecycle_state(
                     _pick_lifecycle_state(previous, description=str(path))
                 )
                 raw = _pick_lifecycle_state_bytes(compact)
+            elif archive_match is not None:
+                compact_archive = _compact_pick_lifecycle_archive(
+                    _pick_lifecycle_archive(
+                        previous,
+                        description=str(path),
+                        expected_month=archive_match.group(1),
+                    )
+                )
+                raw = _pick_lifecycle_archive_bytes(compact_archive)
             else:
                 raw = _git_durable_bytes_from_raw(previous, name=path.name, source=path)
             if raw == previous:
@@ -894,7 +1118,10 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
     ):
         destination_dir = repo / "localdata" / state
         lifecycle_recovery = artifact_name.startswith(LIFECYCLE_RECOVERY_ARTIFACT_PREFIX)
-        sources = sorted(source_dir.iterdir())
+        sources = sorted(
+            source_dir.iterdir(),
+            key=lambda p: (0 if PICK_LIFECYCLE_ARCHIVE_NAME.fullmatch(p.name) else 1, p.name),
+        )
         withdrawn_decision_ids = _withdrawn_decision_ids(destination_dir)
         no_bet_dates = _no_bet_decision_dates(destination_dir) | _no_bet_decision_dates(
             source_dir
@@ -945,10 +1172,18 @@ def merge_downloaded_localdata(artifacts: Path, repo: Path) -> Dict[str, Any]:
                 compact_pick_markers_skipped.append(relative)
                 continue
             raw = _git_durable_bytes_from_raw(source_raw, name=source.name, source=source)
+            archive_match = PICK_LIFECYCLE_ARCHIVE_NAME.fullmatch(source.name)
             if source.name == "auto_tickets_state.json":
                 raw = _merge_no_bet_releases(destination, raw, relative=relative)
             if source.name == "pick_lifecycle_state.json":
                 raw = _merge_pick_lifecycle_state(destination, raw, relative=relative)
+            elif archive_match is not None:
+                raw = _merge_pick_lifecycle_archive(
+                    destination,
+                    raw,
+                    relative=relative,
+                    expected_month=archive_match.group(1),
+                )
             elif source.name == ABA_HISTORY_RECEIPTS_FILE:
                 raw = _merge_aba_history_receipts(destination, raw, relative=relative)
             if DECISION_RECEIPT_NAME.fullmatch(source.name) and withdrawn_decision_ids:

@@ -126,6 +126,8 @@ def _archive_artifact_file(relative: str) -> bool:
         return True
     if re.fullmatch(rf"picks_audit_{DATE}\.md", name):
         return True
+    if re.fullmatch(r"picks_lifecycle_archive_\d{4}-\d{2}\.json", name):
+        return True
     if name in {
         "pick_lifecycle_state.json",
         "auto_tickets_state.json",
