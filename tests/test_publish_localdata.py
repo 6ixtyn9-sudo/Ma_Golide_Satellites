@@ -8,6 +8,7 @@ import pytest
 from ingestion.league_registry import SPECS
 from scripts.publish_localdata import (
     STATE_KEYS,
+    _card_grade_entries,
     allowed_lifecycle_recovery_file,
     allowed_operator_file,
     merge_downloaded_localdata,
@@ -1278,4 +1279,152 @@ def test_publisher_still_blocks_settled_pick_card_regressions_with_collapse(tmp_
         "localdata/euroleague/picks_2026-11-24.txt"
     ]
     assert destination.read_text(encoding="utf-8") == current_partial
+
+
+def _ncaa_m_ticket_card_2026_11_25(
+    *,
+    citadel_grade: str,
+    miss_state_grade: str,
+    utah_state_grade: str,
+    acca4_grade: str,
+    bank_line: str,
+) -> str:
+    return "\n".join(
+        [
+            "MA GOLIDE PAPER TICKETS — NCAA_M 2026-11-25",
+            "=" * 72,
+            bank_line,
+            "",
+            "[PAPER 3-LEG ACCA #2] @3.882 — 1.000000 paper units — DraftKings · ❌ LOSS",
+            "   The Citadel Bulldogs vs South Carolina Upstate Spartans · TIP-OFF 2026-11-26 02:00 SAST",
+            f"      MONEYLINE full_game -> HOME @1.556 · ML 69.1% · ELIGIBLE_CLEAN · {citadel_grade}",
+            "",
+            "[PAPER 3-LEG ACCA #3] @3.923 — 1.000000 paper units — DraftKings · ❌ LOSS",
+            "   Mississippi State Bulldogs vs Wake Forest Demon Deacons · TIP-OFF 2026-11-26 02:30 SAST",
+            f"      MONEYLINE full_game -> HOME @1.556 · ML 69.1% · ELIGIBLE_CLEAN · {miss_state_grade}",
+            "",
+            f"[PAPER 3-LEG ACCA #4] @5.018 — 1.000000 paper units — DraftKings · {acca4_grade}",
+            "   Detroit Mercy Titans vs Northern Colorado Bears · TIP-OFF 2026-11-25 22:00 SAST",
+            "      MONEYLINE full_game -> AWAY @1.444 · ML 68.3% · ELIGIBLE_CLEAN · ✅ WIN",
+            "   Northwestern State Demons vs West Florida Argonauts · TIP-OFF 2026-11-26 01:00 SAST",
+            "      MONEYLINE full_game -> HOME @1.820 · ML 64.1% · ELIGIBLE_CLEAN · ✅ WIN",
+            "   Utah State Aggies vs SMU Mustangs · TIP-OFF 2026-11-26 02:00 SAST",
+            f"      TOTAL full_game 167.5 -> UNDER @1.909 · ML 59.8% · ELIGIBLE_CLEAN · {utah_state_grade}",
+            "",
+        ]
+    )
+
+
+def test_publisher_accepts_ticket_card_settlement_when_different_fixtures_share_leg_line(tmp_path):
+    """NCAA_M 2026-11-25: two distinct fixtures sharing @1.556 / ML 69.1% must not collide.
+
+    The Citadel vs SC Upstate (ACCA #2, ✅ WIN) and Mississippi State vs Wake
+    Forest (ACCA #3, ⏳ PENDING) rendered identical leg selection lines beneath
+    distinct TIP-OFF headers. Keying ticket legs by their TIP-OFF header +
+    selection lets ACCA #4 settle to ✅ WIN (bank 114.769) while Mississippi
+    State remains pending.
+    """
+
+    before = _ncaa_m_ticket_card_2026_11_25(
+        citadel_grade="✅ WIN",
+        miss_state_grade="⏳ PENDING",
+        utah_state_grade="⏳ PENDING",
+        acca4_grade="⏳ PENDING",
+        bank_line="CURRENT PAPER BANK (all dates): 110.751 units · free 109.751 / reserved 1.000",
+    )
+    after = _ncaa_m_ticket_card_2026_11_25(
+        citadel_grade="✅ WIN",
+        miss_state_grade="⏳ PENDING",
+        utah_state_grade="✅ WIN",
+        acca4_grade="✅ WIN",
+        bank_line="CURRENT PAPER BANK (all dates): 114.769 units · free 114.769 / reserved 0.000",
+    )
+
+    repo = tmp_path / "repo"
+    destination = repo / "localdata" / "ncaa_m" / "auto_tickets_2026-11-25.txt"
+    destination.parent.mkdir(parents=True)
+    destination.write_text(before, encoding="utf-8")
+
+    artifact_file(
+        tmp_path,
+        "ncaa-m-artifact",
+        "ncaa_m",
+        "auto_tickets_2026-11-25.txt",
+        after.encode("utf-8"),
+    )
+
+    first = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert first["settled_card_regressions_skipped"] == []
+    assert first["copied"] == ["localdata/ncaa_m/auto_tickets_2026-11-25.txt"]
+    assert "114.769 units" in destination.read_text(encoding="utf-8")
+    assert "[PAPER 3-LEG ACCA #4] @5.018 — 1.000000 paper units — DraftKings · ✅ WIN" in (
+        destination.read_text(encoding="utf-8")
+    )
+
+    second = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert second["settled_card_regressions_skipped"] == []
+    assert second["copied"] == []
+    assert second["unchanged"] == ["localdata/ncaa_m/auto_tickets_2026-11-25.txt"]
+
+
+def test_publisher_rejects_ticket_leg_downgrade_even_when_sibling_leg_shares_line(tmp_path):
+    """Downgrading a settled ticket leg back to PENDING stays blocked even if other legs settle."""
+
+    current = _ncaa_m_ticket_card_2026_11_25(
+        citadel_grade="✅ WIN",
+        miss_state_grade="⏳ PENDING",
+        utah_state_grade="⏳ PENDING",
+        acca4_grade="⏳ PENDING",
+        bank_line="CURRENT PAPER BANK (all dates): 110.751 units · free 109.751 / reserved 1.000",
+    )
+    # Stale artifact downgrades The Citadel leg back to PENDING even though
+    # Mississippi State and Utah State both appear settled (net higher settled count).
+    regressed_citadel = _ncaa_m_ticket_card_2026_11_25(
+        citadel_grade="⏳ PENDING",
+        miss_state_grade="✅ WIN",
+        utah_state_grade="✅ WIN",
+        acca4_grade="✅ WIN",
+        bank_line="CURRENT PAPER BANK (all dates): 114.769 units · free 114.769 / reserved 0.000",
+    )
+
+    repo = tmp_path / "repo"
+    destination = repo / "localdata" / "ncaa_m" / "auto_tickets_2026-11-25.txt"
+    destination.parent.mkdir(parents=True)
+    destination.write_text(current, encoding="utf-8")
+
+    artifact_file(
+        tmp_path,
+        "stale-ncaa-m-artifact",
+        "ncaa_m",
+        "auto_tickets_2026-11-25.txt",
+        regressed_citadel.encode("utf-8"),
+    )
+
+    report = merge_downloaded_localdata(tmp_path / "artifacts", repo)
+    assert report["settled_card_regressions_skipped"] == [
+        "localdata/ncaa_m/auto_tickets_2026-11-25.txt"
+    ]
+    assert destination.read_text(encoding="utf-8") == current
+
+
+def test_card_grade_entries_keys_unpriced_spread_shadow_legs_by_tipoff_header():
+    """Two unpriced->spread shadow rows sharing identical spread/odds/ML p get distinct subjects."""
+
+    card = "\n".join(
+        [
+            "   Team Alpha vs Team Beta · TIP-OFF 2026-11-26 02:00 SAST",
+            "      SPREAD full_game -6.5 -> HOME @1.909 DraftKings · ML p 72.0% · ✅ WIN",
+            "   Team Gamma vs Team Delta · TIP-OFF 2026-11-26 03:00 SAST",
+            "      SPREAD full_game -6.5 -> HOME @1.909 DraftKings · ML p 72.0% · ⏳ PENDING",
+        ]
+    )
+
+    entries = _card_grade_entries(card)
+    assert len(entries) == 2
+    assert entries[0][0] == "settled"
+    assert entries[1][0] == "pending"
+    assert entries[0][1].startswith("Team Alpha vs Team Beta · TIP-OFF 2026-11-26 02:00 SAST | ")
+    assert entries[1][1].startswith("Team Gamma vs Team Delta · TIP-OFF 2026-11-26 03:00 SAST | ")
+    assert entries[0][1] != entries[1][1]
+
 
