@@ -117,7 +117,7 @@ def _archive_artifact_file(relative: str) -> bool:
     if relative.startswith("ledgers/"):
         return name.endswith(".json")
     if relative.startswith("reports/"):
-        return name.endswith(".json")
+        return name.endswith(".json") and not name.startswith("daily_")
     if name.startswith("assay_") and name.endswith(".json"):
         return True
     if re.fullmatch(rf"picks_{DATE}(?:_lifecycle)?\.json", name):
@@ -244,7 +244,7 @@ def _write_deterministic_archive(path: Path, *, content_manifest: dict[str, Any]
     temporary = path.with_name(path.name + ".tmp")
     manifest_bytes = _json_bytes(content_manifest)
     with temporary.open("wb") as raw_handle:
-        with gzip.GzipFile(fileobj=raw_handle, mode="wb", mtime=0) as gzip_handle:
+        with gzip.GzipFile(fileobj=raw_handle, mode="wb", compresslevel=1, mtime=0) as gzip_handle:
             with tarfile.open(fileobj=gzip_handle, mode="w") as archive:
                 manifest_info = tarfile.TarInfo(CONTENT_MANIFEST_NAME)
                 manifest_info.size = len(manifest_bytes)

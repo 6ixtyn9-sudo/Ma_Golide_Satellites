@@ -15,11 +15,13 @@ import re
 import unicodedata
 from dataclasses import dataclass, field
 from datetime import datetime, timedelta, timezone
+from functools import lru_cache
 from typing import Dict, Iterable, List, Optional, Tuple
 
 from .models import Game, League
 
 UTC = timezone.utc
+_WHITESPACE_RE = re.compile(r"\s+")
 
 # Strict cross-provider join tolerance.
 TIME_TOLERANCE = timedelta(minutes=30)
@@ -147,22 +149,50 @@ def fold_diacritics(text: str) -> str:
     return stripped.translate(_ASCII_FOLDS)
 
 
+@lru_cache(maxsize=16384)
+def _normalize_team_name_cached(text: str) -> str:
+    return _WHITESPACE_RE.sub(" ", fold_diacritics(text).strip()).lower()
+
+
 def normalize_team_name(name: str) -> str:
     """Lowercase, fold diacritics, trim, and collapse whitespace."""
-    return re.sub(r"\s+", " ", fold_diacritics(name).strip()).lower()
+    return _normalize_team_name_cached(str(name or ""))
+
+
+def _build_alias_lookup(table: Dict[str, List[str]]) -> Dict[str, str]:
+    lookup: Dict[str, str] = {}
+    for canonical, variants in table.items():
+        lookup.setdefault(normalize_team_name(canonical), canonical)
+        for variant in variants:
+            lookup.setdefault(normalize_team_name(variant), canonical)
+    return lookup
+
+
+_DEFAULT_TEAM_ALIAS_LOOKUP: Dict[str, str] = _build_alias_lookup(DEFAULT_TEAM_ALIASES)
+
+
+@lru_cache(maxsize=16384)
+def _canonical_team_name_default(raw: str) -> str:
+    norm = _normalize_team_name_cached(raw)
+    matched = _DEFAULT_TEAM_ALIAS_LOOKUP.get(norm)
+    if matched is not None:
+        return matched
+    return _WHITESPACE_RE.sub(" ", raw.strip())
 
 
 def canonical_team_name(name: str, aliases: Optional[Dict[str, List[str]]] = None) -> str:
     """Map a provider name to the canonical display name via the alias table."""
-    table = aliases if aliases is not None else DEFAULT_TEAM_ALIASES
-    norm = normalize_team_name(name)
-    for canonical, variants in table.items():
-        if norm == normalize_team_name(canonical) or norm in {
-            normalize_team_name(v) for v in variants
-        }:
+    raw = str(name or "")
+    if aliases is None:
+        return _canonical_team_name_default(raw)
+    norm = _normalize_team_name_cached(raw)
+    for canonical, variants in aliases.items():
+        if norm == normalize_team_name(canonical) or any(
+            norm == normalize_team_name(v) for v in variants
+        ):
             return canonical
-    # No alias hit: return title-cased collapsed original.
-    return re.sub(r"\s+", " ", str(name or "").strip())
+    # No alias hit: return collapsed original.
+    return _WHITESPACE_RE.sub(" ", raw.strip())
 
 
 # Tokens that never distinguish two basketball teams.  Conference/school
@@ -246,6 +276,13 @@ def canonical_book_name(name: str | None) -> str:
     return re.sub(r"\s+", " ", raw)
 
 
+@lru_cache(maxsize=16384)
+def _canonical_team_key_cached(raw: str) -> str:
+    canonical = _canonical_team_name_default(raw)
+    decomposed = unicodedata.normalize("NFKD", _normalize_team_name_cached(canonical)).casefold()
+    return "".join(character for character in decomposed if character.isalnum())
+
+
 def canonical_team_key(name: str) -> str:
     """Build a punctuation- and diacritic-insensitive team identity key.
 
@@ -253,9 +290,7 @@ def canonical_team_key(name: str) -> str:
     Unicode and punctuation differences. It does not remove mascots, abbreviate
     names, reverse home/away, or perform fuzzy matching.
     """
-    canonical = canonical_team_name(name)
-    decomposed = unicodedata.normalize("NFKD", normalize_team_name(canonical)).casefold()
-    return "".join(character for character in decomposed if character.isalnum())
+    return _canonical_team_key_cached(str(name or ""))
 
 
 # ---------------------------------------------------------------------------
@@ -263,18 +298,26 @@ def canonical_team_key(name: str) -> str:
 # ---------------------------------------------------------------------------
 
 
-def parse_utc(value: str) -> datetime:
-    """Parse an ISO 8601 timestamp into an aware UTC datetime."""
-    if isinstance(value, datetime):
-        dt = value
-    else:
-        text = str(value).strip()
-        if text.endswith("Z"):
-            text = text[:-1] + "+00:00"
-        dt = datetime.fromisoformat(text)
+@lru_cache(maxsize=32768)
+def _parse_utc_str(value: str) -> datetime:
+    text = value.strip()
+    if text.endswith("Z"):
+        text = text[:-1] + "+00:00"
+    dt = datetime.fromisoformat(text)
     if dt.tzinfo is None:
         raise ValueError(f"naive datetime not allowed: {value!r}")
     return dt.astimezone(UTC)
+
+
+def parse_utc(value: str) -> datetime:
+    """Parse an ISO 8601 timestamp into an aware UTC datetime."""
+    if isinstance(value, str):
+        return _parse_utc_str(value)
+    if isinstance(value, datetime):
+        if value.tzinfo is None:
+            raise ValueError(f"naive datetime not allowed: {value!r}")
+        return value.astimezone(UTC)
+    return _parse_utc_str(str(value))
 
 
 def to_utc_iso(dt: datetime) -> str:

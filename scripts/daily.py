@@ -108,7 +108,9 @@ def _write_run_report(localdata: Path, run_id: str, report: dict) -> str:
     target = localdata / "reports" / f"daily_{_safe_run_id(run_id)}.json"
     target.parent.mkdir(parents=True, exist_ok=True)
     temporary = target.with_suffix(".json.tmp")
-    temporary.write_text(json.dumps(report, indent=2, sort_keys=True, default=str) + "\n")
+    temporary.write_text(
+        json.dumps(report, sort_keys=True, separators=(",", ":"), default=str) + "\n"
+    )
     os.replace(temporary, target)
     return str(target)
 
@@ -382,15 +384,25 @@ def _write_coverage_gap_marker(
     return str(target)
 
 
-def _prune_report_files(localdata: Path, cutoff_utc: str) -> int:
+def _prune_report_files(
+    localdata: Path, cutoff_utc: str, *, daily_cutoff_utc: str | None = None
+) -> int:
     """Prune derived telemetry, never canonical immutable ledgers.
 
     Parseable reports use their generated clock. A malformed report cannot keep
     consuming cache space forever: its filesystem mtime is a bounded fallback.
+    Transient per-run ``daily_*.json`` telemetry uses ``daily_cutoff_utc`` when
+    supplied so hourly runs do not bloat caches and workflow artifacts across
+    the full ``--keep-days`` window.
     """
 
     pruned = 0
     for path in (localdata / "reports").glob("*.json"):
+        effective_cutoff = (
+            daily_cutoff_utc
+            if daily_cutoff_utc is not None and path.name.startswith("daily_")
+            else cutoff_utc
+        )
         try:
             report = json.loads(path.read_text())
             generated = str(report.get("finished_utc") or report.get("generated_utc") or "")
@@ -401,7 +413,7 @@ def _prune_report_files(localdata: Path, cutoff_utc: str) -> int:
                 ).strftime("%Y-%m-%dT%H:%M:%SZ")
             except OSError:
                 continue
-        if generated and generated < cutoff_utc:
+        if generated and generated < effective_cutoff:
             path.unlink()
             pruned += 1
     return pruned
@@ -623,13 +635,19 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
                 stage_seconds["forecast"] = round(time.perf_counter() - forecast_started, 3)
 
         retention_started = time.perf_counter()
-        cutoff_utc = (datetime.now(timezone.utc) - timedelta(days=args.keep_days)).strftime(
+        now_dt = datetime.now(timezone.utc)
+        cutoff_utc = (now_dt - timedelta(days=args.keep_days)).strftime(
+            "%Y-%m-%dT%H:%M:%SZ"
+        )
+        daily_cutoff_utc = (now_dt - timedelta(days=min(args.keep_days, 2))).strftime(
             "%Y-%m-%dT%H:%M:%SZ"
         )
         pruned_runs = store.prune_pipeline_runs(cutoff_utc) if args.write else 0
         # Dry-run schedules also write reports, so retention cannot depend on
         # canonical writes being enabled.
-        pruned_reports = _prune_report_files(localdata, cutoff_utc)
+        pruned_reports = _prune_report_files(
+            localdata, cutoff_utc, daily_cutoff_utc=daily_cutoff_utc
+        )
         stage_seconds["retention"] = round(time.perf_counter() - retention_started, 3)
 
         # Live acquisition and forecasting can take minutes. Use the actual
