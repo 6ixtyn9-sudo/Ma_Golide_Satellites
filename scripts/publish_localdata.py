@@ -109,6 +109,8 @@ _CARD_GRADE_TOKEN_RE = re.compile(
 _PICK_HEADER_RE = re.compile(r"^  \[[^\]]+\] (.+)$")
 _PICK_SELECTION_RE = re.compile(r"^      (.+?) · p=")
 _PICK_COLLAPSED_RE = re.compile(r"^      collapsed_observations=(\d+)\b")
+_TICKET_LEG_HEADER_RE = re.compile(r"^   (.+? · TIP-OFF .+)$")
+_TICKET_LEG_SELECTION_RE = re.compile(r"^      (.+)$")
 MAX_FILE_BYTES = 25 * 1024 * 1024
 MAX_TOTAL_BYTES = 100 * 1024 * 1024
 
@@ -652,12 +654,13 @@ def _card_grade_entries(text: str) -> list[tuple[str, str, int]]:
     A dated card can legitimately contain both settled early games and a late
     pending game, and pick cards collapse repeated book/model observations of
     one bet onto a single line annotated with ``collapsed_observations=N``
-    (``forecasting/operator.py``).  Keying structured pick blocks by their
-    fixture and selection — and weighting each rendered pick by the
-    observations it represents (default 1) — keeps the anti-rollback comparison
-    invariant across that display collapse while still rejecting any stale
-    artifact that drops settled observations or re-opens a settled pick as
-    ``PENDING``.
+    (``forecasting/operator.py``).  Keying structured pick blocks and two-line
+    ticket / spread-shadow leg blocks by their fixture and selection — and
+    weighting each rendered pick by the observations it represents (default 1)
+    — keeps the anti-rollback comparison invariant across that display collapse
+    and prevents distinct ticket fixtures that share odds and probability from
+    colliding, while still rejecting any stale artifact that drops settled
+    observations or re-opens a settled pick or leg as ``PENDING``.
     """
 
     lines = text.splitlines()
@@ -683,6 +686,16 @@ def _card_grade_entries(text: str) -> list[tuple[str, str, int]]:
                 lookahead += 1
             entries.append((state, fingerprint, observations))
             continue
+        ticket_header = _TICKET_LEG_HEADER_RE.match(lines[index - 1]) if index >= 1 else None
+        ticket_selection = _TICKET_LEG_SELECTION_RE.match(line)
+        if ticket_header and ticket_selection:
+            cleaned_selection = _CARD_GRADE_TOKEN_RE.sub("", ticket_selection.group(1))
+            cleaned_selection = re.sub(r"[\[\]]", "", cleaned_selection)
+            cleaned_selection = " ".join(cleaned_selection.split())
+            if cleaned_selection:
+                fixture_header = " ".join(ticket_header.group(1).split())
+                entries.append((state, f"{fixture_header} | {cleaned_selection}", 1))
+                continue
         fingerprint = _CARD_GRADE_TOKEN_RE.sub("", line)
         fingerprint = re.sub(r"[\[\]]", "", fingerprint)
         fingerprint = " ".join(fingerprint.split())
