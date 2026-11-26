@@ -1,6 +1,6 @@
 {
-  "awaiting_game_legs": 2,
-  "awaiting_game_legs_open": 1,
+  "awaiting_game_legs": 1,
+  "awaiting_game_legs_open": 0,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -2066,17 +2066,17 @@
       "wins": 5
     },
     {
-      "awaiting_game_legs": 2,
-      "bank_units": 110.75128223659584,
+      "awaiting_game_legs": 1,
+      "bank_units": 114.76916599218453,
       "date": "2026-11-25",
       "decision_id": "45588367951_ncaa_m_1_attempt_1",
       "frozen_at": "2026-11-25T10:15:16Z",
       "league": "NCAA_M",
       "losses": 3,
-      "pending_accas": 1,
-      "pending_positions": 1,
+      "pending_accas": 0,
+      "pending_positions": 0,
       "pending_singles": 0,
-      "pending_units": 1.0,
+      "pending_units": 0,
       "positions": [
         {
           "awaiting_game_legs": 0,
@@ -2313,19 +2313,19 @@
           "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 5.0179,
           "effective_decimal_odds": 5.017883755588674,
           "estimated_joint_win_probability": 0.26148224,
-          "grade_status": "pending",
+          "grade_status": "win",
           "leg_count": 3,
           "leg_outcomes": [
             "win",
             "win",
-            null
+            "win"
           ],
           "legs": [
             {
@@ -2366,19 +2366,20 @@
               "book_provider": "espn",
               "forecast_id": "71fc0e3969751283c646",
               "game_id": "401918971",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Utah State Aggies",
               "line": 167.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "71fc0e3969751283c646",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T00:00:00Z",
               "selected_decimal_price": 1.9090909090909092,
               "selection": "under"
             }
           ],
           "paper_only": true,
+          "profit_units": 4.017883755588674,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 4,
@@ -2388,7 +2389,7 @@
           "stake_units": 1.0,
           "ticket_id": "8030b4771d51fc96f52f",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
           "awaiting_game_legs": 0,
@@ -2472,41 +2473,41 @@
           "unresolved_legs": 0
         }
       ],
-      "profit_units": 2.815504945939728,
+      "profit_units": 6.833388701528402,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-25_decision.json",
       "result_unresolvable_legs": 0,
-      "returned_units": 6.815504945939728,
-      "settled_accas": 4,
-      "settled_positions": 4,
+      "returned_units": 11.833388701528403,
+      "settled_accas": 5,
+      "settled_positions": 5,
       "settled_singles": 0,
-      "staked_units": 4.0,
-      "unresolved_result_legs": 2,
-      "wins": 1
+      "staked_units": 5.0,
+      "unresolved_result_legs": 1,
+      "wins": 2
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.5,
+  "hit_rate": 0.5172413793103449,
   "league": "NCAA_M",
   "losses": 14,
-  "paper_bank_units": 110.75128223659583,
-  "paper_committed_units": 1.0,
-  "paper_free_units": 109.75128223659583,
+  "paper_bank_units": 114.7691659921845,
+  "paper_committed_units": 0,
+  "paper_free_units": 114.7691659921845,
   "paper_only": true,
-  "pending_accas": 1,
-  "pending_positions": 1,
+  "pending_accas": 0,
+  "pending_positions": 0,
   "pending_singles": 0,
-  "profit_units": 10.75128223659583,
+  "profit_units": 14.769165992184504,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": 0.38397436559270826,
+  "roi": 0.5092815859373967,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.17678953673048184,
-  "settled_accas": 27,
-  "settled_positions": 28,
+  "selected_leg_brier_score": 0.1766135452217856,
+  "settled_accas": 28,
+  "settled_positions": 29,
   "settled_singles": 1,
-  "settled_stake_units": 28.0,
+  "settled_stake_units": 29.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 2,
-  "wins": 14
+  "unresolved_result_legs": 1,
+  "wins": 15
 }

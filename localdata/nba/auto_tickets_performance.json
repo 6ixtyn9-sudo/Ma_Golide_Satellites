@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 10,
+  "awaiting_game_legs": 7,
   "awaiting_game_legs_open": 4,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
@@ -2133,7 +2133,7 @@
       "wins": 1
     },
     {
-      "awaiting_game_legs": 10,
+      "awaiting_game_legs": 7,
       "bank_units": 99.78629894624167,
       "date": "2026-11-25",
       "decision_id": "45597952572_nba_1_attempt_1",
@@ -2225,7 +2225,7 @@
           "unresolved_legs": 2
         },
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -2236,8 +2236,8 @@
           "leg_count": 3,
           "leg_outcomes": [
             "loss",
-            null,
-            null
+            "loss",
+            "win"
           ],
           "legs": [
             {
@@ -2263,12 +2263,12 @@
               "book_provider": "espn",
               "forecast_id": "43bfc3b8081925d38dfb",
               "game_id": "401909318",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Charlotte Hornets",
               "market": "moneyline",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "43bfc3b8081925d38dfb",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T00:00:00Z",
               "selected_decimal_price": 1.6451612903225805,
               "selection": "home"
@@ -2279,12 +2279,12 @@
               "book_provider": "espn",
               "forecast_id": "3342816d0b4eeaeb8a3f",
               "game_id": "401909319",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "New York Knicks",
               "market": "moneyline",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "3342816d0b4eeaeb8a3f",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T00:30:00Z",
               "selected_decimal_price": 1.6451612903225805,
               "selection": "home"
@@ -2301,10 +2301,10 @@
           "stake_units": 1.0,
           "ticket_id": "29ecd6cac3bf03b8a7c8",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
@@ -2316,7 +2316,7 @@
           "leg_outcomes": [
             "loss",
             null,
-            null
+            "win"
           ],
           "legs": [
             {
@@ -2358,13 +2358,13 @@
               "book_provider": "espn",
               "forecast_id": "1a77bcea740cf5113a8c",
               "game_id": "401909318",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Charlotte Hornets",
               "line": -3.5,
               "market": "spread",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "1a77bcea740cf5113a8c",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T00:00:00Z",
               "selected_decimal_price": 1.8695652173913042,
               "selection": "away"
@@ -2381,7 +2381,7 @@
           "stake_units": 1.0,
           "ticket_id": "5d3c8583127425f5d253",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         },
         {
           "awaiting_game_legs": 2,
@@ -2552,7 +2552,7 @@
       "settled_positions": 3,
       "settled_singles": 0,
       "staked_units": 3.0,
-      "unresolved_result_legs": 10,
+      "unresolved_result_legs": 7,
       "wins": 0
     }
   ],
@@ -2572,12 +2572,12 @@
   "result_unresolvable_legs": 0,
   "roi": -0.007632180491368823,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.25893158489027773,
+  "selected_leg_brier_score": 0.25802377941661325,
   "settled_accas": 24,
   "settled_positions": 28,
   "settled_singles": 4,
   "settled_stake_units": 28.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 10,
+  "unresolved_result_legs": 7,
   "wins": 7
 }
