@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 1,
+  "awaiting_game_legs": 0,
   "awaiting_game_legs_open": 0,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
@@ -2066,7 +2066,7 @@
       "wins": 5
     },
     {
-      "awaiting_game_legs": 1,
+      "awaiting_game_legs": 0,
       "bank_units": 114.76916599218453,
       "date": "2026-11-25",
       "decision_id": "45588367951_ncaa_m_1_attempt_1",
@@ -2235,7 +2235,7 @@
           "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -2245,7 +2245,7 @@
           "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "loss",
             "loss",
             "loss"
           ],
@@ -2256,12 +2256,12 @@
               "book_provider": "espn",
               "forecast_id": "5f2a736405a3a8fc895f",
               "game_id": "401929287",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Mississippi State Bulldogs",
               "market": "moneyline",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "5f2a736405a3a8fc895f",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T00:30:00Z",
               "selected_decimal_price": 1.5555555555555556,
               "selection": "home"
@@ -2310,7 +2310,7 @@
           "stake_units": 1.0,
           "ticket_id": "e9c241e5e7b46e000f3b",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
           "awaiting_game_legs": 0,
@@ -2482,7 +2482,7 @@
       "settled_positions": 5,
       "settled_singles": 0,
       "staked_units": 5.0,
-      "unresolved_result_legs": 1,
+      "unresolved_result_legs": 0,
       "wins": 2
     }
   ],
@@ -2502,12 +2502,12 @@
   "result_unresolvable_legs": 0,
   "roi": 0.5092815859373967,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.1766135452217856,
+  "selected_leg_brier_score": 0.1801518291923999,
   "settled_accas": 28,
   "settled_positions": 29,
   "settled_singles": 1,
   "settled_stake_units": 29.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 1,
+  "unresolved_result_legs": 0,
   "wins": 15
 }
