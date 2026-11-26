@@ -8,8 +8,10 @@ import pytest
 
 from ingestion.adaptive_gate import (
     GateUncertain,
+    HISTORICAL_PENDING_CARD_MAX_AGE_DAYS,
     LEAGUES,
     ScheduleGame,
+    _espn_games,
     _ticket_decision_cutoff,
     evaluate_gate,
     evaluate_league,
@@ -795,3 +797,108 @@ def test_forced_gate_matrix_keeps_all_schedulable_leagues_and_names_the_dark_one
         config.league for config in LEAGUES if config.status != "active"
     }
     assert all(row["reasons"][0].startswith("lane_") for row in dark)
+
+
+def test_gate_bounds_historical_pending_card_recovery_without_weakening_real_settlement(
+    tmp_path: Path,
+):
+    """Legacy pending text cards older than 7 days must not loop hourly forever,
+    while cards within 7 days AND real open tickets/frozen picks always wake."""
+
+    nba = LEAGUES[0]
+    _operator_state(tmp_path, nba, date="2026-11-18")
+    state_dir = tmp_path / nba.state_key
+    assert HISTORICAL_PENDING_CARD_MAX_AGE_DAYS == 7
+    # 8 days old -> beyond bounded legacy-card recovery window.
+    (state_dir / "picks_2026-11-10.txt").write_text("grade=⏳ PENDING\n")
+    (state_dir / "auto_tickets_2026-11-10.txt").write_text("[⏳ PENDING] shadow\n")
+    # Exactly 7 days old -> still inside bounded recovery window.
+    (state_dir / "picks_2026-11-11.txt").write_text("grade=⏳ PENDING\n")
+
+    decision = evaluate_league(
+        nba,
+        state_root=tmp_path,
+        now=NOW,
+        schedule_fetcher=_schedule(),
+    )
+    assert decision.should_run
+    assert decision.reasons == ("historical_picks_reconciliation_due:2026-11-11",)
+
+    # Removing the 7-day-old card leaves only the 8-day-old legacy residue -> idle.
+    (state_dir / "picks_2026-11-11.txt").unlink()
+    idle = evaluate_league(
+        nba,
+        state_root=tmp_path,
+        now=NOW,
+        schedule_fetcher=_schedule(),
+    )
+    assert not idle.should_run
+    assert idle.reasons == ("no_work",)
+
+    # A real pending frozen fixture older than 7 days MUST still wake settlement.
+    _write_json(
+        state_dir / "pick_lifecycle_state.json",
+        {
+            "schema_version": "magolide.pick_lifecycle_state",
+            "league": nba.league,
+            "pending_frozen_games": [["old-game-1", "2026-11-05T00:00:00Z"]],
+            "dated_reports": {},
+            "frozen_by_date": {},
+        },
+    )
+    frozen_wake = evaluate_league(
+        nba,
+        state_root=tmp_path,
+        now=NOW,
+        schedule_fetcher=_schedule(),
+    )
+    assert frozen_wake.should_run
+    assert "frozen_pick_settlement_due" in frozen_wake.reasons
+
+
+def test_espn_gate_skips_tbd_placeholder_events_and_keeps_real_games():
+    payload = {
+        "events": [
+            {
+                "id": "tbd-1",
+                "date": "2026-11-18T20:00Z",
+                "competitions": [
+                    {
+                        "date": "2026-11-18T20:00Z",
+                        "status": {"type": {"state": "pre"}},
+                        "competitors": [
+                            {"homeAway": "home", "team": {"id": "-1", "displayName": "TBD"}},
+                            {"homeAway": "away", "team": {"id": "-2", "displayName": "TBD"}},
+                        ],
+                    }
+                ],
+            },
+            {
+                "id": "real-1",
+                "date": "2026-11-18T22:00Z",
+                "competitions": [
+                    {
+                        "date": "2026-11-18T22:00Z",
+                        "status": {"type": {"state": "pre"}},
+                        "competitors": [
+                            {"homeAway": "home", "team": {"id": "10", "displayName": "Duke Blue Devils"}},
+                            {"homeAway": "away", "team": {"id": "20", "displayName": "UConn Huskies"}},
+                        ],
+                    }
+                ],
+            },
+            {
+                "id": "minimal-no-competitors",
+                "date": "2026-11-18T23:00Z",
+                "competitions": [
+                    {
+                        "date": "2026-11-18T23:00Z",
+                        "status": {"type": {"state": "pre"}},
+                    }
+                ],
+            },
+        ]
+    }
+    games = _espn_games(payload)
+    assert [g.game_id for g in games] == ["real-1", "minimal-no-competitors"]
+
