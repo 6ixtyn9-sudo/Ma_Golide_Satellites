@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 7,
+  "awaiting_game_legs": 6,
   "awaiting_game_legs_open": 3,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
@@ -2066,7 +2066,7 @@
       "wins": 5
     },
     {
-      "awaiting_game_legs": 7,
+      "awaiting_game_legs": 6,
       "bank_units": 104.93577729065612,
       "date": "2026-11-25",
       "decision_id": "45588367951_ncaa_m_1_attempt_1",
@@ -2235,7 +2235,7 @@
           "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
@@ -2246,7 +2246,7 @@
           "leg_count": 3,
           "leg_outcomes": [
             null,
-            null,
+            "loss",
             "loss"
           ],
           "legs": [
@@ -2272,12 +2272,12 @@
               "book_provider": "espn",
               "forecast_id": "9098e76447a3a9cf8c55",
               "game_id": "401925917",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "UC Riverside Highlanders",
               "market": "moneyline",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "9098e76447a3a9cf8c55",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-25T22:00:00Z",
               "selected_decimal_price": 1.6756756756756757,
               "selection": "home"
@@ -2310,7 +2310,7 @@
           "stake_units": 1.0,
           "ticket_id": "e9c241e5e7b46e000f3b",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         },
         {
           "awaiting_game_legs": 2,
@@ -2480,7 +2480,7 @@
       "settled_positions": 3,
       "settled_singles": 0,
       "staked_units": 3.0,
-      "unresolved_result_legs": 7,
+      "unresolved_result_legs": 6,
       "wins": 0
     }
   ],
@@ -2500,12 +2500,12 @@
   "result_unresolvable_legs": 0,
   "roi": 0.1828065663205964,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.17597185086838452,
+  "selected_leg_brier_score": 0.17961333785389866,
   "settled_accas": 26,
   "settled_positions": 27,
   "settled_singles": 1,
   "settled_stake_units": 27.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 7,
+  "unresolved_result_legs": 6,
   "wins": 13
 }

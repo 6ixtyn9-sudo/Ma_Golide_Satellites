@@ -1,6 +1,6 @@
 Ma Golide Picks — NBA 2026-11-25
 ========================================================================
-Generated at: 2026-11-26 01:03 SAST
+Generated at: 2026-11-26 02:08 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -17,19 +17,18 @@ ELIGIBLE CLEAN PICKS
       PAPER SINGLE · NBA spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=7 · recency ROI +7.0% / adjusted +11.8%
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, team_history_empirical
   [team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
-      MONEYLINE full_game -> HOME · p=65.3% (raw 62.0%) @1.313 DraftKings
+      MONEYLINE full_game -> HOME · p=65.3% (raw 62.0%) @1.309 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=109 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
       ROI-BAND BLOCKED · NBA moneyline full_game · p 0.60-<0.70 · odds 1.20-<1.50 · n=0 · recency ROI n/a / adjusted n/a
       collapsed_observations=4 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn, provider:hardwood, team_history_empirical
-      archived_revisions=13 · latest_evidence_utc=2026-11-25T22:47:31Z
+      archived_revisions=14 · latest_evidence_utc=2026-11-25T23:48:25Z
   [provider:hardwood+team_history_empirical/team_history_empirical] New York Knicks vs Cleveland Cavaliers · KO 2026-11-26 02:30 SAST
       SPREAD full_game -2.5 -> HOME · p=63.0% (raw 63.0%) @1.926 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
       calibration=no_history n=0 · reasons=none · prediction=hardwood
       venue/rest (evidence only) · neutral_site=false · home_rest=71.5h (b2b=false) · away_rest=47.5h (b2b=false) · diff=+24.0h · any_b2b=false
-      evidence_advisories=insufficient_walk_forward_samples
       ROI-BAND BLOCKED · NBA spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -26.8%
   [team_history_empirical/team_history_empirical] Memphis Grizzlies vs Los Angeles Clippers · KO 2026-11-26 03:00 SAST
       SPREAD full_game +6.5 -> AWAY · p=62.5% (raw 65.0%) @1.909 DraftKings
@@ -40,18 +39,16 @@ ELIGIBLE CLEAN PICKS
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, team_history_empirical
   [team_history_empirical/team_history_empirical] Houston Rockets vs Phoenix Suns · KO 2026-11-26 03:30 SAST
       MONEYLINE full_game -> HOME · p=62.3% (raw 59.0%) @1.253 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T00:08:44Z
       calibration=calibrated n=109 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=48.5h (b2b=false) · diff=-0.5h · any_b2b=false
       ROI-BAND BLOCKED · NBA moneyline full_game · p 0.60-<0.70 · odds 1.20-<1.50 · n=0 · recency ROI n/a / adjusted n/a
       collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=provider:espn, provider:hardwood, team_history_empirical
-      archived_revisions=14 · latest_evidence_utc=2026-11-25T22:47:31Z
   [provider:hardwood+team_history_empirical/team_history_empirical] New York Knicks vs Cleveland Cavaliers · KO 2026-11-26 02:30 SAST
       SPREAD full_game -3.5 -> HOME · p=62.0% (raw 62.0%) @1.935 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
       calibration=no_history n=0 · reasons=none · prediction=hardwood
       venue/rest (evidence only) · neutral_site=false · home_rest=71.5h (b2b=false) · away_rest=47.5h (b2b=false) · diff=+24.0h · any_b2b=false
-      evidence_advisories=insufficient_walk_forward_samples
       ROI-BAND BLOCKED · NBA spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=1 · recency ROI -100.0% / adjusted -26.8%
   [team_history_empirical/team_history_empirical] Portland Trail Blazers vs San Antonio Spurs · KO 2026-11-26 05:00 SAST
       MONEYLINE full_game -> AWAY · p=60.3% (raw 57.0%) @1.617 DraftKings
@@ -60,29 +57,21 @@ ELIGIBLE CLEAN PICKS
       venue/rest (evidence only) · neutral_site=false · home_rest=51.0h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+3.0h · any_b2b=false
       ROI-BAND BLOCKED · NBA moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=0 · recency ROI n/a / adjusted n/a
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:hardwood, team_history_empirical
-      archived_revisions=14 · latest_evidence_utc=2026-11-25T22:47:31Z
+      archived_revisions=15 · latest_evidence_utc=2026-11-25T23:48:25Z
   [provider:hardwood+team_history_empirical/team_history_empirical] New York Knicks vs Cleveland Cavaliers · KO 2026-11-26 02:30 SAST
       SPREAD full_game -4.5 -> HOME · p=59.0% (raw 59.0%) @1.980 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
       calibration=no_history n=0 · reasons=none · prediction=hardwood
       venue/rest (evidence only) · neutral_site=false · home_rest=71.5h (b2b=false) · away_rest=47.5h (b2b=false) · diff=+24.0h · any_b2b=false
-      evidence_advisories=insufficient_walk_forward_samples
       PAPER SINGLE · NBA spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=7 · recency ROI +8.2% / adjusted +4.1%
   [team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
-      SPREAD full_game +7.5 -> AWAY · p=57.5% (raw 60.0%) @1.935 DraftKings
+      SPREAD full_game +7.5 -> AWAY · p=57.5% (raw 60.0%) @1.909 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=39 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
       PAPER SINGLE · NBA spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=6 · recency ROI +30.3% / adjusted +27.4%
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, team_history_empirical
-      archived_revisions=2 · latest_evidence_utc=2026-11-25T22:47:31Z
-  [team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
-      MONEYLINE full_game -> HOME · p=57.3% (raw 54.0%) @1.599 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
-      calibration=calibrated n=109 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
-      PAPER SINGLE · NBA moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=1 · recency ROI +76.9% / adjusted +23.2%
-      collapsed_observations=4 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn, provider:hardwood, team_history_empirical
+      archived_revisions=3 · latest_evidence_utc=2026-11-25T23:48:25Z
   [team_history_empirical/team_history_empirical] New York Knicks vs Cleveland Cavaliers · KO 2026-11-26 02:30 SAST
       MONEYLINE full_game -> HOME · p=57.3% (raw 54.0%) @1.556 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
@@ -107,9 +96,9 @@ ELIGIBLE CLEAN PICKS
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=39 · reasons=none · prediction=espn
       venue/rest (evidence only) · neutral_site=false · home_rest=51.0h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+3.0h · any_b2b=false
-      PAPER SINGLE · NBA spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=3 · recency ROI +26.4% / adjusted +16.6%
+      PAPER SINGLE · NBA spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=3 · recency ROI +26.4% / adjusted +16.5%
       collapsed_observations=4 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
-      archived_revisions=14 · latest_evidence_utc=2026-11-25T22:47:33Z
+      archived_revisions=15 · latest_evidence_utc=2026-11-25T23:48:26Z
   [team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
       SPREAD full_game +6.5 -> AWAY · p=55.5% (raw 58.0%) @1.962 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
@@ -168,28 +157,27 @@ ELIGIBLE CLEAN PICKS
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, team_history_empirical
       archived_revisions=4 · latest_evidence_utc=2026-11-25T12:48:21Z
   [provider:hardwood+team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
-      SPREAD full_game -7.5 -> HOME · p=51.0% (raw 51.0%) @1.885 DraftKings
+      SPREAD full_game -7.5 -> HOME · p=51.0% (raw 51.0%) @1.909 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=no_history n=0 · reasons=none · prediction=hardwood
       venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
       evidence_advisories=insufficient_walk_forward_samples
       PAPER SINGLE · NBA spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=7 · recency ROI +8.2% / adjusted +4.1%
-      archived_revisions=2 · latest_evidence_utc=2026-11-25T22:47:31Z
+      archived_revisions=3 · latest_evidence_utc=2026-11-25T23:48:25Z
   [provider:hardwood+team_history_empirical/team_history_empirical] Milwaukee Bucks vs Brooklyn Nets · KO 2026-11-26 03:00 SAST
       TOTAL full_game 231.5 -> OVER · p=51.0% (raw 51.0%) @1.870 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
       calibration=no_history n=0 · reasons=none · prediction=hardwood
       venue/rest (evidence only) · neutral_site=false · home_rest=48.5h (b2b=false) · away_rest=48.5h (b2b=false) · diff=+0.0h · any_b2b=false
-      evidence_advisories=insufficient_walk_forward_samples
       PAPER SINGLE · NBA total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=11 · recency ROI +5.0% / adjusted +2.5%
   [provider:espn+team_history_empirical/team_history_empirical] Portland Trail Blazers vs San Antonio Spurs · KO 2026-11-26 05:00 SAST
       SPREAD full_game +2.5 -> HOME · p=50.9% (raw 56.0%) @1.926 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=39 · reasons=none · prediction=espn
       venue/rest (evidence only) · neutral_site=false · home_rest=51.0h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+3.0h · any_b2b=false
-      PAPER SINGLE · NBA spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=3 · recency ROI +26.4% / adjusted +16.6%
+      PAPER SINGLE · NBA spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=3 · recency ROI +26.4% / adjusted +16.5%
       collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn+team_history_empirical, team_history_empirical
-      archived_revisions=13 · latest_evidence_utc=2026-11-25T22:47:33Z
+      archived_revisions=14 · latest_evidence_utc=2026-11-25T23:48:26Z
   [team_history_empirical/team_history_empirical] Milwaukee Bucks vs Brooklyn Nets · KO 2026-11-26 03:00 SAST
       SPREAD full_game +1.5 -> AWAY · p=50.5% (raw 53.0%) @1.877 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
@@ -197,18 +185,6 @@ ELIGIBLE CLEAN PICKS
       venue/rest (evidence only) · neutral_site=false · home_rest=48.5h (b2b=false) · away_rest=48.5h (b2b=false) · diff=+0.0h · any_b2b=false
       PAPER SINGLE · NBA spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=6 · recency ROI +30.3% / adjusted +27.4%
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:hardwood+team_history_empirical, team_history_empirical
-  [context_availability+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
-      TOTAL full_game 222.5 -> UNDER · p=50.4% (raw 61.0%) @1.870 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
-      calibration=calibrated n=36 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
-      ROI-BAND BLOCKED · NBA total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=11 · recency ROI -82.4% / adjusted -71.8%
-  [context_availability+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
-      TOTAL full_game 221.5 -> UNDER · p=50.4% (raw 61.0%) @1.885 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
-      calibration=calibrated n=36 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
-      ROI-BAND BLOCKED · NBA total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=11 · recency ROI -82.4% / adjusted -71.8%
 
 CAUTION PICKS
 ========================================================================
@@ -227,7 +203,7 @@ WATCHLIST — NO MATCHED ODDS
       venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
   [team_history_empirical/team_history_empirical] Houston Rockets vs Phoenix Suns · KO 2026-11-26 03:30 SAST
       MONEYLINE H1 -> HOME · p=62.8% (raw 61.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T00:08:44Z
       calibration=calibrated n=109 · reasons=no_exact_bookmaker_market · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=48.5h (b2b=false) · diff=-0.5h · any_b2b=false
   [team_history_empirical/team_history_empirical] New York Knicks vs Cleveland Cavaliers · KO 2026-11-26 02:30 SAST
@@ -235,11 +211,6 @@ WATCHLIST — NO MATCHED ODDS
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
       calibration=calibrated n=109 · reasons=no_exact_bookmaker_market · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=71.5h (b2b=false) · away_rest=47.5h (b2b=false) · diff=+24.0h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
-      MONEYLINE H1 -> HOME · p=59.8% (raw 58.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
-      calibration=calibrated n=109 · reasons=no_exact_bookmaker_market · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
   [team_history_empirical/team_history_empirical] Portland Trail Blazers vs San Antonio Spurs · KO 2026-11-26 05:00 SAST
       MONEYLINE H1 -> AWAY · p=59.8% (raw 58.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -262,7 +233,7 @@ WATCHLIST — NO MATCHED ODDS
       venue/rest (evidence only) · neutral_site=false · home_rest=48.5h (b2b=false) · away_rest=48.5h (b2b=false) · diff=+0.0h · any_b2b=false
   [team_history_empirical/team_history_empirical] Houston Rockets vs Phoenix Suns · KO 2026-11-26 03:30 SAST
       HIGHEST QUARTER full_game -> Q3 · p=44.1% (raw 40.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T00:08:44Z
       calibration=calibrated n=111 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=48.5h (b2b=false) · diff=-0.5h · any_b2b=false
   [team_history_empirical/team_history_empirical] Oklahoma City Thunder vs Minnesota Timberwolves · KO 2026-11-26 02:30 SAST
@@ -270,11 +241,6 @@ WATCHLIST — NO MATCHED ODDS
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
       calibration=calibrated n=111 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+0.0h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
-      HIGHEST QUARTER full_game -> Q3 · p=42.1% (raw 38.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
-      calibration=calibrated n=111 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
   [team_history_empirical/team_history_empirical] Memphis Grizzlies vs Los Angeles Clippers · KO 2026-11-26 03:00 SAST
       HIGHEST QUARTER full_game -> Q3 · p=42.1% (raw 38.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
@@ -307,26 +273,19 @@ WATCHLIST — INSUFFICIENT CONTEXT
 
 SKIPPED — INELIGIBLE
 ========================================================================
-  [provider:espn+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
-      SPREAD full_game +3.5 -> AWAY · p=54.9% (raw 60.0%) @1.952 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
-      calibration=calibrated n=39 · reasons=superseded_by_calibration_twin · prediction=espn
-      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
-      collapsed_observations=4 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
   [provider:espn+team_history_empirical/team_history_empirical] Houston Rockets vs Phoenix Suns · KO 2026-11-26 03:30 SAST
       SPREAD full_game +9.5 -> AWAY · p=51.9% (raw 57.0%) @1.862 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T00:08:44Z
       calibration=calibrated n=39 · reasons=superseded_by_calibration_twin · prediction=espn
       venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=48.5h (b2b=false) · diff=-0.5h · any_b2b=false
       collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
-      archived_revisions=14 · latest_evidence_utc=2026-11-25T22:47:32Z
   [provider:espn/team_history_empirical] Portland Trail Blazers vs San Antonio Spurs · KO 2026-11-26 05:00 SAST
       MONEYLINE full_game -> HOME · p=49.9% (raw 51.2%) @2.360 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
       venue/rest (evidence only) · neutral_site=false · home_rest=51.0h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+3.0h · any_b2b=false
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn
-      archived_revisions=14 · latest_evidence_utc=2026-11-25T22:47:33Z
+      archived_revisions=15 · latest_evidence_utc=2026-11-25T23:48:26Z
   [team_history_empirical/team_history_empirical] Oklahoma City Thunder vs Minnesota Timberwolves · KO 2026-11-26 02:30 SAST
       SPREAD full_game +1.5 -> AWAY · p=49.5% (raw 52.0%) @1.943 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
@@ -338,45 +297,45 @@ SKIPPED — INELIGIBLE
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
       calibration=calibrated n=36 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=49.0h (b2b=false) · away_rest=47.5h (b2b=false) · diff=+1.5h · any_b2b=false
-  [provider:espn+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
-      TOTAL full_game 219.5 -> OVER · p=49.1% (raw 65.0%) @1.952 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
-      calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
-      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
-      collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
-  [provider:espn+team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
-      TOTAL full_game 215.5 -> OVER · p=49.1% (raw 65.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
-      venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
-      collapsed_observations=4 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
-      archived_revisions=2 · latest_evidence_utc=2026-11-25T22:47:32Z
-  [provider:espn+team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
-      TOTAL full_game 216.5 -> OVER · p=49.1% (raw 65.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
-      venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
-      collapsed_observations=4 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
-      archived_revisions=7 · latest_evidence_utc=2026-11-25T22:47:32Z
   [provider:espn+team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
       TOTAL full_game 214.5 -> OVER · p=49.1% (raw 65.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
       venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
       collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
+      archived_revisions=2 · latest_evidence_utc=2026-11-25T23:48:26Z
+  [provider:espn+team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
+      TOTAL full_game 216.5 -> OVER · p=49.1% (raw 65.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
+      venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
+      collapsed_observations=4 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
+      archived_revisions=8 · latest_evidence_utc=2026-11-25T23:48:26Z
+  [provider:espn+team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
+      TOTAL full_game 215.5 -> OVER · p=49.1% (raw 65.0%) @1.952 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
+      venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
+      collapsed_observations=4 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
+      archived_revisions=3 · latest_evidence_utc=2026-11-25T23:48:26Z
   [provider:espn+team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
       SPREAD full_game -5.5 -> HOME · p=48.9% (raw 54.0%) @1.877 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
       venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn+team_history_empirical, provider:hardwood+team_history_empirical
-      archived_revisions=14 · latest_evidence_utc=2026-11-25T22:47:32Z
+      archived_revisions=15 · latest_evidence_utc=2026-11-25T23:48:26Z
   [team_history_empirical/team_history_empirical] New York Knicks vs Cleveland Cavaliers · KO 2026-11-26 02:30 SAST
       SPREAD full_game -1.5 -> HOME · p=48.5% (raw 51.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
       calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=71.5h (b2b=false) · away_rest=47.5h (b2b=false) · diff=+24.0h · any_b2b=false
       collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
+  [context_availability+team_history_empirical/team_history_empirical] Memphis Grizzlies vs Los Angeles Clippers · KO 2026-11-26 03:00 SAST
+      TOTAL full_game 227.5 -> UNDER · p=48.4% (raw 59.0%) @1.926 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
+      calibration=calibrated n=36 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=49.0h (b2b=false) · away_rest=47.5h (b2b=false) · diff=+1.5h · any_b2b=false
   [context_availability+team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
       TOTAL full_game 217.5 -> UNDER · p=48.4% (raw 59.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -388,21 +347,6 @@ SKIPPED — INELIGIBLE
       calibration=calibrated n=36 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:hardwood+team_history_empirical
-  [context_availability+team_history_empirical/team_history_empirical] Memphis Grizzlies vs Los Angeles Clippers · KO 2026-11-26 03:00 SAST
-      TOTAL full_game 227.5 -> UNDER · p=48.4% (raw 59.0%) @1.926 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
-      calibration=calibrated n=36 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=49.0h (b2b=false) · away_rest=47.5h (b2b=false) · diff=+1.5h · any_b2b=false
-  [context_availability+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
-      TOTAL full_game 220.5 -> UNDER · p=48.4% (raw 59.0%) @1.952 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
-      calibration=calibrated n=36 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
-  [context_availability+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
-      TOTAL full_game 219.5 -> UNDER · p=48.4% (raw 59.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
-      calibration=calibrated n=36 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
   [context_availability+team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
       MONEYLINE full_game -> AWAY · p=48.3% (raw 55.0%) @3.470 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -430,18 +374,11 @@ SKIPPED — INELIGIBLE
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
       calibration=calibrated n=36 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=71.5h (b2b=false) · away_rest=47.5h (b2b=false) · diff=+24.0h · any_b2b=false
-  [provider:espn+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
-      TOTAL full_game 220.5 -> OVER · p=47.1% (raw 63.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
-      calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
-      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
-      collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
   [provider:espn+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs Minnesota Timberwolves · KO 2026-11-26 02:30 SAST
       SPREAD full_game +2.5 -> AWAY · p=46.9% (raw 52.0%) @1.901 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
       calibration=calibrated n=39 · reasons=below_calibrated_probability_floor,superseded_by_calibration_twin · prediction=espn
       venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+0.0h · any_b2b=false
-      evidence_advisories=calibration_twin_disagreement
       collapsed_observations=4 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
   [provider:espn+team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
       TOTAL full_game 217.5 -> OVER · p=46.1% (raw 62.0%) @1.909 DraftKings
@@ -449,14 +386,14 @@ SKIPPED — INELIGIBLE
       calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
       venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
       collapsed_observations=4 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
-      archived_revisions=13 · latest_evidence_utc=2026-11-25T22:47:32Z
+      archived_revisions=14 · latest_evidence_utc=2026-11-25T23:48:26Z
   [provider:espn+team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
       SPREAD full_game -6.5 -> HOME · p=45.9% (raw 51.0%) @1.862 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
       calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
       venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn+team_history_empirical, provider:hardwood+team_history_empirical
-      archived_revisions=10 · latest_evidence_utc=2026-11-25T22:47:32Z
+      archived_revisions=11 · latest_evidence_utc=2026-11-25T23:48:26Z
   [team_history_empirical/team_history_empirical] Oklahoma City Thunder vs Minnesota Timberwolves · KO 2026-11-26 02:30 SAST
       TOTAL full_game 221.5 -> OVER · p=45.5% (raw 59.0%) @1.901 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
@@ -472,12 +409,6 @@ SKIPPED — INELIGIBLE
       SPREAD full_game -1.5 -> HOME · p=45.2% (raw 51.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
       calibration=calibrated n=38 · reasons=below_calibrated_probability_floor · prediction=espn
-  [provider:espn+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
-      TOTAL full_game 221.5 -> OVER · p=45.1% (raw 61.0%) @1.935 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
-      calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
-      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
-      collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
   [provider:espn+team_history_empirical/team_history_empirical] New York Knicks vs Cleveland Cavaliers · KO 2026-11-26 02:30 SAST
       TOTAL full_game 216.5 -> OVER · p=45.1% (raw 61.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
@@ -501,7 +432,7 @@ SKIPPED — INELIGIBLE
       calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
       venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
       collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn+team_history_empirical, team_history_empirical
-      archived_revisions=14 · latest_evidence_utc=2026-11-25T22:47:32Z
+      archived_revisions=15 · latest_evidence_utc=2026-11-25T23:48:26Z
   [provider:espn+team_history_empirical/team_history_empirical] Memphis Grizzlies vs Los Angeles Clippers · KO 2026-11-26 03:00 SAST
       TOTAL full_game 227.5 -> OVER · p=44.1% (raw 60.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
@@ -524,12 +455,6 @@ SKIPPED — INELIGIBLE
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
       calibration=calibrated n=36 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=71.5h (b2b=false) · away_rest=47.5h (b2b=false) · diff=+24.0h · any_b2b=false
-  [provider:espn+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
-      TOTAL full_game 222.5 -> OVER · p=43.1% (raw 59.0%) @1.952 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
-      calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
-      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
-      collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
   [provider:espn+team_history_empirical/team_history_empirical] Memphis Grizzlies vs Los Angeles Clippers · KO 2026-11-26 03:00 SAST
       TOTAL full_game 228.5 -> OVER · p=43.1% (raw 59.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
@@ -566,17 +491,18 @@ SKIPPED — INELIGIBLE
       calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
       venue/rest (evidence only) · neutral_site=false · home_rest=51.0h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+3.0h · any_b2b=false
       collapsed_observations=4 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
-      archived_revisions=14 · latest_evidence_utc=2026-11-25T22:47:33Z
-  [context_availability+team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
-      TOTAL full_game 215.5 -> UNDER · p=42.4% (raw 53.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
-      calibration=calibrated n=36 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
+      archived_revisions=15 · latest_evidence_utc=2026-11-25T23:48:26Z
   [context_availability+team_history_empirical/team_history_empirical] New York Knicks vs Cleveland Cavaliers · KO 2026-11-26 02:30 SAST
       TOTAL full_game 217.5 -> UNDER · p=42.4% (raw 53.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
       calibration=calibrated n=36 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=71.5h (b2b=false) · away_rest=47.5h (b2b=false) · diff=+24.0h · any_b2b=false
+  [context_availability+team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
+      TOTAL full_game 215.5 -> UNDER · p=42.4% (raw 53.0%) @1.870 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      calibration=calibrated n=36 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=73.5h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+25.5h · any_b2b=false
+      archived_revisions=2 · latest_evidence_utc=2026-11-25T23:48:25Z
   [provider:espn+team_history_empirical/team_history_empirical] Oklahoma City Thunder vs Minnesota Timberwolves · KO 2026-11-26 02:30 SAST
       TOTAL full_game 221.5 -> UNDER · p=42.1% (raw 58.0%) @1.917 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
@@ -589,7 +515,7 @@ SKIPPED — INELIGIBLE
       calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
       venue/rest (evidence only) · neutral_site=false · home_rest=51.0h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+3.0h · any_b2b=false
       collapsed_observations=4 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
-      archived_revisions=13 · latest_evidence_utc=2026-11-25T22:47:33Z
+      archived_revisions=14 · latest_evidence_utc=2026-11-25T23:48:26Z
   [context_availability+team_history_empirical/team_history_empirical] Golden State Warriors vs Sacramento Kings · KO 2026-11-26 05:00 SAST
       TOTAL full_game 214.5 -> UNDER · p=41.4% (raw 52.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
@@ -612,12 +538,11 @@ SKIPPED — INELIGIBLE
       calibration=calibrated n=36 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=71.5h (b2b=false) · away_rest=47.5h (b2b=false) · diff=+24.0h · any_b2b=false
   [provider:espn+team_history_empirical/team_history_empirical] Houston Rockets vs Phoenix Suns · KO 2026-11-26 03:30 SAST
-      TOTAL full_game 222.5 -> OVER · p=40.1% (raw 56.0%) @1.885 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      TOTAL full_game 222.5 -> OVER · p=40.1% (raw 56.0%) @1.901 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T00:08:44Z
       calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
       venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=48.5h (b2b=false) · diff=-0.5h · any_b2b=false
       collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
-      archived_revisions=12 · latest_evidence_utc=2026-11-25T22:47:32Z
   [provider:espn+team_history_empirical/team_history_empirical] Milwaukee Bucks vs Brooklyn Nets · KO 2026-11-26 03:00 SAST
       TOTAL full_game 233.5 -> UNDER · p=40.1% (raw 56.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
@@ -642,17 +567,16 @@ SKIPPED — INELIGIBLE
       venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=48.0h (b2b=false) · diff=+0.0h · any_b2b=false
   [team_history_empirical/team_history_empirical] Houston Rockets vs Phoenix Suns · KO 2026-11-26 03:30 SAST
       TOTAL full_game 224.5 -> OVER · p=37.5% (raw 51.0%) @1.952 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T00:08:44Z
       calibration=calibrated n=38 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=48.5h (b2b=false) · diff=-0.5h · any_b2b=false
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:hardwood+team_history_empirical, team_history_empirical
   [provider:espn+team_history_empirical/team_history_empirical] Houston Rockets vs Phoenix Suns · KO 2026-11-26 03:30 SAST
       TOTAL full_game 223.5 -> OVER · p=37.1% (raw 53.0%) @1.952 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T00:08:44Z
       calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
       venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=48.5h (b2b=false) · diff=-0.5h · any_b2b=false
       collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
-      archived_revisions=13 · latest_evidence_utc=2026-11-25T22:47:32Z
   [provider:espn+team_history_empirical/team_history_empirical] Milwaukee Bucks vs Brooklyn Nets · KO 2026-11-26 03:00 SAST
       TOTAL full_game 232.5 -> UNDER · p=37.1% (raw 53.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
@@ -661,10 +585,9 @@ SKIPPED — INELIGIBLE
       collapsed_observations=4 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
   [provider:espn+team_history_empirical/team_history_empirical] Houston Rockets vs Phoenix Suns · KO 2026-11-26 03:30 SAST
       TOTAL full_game 224.5 -> UNDER · p=36.1% (raw 52.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=DRAFT
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T00:08:44Z
       calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
       venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=48.5h (b2b=false) · diff=-0.5h · any_b2b=false
-      archived_revisions=14 · latest_evidence_utc=2026-11-25T22:47:32Z
   [provider:espn+team_history_empirical/team_history_empirical] Milwaukee Bucks vs Brooklyn Nets · KO 2026-11-26 03:00 SAST
       TOTAL full_game 231.5 -> UNDER · p=36.1% (raw 52.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T23:03:47Z
@@ -680,6 +603,11 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       calibration=calibrated n=39 · reasons=none · prediction=espn
       PAPER SINGLE · NBA moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=1 · recency ROI +67.6% / adjusted +0.6%
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, provider:hardwood
+  [team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
+      MONEYLINE H1 -> HOME · p=59.8% (raw 58.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
+      calibration=calibrated n=109 · reasons=no_exact_bookmaker_market · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
   [team_history_empirical/team_history_empirical] Philadelphia 76ers vs Miami Heat · KO 2026-11-26 00:00 SAST
       MONEYLINE H1 -> AWAY · p=57.8% (raw 56.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T20:03:24Z
@@ -690,6 +618,13 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       calibration=calibrated n=39 · reasons=none · prediction=history
       PAPER SINGLE · NBA spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=6 · recency ROI +30.3% / adjusted +27.4%
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:hardwood+team_history_empirical, team_history_empirical
+  [team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
+      MONEYLINE full_game -> HOME · p=57.3% (raw 54.0%) @1.599 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
+      calibration=calibrated n=109 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
+      PAPER SINGLE · NBA moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=1 · recency ROI +76.9% / adjusted +23.2%
+      collapsed_observations=4 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn, provider:hardwood, team_history_empirical
   [team_history_empirical/team_history_empirical] Philadelphia 76ers vs Miami Heat · KO 2026-11-26 00:00 SAST
       MONEYLINE full_game -> AWAY · p=56.3% (raw 53.0%) @2.010 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T20:03:24Z
@@ -700,11 +635,51 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T20:03:24Z
       calibration=calibrated n=39 · reasons=none · prediction=espn
       PAPER SINGLE · NBA spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=3 · recency ROI +26.4% / adjusted +16.6%
+  [provider:espn+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
+      SPREAD full_game +3.5 -> AWAY · p=54.9% (raw 60.0%) @1.952 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
+      calibration=calibrated n=39 · reasons=superseded_by_calibration_twin · prediction=espn
+      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
+      collapsed_observations=4 · books_quoted=1: DraftKings · surfaces=context_availability+team_history_empirical, provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
   [provider:hardwood+team_history_empirical/team_history_empirical] Philadelphia 76ers vs Miami Heat · KO 2026-11-26 00:00 SAST
       TOTAL full_game 237.5 -> OVER · p=52.6% (raw 52.0%) @1.909 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T20:03:24Z
       calibration=provisional n=3 · reasons=none · prediction=hardwood
       PAPER SINGLE · NBA total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=11 · recency ROI +5.0% / adjusted +2.5%
+  [context_availability+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
+      TOTAL full_game 222.5 -> UNDER · p=50.4% (raw 61.0%) @1.870 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
+      calibration=calibrated n=36 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
+      ROI-BAND BLOCKED · NBA total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=11 · recency ROI -82.4% / adjusted -71.8%
+  [context_availability+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
+      TOTAL full_game 221.5 -> UNDER · p=50.4% (raw 61.0%) @1.885 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
+      calibration=calibrated n=36 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
+      ROI-BAND BLOCKED · NBA total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=11 · recency ROI -82.4% / adjusted -71.8%
+  [provider:espn+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
+      TOTAL full_game 219.5 -> OVER · p=49.1% (raw 65.0%) @1.952 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
+      calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
+      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
+      collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
+  [context_availability+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
+      TOTAL full_game 220.5 -> UNDER · p=48.4% (raw 59.0%) @1.952 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
+      calibration=calibrated n=36 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
+  [context_availability+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
+      TOTAL full_game 219.5 -> UNDER · p=48.4% (raw 59.0%) @1.870 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
+      calibration=calibrated n=36 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
+  [provider:espn+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
+      TOTAL full_game 220.5 -> OVER · p=47.1% (raw 63.0%) @1.870 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
+      calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
+      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
+      collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
   [team_history_empirical/team_history_empirical] Philadelphia 76ers vs Miami Heat · KO 2026-11-26 00:00 SAST
       TOTAL full_game 237.5 -> UNDER · p=45.5% (raw 59.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T20:03:24Z
@@ -714,6 +689,23 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       TOTAL full_game 236.5 -> UNDER · p=45.5% (raw 59.0%) @1.935 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T20:03:24Z
       calibration=calibrated n=38 · reasons=below_calibrated_probability_floor · prediction=history
+  [provider:espn+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
+      TOTAL full_game 221.5 -> OVER · p=45.1% (raw 61.0%) @1.935 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
+      calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
+      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
+      collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
+  [provider:espn+team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
+      TOTAL full_game 222.5 -> OVER · p=43.1% (raw 59.0%) @1.952 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
+      calibration=calibrated n=39 · reasons=below_calibrated_probability_floor · prediction=espn
+      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
+      collapsed_observations=3 · books_quoted=1: DraftKings · surfaces=provider:espn+team_history_empirical, provider:hardwood+team_history_empirical, team_history_empirical
+  [team_history_empirical/team_history_empirical] Charlotte Hornets vs Chicago Bulls · KO 2026-11-26 02:00 SAST
+      HIGHEST QUARTER full_game -> Q3 · p=42.1% (raw 38.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T22:07:59Z
+      calibration=calibrated n=111 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=48.0h (b2b=false) · away_rest=47.0h (b2b=false) · diff=+1.0h · any_b2b=false
   [team_history_empirical/team_history_empirical] Philadelphia 76ers vs Miami Heat · KO 2026-11-26 00:00 SAST
       HIGHEST QUARTER full_game -> Q3 · p=38.1% (raw 34.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-25T20:03:24Z
@@ -728,10 +720,10 @@ SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
   (none)
 
-Active summary: ELIGIBLE_CLEAN=28 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=16 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=62
-ROI-qualified individual paper singles: 18
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=10 SETTLED=0
-Logical picks shown: 116 · superseded observations: 467 · book/model rows collapsed: 117
-Total archived pick evidence rows: 700
+Active summary: ELIGIBLE_CLEAN=25 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=14 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=55
+ROI-qualified individual paper singles: 17
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=22 SETTLED=0
+Logical picks shown: 116 · superseded observations: 360 · book/model rows collapsed: 117
+Total archived pick evidence rows: 593
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
 Bet only what you can afford to lose.

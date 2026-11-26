@@ -36,9 +36,9 @@
       "logical_picks": 559
     },
     "2026-11-25": {
-      "evidence_rows": 482,
-      "frozen_fixtures": 60,
-      "logical_picks": 423
+      "evidence_rows": 484,
+      "frozen_fixtures": 63,
+      "logical_picks": 425
     }
   },
   "frozen_by_date": {
@@ -130192,6 +130192,512 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-25"
       },
+      "401917545": {
+        "decision_cutoff_utc": "2026-11-26T00:00:00Z",
+        "frozen_at": "2026-11-26T00:24:16Z",
+        "game_id": "401917545",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Eastern Washington Eagles",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.720169,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 502,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "d74ced805abb0d10919a48a13dbb9f5af80e1dcaf26d02309936f9c4fbad2a5a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e9139e6a676509486503",
+            "game_id": "401917545",
+            "grade_status": "pending",
+            "home": "Loyola Marymount Lions",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "e9139e6a676509486503",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.79,
+            "role": null,
+            "scheduled_utc": "2026-11-26T02:00:00Z",
+            "selection": "home",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-24",
+              "away_prev_fixture_id": "401920721",
+              "away_prev_source": "espn",
+              "away_rest_hours": 47.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-22",
+              "home_prev_fixture_id": "401917540",
+              "home_prev_source": "espn",
+              "home_rest_hours": 76.5,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 29.5
+            }
+          },
+          {
+            "away": "Eastern Washington Eagles",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917545",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-25T23:48:53Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.3225806451612903,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.652912,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 341,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "69ec8c1da21f67f0362618a8623419683ec0a712bf275f4e3a21690d49694f54",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "483d47d48c18d4858bcf",
+            "game_id": "401917545",
+            "grade_status": "pending",
+            "home": "Loyola Marymount Lions",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "483d47d48c18d4858bcf",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-25T23:48:58Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.7027,
+            "role": "favorite",
+            "scheduled_utc": "2026-11-26T02:00:00Z",
+            "selection": "home",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-24",
+              "away_prev_fixture_id": "401920721",
+              "away_prev_source": "espn",
+              "away_rest_hours": 47.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-22",
+              "home_prev_fixture_id": "401917540",
+              "home_prev_source": "espn",
+              "home_rest_hours": 76.5,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 29.5
+            }
+          },
+          {
+            "away": "Eastern Washington Eagles",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917545",
+              "line": null,
+              "main_line": true,
+              "market": "moneyline",
+              "observed_utc": "2026-11-25T23:48:53Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.3225806451612903,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.768308,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 502,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "2fc57179d9858d01c1e16ea8e88b1a6ce5560fac72866a659cd7a895c7b49954",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b3f01336b51b69542b35",
+            "game_id": "401917545",
+            "grade_status": "pending",
+            "home": "Loyola Marymount Lions",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.245241,
+              "historical_pick_count": 6,
+              "individual_odds_band": "1.20-<1.50",
+              "league": "NCAA_M",
+              "losses": 3,
+              "market": "moneyline",
+              "observed_roi": -0.366596,
+              "period": "full_game",
+              "probability_band": "0.70-<0.80",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.342323,
+              "wins": 3
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "b3f01336b51b69542b35",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.81,
+            "role": null,
+            "scheduled_utc": "2026-11-26T02:00:00Z",
+            "selection": "home",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-24",
+              "away_prev_fixture_id": "401920721",
+              "away_prev_source": "espn",
+              "away_rest_hours": 47.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-22",
+              "home_prev_fixture_id": "401917540",
+              "home_prev_source": "espn",
+              "home_rest_hours": 76.5,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 29.5
+            }
+          },
+          {
+            "away": "Eastern Washington Eagles",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917545",
+              "line": -7.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-25T23:48:53Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "SKIPPED_INELIGIBLE",
+            "calibrated_probability": 0.493678,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 231,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "b500bad1ce3695db8d32d13b612cfae5364520163fa97908de4c06074f6faf5d",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "below_calibrated_probability_floor"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "8a2ef75b3b328c30f19d",
+            "game_id": "401917545",
+            "grade_status": "pending",
+            "home": "Loyola Marymount Lions",
+            "league": "NCAA_M",
+            "line": -7.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "8a2ef75b3b328c30f19d",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-26T02:00:00Z",
+            "selection": "away",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-24",
+              "away_prev_fixture_id": "401920721",
+              "away_prev_source": "espn",
+              "away_rest_hours": 47.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-22",
+              "home_prev_fixture_id": "401917540",
+              "home_prev_source": "espn",
+              "home_rest_hours": 76.5,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 29.5
+            }
+          },
+          {
+            "away": "Eastern Washington Eagles",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917545",
+              "line": 151.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-25T23:48:53Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.524981,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 231,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "cd3c2f205797315a589e5158f17a0171629a95a2782cceea06e582d1134022db",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "a23962bc9c8bc07c80d9",
+            "game_id": "401917545",
+            "grade_status": "pending",
+            "home": "Loyola Marymount Lions",
+            "league": "NCAA_M",
+            "line": 151.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.097858,
+              "historical_pick_count": 581,
+              "individual_odds_band": "1.50-<2.00",
+              "league": "NCAA_M",
+              "losses": 245,
+              "market": "total",
+              "observed_roi": 0.102882,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.098029,
+              "wins": 336
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "a23962bc9c8bc07c80d9",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-26T02:00:00Z",
+            "selection": "over",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-24",
+              "away_prev_fixture_id": "401920721",
+              "away_prev_source": "espn",
+              "away_rest_hours": 47.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-22",
+              "home_prev_fixture_id": "401917540",
+              "home_prev_source": "espn",
+              "home_rest_hours": 76.5,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 29.5
+            }
+          },
+          {
+            "away": "Eastern Washington Eagles",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401917545",
+              "line": 152.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-25T22:47:58Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8695652173913042,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.514981,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 231,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "2dd49faf05ba76a3e27904d2edbc5711518208b917901f08ca79bb05e49d556c",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e109140567f49769df83",
+            "game_id": "401917545",
+            "grade_status": "pending",
+            "home": "Loyola Marymount Lions",
+            "league": "NCAA_M",
+            "line": 152.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.097858,
+              "historical_pick_count": 581,
+              "individual_odds_band": "1.50-<2.00",
+              "league": "NCAA_M",
+              "losses": 245,
+              "market": "total",
+              "observed_roi": 0.102882,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.098029,
+              "wins": 336
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "e109140567f49769df83",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.51,
+            "role": null,
+            "scheduled_utc": "2026-11-26T02:00:00Z",
+            "selection": "under",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-24",
+              "away_prev_fixture_id": "401920721",
+              "away_prev_source": "espn",
+              "away_rest_hours": 47.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-22",
+              "home_prev_fixture_id": "401917540",
+              "home_prev_source": "espn",
+              "home_rest_hours": 76.5,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 29.5
+            }
+          }
+        ],
+        "scheduled_utc": "2026-11-26T02:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-25"
+      },
       "401917967": {
         "decision_cutoff_utc": "2026-11-25T17:00:00Z",
         "frozen_at": "2026-11-25T17:12:11Z",
@@ -147402,6 +147908,479 @@
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-25"
       },
+      "401924897": {
+        "decision_cutoff_utc": "2026-11-26T00:00:00Z",
+        "frozen_at": "2026-11-26T00:24:16Z",
+        "game_id": "401924897",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Mississippi Valley State Delta Devils",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.850169,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 502,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "4e7fdeae19f06f1cf8e79b904669cca260f5c87a72943c4fbd54e9425d2db5dd",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "b82509c27cb96edd57b9",
+            "game_id": "401924897",
+            "grade_status": "pending",
+            "home": "New Mexico Lobos",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "b82509c27cb96edd57b9",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.92,
+            "role": null,
+            "scheduled_utc": "2026-11-26T02:00:00Z",
+            "selection": "home",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-21",
+              "away_prev_fixture_id": "401925740",
+              "away_prev_source": "espn",
+              "away_rest_hours": 121.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-21",
+              "home_prev_fixture_id": "401919031",
+              "home_prev_source": "espn",
+              "home_rest_hours": 103.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": -18.0
+            }
+          },
+          {
+            "away": "Mississippi Valley State Delta Devils",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.940512,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 341,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "2eae38496495cc68f7beec6929c2d619723aa5d36103b4183ca78402f890ffe3",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "4fa20b3f90e05b4f3204",
+            "game_id": "401924897",
+            "grade_status": "pending",
+            "home": "New Mexico Lobos",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "4fa20b3f90e05b4f3204",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-25T23:48:58Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9903,
+            "role": null,
+            "scheduled_utc": "2026-11-26T02:00:00Z",
+            "selection": "home",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-21",
+              "away_prev_fixture_id": "401925740",
+              "away_prev_source": "espn",
+              "away_rest_hours": 121.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-21",
+              "home_prev_fixture_id": "401919031",
+              "home_prev_source": "espn",
+              "home_rest_hours": 103.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": -18.0
+            }
+          },
+          {
+            "away": "Mississippi Valley State Delta Devils",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.928308,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 502,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "87cd4c376dd41c4b3ad6527cc0a1a892771c5bac0b027b891ab3595b21991985",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "e9649407a81c178fa576",
+            "game_id": "401924897",
+            "grade_status": "pending",
+            "home": "New Mexico Lobos",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "e9649407a81c178fa576",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.97,
+            "role": null,
+            "scheduled_utc": "2026-11-26T02:00:00Z",
+            "selection": "home",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-21",
+              "away_prev_fixture_id": "401925740",
+              "away_prev_source": "espn",
+              "away_rest_hours": 121.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-21",
+              "home_prev_fixture_id": "401919031",
+              "home_prev_source": "espn",
+              "home_rest_hours": 103.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": -18.0
+            }
+          },
+          {
+            "away": "Mississippi Valley State Delta Devils",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401924897",
+              "line": -35.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-25T22:48:00Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9523809523809523,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.563678,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 231,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "c2c05585ce251940095edee8dcabb3a09e254ab510b5bf21895a86ae80ef701c",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "387fc993806917f7530a",
+            "game_id": "401924897",
+            "grade_status": "pending",
+            "home": "New Mexico Lobos",
+            "league": "NCAA_M",
+            "line": -35.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.005905,
+              "historical_pick_count": 374,
+              "individual_odds_band": "1.50-<2.00",
+              "league": "NCAA_M",
+              "losses": 179,
+              "market": "spread",
+              "observed_roi": -0.005992,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.005678,
+              "wins": 195
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "387fc993806917f7530a",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.58,
+            "role": null,
+            "scheduled_utc": "2026-11-26T02:00:00Z",
+            "selection": "away",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-21",
+              "away_prev_fixture_id": "401925740",
+              "away_prev_source": "espn",
+              "away_rest_hours": 121.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-21",
+              "home_prev_fixture_id": "401919031",
+              "home_prev_source": "espn",
+              "home_rest_hours": 103.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": -18.0
+            }
+          },
+          {
+            "away": "Mississippi Valley State Delta Devils",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401924897",
+              "line": -36.5,
+              "main_line": true,
+              "market": "spread",
+              "observed_utc": "2026-11-25T23:48:55Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.8928571428571428,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.573678,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 231,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "3e8386b49e497974822af0afa83ef6415fa6c0b3a94ef135d4d485bb328d2816",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "5c47437719898c8477dc",
+            "game_id": "401924897",
+            "grade_status": "pending",
+            "home": "New Mexico Lobos",
+            "league": "NCAA_M",
+            "line": -36.5,
+            "market": "spread",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": -0.005905,
+              "historical_pick_count": 374,
+              "individual_odds_band": "1.50-<2.00",
+              "league": "NCAA_M",
+              "losses": 179,
+              "market": "spread",
+              "observed_roi": -0.005992,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": false,
+              "recency_weighted_roi": -0.005678,
+              "wins": 195
+            },
+            "paper_roi_band_eligible": false,
+            "period": "full_game",
+            "pick_id": "5c47437719898c8477dc",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.59,
+            "role": null,
+            "scheduled_utc": "2026-11-26T02:00:00Z",
+            "selection": "away",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-21",
+              "away_prev_fixture_id": "401925740",
+              "away_prev_source": "espn",
+              "away_rest_hours": 121.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-21",
+              "home_prev_fixture_id": "401919031",
+              "home_prev_source": "espn",
+              "home_rest_hours": 103.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": -18.0
+            }
+          },
+          {
+            "away": "Mississippi Valley State Delta Devils",
+            "book": {
+              "book": "DraftKings",
+              "frozen": false,
+              "game_id": "401924897",
+              "line": 152.5,
+              "main_line": true,
+              "market": "total",
+              "observed_utc": "2026-11-25T23:48:55Z",
+              "operational_validation": "unverified",
+              "period": "full_game",
+              "pre_match": true,
+              "price_provenance": "named_book",
+              "provider": "espn",
+              "selected_decimal_price": 1.9090909090909092,
+              "source_modified_utc": null,
+              "source_permission": "unresolved"
+            },
+            "bucket": "ELIGIBLE_CLEAN",
+            "calibrated_probability": 0.524981,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 231,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "ea30e7987d181d4369a44c2ce10a6a5ffd3fee232a2337d9f4398caae1642203",
+            "eligibility": {
+              "acca_eligible": true,
+              "reasons": []
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "d5098bae98479d556f32",
+            "game_id": "401924897",
+            "grade_status": "pending",
+            "home": "New Mexico Lobos",
+            "league": "NCAA_M",
+            "line": 152.5,
+            "market": "total",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "paper_roi_band": {
+              "adjusted_roi": 0.097858,
+              "historical_pick_count": 581,
+              "individual_odds_band": "1.50-<2.00",
+              "league": "NCAA_M",
+              "losses": 245,
+              "market": "total",
+              "observed_roi": 0.102882,
+              "period": "full_game",
+              "probability_band": "0.50-<0.60",
+              "pushes": 0,
+              "qualifies": true,
+              "recency_weighted_roi": 0.098029,
+              "wins": 336
+            },
+            "paper_roi_band_eligible": true,
+            "period": "full_game",
+            "pick_id": "d5098bae98479d556f32",
+            "price_evidence": "NAMED_BOOKMAKER_PRICE",
+            "push_probability": 0.0,
+            "raw_probability": 0.52,
+            "role": null,
+            "scheduled_utc": "2026-11-26T02:00:00Z",
+            "selection": "under",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-21",
+              "away_prev_fixture_id": "401925740",
+              "away_prev_source": "espn",
+              "away_rest_hours": 121.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-21",
+              "home_prev_fixture_id": "401919031",
+              "home_prev_source": "espn",
+              "home_rest_hours": 103.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": -18.0
+            }
+          }
+        ],
+        "scheduled_utc": "2026-11-26T02:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-25"
+      },
       "401925050": {
         "decision_cutoff_utc": "2026-11-25T19:00:00Z",
         "frozen_at": "2026-11-25T19:20:38Z",
@@ -148653,6 +149632,206 @@
           }
         ],
         "scheduled_utc": "2026-11-25T22:00:00Z",
+        "schema_version": "magolide.pick_freeze",
+        "target_date": "2026-11-25"
+      },
+      "401925880": {
+        "decision_cutoff_utc": "2026-11-26T00:00:00Z",
+        "frozen_at": "2026-11-26T00:24:16Z",
+        "game_id": "401925880",
+        "league": "NCAA_M",
+        "rows": [
+          {
+            "away": "Northwest Indian RedHawks",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.770169,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 502,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "0de0738d48f8dffa35bb0b780542c62575f2bff9033aa775e78c3a272deff06a",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "de2947981a5583aa4dbb",
+            "game_id": "401925880",
+            "grade_status": "pending",
+            "home": "Montana State Bobcats",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "H1",
+            "pick_id": "de2947981a5583aa4dbb",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.84,
+            "role": null,
+            "scheduled_utc": "2026-11-26T02:00:00Z",
+            "selection": "home",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-20",
+              "away_prev_fixture_id": "401925916",
+              "away_prev_source": "espn",
+              "away_rest_hours": 143.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-20",
+              "home_prev_fixture_id": "401920413",
+              "home_prev_source": "espn",
+              "home_rest_hours": 146.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 3.0
+            }
+          },
+          {
+            "away": "Northwest Indian RedHawks",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.848308,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 502,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "team_history_empirical-542f7e282358",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "45408a80e785447bdcff0f1331baa3466223563a4c4c57edd8773249ce01efb8",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "7ae104137ad4b28316e5",
+            "game_id": "401925880",
+            "grade_status": "pending",
+            "home": "Montana State Bobcats",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "team_history_empirical",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "7ae104137ad4b28316e5",
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.89,
+            "role": null,
+            "scheduled_utc": "2026-11-26T02:00:00Z",
+            "selection": "home",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-20",
+              "away_prev_fixture_id": "401925916",
+              "away_prev_source": "espn",
+              "away_rest_hours": 143.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-20",
+              "home_prev_fixture_id": "401920413",
+              "home_prev_source": "espn",
+              "home_rest_hours": 146.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 3.0
+            }
+          },
+          {
+            "away": "Northwest Indian RedHawks",
+            "bucket": "WATCHLIST_NO_ODDS",
+            "calibrated_probability": 0.949612,
+            "calibration": {
+              "minimum_samples": 30,
+              "n": 341,
+              "status": "calibrated",
+              "sufficient_for_accas": true
+            },
+            "calibration_version": "provider_prediction-7fb3e30d878d",
+            "date": "2026-11-25",
+            "detailed_evidence_sha256": "926abe20dfe62bf4ddcc028e8110067ac91358b799af605bb57f374096825413",
+            "eligibility": {
+              "acca_eligible": false,
+              "reasons": [
+                "no_exact_bookmaker_market",
+                "superseded_by_calibration_twin"
+              ]
+            },
+            "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+            "forecast_id": "87279e01b07d5ad1c913",
+            "game_id": "401925880",
+            "grade_status": "pending",
+            "home": "Montana State Bobcats",
+            "league": "NCAA_M",
+            "line": null,
+            "market": "moneyline",
+            "model": "provider:espn",
+            "model_version": "team_history_empirical",
+            "outcome": null,
+            "paper_only": true,
+            "period": "full_game",
+            "pick_id": "87279e01b07d5ad1c913",
+            "prediction": {
+              "frozen": false,
+              "model": "espn-bpi",
+              "model_version": "adapter:espn-bpi",
+              "observed_utc": "2026-11-25T23:48:58Z",
+              "produced_by": "ESPN BPI",
+              "provider": "espn"
+            },
+            "price_evidence": "UNMATCHED",
+            "push_probability": 0.0,
+            "raw_probability": 0.9994,
+            "role": null,
+            "scheduled_utc": "2026-11-26T02:00:00Z",
+            "selection": "home",
+            "venue_rest_evidence": {
+              "any_back_to_back": false,
+              "away_back_to_back": false,
+              "away_prev_fixture_date": "2026-11-20",
+              "away_prev_fixture_id": "401925916",
+              "away_prev_source": "espn",
+              "away_rest_hours": 143.0,
+              "definition": {
+                "back_to_back_max_hours": 26.0,
+                "relist_skip_max_hours": 6.0
+              },
+              "home_back_to_back": false,
+              "home_prev_fixture_date": "2026-11-20",
+              "home_prev_fixture_id": "401920413",
+              "home_prev_source": "espn",
+              "home_rest_hours": 146.0,
+              "neutral_site": false,
+              "neutral_site_source": "espn.scoreboard",
+              "rest_diff_hours": 3.0
+            }
+          }
+        ],
+        "scheduled_utc": "2026-11-26T02:00:00Z",
         "schema_version": "magolide.pick_freeze",
         "target_date": "2026-11-25"
       },
@@ -154188,31 +155367,7 @@
   "league": "NCAA_M",
   "pending_frozen_games": [
     [
-      "401920809",
-      "2026-11-25T19:30:00Z"
-    ],
-    [
-      "401921670",
-      "2026-11-25T21:30:00Z"
-    ],
-    [
       "401917182",
-      "2026-11-25T22:00:00Z"
-    ],
-    [
-      "401920237",
-      "2026-11-25T22:00:00Z"
-    ],
-    [
-      "401925688",
-      "2026-11-25T22:00:00Z"
-    ],
-    [
-      "401925917",
-      "2026-11-25T22:00:00Z"
-    ],
-    [
-      "401926065",
       "2026-11-25T22:00:00Z"
     ],
     [
@@ -154294,6 +155449,18 @@
     [
       "401920550",
       "2026-11-26T01:30:00Z"
+    ],
+    [
+      "401917545",
+      "2026-11-26T02:00:00Z"
+    ],
+    [
+      "401924897",
+      "2026-11-26T02:00:00Z"
+    ],
+    [
+      "401925880",
+      "2026-11-26T02:00:00Z"
     ]
   ],
   "schema_version": "magolide.pick_lifecycle_state"
