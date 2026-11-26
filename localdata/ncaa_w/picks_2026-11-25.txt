@@ -1,6 +1,6 @@
 Ma Golide Picks — NCAA_W 2026-11-25
 ========================================================================
-Generated at: 2026-11-26 05:15 SAST
+Generated at: 2026-11-26 06:08 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -33,21 +33,7 @@ SKIPPED — INELIGIBLE
 
 IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
 ========================================================================
-  [team_history_empirical/team_history_empirical] Utah Tech Trailblazers vs San Diego Toreros · KO 2026-11-26 04:00 SAST
-      MONEYLINE full_game -> HOME · p=76.0% (raw 82.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T00:30:37Z
-      calibration=calibrated n=515 · reasons=no_exact_bookmaker_market · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=120.0h (b2b=false) · away_rest=95.0h (b2b=false) · diff=+25.0h · any_b2b=false
-  [provider:espn/team_history_empirical] Utah Tech Trailblazers vs San Diego Toreros · KO 2026-11-26 04:00 SAST
-      MONEYLINE full_game -> AWAY · p=69.2% (raw 73.6%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T00:30:37Z
-      calibration=calibrated n=327 · reasons=no_exact_bookmaker_market · prediction=espn
-      venue/rest (evidence only) · neutral_site=false · home_rest=120.0h (b2b=false) · away_rest=95.0h (b2b=false) · diff=+25.0h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Utah Tech Trailblazers vs San Diego Toreros · KO 2026-11-26 04:00 SAST
-      MONEYLINE H1 -> HOME · p=67.9% (raw 75.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T00:30:37Z
-      calibration=calibrated n=512 · reasons=no_exact_bookmaker_market · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=120.0h (b2b=false) · away_rest=95.0h (b2b=false) · diff=+25.0h · any_b2b=false
+  (none)
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
@@ -120,6 +106,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T14:19:32Z
       calibration=calibrated n=473 · reasons=no_exact_bookmaker_market · prediction=history
       collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:espn, team_history_empirical
+  [team_history_empirical/team_history_empirical] Utah Tech Trailblazers vs San Diego Toreros · KO 2026-11-26 04:00 SAST
+      MONEYLINE full_game -> HOME · p=76.0% (raw 82.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-26T00:30:37Z
+      calibration=calibrated n=515 · reasons=no_exact_bookmaker_market · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=120.0h (b2b=false) · away_rest=95.0h (b2b=false) · diff=+25.0h · any_b2b=false
   [team_history_empirical/team_history_empirical] Georgia Southern Eagles vs Western Michigan Broncos · KO 2026-11-25 19:00 SAST
       MONEYLINE full_game -> HOME · p=75.3% (raw 81.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T15:16:40Z
@@ -173,6 +164,16 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE H1 -> HOME · p=69.5% (raw 77.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T18:30:46Z
       calibration=calibrated n=485 · reasons=no_exact_bookmaker_market · prediction=history
+  [provider:espn/team_history_empirical] Utah Tech Trailblazers vs San Diego Toreros · KO 2026-11-26 04:00 SAST
+      MONEYLINE full_game -> AWAY · p=69.2% (raw 73.6%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-26T00:30:37Z
+      calibration=calibrated n=327 · reasons=no_exact_bookmaker_market · prediction=espn
+      venue/rest (evidence only) · neutral_site=false · home_rest=120.0h (b2b=false) · away_rest=95.0h (b2b=false) · diff=+25.0h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Utah Tech Trailblazers vs San Diego Toreros · KO 2026-11-26 04:00 SAST
+      MONEYLINE H1 -> HOME · p=67.9% (raw 75.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-26T00:30:37Z
+      calibration=calibrated n=512 · reasons=no_exact_bookmaker_market · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=120.0h (b2b=false) · away_rest=95.0h (b2b=false) · diff=+25.0h · any_b2b=false
   [team_history_empirical/team_history_empirical] Princeton Tigers vs Rutgers Scarlet Knights · KO 2026-11-25 19:00 SAST
       MONEYLINE H1 -> HOME · p=66.5% (raw 74.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T15:16:40Z
@@ -610,7 +611,7 @@ SETTLED PICKS — ARCHIVE ONLY
 
 Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=0 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=3 SETTLED=124
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=0 SETTLED=127
 Logical picks shown: 127 · superseded observations: 0 · book/model rows collapsed: 36
 Total archived pick evidence rows: 163
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.

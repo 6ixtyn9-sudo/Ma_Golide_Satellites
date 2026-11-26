@@ -1,6 +1,6 @@
 {
-  "awaiting_game_legs": 7,
-  "awaiting_game_legs_open": 4,
+  "awaiting_game_legs": 3,
+  "awaiting_game_legs_open": 0,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -2133,32 +2133,32 @@
       "wins": 1
     },
     {
-      "awaiting_game_legs": 7,
-      "bank_units": 99.78629894624167,
+      "awaiting_game_legs": 3,
+      "bank_units": 97.78629894624167,
       "date": "2026-11-25",
       "decision_id": "45597952572_nba_1_attempt_1",
       "frozen_at": "2026-11-25T11:09:15Z",
       "league": "NBA",
-      "losses": 3,
-      "pending_accas": 2,
-      "pending_positions": 2,
+      "losses": 5,
+      "pending_accas": 0,
+      "pending_positions": 0,
       "pending_singles": 0,
-      "pending_units": 2.0,
+      "pending_units": 0,
       "positions": [
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 6.646,
           "effective_decimal_odds": 6.646040616055608,
           "estimated_joint_win_probability": 0.26223229,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
             null,
             "win",
-            null
+            "loss"
           ],
           "legs": [
             {
@@ -2200,19 +2200,20 @@
               "book_provider": "espn",
               "forecast_id": "d926fc0bbcb7aabe85d4",
               "game_id": "401909321",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Memphis Grizzlies",
               "line": -6.5,
               "market": "spread",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "d926fc0bbcb7aabe85d4",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T01:00:00Z",
               "selected_decimal_price": 1.9090909090909092,
               "selection": "away"
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 1,
@@ -2222,7 +2223,7 @@
           "stake_units": 1.0,
           "ticket_id": "d1b3cb36e52c894f5caa",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         },
         {
           "awaiting_game_legs": 0,
@@ -2384,19 +2385,19 @@
           "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 6.7986,
           "effective_decimal_odds": 6.798576442305634,
           "estimated_joint_win_probability": 0.16504695,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
             "win",
-            null,
-            null
+            "loss",
+            "loss"
           ],
           "legs": [
             {
@@ -2422,12 +2423,12 @@
               "book_provider": "espn",
               "forecast_id": "91686468bd6f6283790f",
               "game_id": "401909322",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Milwaukee Bucks",
               "market": "moneyline",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "91686468bd6f6283790f",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T01:00:00Z",
               "selected_decimal_price": 1.900900900900901,
               "selection": "home"
@@ -2438,18 +2439,19 @@
               "book_provider": "espn",
               "forecast_id": "876cc8b7e10e7daf7931",
               "game_id": "401909320",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Oklahoma City Thunder",
               "market": "moneyline",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "876cc8b7e10e7daf7931",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T00:30:00Z",
               "selected_decimal_price": 1.8403361344537816,
               "selection": "home"
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 4,
@@ -2459,10 +2461,10 @@
           "stake_units": 1.0,
           "ticket_id": "b4214d308c00992b47e7",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
@@ -2474,7 +2476,7 @@
           "leg_outcomes": [
             "loss",
             null,
-            null
+            "loss"
           ],
           "legs": [
             {
@@ -2517,13 +2519,13 @@
               "book_provider": "espn",
               "forecast_id": "df448570dd807fb09610",
               "game_id": "401909322",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Milwaukee Bucks",
               "line": 231.5,
               "market": "total",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "df448570dd807fb09610",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T01:00:00Z",
               "selected_decimal_price": 1.8695652173913042,
               "selection": "over"
@@ -2540,44 +2542,44 @@
           "stake_units": 1.0,
           "ticket_id": "69ee02c2bad030fe7d52",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         }
       ],
-      "profit_units": -3.0,
+      "profit_units": -5.0,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-25_decision.json",
       "result_unresolvable_legs": 0,
       "returned_units": 0.0,
-      "settled_accas": 3,
-      "settled_positions": 3,
+      "settled_accas": 5,
+      "settled_positions": 5,
       "settled_singles": 0,
-      "staked_units": 3.0,
-      "unresolved_result_legs": 7,
+      "staked_units": 5.0,
+      "unresolved_result_legs": 3,
       "wins": 0
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.25,
+  "hit_rate": 0.23333333333333334,
   "league": "NBA",
-  "losses": 21,
-  "paper_bank_units": 99.78629894624167,
-  "paper_committed_units": 2.0,
+  "losses": 23,
+  "paper_bank_units": 97.78629894624167,
+  "paper_committed_units": 0,
   "paper_free_units": 97.78629894624167,
   "paper_only": true,
-  "pending_accas": 2,
-  "pending_positions": 2,
+  "pending_accas": 0,
+  "pending_positions": 0,
   "pending_singles": 0,
-  "profit_units": -0.21370105375832704,
+  "profit_units": -2.213701053758327,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": -0.007632180491368823,
+  "roi": -0.07379003512527757,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.25802377941661325,
-  "settled_accas": 24,
-  "settled_positions": 28,
+  "selected_leg_brier_score": 0.26074524196146825,
+  "settled_accas": 26,
+  "settled_positions": 30,
   "settled_singles": 4,
-  "settled_stake_units": 28.0,
+  "settled_stake_units": 30.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 7,
+  "unresolved_result_legs": 3,
   "wins": 7
 }
