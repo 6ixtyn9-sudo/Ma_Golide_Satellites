@@ -50,12 +50,17 @@ class ArchiveEntry:
     role: str
 
     def manifest_dict(self) -> dict[str, Any]:
-        raw = self.source_path.read_bytes()
+        digest = hashlib.sha256()
+        size = 0
+        with self.source_path.open("rb") as handle:
+            for chunk in iter(lambda: handle.read(1024 * 1024), b""):
+                digest.update(chunk)
+                size += len(chunk)
         return {
             "path": self.archive_path,
             "role": self.role,
-            "bytes": len(raw),
-            "sha256": hashlib.sha256(raw).hexdigest(),
+            "bytes": size,
+            "sha256": digest.hexdigest(),
         }
 
 
@@ -239,12 +244,38 @@ def _checkpoint_regressions(
     return regressions
 
 
-def _write_deterministic_archive(path: Path, *, content_manifest: dict[str, Any], entries: list[ArchiveEntry]) -> None:
+class _HashingWriter:
+    """Wrap a binary stream to compute SHA-256 and byte count in one pass."""
+
+    def __init__(self, stream: Any) -> None:
+        self._stream = stream
+        self._digest = hashlib.sha256()
+        self.size = 0
+
+    def write(self, data: bytes | bytearray | memoryview) -> int:
+        written = self._stream.write(data)
+        self._digest.update(data)
+        self.size += len(data)
+        return written
+
+    def flush(self) -> None:
+        self._stream.flush()
+
+    def hexdigest(self) -> str:
+        return self._digest.hexdigest()
+
+
+def _write_deterministic_archive(
+    path: Path, *, content_manifest: dict[str, Any], entries: list[ArchiveEntry]
+) -> tuple[int, str]:
     path.parent.mkdir(parents=True, exist_ok=True)
     temporary = path.with_name(path.name + ".tmp")
     manifest_bytes = _json_bytes(content_manifest)
     with temporary.open("wb") as raw_handle:
-        with gzip.GzipFile(fileobj=raw_handle, mode="wb", compresslevel=1, mtime=0) as gzip_handle:
+        hashing_handle = _HashingWriter(raw_handle)
+        with gzip.GzipFile(
+            fileobj=hashing_handle, mode="wb", compresslevel=3, mtime=0
+        ) as gzip_handle:
             with tarfile.open(fileobj=gzip_handle, mode="w") as archive:
                 manifest_info = tarfile.TarInfo(CONTENT_MANIFEST_NAME)
                 manifest_info.size = len(manifest_bytes)
@@ -259,6 +290,7 @@ def _write_deterministic_archive(path: Path, *, content_manifest: dict[str, Any]
                     with entry.source_path.open("rb") as source:
                         archive.addfile(info, source)
     os.replace(temporary, path)
+    return hashing_handle.size, hashing_handle.hexdigest()
 
 
 def build_release_archives(
@@ -312,14 +344,15 @@ def build_release_archives(
         }
         asset_name = f"magolide-state-{state}.tar.gz"
         archive_path = output / asset_name
-        _write_deterministic_archive(archive_path, content_manifest=content_manifest, entries=entries)
-        archive_sha256 = _sha256_path(archive_path)
+        archive_bytes, archive_sha256 = _write_deterministic_archive(
+            archive_path, content_manifest=content_manifest, entries=entries
+        )
         manifest = {
             "schema_version": ARCHIVE_SCHEMA,
             "state_key": state,
             "release_tag": release_tag,
             "asset_name": asset_name,
-            "archive_bytes": archive_path.stat().st_size,
+            "archive_bytes": archive_bytes,
             "archive_sha256": archive_sha256,
             "canonical_csv_files": len(canonical_entries),
             "canonical_row_counts": dict(sorted(row_counts.items())),
