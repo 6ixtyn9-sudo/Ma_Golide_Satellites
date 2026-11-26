@@ -1,6 +1,6 @@
 Ma Golide Picks — NCAA_M 2026-11-25
 ========================================================================
-Generated at: 2026-11-26 07:21 SAST
+Generated at: 2026-11-26 08:17 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -44,10 +44,6 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T03:20:46Z
       calibration=calibrated n=522 · reasons=no_exact_bookmaker_market · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=170.0h (b2b=false) · away_rest=125.0h (b2b=false) · diff=+45.0h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
-      MONEYLINE full_game -> HOME · p=63.5% (raw 69.0%) @4.900 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T01:17:03Z
-      calibration=calibrated n=494 · reasons=none · prediction=history
   [team_history_empirical/team_history_empirical] Saint Louis Billikens vs Stanford Cardinal · KO 2026-11-26 06:59 SAST
       MONEYLINE full_game -> HOME · p=61.8% (raw 66.0%) @1.556 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T03:20:46Z
@@ -55,33 +51,11 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       venue/rest (evidence only) · neutral_site=true · home_rest=26.1h (b2b=false) · away_rest=23.0h (b2b=true) · diff=+3.1h · any_b2b=true
       ROI-BAND BLOCKED · NCAA_M moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=38 · recency ROI -11.0% / adjusted -10.9%
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
-  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
-      TOTAL full_game 133.5 -> OVER · p=58.7% (raw 58.0%) @1.952 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T02:30:44Z
-      calibration=calibrated n=239 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
-      PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=607 · recency ROI +11.6% / adjusted +11.6%
-  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
-      TOTAL full_game 132.5 -> OVER · p=58.7% (raw 58.0%) @1.870 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T02:30:44Z
-      calibration=calibrated n=239 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
-      PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=607 · recency ROI +11.6% / adjusted +11.6%
   [team_history_empirical/team_history_empirical] Saint Louis Billikens vs Stanford Cardinal · KO 2026-11-26 06:59 SAST
       MONEYLINE H1 -> HOME · p=58.6% (raw 66.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T03:20:46Z
       calibration=calibrated n=522 · reasons=no_exact_bookmaker_market · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=26.1h (b2b=false) · away_rest=23.0h (b2b=true) · diff=+3.1h · any_b2b=true
-  [provider:espn/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
-      MONEYLINE full_game -> AWAY · p=57.8% (raw 63.2%) @1.541 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T02:30:44Z
-      calibration=calibrated n=351 · reasons=none · prediction=espn
-      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
-      ROI-BAND BLOCKED · NCAA_M moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=28 · recency ROI -3.6% / adjusted -4.0%
-  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
-      MONEYLINE H1 -> HOME · p=57.3% (raw 64.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T01:17:03Z
-      calibration=calibrated n=496 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical/team_history_empirical] Hawai'i Rainbow Warriors vs Incarnate Word Cardinals · KO 2026-11-26 06:59 SAST
       TOTAL full_game 138.5 -> OVER · p=56.3% (raw 56.0%) @1.893 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T03:20:46Z
@@ -94,40 +68,18 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       calibration=calibrated n=243 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=170.0h (b2b=false) · away_rest=125.0h (b2b=false) · diff=+45.0h · any_b2b=false
       PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=617 · recency ROI +11.0% / adjusted +10.9%
-  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
-      MONEYLINE H1 -> HOME · p=53.7% (raw 61.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T02:30:44Z
-      calibration=calibrated n=517 · reasons=no_exact_bookmaker_market · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
-      TOTAL full_game 154.5 -> UNDER · p=53.0% (raw 53.0%) @1.909 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T01:17:03Z
-      calibration=calibrated n=237 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=20.5h (b2b=true) · away_rest=23.6h (b2b=true) · diff=-3.1h · any_b2b=true
-      PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=592 · recency ROI +10.8% / adjusted +10.8%
   [team_history_empirical/team_history_empirical] Saint Louis Billikens vs Stanford Cardinal · KO 2026-11-26 06:59 SAST
       TOTAL full_game 154.5 -> UNDER · p=52.3% (raw 52.0%) @1.952 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T03:20:46Z
       calibration=calibrated n=243 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=26.1h (b2b=false) · away_rest=23.0h (b2b=true) · diff=+3.1h · any_b2b=true
       PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=617 · recency ROI +11.0% / adjusted +10.9%
-  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
-      TOTAL full_game 153.5 -> UNDER · p=52.0% (raw 52.0%) @1.926 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T01:17:03Z
-      calibration=calibrated n=237 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=20.5h (b2b=true) · away_rest=23.6h (b2b=true) · diff=-3.1h · any_b2b=true
-      PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=592 · recency ROI +10.8% / adjusted +10.8%
   [team_history_empirical/team_history_empirical] Saint Louis Billikens vs Stanford Cardinal · KO 2026-11-26 06:59 SAST
       TOTAL full_game 152.5 -> UNDER · p=51.3% (raw 51.0%) @1.909 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T03:20:46Z
       calibration=calibrated n=243 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=26.1h (b2b=false) · away_rest=23.0h (b2b=true) · diff=+3.1h · any_b2b=true
       PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=617 · recency ROI +11.0% / adjusted +10.9%
-  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
-      SPREAD full_game +9.5 -> HOME · p=51.2% (raw 56.0%) @1.952 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T01:17:03Z
-      calibration=calibrated n=217 · reasons=none · prediction=history
-      ROI-BAND BLOCKED · NCAA_M spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=370 · recency ROI -0.5% / adjusted -0.5%
   [team_history_empirical/team_history_empirical] Hawai'i Rainbow Warriors vs Incarnate Word Cardinals · KO 2026-11-26 06:59 SAST
       SPREAD full_game +17.5 -> AWAY · p=51.1% (raw 53.0%) @1.847 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T03:20:46Z
@@ -140,11 +92,6 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       calibration=calibrated n=250 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=26.1h (b2b=false) · away_rest=23.0h (b2b=true) · diff=+3.1h · any_b2b=true
       ROI-BAND BLOCKED · NCAA_M spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=383 · recency ROI -1.0% / adjusted -1.0%
-  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
-      SPREAD full_game +5.5 -> HOME · p=50.2% (raw 55.0%) @1.870 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T02:30:44Z
-      calibration=calibrated n=217 · reasons=none · prediction=history
-      ROI-BAND BLOCKED · NCAA_M spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=370 · recency ROI -0.5% / adjusted -0.5%
   [team_history_empirical/team_history_empirical] Hawai'i Rainbow Warriors vs Incarnate Word Cardinals · KO 2026-11-26 06:59 SAST
       SPREAD full_game +16.5 -> AWAY · p=50.1% (raw 52.0%) @1.952 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T03:20:46Z
@@ -157,50 +104,6 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       calibration=calibrated n=250 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=26.1h (b2b=false) · away_rest=23.0h (b2b=true) · diff=+3.1h · any_b2b=true
       ROI-BAND BLOCKED · NCAA_M spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=383 · recency ROI -1.0% / adjusted -1.0%
-  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
-      SPREAD full_game -4.5 -> AWAY · p=50.0% (raw 52.0%) @1.893 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T02:30:44Z
-      calibration=calibrated n=245 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
-      SPREAD full_game -5.5 -> AWAY · p=50.0% (raw 52.0%) @1.952 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T02:30:44Z
-      calibration=calibrated n=245 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
-      SPREAD full_game -3.5 -> AWAY · p=50.0% (raw 52.0%) @1.893 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T02:30:44Z
-      calibration=calibrated n=245 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
-      SPREAD full_game +4.5 -> HOME · p=49.2% (raw 54.0%) @1.926 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T02:30:44Z
-      calibration=calibrated n=217 · reasons=below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
-      SPREAD full_game +3.5 -> HOME · p=49.2% (raw 54.0%) @1.926 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T02:30:44Z
-      calibration=calibrated n=217 · reasons=below_calibrated_probability_floor · prediction=history
-  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
-      SPREAD full_game -9.5 -> AWAY · p=48.4% (raw 51.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T01:17:03Z
-      calibration=calibrated n=238 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=20.5h (b2b=true) · away_rest=23.6h (b2b=true) · diff=-3.1h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
-      MONEYLINE full_game -> AWAY · p=47.3% (raw 52.0%) @1.200 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T01:17:03Z
-      calibration=calibrated n=511 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=20.5h (b2b=true) · away_rest=23.6h (b2b=true) · diff=-3.1h · any_b2b=true
-      collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
-  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
-      MONEYLINE H1 -> AWAY · p=47.0% (raw 54.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T01:17:03Z
-      calibration=calibrated n=508 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=20.5h (b2b=true) · away_rest=23.6h (b2b=true) · diff=-3.1h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
-      MONEYLINE full_game -> HOME · p=46.7% (raw 51.0%) @2.540 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T02:30:44Z
-      calibration=calibrated n=518 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
   [team_history_empirical/team_history_empirical] Saint Louis Billikens vs Stanford Cardinal · KO 2026-11-26 06:59 SAST
       SPREAD full_game -3.5 -> HOME · p=46.2% (raw 51.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T03:20:46Z
@@ -686,6 +589,10 @@ SETTLED PICKS — ARCHIVE ONLY
       MONEYLINE H1 -> HOME · p=64.1% (raw 71.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T17:12:11Z
       calibration=calibrated n=489 · reasons=no_exact_bookmaker_market · prediction=history
+  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
+      MONEYLINE full_game -> HOME · p=63.5% (raw 69.0%) @4.900 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-26T01:17:03Z
+      calibration=calibrated n=494 · reasons=none · prediction=history
   [team_history_empirical/team_history_empirical] Providence Friars vs BYU Cougars · KO 2026-11-26 00:30 SAST
       MONEYLINE full_game -> HOME · p=63.5% (raw 69.0%) @2.200 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T21:27:24Z
@@ -839,6 +746,18 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T20:28:30Z
       calibration=calibrated n=318 · reasons=none · prediction=espn
       PAPER SINGLE · NCAA_M moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=26 · recency ROI +5.3% / adjusted +3.8%
+  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
+      TOTAL full_game 133.5 -> OVER · p=58.7% (raw 58.0%) @1.952 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-26T02:30:44Z
+      calibration=calibrated n=239 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
+      PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=607 · recency ROI +11.6% / adjusted +11.6%
+  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
+      TOTAL full_game 132.5 -> OVER · p=58.7% (raw 58.0%) @1.870 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-26T02:30:44Z
+      calibration=calibrated n=239 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
+      PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=607 · recency ROI +11.6% / adjusted +11.6%
   [team_history_empirical/team_history_empirical] UC Riverside Highlanders vs Portland State Vikings · KO 2026-11-26 00:00 SAST
       MONEYLINE H1 -> HOME · p=58.6% (raw 65.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T20:28:30Z
@@ -886,6 +805,12 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T21:27:24Z
       calibration=calibrated n=220 · reasons=none · prediction=history
       PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=553 · recency ROI +9.9% / adjusted +9.9%
+  [provider:espn/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
+      MONEYLINE full_game -> AWAY · p=57.8% (raw 63.2%) @1.541 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-26T02:30:44Z
+      calibration=calibrated n=351 · reasons=none · prediction=espn
+      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
+      ROI-BAND BLOCKED · NCAA_M moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=28 · recency ROI -3.6% / adjusted -4.0%
   [provider:espn/team_history_empirical] App State Mountaineers vs Akron Zips · KO 2026-11-25 22:00 SAST
       MONEYLINE full_game -> AWAY · p=57.8% (raw 63.0%) @1.459 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T18:12:37Z
@@ -912,6 +837,10 @@ SETTLED PICKS — ARCHIVE ONLY
       calibration=calibrated n=231 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=103.0h (b2b=false) · away_rest=121.0h (b2b=false) · diff=-18.0h · any_b2b=false
       ROI-BAND BLOCKED · NCAA_M spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=374 · recency ROI -0.6% / adjusted -0.6%
+  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
+      MONEYLINE H1 -> HOME · p=57.3% (raw 64.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-26T01:17:03Z
+      calibration=calibrated n=496 · reasons=no_exact_bookmaker_market · prediction=history
   [team_history_empirical/team_history_empirical] Oklahoma State Cowboys vs Jackson State Tigers · KO 2026-11-25 22:00 SAST
       SPREAD full_game +34.5 -> AWAY · p=57.2% (raw 62.0%) @1.952 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T18:12:37Z
@@ -1125,6 +1054,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T17:12:11Z
       calibration=calibrated n=214 · reasons=none · prediction=history
       PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=549 · recency ROI +10.0% / adjusted +10.0%
+  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
+      MONEYLINE H1 -> HOME · p=53.7% (raw 61.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-26T02:30:44Z
+      calibration=calibrated n=517 · reasons=no_exact_bookmaker_market · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
   [team_history_empirical/team_history_empirical] Nebraska Cornhuskers vs Southern Jaguars · KO 2026-11-26 00:00 SAST
       TOTAL full_game 149.5 -> UNDER · p=53.7% (raw 53.0%) @1.870 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T20:28:30Z
@@ -1226,6 +1160,12 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T22:32:46Z
       calibration=calibrated n=220 · reasons=none · prediction=history
       PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=553 · recency ROI +9.9% / adjusted +9.9%
+  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
+      TOTAL full_game 154.5 -> UNDER · p=53.0% (raw 53.0%) @1.909 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-26T01:17:03Z
+      calibration=calibrated n=237 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=20.5h (b2b=true) · away_rest=23.6h (b2b=true) · diff=-3.1h · any_b2b=true
+      PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=592 · recency ROI +10.8% / adjusted +10.8%
   [team_history_empirical/team_history_empirical] VCU Rams vs Washington Huskies · KO 2026-11-26 05:00 SAST
       TOTAL full_game 144.5 -> OVER · p=53.0% (raw 53.0%) @1.909 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-26T01:17:03Z
@@ -1480,6 +1420,12 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T21:27:24Z
       calibration=calibrated n=220 · reasons=none · prediction=history
       PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=553 · recency ROI +9.9% / adjusted +9.9%
+  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
+      TOTAL full_game 153.5 -> UNDER · p=52.0% (raw 52.0%) @1.926 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-26T01:17:03Z
+      calibration=calibrated n=237 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=20.5h (b2b=true) · away_rest=23.6h (b2b=true) · diff=-3.1h · any_b2b=true
+      PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=592 · recency ROI +10.8% / adjusted +10.8%
   [team_history_empirical/team_history_empirical] VCU Rams vs Washington Huskies · KO 2026-11-26 05:00 SAST
       TOTAL full_game 147.5 -> OVER · p=52.0% (raw 52.0%) @1.952 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-26T01:17:03Z
@@ -1641,6 +1587,11 @@ SETTLED PICKS — ARCHIVE ONLY
       calibration=calibrated n=223 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=166.0h (b2b=false) · away_rest=119.0h (b2b=false) · diff=+47.0h · any_b2b=false
       ROI-BAND BLOCKED · NCAA_M spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=371 · recency ROI -0.2% / adjusted -0.2%
+  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
+      SPREAD full_game +9.5 -> HOME · p=51.2% (raw 56.0%) @1.952 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-26T01:17:03Z
+      calibration=calibrated n=217 · reasons=none · prediction=history
+      ROI-BAND BLOCKED · NCAA_M spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=370 · recency ROI -0.5% / adjusted -0.5%
   [team_history_empirical/team_history_empirical] Duke Blue Devils vs UConn Huskies · KO 2026-11-26 02:00 SAST
       TOTAL full_game 145.5 -> OVER · p=51.2% (raw 51.0%) @1.909 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T22:32:46Z
@@ -1779,6 +1730,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T19:20:38Z
       calibration=calibrated n=317 · reasons=none · prediction=espn
       PAPER SINGLE · NCAA_M moneyline full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=26 · recency ROI +5.3% / adjusted +3.7%
+  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
+      SPREAD full_game +5.5 -> HOME · p=50.2% (raw 55.0%) @1.870 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-26T02:30:44Z
+      calibration=calibrated n=217 · reasons=none · prediction=history
+      ROI-BAND BLOCKED · NCAA_M spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=370 · recency ROI -0.5% / adjusted -0.5%
   [team_history_empirical/team_history_empirical] Marshall Thundering Herd vs Prairie View A&M Panthers · KO 2026-11-25 23:00 SAST
       SPREAD full_game +15.5 -> AWAY · p=50.2% (raw 55.0%) @1.893 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T19:20:38Z
@@ -1817,6 +1773,21 @@ SETTLED PICKS — ARCHIVE ONLY
       SPREAD full_game +5.5 -> HOME · p=50.0% (raw 54.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T15:13:16Z
       calibration=calibrated n=211 · reasons=below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
+      SPREAD full_game -4.5 -> AWAY · p=50.0% (raw 52.0%) @1.893 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-26T02:30:44Z
+      calibration=calibrated n=245 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
+      SPREAD full_game -5.5 -> AWAY · p=50.0% (raw 52.0%) @1.952 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-26T02:30:44Z
+      calibration=calibrated n=245 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
+      SPREAD full_game -3.5 -> AWAY · p=50.0% (raw 52.0%) @1.893 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-26T02:30:44Z
+      calibration=calibrated n=245 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
   [team_history_empirical/team_history_empirical] SIU Edwardsville Cougars vs Northern Illinois Huskies · KO 2026-11-26 02:00 SAST
       SPREAD full_game +3.5 -> HOME · p=49.4% (raw 51.0%) @1.847 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T22:32:46Z
@@ -1860,6 +1831,14 @@ SETTLED PICKS — ARCHIVE ONLY
   [team_history_empirical/team_history_empirical] Duke Blue Devils vs UConn Huskies · KO 2026-11-26 02:00 SAST
       SPREAD full_game +2.5 -> HOME · p=49.2% (raw 54.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T22:32:46Z
+      calibration=calibrated n=217 · reasons=below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
+      SPREAD full_game +4.5 -> HOME · p=49.2% (raw 54.0%) @1.926 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-26T02:30:44Z
+      calibration=calibrated n=217 · reasons=below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
+      SPREAD full_game +3.5 -> HOME · p=49.2% (raw 54.0%) @1.926 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-26T02:30:44Z
       calibration=calibrated n=217 · reasons=below_calibrated_probability_floor · prediction=history
   [team_history_empirical/team_history_empirical] Marshall Thundering Herd vs Prairie View A&M Panthers · KO 2026-11-25 23:00 SAST
       SPREAD full_game +14.5 -> AWAY · p=49.2% (raw 54.0%) @1.870 DraftKings
@@ -1929,6 +1908,11 @@ SETTLED PICKS — ARCHIVE ONLY
       SPREAD full_game +10.5 -> AWAY · p=48.5% (raw 53.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T20:28:30Z
       calibration=calibrated n=216 · reasons=below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
+      SPREAD full_game -9.5 -> AWAY · p=48.4% (raw 51.0%) @1.870 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-26T01:17:03Z
+      calibration=calibrated n=238 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=20.5h (b2b=true) · away_rest=23.6h (b2b=true) · diff=-3.1h · any_b2b=true
   [team_history_empirical/team_history_empirical] Duke Blue Devils vs UConn Huskies · KO 2026-11-26 02:00 SAST
       SPREAD full_game +1.5 -> HOME · p=48.2% (raw 53.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T22:32:46Z
@@ -1985,6 +1969,12 @@ SETTLED PICKS — ARCHIVE ONLY
       SPREAD full_game -4.5 -> HOME · p=47.4% (raw 51.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T14:25:55Z
       calibration=calibrated n=209 · reasons=below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
+      MONEYLINE full_game -> AWAY · p=47.3% (raw 52.0%) @1.200 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-26T01:17:03Z
+      calibration=calibrated n=511 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=20.5h (b2b=true) · away_rest=23.6h (b2b=true) · diff=-3.1h · any_b2b=true
+      collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
   [team_history_empirical/team_history_empirical] Charleston Cougars vs Kennesaw State Owls · KO 2026-11-26 01:00 SAST
       SPREAD full_game -1.5 -> HOME · p=47.2% (raw 52.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T21:27:24Z
@@ -2057,6 +2047,16 @@ SETTLED PICKS — ARCHIVE ONLY
       SPREAD full_game -1.5 -> HOME · p=47.0% (raw 51.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-25T17:12:11Z
       calibration=calibrated n=211 · reasons=below_calibrated_probability_floor · prediction=history
+  [team_history_empirical/team_history_empirical] Colorado Buffaloes vs Grand Canyon Lopes · KO 2026-11-26 04:30 SAST
+      MONEYLINE H1 -> AWAY · p=47.0% (raw 54.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-26T01:17:03Z
+      calibration=calibrated n=508 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=20.5h (b2b=true) · away_rest=23.6h (b2b=true) · diff=-3.1h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Jacksonville State Gamecocks vs Pacific Tigers · KO 2026-11-26 05:30 SAST
+      MONEYLINE full_game -> HOME · p=46.7% (raw 51.0%) @2.540 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-26T02:30:44Z
+      calibration=calibrated n=518 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=123.5h (b2b=false) · away_rest=96.5h (b2b=false) · diff=+27.0h · any_b2b=false
   [team_history_empirical/team_history_empirical] LSU New Orleans Privateers vs Grambling Tigers · KO 2026-11-25 23:00 SAST
       SPREAD full_game +3.5 -> AWAY · p=46.6% (raw 51.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-25T19:20:38Z
@@ -2156,7 +2156,7 @@ SETTLED PICKS — ARCHIVE ONLY
 
 Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=0 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=33 SETTLED=393
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=14 SETTLED=412
 Logical picks shown: 426 · superseded observations: 0 · book/model rows collapsed: 59
 Total archived pick evidence rows: 485
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
