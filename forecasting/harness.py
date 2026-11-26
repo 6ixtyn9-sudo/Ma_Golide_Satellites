@@ -364,20 +364,32 @@ def _wager_identity(forecast: Forecast) -> tuple:
 
 
 def _calibration_evidence_rank(forecast: Forecast) -> tuple:
-    """Order twins by how much calibration evidence stands behind them.
+    """Order twins by how much verified calibration skill stands behind them.
 
-    Sufficiency first, then sample size, then probability, then the row id so the
-    winner never depends on emission order. Deliberately *not* "the stricter
-    verdict wins": that reads as cautious, but it hands a veto to whichever model
-    is worse, and a lane could then block every bet by also emitting a
-    badly-calibrated pessimistic twin. The floor has to be a property of the bet,
-    decided by its best evidence, not of the model someone chose to consult.
+    Sufficiency first (``n >= minimum_samples``), then lower walk-forward
+    ``brier_score`` among sufficient twins so a sharper calibrated model (e.g.
+    ``provider:espn``) is never suppressed merely because a weaker baseline
+    replayed more early-season games, then sample size, probability, and row
+    id so the winner never depends on emission order. Deliberately *not* "the
+    stricter verdict wins": that reads as cautious, but it hands a veto to
+    whichever model is worse, and a lane could then block every bet by also
+    emitting a badly-calibrated pessimistic twin.
     """
 
     calibration = forecast.calibration or {}
     sample = calibration.get("n")
+    sufficient = 1 if calibration.get("sufficient_for_accas") is True else 0
+    brier = calibration.get("brier_score")
+    has_brier = (
+        sufficient == 1
+        and isinstance(brier, (int, float))
+        and not isinstance(brier, bool)
+        and math.isfinite(float(brier))
+    )
     return (
-        1 if calibration.get("sufficient_for_accas") is True else 0,
+        sufficient,
+        1 if has_brier else 0,
+        -float(brier) if has_brier else float("-inf"),
         int(sample) if isinstance(sample, int) and not isinstance(sample, bool) else 0,
         float(forecast.calibrated_probability or 0.0),
         str(forecast.forecast_id),

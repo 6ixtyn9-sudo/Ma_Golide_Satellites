@@ -119,6 +119,46 @@ def _candidate_rank(row: Forecast) -> tuple:
     )
 
 
+def _history_canonical_rank(
+    row: Forecast,
+    empirical_segment_brier: Dict[Tuple[str, str, str, str], float] | None = None,
+) -> tuple:
+    """Canonical ordering when deduplicating historical settled wagers.
+
+    Matches :func:`forecasting.harness._calibration_evidence_rank`: a
+    walk-forward sufficient segment with lower ``brier_score`` owns the
+    historical wager instead of letting an overconfident weak model erase
+    the sharper model's settled ROI history. When older compacted audit rows
+    omit ``calibration.brier_score``, falls back to the segment's past-only
+    empirical Brier score computed from the same settled history pool.
+    """
+
+    calibration = row.calibration or {}
+    sufficient = calibration.get("sufficient_for_accas") is True
+    brier = calibration.get("brier_score")
+    has_brier = (
+        isinstance(brier, (int, float))
+        and not isinstance(brier, bool)
+        and math.isfinite(float(brier))
+    )
+    if not has_brier and empirical_segment_brier is not None:
+        fallback = empirical_segment_brier.get(
+            (row.league, row.market, row.period, row.source)
+        )
+        if fallback is not None and math.isfinite(fallback):
+            brier = fallback
+            has_brier = True
+    use_brier = sufficient and has_brier
+    return (
+        0 if sufficient else 1,
+        0 if use_brier else 1,
+        float(brier) if use_brier else float("inf"),
+        0 if has_brier else 1,
+        float(brier) if has_brier else float("inf"),
+        _candidate_rank(row),
+    )
+
+
 def _is_named_book_priced(forecast: Forecast) -> bool:
     """Whether a row's quote is a bookmaker's own, not an aggregate average.
 
@@ -331,6 +371,8 @@ def filter_paper_candidate_picks(
     require_positive_expected_value: bool = False,
     require_point_in_time_price: bool = False,
     require_named_book_quote: bool = False,
+    require_calibrated_segment: bool = False,
+    maximum_segment_brier_score: float | None = None,
     admit_cold_start_bands: bool = True,
 ) -> tuple[List[Forecast], dict]:
     """Route paper picks through adaptive, market-specific positive-ROI bands.
@@ -395,11 +437,47 @@ def filter_paper_candidate_picks(
         raise ValueError("require_point_in_time_price must be a boolean")
     if not isinstance(require_named_book_quote, bool):
         raise ValueError("require_named_book_quote must be a boolean")
+    if not isinstance(require_calibrated_segment, bool):
+        raise ValueError("require_calibrated_segment must be a boolean")
+    if maximum_segment_brier_score is not None and (
+        isinstance(maximum_segment_brier_score, bool)
+        or not isinstance(maximum_segment_brier_score, (int, float))
+        or not math.isfinite(float(maximum_segment_brier_score))
+        or not 0.0 < float(maximum_segment_brier_score) <= 1.0
+    ):
+        raise ValueError("maximum_segment_brier_score must be in (0, 1]")
     if not isinstance(admit_cold_start_bands, bool):
         raise ValueError("admit_cold_start_bands must be a boolean")
     as_of = parse_utc(as_of_utc)
     history_cutoff = as_of - timedelta(hours=float(result_available_after_hours))
-    candidate_pool = _eligible_candidate_picks(forecasts, allow_provisional=True)
+    candidate_pool = _eligible_candidate_picks(
+        forecasts, allow_provisional=not require_calibrated_segment
+    )
+    excluded_uncalibrated_segment = 0
+    if require_calibrated_segment:
+        calibrated_only = [
+            row
+            for row in candidate_pool
+            if (row.calibration or {}).get("sufficient_for_accas") is True
+        ]
+        excluded_uncalibrated_segment = len(candidate_pool) - len(calibrated_only)
+        candidate_pool = calibrated_only
+    excluded_segment_brier = 0
+    if maximum_segment_brier_score is not None:
+        max_brier = float(maximum_segment_brier_score)
+        skilled_only = []
+        for row in candidate_pool:
+            brier = (row.calibration or {}).get("brier_score")
+            if (
+                isinstance(brier, (int, float))
+                and not isinstance(brier, bool)
+                and math.isfinite(float(brier))
+                and float(brier) >= max_brier
+            ):
+                excluded_segment_brier += 1
+                continue
+            skilled_only.append(row)
+        candidate_pool = skilled_only
     if require_point_in_time_price:
         scoped_candidates = []
         for row in candidate_pool:
@@ -428,7 +506,9 @@ def filter_paper_candidate_picks(
         else scoped_candidates
     )
 
-    historical_by_wager: Dict[Tuple[str, str, str, str, str, str], Forecast] = {}
+    valid_history: List[Forecast] = []
+    segment_brier_sums: Dict[Tuple[str, str, str, str], float] = {}
+    segment_brier_counts: Dict[Tuple[str, str, str, str], int] = {}
     for forecast in historical_forecasts:
         outcome = forecast.outcome
         probability = forecast.calibrated_probability
@@ -459,6 +539,28 @@ def filter_paper_candidate_picks(
                 continue
         except (TypeError, ValueError):
             continue
+        valid_history.append(forecast)
+        if outcome in {"win", "loss"}:
+            seg_key = (
+                forecast.league,
+                forecast.market,
+                forecast.period,
+                forecast.source,
+            )
+            y = 1.0 if outcome == "win" else 0.0
+            segment_brier_sums[seg_key] = segment_brier_sums.get(seg_key, 0.0) + (
+                float(probability) - y
+            ) ** 2
+            segment_brier_counts[seg_key] = segment_brier_counts.get(seg_key, 0) + 1
+
+    empirical_segment_brier: Dict[Tuple[str, str, str, str], float] = {
+        seg_key: segment_brier_sums[seg_key] / count
+        for seg_key, count in segment_brier_counts.items()
+        if count >= 5
+    }
+
+    historical_by_wager: Dict[Tuple[str, str, str, str, str, str], Forecast] = {}
+    for forecast in valid_history:
         wager_key = _wager_leg_key(
             forecast.league,
             forecast.game_id,
@@ -468,7 +570,9 @@ def filter_paper_candidate_picks(
             forecast.line,
         )
         previous = historical_by_wager.get(wager_key)
-        if previous is None or _candidate_rank(forecast) < _candidate_rank(previous):
+        if previous is None or _history_canonical_rank(
+            forecast, empirical_segment_brier
+        ) < _history_canonical_rank(previous, empirical_segment_brier):
             historical_by_wager[wager_key] = forecast
 
     league_stats: Dict[str, dict] = {}
@@ -647,6 +751,14 @@ def filter_paper_candidate_picks(
         "require_point_in_time_price": require_point_in_time_price,
         "require_named_book_quote": require_named_book_quote,
         "excluded_no_named_book_quote_count": excluded_no_named_book_quote,
+        "require_calibrated_segment": require_calibrated_segment,
+        "excluded_uncalibrated_segment_count": excluded_uncalibrated_segment,
+        "maximum_segment_brier_score": (
+            float(maximum_segment_brier_score)
+            if maximum_segment_brier_score is not None
+            else None
+        ),
+        "excluded_segment_brier_count": excluded_segment_brier,
         "cold_start_admission": {
             "enabled": admit_cold_start_bands,
             "applies_when_lane_settled_pick_count_is_zero": True,
@@ -671,7 +783,11 @@ def filter_paper_candidate_picks(
         "bands": band_reports,
         "candidate_band_details": candidate_band_details,
         "status": (
-            "no_eligible_candidate_picks"
+            "no_calibrated_skill_candidates"
+            if not candidate_pool and excluded_segment_brier > 0
+            else "no_calibrated_segment_candidates"
+            if not candidate_pool and excluded_uncalibrated_segment > 0
+            else "no_eligible_candidate_picks"
             if not candidate_pool
             else "no_point_in_time_priced_candidates"
             if not scoped_candidates
@@ -717,6 +833,38 @@ def _wager_leg_key(
     )
 
 
+def _conflicting_game_side_key(
+    league: str, game_id: str, market: str, selection: str
+) -> Tuple[str, str, str] | None:
+    """Return the opposing directional commitment on the same fixture, if any."""
+
+    sel = str(selection or "").lower()
+    mkt = str(market or "").lower()
+    if mkt in {"moneyline", "spread"}:
+        if sel == "home":
+            return (league, game_id, "side:away")
+        if sel == "away":
+            return (league, game_id, "side:home")
+    elif mkt == "total":
+        if sel == "over":
+            return (league, game_id, "total:under")
+        if sel == "under":
+            return (league, game_id, "total:over")
+    return None
+
+
+def _committed_game_side_key(
+    league: str, game_id: str, market: str, selection: str
+) -> Tuple[str, str, str] | None:
+    sel = str(selection or "").lower()
+    mkt = str(market or "").lower()
+    if mkt in {"moneyline", "spread"} and sel in {"home", "away"}:
+        return (league, game_id, f"side:{sel}")
+    if mkt == "total" and sel in {"over", "under"}:
+        return (league, game_id, f"total:{sel}")
+    return None
+
+
 def build_accas(
     forecasts: Iterable[Forecast],
     *,
@@ -724,6 +872,7 @@ def build_accas(
     limit: int = 5,
     allow_provisional: bool = False,
     require_disjoint_legs: bool = False,
+    forbid_conflicting_game_sides: bool = False,
 ) -> List[dict]:
     """Return best-ranked accas for the requested leg count.
 
@@ -751,6 +900,7 @@ def build_accas(
     if require_disjoint_legs:
         all_forecasts = list(forecasts)
         used_leg_keys: set[Tuple[str, str, str, str, str, str]] = set()
+        used_game_sides: set[Tuple[str, str, str]] = set()
         output: List[dict] = []
         while len(output) < limit:
             remaining = [
@@ -765,6 +915,16 @@ def build_accas(
                     forecast.line,
                 )
                 not in used_leg_keys
+                and (
+                    not forbid_conflicting_game_sides
+                    or _conflicting_game_side_key(
+                        forecast.league,
+                        forecast.game_id,
+                        forecast.market,
+                        forecast.selection,
+                    )
+                    not in used_game_sides
+                )
             ]
             best = build_accas(
                 remaining,
@@ -776,7 +936,11 @@ def build_accas(
                 break
             ticket = best[0]
             ticket["rank"] = len(output) + 1
-            ticket["ticket_leg_reuse_policy"] = "no_reused_wager_selections"
+            ticket["ticket_leg_reuse_policy"] = (
+                "no_reused_wager_selections_or_opposing_game_sides"
+                if forbid_conflicting_game_sides
+                else "no_reused_wager_selections"
+            )
             output.append(ticket)
             for leg in ticket["legs"]:
                 used_leg_keys.add(
@@ -789,6 +953,15 @@ def build_accas(
                         leg.get("line"),
                     )
                 )
+                if forbid_conflicting_game_sides:
+                    committed = _committed_game_side_key(
+                        leg["league"],
+                        leg["game_id"],
+                        leg["market"],
+                        leg["selection"],
+                    )
+                    if committed is not None:
+                        used_game_sides.add(committed)
         return output
 
     candidates = _best_leg_per_game(forecasts, allow_provisional=allow_provisional)
