@@ -31,10 +31,12 @@ rotate a frozen receipt. Every position has a flat one-paper-unit stake.
 
 from __future__ import annotations
 
+import base64
 from collections import Counter, defaultdict
 from copy import deepcopy
 from dataclasses import replace
 from datetime import datetime, time, timedelta, timezone
+import gzip
 import hashlib
 import itertools
 import json
@@ -74,6 +76,14 @@ STATE_SCHEMA = "magolide.paper_ticket_state"
 PICK_FREEZE_SCHEMA = "magolide.pick_freeze"
 PICK_LIFECYCLE_SCHEMA = "magolide.pick_lifecycle"
 PICK_LIFECYCLE_STATE_SCHEMA = "magolide.pick_lifecycle_state"
+PICK_LIFECYCLE_ARCHIVE_SCHEMA = "magolide.pick_lifecycle_archive"
+# Fully-settled frozen dates older than this window roll out of the active
+# monolithic pick_lifecycle_state.json into deterministic monthly compressed
+# JSON archives (picks_lifecycle_archive_YYYY-MM.json, matching the existing
+# picks_*.json workflow upload globs) so the active JSON stays far below
+# publish_localdata's 25 MiB per-file limit across seasons without losing
+# immutable evidence.
+PICK_LIFECYCLE_ACTIVE_WINDOW_DAYS = 7
 UNPRICED_AUDIT_SCHEMA = "magolide.unpriced_forecast_audit"
 UNPRICED_SUCCESS_RATE_THRESHOLD = 0.70
 UNPRICED_SUCCESS_RATE_MIN_DECISIONS_EXCLUSIVE = 10
@@ -201,6 +211,13 @@ def _atomic_bytes(path: Path, raw: bytes) -> str:
 
 def _write_json(path: Path, value: Any) -> str:
     raw = (json.dumps(value, indent=2, sort_keys=True, default=str) + "\n").encode()
+    return _atomic_bytes(path, raw)
+
+
+def _write_compact_json(path: Path, value: Any) -> str:
+    raw = (
+        json.dumps(value, separators=(",", ":"), sort_keys=True, default=str) + "\n"
+    ).encode()
     return _atomic_bytes(path, raw)
 
 
@@ -1278,9 +1295,147 @@ def _latest_logical_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 
 def _pick_lifecycle_state_path(localdata: Path) -> Path:
-    """Return the sole Git-durable home for per-fixture frozen snapshots."""
+    """Return the Git-durable active home for recent/pending frozen snapshots."""
 
     return localdata / "pick_lifecycle_state.json"
+
+
+def _pick_lifecycle_archive_path(localdata: Path, month: str) -> Path:
+    """Return the Git-durable monthly archive for older settled freezes."""
+
+    return localdata / f"picks_lifecycle_archive_{month}.json"
+
+
+def _load_pick_lifecycle_archive(
+    path: Path, *, league: str, month: str
+) -> Dict[str, Any]:
+    if not path.exists():
+        return {
+            "schema_version": PICK_LIFECYCLE_ARCHIVE_SCHEMA,
+            "league": league,
+            "month": month,
+            "frozen_by_date": {},
+        }
+    try:
+        envelope = json.loads(path.read_bytes())
+    except (OSError, json.JSONDecodeError) as exc:
+        raise ValueError(f"invalid pick lifecycle archive: {path}") from exc
+    if (
+        not isinstance(envelope, dict)
+        or not schema_matches(envelope.get("schema_version"), PICK_LIFECYCLE_ARCHIVE_SCHEMA)
+        or envelope.get("league") != league
+        or envelope.get("month") != month
+    ):
+        raise ValueError(f"invalid pick lifecycle archive: {path}")
+    encoded = envelope.get("frozen_by_date_gzip_b64")
+    if isinstance(encoded, str) and envelope.get("encoding") == "gzip+base64":
+        try:
+            frozen_by_date = json.loads(gzip.decompress(base64.b64decode(encoded)))
+        except (ValueError, OSError, EOFError, json.JSONDecodeError) as exc:
+            raise ValueError(f"invalid pick lifecycle archive payload: {path}") from exc
+    else:
+        frozen_by_date = envelope.get("frozen_by_date")
+    if not isinstance(frozen_by_date, dict):
+        raise ValueError(f"invalid pick lifecycle archive: {path}")
+    return {
+        "schema_version": PICK_LIFECYCLE_ARCHIVE_SCHEMA,
+        "league": league,
+        "month": month,
+        "frozen_by_date": frozen_by_date,
+    }
+
+
+def _write_pick_lifecycle_archive(path: Path, archive: Dict[str, Any]) -> str:
+    frozen_payload = (
+        json.dumps(
+            archive["frozen_by_date"], separators=(",", ":"), sort_keys=True, default=str
+        )
+        + "\n"
+    ).encode()
+    compressed = gzip.compress(frozen_payload, compresslevel=9, mtime=0)
+    envelope = {
+        "schema_version": PICK_LIFECYCLE_ARCHIVE_SCHEMA,
+        "league": archive["league"],
+        "month": archive["month"],
+        "encoding": "gzip+base64",
+        "frozen_by_date_gzip_b64": base64.b64encode(compressed).decode("ascii"),
+    }
+    return _write_compact_json(path, envelope)
+
+
+def _archived_frozen_game_ids(localdata: Path, *, league: str) -> set[str]:
+    archived: set[str] = set()
+    for path in sorted(localdata.glob("picks_lifecycle_archive_????-??.json")):
+        month = path.name.removeprefix("picks_lifecycle_archive_").removesuffix(".json")
+        archive = _load_pick_lifecycle_archive(path, league=league, month=month)
+        for by_game in (archive.get("frozen_by_date") or {}).values():
+            if isinstance(by_game, dict):
+                archived.update(str(gid) for gid in by_game)
+    return archived
+
+
+def _archive_settled_pick_freezes(
+    localdata: Path,
+    lifecycle_state: Dict[str, Any],
+    *,
+    league: str,
+    anchor_date: Optional[str],
+) -> list[str]:
+    """Roll fully-settled dates older than the active window into monthly gzip archives."""
+
+    frozen_by_date = lifecycle_state.get("frozen_by_date")
+    if not isinstance(frozen_by_date, dict) or not frozen_by_date:
+        return []
+    dated_reports = lifecycle_state.get("dated_reports") or {}
+    all_dates = set(frozen_by_date) | (
+        set(dated_reports) if isinstance(dated_reports, dict) else set()
+    )
+    anchor_str = anchor_date or (max(all_dates) if all_dates else None)
+    if not anchor_str:
+        return []
+    cutoff_date = (
+        datetime.strptime(anchor_str, "%Y-%m-%d").date()
+        - timedelta(days=PICK_LIFECYCLE_ACTIVE_WINDOW_DAYS)
+    ).isoformat()
+    pending_game_ids = {
+        str(item[0])
+        for item in lifecycle_state.get("pending_frozen_games", [])
+        if isinstance(item, (list, tuple)) and len(item) == 2
+    }
+
+    by_month: Dict[str, Dict[str, Dict[str, Any]]] = defaultdict(dict)
+    for date_key in sorted(list(frozen_by_date)):
+        if date_key >= cutoff_date:
+            continue
+        by_game = frozen_by_date.get(date_key)
+        if not isinstance(by_game, dict):
+            continue
+        if any(str(gid) in pending_game_ids for gid in by_game):
+            continue
+        by_month[date_key[:7]][date_key] = by_game
+
+    archived_dates: list[str] = []
+    for month, dates_payload in sorted(by_month.items()):
+        archive_path = _pick_lifecycle_archive_path(localdata, month)
+        archive = _load_pick_lifecycle_archive(archive_path, league=league, month=month)
+        dest_by_date = archive["frozen_by_date"]
+        for date_key, by_game in sorted(dates_payload.items()):
+            dest_games = dest_by_date.setdefault(date_key, {})
+            if not isinstance(dest_games, dict):
+                raise ValueError(f"invalid pick lifecycle archive date: {archive_path}:{date_key}")
+            for game_id, payload in sorted(by_game.items()):
+                previous = dest_games.get(game_id)
+                if previous is not None and previous != payload:
+                    raise ValueError(
+                        "archived inline pick freeze conflicts with active state: "
+                        f"{archive_path}:{date_key}/{game_id}"
+                    )
+                dest_games[game_id] = payload
+            archived_dates.append(date_key)
+        _write_pick_lifecycle_archive(archive_path, archive)
+        for date_key in dates_payload:
+            frozen_by_date.pop(date_key, None)
+    return archived_dates
 
 
 def _new_pick_lifecycle_state(league: str) -> Dict[str, Any]:
@@ -1313,14 +1468,27 @@ def _load_pick_lifecycle_state(localdata: Path, *, league: str) -> Dict[str, Any
 
 
 def _load_pick_freezes(
-    lifecycle_state: Dict[str, Any], *, target_date: str, league: str
+    lifecycle_state: Dict[str, Any],
+    *,
+    target_date: str,
+    league: str,
+    localdata: Optional[Path] = None,
 ) -> Dict[str, Dict[str, Any]]:
-    """Read immutable fixture snapshots embedded in durable lifecycle state."""
+    """Read immutable fixture snapshots from active state or its monthly archive."""
 
     frozen_by_date = lifecycle_state.get("frozen_by_date")
     if not isinstance(frozen_by_date, dict):
         raise ValueError("invalid frozen pick lifecycle state")
-    payloads = frozen_by_date.get(target_date, {})
+    payloads = frozen_by_date.get(target_date)
+    if payloads is None and localdata is not None:
+        archive_path = _pick_lifecycle_archive_path(localdata, target_date[:7])
+        if archive_path.exists():
+            archive = _load_pick_lifecycle_archive(
+                archive_path, league=league, month=target_date[:7]
+            )
+            payloads = (archive.get("frozen_by_date") or {}).get(target_date, {})
+    if payloads is None:
+        payloads = {}
     if not isinstance(payloads, dict):
         raise ValueError(f"invalid frozen pick date state: {target_date}")
     freezes: Dict[str, Dict[str, Any]] = {}
@@ -1389,14 +1557,15 @@ def _freeze_due_pick_fixtures(
     """
 
     now = parse_utc(generated_utc)
-    existing = _load_pick_freezes(lifecycle_state, target_date=target_date, league=league)
+    existing = _load_pick_freezes(
+        lifecycle_state, target_date=target_date, league=league, localdata=localdata
+    )
     frozen_any_date = {
         str(gid)
         for date_bucket in (lifecycle_state.get("frozen_by_date") or {}).values()
         if isinstance(date_bucket, dict)
         for gid in date_bucket
-    }
-    frozen_by_date = lifecycle_state["frozen_by_date"].setdefault(target_date, {})
+    } | _archived_frozen_game_ids(localdata, league=league)
     froze_any = False
     for game_id, fixture_rows in itertools.groupby(
         _latest_logical_rows(rows), key=lambda row: str(row["game_id"])
@@ -1425,7 +1594,7 @@ def _freeze_due_pick_fixtures(
             "frozen_at": now.strftime("%Y-%m-%dT%H:%M:%SZ"),
             "rows": frozen_rows,
         }
-        frozen_by_date[game_id] = payload
+        lifecycle_state["frozen_by_date"].setdefault(target_date, {})[game_id] = payload
         existing[game_id] = payload
         froze_any = True
     if froze_any:
@@ -1441,7 +1610,7 @@ def _freeze_due_pick_fixtures(
             for game_id, payload in existing.items()
         )
         lifecycle_state["pending_frozen_games"] = [list(item) for item in sorted(pending)]
-        _write_json(_pick_lifecycle_state_path(localdata), lifecycle_state)
+        _write_compact_json(_pick_lifecycle_state_path(localdata), lifecycle_state)
     return existing
 
 
@@ -1839,7 +2008,7 @@ def _refresh_dated_pick_reports(
         _write_json(path, rows)
         target_date = path.stem.removeprefix("picks_")
         freezes = _load_pick_freezes(
-            lifecycle_state, target_date=target_date, league=league
+            lifecycle_state, target_date=target_date, league=league, localdata=localdata
         )
         lifecycle_rows, pending = _pick_lifecycle_rows(
             rows,
@@ -1892,7 +2061,13 @@ def _refresh_dated_pick_reports(
         )
     ]
     lifecycle_state["dated_reports"] = dated_reports
-    _write_json(_pick_lifecycle_state_path(localdata), lifecycle_state)
+    _archive_settled_pick_freezes(
+        localdata,
+        lifecycle_state,
+        league=league,
+        anchor_date=current_target_date,
+    )
+    _write_compact_json(_pick_lifecycle_state_path(localdata), lifecycle_state)
     return lifecycle_state
 
 
@@ -5370,7 +5545,10 @@ def publish_operator_reports(
     # snapshot itself as settlement evidence.
     pick_lifecycle_state = _load_pick_lifecycle_state(localdata, league=league.value)
     existing_pick_freezes = _load_pick_freezes(
-        pick_lifecycle_state, target_date=target_date, league=league.value
+        pick_lifecycle_state,
+        target_date=target_date,
+        league=league.value,
+        localdata=localdata,
     )
     frozen_game_ids = set(existing_pick_freezes)
     # Preview rows stay on picks_today.json so operators can inspect them, but

@@ -3638,4 +3638,111 @@ def test_preview_only_pick_card_carries_unmistakable_header_and_never_triggers_p
     assert "PREVIEW ONLY" not in nba_card
 
 
+def test_operator_archives_settled_old_pick_freezes_and_reloads_transparently(tmp_path):
+    """Settled dates older than PICK_LIFECYCLE_ACTIVE_WINDOW_DAYS move into monthly gzip
+    archives while pending or recent dates stay active, and archived freezes remain readable
+    and immune from re-freezing."""
+
+    import base64
+    import gzip
+
+    from forecasting.operator import (
+        PICK_LIFECYCLE_ACTIVE_WINDOW_DAYS,
+        _archive_settled_pick_freezes,
+        _freeze_due_pick_fixtures,
+        _load_pick_freezes,
+    )
+
+    assert PICK_LIFECYCLE_ACTIVE_WINDOW_DAYS == 7
+    localdata = tmp_path / "ncaa_m"
+    localdata.mkdir()
+
+    def _freeze_payload(date: str, game_id: str) -> dict:
+        return {
+            "schema_version": "magolide.pick_freeze",
+            "target_date": date,
+            "league": "NCAA_M",
+            "game_id": game_id,
+            "scheduled_utc": f"{date}T20:00:00Z",
+            "decision_cutoff_utc": f"{date}T18:00:00Z",
+            "frozen_at": f"{date}T18:05:00Z",
+            "rows": [
+                {
+                    "pick_id": f"p-{game_id}",
+                    "forecast_id": f"p-{game_id}",
+                    "game_id": game_id,
+                    "league": "NCAA_M",
+                    "date": date,
+                    "scheduled_utc": f"{date}T20:00:00Z",
+                    "home": "Team A",
+                    "away": "Team B",
+                    "market": "moneyline",
+                    "period": "full_game",
+                    "selection": "home",
+                    "raw_probability": 0.65,
+                    "calibrated_probability": 0.65,
+                }
+            ],
+        }
+
+    state = {
+        "schema_version": "magolide.pick_lifecycle_state",
+        "league": "NCAA_M",
+        "pending_frozen_games": [["g-old-pending", "2026-11-10T20:00:00Z"]],
+        "dated_reports": {
+            "2026-11-10": {"frozen_fixtures": 1},
+            "2026-11-11": {"frozen_fixtures": 1},
+            "2026-11-20": {"frozen_fixtures": 1},
+        },
+        "frozen_by_date": {
+            # 10 days old, still pending -> MUST remain active.
+            "2026-11-10": {"g-old-pending": _freeze_payload("2026-11-10", "g-old-pending")},
+            # 9 days old, fully settled -> MUST archive into 2026-11 gzip archive.
+            "2026-11-11": {"g-old-settled": _freeze_payload("2026-11-11", "g-old-settled")},
+            # Current date -> MUST remain active.
+            "2026-11-20": {"g-today": _freeze_payload("2026-11-20", "g-today")},
+        },
+    }
+
+    archived_dates = _archive_settled_pick_freezes(
+        localdata, state, league="NCAA_M", anchor_date="2026-11-20"
+    )
+    assert archived_dates == ["2026-11-11"]
+    assert sorted(state["frozen_by_date"]) == ["2026-11-10", "2026-11-20"]
+
+    archive_path = localdata / "picks_lifecycle_archive_2026-11.json"
+    assert archive_path.is_file()
+    archive_env = json.loads(archive_path.read_text())
+    assert archive_env["schema_version"] == "magolide.pick_lifecycle_archive"
+    assert archive_env["encoding"] == "gzip+base64"
+    archive_frozen = json.loads(
+        gzip.decompress(base64.b64decode(archive_env["frozen_by_date_gzip_b64"]))
+    )
+    assert list(archive_frozen) == ["2026-11-11"]
+
+    # Transparent reload from monthly archive.
+    reloaded = _load_pick_freezes(
+        state, target_date="2026-11-11", league="NCAA_M", localdata=localdata
+    )
+    assert list(reloaded) == ["g-old-settled"]
+
+    # Archived fixture cannot be re-frozen into active state.
+    mutated_row = dict(
+        archive_frozen["2026-11-11"]["g-old-settled"]["rows"][0],
+        raw_probability=0.99,
+        calibrated_probability=0.99,
+    )
+    existing = _freeze_due_pick_fixtures(
+        localdata,
+        lifecycle_state=state,
+        target_date="2026-11-11",
+        league="NCAA_M",
+        rows=[mutated_row],
+        generated_utc="2026-11-11T19:00:00Z",
+    )
+    assert existing["g-old-settled"]["rows"][0]["raw_probability"] == 0.65
+    assert "2026-11-11" not in state["frozen_by_date"]
+
+
+
 

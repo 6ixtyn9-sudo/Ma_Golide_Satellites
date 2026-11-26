@@ -219,6 +219,37 @@ _STATE_TO_STATUS: Dict[str, GameStatus] = {
 }
 
 _TEAM_REF_RE = re.compile(r"/teams/(\d+)")
+_PLACEHOLDER_TEAM_RE = re.compile(
+    r"^(?:tbd|tba)(?:\s+#?\d+)?$|^(?:winner|loser)\s+of\b",
+    re.IGNORECASE,
+)
+
+
+def _is_placeholder_competitor(competitor: Dict[str, Any]) -> bool:
+    """Return whether an ESPN competitor is an unresolved bracket placeholder."""
+    team = competitor.get("team")
+    if not isinstance(team, dict):
+        return False
+    team_id = _team_ref_id(team)
+    if team_id is not None and team_id.startswith("-"):
+        return True
+    for field in ("displayName", "shortDisplayName", "name"):
+        if field in team and team.get(field) is not None:
+            text = str(team.get(field) or "").strip()
+            if _PLACEHOLDER_TEAM_RE.match(text):
+                return True
+    if "displayName" in team and not str(team.get("displayName") or "").strip():
+        return True
+    return False
+
+
+def _is_placeholder_competition(comp: Dict[str, Any]) -> bool:
+    """Return whether an ESPN competition carries an unresolved bracket slot."""
+    competitors = comp.get("competitors") or []
+    return any(
+        isinstance(item, dict) and _is_placeholder_competitor(item)
+        for item in competitors
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -969,9 +1000,13 @@ def discover_games(date_yyyymmdd: str, fetch: FetchFn, league: League = League.N
     competitors' ``homeAway`` markers, never array order.
     """
     payload = fetch(_scoreboard_url(date_yyyymmdd, league)) or {}
-    return [
-        _game_from_event(event, _competition(event), league) for event in payload.get("events", [])
-    ]
+    games: List[Game] = []
+    for event in payload.get("events", []):
+        comp = _competition(event)
+        if _is_placeholder_competition(comp):
+            continue
+        games.append(_game_from_event(event, comp, league))
+    return games
 
 
 def discover_games_with_evidence(
@@ -988,6 +1023,8 @@ def discover_games_with_evidence(
     books: Dict[str, List[BookSnapshot]] = {}
     for event in payload.get("events", []):
         comp = _competition(event)
+        if _is_placeholder_competition(comp):
+            continue
         game = _game_from_event(event, comp, league)
         game_books: List[BookSnapshot] = []
         notes: List[str] = []
@@ -1509,7 +1546,7 @@ def fetch_recent_results(
     results: List[Game] = []
     for event in payload.get("events", []):
         comp = _competition(event)
-        if _state(comp) != "post":
+        if _state(comp) != "post" or _is_placeholder_competition(comp):
             continue
         home, away = _home_away_competitors(comp)
         actual, period_note = _actual_for_history(home, away, comp, league)

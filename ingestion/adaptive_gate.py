@@ -67,6 +67,16 @@ HTTP_TIMEOUT_SECONDS = 15
 MAX_RESPONSE_BYTES = 5 * 1024 * 1024
 COVERAGE_GAP_MARKER_SCHEMA = "magolide.coverage_gap_marker"
 HISTORICAL_CARD_RE = re.compile(r"^(picks|auto_tickets)_(\d{4}-\d{2}-\d{2})\.txt$")
+# Bounded recovery lookback for legacy/unfrozen public text cards. Real open
+# paper tickets (`auto_tickets_performance.json`) and real frozen fixtures
+# (`pick_lifecycle_state.json`) wake independently without an age limit; this
+# cap stops unrecoverable pre-lifecycle cards (e.g. 10-day-old unfrozen/TBD
+# residues) from waking lanes on every hourly tick forever.
+HISTORICAL_PENDING_CARD_MAX_AGE_DAYS = 7
+_ESPN_PLACEHOLDER_TEAM_RE = re.compile(
+    r"^(?:tbd|tba)(?:\s+#?\d+)?$|^(?:winner|loser)\s+of\b",
+    re.IGNORECASE,
+)
 # Keep this aligned with the recovery utility. It deliberately detects rendered
 # grades only, never explanatory prose mentioning a pending observation.
 PENDING_GRADE_RE = re.compile(r"(?:grade=|\[\s*)PENDING\b|⏳\s+PENDING\b")
@@ -609,6 +619,7 @@ def _historical_pending_card_reasons(state_dir: Path, *, target_date: str) -> li
     """
 
     reasons: list[str] = []
+    target_day = datetime.strptime(target_date, "%Y-%m-%d").date()
     try:
         cards = sorted(path for path in state_dir.iterdir() if path.is_file())
     except FileNotFoundError:
@@ -623,6 +634,9 @@ def _historical_pending_card_reasons(state_dir: Path, *, target_date: str) -> li
         # ISO dates have chronological lexical order. Future/current cards
         # must remain draft-capable and are intentionally outside recovery.
         if card_date >= target_date:
+            continue
+        card_day = datetime.strptime(card_date, "%Y-%m-%d").date()
+        if (target_day - card_day).days > HISTORICAL_PENDING_CARD_MAX_AGE_DAYS:
             continue
         try:
             has_pending_grade = PENDING_GRADE_RE.search(path.read_text(encoding="utf-8")) is not None
@@ -1214,6 +1228,30 @@ def _espn_scoreboard_url(config: LeagueGateConfig, target_date: str | None) -> s
     )
 
 
+def _espn_event_is_placeholder(competition: dict[str, Any]) -> bool:
+    """Return whether an ESPN competition carries an unresolved TBD bracket slot."""
+    competitors = competition.get("competitors")
+    if not isinstance(competitors, list):
+        return False
+    for competitor in competitors:
+        if not isinstance(competitor, dict):
+            continue
+        team = competitor.get("team")
+        if not isinstance(team, dict):
+            continue
+        team_id = team.get("id")
+        if team_id is not None and str(team_id).strip().startswith("-"):
+            return True
+        for field in ("displayName", "shortDisplayName", "name"):
+            if field in team and team.get(field) is not None:
+                text = str(team.get(field) or "").strip()
+                if _ESPN_PLACEHOLDER_TEAM_RE.match(text):
+                    return True
+        if "displayName" in team and not str(team.get("displayName") or "").strip():
+            return True
+    return False
+
+
 def _espn_games(payload: Any) -> list[ScheduleGame]:
     if not isinstance(payload, dict) or not isinstance(payload.get("events"), list):
         raise GateUncertain("ESPN scoreboard lacks an events list")
@@ -1227,6 +1265,8 @@ def _espn_games(payload: Any) -> list[ScheduleGame]:
         competition = competitions[0]
         if not isinstance(competition, dict):
             raise GateUncertain("ESPN competition is invalid")
+        if _espn_event_is_placeholder(competition):
+            continue
         status = ((competition.get("status") or {}).get("type") or {}).get("state")
         mapped_status = {"pre": "scheduled", "in": "live", "post": "final"}.get(status)
         if mapped_status is None:

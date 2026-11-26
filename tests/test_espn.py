@@ -972,3 +972,69 @@ def test_smoke_verification_live_with_http_client(load_fixture):
     wrapped = smoke("20261106", AcquisitionClient(client.get_json, request_budget=100))
     assert wrapped["verification"] == "LIVE_VERIFIED"
     assert wrapped["bpi_complete"]["complete"] == 1
+
+
+def test_espn_skips_tbd_and_placeholder_bracket_events(fixture_fetch):
+    """ESPN tournament TBD/TBA/negative-id bracket slots must not enter canonical slates."""
+
+    def _event(event_id: str, home_id: str, home_name: str, away_id: str, away_name: str, state: str = "pre"):
+        league_uid = ESPN_LEAGUE_IDS[League.NCAA_W]
+        return {
+            "id": event_id,
+            "uid": f"s:40~l:{league_uid}~e:{event_id}",
+            "date": "2026-11-25T20:00Z",
+            "season": {"year": 2027},
+            "competitions": [
+                {
+                    "id": event_id,
+                    "date": "2026-11-25T20:00Z",
+                    "status": {"type": {"state": state}},
+                    "competitors": [
+                        {
+                            "homeAway": "home",
+                            "score": "70" if state == "post" else "0",
+                            "team": {"id": home_id, "displayName": home_name},
+                        },
+                        {
+                            "homeAway": "away",
+                            "score": "65" if state == "post" else "0",
+                            "team": {"id": away_id, "displayName": away_name},
+                        },
+                    ],
+                }
+            ],
+        }
+
+    payload = {
+        "events": [
+            _event("401000001", "-1", "TBD", "-2", "TBD"),
+            _event("401000002", "10", "Duke Blue Devils", "999", "TBA"),
+            _event("401000003", "10", "Winner of Game 1", "20", "UConn Huskies"),
+            _event("401000004", "150", "Duke Blue Devils", "41", "UConn Huskies"),
+        ]
+    }
+    fetch = fixture_fetch({"dates=20261125": payload})
+
+    discovered = discover_games("20261125", fetch, league=League.NCAA_W)
+    assert [g.game_id for g in discovered] == ["401000004"]
+
+    with_ev, books = discover_games_with_evidence(
+        "20261125", fetch, league=League.NCAA_W, observed_utc="2026-11-25T15:00:00Z"
+    )
+    assert [g.game_id for g in with_ev] == ["401000004"]
+    assert list(books) == ["401000004"]
+
+    post_payload = {
+        "events": [
+            _event("401000001", "-1", "TBD", "-2", "TBD", state="post"),
+            _event("401000004", "150", "Duke Blue Devils", "41", "UConn Huskies", state="post"),
+        ]
+    }
+    results = fetch_recent_results(
+        "20261125",
+        fixture_fetch({"dates=20261125": post_payload}),
+        league=League.NCAA_W,
+        observed_utc="2026-11-26T00:00:00Z",
+    )
+    assert [g.game_id for g in results] == ["401000004"]
+
