@@ -1089,6 +1089,43 @@ class HistoryModel:
             for snapshot in snapshots
         ]
 
+    @staticmethod
+    def _anchor_lines(
+        snapshots: Sequence[BookSnapshot],
+    ) -> Dict[Tuple[Market, Period], float]:
+        """Choose one posted market anchor line per ``(market, period)``.
+
+        When ``posted_line_model_weight`` blends the model distribution toward
+        the market expectation, anchoring to *each* snapshot's line treats every
+        alternate line as if it were the 50/50 main line — stamping identical
+        probabilities onto lines 1–2 points apart. Instead, compute a single
+        deterministic anchor per ``(market, period)`` (preferring ``main_line``
+        quotes, taking their median when multiple books/captures exist) and
+        evaluate every alternate line against that one shifted distribution.
+        """
+        grouped: Dict[Tuple[Market, Period], List[BookSnapshot]] = {}
+        for snapshot in snapshots:
+            if snapshot.line is None or snapshot.market not in {
+                Market.TOTAL,
+                Market.SPREAD,
+            }:
+                continue
+            grouped.setdefault((snapshot.market, snapshot.period), []).append(snapshot)
+        anchors: Dict[Tuple[Market, Period], float] = {}
+        for key, group in grouped.items():
+            preferred = [snap for snap in group if snap.main_line]
+            chosen = preferred if preferred else group
+            values = sorted(float(snap.line) for snap in chosen if snap.line is not None)
+            if not values:
+                continue
+            mid = len(values) // 2
+            anchors[key] = (
+                values[mid]
+                if len(values) % 2 == 1
+                else 0.5 * (values[mid - 1] + values[mid])
+            )
+        return anchors
+
     def lines(
         self,
         game: Game,
@@ -1101,9 +1138,14 @@ class HistoryModel:
     ) -> List[Forecast]:
         if context is not None and prediction is not None:
             raise ValueError("context adjustment applies only to the empirical surface")
+        snapshot_list = list(snapshots)
+        weight = self.config.posted_line_model_weight
+        anchor_lines = (
+            self._anchor_lines(snapshot_list) if weight is not None else {}
+        )
         forecasts: List[Forecast] = []
         distributions: Dict[Period, Optional[Distribution]] = {}
-        for snapshot in snapshots:
+        for snapshot in snapshot_list:
             if snapshot.line is None or snapshot.market not in {
                 Market.TOTAL,
                 Market.SPREAD,
@@ -1120,13 +1162,15 @@ class HistoryModel:
             distribution = distributions[snapshot.period]
             if distribution is None:
                 continue
-            weight = self.config.posted_line_model_weight
             if snapshot.market is Market.TOTAL:
                 line = snapshot.line
                 totals = distribution.totals
                 if weight is not None:
-                    # Centre between the model total and the posted total.
-                    shift = (1.0 - weight) * (line - distribution.baseline.total)
+                    # Centre once between the model total and the game's main
+                    # posted total, then price every line against that single
+                    # distribution so probabilities stay monotonic in line.
+                    anchor = anchor_lines.get((snapshot.market, snapshot.period), line)
+                    shift = (1.0 - weight) * (anchor - distribution.baseline.total)
                     totals = tuple(value + shift for value in totals)
                 probabilities = {
                     "over": sum(value > line for value in totals)
@@ -1140,8 +1184,11 @@ class HistoryModel:
             else:
                 margins = distribution.margins
                 if weight is not None:
-                    # A home-oriented line L implies a posted margin of -L.
-                    shift = (1.0 - weight) * (-snapshot.line - distribution.baseline.margin)
+                    # A home-oriented main line L implies a posted margin of -L.
+                    anchor = anchor_lines.get(
+                        (snapshot.market, snapshot.period), snapshot.line
+                    )
+                    shift = (1.0 - weight) * (-anchor - distribution.baseline.margin)
                     margins = tuple(value + shift for value in margins)
                 adjusted = [value + snapshot.line for value in margins]
                 probabilities = {

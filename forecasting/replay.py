@@ -18,6 +18,7 @@ Doctrine
 from __future__ import annotations
 
 from dataclasses import dataclass, replace
+import hashlib
 import json
 import math
 from pathlib import Path
@@ -27,7 +28,7 @@ from typing import Any, Dict, List, Optional, Sequence, Tuple
 
 from ingestion.models import Game, schema_matches
 
-from .accas import build_accas
+from .accas import RANKING_METRIC_BLEND, VALID_RANKING_METRICS, build_accas
 from .operator import (
     TICKET_SCHEMA,
     _forecast_from_row,
@@ -53,6 +54,8 @@ class ReplaySpec:
     """Variant overrides forwarded directly to live ``build_accas`` + sizing."""
 
     legs: Optional[int] = None
+    min_legs: Optional[int] = None
+    max_legs: Optional[int] = None
     limit: Optional[int] = None
     min_leg_odds: Optional[float] = None
     max_leg_odds: Optional[float] = None
@@ -60,7 +63,11 @@ class ReplaySpec:
     price_weight: Optional[float] = None
     min_odds: Optional[float] = None
     max_odds: Optional[float] = None
+    ranking_metric: Optional[str] = None
+    max_claimed_edge: Optional[float] = None
+    edge_flag_threshold: Optional[float] = None
     forbid_opposing: Optional[bool] = None
+    forbid_alt_line_reuse: Optional[bool] = None
     allow_provisional: Optional[bool] = None
     markets: Tuple[str, ...] = ()
     exclude_markets: Tuple[str, ...] = ()
@@ -86,6 +93,20 @@ class ReplaySpec:
             raise ValueError("skim must be in [0, 0.95)")
         if self.legs is not None and not 2 <= self.legs <= 6:
             raise ValueError("legs must be between 2 and 6")
+        if self.min_legs is not None and not 2 <= self.min_legs <= 6:
+            raise ValueError("min_legs must be between 2 and 6")
+        if self.max_legs is not None and not 2 <= self.max_legs <= 6:
+            raise ValueError("max_legs must be between 2 and 6")
+        if (
+            self.min_legs is not None
+            and self.max_legs is not None
+            and self.min_legs > self.max_legs
+        ):
+            raise ValueError("min_legs must be <= max_legs")
+        if self.ranking_metric is not None and self.ranking_metric not in VALID_RANKING_METRICS:
+            raise ValueError(
+                f"invalid ranking_metric {self.ranking_metric!r}; expected one of {sorted(VALID_RANKING_METRICS)}"
+            )
         if self.limit is not None and not 1 <= self.limit <= 100:
             raise ValueError("limit must be between 1 and 100")
 
@@ -109,7 +130,7 @@ def parse_variant_spec(raw: str) -> ReplaySpec:
         if "=" not in token:
             raise ValueError(f"variant token must be key=value: {token!r}")
         key, val = (item.strip() for item in token.split("=", 1))
-        if key in {"legs", "limit"}:
+        if key in {"legs", "min_legs", "max_legs", "limit"}:
             kwargs[key] = int(val)
         elif key in {
             "min_leg_odds",
@@ -118,13 +139,23 @@ def parse_variant_spec(raw: str) -> ReplaySpec:
             "price_weight",
             "min_odds",
             "max_odds",
+            "max_claimed_edge",
+            "edge_flag_threshold",
             "stake_frac",
             "kelly_frac",
             "skim",
         }:
             kwargs[key] = float(val)
-        elif key in {"forbid_opposing", "allow_provisional", "allow_single_fallback", "include_derived"}:
+        elif key in {
+            "forbid_opposing",
+            "forbid_alt_line_reuse",
+            "allow_provisional",
+            "allow_single_fallback",
+            "include_derived",
+        }:
             kwargs[key] = _parse_bool(val)
+        elif key == "ranking_metric":
+            kwargs["ranking_metric"] = val.lower()
         elif key == "stake_mode":
             kwargs["stake_mode"] = val.lower()
         elif key == "weights":
@@ -340,8 +371,9 @@ def _derived_single_from_row(row: Dict[str, Any]) -> Optional[Dict[str, Any]]:
     prob = row.get("calibrated_probability")
     if prob is None:
         prob = row.get("raw_probability")
+    fid = str(row.get("forecast_id") or row.get("pick_id") or "")
     return {
-        "ticket_id": str(row.get("forecast_id") or row.get("pick_id") or ""),
+        "ticket_id": hashlib.sha256(f"paper-derived-spread|{fid}".encode()).hexdigest()[:20],
         "ticket_type": "single",
         "leg_count": 1,
         "combined_decimal_odds": round(float(price), 4),
@@ -398,6 +430,11 @@ def select_tickets_for_pool(
         if spec.forbid_opposing is not None
         else bool(policy.get("forbid_conflicting_game_sides", False))
     )
+    forbid_alt_line_reuse = (
+        spec.forbid_alt_line_reuse
+        if spec.forbid_alt_line_reuse is not None
+        else bool(policy.get("forbid_alt_line_reuse", False))
+    )
     limit = spec.limit if spec.limit is not None else int(policy.get("limit") or 5)
     min_leg_odds = (
         spec.min_leg_odds if spec.min_leg_odds is not None else policy.get("min_leg_odds")
@@ -408,29 +445,88 @@ def select_tickets_for_pool(
     price_weight = (
         spec.price_weight if spec.price_weight is not None else policy.get("price_weight")
     )
+    ranking_metric = (
+        spec.ranking_metric
+        if spec.ranking_metric is not None
+        else str(policy.get("ranking_metric") or RANKING_METRIC_BLEND)
+    )
+    min_combined_odds = (
+        spec.min_odds
+        if spec.min_odds is not None
+        else policy.get("min_combined_odds")
+    )
+    max_combined_odds = (
+        spec.max_odds
+        if spec.max_odds is not None
+        else policy.get("max_combined_odds")
+    )
+    max_claimed_edge = (
+        spec.max_claimed_edge
+        if spec.max_claimed_edge is not None
+        else policy.get("max_claimed_edge")
+    )
+    edge_flag_threshold = (
+        spec.edge_flag_threshold
+        if spec.edge_flag_threshold is not None
+        else policy.get("edge_flag_threshold")
+    )
     distinct_games = len({(fc.league, fc.game_id) for fc in native_forecasts})
-    if spec.legs is not None:
-        effective_legs: Optional[int] = spec.legs if distinct_games >= spec.legs else None
+    effective_min_legs: Optional[int]
+    effective_max_legs: Optional[int]
+    if spec.min_legs is not None or spec.max_legs is not None:
+        req_lo = spec.min_legs if spec.min_legs is not None else 2
+        req_hi = (
+            spec.max_legs
+            if spec.max_legs is not None
+            else (spec.legs if spec.legs is not None else int(policy.get("max_legs") or policy.get("requested_legs") or 3))
+        )
+        capped_hi = min(req_hi, distinct_games)
+        if capped_hi >= req_lo and req_lo >= 2:
+            effective_min_legs = req_lo
+            effective_max_legs = capped_hi
+        else:
+            effective_min_legs = None
+            effective_max_legs = None
+    elif spec.legs is not None:
+        effective_min_legs = spec.legs if distinct_games >= spec.legs else None
+        effective_max_legs = effective_min_legs
+    elif policy.get("min_legs") is not None:
+        req_lo = int(policy["min_legs"])
+        req_hi = int(policy.get("max_legs") or policy.get("requested_legs") or req_lo)
+        capped_hi = min(req_hi, distinct_games)
+        if capped_hi >= req_lo and req_lo >= 2:
+            effective_min_legs = req_lo
+            effective_max_legs = capped_hi
+        else:
+            effective_min_legs = None
+            effective_max_legs = None
     else:
         requested = int(policy.get("requested_legs") or 3)
         live_eff = min(requested, distinct_games)
-        effective_legs = live_eff if live_eff >= 2 else None
+        effective_min_legs = live_eff if live_eff >= 2 else None
+        effective_max_legs = effective_min_legs
 
     tickets: List[Dict[str, Any]] = []
-    if effective_legs is not None:
+    if effective_min_legs is not None and effective_max_legs is not None:
         accas = build_accas(
             native_forecasts,
-            legs=effective_legs,
+            legs=effective_max_legs,
+            min_legs=effective_min_legs,
+            max_legs=effective_max_legs,
             limit=limit,
             allow_provisional=allow_provisional,
             require_disjoint_legs=bool(policy.get("require_disjoint_legs", True)),
             forbid_conflicting_game_sides=forbid_opposing,
+            forbid_alt_line_reuse=forbid_alt_line_reuse,
             min_leg_odds=min_leg_odds,
             max_leg_odds=max_leg_odds,
             min_leg_probability=spec.min_leg_prob,
             price_weight=price_weight,
-            min_combined_odds=spec.min_odds,
-            max_combined_odds=spec.max_odds,
+            min_combined_odds=min_combined_odds,
+            max_combined_odds=max_combined_odds,
+            ranking_metric=ranking_metric,
+            max_claimed_edge=max_claimed_edge,
+            edge_flag_threshold=edge_flag_threshold,
         )
         for acca in accas:
             tickets.append(
@@ -457,12 +553,15 @@ def select_tickets_for_pool(
             and prob is not None
             and lo <= price <= hi
             and (spec.min_leg_prob is None or prob >= spec.min_leg_prob)
+            and (max_claimed_edge is None or (prob * price - 1.0) <= float(max_claimed_edge))
             and (spec.min_odds is None or price >= spec.min_odds)
             and (spec.max_odds is None or price <= spec.max_odds)
         ):
             tickets.append(
                 {
-                    "ticket_id": fc.forecast_id,
+                    "ticket_id": hashlib.sha256(
+                        f"paper-single|{fc.forecast_id}".encode()
+                    ).hexdigest()[:20],
                     "ticket_type": "single",
                     "leg_count": 1,
                     "combined_decimal_odds": round(float(price), 4),

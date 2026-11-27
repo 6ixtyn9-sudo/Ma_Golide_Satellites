@@ -264,7 +264,10 @@ def service(
 
 def test_all_old_markets_are_forecast_and_accas_use_calibrated_probabilities():
     report = service(populated_store()).build_report(
-        as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4
+        as_of_utc=iso(AS_OF),
+        acca_legs=2,
+        acca_limit=4,
+        paper_max_claimed_edge=None,
     )
     current = [row for row in report["forecasts"] if row["game_id"] == "g12"]
     markets = {(row["period"], row["market"]) for row in current}
@@ -431,7 +434,12 @@ def test_walk_forward_diagnostics_count_result_delay_withheld_replay_rows():
 def test_service_publishes_sample_only_candidates_as_picks():
     report = service(
         populated_store(), min_calibration_samples=30
-    ).build_report(as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4)
+    ).build_report(
+        as_of_utc=iso(AS_OF),
+        acca_legs=2,
+        acca_limit=4,
+        paper_max_claimed_edge=None,
+    )
     accas = report["accas"]
 
     assert accas["mode"] == "paper_only"
@@ -600,7 +608,11 @@ def test_service_falls_back_to_double_when_only_two_qualified_games_exist(monkey
         forecasting_service_module, "filter_paper_candidate_picks", two_game_filter
     )
     report = service(populated_store()).build_report(
-        as_of_utc=iso(AS_OF), acca_legs=3, acca_limit=4
+        as_of_utc=iso(AS_OF),
+        acca_legs=3,
+        acca_limit=4,
+        paper_max_claimed_edge=None,
+        paper_min_combined_odds=None,
     )
 
     accas = report["accas"]
@@ -2169,8 +2181,8 @@ def test_build_accas_forbids_opposing_game_sides_across_tickets_when_enabled():
     assert g1_sides == {"home"}
 
 
-def test_nba_service_enforces_calibrated_value_lane_while_ncaa_m_stays_standard():
-    nba_report = service(populated_store()).build_report(as_of_utc=iso(AS_OF), acca_legs=2, acca_limit=4)
+def test_nba_ncaa_m_ncaa_w_enforce_calibrated_value_lane_while_standard_lanes_do_not():
+    nba_report = service(populated_store()).build_report(as_of_utc=iso(AS_OF), acca_legs=3, acca_limit=3)
     assert nba_report["capabilities"]["league_operator_policy"] == "nba_calibrated_value_ticket_lane"
     nba_lane = nba_report["accas"]["paper_lane"]
     assert nba_lane["name"] == "NBA_CALIBRATED_VALUE_TICKET_LANE"
@@ -2179,33 +2191,48 @@ def test_nba_service_enforces_calibrated_value_lane_while_ncaa_m_stays_standard(
     assert nba_lane["minimum_prior_settled_picks_in_matching_roi_band"] == 5
     assert nba_lane["requires_positive_calibrated_expected_value"] is True
     assert nba_lane["forbids_conflicting_game_sides_across_accas"] is True
+    assert nba_lane["forbids_alt_line_reuse_across_accas"] is True
+    assert nba_lane["max_claimed_edge"] == 0.40
+    assert nba_lane["edge_flag_threshold"] == 0.15
+    assert nba_report["accas"]["paper_ticket_policy"]["ranking_metric"] == "kelly_log_growth"
+    assert nba_report["accas"]["paper_ticket_policy"]["min_legs"] == 2
+    assert nba_report["accas"]["paper_ticket_policy"]["max_legs"] == 3
+    assert nba_report["accas"]["paper_ticket_policy"]["min_combined_odds"] == 3.30
+    assert nba_report["accas"]["paper_ticket_policy"]["max_combined_odds"] == 5.00
 
-    ncaa_report = MarketForecastService(populated_store(), League.NCAA_M).build_report(
+    for league, policy_slug, lane_name in (
+        (League.NCAA_M, "ncaa_m_calibrated_value_ticket_lane", "NCAA_M_CALIBRATED_VALUE_TICKET_LANE"),
+        (League.NCAA_W, "ncaa_w_calibrated_value_ticket_lane", "NCAA_W_CALIBRATED_VALUE_TICKET_LANE"),
+    ):
+        report = MarketForecastService(populated_store(), league).build_report(
+            as_of_utc=iso(AS_OF)
+        )
+        assert report["capabilities"]["league_operator_policy"] == policy_slug
+        lane = report["accas"]["paper_lane"]
+        assert lane["name"] == lane_name
+        assert lane["maximum_segment_brier_score"] == 0.25
+        assert lane["minimum_prior_settled_picks_in_matching_roi_band"] == 5
+        assert lane["requires_positive_calibrated_expected_value"] is True
+        assert lane["forbids_conflicting_game_sides_across_accas"] is True
+        assert lane["forbids_alt_line_reuse_across_accas"] is True
+        assert lane["max_claimed_edge"] == 0.40
+        assert lane["edge_flag_threshold"] == 0.15
+        assert (
+            report["accas"]["paper_ticket_leg_reuse_policy"]
+            == "no_reused_wager_selections_or_opposing_game_sides"
+        )
+        assert report["accas"]["paper_ticket_policy"]["ranking_metric"] == "kelly_log_growth"
+        assert report["accas"]["paper_ticket_policy"]["min_combined_odds"] == 3.30
+        assert report["accas"]["paper_ticket_policy"]["max_combined_odds"] == 5.00
+
+    standard_report = MarketForecastService(populated_store(), League.WNBA).build_report(
         as_of_utc=iso(AS_OF)
     )
-    assert ncaa_report["capabilities"]["league_operator_policy"] == "standard_policy"
-    assert ncaa_report["accas"]["paper_lane"] is None
-    assert ncaa_report["accas"]["paper_pick_filter"]["minimum_historical_pick_count_for_band"] == 1
-    assert ncaa_report["accas"]["paper_pick_filter"]["require_positive_expected_value"] is False
-    assert ncaa_report["accas"]["paper_pick_filter"]["maximum_segment_brier_score"] is None
-
-    ncaa_w_report = MarketForecastService(populated_store(), League.NCAA_W).build_report(
-        as_of_utc=iso(AS_OF)
-    )
-    assert (
-        ncaa_w_report["capabilities"]["league_operator_policy"]
-        == "ncaa_w_calibrated_value_ticket_lane"
-    )
-    ncaa_w_lane = ncaa_w_report["accas"]["paper_lane"]
-    assert ncaa_w_lane["name"] == "NCAA_W_CALIBRATED_VALUE_TICKET_LANE"
-    assert ncaa_w_lane["maximum_segment_brier_score"] == 0.25
-    assert ncaa_w_lane["minimum_prior_settled_picks_in_matching_roi_band"] == 5
-    assert ncaa_w_lane["requires_positive_calibrated_expected_value"] is True
-    assert ncaa_w_lane["forbids_conflicting_game_sides_across_accas"] is True
-    assert (
-        ncaa_w_report["accas"]["paper_ticket_leg_reuse_policy"]
-        == "no_reused_wager_selections_or_opposing_game_sides"
-    )
+    assert standard_report["capabilities"]["league_operator_policy"] == "standard_policy"
+    assert standard_report["accas"]["paper_lane"] is None
+    assert standard_report["accas"]["paper_pick_filter"]["minimum_historical_pick_count_for_band"] == 1
+    assert standard_report["accas"]["paper_pick_filter"]["require_positive_expected_value"] is False
+    assert standard_report["accas"]["paper_pick_filter"]["maximum_segment_brier_score"] is None
 
 
 def test_history_dedup_uses_empirical_segment_brier_for_legacy_compacted_rows():
@@ -2276,5 +2303,178 @@ def test_history_dedup_uses_empirical_segment_brier_for_legacy_compacted_rows():
     )
     assert qualifying == [espn_cand]
     assert summary["candidate_band_details"][espn_cand.forecast_id]["historical_pick_count"] == 5
+
+
+def test_kelly_log_growth_formula_and_variable_2_to_3_leg_exact_optimum():
+    from forecasting.accas import kelly_log_growth
+
+    # Corrected Kelly g*(p, O) = p ln(pO) + (1-p) ln(O(1-p)/(O-1)):
+    # At identical +5% EV, @1.30 dominates @3.00 by ~7x due to lower variance drag.
+    g_short = kelly_log_growth(1.05 / 1.30, 1.30)
+    g_long = kelly_log_growth(1.05 / 3.00, 3.00)
+    assert g_short == pytest.approx(0.004346, abs=1e-5)
+    assert g_long == pytest.approx(0.000620, abs=1e-5)
+    assert g_short / g_long > 6.5
+    assert kelly_log_growth(0.50, 2.00) == float("-inf")  # zero EV
+    assert kelly_log_growth(0.45, 2.00) == float("-inf")  # negative EV
+
+    # 5 games with varied odds & positive edges: verify exact Kelly 2-3 leg
+    # selection inside [3.30, 5.00] matches brute-force enumeration and picks
+    # the superior 3-leg ticket over 2-leg combinations.
+    specs = [
+        ("g1", 0.78, 1.40),  # +9.2% EV, short fav
+        ("g2", 0.72, 1.50),  # +8.0% EV, short fav
+        ("g3", 0.56, 1.92),  # +7.5% EV, even-ish
+        ("g4", 0.54, 1.95),  # +5.3% EV
+        ("g5", 0.42, 2.55),  # +7.1% EV, underdog
+    ]
+    rows = []
+    for gid, p, o in specs:
+        row = _roi_forecast(gid, p, o, None, scheduled_utc="2026-11-28T20:00:00Z")
+        row.eligibility = {"acca_eligible": True, "reasons": []}
+        rows.append(row)
+
+    actual = build_accas(
+        rows,
+        min_legs=2,
+        max_legs=3,
+        limit=3,
+        min_combined_odds=3.30,
+        max_combined_odds=5.00,
+        ranking_metric="kelly_log_growth",
+    )
+    brute = []
+    for L in (2, 3):
+        for comb in itertools.combinations(rows, L):
+            odds = math.prod(r.decimal_price for r in comb)
+            if not (3.30 <= odds <= 5.00):
+                continue
+            prob = math.prod(r.calibrated_probability for r in comb)
+            g = kelly_log_growth(prob, odds)
+            brute.append((g, prob, odds, comb))
+    brute.sort(key=lambda item: (item[0], item[1]), reverse=True)
+
+    assert len(actual) == 3
+    assert actual[0]["leg_count"] == 3  # g1@1.40 + g2@1.50 + g3@1.92 = @4.032 beats all 2-legs
+    assert actual[0]["ranking_metric"] == "kelly_log_growth"
+    assert actual[0]["kelly_fraction"] > 0.0
+    for ticket, (g, _, odds, _) in zip(actual, brute[:3]):
+        assert ticket["ranking_score"] == pytest.approx(g, abs=1e-7)
+        assert ticket["combined_decimal_odds"] == pytest.approx(odds, abs=1e-4)
+        assert 3.30 <= ticket["combined_decimal_odds"] <= 5.00
+
+
+def test_kelly_distinct_markets_prevent_starvation_and_forbid_alt_line_reuse():
+    # Two games each have a heavy ML favourite (@1.35 * @1.40 = @1.89 < 3.30)
+    # AND a total (@1.91 * @1.91 = @3.65 inside [3.30, 5.00]). Keeping distinct
+    # markets per game avoids starvation while strictly prohibiting same-game legs.
+    g1_ml = _roi_forecast("g1", 0.78, 1.35, None, market="moneyline", selection="home", scheduled_utc="2026-11-28T20:00:00Z")
+    g2_ml = _roi_forecast("g2", 0.75, 1.40, None, market="moneyline", selection="home", scheduled_utc="2026-11-28T20:00:00Z")
+    g1_tot_main = _roi_forecast("g1", 0.57, 1.91, None, market="total", selection="under", line=176.5, scheduled_utc="2026-11-28T20:00:00Z")
+    g1_tot_alt = _roi_forecast("g1", 0.56, 1.92, None, market="total", selection="under", line=177.5, scheduled_utc="2026-11-28T20:00:00Z")
+    g2_tot = _roi_forecast("g2", 0.57, 1.91, None, market="total", selection="under", line=142.5, scheduled_utc="2026-11-28T20:00:00Z")
+    g3_tot = _roi_forecast("g3", 0.56, 1.91, None, market="total", selection="over", line=150.5, scheduled_utc="2026-11-28T20:00:00Z")
+    for r in (g1_ml, g2_ml, g1_tot_main, g1_tot_alt, g2_tot, g3_tot):
+        r.eligibility = {"acca_eligible": True, "reasons": []}
+
+    tickets = build_accas(
+        [g1_ml, g2_ml, g1_tot_main, g1_tot_alt, g2_tot, g3_tot],
+        min_legs=2,
+        max_legs=3,
+        limit=3,
+        require_disjoint_legs=True,
+        forbid_alt_line_reuse=True,
+        min_combined_odds=3.30,
+        max_combined_odds=5.00,
+        ranking_metric="kelly_log_growth",
+    )
+    assert len(tickets) >= 1
+    # Verify g1 TOTAL under cannot appear in two tickets via 176.5 and 177.5 alt lines.
+    g1_total_uses = [
+        (t["rank"], leg["line"])
+        for t in tickets
+        for leg in t["legs"]
+        if leg["game_id"] == "g1" and leg["market"] == "total" and leg["selection"] == "under"
+    ]
+    assert len(g1_total_uses) <= 1
+    # Same-game legs strictly prohibited inside every ticket.
+    for t in tickets:
+        assert len({leg["game_id"] for leg in t["legs"]}) == len(t["legs"])
+
+
+def test_option_a_edge_tripwire_flags_above_15pct_and_caps_above_40pct():
+    as_of = "2026-11-28T19:30:00Z"
+    # +9.2% EV (clean), +21.6% EV (passes with audit flag), +56.0% EV (hard-capped).
+    clean = _roi_forecast("g1", 0.56, 1.95, None, scheduled_utc="2026-11-28T20:00:00Z")
+    flagged = _roi_forecast("g2", 0.64, 1.90, None, scheduled_utc="2026-11-28T20:00:00Z")
+    broken = _roi_forecast("g3", 0.80, 1.95, None, scheduled_utc="2026-11-28T20:00:00Z")
+    for r in (clean, flagged, broken):
+        r.eligibility = {"acca_eligible": True, "reasons": []}
+        r.calibration = {"status": "calibrated", "n": 40, "sufficient_for_accas": True, "brier_score": 0.19}
+
+    qualifying, summary = filter_paper_candidate_picks(
+        [clean, flagged, broken],
+        [],
+        as_of_utc=as_of,
+        require_positive_expected_value=True,
+        require_point_in_time_price=True,
+        require_named_book_quote=True,
+        require_calibrated_segment=True,
+        maximum_segment_brier_score=0.25,
+        max_claimed_edge=0.40,
+        edge_flag_threshold=0.15,
+    )
+    assert {row.game_id for row in qualifying} == {"g1", "g2"}
+    assert summary["excluded_implausible_edge_count"] == 1
+    assert summary["flagged_implausible_edge_count"] == 1
+    assert summary["candidate_band_details"][clean.forecast_id]["edge_implausible"] is False
+    assert summary["candidate_band_details"][flagged.forecast_id]["edge_implausible"] is True
+
+    accas = build_accas(
+        qualifying,
+        min_legs=2,
+        max_legs=3,
+        limit=3,
+        min_combined_odds=3.30,
+        max_combined_odds=5.00,
+        ranking_metric="kelly_log_growth",
+        max_claimed_edge=0.40,
+        edge_flag_threshold=0.15,
+    )
+    assert len(accas) == 1
+    assert accas[0]["edge_implausible"] is True
+    assert accas[0]["edge_implausible_leg_count"] == 1
+    by_gid = {leg["game_id"]: leg for leg in accas[0]["legs"]}
+    assert by_gid["g1"]["edge_implausible"] is False
+    assert by_gid["g2"]["edge_implausible"] is True
+
+
+def test_historical_roi_band_deduplicates_alternate_lines_per_game():
+    as_of = "2026-11-28T19:30:00Z"
+    cand = _roi_forecast("g-live", 0.58, 1.91, None, market="total", selection="under", line=150.5, scheduled_utc="2026-11-28T20:00:00Z")
+    cand.eligibility = {"acca_eligible": True, "reasons": []}
+    cand.calibration = {"status": "calibrated", "n": 40, "sufficient_for_accas": True, "brier_score": 0.21}
+
+    # One past game captured with 3 correlated alternate total lines (1 main + 2 alts):
+    # must count as 1 unique historical pick, not 3!
+    hist_main = _roi_forecast("g-past-1", 0.58, 1.91, "win", market="total", selection="under", line=145.5, scheduled_utc="2026-11-20T20:00:00Z")
+    hist_alt1 = _roi_forecast("g-past-1", 0.58, 1.91, "win", market="total", selection="under", line=146.5, scheduled_utc="2026-11-20T20:00:00Z")
+    hist_alt2 = _roi_forecast("g-past-1", 0.58, 1.91, "win", market="total", selection="under", line=147.5, scheduled_utc="2026-11-20T20:00:00Z")
+    assert hist_alt1.book is not None and hist_alt2.book is not None
+    hist_alt1.book = replace(hist_alt1.book, main_line=False)
+    hist_alt2.book = replace(hist_alt2.book, main_line=False)
+
+    qualifying, summary = filter_paper_candidate_picks(
+        [cand],
+        [hist_alt1, hist_main, hist_alt2],
+        as_of_utc=as_of,
+        minimum_historical_picks_for_band=2,
+        require_positive_expected_value=True,
+        require_point_in_time_price=True,
+    )
+    assert summary["historical_unique_pick_count"] == 1
+    assert summary["candidate_band_details"][cand.forecast_id]["historical_pick_count"] == 1
+    assert qualifying == []  # 1 game with 3 alt lines cannot satisfy min_picks=2
+
 
 

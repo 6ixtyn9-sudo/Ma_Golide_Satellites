@@ -620,7 +620,7 @@ def run_daily(args: argparse.Namespace) -> Dict[str, Any]:
                     date_yyyymmdd=config.date_yyyymmdd,
                     timezone_name=config.timezone,
                     acca_legs=getattr(args, "acca_legs", 3),
-                    acca_limit=getattr(args, "acca_limit", 5),
+                    acca_limit=getattr(args, "acca_limit", 3),
                     slate_window=report.get("slate_window"),
                 )
                 market_report_path = write_market_report(
@@ -972,7 +972,7 @@ def main() -> int:
         ),
     )
     parser.add_argument("--acca-legs", type=int, default=3)
-    parser.add_argument("--acca-limit", type=int, default=5)
+    parser.add_argument("--acca-limit", type=int, default=3)
     parser.add_argument("--freshness-hours", type=float, default=12.0)
     parser.add_argument("--book", default=None)
     parser.add_argument(

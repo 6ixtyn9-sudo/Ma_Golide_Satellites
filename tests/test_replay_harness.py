@@ -625,3 +625,154 @@ def test_derived_spread_survives_receipt_compaction_and_pool_grading() -> None:
     assert perf_win["history"][0]["candidate_pool_outcomes"] == {"ds_leg_1": "win"}
     assert perf_loss["history"][0]["candidate_pool_outcomes"] == {"ds_leg_1": "loss"}
 
+
+def test_replay_parity_and_ab_across_legacy_blend_and_kelly_option_1a(tmp_path: Path) -> None:
+    """Both legacy probability_price_blend receipts AND new Option 1+A Kelly
+    receipts must pass check_parity() 100%, and replay_harness A/B can compare
+    the two policies over identical frozen pools."""
+    from forecasting.accas import (
+        EDGE_FLAG_THRESHOLD,
+        MAX_CLAIMED_EDGE,
+        PAPER_ACCA_LIMIT,
+        PAPER_MAX_ACCA_LEGS,
+        PAPER_MAX_COMBINED_ODDS,
+        PAPER_MIN_ACCA_LEGS,
+        PAPER_MIN_COMBINED_ODDS,
+        RANKING_METRIC_KELLY,
+    )
+    from forecasting.operator import (
+        _grade_receipt,
+        _new_receipt,
+        _render_ticket_card,
+        _selection_policy_snapshot,
+    )
+
+    sched = "2026-11-28T20:00:00Z"
+    pool_rows = [
+        _make_forecast(league=League.NCAA_M, game_id="m1", home="Duke", away="UNC", scheduled_utc=sched, prob=0.78, price=1.40),
+        _make_forecast(league=League.NCAA_M, game_id="m2", home="Kansas", away="Baylor", scheduled_utc=sched, prob=0.72, price=1.50),
+        _make_forecast(league=League.NCAA_M, game_id="m3", home="UConn", away="Creighton", scheduled_utc=sched, prob=0.61, price=1.95),  # +19.0% EV -> flagged!
+        _make_forecast(league=League.NCAA_M, game_id="m4", home="Gonzaga", away="SMC", scheduled_utc=sched, prob=0.56, price=1.92),
+        _make_forecast(league=League.NCAA_M, game_id="m5", home="Houston", away="Texas", scheduled_utc=sched, prob=0.80, price=1.95),  # +56.0% EV -> hard-capped!
+    ]
+    # 1. Freeze a NEW Option 1+A Kelly receipt on 2026-11-28.
+    kelly_accas = build_accas(
+        pool_rows,
+        legs=PAPER_MAX_ACCA_LEGS,
+        min_legs=PAPER_MIN_ACCA_LEGS,
+        max_legs=PAPER_MAX_ACCA_LEGS,
+        limit=PAPER_ACCA_LIMIT,
+        require_disjoint_legs=True,
+        forbid_conflicting_game_sides=True,
+        forbid_alt_line_reuse=True,
+        min_combined_odds=PAPER_MIN_COMBINED_ODDS,
+        max_combined_odds=PAPER_MAX_COMBINED_ODDS,
+        ranking_metric=RANKING_METRIC_KELLY,
+        max_claimed_edge=MAX_CLAIMED_EDGE,
+        edge_flag_threshold=EDGE_FLAG_THRESHOLD,
+    )
+    assert len(kelly_accas) == 1
+    assert kelly_accas[0]["leg_count"] == 3
+    assert kelly_accas[0]["ranking_metric"] == RANKING_METRIC_KELLY
+    assert kelly_accas[0]["edge_implausible"] is True
+    assert all(leg["game_id"] != "m5" for leg in kelly_accas[0]["legs"])
+
+    sel_policy = _selection_policy_snapshot(
+        {
+            "requested_legs": PAPER_MAX_ACCA_LEGS,
+            "effective_paper_legs": PAPER_MAX_ACCA_LEGS,
+            "requested_limit": PAPER_ACCA_LIMIT,
+            "paper_lane": {"requires_calibrated_segment": True},
+            "paper_ticket_leg_reuse_policy": "no_reused_wager_selections_or_opposing_game_sides",
+            "paper_ticket_policy": {
+                "requested_legs": PAPER_MAX_ACCA_LEGS,
+                "min_legs": PAPER_MIN_ACCA_LEGS,
+                "max_legs": PAPER_MAX_ACCA_LEGS,
+                "effective_paper_legs": PAPER_MAX_ACCA_LEGS,
+                "limit": PAPER_ACCA_LIMIT,
+                "ranking_metric": RANKING_METRIC_KELLY,
+                "min_combined_odds": PAPER_MIN_COMBINED_ODDS,
+                "max_combined_odds": PAPER_MAX_COMBINED_ODDS,
+                "forbid_conflicting_game_sides": True,
+                "forbid_alt_line_reuse": True,
+                "max_claimed_edge": MAX_CLAIMED_EDGE,
+                "edge_flag_threshold": EDGE_FLAG_THRESHOLD,
+            },
+        },
+        League.NCAA_M,
+    )
+    league_dir = tmp_path / "ncaa_m"
+    league_dir.mkdir(parents=True, exist_ok=True)
+    receipt = _compact_ticket_receipt(
+        _new_receipt(
+            league=League.NCAA_M,
+            target_date="2026-11-28",
+            captured_utc="2026-11-28T10:15:00Z",
+            run_id="kelly_run_1",
+            accas=kelly_accas,
+            ticket_decision={"status": "frozen"},
+            candidate_pool=[r.to_dict() for r in pool_rows],
+            selection_policy=sel_policy,
+        )
+    )
+    (league_dir / "auto_tickets_2026-11-28_decision.json").write_text(
+        json.dumps(receipt, indent=2) + "\n", encoding="utf-8"
+    )
+    # Render card and confirm [EDGE>15% AUDIT] appears on the +19% EV leg
+    # even after Git-durable receipt compaction!
+    graded = _grade_receipt(receipt, {})
+    perf = _performance([receipt], {})
+    card_text = _render_ticket_card(graded, perf, timezone_name="Africa/Johannesburg")
+    assert "[EDGE>15% AUDIT]" in card_text
+
+    # 2. Freeze a LEGACY blend receipt on 2026-11-27 (without ranking_metric / min_legs / min_combined_odds).
+    legacy_accas = build_accas(
+        pool_rows[:4],
+        legs=3,
+        limit=5,
+        require_disjoint_legs=True,
+        forbid_conflicting_game_sides=False,
+    )
+    legacy_receipt = _compact_ticket_receipt(
+        _new_receipt(
+            league=League.NCAA_M,
+            target_date="2026-11-27",
+            captured_utc="2026-11-27T10:15:00Z",
+            run_id="legacy_run_1",
+            accas=legacy_accas,
+            ticket_decision={"status": "frozen"},
+            candidate_pool=[r.to_dict() for r in pool_rows[:4]],
+            selection_policy={
+                "requested_legs": 3,
+                "effective_paper_legs": 3,
+                "limit": 5,
+                "allow_provisional": True,
+                "require_disjoint_legs": True,
+                "forbid_conflicting_game_sides": False,
+                "min_leg_odds": 1.2,
+                "max_leg_odds": 3.0,
+                "price_weight": 0.15,
+            },
+        )
+    )
+    (league_dir / "auto_tickets_2026-11-27_decision.json").write_text(
+        json.dumps(legacy_receipt, indent=2) + "\n", encoding="utf-8"
+    )
+
+    days = load_localdata_evidence(tmp_path)
+    parity = check_parity(days)
+    assert parity["checked"] == 2
+    assert parity["matched"] == 2
+    assert parity["mismatched"] == 0
+
+    # Verify variant parsing supports the new Option 1+A keys cleanly.
+    spec = parse_variant_spec(
+        "ranking_metric=kelly_log_growth,min_legs=2,max_legs=3,limit=3,min_odds=3.3,max_odds=5.0,max_claimed_edge=0.40,edge_flag_threshold=0.15,forbid_alt_line_reuse=1"
+    )
+    assert spec.ranking_metric == "kelly_log_growth"
+    assert spec.min_legs == 2 and spec.max_legs == 3
+    assert spec.min_odds == 3.3 and spec.max_odds == 5.0
+    assert spec.max_claimed_edge == 0.40 and spec.edge_flag_threshold == 0.15
+    assert spec.forbid_alt_line_reuse is True
+
+
