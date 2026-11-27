@@ -1,0 +1,277 @@
+{
+  "accas": [],
+  "candidate_pool": [
+    {
+      "away": "Los Angeles Lakers",
+      "book": {
+        "book": "DraftKings",
+        "frozen": false,
+        "game_id": "401909333",
+        "line": null,
+        "main_line": true,
+        "market": "moneyline",
+        "observed_utc": "2026-11-27T10:46:56Z",
+        "operational_validation": "unverified",
+        "period": "full_game",
+        "pre_match": true,
+        "price_provenance": "named_book",
+        "provider": "espn",
+        "selected_decimal_price": 1.4608294930875576,
+        "side_prices": {
+          "away": 2.8,
+          "draw": null,
+          "home": 1.4608294930875576,
+          "over": null,
+          "under": null
+        },
+        "source_modified_utc": null,
+        "source_permission": "unresolved"
+      },
+      "bucket": "ELIGIBLE_CLEAN",
+      "calibrated_probability": 0.711734,
+      "calibration": {
+        "brier_score": 0.195052,
+        "minimum_samples": 30,
+        "n": 48,
+        "status": "calibrated",
+        "sufficient_for_accas": true
+      },
+      "calibration_version": "provider_prediction-7fb3e30d878d",
+      "date": "2026-11-27",
+      "detailed_evidence_sha256": "67ce52efbb869fbaaca2eafe2f1c41a81d689e04c28875e6d9c82bbd64abe197",
+      "eligibility": {
+        "acca_eligible": true,
+        "reasons": []
+      },
+      "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+      "forecast_id": "b663bf4ca1be64280b55",
+      "game_id": "401909333",
+      "grade_status": "pending",
+      "home": "San Antonio Spurs",
+      "league": "NBA",
+      "line": null,
+      "market": "moneyline",
+      "model": "provider:espn",
+      "model_version": "team_history_empirical",
+      "outcome": null,
+      "paper_only": true,
+      "period": "full_game",
+      "pick_id": "b663bf4ca1be64280b55",
+      "prediction": {
+        "frozen": false,
+        "model": "espn-bpi",
+        "model_version": "adapter:espn-bpi",
+        "observed_utc": "2026-11-27T10:46:58Z",
+        "produced_by": "ESPN BPI",
+        "provider": "espn"
+      },
+      "price_evidence": "NAMED_BOOKMAKER_PRICE",
+      "push_probability": 0.0,
+      "raw_probability": 0.71645,
+      "role": "favorite",
+      "scheduled_utc": "2026-11-28T02:30:00Z",
+      "selection": "home"
+    }
+  ],
+  "captured_at": "2026-11-27T10:47:07Z",
+  "date": "2026-11-27",
+  "decision_id": "45984724506_nba_1_attempt_1",
+  "frozen_at": "2026-11-27T10:47:07Z",
+  "league": "NBA",
+  "paper_only": true,
+  "schema_version": "magolide.paper_ticket_receipt",
+  "selection_policy": {
+    "allow_provisional": false,
+    "effective_paper_legs": null,
+    "forbid_conflicting_game_sides": true,
+    "limit": 5,
+    "max_leg_odds": 3.0,
+    "min_leg_odds": 1.2,
+    "price_weight": 0.15,
+    "requested_legs": 3,
+    "require_disjoint_legs": true
+  },
+  "singles": [
+    {
+      "bookmakers": [
+        "DraftKings"
+      ],
+      "combined_decimal_odds": 1.4608294930875576,
+      "estimated_joint_win_probability": 0.711734,
+      "estimated_win_probability": 0.711734,
+      "individual_pick_filter": {
+        "candidate_band_details": {
+          "b663bf4ca1be64280b55": {
+            "adjusted_roi": 0.079152,
+            "historical_pick_count": 6,
+            "individual_odds_band": "1.20-<1.50",
+            "league": "NBA",
+            "losses": 1,
+            "market": "moneyline",
+            "observed_roi": 0.088402,
+            "period": "full_game",
+            "probability_band": "0.70-<0.80",
+            "pushes": 0,
+            "qualifies": true,
+            "recency_weighted_roi": 0.119819,
+            "wins": 5
+          }
+        },
+        "candidate_pick_count": 13,
+        "historical_unique_pick_count": 237,
+        "history_fallback": {
+          "from": "settled_pick_audit",
+          "reason": "no_usable_settled_individual_pick_history",
+          "settled_audit_usable_pick_count": 0,
+          "used": true
+        },
+        "history_source": "prequential_settled_individual_forecasts_cold_start_fallback",
+        "qualifying_band_count": 1,
+        "qualifying_pick_count": 1,
+        "status": "applied"
+      },
+      "leg_count": 1,
+      "legs": [
+        {
+          "away": "Los Angeles Lakers",
+          "book": {
+            "book": "DraftKings",
+            "frozen": false,
+            "game_id": "401909333",
+            "line": null,
+            "main_line": true,
+            "market": "moneyline",
+            "observed_utc": "2026-11-27T10:46:56Z",
+            "operational_validation": "unverified",
+            "period": "full_game",
+            "pre_match": true,
+            "price_provenance": "named_book",
+            "provider": "espn",
+            "selected_decimal_price": 1.4608294930875576,
+            "side_prices": {
+              "away": 2.8,
+              "draw": null,
+              "home": 1.4608294930875576,
+              "over": null,
+              "under": null
+            },
+            "source_modified_utc": null,
+            "source_permission": "unresolved"
+          },
+          "bucket": "ELIGIBLE_CLEAN",
+          "calibrated_probability": 0.711734,
+          "calibration": {
+            "brier_score": 0.195052,
+            "minimum_samples": 30,
+            "n": 48,
+            "status": "calibrated",
+            "sufficient_for_accas": true
+          },
+          "calibration_version": "provider_prediction-7fb3e30d878d",
+          "date": "2026-11-27",
+          "detailed_evidence_sha256": "92d3040ba5280a66d87fc09a61dac35ecb9207e3b8cc93a4ff3388bb0eb1c9ca",
+          "eligibility": {
+            "acca_eligible": true,
+            "reasons": []
+          },
+          "evidence_schema": "magolide.frozen_forecast_evidence.v1",
+          "forecast_id": "b663bf4ca1be64280b55",
+          "game_id": "401909333",
+          "grade_status": "pending",
+          "home": "San Antonio Spurs",
+          "league": "NBA",
+          "line": null,
+          "market": "moneyline",
+          "model": "provider:espn",
+          "model_version": "team_history_empirical",
+          "outcome": null,
+          "paper_only": true,
+          "period": "full_game",
+          "pick_id": "b663bf4ca1be64280b55",
+          "prediction": {
+            "frozen": false,
+            "model": "espn-bpi",
+            "model_version": "adapter:espn-bpi",
+            "observed_utc": "2026-11-27T10:46:58Z",
+            "produced_by": "ESPN BPI",
+            "provider": "espn"
+          },
+          "price_evidence": "NAMED_BOOKMAKER_PRICE",
+          "push_probability": 0.0,
+          "raw_probability": 0.71645,
+          "role": "favorite",
+          "scheduled_utc": "2026-11-28T02:30:00Z",
+          "selection": "home",
+          "venue_rest_evidence": {
+            "any_back_to_back": false,
+            "away_back_to_back": false,
+            "away_prev_fixture_date": "2026-11-24",
+            "away_prev_fixture_id": "401910044",
+            "away_prev_source": "espn",
+            "away_rest_hours": 95.5,
+            "definition": {
+              "back_to_back_max_hours": 26.0,
+              "relist_skip_max_hours": 6.0
+            },
+            "home_back_to_back": false,
+            "home_prev_fixture_date": "2026-11-26",
+            "home_prev_fixture_id": "401909325",
+            "home_prev_source": "espn",
+            "home_rest_hours": 47.5,
+            "neutral_site": false,
+            "neutral_site_source": "espn.scoreboard",
+            "rest_diff_hours": -48.0
+          }
+        }
+      ],
+      "paper_only": true,
+      "provisional_leg_count": 0,
+      "provisional_sample_gate_bypassed": false,
+      "publication_index": 1,
+      "ranking_status": "paper_only_roi_qualified_single",
+      "stake_units": 1.0,
+      "ticket_id": "0eb7f6e92d26ca926243",
+      "ticket_type": "single"
+    }
+  ],
+  "stake_units_per_acca": 1.0,
+  "stake_units_per_position": 1.0,
+  "status": "frozen",
+  "ticket_decision": {
+    "candidate_tickets_pre_tip": 1,
+    "candidate_tickets_seen": 1,
+    "derived_spread_candidates_seen": 0,
+    "derived_spread_history": {
+      "contract": "unpriced_moneyline_spread",
+      "cover_rate": null,
+      "decisions": 0,
+      "history_scope": "derived_spread_named_book_pre_tip_quotes",
+      "losses": 0,
+      "minimum_cover_rate": 0.7,
+      "minimum_decisions_exclusive": 10,
+      "positive_roi_required": true,
+      "priced_settled": 0,
+      "pushes": 0,
+      "qualifies": false,
+      "roi": null,
+      "status": "insufficient_history",
+      "units": 0,
+      "wins": 0
+    },
+    "earliest_slate_tip_utc": "2026-11-28T00:00:00Z",
+    "generated_utc": "2026-11-27T10:47:07Z",
+    "lead_minutes": 120,
+    "market_report_available": true,
+    "planned_cutoff_utc": "2026-11-27T10:00:00Z",
+    "policy": "1200_sast_or_first_slate_tip_minus_120_minutes",
+    "pre_tip_safety_cutoff_utc": "2026-11-27T22:00:00Z",
+    "preview_rows_excluded_from_tickets": 0,
+    "preview_rows_seen": 0,
+    "publication_cutoff_utc": "2026-11-27T10:00:00Z",
+    "publication_local_time": "12:00",
+    "publication_timezone": "Africa/Johannesburg",
+    "slate_time_source": "games",
+    "slate_timezone": "America/New_York",
+    "status": "due"
+  }
+}

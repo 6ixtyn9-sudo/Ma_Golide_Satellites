@@ -327,6 +327,60 @@
           "status": "due"
         }
       }
+    },
+    "2026-11-27": {
+      "decision_cutoff_utc": "2026-11-27T10:00:00Z",
+      "decision_id": "45984724506_nba_g_league_1_attempt_1",
+      "final": true,
+      "frozen_at": "2026-11-27T10:47:07Z",
+      "lock_source": "inline_state_no_bet",
+      "no_bet": true,
+      "no_bet_decision": {
+        "decision_id": "45984724506_nba_g_league_1_attempt_1",
+        "frozen_at": "2026-11-27T10:47:07Z",
+        "league": "NBA_G_LEAGUE",
+        "reason": "no_qualifying_pre_tip_ticket_at_decision_cutoff",
+        "schema_version": "magolide.paper_ticket_no_bet",
+        "status": "frozen_no_bet",
+        "target_date": "2026-11-27",
+        "ticket_decision": {
+          "candidate_tickets_pre_tip": 0,
+          "candidate_tickets_seen": 0,
+          "derived_spread_candidates_seen": 0,
+          "derived_spread_history": {
+            "contract": "unpriced_moneyline_spread",
+            "cover_rate": null,
+            "decisions": 0,
+            "history_scope": "derived_spread_named_book_pre_tip_quotes",
+            "losses": 0,
+            "minimum_cover_rate": 0.7,
+            "minimum_decisions_exclusive": 10,
+            "positive_roi_required": true,
+            "priced_settled": 0,
+            "pushes": 0,
+            "qualifies": false,
+            "roi": null,
+            "status": "insufficient_history",
+            "units": 0,
+            "wins": 0
+          },
+          "earliest_slate_tip_utc": "2026-11-27T18:00:00Z",
+          "generated_utc": "2026-11-27T10:47:07Z",
+          "lead_minutes": 120,
+          "market_report_available": true,
+          "planned_cutoff_utc": "2026-11-27T10:00:00Z",
+          "policy": "1200_sast_or_first_slate_tip_minus_120_minutes",
+          "pre_tip_safety_cutoff_utc": "2026-11-27T16:00:00Z",
+          "preview_rows_excluded_from_tickets": 0,
+          "preview_rows_seen": 0,
+          "publication_cutoff_utc": "2026-11-27T10:00:00Z",
+          "publication_local_time": "12:00",
+          "publication_timezone": "Africa/Johannesburg",
+          "slate_time_source": "games",
+          "slate_timezone": "America/New_York",
+          "status": "due"
+        }
+      }
     }
   },
   "paper_bank_units": 100.0,
