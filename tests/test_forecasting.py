@@ -2477,4 +2477,137 @@ def test_historical_roi_band_deduplicates_alternate_lines_per_game():
     assert qualifying == []  # 1 game with 3 alt lines cannot satisfy min_picks=2
 
 
+def test_kelly_frontier_fixture_collision_never_masks_legal_third_leg():
+    """A same-fixture higher-price/higher-prob leg must not raise the Pareto
+    dominance threshold and hide a legal lower-price leg from another fixture."""
+    f0 = _roi_forecast("G1", 0.78, 1.40, None, market="moneyline", selection="home", scheduled_utc="2026-11-28T20:00:00Z")
+    f1 = _roi_forecast("G2", 0.72, 1.50, None, market="moneyline", selection="home", scheduled_utc="2026-11-28T20:00:00Z")
+    f2 = _roi_forecast("G3", 0.60, 1.80, None, market="moneyline", selection="home", scheduled_utc="2026-11-28T20:00:00Z")
+    # Same fixture G1 as f0, pricier & higher prob than f2: a naive monotonic
+    # prev_greater chain pops f2 and selects inferior (f1, f2, f3) @4.995.
+    f3 = _roi_forecast("G1", 0.61, 1.85, None, market="total", selection="under", line=145.5, scheduled_utc="2026-11-28T20:00:00Z")
+    for row in (f0, f1, f2, f3):
+        row.eligibility = {"acca_eligible": True, "reasons": []}
+
+    accas = build_accas(
+        [f0, f1, f2, f3],
+        min_legs=2,
+        max_legs=3,
+        limit=3,
+        require_disjoint_legs=True,
+        min_combined_odds=3.30,
+        max_combined_odds=5.00,
+        ranking_metric="kelly_log_growth",
+    )
+    assert len(accas) == 1
+    assert accas[0]["combined_decimal_odds"] == pytest.approx(3.78, abs=1e-4)
+    assert accas[0]["ranking_score"] == pytest.approx(0.012800, abs=1e-5)
+    assert {leg["game_id"] for leg in accas[0]["legs"]} == {"G1", "G2", "G3"}
+    assert all(leg["market"] == "moneyline" for leg in accas[0]["legs"])
+
+
+def test_kelly_frontier_upper_band_epsilon_rejection_does_not_mask_in_band_leg():
+    """A leg inside _last_range's 1e-12 padding that exceeds max_combined_odds
+    must not raise the dominance threshold and mask valid legs below 5.00."""
+    f0 = _roi_forecast("G1", 0.78, 2.00, None, scheduled_utc="2026-11-28T20:00:00Z")
+    # Combined odds 2.00 * 2.500000000001 = 5.000000000002 (> 5.00, within 1e-12 pad)
+    f_over = _roi_forecast("G2", 0.70, 2.500000000001, None, scheduled_utc="2026-11-28T20:00:00Z")
+    f_valid = _roi_forecast("G3", 0.60, 2.45, None, scheduled_utc="2026-11-28T20:00:00Z")
+    for row in (f0, f_over, f_valid):
+        row.eligibility = {"acca_eligible": True, "reasons": []}
+
+    accas = build_accas(
+        [f0, f_over, f_valid],
+        min_legs=2,
+        max_legs=3,
+        limit=3,
+        require_disjoint_legs=True,
+        min_combined_odds=3.30,
+        max_combined_odds=5.00,
+        ranking_metric="kelly_log_growth",
+    )
+    assert len(accas) == 1
+    assert accas[0]["combined_decimal_odds"] == pytest.approx(4.90, abs=1e-4)
+    assert {leg["game_id"] for leg in accas[0]["legs"]} == {"G1", "G3"}
+
+
+def test_kelly_segment_tree_matches_brute_force_on_multimarket_boards():
+    """Exactness parity over 60 multi-market boards (half correlated, half
+    random), checking both require_disjoint_legs=True and non-disjoint top-3."""
+    import random
+    from forecasting.accas import kelly_log_growth
+
+    for seed in range(60):
+        rng = random.Random(seed)
+        board = []
+        for g in range(10):
+            base_edge = rng.uniform(0.01, 0.16) if seed < 30 else None
+            for mkt in ("moneyline", "spread", "total"):
+                odds = round(rng.uniform(1.25, 2.95), 2)
+                ev = (
+                    max(0.005, base_edge + rng.uniform(-0.02, 0.02))
+                    if base_edge is not None
+                    else rng.uniform(0.005, 0.18)
+                )
+                prob = min(0.95, round((1.0 + ev) / odds, 4))
+                sel = "home" if mkt != "total" else "under"
+                line = None if mkt == "moneyline" else (-4.5 if mkt == "spread" else 145.5)
+                row = _roi_forecast(
+                    f"G{g:02d}",
+                    prob,
+                    odds,
+                    None,
+                    market=mkt,
+                    selection=sel,
+                    line=line,
+                    scheduled_utc="2026-11-28T20:00:00Z",
+                )
+                row.eligibility = {"acca_eligible": True, "reasons": []}
+                board.append(row)
+
+        brute = []
+        for leg_count in (2, 3):
+            for comb in itertools.combinations(board, leg_count):
+                if len({c.game_id for c in comb}) != leg_count:
+                    continue
+                comb_odds = math.prod(c.decimal_price for c in comb)
+                if not (3.30 <= comb_odds <= 5.00):
+                    continue
+                comb_prob = math.prod(c.calibrated_probability for c in comb)
+                g_val = kelly_log_growth(comb_prob, comb_odds)
+                if math.isfinite(g_val):
+                    brute.append((round(g_val, 8), round(comb_prob, 8)))
+        brute.sort(reverse=True)
+
+        got_nd = build_accas(
+            board,
+            min_legs=2,
+            max_legs=3,
+            limit=3,
+            require_disjoint_legs=False,
+            min_combined_odds=3.30,
+            max_combined_odds=5.00,
+            ranking_metric="kelly_log_growth",
+        )
+        got_d = build_accas(
+            board,
+            min_legs=2,
+            max_legs=3,
+            limit=3,
+            require_disjoint_legs=True,
+            min_combined_odds=3.30,
+            max_combined_odds=5.00,
+            ranking_metric="kelly_log_growth",
+        )
+        assert [
+            (t["ranking_score"], t["estimated_joint_win_probability"]) for t in got_nd
+        ] == brute[: len(got_nd)]
+        if brute:
+            assert (
+                got_d[0]["ranking_score"],
+                got_d[0]["estimated_joint_win_probability"],
+            ) == brute[0]
+
+
+
 
