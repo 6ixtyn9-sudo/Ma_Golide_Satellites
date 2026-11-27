@@ -1,6 +1,6 @@
 {
-  "awaiting_game_legs": 6,
-  "awaiting_game_legs_open": 3,
+  "awaiting_game_legs": 5,
+  "awaiting_game_legs_open": 2,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -2486,7 +2486,7 @@
       "wins": 2
     },
     {
-      "awaiting_game_legs": 6,
+      "awaiting_game_legs": 5,
       "bank_units": 111.76916599218453,
       "date": "2026-11-26",
       "decision_id": "45804223719_ncaa_m_1_attempt_1",
@@ -2822,7 +2822,7 @@
           "unresolved_legs": 1
         },
         {
-          "awaiting_game_legs": 2,
+          "awaiting_game_legs": 1,
           "bookmakers": [
             "DraftKings"
           ],
@@ -2834,7 +2834,7 @@
           "leg_outcomes": [
             null,
             "win",
-            null
+            "win"
           ],
           "legs": [
             {
@@ -2877,13 +2877,13 @@
               "book_provider": "espn",
               "forecast_id": "1657e293dee1383f70bc",
               "game_id": "401921673",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "USC Trojans",
               "line": -3.5,
               "market": "spread",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "1657e293dee1383f70bc",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-26T21:30:00Z",
               "selected_decimal_price": 1.8928571428571428,
               "selection": "away"
@@ -2899,7 +2899,7 @@
           "stake_units": 1.0,
           "ticket_id": "b8299240046473fe5120",
           "ticket_type": "acca",
-          "unresolved_legs": 2
+          "unresolved_legs": 1
         }
       ],
       "profit_units": -3.0,
@@ -2911,7 +2911,7 @@
       "settled_positions": 3,
       "settled_singles": 0,
       "staked_units": 3.0,
-      "unresolved_result_legs": 6,
+      "unresolved_result_legs": 5,
       "wins": 0
     }
   ],
@@ -2931,12 +2931,12 @@
   "result_unresolvable_legs": 0,
   "roi": 0.36778643725576576,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.18906586823143606,
+  "selected_leg_brier_score": 0.18928053364888414,
   "settled_accas": 31,
   "settled_positions": 32,
   "settled_singles": 1,
   "settled_stake_units": 32.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 6,
+  "unresolved_result_legs": 5,
   "wins": 15
 }
