@@ -1,6 +1,6 @@
 Ma Golide Picks — NCAA_W 2026-11-26
 ========================================================================
-Generated at: 2026-11-27 03:47 SAST
+Generated at: 2026-11-27 04:47 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -21,17 +21,7 @@ PRIOR-HEAVY — THIN TEAM EVIDENCE (PAPER ONLY)
 
 WATCHLIST — NO MATCHED ODDS
 ========================================================================
-  [team_history_empirical/team_history_empirical] Miami (OH) RedHawks vs Cincinnati Bearcats · KO 2026-11-27 04:00 SAST
-      MONEYLINE full_game -> HOME · p=65.9% (raw 71.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-27T00:48:39Z
-      calibration=calibrated n=564 · reasons=no_exact_bookmaker_market,superseded_by_calibration_twin · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=146.0h (b2b=false) · away_rest=124.0h (b2b=false) · diff=+22.0h · any_b2b=false
-      collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:espn, team_history_empirical
-  [team_history_empirical/team_history_empirical] Miami (OH) RedHawks vs Cincinnati Bearcats · KO 2026-11-27 04:00 SAST
-      MONEYLINE H1 -> HOME · p=57.0% (raw 64.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-27T00:48:39Z
-      calibration=calibrated n=563 · reasons=no_exact_bookmaker_market · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=146.0h (b2b=false) · away_rest=124.0h (b2b=false) · diff=+22.0h · any_b2b=false
+  (none)
 
 WATCHLIST — INSUFFICIENT CONTEXT
 ========================================================================
@@ -48,11 +38,22 @@ IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T23:48:28Z
       calibration=calibrated n=358 · reasons=no_exact_bookmaker_market · prediction=espn
       venue/rest (evidence only) · neutral_site=true · home_rest=143.5h (b2b=false) · away_rest=73.0h (b2b=false) · diff=+70.5h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Miami (OH) RedHawks vs Cincinnati Bearcats · KO 2026-11-27 04:00 SAST
+      MONEYLINE full_game -> HOME · p=65.9% (raw 71.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-27T00:48:39Z
+      calibration=calibrated n=564 · reasons=no_exact_bookmaker_market,superseded_by_calibration_twin · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=146.0h (b2b=false) · away_rest=124.0h (b2b=false) · diff=+22.0h · any_b2b=false
+      collapsed_observations=2 · books_quoted=1: unattributed · surfaces=provider:espn, team_history_empirical
   [team_history_empirical/team_history_empirical] Santa Clara Broncos vs Xavier Musketeers · KO 2026-11-27 03:00 SAST
       MONEYLINE full_game -> AWAY · p=58.0% (raw 63.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T23:48:28Z
       calibration=calibrated n=555 · reasons=no_exact_bookmaker_market · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=143.5h (b2b=false) · away_rest=73.0h (b2b=false) · diff=+70.5h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Miami (OH) RedHawks vs Cincinnati Bearcats · KO 2026-11-27 04:00 SAST
+      MONEYLINE H1 -> HOME · p=57.0% (raw 64.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-27T00:48:39Z
+      calibration=calibrated n=563 · reasons=no_exact_bookmaker_market · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=146.0h (b2b=false) · away_rest=124.0h (b2b=false) · diff=+22.0h · any_b2b=false
   [team_history_empirical/team_history_empirical] Santa Clara Broncos vs Xavier Musketeers · KO 2026-11-27 03:00 SAST
       MONEYLINE H1 -> AWAY · p=50.2% (raw 57.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-26T23:48:28Z
@@ -266,9 +267,9 @@ SETTLED PICKS — ARCHIVE ONLY
       calibration=calibrated n=44 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=102.5h (b2b=false) · away_rest=99.5h (b2b=false) · diff=+3.0h · any_b2b=false
 
-Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=2 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=0 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
 ROI-qualified individual paper singles: 0
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=3 SETTLED=39
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=5 SETTLED=39
 Logical picks shown: 44 · superseded observations: 0 · book/model rows collapsed: 10
 Total archived pick evidence rows: 54
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
