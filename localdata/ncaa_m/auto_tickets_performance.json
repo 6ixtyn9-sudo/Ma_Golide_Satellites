@@ -1,6 +1,6 @@
 {
-  "awaiting_game_legs": 2,
-  "awaiting_game_legs_open": 2,
+  "awaiting_game_legs": 0,
+  "awaiting_game_legs_open": 0,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -2486,17 +2486,17 @@
       "wins": 2
     },
     {
-      "awaiting_game_legs": 2,
-      "bank_units": 111.76916599218453,
+      "awaiting_game_legs": 0,
+      "bank_units": 109.76916599218453,
       "date": "2026-11-26",
       "decision_id": "45804223719_ncaa_m_1_attempt_1",
       "frozen_at": "2026-11-26T11:25:40Z",
       "league": "NCAA_M",
-      "losses": 3,
-      "pending_accas": 2,
-      "pending_positions": 2,
+      "losses": 5,
+      "pending_accas": 0,
+      "pending_positions": 0,
       "pending_singles": 0,
-      "pending_units": 2.0,
+      "pending_units": 0,
       "positions": [
         {
           "awaiting_game_legs": 0,
@@ -2742,17 +2742,17 @@
           "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 6.874,
           "effective_decimal_odds": 6.873956960913483,
           "estimated_joint_win_probability": 0.17154109,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "loss",
             "win",
             "win"
           ],
@@ -2763,13 +2763,13 @@
               "book_provider": "espn",
               "forecast_id": "5d79bf5a9cae30458661",
               "game_id": "401920531",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Oregon Ducks",
               "line": 148.5,
               "market": "total",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "5d79bf5a9cae30458661",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-27T04:30:00Z",
               "selected_decimal_price": 1.8695652173913042,
               "selection": "over"
@@ -2810,6 +2810,7 @@
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 4,
@@ -2819,20 +2820,20 @@
           "stake_units": 1.0,
           "ticket_id": "d301274ed9e4011e6e29",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 6.6985,
           "effective_decimal_odds": 6.698480479148181,
           "estimated_joint_win_probability": 0.1654667,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
-            null,
+            "loss",
             "win",
             "win"
           ],
@@ -2843,13 +2844,13 @@
               "book_provider": "espn",
               "forecast_id": "04c511ae3dee5f86f468",
               "game_id": "401920531",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "Oregon Ducks",
               "line": 149.5,
               "market": "total",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "04c511ae3dee5f86f468",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-27T04:30:00Z",
               "selected_decimal_price": 1.8928571428571428,
               "selection": "over"
@@ -2890,6 +2891,7 @@
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 5,
@@ -2899,44 +2901,44 @@
           "stake_units": 1.0,
           "ticket_id": "b8299240046473fe5120",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         }
       ],
-      "profit_units": -3.0,
+      "profit_units": -5.0,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-26_decision.json",
       "result_unresolvable_legs": 0,
       "returned_units": 0.0,
-      "settled_accas": 3,
-      "settled_positions": 3,
+      "settled_accas": 5,
+      "settled_positions": 5,
       "settled_singles": 0,
-      "staked_units": 3.0,
-      "unresolved_result_legs": 2,
+      "staked_units": 5.0,
+      "unresolved_result_legs": 0,
       "wins": 0
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.46875,
+  "hit_rate": 0.4411764705882353,
   "league": "NCAA_M",
-  "losses": 17,
-  "paper_bank_units": 111.7691659921845,
-  "paper_committed_units": 2.0,
+  "losses": 19,
+  "paper_bank_units": 109.7691659921845,
+  "paper_committed_units": 0,
   "paper_free_units": 109.7691659921845,
   "paper_only": true,
-  "pending_accas": 2,
-  "pending_positions": 2,
+  "pending_accas": 0,
+  "pending_positions": 0,
   "pending_singles": 0,
-  "profit_units": 11.769165992184504,
+  "profit_units": 9.769165992184504,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": 0.36778643725576576,
+  "roi": 0.28732841153483835,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.19357669819092851,
-  "settled_accas": 31,
-  "settled_positions": 32,
+  "selected_leg_brier_score": 0.1960311570008899,
+  "settled_accas": 33,
+  "settled_positions": 34,
   "settled_singles": 1,
-  "settled_stake_units": 32.0,
+  "settled_stake_units": 34.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 2,
+  "unresolved_result_legs": 0,
   "wins": 15
 }
