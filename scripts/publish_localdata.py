@@ -348,6 +348,8 @@ def _compact_frozen_forecast(row: object) -> object:
                 "price_evidence",
                 "paper_only",
                 "paper_roi_band_eligible",
+                "claimed_edge",
+                "edge_implausible",
                 "outcome",
                 "grade_status",
             ),

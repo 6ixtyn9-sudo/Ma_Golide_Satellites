@@ -29,10 +29,19 @@ from ingestion.models import (
 from ingestion.predictions import DEFAULT_PROVIDER_ORDER
 
 from .accas import (
+    EDGE_FLAG_THRESHOLD,
+    MAX_CLAIMED_EDGE,
+    PAPER_ACCA_LIMIT,
+    PAPER_MAX_ACCA_LEGS,
+    PAPER_MAX_COMBINED_ODDS,
+    PAPER_MIN_ACCA_LEGS,
+    PAPER_MIN_COMBINED_ODDS,
+    RANKING_METRIC_BLEND,
+    RANKING_METRIC_KELLY,
     build_accas,
     filter_paper_candidate_picks,
-    ticket_leg_pool,
     is_provisional_sample_only,
+    ticket_leg_pool,
 )
 from .context_adjustment import (
     ContextAdjustmentConfig,
@@ -58,6 +67,7 @@ from .shadow import (
 from .types import Forecast, MODEL_VERSION, grade_forecast
 
 _VENUE_REST_BACK_TO_BACK_MAX_HOURS = 26.0
+_UNSET: Any = object()
 _VENUE_REST_RELIST_SKIP_MAX_HOURS = 6.0
 _REST_EXCLUDED_STATUSES = frozenset(
     {
@@ -65,6 +75,15 @@ _REST_EXCLUDED_STATUSES = frozenset(
         GameStatus.CANCELLED,
         GameStatus.ABANDONED,
     }
+)
+#: Leagues with validated named-book pre-tip feeds governed by the strict
+#: calibrated-skill (<0.25 Brier), positive-EV, 5-pick ROI band paper lane.
+CALIBRATED_VALUE_PAPER_LEAGUES = frozenset({League.NBA, League.NCAA_M, League.NCAA_W})
+#: All named-book value paper lanes that use the unified Option 1 + Option A
+#: ticket policy (Kelly g* ranking, variable 2-3 legs, limit 3, @3.30-5.00,
+#: EV > 15% audit flag, EV > 40% sanity cap, no alt-line reuse).
+STRICT_VALUE_TICKET_LEAGUES = CALIBRATED_VALUE_PAPER_LEAGUES | frozenset(
+    {League.EUROLEAGUE}
 )
 
 
@@ -685,9 +704,15 @@ class MarketForecastService:
         as_of_utc: str,
         date_yyyymmdd: Optional[str] = None,
         timezone_name: str = "UTC",
-        acca_legs: int = 3,
-        acca_limit: int = 5,
+        acca_legs: int = PAPER_MAX_ACCA_LEGS,
+        acca_limit: int = PAPER_ACCA_LIMIT,
         slate_window: Optional[Dict[str, Any]] = None,
+        paper_min_legs: Any = _UNSET,
+        paper_min_combined_odds: Any = _UNSET,
+        paper_max_combined_odds: Any = _UNSET,
+        paper_ranking_metric: Any = _UNSET,
+        paper_max_claimed_edge: Any = _UNSET,
+        paper_edge_flag_threshold: Any = _UNSET,
     ) -> Dict[str, Any]:
         as_of = parse_utc(as_of_utc)
         games = self.store.list_games(league=self.league)
@@ -1042,6 +1067,17 @@ class MarketForecastService:
             if self.paper_pick_history is None
             else "settled_pick_audit"
         )
+        strict_value_lane = self.league in STRICT_VALUE_TICKET_LEAGUES
+        effective_max_claimed_edge = (
+            (MAX_CLAIMED_EDGE if strict_value_lane else None)
+            if paper_max_claimed_edge is _UNSET
+            else paper_max_claimed_edge
+        )
+        effective_edge_flag_threshold = (
+            (EDGE_FLAG_THRESHOLD if strict_value_lane else None)
+            if paper_edge_flag_threshold is _UNSET
+            else paper_edge_flag_threshold
+        )
         if self.league is League.EUROLEAGUE:
             paper_lane_options = {
                 "minimum_historical_picks_for_band": 10,
@@ -1053,14 +1089,17 @@ class MarketForecastService:
                 # the strict lane priced tickets on consensus averages
                 # (2026-11-25: 5 of 11 eligible rows, 4 of 4 strict accas).
                 "require_named_book_quote": True,
+                "max_claimed_edge": effective_max_claimed_edge,
+                "edge_flag_threshold": effective_edge_flag_threshold,
             }
-        elif self.league in {League.NBA, League.NCAA_W}:
-            # Once NBA or NCAA_W has walk-forward calibrated (n >= minimum_samples)
-            # segments, keep provisional experimental surfaces (e.g. n=3)
-            # audit-only, reject calibrated segments whose walk-forward Brier
-            # is no better than a 50/50 coin flip (>= 0.25), require positive
-            # calibrated EV at exact pre-tip named-book quotes, and require at
-            # least 5 prior settled picks in the matching ROI band.
+        elif self.league in CALIBRATED_VALUE_PAPER_LEAGUES:
+            # Once NBA, NCAA_M, or NCAA_W has walk-forward calibrated
+            # (n >= minimum_samples) segments, keep provisional experimental
+            # surfaces audit-only, reject calibrated segments whose walk-forward
+            # Brier is no better than a 50/50 coin flip (>= 0.25), require
+            # positive calibrated EV at exact pre-tip named-book quotes, apply
+            # the Option A edge tripwire (15% audit flag / 40% sanity cap), and
+            # require at least 5 prior settled picks in the matching ROI band.
             league_has_calibrated_candidates = any(
                 (row.calibration or {}).get("sufficient_for_accas") is True
                 for row in ticket_eligible_current
@@ -1072,6 +1111,8 @@ class MarketForecastService:
                 "require_named_book_quote": True,
                 "require_calibrated_segment": league_has_calibrated_candidates,
                 "maximum_segment_brier_score": 0.25,
+                "max_claimed_edge": effective_max_claimed_edge,
+                "edge_flag_threshold": effective_edge_flag_threshold,
             }
         else:
             # These source contracts have no validated named-book feed, so they
@@ -1116,13 +1157,20 @@ class MarketForecastService:
             band = band_details_by_id.get(candidate.forecast_id)
             if band is not None:
                 single["individual_pick_roi_band"] = dict(band)
+                if "edge_implausible" in band:
+                    single["edge_implausible"] = bool(band["edge_implausible"])
+                if "expected_value_per_unit" in band:
+                    single["claimed_edge"] = band["expected_value_per_unit"]
             paper_single_picks.append(single)
 
         qualified_game_count = len({candidate.game_id for candidate in paper_candidates})
         # Why a ticket may be missing even when singles qualified: the acca
         # builder applies its own eligibility and price band on top of the ROI
         # filter, so the card must name that instead of blaming the acca step.
-        acca_pool = ticket_leg_pool(paper_candidates, allow_provisional=True)
+        acca_pool = ticket_leg_pool(
+            paper_candidates,
+            allow_provisional=not bool(paper_lane_options.get("require_calibrated_segment")),
+        )
         acca_pool_ids = {row.forecast_id for row in acca_pool}
         acca_pool_games = len({row.game_id for row in acca_pool})
         acca_blockers: Counter = Counter()
@@ -1133,20 +1181,77 @@ class MarketForecastService:
             for reason in reasons or ["not_acca_eligible"]:
                 acca_blockers[str(reason)] += 1
         effective_paper_legs = min(acca_legs, qualified_game_count)
+        effective_ranking_metric = (
+            (RANKING_METRIC_KELLY if strict_value_lane else RANKING_METRIC_BLEND)
+            if paper_ranking_metric is _UNSET
+            else (paper_ranking_metric or RANKING_METRIC_BLEND)
+        )
+        effective_min_combined_odds = (
+            (PAPER_MIN_COMBINED_ODDS if strict_value_lane else None)
+            if paper_min_combined_odds is _UNSET
+            else paper_min_combined_odds
+        )
+        effective_max_combined_odds = (
+            (PAPER_MAX_COMBINED_ODDS if strict_value_lane else None)
+            if paper_max_combined_odds is _UNSET
+            else paper_max_combined_odds
+        )
+        resolved_min_legs_setting = (
+            (PAPER_MIN_ACCA_LEGS if strict_value_lane else None)
+            if paper_min_legs is _UNSET
+            else paper_min_legs
+        )
+        effective_forbid_opposing = self.league in CALIBRATED_VALUE_PAPER_LEAGUES
+        effective_forbid_alt_line_reuse = strict_value_lane
+        effective_paper_min_legs: Optional[int]
+        effective_paper_max_legs: Optional[int]
         if effective_paper_legs < 2:
             effective_paper_legs = None
+            effective_paper_min_legs = None
+            effective_paper_max_legs = None
             paper_accas = []
         else:
-            # Keep the requested size when enough qualifying games exist; if
-            # fewer remain, make the largest viable smaller combo (minimum two).
+            if resolved_min_legs_setting is not None:
+                effective_paper_min_legs = min(
+                    int(resolved_min_legs_setting),
+                    effective_paper_legs,
+                )
+                effective_paper_max_legs = effective_paper_legs
+            else:
+                effective_paper_min_legs = effective_paper_legs
+                effective_paper_max_legs = effective_paper_legs
+            # Variable 2-3 legs (Option 1) for strict value lanes; fixed size
+            # falling down to available distinct games for legacy/standard lanes.
             paper_accas = build_accas(
                 paper_candidates,
-                legs=effective_paper_legs,
+                legs=effective_paper_max_legs,
+                min_legs=effective_paper_min_legs,
+                max_legs=effective_paper_max_legs,
                 limit=acca_limit,
                 allow_provisional=not bool(paper_lane_options.get("require_calibrated_segment")),
                 require_disjoint_legs=True,
-                forbid_conflicting_game_sides=(self.league in {League.NBA, League.NCAA_W}),
+                forbid_conflicting_game_sides=effective_forbid_opposing,
+                forbid_alt_line_reuse=effective_forbid_alt_line_reuse,
+                min_combined_odds=effective_min_combined_odds,
+                max_combined_odds=effective_max_combined_odds,
+                ranking_metric=effective_ranking_metric,
+                max_claimed_edge=effective_max_claimed_edge,
+                edge_flag_threshold=effective_edge_flag_threshold,
             )
+        paper_ticket_policy = {
+            "requested_legs": acca_legs,
+            "min_legs": resolved_min_legs_setting,
+            "max_legs": acca_legs if resolved_min_legs_setting is not None else None,
+            "effective_paper_legs": effective_paper_legs,
+            "limit": acca_limit,
+            "ranking_metric": effective_ranking_metric,
+            "min_combined_odds": effective_min_combined_odds,
+            "max_combined_odds": effective_max_combined_odds,
+            "forbid_conflicting_game_sides": effective_forbid_opposing,
+            "forbid_alt_line_reuse": effective_forbid_alt_line_reuse,
+            "max_claimed_edge": effective_max_claimed_edge,
+            "edge_flag_threshold": effective_edge_flag_threshold,
+        }
         for acca in paper_accas:
             acca["individual_pick_filter"] = dict(paper_pick_filter)
         market_counts = Counter(f"{forecast.period}:{forecast.market}" for forecast in current)
@@ -1216,6 +1321,8 @@ class MarketForecastService:
                     if self.league is League.EUROLEAGUE
                     else "nba_calibrated_value_ticket_lane"
                     if self.league is League.NBA
+                    else "ncaa_m_calibrated_value_ticket_lane"
+                    if self.league is League.NCAA_M
                     else "ncaa_w_calibrated_value_ticket_lane"
                     if self.league is League.NCAA_W
                     else "fiba_elw_empirical_history_with_betexplorer_direct_fallback"
@@ -1317,7 +1424,7 @@ class MarketForecastService:
                         "exists, walk-forward Brier < 0.25, exact pre-tip named-book quotes, "
                         "positive calibrated expected value, at least five prior settled picks in "
                         "the matching ROI band, and no opposing game sides across accas"
-                        if self.league in {League.NBA, League.NCAA_W}
+                        if self.league in CALIBRATED_VALUE_PAPER_LEAGUES
                         else ""
                     )
                 ),
@@ -1328,7 +1435,7 @@ class MarketForecastService:
                         "_plus_EUROLEAGUE_exact_pretip_price_positive_EV_and_10_pick_band_gate"
                         if self.league is League.EUROLEAGUE
                         else f"_plus_{self.league.value}_calibrated_brier_skill_positive_EV_and_5_pick_band_gate"
-                        if self.league in {League.NBA, League.NCAA_W}
+                        if self.league in CALIBRATED_VALUE_PAPER_LEAGUES
                         else ""
                     )
                 ),
@@ -1347,6 +1454,11 @@ class MarketForecastService:
                             paper_pick_filter.get("excluded_no_named_book_quote_count") or 0
                         ),
                         "requires_positive_calibrated_expected_value": True,
+                        "max_claimed_edge": effective_max_claimed_edge,
+                        "edge_flag_threshold": effective_edge_flag_threshold,
+                        "excluded_implausible_edge_candidates": int(
+                            paper_pick_filter.get("excluded_implausible_edge_count") or 0
+                        ),
                         "minimum_prior_settled_picks_in_matching_roi_band": 10,
                         "roi_band_scope": [
                             "league", "market", "period", "model", "calibrated_probability_band",
@@ -1380,8 +1492,14 @@ class MarketForecastService:
                             paper_pick_filter.get("excluded_segment_brier_count") or 0
                         ),
                         "requires_positive_calibrated_expected_value": True,
+                        "max_claimed_edge": effective_max_claimed_edge,
+                        "edge_flag_threshold": effective_edge_flag_threshold,
+                        "excluded_implausible_edge_candidates": int(
+                            paper_pick_filter.get("excluded_implausible_edge_count") or 0
+                        ),
                         "minimum_prior_settled_picks_in_matching_roi_band": 5,
                         "forbids_conflicting_game_sides_across_accas": True,
+                        "forbids_alt_line_reuse_across_accas": True,
                         "roi_band_scope": [
                             "league", "market", "period", "model", "calibrated_probability_band",
                             "individual_odds_band",
@@ -1402,15 +1520,16 @@ class MarketForecastService:
                         ),
                         "qualifying_picks": paper_pick_filter["qualifying_pick_count"],
                     }
-                    if self.league in {League.NBA, League.NCAA_W}
+                    if self.league in CALIBRATED_VALUE_PAPER_LEAGUES
                     else None
                 ),
+                "paper_ticket_policy": paper_ticket_policy,
                 "paper_pick_filter": paper_pick_filter,
                 "paper_single_picks": paper_single_picks,
                 "paper_single_pick_count": len(paper_single_picks),
                 "paper_ticket_leg_reuse_policy": (
                     "no_reused_wager_selections_or_opposing_game_sides"
-                    if self.league in {League.NBA, League.NCAA_W}
+                    if self.league in CALIBRATED_VALUE_PAPER_LEAGUES
                     else "no_reused_wager_selections"
                 ),
                 "paper_single_ticket_policy": (

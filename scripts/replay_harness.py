@@ -16,8 +16,11 @@ Usage:
   python3 scripts/replay_harness.py --slots                      # rank slot + combined-odds table
 
 Variant spec syntax (comma-separated key=value, or "live"):
-  legs=2..6  limit=1..100  min_leg_odds=1.20  max_leg_odds=3.00  min_leg_prob=0.60
-  price_weight=0.15  min_odds=3.0  max_odds=4.5  forbid_opposing=0|1  allow_provisional=0|1
+  legs=2..6  min_legs=2..6  max_legs=2..6  limit=1..100
+  ranking_metric=kelly_log_growth|probability_price_blend
+  min_leg_odds=1.20  max_leg_odds=3.00  min_leg_prob=0.60  price_weight=0.15
+  min_odds=3.3  max_odds=5.0  max_claimed_edge=0.40  edge_flag_threshold=0.15
+  forbid_opposing=0|1  forbid_alt_line_reuse=0|1  allow_provisional=0|1
   markets=moneyline|total|!spread  leagues=nba|ncaa_m|ncaa_w  include_derived=0|1
   stake_mode=flat|daily_pct|per_acca_pct|kelly  stake_frac=0.25  kelly_frac=0.25
   weights=3:2:1  skim=0.10

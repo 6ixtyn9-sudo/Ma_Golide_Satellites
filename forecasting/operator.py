@@ -61,8 +61,10 @@ from ingestion.models import (
 from .accas import (
     MAX_TICKET_LEG_DECIMAL,
     MIN_TICKET_LEG_DECIMAL,
+    RANKING_METRIC_BLEND,
     TICKET_RANKING_PRICE_WEIGHT,
 )
+from .service import CALIBRATED_VALUE_PAPER_LEAGUES
 from .types import (
     TICKET_PRICE_PROVENANCE,
     BookEvidence,
@@ -2899,23 +2901,46 @@ def _selection_policy_snapshot(acca_report: Dict[str, Any], league: League) -> D
         if isinstance(acca_report.get("paper_lane"), dict)
         else {}
     )
+    ticket_policy = (
+        acca_report.get("paper_ticket_policy")
+        if isinstance(acca_report.get("paper_ticket_policy"), dict)
+        else {}
+    )
     reuse_policy = str(acca_report.get("paper_ticket_leg_reuse_policy") or "")
     forbid_opposing = (
-        reuse_policy == "no_reused_wager_selections_or_opposing_game_sides"
+        bool(ticket_policy["forbid_conflicting_game_sides"])
+        if "forbid_conflicting_game_sides" in ticket_policy
+        else reuse_policy == "no_reused_wager_selections_or_opposing_game_sides"
         if reuse_policy
-        else league in {League.NBA, League.NCAA_W}
+        else league in CALIBRATED_VALUE_PAPER_LEAGUES
     )
-    return {
-        "requested_legs": acca_report.get("requested_legs", 3),
-        "effective_paper_legs": acca_report.get("effective_paper_legs"),
-        "limit": acca_report.get("requested_limit", 5),
+    ranking_metric = str(ticket_policy.get("ranking_metric") or RANKING_METRIC_BLEND)
+    snapshot: Dict[str, Any] = {
+        "requested_legs": ticket_policy.get("requested_legs", acca_report.get("requested_legs", 3)),
+        "effective_paper_legs": ticket_policy.get(
+            "effective_paper_legs", acca_report.get("effective_paper_legs")
+        ),
+        "limit": ticket_policy.get("limit", acca_report.get("requested_limit", 5)),
         "allow_provisional": not bool(paper_lane.get("requires_calibrated_segment")),
         "require_disjoint_legs": True,
         "forbid_conflicting_game_sides": forbid_opposing,
+        "forbid_alt_line_reuse": bool(ticket_policy.get("forbid_alt_line_reuse", False)),
         "min_leg_odds": MIN_TICKET_LEG_DECIMAL,
         "max_leg_odds": MAX_TICKET_LEG_DECIMAL,
         "price_weight": TICKET_RANKING_PRICE_WEIGHT,
+        "ranking_metric": ranking_metric,
     }
+    for optional_key in (
+        "min_legs",
+        "max_legs",
+        "min_combined_odds",
+        "max_combined_odds",
+        "max_claimed_edge",
+        "edge_flag_threshold",
+    ):
+        if ticket_policy.get(optional_key) is not None:
+            snapshot[optional_key] = ticket_policy[optional_key]
+    return snapshot
 
 
 def _new_receipt(
@@ -2951,6 +2976,15 @@ def _new_receipt(
             "bookmakers": books,
             "legs": legs,
         }
+        for extra_key in (
+            "ranking_metric",
+            "kelly_fraction",
+            "edge_flag_threshold",
+            "edge_implausible_leg_count",
+            "edge_implausible",
+        ):
+            if extra_key in acca:
+                ticket_row[extra_key] = acca[extra_key]
         if ticket_type == "single":
             ticket_row["estimated_win_probability"] = acca.get(
                 "estimated_win_probability", acca["estimated_joint_win_probability"]
@@ -4862,12 +4896,16 @@ def _render_ticket_card(
                 if _is_derived_spread_ticket_row(leg)
                 else f"ML {probability:.1%}"
             )
+            leg_edge_flag = bool(leg.get("edge_implausible")) or bool(
+                isinstance(details, dict) and details.get("edge_implausible")
+            )
+            edge_badge = " · [EDGE>15% AUDIT]" if leg_edge_flag else ""
             lines.extend(
                 [
                     f"   {leg['home']} vs {leg['away']} · "
                     f"TIP-OFF {_local_time(leg['scheduled_utc'], timezone_name)}",
                     f"      {_selection_label(leg)} @{float(price):.3f} "
-                    f"· {probability_text} · {leg['bucket']} · {_grade_badge(leg['grade_status'])}",
+                    f"· {probability_text} · {leg['bucket']} · {_grade_badge(leg['grade_status'])}{edge_badge}",
                 ]
             )
             if _is_derived_spread_ticket_row(leg):

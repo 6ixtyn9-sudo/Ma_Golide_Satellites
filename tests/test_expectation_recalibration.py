@@ -205,3 +205,93 @@ def test_league_defaults_apply_only_to_backtested_college_leagues():
     assert league_forecast_config(
         League.NCAA_W, min_history_games=5, posted_line_model_weight=None
     ) == ForecastConfig(min_history_games=5, recalibrate_expectations=True)
+
+
+def test_posted_line_weight_anchors_once_to_main_line_across_alternate_lines():
+    """Alternate lines must be priced against ONE main-line-anchored distribution.
+
+    Previously, shifting toward each snapshot's own line stamped identical
+    probabilities onto lines 1-2 points apart (2026-11-27 NCAA_M: Illinois
+    176.5/177.5 both 0.592409; Hofstra 142.5/140.5 both 0.572409).
+    """
+    config = _config(recalibrate_expectations=True, posted_line_model_weight=0.2)
+    model, target, history, _ = _mismatch_distribution(config)
+    # Build spread main line (-20.5) plus alternate lines (-14.5, -26.5):
+    # higher home handicap (-14.5) must have strictly higher home cover prob
+    # than (-20.5), which must beat (-26.5).
+    spread_snaps = [
+        BookSnapshot(
+            game_id=target.game_id,
+            provider="espn",
+            book="DraftKings",
+            market=Market.SPREAD,
+            period=Period.FULL_GAME,
+            observed_utc=target.scheduled_utc,
+            line=line,
+            home_price_decimal=1.91,
+            away_price_decimal=1.91,
+            main_line=(line == -20.5),
+        )
+        for line in (-26.5, -20.5, -14.5)
+    ]
+    rows = model.lines(target, history, spread_snaps, {})
+    by_line = {row.line: row.alternative_probabilities["home"] for row in rows}
+    assert by_line[-26.5] < by_line[-20.5] < by_line[-14.5]
+    # Single-line main snapshot must produce the exact same probability as the
+    # main line when alt lines are present alongside it.
+    solo = model.lines(target, history, [spread_snaps[1]], {})
+    assert solo[0].alternative_probabilities["home"] == pytest.approx(by_line[-20.5])
+
+    # Same monotonicity check for TOTAL on a season with non-degenerate total
+    # variance: higher threshold -> strictly higher under prob and lower over prob.
+    varied_finals = []
+    for idx, g in enumerate(_season()):
+        assert g.actual is not None
+        total_shift = float((idx * 19) % 25 - 12)
+        h_final = g.actual.home_final + total_shift / 2.0
+        a_final = g.actual.away_final + total_shift / 2.0
+        varied_finals.append(
+            Game(
+                game_id=g.game_id,
+                league=g.league,
+                season=g.season,
+                home_team_id=g.home_team_id,
+                away_team_id=g.away_team_id,
+                home_name=g.home_name,
+                away_name=g.away_name,
+                scheduled_utc=g.scheduled_utc,
+                status=g.status,
+                actual=ActualResult(
+                    period_kind=PeriodKind.QUARTERS,
+                    home_quarters=[h_final / 4] * 4,
+                    away_quarters=[a_final / 4] * 4,
+                    home_final=h_final,
+                    away_final=a_final,
+                ),
+            )
+        )
+    t_target = _game(len(varied_finals), home=7, away=0, final=False)
+    t_history = model.available_history(
+        varied_finals, scheduled_utc=t_target.scheduled_utc, as_of_utc=t_target.scheduled_utc
+    )
+    total_snaps = [
+        BookSnapshot(
+            game_id=t_target.game_id,
+            provider="espn",
+            book="DraftKings",
+            market=Market.TOTAL,
+            period=Period.FULL_GAME,
+            observed_utc=t_target.scheduled_utc,
+            line=line,
+            over_price_decimal=1.91,
+            under_price_decimal=1.91,
+            main_line=(line == 140.5),
+        )
+        for line in (134.5, 140.5, 146.5)
+    ]
+    t_rows = model.lines(t_target, t_history, total_snaps, {})
+    under_by_line = {row.line: row.alternative_probabilities["under"] for row in t_rows}
+    over_by_line = {row.line: row.alternative_probabilities["over"] for row in t_rows}
+    assert under_by_line[134.5] < under_by_line[140.5] < under_by_line[146.5]
+    assert over_by_line[134.5] > over_by_line[140.5] > over_by_line[146.5]
+

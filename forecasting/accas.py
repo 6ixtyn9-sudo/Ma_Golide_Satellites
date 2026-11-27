@@ -2,11 +2,12 @@
 
 from __future__ import annotations
 
+import bisect
 import hashlib
 import heapq
 import math
 from datetime import timedelta
-from typing import Dict, Iterable, List, Optional, Tuple
+from typing import Dict, Iterable, List, Optional, Sequence, Tuple
 
 from ingestion.identity import parse_utc
 
@@ -38,6 +39,54 @@ MAX_TICKET_LEG_DECIMAL = float(BET_CONFIG_DEFAULTS["maxTicketLegOdds"])
 #: probability primary and lets a 1.90 leg outrank a 1.22 leg when the
 #: probabilities are close, which is what a bill of bets actually wants.
 TICKET_RANKING_PRICE_WEIGHT = float(BET_CONFIG_DEFAULTS["ticketRankingPriceWeight"])
+
+#: Unified paper-ticket construction defaults (Option 1 + Option A):
+#: - Variable 2–3 legs, limit 3, combined odds [3.30, 5.00] so any 1W-2L day
+#:   nets >= +0.30u (strictly green, avoiding the breakeven/red 1W trap).
+#: - Exact Kelly log-growth ranking g*(p, O) with stake-normalization term.
+#: - Non-blocking audit flag at EV > 15% and hard sanity cap at EV > 40%.
+PAPER_MIN_ACCA_LEGS = 2
+PAPER_MAX_ACCA_LEGS = 3
+PAPER_ACCA_LIMIT = 3
+PAPER_MIN_COMBINED_ODDS = 3.30
+PAPER_MAX_COMBINED_ODDS = 5.00
+EDGE_FLAG_THRESHOLD = 0.15
+MAX_CLAIMED_EDGE = 0.40
+RANKING_METRIC_BLEND = "probability_price_blend"
+RANKING_METRIC_KELLY = "kelly_log_growth"
+VALID_RANKING_METRICS = frozenset({RANKING_METRIC_BLEND, RANKING_METRIC_KELLY})
+
+
+def kelly_log_growth(probability: float, decimal_odds: float) -> float:
+    """Exact full-Kelly expected log-wealth growth rate ``g*(p, O)``.
+
+    For win probability ``p`` and decimal odds ``O`` (net odds ``O - 1``), the
+    optimal Kelly stake fraction is ``f* = (p * O - 1) / (O - 1)`` and the
+    resulting expected log growth per unit bankroll is:
+
+        g*(p, O) = p * ln(p * O) + (1 - p) * ln(O * (1 - p) / (O - 1))
+
+    At identical positive EV, shorter prices score higher than longshots
+    because of lower variance drag (the ``O / (O - 1)`` stake-normalization
+    term). Returns ``-inf`` whenever ``p * O <= 1.0`` or inputs are invalid.
+    """
+    if (
+        isinstance(probability, bool)
+        or isinstance(decimal_odds, bool)
+        or not math.isfinite(probability)
+        or not math.isfinite(decimal_odds)
+        or decimal_odds <= 1.0
+        or probability <= 0.0
+        or probability > 1.0
+    ):
+        return float("-inf")
+    if probability * decimal_odds <= 1.0:
+        return float("-inf")
+    if probability >= 1.0:
+        return math.log(decimal_odds)
+    return probability * math.log(probability * decimal_odds) + (
+        1.0 - probability
+    ) * math.log(decimal_odds * (1.0 - probability) / (decimal_odds - 1.0))
 
 
 def _ticket_ranking_score(
@@ -153,12 +202,14 @@ def _history_canonical_rank(
             brier = fallback
             has_brier = True
     use_brier = sufficient and has_brier
+    is_main_line = bool(getattr(row.book, "main_line", True)) if row.book is not None else False
     return (
         0 if sufficient else 1,
         0 if use_brier else 1,
         float(brier) if use_brier else float("inf"),
         0 if has_brier else 1,
         float(brier) if has_brier else float("inf"),
+        0 if is_main_line else 1,
         _candidate_rank(row),
     )
 
@@ -396,6 +447,8 @@ def filter_paper_candidate_picks(
     require_named_book_quote: bool = False,
     require_calibrated_segment: bool = False,
     maximum_segment_brier_score: float | None = None,
+    max_claimed_edge: float | None = None,
+    edge_flag_threshold: float | None = None,
     admit_cold_start_bands: bool = True,
 ) -> tuple[List[Forecast], dict]:
     """Route paper picks through adaptive, market-specific positive-ROI bands.
@@ -469,6 +522,20 @@ def filter_paper_candidate_picks(
         or not 0.0 < float(maximum_segment_brier_score) <= 1.0
     ):
         raise ValueError("maximum_segment_brier_score must be in (0, 1]")
+    if max_claimed_edge is not None and (
+        isinstance(max_claimed_edge, bool)
+        or not isinstance(max_claimed_edge, (int, float))
+        or not math.isfinite(float(max_claimed_edge))
+        or float(max_claimed_edge) <= 0.0
+    ):
+        raise ValueError("max_claimed_edge must be finite and positive")
+    if edge_flag_threshold is not None and (
+        isinstance(edge_flag_threshold, bool)
+        or not isinstance(edge_flag_threshold, (int, float))
+        or not math.isfinite(float(edge_flag_threshold))
+        or float(edge_flag_threshold) <= 0.0
+    ):
+        raise ValueError("edge_flag_threshold must be finite and positive")
     if not isinstance(admit_cold_start_bands, bool):
         raise ValueError("admit_cold_start_bands must be a boolean")
     as_of = parse_utc(as_of_utc)
@@ -528,6 +595,17 @@ def filter_paper_candidate_picks(
         if require_positive_expected_value
         else scoped_candidates
     )
+    positive_ev_count = len(candidates)
+    excluded_implausible_edge = 0
+    if max_claimed_edge is not None:
+        edge_cap = float(max_claimed_edge)
+        plausible_only = [
+            row
+            for row in candidates
+            if float(row.calibrated_probability) * float(row.decimal_price) - 1.0 <= edge_cap
+        ]
+        excluded_implausible_edge = len(candidates) - len(plausible_only)
+        candidates = plausible_only
 
     valid_history: List[Forecast] = []
     segment_brier_sums: Dict[Tuple[str, str, str, str], float] = {}
@@ -582,15 +660,16 @@ def filter_paper_candidate_picks(
         if count >= 5
     }
 
-    historical_by_wager: Dict[Tuple[str, str, str, str, str, str], Forecast] = {}
+    historical_by_wager: Dict[Tuple[str, str, str, str, str], Forecast] = {}
     for forecast in valid_history:
-        wager_key = _wager_leg_key(
+        # Deduplicate across alternate lines on the same fixture/market/period/selection
+        # so multi-line captures on one game cannot multiply correlated counts in band_stats.
+        wager_key = _market_selection_leg_key(
             forecast.league,
             forecast.game_id,
             forecast.market,
             forecast.period,
             forecast.selection,
-            forecast.line,
         )
         previous = historical_by_wager.get(wager_key)
         if previous is None or _history_canonical_rank(
@@ -730,9 +809,11 @@ def filter_paper_candidate_picks(
         band_reports.append(details)
         for row in rows:
             row_details = dict(details)
-            row_details["expected_value_per_unit"] = round(
-                float(row.calibrated_probability) * float(row.decimal_price) - 1.0, 6
-            )
+            ev = float(row.calibrated_probability) * float(row.decimal_price) - 1.0
+            row_details["expected_value_per_unit"] = round(ev, 6)
+            if edge_flag_threshold is not None:
+                row_details["edge_flag_threshold"] = float(edge_flag_threshold)
+                row_details["edge_implausible"] = ev > float(edge_flag_threshold)
             row_details["qualifies"] = row in qualifying_rows
             candidate_band_details[row.forecast_id] = row_details
 
@@ -782,6 +863,21 @@ def filter_paper_candidate_picks(
             else None
         ),
         "excluded_segment_brier_count": excluded_segment_brier,
+        "max_claimed_edge": (
+            float(max_claimed_edge) if max_claimed_edge is not None else None
+        ),
+        "excluded_implausible_edge_count": excluded_implausible_edge,
+        "edge_flag_threshold": (
+            float(edge_flag_threshold) if edge_flag_threshold is not None else None
+        ),
+        "flagged_implausible_edge_count": (
+            sum(
+                bool(detail.get("edge_implausible"))
+                for detail in candidate_band_details.values()
+            )
+            if edge_flag_threshold is not None
+            else 0
+        ),
         "cold_start_admission": {
             "enabled": admit_cold_start_bands,
             "applies_when_lane_settled_pick_count_is_zero": True,
@@ -793,7 +889,7 @@ def filter_paper_candidate_picks(
         },
         "candidate_pool_pick_count": len(candidate_pool),
         "candidate_with_point_in_time_price_count": len(scoped_candidates),
-        "candidate_positive_expected_value_count": len(candidates),
+        "candidate_positive_expected_value_count": positive_ev_count,
         "historical_unique_pick_count": historical_count,
         "league_recency_weighted_roi": {
             league: round(roi, 6) if roi is not None else None
@@ -814,6 +910,8 @@ def filter_paper_candidate_picks(
             if not candidate_pool
             else "no_point_in_time_priced_candidates"
             if not scoped_candidates
+            else "no_plausible_edge_candidates"
+            if not candidates and excluded_implausible_edge > 0
             else "no_positive_expected_value_candidates"
             if not candidates
             else "applied_cold_start_no_settled_history"
@@ -856,6 +954,17 @@ def _wager_leg_key(
     )
 
 
+def _market_selection_leg_key(
+    league: str,
+    game_id: str,
+    market: str,
+    period: str,
+    selection: str,
+) -> Tuple[str, str, str, str, str]:
+    """Wager identity ignoring ``line`` so alternate lines collapse together."""
+    return (league, game_id, market, period, selection)
+
+
 def _conflicting_game_side_key(
     league: str, game_id: str, market: str, selection: str
 ) -> Tuple[str, str, str] | None:
@@ -888,47 +997,389 @@ def _committed_game_side_key(
     return None
 
 
+class _DescendingIdKey:
+    """Wrapper reversing tuple comparison so smaller IDs win ties in a min-heap."""
+
+    __slots__ = ("value",)
+
+    def __init__(self, value: Tuple[str, ...]) -> None:
+        self.value = value
+
+    def __lt__(self, other: "_DescendingIdKey") -> bool:
+        return self.value > other.value
+
+    def __eq__(self, other: object) -> bool:
+        return isinstance(other, _DescendingIdKey) and self.value == other.value
+
+
+def _build_ticket_dict(
+    selected: Sequence[Forecast],
+    *,
+    rank: int,
+    ranking_metric: str,
+    ranking_score: float,
+    price_weight: Optional[float],
+    allow_provisional: bool,
+    edge_flag_threshold: Optional[float],
+) -> dict:
+    joint = math.exp(
+        sum(math.log(float(row.calibrated_probability)) for row in selected)
+    )
+    decimal_odds = math.prod(float(row.decimal_price) for row in selected)
+    leg_ids = [row.forecast_id for row in selected]
+    provisional_leg_count = sum(is_provisional_sample_only(row) for row in selected)
+    provisional_gate_bypassed = allow_provisional and provisional_leg_count > 0
+    leg_dicts: List[dict] = []
+    flagged_count = 0
+    for row in selected:
+        leg_dict = row.to_dict()
+        if edge_flag_threshold is not None:
+            leg_ev = (
+                float(row.calibrated_probability) * float(row.decimal_price) - 1.0
+            )
+            implausible = leg_ev > float(edge_flag_threshold)
+            leg_dict["claimed_edge"] = round(leg_ev, 6)
+            leg_dict["edge_implausible"] = implausible
+            if implausible:
+                flagged_count += 1
+        leg_dicts.append(leg_dict)
+    ticket = {
+        "acca_id": hashlib.sha256("|".join(leg_ids).encode()).hexdigest()[:20],
+        "rank": rank,
+        "provisional_sample_gate_bypassed": provisional_gate_bypassed,
+        "provisional_leg_count": provisional_leg_count,
+        "legs": leg_dicts,
+        "leg_count": len(selected),
+        "estimated_joint_win_probability": round(joint, 8),
+        "combined_decimal_odds": round(decimal_odds, 4),
+        "bookmaker_implied_probability": round(1 / decimal_odds, 8),
+        "estimated_ev_per_unit": round(joint * decimal_odds - 1, 8),
+        "ranking_metric": ranking_metric,
+        "ranking_price_weight": (
+            None if ranking_metric == RANKING_METRIC_KELLY else price_weight
+        ),
+        "ranking_score": round(ranking_score, 8),
+        "ranking_status": (
+            "paper_only_provisional_sample_gate_bypassed"
+            if provisional_gate_bypassed
+            else "paper_only_strict_gates_passed"
+            if allow_provisional
+            else "highest_estimated_not_guaranteed"
+        ),
+        "dependence": {
+            "same_game_legs": "prohibited",
+            "cross_game_model": "conditional_independence",
+            "limitation": (
+                "Shared league, weather, scheduling, or other latent "
+                "dependence is not estimated; no same-game parlay is built."
+            ),
+        },
+    }
+    if ranking_metric == RANKING_METRIC_KELLY and decimal_odds > 1.0:
+        ticket["kelly_fraction"] = round(
+            max((joint * decimal_odds - 1.0) / (decimal_odds - 1.0), 0.0), 8
+        )
+    if edge_flag_threshold is not None:
+        ticket["edge_flag_threshold"] = float(edge_flag_threshold)
+        ticket["edge_implausible_leg_count"] = flagged_count
+        ticket["edge_implausible"] = flagged_count > 0
+    return ticket
+
+
+def _exact_variable_accas(
+    forecasts: Iterable[Forecast],
+    *,
+    min_legs: int,
+    max_legs: int,
+    limit: int,
+    allow_provisional: bool,
+    min_leg_odds: Optional[float],
+    max_leg_odds: Optional[float],
+    min_leg_probability: Optional[float],
+    price_weight: Optional[float],
+    min_combined_odds: Optional[float],
+    max_combined_odds: Optional[float],
+    ranking_metric: str,
+    max_claimed_edge: Optional[float],
+    edge_flag_threshold: Optional[float],
+) -> List[dict]:
+    """Exact sorted-price branch-and-bound acca search over ``min_legs..max_legs``.
+
+    Keeps one best row per ``(league, game_id, market, period, selection)``
+    (avoiding alternate-line combinatorics while preserving distinct markets
+    per fixture so heavy moneyline favourites do not starve ``min_combined_odds``)
+    and enforces strictly distinct ``(league, game_id)`` inside every ticket.
+    """
+    effective_price_weight = (
+        TICKET_RANKING_PRICE_WEIGHT if price_weight is None else float(price_weight)
+    )
+    eligible = _eligible_candidate_picks(
+        forecasts,
+        allow_provisional=allow_provisional,
+        min_leg_odds=min_leg_odds,
+        max_leg_odds=max_leg_odds,
+        min_leg_probability=min_leg_probability,
+    )
+    by_market_sel: Dict[Tuple[str, str, str, str, str], Tuple[tuple, Forecast]] = {}
+    for row in eligible:
+        prob = float(row.calibrated_probability)
+        price = float(row.decimal_price)
+        ev = prob * price - 1.0
+        if ranking_metric == RANKING_METRIC_KELLY and ev <= 0.0:
+            continue
+        if max_claimed_edge is not None and ev > float(max_claimed_edge):
+            continue
+        single_score = (
+            kelly_log_growth(prob, price)
+            if ranking_metric == RANKING_METRIC_KELLY
+            else _ticket_ranking_score(row, price_weight=effective_price_weight)
+        )
+        if not math.isfinite(single_score):
+            continue
+        is_main = bool(getattr(row.book, "main_line", True)) if row.book is not None else False
+        order_key = (-single_score, 0 if is_main else 1, _candidate_rank(row))
+        mkey = _market_selection_leg_key(
+            row.league, row.game_id, row.market, row.period, row.selection
+        )
+        prev = by_market_sel.get(mkey)
+        if prev is None or order_key < prev[0]:
+            by_market_sel[mkey] = (order_key, row)
+
+    if not by_market_sel:
+        return []
+
+    scored_rows: List[Tuple[float, float, Forecast]] = []
+    for order_key, row in by_market_sel.values():
+        scored_rows.append((float(row.decimal_price), -order_key[0], row))
+    # Sort ascending by price for tight bisect/break bounds on combined odds.
+    scored_rows.sort(
+        key=lambda item: (
+            item[0],
+            -item[1],
+            item[2].league,
+            item[2].game_id,
+            item[2].forecast_id,
+        )
+    )
+    n = len(scored_rows)
+    if n < min_legs:
+        return []
+    distinct_games = len({(item[2].league, item[2].game_id) for item in scored_rows})
+    effective_max_legs = min(max_legs, distinct_games)
+    if effective_max_legs < min_legs:
+        return []
+
+    prices = [item[0] for item in scored_rows]
+    single_scores = [item[1] for item in scored_rows]
+    rows = [item[2] for item in scored_rows]
+    probs = [float(r.calibrated_probability) for r in rows]
+    log_probs = [math.log(p) for p in probs]
+    log_prices = [math.log(o) for o in prices]
+    game_keys = [(r.league, r.game_id) for r in rows]
+    min_o = None if min_combined_odds is None else float(min_combined_odds)
+    max_o = None if max_combined_odds is None else float(max_combined_odds)
+    eps = 1e-12
+
+    top_heap: List[Tuple[float, float, _DescendingIdKey, Tuple[int, ...]]] = []
+
+    def _consider(indices: Tuple[int, ...], joint_p: float, combined_o: float) -> None:
+        if min_o is not None and combined_o < min_o:
+            return
+        if max_o is not None and combined_o > max_o:
+            return
+        if ranking_metric == RANKING_METRIC_KELLY:
+            score = kelly_log_growth(joint_p, combined_o)
+            if not math.isfinite(score):
+                return
+        else:
+            score = sum(
+                (1.0 - effective_price_weight) * log_probs[idx]
+                + effective_price_weight * log_prices[idx]
+                for idx in indices
+            )
+        ordered = tuple(
+            sorted(
+                indices,
+                key=lambda idx: (
+                    -single_scores[idx],
+                    rows[idx].game_id,
+                    rows[idx].forecast_id,
+                ),
+            )
+        )
+        id_key = _DescendingIdKey(tuple(rows[idx].forecast_id for idx in ordered))
+        entry = (score, joint_p, id_key, ordered)
+        if len(top_heap) < limit:
+            heapq.heappush(top_heap, entry)
+        elif entry[:3] > top_heap[0][:3]:
+            heapq.heapreplace(top_heap, entry)
+
+    def _last_range(start: int, prod_o: float) -> Tuple[int, int]:
+        lo = start
+        if min_o is not None:
+            target_lo = (min_o / prod_o) * (1.0 - eps)
+            lo = max(start, bisect.bisect_left(prices, target_lo, start, n))
+        if max_o is not None:
+            target_hi = (max_o / prod_o) * (1.0 + eps)
+            hi = bisect.bisect_right(prices, target_hi, lo, n)
+        else:
+            hi = n
+        return lo, hi
+
+    for target_legs in range(min_legs, effective_max_legs + 1):
+        if target_legs == 2:
+            for i in range(n - 1):
+                oi = prices[i]
+                if max_o is not None and oi * prices[i + 1] > max_o * (1.0 + eps):
+                    break
+                pi = probs[i]
+                gi = game_keys[i]
+                lo, hi = _last_range(i + 1, oi)
+                for j in range(lo, hi):
+                    if game_keys[j] == gi:
+                        continue
+                    _consider((i, j), pi * probs[j], oi * prices[j])
+        elif target_legs == 3:
+            for i in range(n - 2):
+                oi = prices[i]
+                if (
+                    max_o is not None
+                    and oi * prices[i + 1] * prices[i + 2] > max_o * (1.0 + eps)
+                ):
+                    break
+                pi = probs[i]
+                gi = game_keys[i]
+                for j in range(i + 1, n - 1):
+                    gj = game_keys[j]
+                    if gj == gi:
+                        continue
+                    oij = oi * prices[j]
+                    if max_o is not None and oij * prices[j + 1] > max_o * (1.0 + eps):
+                        break
+                    pij = pi * probs[j]
+                    lo, hi = _last_range(j + 1, oij)
+                    for k in range(lo, hi):
+                        gk = game_keys[k]
+                        if gk == gi or gk == gj:
+                            continue
+                        _consider((i, j, k), pij * probs[k], oij * prices[k])
+        else:
+            # Recursive exact branch-and-bound for 4..6 legs.
+            chosen_indices: List[int] = []
+            used_games: set[Tuple[str, str]] = set()
+
+            def _dfs(start: int, remaining: int, prod_p: float, prod_o: float) -> None:
+                if remaining == 1:
+                    lo, hi = _last_range(start, prod_o)
+                    for idx in range(lo, hi):
+                        if game_keys[idx] in used_games:
+                            continue
+                        _consider(
+                            (*chosen_indices, idx),
+                            prod_p * probs[idx],
+                            prod_o * prices[idx],
+                        )
+                    return
+                end = n - remaining + 1
+                for idx in range(start, end):
+                    if max_o is not None:
+                        min_future = prod_o
+                        for offset in range(remaining):
+                            min_future *= prices[idx + offset]
+                        if min_future > max_o * (1.0 + eps):
+                            break
+                    gkey = game_keys[idx]
+                    if gkey in used_games:
+                        continue
+                    used_games.add(gkey)
+                    chosen_indices.append(idx)
+                    _dfs(idx + 1, remaining - 1, prod_p * probs[idx], prod_o * prices[idx])
+                    chosen_indices.pop()
+                    used_games.remove(gkey)
+
+            _dfs(0, target_legs, 1.0, 1.0)
+
+    ranked = sorted(top_heap, key=lambda item: item[:3], reverse=True)
+    return [
+        _build_ticket_dict(
+            [rows[idx] for idx in ordered],
+            rank=position,
+            ranking_metric=ranking_metric,
+            ranking_score=score,
+            price_weight=effective_price_weight,
+            allow_provisional=allow_provisional,
+            edge_flag_threshold=edge_flag_threshold,
+        )
+        for position, (score, _joint, _id_key, ordered) in enumerate(ranked, 1)
+    ]
+
+
 def build_accas(
     forecasts: Iterable[Forecast],
     *,
     legs: int = 3,
+    min_legs: Optional[int] = None,
+    max_legs: Optional[int] = None,
     limit: int = 5,
     allow_provisional: bool = False,
     require_disjoint_legs: bool = False,
     forbid_conflicting_game_sides: bool = False,
+    forbid_alt_line_reuse: bool = False,
     min_leg_odds: Optional[float] = None,
     max_leg_odds: Optional[float] = None,
     min_leg_probability: Optional[float] = None,
     price_weight: Optional[float] = None,
     min_combined_odds: Optional[float] = None,
     max_combined_odds: Optional[float] = None,
+    ranking_metric: str = RANKING_METRIC_BLEND,
+    max_claimed_edge: Optional[float] = None,
+    edge_flag_threshold: Optional[float] = None,
 ) -> List[dict]:
-    """Return best-ranked accas for the requested leg count.
+    """Return best-ranked accas for the requested leg count or leg range.
 
-    Ranking is the blended probability/price score from
-    :func:`_ticket_ranking_score`, not raw joint probability, so a ticket is
-    assembled from legs that can pay rather than from whichever legs are most
-    certain. Same-game legs stay prohibited and every eligibility gate is
-    unchanged; ``estimated_joint_win_probability`` and
-    ``estimated_ev_per_unit`` are still reported so the blend never hides the
-    probability that was traded away.
+    Supports two ranking objectives:
+    - ``probability_price_blend`` (default for legacy callers & replay parity):
+      additive ``(1 - w) * log p + w * log price`` over fixed ``legs``.
+    - ``kelly_log_growth``: exact full-Kelly log-wealth growth ``g*(p, O)`` over
+      variable ``min_legs..max_legs`` via sorted-price branch-and-bound,
+      enforcing distinct fixtures per acca while allowing distinct markets on
+      the same fixture to compete.
 
-    The optional paper path admits provisional forecasts only when insufficient
-    sample size is their sole blocker and at least one graded observation exists.
-    It never relaxes price, team-history, push-risk, or probability-floor gates.
-    When ``require_disjoint_legs`` is true, greedily select top-ranked accas
-    without reusing an exact wager selection (league, game, market, period,
-    selection, and line). A different selection from the same game can be used
-    in a later ticket. The default retains all top combinations for analytical
-    ranking. Same-game legs remain prohibited within each acca.
+    Same-game legs remain strictly prohibited inside every acca. When
+    ``require_disjoint_legs`` is true, tickets are selected greedily without
+    reusing an exact wager selection; setting ``forbid_alt_line_reuse=True``
+    additionally prevents reusing the same ``(league, game, market, period,
+    selection)`` across accas via alternate lines.
     """
-    if legs < 2 or legs > 6:
-        raise ValueError("acca legs must be between two and six")
+    lo_legs = legs if min_legs is None else int(min_legs)
+    hi_legs = legs if max_legs is None else int(max_legs)
+    if lo_legs < 2 or hi_legs > 6 or lo_legs > hi_legs:
+        raise ValueError("acca legs must be between two and six with min_legs <= max_legs")
     if limit < 1 or limit > 100:
         raise ValueError("acca limit must be between one and one hundred")
+    if ranking_metric not in VALID_RANKING_METRICS:
+        raise ValueError(
+            f"ranking_metric must be one of {sorted(VALID_RANKING_METRICS)}, got {ranking_metric!r}"
+        )
+    if max_claimed_edge is not None and (
+        isinstance(max_claimed_edge, bool)
+        or not isinstance(max_claimed_edge, (int, float))
+        or not math.isfinite(float(max_claimed_edge))
+        or float(max_claimed_edge) <= 0.0
+    ):
+        raise ValueError("max_claimed_edge must be finite and positive")
+    if edge_flag_threshold is not None and (
+        isinstance(edge_flag_threshold, bool)
+        or not isinstance(edge_flag_threshold, (int, float))
+        or not math.isfinite(float(edge_flag_threshold))
+        or float(edge_flag_threshold) <= 0.0
+    ):
+        raise ValueError("edge_flag_threshold must be finite and positive")
+
     if require_disjoint_legs:
         all_forecasts = list(forecasts)
         used_leg_keys: set[Tuple[str, str, str, str, str, str]] = set()
+        used_market_selection_keys: set[Tuple[str, str, str, str, str]] = set()
         used_game_sides: set[Tuple[str, str, str]] = set()
         output: List[dict] = []
         while len(output) < limit:
@@ -945,6 +1396,17 @@ def build_accas(
                 )
                 not in used_leg_keys
                 and (
+                    not forbid_alt_line_reuse
+                    or _market_selection_leg_key(
+                        forecast.league,
+                        forecast.game_id,
+                        forecast.market,
+                        forecast.period,
+                        forecast.selection,
+                    )
+                    not in used_market_selection_keys
+                )
+                and (
                     not forbid_conflicting_game_sides
                     or _conflicting_game_side_key(
                         forecast.league,
@@ -957,7 +1419,9 @@ def build_accas(
             ]
             best = build_accas(
                 remaining,
-                legs=legs,
+                legs=hi_legs,
+                min_legs=lo_legs,
+                max_legs=hi_legs,
                 limit=1,
                 allow_provisional=allow_provisional,
                 min_leg_odds=min_leg_odds,
@@ -966,6 +1430,9 @@ def build_accas(
                 price_weight=price_weight,
                 min_combined_odds=min_combined_odds,
                 max_combined_odds=max_combined_odds,
+                ranking_metric=ranking_metric,
+                max_claimed_edge=max_claimed_edge,
+                edge_flag_threshold=edge_flag_threshold,
             )
             if not best:
                 break
@@ -988,6 +1455,16 @@ def build_accas(
                         leg.get("line"),
                     )
                 )
+                if forbid_alt_line_reuse:
+                    used_market_selection_keys.add(
+                        _market_selection_leg_key(
+                            leg["league"],
+                            leg["game_id"],
+                            leg["market"],
+                            leg["period"],
+                            leg["selection"],
+                        )
+                    )
                 if forbid_conflicting_game_sides:
                     committed = _committed_game_side_key(
                         leg["league"],
@@ -999,6 +1476,24 @@ def build_accas(
                         used_game_sides.add(committed)
         return output
 
+    if ranking_metric == RANKING_METRIC_KELLY or lo_legs != hi_legs:
+        return _exact_variable_accas(
+            forecasts,
+            min_legs=lo_legs,
+            max_legs=hi_legs,
+            limit=limit,
+            allow_provisional=allow_provisional,
+            min_leg_odds=min_leg_odds,
+            max_leg_odds=max_leg_odds,
+            min_leg_probability=min_leg_probability,
+            price_weight=price_weight,
+            min_combined_odds=min_combined_odds,
+            max_combined_odds=max_combined_odds,
+            ranking_metric=ranking_metric,
+            max_claimed_edge=max_claimed_edge,
+            edge_flag_threshold=edge_flag_threshold,
+        )
+
     candidates = _best_leg_per_game(
         forecasts,
         allow_provisional=allow_provisional,
@@ -1006,7 +1501,15 @@ def build_accas(
         max_leg_odds=max_leg_odds,
         min_leg_probability=min_leg_probability,
     )
-    if len(candidates) < legs:
+    if max_claimed_edge is not None:
+        edge_cap = float(max_claimed_edge)
+        candidates = [
+            row
+            for row in candidates
+            if float(row.calibrated_probability) * float(row.decimal_price) - 1.0
+            <= edge_cap
+        ]
+    if len(candidates) < lo_legs:
         return []
     effective_price_weight = (
         TICKET_RANKING_PRICE_WEIGHT if price_weight is None else float(price_weight)
@@ -1018,7 +1521,7 @@ def build_accas(
         -_ticket_ranking_score(row, price_weight=effective_price_weight)
         for row in candidates
     ]
-    initial = tuple(range(legs))
+    initial = tuple(range(lo_legs))
     heap: List[tuple[float, Tuple[int, ...]]] = [(sum(costs[index] for index in initial), initial)]
     visited = {initial}
     output = []
@@ -1031,50 +1534,21 @@ def build_accas(
         cost, state = heapq.heappop(heap)
         popped_states += 1
         selected = [candidates[index] for index in state]
-        # The cost is now a blended score, so the joint probability is read from
-        # the probabilities rather than assumed to be ``exp(-cost)``.
-        joint = math.exp(
-            sum(math.log(float(row.calibrated_probability)) for row in selected)
-        )
         decimal_odds = math.prod(float(row.decimal_price) for row in selected)
         if not (
             (min_combined_odds is not None and decimal_odds < float(min_combined_odds))
             or (max_combined_odds is not None and decimal_odds > float(max_combined_odds))
         ):
-            leg_ids = [row.forecast_id for row in selected]
-            provisional_leg_count = sum(is_provisional_sample_only(row) for row in selected)
-            provisional_gate_bypassed = allow_provisional and provisional_leg_count > 0
             output.append(
-                {
-                    "acca_id": hashlib.sha256("|".join(leg_ids).encode()).hexdigest()[:20],
-                    "rank": len(output) + 1,
-                    "provisional_sample_gate_bypassed": provisional_gate_bypassed,
-                    "provisional_leg_count": provisional_leg_count,
-                    "legs": [row.to_dict() for row in selected],
-                    "leg_count": legs,
-                    "estimated_joint_win_probability": round(joint, 8),
-                    "combined_decimal_odds": round(decimal_odds, 4),
-                    "bookmaker_implied_probability": round(1 / decimal_odds, 8),
-                    "estimated_ev_per_unit": round(joint * decimal_odds - 1, 8),
-                    "ranking_metric": "probability_price_blend",
-                    "ranking_price_weight": effective_price_weight,
-                    "ranking_score": round(-cost, 8),
-                    "ranking_status": (
-                        "paper_only_provisional_sample_gate_bypassed"
-                        if provisional_gate_bypassed
-                        else "paper_only_strict_gates_passed"
-                        if allow_provisional
-                        else "highest_estimated_not_guaranteed"
-                    ),
-                    "dependence": {
-                        "same_game_legs": "prohibited",
-                        "cross_game_model": "conditional_independence",
-                        "limitation": (
-                            "Shared league, weather, scheduling, or other latent "
-                            "dependence is not estimated; no same-game parlay is built."
-                        ),
-                    },
-                }
+                _build_ticket_dict(
+                    selected,
+                    rank=len(output) + 1,
+                    ranking_metric=RANKING_METRIC_BLEND,
+                    ranking_score=-cost,
+                    price_weight=effective_price_weight,
+                    allow_provisional=allow_provisional,
+                    edge_flag_threshold=edge_flag_threshold,
+                )
             )
         for neighbor in _neighbors(state, len(candidates)):
             if neighbor in visited:
@@ -1088,8 +1562,19 @@ def build_accas(
 
 
 __all__ = [
+    "EDGE_FLAG_THRESHOLD",
+    "MAX_CLAIMED_EDGE",
+    "PAPER_ACCA_LIMIT",
+    "PAPER_MAX_ACCA_LEGS",
+    "PAPER_MAX_COMBINED_ODDS",
+    "PAPER_MIN_ACCA_LEGS",
+    "PAPER_MIN_COMBINED_ODDS",
+    "RANKING_METRIC_BLEND",
+    "RANKING_METRIC_KELLY",
+    "VALID_RANKING_METRICS",
     "build_accas",
     "filter_paper_candidate_picks",
     "is_provisional_sample_only",
+    "kelly_log_growth",
     "ticket_leg_pool",
 ]
