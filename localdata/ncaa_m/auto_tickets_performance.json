@@ -1,6 +1,6 @@
 {
-  "awaiting_game_legs": 15,
-  "awaiting_game_legs_open": 15,
+  "awaiting_game_legs": 13,
+  "awaiting_game_legs_open": 11,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -2917,20 +2917,24 @@
       "wins": 0
     },
     {
-      "awaiting_game_legs": 15,
-      "bank_units": 109.76916599218453,
+      "awaiting_game_legs": 13,
+      "bank_units": 108.76916599218453,
       "candidate_pool_outcomes": {
+        "3a22be891fa1817db042": "win",
+        "3b72b49ba9c8ccdca825": "win",
+        "902cc999b3fb8414bfd8": "loss",
+        "a023cd90f0008c782c69": "loss",
         "aef5664a78483261d005": "win"
       },
       "date": "2026-11-27",
       "decision_id": "45984724506_ncaa_m_1_attempt_1",
       "frozen_at": "2026-11-27T10:48:50Z",
       "league": "NCAA_M",
-      "losses": 0,
-      "pending_accas": 5,
-      "pending_positions": 5,
+      "losses": 1,
+      "pending_accas": 4,
+      "pending_positions": 4,
       "pending_singles": 0,
-      "pending_units": 5.0,
+      "pending_units": 4.0,
       "positions": [
         {
           "awaiting_game_legs": 3,
@@ -3093,7 +3097,7 @@
           "unresolved_legs": 3
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
@@ -3104,7 +3108,7 @@
           "leg_count": 3,
           "leg_outcomes": [
             null,
-            null,
+            "win",
             null
           ],
           "legs": [
@@ -3131,13 +3135,13 @@
               "book_provider": "espn",
               "forecast_id": "3b72b49ba9c8ccdca825",
               "game_id": "401924810",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Merrimack Warriors",
               "line": 129.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "3b72b49ba9c8ccdca825",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-27T18:00:00Z",
               "selected_decimal_price": 1.9090909090909092,
               "selection": "over"
@@ -3170,7 +3174,7 @@
           "stake_units": 1.0,
           "ticket_id": "c6f22a60189c7e11d238",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         },
         {
           "awaiting_game_legs": 3,
@@ -3253,19 +3257,19 @@
           "unresolved_legs": 3
         },
         {
-          "awaiting_game_legs": 3,
+          "awaiting_game_legs": 2,
           "bookmakers": [
             "DraftKings"
           ],
           "combined_decimal_odds": 7.0193,
           "effective_decimal_odds": 7.019283746556475,
           "estimated_joint_win_probability": 0.18755053,
-          "grade_status": "pending",
+          "grade_status": "loss",
           "leg_count": 3,
           "leg_outcomes": [
             null,
             null,
-            null
+            "loss"
           ],
           "legs": [
             {
@@ -3308,19 +3312,20 @@
               "book_provider": "espn",
               "forecast_id": "a023cd90f0008c782c69",
               "game_id": "401920848",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "St. Thomas Tommies",
               "line": 146.5,
               "market": "total",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "a023cd90f0008c782c69",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-27T17:00:00Z",
               "selected_decimal_price": 1.9090909090909092,
               "selection": "over"
             }
           ],
           "paper_only": true,
+          "profit_units": -1.0,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 5,
@@ -3330,44 +3335,44 @@
           "stake_units": 1.0,
           "ticket_id": "60443781380dbbc51df6",
           "ticket_type": "acca",
-          "unresolved_legs": 3
+          "unresolved_legs": 2
         }
       ],
-      "profit_units": null,
+      "profit_units": -1.0,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-27_decision.json",
       "result_unresolvable_legs": 0,
-      "returned_units": null,
-      "settled_accas": 0,
-      "settled_positions": 0,
+      "returned_units": 0.0,
+      "settled_accas": 1,
+      "settled_positions": 1,
       "settled_singles": 0,
-      "staked_units": 0,
-      "unresolved_result_legs": 15,
+      "staked_units": 1.0,
+      "unresolved_result_legs": 13,
       "wins": 0
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.4411764705882353,
+  "hit_rate": 0.42857142857142855,
   "league": "NCAA_M",
-  "losses": 19,
-  "paper_bank_units": 109.7691659921845,
-  "paper_committed_units": 5.0,
+  "losses": 20,
+  "paper_bank_units": 108.7691659921845,
+  "paper_committed_units": 4.0,
   "paper_free_units": 104.7691659921845,
   "paper_only": true,
-  "pending_accas": 5,
-  "pending_positions": 5,
+  "pending_accas": 4,
+  "pending_positions": 4,
   "pending_singles": 0,
-  "profit_units": 9.769165992184504,
+  "profit_units": 8.769165992184504,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": 0.28732841153483835,
+  "roi": 0.2505475997767001,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.1960311570008899,
-  "settled_accas": 33,
-  "settled_positions": 34,
+  "selected_leg_brier_score": 0.197109313790696,
+  "settled_accas": 34,
+  "settled_positions": 35,
   "settled_singles": 1,
-  "settled_stake_units": 34.0,
+  "settled_stake_units": 35.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 15,
+  "unresolved_result_legs": 13,
   "wins": 15
 }
