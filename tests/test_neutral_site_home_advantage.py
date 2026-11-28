@@ -334,6 +334,10 @@ def test_all_neutral_history_yields_zero_home_advantage_without_error():
 def test_calibration_version_unchanged_by_neutral_site_fix():
     """Confirm calibration_version (SegmentKey[4]) is NOT bumped by Item C."""
     default_model = HistoryModel(ForecastConfig())
+    legacy_ncaa_m_model = HistoryModel(
+        ForecastConfig(recalibrate_expectations=True, posted_line_model_weight=0.2)
+    )
     ncaa_m_model = HistoryModel(league_forecast_config(League.NCAA_M))
     assert default_model.calibration_version == "team_history_empirical-cb419eb48826"
-    assert ncaa_m_model.calibration_version == "team_history_empirical-542f7e282358"
+    assert legacy_ncaa_m_model.calibration_version == "team_history_empirical-542f7e282358"
+    assert ncaa_m_model.calibration_version == "team_history_empirical-0ae09a9196c1"

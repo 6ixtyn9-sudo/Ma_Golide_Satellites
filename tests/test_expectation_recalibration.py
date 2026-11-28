@@ -168,6 +168,7 @@ def test_default_config_keeps_its_calibration_identity():
     legacy = asdict(ForecastConfig())
     legacy.pop("recalibrate_expectations")
     legacy.pop("posted_line_model_weight")
+    legacy.pop("anchor_dispersion_rescale")
     expected = config_fingerprint({"model_version": id_spelling(MODEL_VERSION), **legacy})
     assert HistoryModel(ForecastConfig()).calibration_version == f"{MODEL_VERSION}-{expected}"
     assert (
@@ -190,6 +191,7 @@ def test_league_defaults_apply_only_to_backtested_college_leagues():
         config = league_forecast_config(league)
         assert config.recalibrate_expectations is True
         assert config.posted_line_model_weight == 0.2
+        assert config.anchor_dispersion_rescale is True
         service = MarketForecastService(InMemoryStore(), league)
         assert service.forecast_config == config
     for league in (
@@ -204,7 +206,11 @@ def test_league_defaults_apply_only_to_backtested_college_leagues():
     # Explicit settings still win over league defaults.
     assert league_forecast_config(
         League.NCAA_W, min_history_games=5, posted_line_model_weight=None
-    ) == ForecastConfig(min_history_games=5, recalibrate_expectations=True)
+    ) == ForecastConfig(
+        min_history_games=5,
+        recalibrate_expectations=True,
+        anchor_dispersion_rescale=True,
+    )
 
 
 def test_posted_line_weight_anchors_once_to_main_line_across_alternate_lines():
@@ -294,4 +300,109 @@ def test_posted_line_weight_anchors_once_to_main_line_across_alternate_lines():
     over_by_line = {row.line: row.alternative_probabilities["over"] for row in t_rows}
     assert under_by_line[134.5] < under_by_line[140.5] < under_by_line[146.5]
     assert over_by_line[134.5] > over_by_line[140.5] > over_by_line[146.5]
+
+
+def test_anchored_dispersion_scale_matches_orthogonal_variance_bounds():
+    scale_fn = HistoryModel._anchored_dispersion_scale
+    # Symmetric values around 0 with exact std = 14.5
+    wide = [-14.5, 14.5] * 25
+    # w=1.0 -> identity (no anchoring)
+    assert scale_fn(wide, 0.0, 10.7, 1.0) == pytest.approx(1.0)
+    # w=0.0 -> shrinks exactly to market sigma prior (10.7 / 14.5)
+    assert scale_fn(wide, 0.0, 10.7, 0.0) == pytest.approx(10.7 / 14.5)
+    # w=0.2 -> sqrt((1 - 0.04)*10.7^2 + 0.04*14.5^2) / 14.5; never drops below sigma_market!
+    expected_sigma = ((1.0 - 0.04) * (10.7**2) + 0.04 * (14.5**2)) ** 0.5
+    assert expected_sigma > 10.7
+    assert scale_fn(wide, 0.0, 10.7, 0.2) == pytest.approx(expected_sigma / 14.5)
+    # Tighter residual window (sigma_raw = 6.0 <= 10.7): never inflated above 1.0
+    tight = [-6.0, 6.0] * 25
+    assert scale_fn(tight, 0.0, 10.7, 0.2) == pytest.approx(1.0)
+
+
+def test_anchor_dispersion_rescale_tightens_noisy_college_alt_line_tails():
+    """High-noise college seasons must not price far alt lines with raw-rating width."""
+    noisy_finals = []
+    for idx, g in enumerate(_season()):
+        assert g.actual is not None
+        # Add wide margin noise (~17-point std) to mimic noisy early-season NCAA ratings.
+        extra = float(((idx * 43) % 51) - 25)
+        h_final = g.actual.home_final + extra / 2.0
+        a_final = g.actual.away_final - extra / 2.0
+        noisy_finals.append(
+            Game(
+                game_id=g.game_id,
+                league=League.NCAA_M,
+                season=g.season,
+                home_team_id=g.home_team_id,
+                away_team_id=g.away_team_id,
+                home_name=g.home_name,
+                away_name=g.away_name,
+                scheduled_utc=g.scheduled_utc,
+                status=g.status,
+                actual=ActualResult(
+                    period_kind=PeriodKind.QUARTERS,
+                    home_quarters=[h_final / 4] * 4,
+                    away_quarters=[a_final / 4] * 4,
+                    home_final=h_final,
+                    away_final=a_final,
+                ),
+            )
+        )
+    target = Game(
+        game_id="g_target",
+        league=League.NCAA_M,
+        season="2026",
+        home_team_id="t4",
+        away_team_id="t3",
+        home_name="Team 4",
+        away_name="Team 3",
+        scheduled_utc=iso(START + timedelta(hours=8 * len(noisy_finals))),
+        status=GameStatus.SCHEDULED,
+    )
+    snaps = [
+        BookSnapshot(
+            game_id=target.game_id,
+            provider="espn",
+            book="DraftKings",
+            market=Market.SPREAD,
+            period=Period.FULL_GAME,
+            observed_utc=target.scheduled_utc,
+            line=line,
+            home_price_decimal=1.91,
+            away_price_decimal=1.91,
+            main_line=(line == -4.5),
+        )
+        for line in (-14.5, -4.5, 5.5)
+    ]
+    unscaled_cfg = _config(
+        recalibrate_expectations=True,
+        posted_line_model_weight=0.2,
+        anchor_dispersion_rescale=False,
+    )
+    scaled_cfg = _config(
+        recalibrate_expectations=True,
+        posted_line_model_weight=0.2,
+        anchor_dispersion_rescale=True,
+    )
+    unscaled_model = HistoryModel(unscaled_cfg)
+    scaled_model = HistoryModel(scaled_cfg)
+    history = unscaled_model.available_history(
+        noisy_finals, scheduled_utc=target.scheduled_utc, as_of_utc=target.scheduled_utc
+    )
+    unscaled_rows = {
+        row.line: row.alternative_probabilities["home"]
+        for row in unscaled_model.lines(target, history, snaps, {})
+    }
+    scaled_rows = {
+        row.line: row.alternative_probabilities["home"]
+        for row in scaled_model.lines(target, history, snaps, {})
+    }
+    # Alt-line monotonicity holds after rescaling.
+    assert scaled_rows[-14.5] < scaled_rows[-4.5] < scaled_rows[5.5]
+    # Far tail alt lines move away from 0.5 (less inflated tail mass).
+    assert scaled_rows[-14.5] < unscaled_rows[-14.5]
+    assert scaled_rows[5.5] > unscaled_rows[5.5]
+    # Calibration version changes for scaled vs unscaled so cohorts stay separated.
+    assert scaled_model.calibration_version != unscaled_model.calibration_version
+
 
