@@ -11,6 +11,7 @@ from bisect import bisect_right, bisect_left
 from collections.abc import Iterator
 from dataclasses import asdict, dataclass
 from datetime import timedelta
+import math
 from typing import Any, Dict, Iterable, List, Optional, Sequence, Tuple
 
 from ingestion.identity import canonical_team_key, parse_utc
@@ -33,6 +34,29 @@ RECALIBRATION_MAX_SLOPE = 6.0
 _FINGERPRINT_OPTIONAL_DEFAULTS: Dict[str, Any] = {
     "recalibrate_expectations": False,
     "posted_line_model_weight": None,
+    "anchor_dispersion_rescale": False,
+}
+
+# Full-game market closing-line residual RMSE priors (margin, total) used when
+# ``anchor_dispersion_rescale`` shrinks raw empirical residuals to match the
+# honest variance of a posted-line-anchored mean:
+#   sigma_anchor^2 = (1 - w^2) * min(sigma_market, sigma_raw)^2 + w^2 * sigma_raw^2.
+# Under efficient-market orthogonality (Cov(Y - L, L - M) = 0), blending a
+# noisier model M into the market line L reduces residual variance toward
+# sigma_market without ever dropping below irreducible game variance sigma_market.
+ANCHOR_MARKET_SIGMA_PRIORS: Dict[League, Tuple[float, float]] = {
+    League.NCAA_M: (10.7, 12.5),
+    League.NCAA_W: (11.5, 13.0),
+}
+DEFAULT_ANCHOR_MARKET_SIGMA_PRIOR: Tuple[float, float] = (10.7, 12.5)
+_PERIOD_SIGMA_SCALE: Dict[Period, float] = {
+    Period.FULL_GAME: 1.0,
+    Period.H1: math.sqrt(0.5),
+    Period.H2: math.sqrt(0.5),
+    Period.Q1: 0.5,
+    Period.Q2: 0.5,
+    Period.Q3: 0.5,
+    Period.Q4: 0.5,
 }
 
 
@@ -58,6 +82,10 @@ class ForecastConfig:
     # ``None`` keeps pure-model line probabilities. With a weight w, the line
     # distribution is centred at w * model + (1 - w) * posted line.
     posted_line_model_weight: Optional[float] = None
+    # When anchoring a spread/total distribution to the market main line, also
+    # rescale the empirical residuals to match the orthogonal anchored variance
+    # instead of pricing alternate lines with the wider raw-rating dispersion.
+    anchor_dispersion_rescale: bool = False
 
     def __post_init__(self) -> None:
         if self.min_history_games < 1 or self.min_residual_games < 1:
@@ -86,8 +114,16 @@ class ForecastConfig:
 # picks won 55% / 49%). Other leagues keep the original behaviour until
 # they are backtested and their paper pipelines are open to change.
 LEAGUE_FORECAST_OVERRIDES: Dict[League, Dict[str, Any]] = {
-    League.NCAA_W: {"recalibrate_expectations": True, "posted_line_model_weight": 0.2},
-    League.NCAA_M: {"recalibrate_expectations": True, "posted_line_model_weight": 0.2},
+    League.NCAA_W: {
+        "recalibrate_expectations": True,
+        "posted_line_model_weight": 0.2,
+        "anchor_dispersion_rescale": True,
+    },
+    League.NCAA_M: {
+        "recalibrate_expectations": True,
+        "posted_line_model_weight": 0.2,
+        "anchor_dispersion_rescale": True,
+    },
     # FIBA ELW starts on the transparent empirical/default surface.  It does
     # not inherit men's EuroLeague backtests, model weights, or price lane.
     League.EUROLEAGUE_W: {},
@@ -1126,6 +1162,50 @@ class HistoryModel:
             )
         return anchors
 
+    @staticmethod
+    def _anchored_dispersion_scale(
+        values: Sequence[float],
+        baseline_mean: float,
+        market_sigma_prior: float,
+        model_weight: float,
+    ) -> float:
+        """Exact orthogonal shrinkage ratio ``sigma_anchor / sigma_raw``.
+
+        For an efficient market line ``L`` with residual std ``sigma_L`` and a
+        raw model ``M`` with residual std ``sigma_M``:
+        ``Y - (w * M + (1 - w) * L) = (Y - L) + w * (L - M)``, where
+        ``Cov(Y - L, L - M) = 0``, so
+        ``sigma_anchor = sqrt((1 - w^2) * sigma_L^2 + w^2 * sigma_M^2)``.
+
+        Clamping ``sigma_L <= sigma_M`` guarantees the scale stays in ``(0, 1]``:
+        it never artificially inflates a residual window tighter than the prior,
+        and never shrinks below irreducible market variance ``sigma_L``.
+        """
+        if not values or model_weight >= 1.0 or market_sigma_prior <= 0.0:
+            return 1.0
+        residuals = [value - baseline_mean for value in values]
+        mean_residual = sum(residuals) / len(residuals)
+        variance = sum((res - mean_residual) ** 2 for res in residuals) / len(residuals)
+        sigma_raw = math.sqrt(max(variance, 0.0))
+        if sigma_raw <= 1e-9 or sigma_raw <= market_sigma_prior:
+            return 1.0
+        w_sq = model_weight * model_weight
+        sigma_anchor = math.sqrt(
+            (1.0 - w_sq) * (market_sigma_prior * market_sigma_prior)
+            + w_sq * (sigma_raw * sigma_raw)
+        )
+        return sigma_anchor / sigma_raw
+
+    @staticmethod
+    def _anchor_market_sigma_prior(
+        league: League, market: Market, period: Period
+    ) -> float:
+        margin_prior, total_prior = ANCHOR_MARKET_SIGMA_PRIORS.get(
+            league, DEFAULT_ANCHOR_MARKET_SIGMA_PRIOR
+        )
+        base = total_prior if market is Market.TOTAL else margin_prior
+        return base * _PERIOD_SIGMA_SCALE.get(period, 1.0)
+
     def lines(
         self,
         game: Game,
@@ -1170,8 +1250,25 @@ class HistoryModel:
                     # posted total, then price every line against that single
                     # distribution so probabilities stay monotonic in line.
                     anchor = anchor_lines.get((snapshot.market, snapshot.period), line)
-                    shift = (1.0 - weight) * (anchor - distribution.baseline.total)
-                    totals = tuple(value + shift for value in totals)
+                    anchored_mean = (
+                        weight * distribution.baseline.total + (1.0 - weight) * anchor
+                    )
+                    if self.config.anchor_dispersion_rescale:
+                        scale = self._anchored_dispersion_scale(
+                            totals,
+                            distribution.baseline.total,
+                            self._anchor_market_sigma_prior(
+                                game.league, snapshot.market, snapshot.period
+                            ),
+                            weight,
+                        )
+                        totals = tuple(
+                            anchored_mean + scale * (value - distribution.baseline.total)
+                            for value in totals
+                        )
+                    else:
+                        shift = anchored_mean - distribution.baseline.total
+                        totals = tuple(value + shift for value in totals)
                 probabilities = {
                     "over": sum(value > line for value in totals)
                     / distribution.residuals,
@@ -1188,8 +1285,25 @@ class HistoryModel:
                     anchor = anchor_lines.get(
                         (snapshot.market, snapshot.period), snapshot.line
                     )
-                    shift = (1.0 - weight) * (-anchor - distribution.baseline.margin)
-                    margins = tuple(value + shift for value in margins)
+                    anchored_mean = (
+                        weight * distribution.baseline.margin + (1.0 - weight) * (-anchor)
+                    )
+                    if self.config.anchor_dispersion_rescale:
+                        scale = self._anchored_dispersion_scale(
+                            margins,
+                            distribution.baseline.margin,
+                            self._anchor_market_sigma_prior(
+                                game.league, snapshot.market, snapshot.period
+                            ),
+                            weight,
+                        )
+                        margins = tuple(
+                            anchored_mean + scale * (value - distribution.baseline.margin)
+                            for value in margins
+                        )
+                    else:
+                        shift = anchored_mean - distribution.baseline.margin
+                        margins = tuple(value + shift for value in margins)
                 adjusted = [value + snapshot.line for value in margins]
                 probabilities = {
                     "home": sum(value > 0 for value in adjusted) / distribution.residuals,
