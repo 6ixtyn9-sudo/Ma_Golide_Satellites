@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 3,
+  "awaiting_game_legs": 1,
   "awaiting_game_legs_open": 0,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
@@ -2917,12 +2917,14 @@
       "wins": 0
     },
     {
-      "awaiting_game_legs": 3,
+      "awaiting_game_legs": 1,
       "bank_units": 104.76916599218453,
       "candidate_pool_outcomes": {
+        "02bdec8c0e9b0ceb4177": "win",
         "02f36f16a43e50f5af74": "loss",
         "03c6d2e720f41edf0c29": "loss",
         "0be5344272ced5c709fc": "loss",
+        "0be778e71ef44ca758d8": "loss",
         "12886e65506f580453f1": "loss",
         "1311dfec55841e286bef": "loss",
         "134ddcfef43cb6a5f605": "win",
@@ -2933,6 +2935,7 @@
         "19cab5082af2d1f9dd86": "loss",
         "1a70fac448a77f178d3a": "win",
         "1dffa2a296dda5df7be9": "win",
+        "27c0ec6352c31ca42f29": "loss",
         "2897a54c3acb1728783c": "loss",
         "2c284eb53be325db1a6a": "loss",
         "314949f67d28b8dddba5": "win",
@@ -2941,6 +2944,8 @@
         "3beff0e8130853b855fd": "loss",
         "408f1693baaaf68f207a": "loss",
         "474441ef59861db9c0ce": "loss",
+        "483bdb0423094926ccdc": "loss",
+        "4c4cb82f3a28858e2438": "win",
         "5619f121e58f3c00db51": "win",
         "58cabb0b5ed25cd13b88": "win",
         "5ee3f265d950f94a24df": "loss",
@@ -2956,6 +2961,7 @@
         "781e3c73797fb066059c": "win",
         "89593b6c10f25ea17394": "win",
         "8b6a8d114b0e390b7d92": "win",
+        "8e8c2de3e9472cece35b": "win",
         "902cc999b3fb8414bfd8": "loss",
         "91c186985294a529eb16": "loss",
         "9229665da66cd170f57f": "loss",
@@ -2966,18 +2972,23 @@
         "ab1c095b251a2b4b3701": "loss",
         "ab787b50fa19752e58d8": "win",
         "aef5664a78483261d005": "win",
+        "c36f847de614b5318321": "loss",
         "c4194e8d812872cb2f5a": "win",
+        "c5a8f85a2cf46ec30a84": "win",
         "c5e0b3793467b1845e69": "win",
         "c9f3aeed91fd94a4d141": "loss",
         "ccc5ef15f436dfa81318": "loss",
         "d81badcb100a836d870b": "win",
         "d9096fbd3952db3bfa05": "loss",
+        "d99a99857a75bd38eb8b": "loss",
         "debee9608f07a7554ea7": "loss",
+        "e110ac61642bd9f26bcd": "loss",
         "e3d83b4b84eb630ccd59": "loss",
         "e58d785c24186aa08625": "win",
         "e6d60ca5b99dc3180332": "loss",
         "ed8de54ad58956e8285a": "loss",
-        "f09070bde991fed22e7f": "win"
+        "f09070bde991fed22e7f": "win",
+        "facb9301087b0ce5d0e7": "win"
       },
       "date": "2026-11-27",
       "decision_id": "45984724506_ncaa_m_1_attempt_1",
@@ -2990,7 +3001,7 @@
       "pending_units": 0,
       "positions": [
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -3002,7 +3013,7 @@
           "leg_outcomes": [
             "loss",
             "loss",
-            null
+            "loss"
           ],
           "legs": [
             {
@@ -3045,13 +3056,13 @@
               "book_provider": "espn",
               "forecast_id": "c36f847de614b5318321",
               "game_id": "401926756",
-              "grade_status": "pending",
+              "grade_status": "loss",
               "home": "UC Santa Barbara Gauchos",
               "line": -14.5,
               "market": "spread",
+              "outcome": "loss",
               "period": "full_game",
               "pick_id": "c36f847de614b5318321",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-28T00:00:00Z",
               "selected_decimal_price": 1.8695652173913042,
               "selection": "away"
@@ -3068,7 +3079,7 @@
           "stake_units": 1.0,
           "ticket_id": "3098fa794d3866a06dd0",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
           "awaiting_game_legs": 1,
@@ -3314,7 +3325,7 @@
           "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -3325,7 +3336,7 @@
           "leg_count": 3,
           "leg_outcomes": [
             "loss",
-            null,
+            "win",
             "loss"
           ],
           "legs": [
@@ -3352,13 +3363,13 @@
               "book_provider": "espn",
               "forecast_id": "4c4cb82f3a28858e2438",
               "game_id": "401911380",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "East Tennessee State Buccaneers",
               "line": 141.5,
               "market": "total",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "4c4cb82f3a28858e2438",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-28T00:00:00Z",
               "selected_decimal_price": 1.9090909090909092,
               "selection": "over"
@@ -3392,7 +3403,7 @@
           "stake_units": 1.0,
           "ticket_id": "60443781380dbbc51df6",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         }
       ],
       "profit_units": -5.0,
@@ -3404,7 +3415,7 @@
       "settled_positions": 5,
       "settled_singles": 0,
       "staked_units": 5.0,
-      "unresolved_result_legs": 3,
+      "unresolved_result_legs": 1,
       "wins": 0
     }
   ],
@@ -3424,12 +3435,12 @@
   "result_unresolvable_legs": 0,
   "roi": 0.12228630749191037,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.2083510343479999,
+  "selected_leg_brier_score": 0.20938449227228934,
   "settled_accas": 38,
   "settled_positions": 39,
   "settled_singles": 1,
   "settled_stake_units": 39.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 3,
+  "unresolved_result_legs": 1,
   "wins": 15
 }
