@@ -1,6 +1,6 @@
 {
-  "awaiting_game_legs": 1,
-  "awaiting_game_legs_open": 1,
+  "awaiting_game_legs": 0,
+  "awaiting_game_legs_open": 0,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
   "history": [
@@ -2558,20 +2558,23 @@
       "wins": 0
     },
     {
-      "awaiting_game_legs": 1,
-      "bank_units": 97.78629894624167,
+      "awaiting_game_legs": 0,
+      "bank_units": 98.24712843932923,
+      "candidate_pool_outcomes": {
+        "b663bf4ca1be64280b55": "win"
+      },
       "date": "2026-11-27",
       "decision_id": "45984724506_nba_1_attempt_1",
       "frozen_at": "2026-11-27T10:47:07Z",
       "league": "NBA",
       "losses": 0,
       "pending_accas": 0,
-      "pending_positions": 1,
-      "pending_singles": 1,
-      "pending_units": 1.0,
+      "pending_positions": 0,
+      "pending_singles": 0,
+      "pending_units": 0,
       "positions": [
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -2579,10 +2582,10 @@
           "effective_decimal_odds": 1.4608294930875576,
           "estimated_joint_win_probability": 0.711734,
           "estimated_win_probability": 0.711734,
-          "grade_status": "pending",
+          "grade_status": "win",
           "leg_count": 1,
           "leg_outcomes": [
-            null
+            "win"
           ],
           "legs": [
             {
@@ -2591,18 +2594,19 @@
               "book_provider": "espn",
               "forecast_id": "b663bf4ca1be64280b55",
               "game_id": "401909333",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "San Antonio Spurs",
               "market": "moneyline",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "b663bf4ca1be64280b55",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-28T02:30:00Z",
               "selected_decimal_price": 1.4608294930875576,
               "selection": "home"
             }
           ],
           "paper_only": true,
+          "profit_units": 0.4608294930875576,
           "provisional_leg_count": 0,
           "provisional_sample_gate_bypassed": false,
           "publication_index": 1,
@@ -2612,44 +2616,44 @@
           "stake_units": 1.0,
           "ticket_id": "0eb7f6e92d26ca926243",
           "ticket_type": "single",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         }
       ],
-      "profit_units": null,
+      "profit_units": 0.4608294930875576,
       "pushes": 0,
       "receipt_path": "auto_tickets_2026-11-27_decision.json",
       "result_unresolvable_legs": 0,
-      "returned_units": null,
+      "returned_units": 1.4608294930875576,
       "settled_accas": 0,
-      "settled_positions": 0,
-      "settled_singles": 0,
-      "staked_units": 0,
-      "unresolved_result_legs": 1,
-      "wins": 0
+      "settled_positions": 1,
+      "settled_singles": 1,
+      "staked_units": 1.0,
+      "unresolved_result_legs": 0,
+      "wins": 1
     }
   ],
   "history_detail": "compact_settlement_summary; immutable auto_tickets_YYYY-MM-DD_decision.json receipts retain complete leg evidence",
-  "hit_rate": 0.23333333333333334,
+  "hit_rate": 0.25806451612903225,
   "league": "NBA",
   "losses": 23,
-  "paper_bank_units": 97.78629894624167,
-  "paper_committed_units": 1.0,
-  "paper_free_units": 96.78629894624167,
+  "paper_bank_units": 98.24712843932923,
+  "paper_committed_units": 0,
+  "paper_free_units": 98.24712843932923,
   "paper_only": true,
   "pending_accas": 0,
-  "pending_positions": 1,
-  "pending_singles": 1,
-  "profit_units": -2.213701053758327,
+  "pending_positions": 0,
+  "pending_singles": 0,
+  "profit_units": -1.7528715606707694,
   "pushes": 0,
   "result_unresolvable_legs": 0,
-  "roi": -0.07379003512527757,
+  "roi": -0.05654424389260546,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.2620532452634633,
+  "selected_leg_brier_score": 0.2598971493778312,
   "settled_accas": 26,
-  "settled_positions": 30,
-  "settled_singles": 4,
-  "settled_stake_units": 30.0,
+  "settled_positions": 31,
+  "settled_singles": 5,
+  "settled_stake_units": 31.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 1,
-  "wins": 7
+  "unresolved_result_legs": 0,
+  "wins": 8
 }
