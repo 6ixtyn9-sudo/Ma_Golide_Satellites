@@ -1,6 +1,6 @@
 Ma Golide Picks — NCAA_M 2026-11-27
 ========================================================================
-Generated at: 2026-11-28 05:48 SAST
+Generated at: 2026-11-28 06:47 SAST
 PAPER ONLY · eligibility labels are evidence states, not profit guarantees.
 Draft rows remain mutable until their fixture enters the 120-minute pre-tip window.
 Only FROZEN rows are immutable settlement evidence; all final grades use official results.
@@ -9,17 +9,90 @@ Started and settled games are retained separately as archive status.
 
 ELIGIBLE CLEAN PICKS
 ========================================================================
+  (none)
+
+CAUTION PICKS
+========================================================================
+  (none)
+
+PRIOR-HEAVY — THIN TEAM EVIDENCE (PAPER ONLY)
+========================================================================
+  (none)
+
+WATCHLIST — NO MATCHED ODDS
+========================================================================
+  (none)
+
+WATCHLIST — INSUFFICIENT CONTEXT
+========================================================================
+  (none)
+
+SKIPPED — INELIGIBLE
+========================================================================
+  (none)
+
+IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
+========================================================================
   [team_history_empirical/team_history_empirical] Texas Tech Red Raiders vs San Diego State Aztecs · KO 2026-11-28 06:30 SAST
       SPREAD full_game +7.5 -> HOME · p=76.6% (raw 80.0%) @1.893 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
       calibration=calibrated n=329 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=23.6h (b2b=true) · away_rest=34.5h (b2b=false) · diff=-10.9h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
+      MONEYLINE full_game -> AWAY · p=72.1% (raw 76.0%) @1.420 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
+      calibration=calibrated n=646 · reasons=superseded_by_calibration_twin · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
+      collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
+  [team_history_empirical/team_history_empirical] Gonzaga Bulldogs vs Creighton Bluejays · KO 2026-11-28 06:00 SAST
+      MONEYLINE full_game -> HOME · p=63.0% (raw 67.0%) @1.377 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
+      calibration=calibrated n=653 · reasons=superseded_by_calibration_twin · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=23.1h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.9h · any_b2b=true
+      collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
+  [team_history_empirical/team_history_empirical] San Diego State Aztecs vs Texas Tech Red Raiders · KO 2026-11-28 06:30 SAST
+      MONEYLINE full_game -> AWAY · p=56.7% (raw 60.0%) @1.308 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
+      calibration=calibrated n=599 · reasons=superseded_by_calibration_twin · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=34.5h (b2b=false) · away_rest=23.6h (b2b=true) · diff=+10.9h · any_b2b=true
+      collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
+  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
+      MONEYLINE H1 -> AWAY · p=55.5% (raw 63.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
+      calibration=calibrated n=641 · reasons=no_exact_bookmaker_market · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
+      TOTAL full_game 144.5 -> UNDER · p=54.3% (raw 57.0%) @1.909 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
+      calibration=calibrated n=321 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
+      TOTAL full_game 138.5 -> OVER · p=54.3% (raw 57.0%) @1.901 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
+      calibration=calibrated n=321 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
   [team_history_empirical/team_history_empirical] Texas Tech Red Raiders vs San Diego State Aztecs · KO 2026-11-28 06:30 SAST
       SPREAD full_game +8.5 -> AWAY · p=53.6% (raw 57.0%) @1.952 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
       calibration=calibrated n=329 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=23.6h (b2b=true) · away_rest=34.5h (b2b=false) · diff=-10.9h · any_b2b=true
       PAPER SINGLE · NCAA_M spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=259 · recency ROI +4.4% / adjusted +4.3%
+  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
+      TOTAL full_game 144.5 -> OVER · p=53.3% (raw 55.0%) @1.909 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
+      calibration=calibrated n=299 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
+      PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=735 · recency ROI +9.5% / adjusted +9.5%
+  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
+      TOTAL full_game 139.5 -> OVER · p=53.3% (raw 56.0%) @1.943 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
+      calibration=calibrated n=321 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
+      TOTAL full_game 140.5 -> OVER · p=53.3% (raw 56.0%) @1.877 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
+      calibration=calibrated n=321 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
   [team_history_empirical/team_history_empirical] Gonzaga Bulldogs vs Creighton Bluejays · KO 2026-11-28 06:00 SAST
       TOTAL full_game 161.5 -> UNDER · p=53.0% (raw 56.0%) @1.870 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
@@ -46,51 +119,26 @@ ELIGIBLE CLEAN PICKS
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
       calibration=calibrated n=329 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=23.6h (b2b=true) · away_rest=34.5h (b2b=false) · diff=-10.9h · any_b2b=true
-
-CAUTION PICKS
-========================================================================
-  (none)
-
-PRIOR-HEAVY — THIN TEAM EVIDENCE (PAPER ONLY)
-========================================================================
-  (none)
-
-WATCHLIST — NO MATCHED ODDS
-========================================================================
-  [team_history_empirical/team_history_empirical] Gonzaga Bulldogs vs Creighton Bluejays · KO 2026-11-28 06:00 SAST
-      MONEYLINE H1 -> HOME · p=46.6% (raw 54.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
-      calibration=calibrated n=647 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=23.1h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.9h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Texas Tech Red Raiders vs San Diego State Aztecs · KO 2026-11-28 06:30 SAST
-      MONEYLINE H1 -> HOME · p=46.6% (raw 54.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
-      calibration=calibrated n=647 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=23.6h (b2b=true) · away_rest=34.5h (b2b=false) · diff=-10.9h · any_b2b=true
-
-WATCHLIST — INSUFFICIENT CONTEXT
-========================================================================
-  (none)
-
-SKIPPED — INELIGIBLE
-========================================================================
-  [team_history_empirical/team_history_empirical] Gonzaga Bulldogs vs Creighton Bluejays · KO 2026-11-28 06:00 SAST
-      MONEYLINE full_game -> HOME · p=63.0% (raw 67.0%) @1.377 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
-      calibration=calibrated n=653 · reasons=superseded_by_calibration_twin · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=23.1h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.9h · any_b2b=true
-      collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
-  [team_history_empirical/team_history_empirical] San Diego State Aztecs vs Texas Tech Red Raiders · KO 2026-11-28 06:30 SAST
-      MONEYLINE full_game -> AWAY · p=56.7% (raw 60.0%) @1.308 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
-      calibration=calibrated n=599 · reasons=superseded_by_calibration_twin · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=34.5h (b2b=false) · away_rest=23.6h (b2b=true) · diff=+10.9h · any_b2b=true
-      collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
+  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
+      SPREAD full_game -4.5 -> AWAY · p=50.3% (raw 54.0%) @n/a DraftKings
+      bucket=WATCHLIST_NO_ODDS · price_evidence=MATCHED_BUT_SELECTED_PRICE_MISSING · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
+      calibration=calibrated n=324 · reasons=missing_selected_decimal_price · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
+      SPREAD full_game -5.5 -> AWAY · p=50.1% (raw 54.0%) @1.935 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
+      calibration=calibrated n=312 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
   [team_history_empirical/team_history_empirical] Gonzaga Bulldogs vs Creighton Bluejays · KO 2026-11-28 06:00 SAST
       SPREAD full_game -5.5 -> HOME · p=49.6% (raw 53.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
       calibration=calibrated n=329 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=23.1h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.9h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
+      TOTAL full_game 142.5 -> UNDER · p=49.3% (raw 52.0%) @1.893 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
+      calibration=calibrated n=321 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
   [team_history_empirical/team_history_empirical] Gonzaga Bulldogs vs Creighton Bluejays · KO 2026-11-28 06:00 SAST
       SPREAD full_game +5.5 -> AWAY · p=49.1% (raw 53.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
@@ -117,6 +165,11 @@ SKIPPED — INELIGIBLE
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
       calibration=calibrated n=321 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=23.1h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.9h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
+      TOTAL full_game 141.5 -> OVER · p=48.3% (raw 51.0%) @1.893 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
+      calibration=calibrated n=321 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
   [team_history_empirical/team_history_empirical] Texas Tech Red Raiders vs San Diego State Aztecs · KO 2026-11-28 06:30 SAST
       TOTAL full_game 142.5 -> UNDER · p=48.3% (raw 51.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
@@ -127,227 +180,31 @@ SKIPPED — INELIGIBLE
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
       calibration=calibrated n=327 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=23.6h (b2b=true) · away_rest=34.5h (b2b=false) · diff=-10.9h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Gonzaga Bulldogs vs Creighton Bluejays · KO 2026-11-28 06:00 SAST
-      SPREAD full_game +6.5 -> AWAY · p=47.6% (raw 51.0%) @1.870 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
-      calibration=calibrated n=329 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=23.1h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.9h · any_b2b=true
-
-IN PROGRESS / AWAITING OFFICIAL RESULT — ARCHIVE ONLY
-========================================================================
-  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
-      MONEYLINE full_game -> HOME · p=76.1% (raw 80.0%) @1.488 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=641 · reasons=superseded_by_calibration_twin · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
-      collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
-  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
-      MONEYLINE full_game -> AWAY · p=72.1% (raw 76.0%) @1.420 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
-      calibration=calibrated n=646 · reasons=superseded_by_calibration_twin · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
-      collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
-  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
-      MONEYLINE H1 -> HOME · p=61.5% (raw 69.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=637 · reasons=no_exact_bookmaker_market · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
-  [provider:espn/team_history_empirical] Alabama Crimson Tide vs Miami Hurricanes · KO 2026-11-28 03:30 SAST
-      MONEYLINE full_game -> AWAY · p=60.4% (raw 64.2%) @1.741 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-27T23:48:50Z
-      calibration=calibrated n=420 · reasons=none · prediction=espn
-      venue/rest (evidence only) · neutral_site=true · home_rest=23.5h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.5h · any_b2b=true
-      ROI-BAND BLOCKED · NCAA_M moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=46 · recency ROI -5.2% / adjusted -5.4%
-  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
-      MONEYLINE H1 -> AWAY · p=55.5% (raw 63.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
-      calibration=calibrated n=641 · reasons=no_exact_bookmaker_market · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
-      TOTAL full_game 144.5 -> UNDER · p=54.3% (raw 57.0%) @1.909 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
-      calibration=calibrated n=321 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
-      TOTAL full_game 138.5 -> OVER · p=54.3% (raw 57.0%) @1.901 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
-      calibration=calibrated n=321 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
-      TOTAL full_game 158.5 -> UNDER · p=54.2% (raw 57.0%) @1.870 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=318 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
-      TOTAL full_game 150.5 -> OVER · p=54.1% (raw 55.0%) @1.952 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=291 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
-      PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=726 · recency ROI +10.9% / adjusted +10.8%
-  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
-      SPREAD full_game +3.5 -> AWAY · p=53.9% (raw 58.0%) @1.935 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=319 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
-      SPREAD full_game +1.5 -> HOME · p=53.9% (raw 58.0%) @1.847 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=319 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
-      TOTAL full_game 144.5 -> OVER · p=53.3% (raw 55.0%) @1.909 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
-      calibration=calibrated n=299 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
-      PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=735 · recency ROI +9.5% / adjusted +9.5%
-  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
-      TOTAL full_game 139.5 -> OVER · p=53.3% (raw 56.0%) @1.943 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
-      calibration=calibrated n=321 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
-      TOTAL full_game 140.5 -> OVER · p=53.3% (raw 56.0%) @1.877 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
-      calibration=calibrated n=321 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
-      SPREAD full_game -1.5 -> AWAY · p=52.8% (raw 56.0%) @1.980 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=301 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
-      PAPER SINGLE · NCAA_M spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=437 · recency ROI +4.1% / adjusted +4.1%
-  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
-      TOTAL full_game 148.5 -> OVER · p=52.2% (raw 55.0%) @1.862 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=318 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
-      SPREAD full_game -3.5 -> HOME · p=51.9% (raw 56.0%) @1.893 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=319 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Alabama Crimson Tide vs Miami Hurricanes · KO 2026-11-28 03:30 SAST
-      MONEYLINE full_game -> HOME · p=51.4% (raw 55.0%) @2.140 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-27T23:48:50Z
-      calibration=calibrated n=632 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=23.5h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.5h · any_b2b=true
-      ROI-BAND BLOCKED · NCAA_M moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=32 · recency ROI -12.5% / adjusted -11.6%
-  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
-      SPREAD full_game -4.5 -> AWAY · p=50.3% (raw 54.0%) @n/a DraftKings
-      bucket=WATCHLIST_NO_ODDS · price_evidence=MATCHED_BUT_SELECTED_PRICE_MISSING · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
-      calibration=calibrated n=324 · reasons=missing_selected_decimal_price · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Alabama Crimson Tide vs Miami Hurricanes · KO 2026-11-28 03:30 SAST
-      MONEYLINE H1 -> HOME · p=50.2% (raw 58.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-27T23:48:50Z
-      calibration=calibrated n=630 · reasons=no_exact_bookmaker_market · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=23.5h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
-      TOTAL full_game 157.5 -> UNDER · p=50.2% (raw 53.0%) @1.926 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=318 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
-      TOTAL full_game 155.5 -> OVER · p=50.2% (raw 53.0%) @1.893 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=318 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Alabama Crimson Tide vs Miami Hurricanes · KO 2026-11-28 03:30 SAST
-      SPREAD full_game -1.5 -> AWAY · p=50.1% (raw 54.0%) @1.862 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-27T23:48:50Z
-      calibration=calibrated n=312 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=23.5h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
-      SPREAD full_game -5.5 -> AWAY · p=50.1% (raw 54.0%) @1.935 DraftKings
-      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
-      calibration=calibrated n=312 · reasons=none · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
-      SPREAD full_game -4.5 -> HOME · p=49.9% (raw 54.0%) @1.893 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=319 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
-      TOTAL full_game 155.5 -> UNDER · p=49.3% (raw 51.0%) @1.926 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=299 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
-      TOTAL full_game 142.5 -> UNDER · p=49.3% (raw 52.0%) @1.893 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
-      calibration=calibrated n=321 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
-      TOTAL full_game 150.5 -> UNDER · p=49.2% (raw 52.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=318 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
-      SPREAD full_game +3.5 -> AWAY · p=48.8% (raw 52.0%) @1.926 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=301 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
-      MONEYLINE H1 -> HOME · p=48.5% (raw 56.0%) @n/a no matched book
-      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=637 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
-      TOTAL full_game 141.5 -> OVER · p=48.3% (raw 51.0%) @1.893 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
-      calibration=calibrated n=321 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
-      TOTAL full_game 156.5 -> UNDER · p=48.2% (raw 51.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=318 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
-      TOTAL full_game 149.5 -> OVER · p=48.2% (raw 51.0%) @1.893 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=318 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Alabama Crimson Tide vs Miami Hurricanes · KO 2026-11-28 03:30 SAST
-      TOTAL full_game 170.5 -> UNDER · p=48.1% (raw 51.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-27T23:48:50Z
-      calibration=calibrated n=309 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=23.5h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
-      TOTAL full_game 149.5 -> UNDER · p=48.1% (raw 51.0%) @1.926 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=309 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
   [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
       TOTAL full_game 142.5 -> OVER · p=47.8% (raw 51.0%) @1.926 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
       calibration=calibrated n=303 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Alabama Crimson Tide vs Miami Hurricanes · KO 2026-11-28 03:30 SAST
-      SPREAD full_game -2.5 -> AWAY · p=47.6% (raw 51.0%) @1.909 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-27T23:48:50Z
-      calibration=calibrated n=305 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=23.5h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.5h · any_b2b=true
-  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
-      SPREAD full_game +4.5 -> AWAY · p=47.6% (raw 51.0%) @1.926 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=305 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
-  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
-      MONEYLINE full_game -> AWAY · p=47.1% (raw 51.0%) @2.420 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=641 · reasons=below_calibrated_probability_floor,superseded_by_calibration_twin · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
-      collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
-  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
-      SPREAD full_game +2.5 -> AWAY · p=46.9% (raw 51.0%) @1.893 DraftKings
-      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T00:48:15Z
-      calibration=calibrated n=319 · reasons=below_calibrated_probability_floor · prediction=history
-      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Gonzaga Bulldogs vs Creighton Bluejays · KO 2026-11-28 06:00 SAST
+      SPREAD full_game +6.5 -> AWAY · p=47.6% (raw 51.0%) @1.870 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
+      calibration=calibrated n=329 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=23.1h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.9h · any_b2b=true
   [team_history_empirical/team_history_empirical] Omaha Mavericks vs Jacksonville State Gamecocks · KO 2026-11-28 05:30 SAST
       SPREAD full_game +5.5 -> HOME · p=46.9% (raw 51.0%) @1.885 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T01:49:06Z
       calibration=calibrated n=319 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-2.5h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Gonzaga Bulldogs vs Creighton Bluejays · KO 2026-11-28 06:00 SAST
+      MONEYLINE H1 -> HOME · p=46.6% (raw 54.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
+      calibration=calibrated n=647 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=23.1h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.9h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Texas Tech Red Raiders vs San Diego State Aztecs · KO 2026-11-28 06:30 SAST
+      MONEYLINE H1 -> HOME · p=46.6% (raw 54.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=⏳ PENDING · lifecycle=FROZEN · frozen_at=2026-11-28T02:48:14Z
+      calibration=calibrated n=647 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=23.6h (b2b=true) · away_rest=34.5h (b2b=false) · diff=-10.9h · any_b2b=true
 
 SETTLED PICKS — ARCHIVE ONLY
 ========================================================================
@@ -502,6 +359,12 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T21:48:43Z
       calibration=calibrated n=623 · reasons=no_exact_bookmaker_market · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=94.0h (b2b=false) · away_rest=124.0h (b2b=false) · diff=-30.0h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
+      MONEYLINE full_game -> HOME · p=76.1% (raw 80.0%) @1.488 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=641 · reasons=superseded_by_calibration_twin · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
+      collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
   [team_history_empirical/team_history_empirical] Fairfield Stags vs Navy Midshipmen · KO 2026-11-27 21:00 SAST
       MONEYLINE full_game -> HOME · p=74.5% (raw 78.0%) @1.488 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T17:48:41Z
@@ -676,6 +539,11 @@ SETTLED PICKS — ARCHIVE ONLY
       calibration=calibrated n=300 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=67.0h (b2b=false) · away_rest=50.0h (b2b=false) · diff=+17.0h · any_b2b=false
       ROI-BAND BLOCKED · NCAA_M spread full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=50 · recency ROI -15.7% / adjusted -14.4%
+  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
+      MONEYLINE H1 -> HOME · p=61.5% (raw 69.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=637 · reasons=no_exact_bookmaker_market · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
   [team_history_empirical/team_history_empirical] UC Davis Aggies vs Pacific Tigers · KO 2026-11-28 03:00 SAST
       MONEYLINE full_game -> HOME · p=61.4% (raw 65.0%) @3.300 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T23:48:50Z
@@ -687,6 +555,12 @@ SETTLED PICKS — ARCHIVE ONLY
       calibration=calibrated n=611 · reasons=superseded_by_calibration_twin · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=210.0h (b2b=false) · away_rest=66.0h (b2b=false) · diff=+144.0h · any_b2b=false
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
+  [provider:espn/team_history_empirical] Alabama Crimson Tide vs Miami Hurricanes · KO 2026-11-28 03:30 SAST
+      MONEYLINE full_game -> AWAY · p=60.4% (raw 64.2%) @1.741 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T23:48:50Z
+      calibration=calibrated n=420 · reasons=none · prediction=espn
+      venue/rest (evidence only) · neutral_site=true · home_rest=23.5h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.5h · any_b2b=true
+      ROI-BAND BLOCKED · NCAA_M moneyline full_game · p 0.60-<0.70 · odds 1.50-<2.00 · n=46 · recency ROI -5.2% / adjusted -5.4%
   [team_history_empirical/team_history_empirical] Vanderbilt Commodores vs Southern Jaguars · KO 2026-11-27 21:00 SAST
       SPREAD full_game +37.5 -> AWAY · p=60.1% (raw 64.0%) @1.893 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T17:48:41Z
@@ -1064,6 +938,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T23:48:50Z
       calibration=calibrated n=630 · reasons=no_exact_bookmaker_market · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=71.0h (b2b=false) · away_rest=95.0h (b2b=false) · diff=-24.0h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
+      TOTAL full_game 158.5 -> UNDER · p=54.2% (raw 57.0%) @1.870 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=318 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
   [team_history_empirical/team_history_empirical] American University Eagles vs Radford Highlanders · KO 2026-11-27 23:00 SAST
       TOTAL full_game 146.5 -> UNDER · p=54.1% (raw 57.0%) @1.909 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T19:48:39Z
@@ -1090,6 +969,12 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T16:49:17Z
       calibration=calibrated n=291 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=21.5h (b2b=true) · away_rest=16.0h (b2b=true) · diff=+5.5h · any_b2b=true
+      PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=726 · recency ROI +10.9% / adjusted +10.8%
+  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
+      TOTAL full_game 150.5 -> OVER · p=54.1% (raw 55.0%) @1.952 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=291 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
       PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=726 · recency ROI +10.9% / adjusted +10.8%
   [team_history_empirical/team_history_empirical] North Carolina Tar Heels vs West Virginia Mountaineers · KO 2026-11-28 02:00 SAST
       TOTAL full_game 149.5 -> OVER · p=54.1% (raw 55.0%) @1.926 DraftKings
@@ -1134,6 +1019,16 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T18:48:35Z
       calibration=calibrated n=302 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=15.6h (b2b=true) · away_rest=26.5h (b2b=false) · diff=-10.9h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
+      SPREAD full_game +3.5 -> AWAY · p=53.9% (raw 58.0%) @1.935 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=319 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
+      SPREAD full_game +1.5 -> HOME · p=53.9% (raw 58.0%) @1.847 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=319 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
   [team_history_empirical/team_history_empirical] Kansas Jayhawks vs Villanova Wildcats · KO 2026-11-28 00:00 SAST
       SPREAD full_game +12.5 -> AWAY · p=53.7% (raw 57.0%) @1.893 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T20:49:07Z
@@ -1264,6 +1159,12 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T22:49:16Z
       calibration=calibrated n=305 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=70.0h (b2b=false) · away_rest=72.0h (b2b=false) · diff=-2.0h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
+      SPREAD full_game -1.5 -> AWAY · p=52.8% (raw 56.0%) @1.980 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=301 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
+      PAPER SINGLE · NCAA_M spread full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=437 · recency ROI +4.1% / adjusted +4.1%
   [team_history_empirical/team_history_empirical] Merrimack Warriors vs Vermont Catamounts · KO 2026-11-27 20:00 SAST
       SPREAD full_game -2.5 -> AWAY · p=52.8% (raw 56.0%) @1.952 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T16:49:17Z
@@ -1377,6 +1278,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T20:49:07Z
       calibration=calibrated n=302 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=121.5h (b2b=false) · away_rest=70.0h (b2b=false) · diff=+51.5h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
+      TOTAL full_game 148.5 -> OVER · p=52.2% (raw 55.0%) @1.862 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=318 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
   [team_history_empirical/team_history_empirical] North Carolina Tar Heels vs West Virginia Mountaineers · KO 2026-11-28 02:00 SAST
       MONEYLINE H1 -> HOME · p=52.1% (raw 60.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T22:49:16Z
@@ -1415,6 +1321,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T22:49:16Z
       calibration=calibrated n=305 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=32.0h (b2b=false) · away_rest=29.5h (b2b=false) · diff=+2.5h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
+      SPREAD full_game -3.5 -> HOME · p=51.9% (raw 56.0%) @1.893 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=319 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
   [team_history_empirical/team_history_empirical] Illinois Fighting Illini vs Western Kentucky Hilltoppers · KO 2026-11-28 01:00 SAST
       SPREAD full_game +26.5 -> AWAY · p=51.6% (raw 55.0%) @1.962 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T21:48:43Z
@@ -1436,6 +1347,12 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T19:48:39Z
       calibration=calibrated n=300 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=27.0h (b2b=false) · away_rest=29.5h (b2b=false) · diff=-2.5h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Alabama Crimson Tide vs Miami Hurricanes · KO 2026-11-28 03:30 SAST
+      MONEYLINE full_game -> HOME · p=51.4% (raw 55.0%) @2.140 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T23:48:50Z
+      calibration=calibrated n=632 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=23.5h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.5h · any_b2b=true
+      ROI-BAND BLOCKED · NCAA_M moneyline full_game · p 0.50-<0.60 · odds 2.00+ · n=32 · recency ROI -12.5% / adjusted -11.6%
   [team_history_empirical/team_history_empirical] Kansas Jayhawks vs Villanova Wildcats · KO 2026-11-28 00:00 SAST
       TOTAL full_game 158.5 -> UNDER · p=51.3% (raw 54.0%) @1.943 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T20:49:07Z
@@ -1563,6 +1480,21 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T20:49:07Z
       calibration=calibrated n=302 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=48.8h (b2b=false) · away_rest=53.0h (b2b=false) · diff=-4.2h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Alabama Crimson Tide vs Miami Hurricanes · KO 2026-11-28 03:30 SAST
+      MONEYLINE H1 -> HOME · p=50.2% (raw 58.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T23:48:50Z
+      calibration=calibrated n=630 · reasons=no_exact_bookmaker_market · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=23.5h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.5h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
+      TOTAL full_game 157.5 -> UNDER · p=50.2% (raw 53.0%) @1.926 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=318 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
+      TOTAL full_game 155.5 -> OVER · p=50.2% (raw 53.0%) @1.893 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=318 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
   [provider:espn/team_history_empirical] Maryland Terrapins vs Oregon Ducks · KO 2026-11-27 22:30 SAST
       MONEYLINE full_game -> HOME · p=50.1% (raw 54.0%) @1.602 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T18:48:35Z
@@ -1592,6 +1524,11 @@ SETTLED PICKS — ARCHIVE ONLY
       calibration=calibrated n=291 · reasons=none · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=70.0h (b2b=false) · away_rest=125.0h (b2b=false) · diff=-55.0h · any_b2b=false
       PAPER SINGLE · NCAA_M total full_game · p 0.50-<0.60 · odds 1.50-<2.00 · n=726 · recency ROI +10.9% / adjusted +10.8%
+  [team_history_empirical/team_history_empirical] Alabama Crimson Tide vs Miami Hurricanes · KO 2026-11-28 03:30 SAST
+      SPREAD full_game -1.5 -> AWAY · p=50.1% (raw 54.0%) @1.862 DraftKings
+      bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T23:48:50Z
+      calibration=calibrated n=312 · reasons=none · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=23.5h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.5h · any_b2b=true
   [team_history_empirical/team_history_empirical] North Texas Mean Green vs North Dakota State Bison · KO 2026-11-28 03:00 SAST
       SPREAD full_game +5.5 -> AWAY · p=50.1% (raw 54.0%) @1.935 DraftKings
       bucket=ELIGIBLE_CLEAN · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=True · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T23:48:50Z
@@ -1622,6 +1559,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T18:48:35Z
       calibration=calibrated n=302 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=123.0h (b2b=false) · away_rest=44.0h (b2b=false) · diff=+79.0h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
+      SPREAD full_game -4.5 -> HOME · p=49.9% (raw 54.0%) @1.893 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=319 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
   [team_history_empirical/team_history_empirical] Pennsylvania Quakers vs Towson Tigers · KO 2026-11-28 01:00 SAST
       TOTAL full_game 143.5 -> OVER · p=49.8% (raw 53.0%) @1.870 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T21:48:43Z
@@ -1718,6 +1660,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T16:49:17Z
       calibration=calibrated n=299 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=21.5h (b2b=true) · away_rest=16.0h (b2b=true) · diff=+5.5h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
+      TOTAL full_game 155.5 -> UNDER · p=49.3% (raw 51.0%) @1.926 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=299 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
   [team_history_empirical/team_history_empirical] UCLA Bruins vs Georgetown Hoyas · KO 2026-11-27 21:30 SAST
       TOTAL full_game 149.5 -> UNDER · p=49.3% (raw 51.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T17:48:41Z
@@ -1738,6 +1685,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T23:48:50Z
       calibration=calibrated n=630 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=169.5h (b2b=false) · away_rest=96.0h (b2b=false) · diff=+73.5h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
+      TOTAL full_game 150.5 -> UNDER · p=49.2% (raw 52.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=318 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
   [team_history_empirical/team_history_empirical] Georgia Bulldogs vs UCF Knights · KO 2026-11-28 02:00 SAST
       MONEYLINE H1 -> HOME · p=49.1% (raw 57.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T22:49:16Z
@@ -1803,6 +1755,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T22:49:16Z
       calibration=calibrated n=303 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=32.0h (b2b=false) · away_rest=29.5h (b2b=false) · diff=+2.5h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
+      SPREAD full_game +3.5 -> AWAY · p=48.8% (raw 52.0%) @1.926 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=301 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
   [team_history_empirical/team_history_empirical] North Carolina Tar Heels vs West Virginia Mountaineers · KO 2026-11-28 02:00 SAST
       SPREAD full_game -3.5 -> AWAY · p=48.8% (raw 52.0%) @1.952 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T22:49:16Z
@@ -1833,6 +1790,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T19:48:39Z
       calibration=calibrated n=300 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=146.5h (b2b=false) · away_rest=165.5h (b2b=false) · diff=-19.0h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
+      MONEYLINE H1 -> HOME · p=48.5% (raw 56.0%) @n/a no matched book
+      bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=637 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
   [team_history_empirical/team_history_empirical] Baylor Bears vs TCU Horned Frogs · KO 2026-11-27 22:00 SAST
       MONEYLINE H1 -> HOME · p=48.4% (raw 56.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T18:48:35Z
@@ -1859,6 +1821,16 @@ SETTLED PICKS — ARCHIVE ONLY
       calibration=calibrated n=588 · reasons=below_calibrated_probability_floor,superseded_by_calibration_twin · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=68.5h (b2b=false) · away_rest=146.5h (b2b=false) · diff=-78.0h · any_b2b=false
       collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
+  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
+      TOTAL full_game 156.5 -> UNDER · p=48.2% (raw 51.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=318 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
+      TOTAL full_game 149.5 -> OVER · p=48.2% (raw 51.0%) @1.893 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=318 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
   [team_history_empirical/team_history_empirical] Kansas State Wildcats vs Michigan Wolverines · KO 2026-11-28 00:30 SAST
       TOTAL full_game 163.5 -> UNDER · p=48.1% (raw 51.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T20:49:07Z
@@ -1899,6 +1871,16 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T22:49:16Z
       calibration=calibrated n=305 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=188.5h (b2b=false) · away_rest=168.5h (b2b=false) · diff=+20.0h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Alabama Crimson Tide vs Miami Hurricanes · KO 2026-11-28 03:30 SAST
+      TOTAL full_game 170.5 -> UNDER · p=48.1% (raw 51.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T23:48:50Z
+      calibration=calibrated n=309 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=23.5h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.5h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
+      TOTAL full_game 149.5 -> UNDER · p=48.1% (raw 51.0%) @1.926 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=309 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
   [team_history_empirical/team_history_empirical] North Texas Mean Green vs North Dakota State Bison · KO 2026-11-28 03:00 SAST
       TOTAL full_game 143.5 -> UNDER · p=48.1% (raw 51.0%) @1.909 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T23:48:50Z
@@ -1984,6 +1966,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T23:48:50Z
       calibration=calibrated n=303 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=72.0h (b2b=false) · away_rest=149.0h (b2b=false) · diff=-77.0h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Alabama Crimson Tide vs Miami Hurricanes · KO 2026-11-28 03:30 SAST
+      SPREAD full_game -2.5 -> AWAY · p=47.6% (raw 51.0%) @1.909 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T23:48:50Z
+      calibration=calibrated n=305 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=23.5h (b2b=true) · away_rest=29.0h (b2b=false) · diff=-5.5h · any_b2b=true
   [team_history_empirical/team_history_empirical] East Tennessee State Buccaneers vs Charleston Southern Buccaneers · KO 2026-11-28 02:00 SAST
       SPREAD full_game -9.5 -> HOME · p=47.6% (raw 51.0%) @1.893 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T22:49:16Z
@@ -1994,6 +1981,11 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T22:49:16Z
       calibration=calibrated n=305 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=false · home_rest=96.0h (b2b=false) · away_rest=72.0h (b2b=false) · diff=+24.0h · any_b2b=false
+  [team_history_empirical/team_history_empirical] Kentucky Wildcats vs Wichita State Shockers · KO 2026-11-28 04:00 SAST
+      SPREAD full_game +4.5 -> AWAY · p=47.6% (raw 51.0%) @1.926 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=305 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=false · home_rest=169.0h (b2b=false) · away_rest=97.5h (b2b=false) · diff=+71.5h · any_b2b=false
   [team_history_empirical/team_history_empirical] North Carolina Tar Heels vs West Virginia Mountaineers · KO 2026-11-28 02:00 SAST
       SPREAD full_game +3.5 -> HOME · p=47.6% (raw 51.0%) @1.877 DraftKings
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-27T22:49:16Z
@@ -2105,6 +2097,17 @@ SETTLED PICKS — ARCHIVE ONLY
       bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T23:48:50Z
       calibration=calibrated n=312 · reasons=below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=21.5h (b2b=true) · diff=+2.5h · any_b2b=true
+  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
+      MONEYLINE full_game -> AWAY · p=47.1% (raw 51.0%) @2.420 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=641 · reasons=below_calibrated_probability_floor,superseded_by_calibration_twin · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
+      collapsed_observations=2 · books_quoted=1: DraftKings · surfaces=provider:espn, team_history_empirical
+  [team_history_empirical/team_history_empirical] Louisville Cardinals vs Tennessee Volunteers · KO 2026-11-28 04:00 SAST
+      SPREAD full_game +2.5 -> AWAY · p=46.9% (raw 51.0%) @1.893 DraftKings
+      bucket=SKIPPED_INELIGIBLE · price_evidence=NAMED_BOOKMAKER_PRICE · acca_eligible=False · grade=❌ LOSS · lifecycle=SETTLED · frozen_at=2026-11-28T00:48:15Z
+      calibration=calibrated n=319 · reasons=below_calibrated_probability_floor · prediction=history
+      venue/rest (evidence only) · neutral_site=true · home_rest=24.0h (b2b=true) · away_rest=29.5h (b2b=false) · diff=-5.5h · any_b2b=true
   [team_history_empirical/team_history_empirical] Iowa State Cyclones vs St. John's Red Storm · KO 2026-11-27 20:00 SAST
       MONEYLINE H1 -> HOME · p=46.5% (raw 54.0%) @n/a no matched book
       bucket=WATCHLIST_NO_ODDS · price_evidence=UNMATCHED · acca_eligible=False · grade=✅ WIN · lifecycle=SETTLED · frozen_at=2026-11-27T16:49:17Z
@@ -2156,9 +2159,9 @@ SETTLED PICKS — ARCHIVE ONLY
       calibration=calibrated n=620 · reasons=no_exact_bookmaker_market,below_calibrated_probability_floor · prediction=history
       venue/rest (evidence only) · neutral_site=true · home_rest=48.8h (b2b=false) · away_rest=53.0h (b2b=false) · diff=-4.2h · any_b2b=false
 
-Active summary: ELIGIBLE_CLEAN=7 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=2 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=11
-ROI-qualified individual paper singles: 2
-Archive status: IN_PROGRESS_OR_AWAITING_RESULT=41 SETTLED=336
+Active summary: ELIGIBLE_CLEAN=0 CAUTION=0 PRIOR_HEAVY=0 WATCHLIST_NO_ODDS=0 WATCHLIST_INSUFFICIENT_CONTEXT=0 SKIPPED_INELIGIBLE=0
+ROI-qualified individual paper singles: 0
+Archive status: IN_PROGRESS_OR_AWAITING_RESULT=33 SETTLED=364
 Logical picks shown: 397 · superseded observations: 0 · book/model rows collapsed: 61
 Total archived pick evidence rows: 458
 Flat one-paper-unit tickets only. No real-money stakes or automatic promotion.
