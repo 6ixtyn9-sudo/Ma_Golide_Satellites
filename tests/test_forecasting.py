@@ -2201,6 +2201,7 @@ def test_nba_ncaa_m_ncaa_w_enforce_calibrated_value_lane_while_standard_lanes_do
     assert nba_report["accas"]["paper_ticket_policy"]["max_combined_odds"] == 5.00
 
     for league, policy_slug, lane_name in (
+        (League.WNBA, "wnba_calibrated_value_ticket_lane", "WNBA_CALIBRATED_VALUE_TICKET_LANE"),
         (League.NCAA_M, "ncaa_m_calibrated_value_ticket_lane", "NCAA_M_CALIBRATED_VALUE_TICKET_LANE"),
         (League.NCAA_W, "ncaa_w_calibrated_value_ticket_lane", "NCAA_W_CALIBRATED_VALUE_TICKET_LANE"),
     ):
@@ -2225,7 +2226,7 @@ def test_nba_ncaa_m_ncaa_w_enforce_calibrated_value_lane_while_standard_lanes_do
         assert report["accas"]["paper_ticket_policy"]["min_combined_odds"] == 3.30
         assert report["accas"]["paper_ticket_policy"]["max_combined_odds"] == 5.00
 
-    standard_report = MarketForecastService(populated_store(), League.WNBA).build_report(
+    standard_report = MarketForecastService(populated_store(), League.EUROCUP).build_report(
         as_of_utc=iso(AS_OF)
     )
     assert standard_report["capabilities"]["league_operator_policy"] == "standard_policy"

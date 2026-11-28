@@ -78,7 +78,9 @@ _REST_EXCLUDED_STATUSES = frozenset(
 )
 #: Leagues with validated named-book pre-tip feeds governed by the strict
 #: calibrated-skill (<0.25 Brier), positive-EV, 5-pick ROI band paper lane.
-CALIBRATED_VALUE_PAPER_LEAGUES = frozenset({League.NBA, League.NCAA_M, League.NCAA_W})
+CALIBRATED_VALUE_PAPER_LEAGUES = frozenset(
+    {League.NBA, League.WNBA, League.NCAA_M, League.NCAA_W}
+)
 #: All named-book value paper lanes that use the unified Option 1 + Option A
 #: ticket policy (Kelly g* ranking, variable 2-3 legs, limit 3, @3.30-5.00,
 #: EV > 15% audit flag, EV > 40% sanity cap, no alt-line reuse).
@@ -1093,7 +1095,7 @@ class MarketForecastService:
                 "edge_flag_threshold": effective_edge_flag_threshold,
             }
         elif self.league in CALIBRATED_VALUE_PAPER_LEAGUES:
-            # Once NBA, NCAA_M, or NCAA_W has walk-forward calibrated
+            # Once NBA, WNBA, NCAA_M, or NCAA_W has walk-forward calibrated
             # (n >= minimum_samples) segments, keep provisional experimental
             # surfaces audit-only, reject calibrated segments whose walk-forward
             # Brier is no better than a 50/50 coin flip (>= 0.25), require
@@ -1321,6 +1323,8 @@ class MarketForecastService:
                     if self.league is League.EUROLEAGUE
                     else "nba_calibrated_value_ticket_lane"
                     if self.league is League.NBA
+                    else "wnba_calibrated_value_ticket_lane"
+                    if self.league is League.WNBA
                     else "ncaa_m_calibrated_value_ticket_lane"
                     if self.league is League.NCAA_M
                     else "ncaa_w_calibrated_value_ticket_lane"
