@@ -1,5 +1,5 @@
 {
-  "awaiting_game_legs": 1,
+  "awaiting_game_legs": 0,
   "awaiting_game_legs_open": 0,
   "base_paper_units": 100.0,
   "drawdown_basis": "not_a_settlement_time_equity_curve",
@@ -2917,7 +2917,7 @@
       "wins": 0
     },
     {
-      "awaiting_game_legs": 1,
+      "awaiting_game_legs": 0,
       "bank_units": 104.76916599218453,
       "candidate_pool_outcomes": {
         "02bdec8c0e9b0ceb4177": "win",
@@ -2935,10 +2935,14 @@
         "19cab5082af2d1f9dd86": "loss",
         "1a70fac448a77f178d3a": "win",
         "1dffa2a296dda5df7be9": "win",
+        "224cf30430aae02b76bf": "win",
         "27c0ec6352c31ca42f29": "loss",
         "2897a54c3acb1728783c": "loss",
         "2c284eb53be325db1a6a": "loss",
         "314949f67d28b8dddba5": "win",
+        "317056b8b0fd4d21bac4": "win",
+        "36a7a498c03e90b1bb0e": "win",
+        "374490f891f34b1fa895": "win",
         "3a22be891fa1817db042": "win",
         "3b72b49ba9c8ccdca825": "win",
         "3beff0e8130853b855fd": "loss",
@@ -2950,17 +2954,20 @@
         "58cabb0b5ed25cd13b88": "win",
         "5ee3f265d950f94a24df": "loss",
         "615edc56c7192d6466fa": "loss",
+        "6177a5ee8f331d5b8c8c": "win",
         "62763503932e625861b5": "loss",
         "62e5c03f78e13c0db5ff": "win",
         "63b47ccbc2f81b26e87b": "loss",
         "649ec9f7d26e77b96f6c": "loss",
         "6b1bea9853d2aef7141b": "loss",
         "71f1e015b58f3bc6a6f3": "loss",
+        "729ae9b157fecb5fcee7": "win",
         "75bced642e60aee05d28": "loss",
         "75e3440333d950e845e1": "win",
         "781e3c73797fb066059c": "win",
         "89593b6c10f25ea17394": "win",
         "8b6a8d114b0e390b7d92": "win",
+        "8d1ca296c4e758e02e63": "win",
         "8e8c2de3e9472cece35b": "win",
         "902cc999b3fb8414bfd8": "loss",
         "91c186985294a529eb16": "loss",
@@ -2968,6 +2975,7 @@
         "95a9d4cd52e4600148af": "win",
         "97aa32efa636fd1cd8f1": "loss",
         "9ae0dfc65d1b7cbfd585": "win",
+        "9fd31c76ef36513ee9ee": "win",
         "a023cd90f0008c782c69": "loss",
         "ab1c095b251a2b4b3701": "loss",
         "ab787b50fa19752e58d8": "win",
@@ -2983,9 +2991,11 @@
         "d99a99857a75bd38eb8b": "loss",
         "debee9608f07a7554ea7": "loss",
         "e110ac61642bd9f26bcd": "loss",
+        "e1b817a8f2564276d2b2": "win",
         "e3d83b4b84eb630ccd59": "loss",
         "e58d785c24186aa08625": "win",
         "e6d60ca5b99dc3180332": "loss",
+        "ea82392c8a3efca53b86": "win",
         "ed8de54ad58956e8285a": "loss",
         "f09070bde991fed22e7f": "win",
         "facb9301087b0ce5d0e7": "win"
@@ -3082,7 +3092,7 @@
           "unresolved_legs": 0
         },
         {
-          "awaiting_game_legs": 1,
+          "awaiting_game_legs": 0,
           "bookmakers": [
             "DraftKings"
           ],
@@ -3094,7 +3104,7 @@
           "leg_outcomes": [
             "loss",
             "loss",
-            null
+            "win"
           ],
           "legs": [
             {
@@ -3137,13 +3147,13 @@
               "book_provider": "espn",
               "forecast_id": "6177a5ee8f331d5b8c8c",
               "game_id": "401929289",
-              "grade_status": "pending",
+              "grade_status": "win",
               "home": "Mississippi State Bulldogs",
               "line": -6.5,
               "market": "spread",
+              "outcome": "win",
               "period": "full_game",
               "pick_id": "6177a5ee8f331d5b8c8c",
-              "result_resolution_status": "awaiting_game",
               "scheduled_utc": "2026-11-28T00:30:00Z",
               "selected_decimal_price": 1.925925925925926,
               "selection": "away"
@@ -3160,7 +3170,7 @@
           "stake_units": 1.0,
           "ticket_id": "551391086c9ee0f803cb",
           "ticket_type": "acca",
-          "unresolved_legs": 1
+          "unresolved_legs": 0
         },
         {
           "awaiting_game_legs": 0,
@@ -3415,7 +3425,7 @@
       "settled_positions": 5,
       "settled_singles": 0,
       "staked_units": 5.0,
-      "unresolved_result_legs": 1,
+      "unresolved_result_legs": 0,
       "wins": 0
     }
   ],
@@ -3435,12 +3445,12 @@
   "result_unresolvable_legs": 0,
   "roi": 0.12228630749191037,
   "schema_version": "magolide.operator",
-  "selected_leg_brier_score": 0.20938449227228934,
+  "selected_leg_brier_score": 0.20907563276369553,
   "settled_accas": 38,
   "settled_positions": 39,
   "settled_singles": 1,
   "settled_stake_units": 39.0,
   "stake_policy": "flat_one_paper_unit_per_position_no_refill_no_real_money",
-  "unresolved_result_legs": 1,
+  "unresolved_result_legs": 0,
   "wins": 15
 }
